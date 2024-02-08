@@ -9,7 +9,6 @@ using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Relation.V1;
 
 namespace API.Controllers;
@@ -30,7 +29,6 @@ public class TermsController : ControllerBase
         TermsOptions termsOptions,
         OidcOptions oidcOptions,
         Relation.V1.Relation.RelationClient relationClient,
-        IOptions<DataHubFacadeOptions> dhOptions,
         int version)
     {
         if (termsOptions.PrivacyPolicyVersion < version)
@@ -101,7 +99,7 @@ public class TermsController : ControllerBase
 
         await userService.UpsertUserAsync(user);
 
-        if (dhOptions.Value.CallRelationService && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
+        if (AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
         {
             var request = new CreateRelationRequest
             {

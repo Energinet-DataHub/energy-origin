@@ -7,7 +7,6 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
-using IdentityModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -39,7 +38,7 @@ public class TermsControllerTests
             .AddJsonFile("appsettings.Test.json", false)
             .Build();
 
-        dataHubFacadeOptions.Value.Returns(new DataHubFacadeOptions { Url = "http://localhost", CallRelationService = true });
+        dataHubFacadeOptions.Value.Returns(new DataHubFacadeOptions { Url = "http://localhost" });
         roleOptions = configuration.GetSection(RoleOptions.Prefix).Get<RoleOptions>()!;
         termsOptions = configuration.GetSection(TermsOptions.Prefix).Get<TermsOptions>()!;
         oidcOptions = configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
@@ -67,7 +66,7 @@ public class TermsControllerTests
             UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = oldAcceptedTermsVersion } }
         });
 
-        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, dataHubFacadeOptions, newAcceptedTermsVersion);
+        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
@@ -96,7 +95,7 @@ public class TermsControllerTests
 
         controller.PrepareUser(id: id, name: name, organization: organization, allowCprLookup: $"{allowCprLookup}", encryptedProviderKeys: cryptography.Encrypt($"{providerKeyType}={providerKey}"));
 
-        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, dataHubFacadeOptions, newAcceptedTermsVersion);
+        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
@@ -114,7 +113,7 @@ public class TermsControllerTests
     }
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenPrincipalIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, dataHubFacadeOptions, 3));
+    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenPrincipalIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, 3));
 
     [Fact]
     public async Task AcceptUserTermsAsync_ShouldThrowArgumentException_WhenUserHasAlreadyAcceptedNewerTermsVersion()
@@ -132,7 +131,7 @@ public class TermsControllerTests
             }
         );
 
-        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, dataHubFacadeOptions, 1);
+        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, 1);
 
         Assert.NotNull(result);
         Assert.IsType<BadRequestObjectResult>(result);
