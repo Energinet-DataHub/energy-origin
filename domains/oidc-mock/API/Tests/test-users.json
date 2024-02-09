@@ -1,7 +1,6 @@
 [
     {
         "name": "Charlotte",
-        "isSelectable": true,
         "idToken": {
             "sub": "7DADB7DB-0637-4446-8626-2781B06A9E20",
             "some.number": 42

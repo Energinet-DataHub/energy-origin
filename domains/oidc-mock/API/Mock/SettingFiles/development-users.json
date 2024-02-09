@@ -1,7 +1,6 @@
 [
     {
         "name": "Ellen Ripley",
-        "isSelectable": true,
         "description": "Stor virksomhed med mange målepunkter (og onde planer)",
         "imageUrl": "https://dummyimage.com/200x200/02525e/fff&text=foo",
         "idToken": {
@@ -21,7 +20,6 @@
     },
     {
         "name": "John Wick",
-        "isSelectable": true,
         "description": "Privat person og er glad for sin hund. Indtil...",
         "imageUrl": "https://dummyimage.com/200x200/02525e/fff&text=bar",
         "accessToken": {
