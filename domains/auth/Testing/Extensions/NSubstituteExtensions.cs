@@ -3,7 +3,7 @@ using Grpc.Core.Testing;
 using NSubstitute;
 using NSubstitute.Core;
 
-namespace Integration.Tests.Extensions;
+namespace Testing.Extensions;
 
 public static class NSubstituteExtensions
 {

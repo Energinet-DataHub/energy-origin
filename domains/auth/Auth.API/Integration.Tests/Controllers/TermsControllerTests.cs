@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Relation.V1;
 using WireMock.Server;
-using Integration.Tests.Extensions;
+using Testing.Extensions;
 
 namespace Integration.Tests.Controllers;
 

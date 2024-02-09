@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../API/API.csproj" />
+    <ProjectReference Include="..\..\Testing\Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
