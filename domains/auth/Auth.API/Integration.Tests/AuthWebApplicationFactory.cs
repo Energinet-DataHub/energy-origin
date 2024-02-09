@@ -39,8 +39,6 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     {
         builder.UseEnvironment("Test");
 
-        builder.UseSetting("DataHubFacade:Url", "http://foo");
-
         builder.ConfigureTestServices(services =>
         {
             services.Remove(services.First(x => x.ServiceType == typeof(DbContextOptions<DataContext>)));
