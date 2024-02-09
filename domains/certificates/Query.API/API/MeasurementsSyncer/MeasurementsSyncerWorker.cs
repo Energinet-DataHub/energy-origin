@@ -1,40 +1,40 @@
-using API.DataSyncSyncer.Client.Dto;
-using DataContext;
-using MassTransit;
-using MeasurementEvents;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
+using DataContext;
 using DataContext.Models;
+using MassTransit;
+using MeasurementEvents;
+using Measurements.V1;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace API.DataSyncSyncer;
+namespace API.MeasurementsSyncer;
 
-internal class DataSyncSyncerWorker : BackgroundService
+internal class MeasurementsSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
-    private readonly ILogger<DataSyncSyncerWorker> logger;
+    private readonly ILogger<MeasurementsSyncerWorker> logger;
     private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
-    private readonly DataSyncService dataSyncService;
-    private readonly DatasyncOptions options;
+    private readonly MeasurementsSyncService measurementsSyncService;
+    private readonly MeasurementsSyncOptions options;
 
-    public DataSyncSyncerWorker(
-        ILogger<DataSyncSyncerWorker> logger,
+    public MeasurementsSyncerWorker(
+        ILogger<MeasurementsSyncerWorker> logger,
         IDbContextFactory<ApplicationDbContext> contextFactory,
         IBus bus,
-        DataSyncService dataSyncService,
-        IOptions<DatasyncOptions> options)
+        MeasurementsSyncService measurementsSyncService,
+        IOptions<MeasurementsSyncOptions> options)
     {
         this.bus = bus;
         this.logger = logger;
         this.contextFactory = contextFactory;
-        this.dataSyncService = dataSyncService;
+        this.measurementsSyncService = measurementsSyncService;
         this.options = options.Value;
     }
 
@@ -51,7 +51,7 @@ internal class DataSyncSyncerWorker : BackgroundService
             var syncInfos = await GetSyncInfos(stoppingToken);
             foreach (var syncInfo in syncInfos)
             {
-                var measurements = await dataSyncService.FetchMeasurements(syncInfo,
+                var measurements = await measurementsSyncService.FetchMeasurements(syncInfo,
                     stoppingToken);
 
                 if (measurements.Any())
@@ -100,7 +100,7 @@ internal class DataSyncSyncerWorker : BackgroundService
         }
     }
 
-    private async Task PublishIntegrationEvents(List<DataSyncDto> measurements, CancellationToken cancellationToken)
+    private async Task PublishIntegrationEvents(List<Measurement> measurements, CancellationToken cancellationToken)
     {
         var integrationsEvents = MapToIntegrationEvents(measurements);
         logger.LogInformation(
@@ -123,16 +123,25 @@ internal class DataSyncSyncerWorker : BackgroundService
     private static int GetNumberOfOwners(IGrouping<string, CertificateIssuingContract> g) =>
         g.Select(c => c.MeteringPointOwner).Distinct().Count();
 
-    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<DataSyncDto> measurements) =>
+    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<Measurement> measurements) =>
         measurements
             .Select(it => new EnergyMeasuredIntegrationEvent(
-                    GSRN: it.GSRN,
+                    GSRN: it.Gsrn,
                     DateFrom: it.DateFrom,
                     DateTo: it.DateTo,
                     Quantity: it.Quantity,
-                    Quality: it.Quality
+                    Quality: MapQuality(it.Quality)
                 )
             )
             .ToList();
 
+    private static MeasurementQuality MapQuality(EnergyQuantityValueQuality q) =>
+        q switch
+        {
+            EnergyQuantityValueQuality.Measured => MeasurementQuality.Measured,
+            EnergyQuantityValueQuality.Estimated => MeasurementQuality.Estimated,
+            EnergyQuantityValueQuality.Calculated => MeasurementQuality.Calculated,
+            EnergyQuantityValueQuality.Revised => MeasurementQuality.Revised,
+            _ => throw new ArgumentOutOfRangeException(nameof(q), q, null)
+        };
 }

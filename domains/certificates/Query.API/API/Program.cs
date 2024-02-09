@@ -1,5 +1,4 @@
 using API.ContractService;
-using API.DataSyncSyncer;
 using API.Query.API;
 using API.RabbitMq;
 using Microsoft.AspNetCore.Builder;
@@ -14,6 +13,7 @@ using Serilog.Formatting.Json;
 using System.Linq;
 using System.Text.Json.Serialization;
 using API.Configurations;
+using API.MeasurementsSyncer;
 using Asp.Versioning;
 using DataContext;
 using EnergyOrigin.ActivityLog;

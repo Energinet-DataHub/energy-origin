@@ -1,11 +1,11 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
-namespace API.DataSyncSyncer.Persistence;
+namespace API.MeasurementsSyncer.Persistence;
 
 public class SyncState : ISyncState
 {

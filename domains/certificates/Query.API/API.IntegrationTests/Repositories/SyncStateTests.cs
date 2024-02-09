@@ -1,5 +1,3 @@
-using API.DataSyncSyncer;
-using API.DataSyncSyncer.Persistence;
 using API.IntegrationTests.Mocks;
 using DataContext;
 using FluentAssertions;
@@ -9,6 +7,8 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System;
 using System.Threading.Tasks;
+using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
 using Testing.Helpers;
 using Xunit;

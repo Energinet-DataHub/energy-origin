@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace API.DataSyncSyncer.Persistence;
+namespace API.MeasurementsSyncer.Persistence;
 
 public interface ISyncState
 {
