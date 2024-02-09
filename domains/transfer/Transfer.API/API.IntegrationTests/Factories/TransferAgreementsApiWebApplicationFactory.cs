@@ -13,6 +13,7 @@ using Asp.Versioning.ApiExplorer;
 using API.Transfer.Api.Services;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
@@ -77,6 +78,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
         builder.ConfigureTestServices(s =>
         {
+            s.Configure<ActivityLogOptions>(options =>
+            {
+                options.ServiceName = "transfer";
+                options.CleanupActivityLogsOlderThanInDays = -1;
+                options.CleanupIntervalInSeconds = 3;
+            });
+
             s.Configure<DatabaseOptions>(o =>
             {
                 var connectionStringBuilder = new DbConnectionStringBuilder

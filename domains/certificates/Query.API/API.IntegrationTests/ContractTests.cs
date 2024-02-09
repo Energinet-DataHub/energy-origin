@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Extensions;
@@ -611,6 +612,36 @@ public sealed class ContractTests :
         activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
         Assert.Equal(2, activityLog!.ActivityLogEntries.Count(x => x.ActorId.ToString() == subject));
+    }
+
+    [Fact]
+    public async Task GivenContract_WhenEditingEndDate_ActivityLogIsCleanedUp()
+    {
+        // Create contract
+        var gsrn = GsrnHelper.GenerateRandom();
+        dataSyncWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = (long?)null };
+        using var contractResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Update end date
+        var createdContractUri = contractResponse.Headers.Location;
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var putBody = new { endDate };
+        await client.PutAsJsonAsync(createdContractUri, putBody);
+
+        // Wait for activity log entries to be cleaned up
+        await Task.Delay(3200);
+
+        // Assert activity log entries (created, updated)
+        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+        using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
+        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
+        Assert.Empty(activityLog!.ActivityLogEntries);
     }
 
 }

@@ -15,6 +15,7 @@ using Asp.Versioning.ApiExplorer;
 using Contracts;
 using DataContext;
 using DataContext.ValueObjects;
+using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using FluentAssertions;
@@ -73,6 +74,13 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+            services.Configure<ActivityLogOptions>(options =>
+            {
+                options.ServiceName = "certificates";
+                options.CleanupActivityLogsOlderThanInDays = -1;
+                options.CleanupIntervalInSeconds = 3;
+            });
+
             services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {
                 options.StartTimeout = TimeSpan.FromSeconds(30);

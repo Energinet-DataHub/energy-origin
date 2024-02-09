@@ -40,4 +40,25 @@ public class TransferAgreementsControllerTest : IClassFixture<TransferAgreements
         Assert.Equal(2, senderLog.ActivityLogEntries.Count());
         Assert.Single(receiverLog.ActivityLogEntries);
     }
+
+    [Fact]
+    public async Task GivenProposal_WhenAcceptingProposal_ActivityLogEntryIsCleanedUp()
+    {
+        var receiverTin = "12334456";
+
+        // Create transfer agreement proposal
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
+        var createdProposalId = await api.CreateTransferAgreementProposal(request);
+
+        // Accept proposal
+        await api.AcceptTransferAgreementProposal(receiverTin, createdProposalId);
+
+        await Task.Delay(3200);
+
+        // Assert activity was logged
+        var senderLog = await api.GetActivityLog(new ActivityLogEntryFilterRequest(null, null, null));
+        var receiverLog = await api.GetActivityLog(receiverTin, new ActivityLogEntryFilterRequest(null, null, null));
+        Assert.Empty(senderLog.ActivityLogEntries);
+        Assert.Empty(receiverLog.ActivityLogEntries);
+    }
 }
