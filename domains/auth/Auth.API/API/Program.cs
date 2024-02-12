@@ -151,7 +151,6 @@ builder.Services.AddOpenTelemetry()
             .AddGrpcClientInstrumentation(grpcOptions =>
             {
                 grpcOptions.SuppressDownstreamInstrumentation = true;
-                grpcOptions.SuppressDownstreamInstrumentation = true;
                 grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
                     activity.SetTag("requestVersion", httpRequestMessage.Version);
                 grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
