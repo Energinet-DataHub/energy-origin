@@ -113,8 +113,7 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(dataSource)
         .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
 
-NpgsqlConnectionStringBuilder healthCheckConnectionStringBuilder = new NpgsqlConnectionStringBuilder(
-    databaseOptions.ConnectionString)
+var healthCheckConnectionStringBuilder = new NpgsqlConnectionStringBuilder(databaseOptions.ConnectionString)
 {
     Pooling = false
 };
