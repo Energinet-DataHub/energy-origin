@@ -113,7 +113,13 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(dataSource)
         .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
 
-builder.Services.AddHealthChecks().AddNpgSql(sp => sp.GetRequiredService<NpgsqlDataSource>().ConnectionString);
+NpgsqlConnectionStringBuilder healthCheckConnectionStringBuilder = new NpgsqlConnectionStringBuilder(
+    databaseOptions.ConnectionString)
+{
+    Pooling = false
+};
+
+builder.Services.AddHealthChecks().AddNpgSql(healthCheckConnectionStringBuilder.ConnectionString);
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
