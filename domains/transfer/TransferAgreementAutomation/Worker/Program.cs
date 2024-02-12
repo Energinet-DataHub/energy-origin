@@ -51,8 +51,6 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddOptions<TransferApiOptions>().BindConfiguration(TransferApiOptions.TransferApi)
-    .ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
     .ValidateDataAnnotations().ValidateOnStart();
 
