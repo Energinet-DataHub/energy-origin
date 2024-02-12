@@ -32,9 +32,10 @@ public class ProjectOriginWalletServiceTest
     [Fact]
     public async Task TransferCertificates_CertificateNotTransfer_ShouldSetMetric()
     {
-        var transferAgreement = new TransferAgreement {
+        var transferAgreement = new TransferAgreement
+        {
             EndDate = DateTimeOffset.UtcNow.AddHours(3),
-            ReceiverReference =  Guid.NewGuid(),
+            ReceiverReference = Guid.NewGuid(),
             ReceiverTin = "12345678",
             SenderId = Guid.NewGuid(),
             StartDate = DateTimeOffset.UtcNow,
@@ -165,10 +166,10 @@ public class ProjectOriginWalletServiceTest
             TransferAgreementNumber = 0
         };
 
-    var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse
-            { GranularCertificates = { CreateGranularCertificate(now.AddHours(-1), now.AddHours(1)) } }
-        );
+        var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
+                new QueryResponse
+                { GranularCertificates = { CreateGranularCertificate(now.AddHours(-1), now.AddHours(1)) } }
+            );
 
         var fakeTransferResponse = CreateAsyncUnaryCall(
             new TransferResponse() { }
@@ -202,13 +203,13 @@ public class ProjectOriginWalletServiceTest
             TransferAgreementNumber = 0
         };
 
-    var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse
-            {
-                GranularCertificates =
-                    { CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2)) }
-            }
-        );
+        var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
+                new QueryResponse
+                {
+                    GranularCertificates =
+                        { CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2)) }
+                }
+            );
 
         var fakeTransferResponse = CreateAsyncUnaryCall(
             new TransferResponse() { }
