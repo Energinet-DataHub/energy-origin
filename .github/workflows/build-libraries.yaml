@@ -27,7 +27,7 @@ jobs:
           echo "csprojects=[]" >> "$GITHUB_ENV"
           echo "dockerfiles=[]" >> "$GITHUB_ENV"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build relevant dotnet project matrix
         if: ${{ steps.dotnet.outputs.pattern != '' }}
@@ -75,7 +75,7 @@ jobs:
       matrix:
         projects: ${{ fromJson(needs.define-matrix.outputs.csprojects) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Resolve values
         shell: bash
@@ -119,7 +119,7 @@ jobs:
       matrix:
         item: ${{ fromJson(needs.define-matrix.outputs.dockerfiles) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Resolve version
         uses: ./.github/actions/docker-image-version
@@ -160,7 +160,7 @@ jobs:
       matrix:
         item: ${{ fromJson(needs.define-matrix.outputs.dockerfiles) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Update environment
         uses: ./.github/actions/update-base-environment
