@@ -12,7 +12,7 @@ jobs:
     outputs:
       matrix: ${{ env.matrix }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build matrix
         shell: bash
@@ -45,7 +45,7 @@ jobs:
       matrix:
         path: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           sparse-checkout: ${{ matrix.path }}
 

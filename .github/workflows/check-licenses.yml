@@ -20,7 +20,7 @@ jobs:
         run: |
           echo "matrix=[]" >> "$GITHUB_ENV"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: ${{ steps.diff.outputs.pattern != '' }}
 
       - name: Build relevant project matrix
@@ -51,7 +51,7 @@ jobs:
       matrix:
         projects: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Check license
         uses: ./.github/actions/dotnet-check-license
