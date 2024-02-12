@@ -16,12 +16,3 @@ updates:
     directory: "/libraries/docker"
     schedule:
       interval: "weekly"
-
-  - package-ecosystem: "nuget"
-    directory: "/domains"
-    schedule:
-      interval: "weekly"
-    groups:
-      "Microsoft.EntityFrameworkCore":
-        patterns:
-          - "Microsoft.EntityFrameworkCore.*"
