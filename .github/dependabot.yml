@@ -5,14 +5,21 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      artifacts-actions:
-        patterns:
-          - "actions/*-artifact"
-      pages-actions:
+      pages-and-artifact-actions:
         patterns:
           - "actions/*pages*"
+          - "actions/*-artifact"
 
   - package-ecosystem: "docker"
     directory: "/libraries/docker"
     schedule:
       interval: "weekly"
+
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      "Microsoft.EntityFrameworkCore":
+        patterns:
+          - "Microsoft.EntityFrameworkCore.*"
