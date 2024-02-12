@@ -1,0 +1,16 @@
+name: dependabot validate
+
+on:
+  workflow_call: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pipx install check-jsonschema
+        shell: bash
+      - run: curl -o schema.json 'https://json.schemastore.org/dependabot-2.0.json'
+        shell: bash
+      - run: check-jsonschema --schemafile schema.json .github/dependabot.yml
+        shell: bash
