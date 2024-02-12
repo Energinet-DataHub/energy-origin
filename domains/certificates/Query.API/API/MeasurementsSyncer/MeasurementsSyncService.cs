@@ -3,28 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.DataSyncSyncer.Client;
-using API.DataSyncSyncer.Client.Dto;
-using API.DataSyncSyncer.Persistence;
-using DataContext.ValueObjects;
+using API.MeasurementsSyncer.Persistence;
+using Measurements.V1;
 using Microsoft.Extensions.Logging;
 
-namespace API.DataSyncSyncer;
+namespace API.MeasurementsSyncer;
 
-public class DataSyncService
+public class MeasurementsSyncService
 {
-    private readonly IDataSyncClientFactory factory;
     private readonly ISyncState syncState;
-    private readonly ILogger<DataSyncService> logger;
+    private readonly Measurements.V1.Measurements.MeasurementsClient measurementsClient;
+    private readonly ILogger<MeasurementsSyncService> logger;
 
-    public DataSyncService(IDataSyncClientFactory factory, ILogger<DataSyncService> logger, ISyncState syncState)
+    public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISyncState syncState, Measurements.V1.Measurements.MeasurementsClient measurementsClient)
     {
-        this.factory = factory;
         this.logger = logger;
         this.syncState = syncState;
+        this.measurementsClient = measurementsClient;
     }
 
-    public async Task<List<DataSyncDto>> FetchMeasurements(MeteringPointSyncInfo syncInfo,
+    public async Task<List<Measurement>> FetchMeasurements(MeteringPointSyncInfo syncInfo,
         CancellationToken cancellationToken)
     {
         var dateFrom = await syncState.GetPeriodStartTime(syncInfo);
@@ -42,28 +40,30 @@ public class DataSyncService
         {
             try
             {
-                var client = factory.CreateClient();
-                var result = await client.RequestAsync(
-                    syncInfo.GSRN,
-                    new Period(dateFrom.Value, nearestHour),
-                    syncInfo.MeteringPointOwner,
-                    cancellationToken
-                );
+                var request = new GetMeasurementsRequest
+                {
+                    DateFrom = dateFrom.Value,
+                    DateTo = nearestHour,
+                    Gsrn = syncInfo.GSRN,
+                    Subject = syncInfo.MeteringPointOwner,
+                    Actor = Guid.NewGuid().ToString()
+                };
+                var res = await measurementsClient.GetMeasurementsAsync(request, cancellationToken: cancellationToken);
 
                 logger.LogInformation(
                     "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
-                    result.Count,
+                    res.Measurements.Count,
                     syncInfo.GSRN,
                     DateTimeOffset.FromUnixTimeSeconds(dateFrom.Value).ToString("o"),
                     DateTimeOffset.FromUnixTimeSeconds(nearestHour).ToString("o"));
 
-                if (result.Any())
+                if (res.Measurements.Any())
                 {
-                    var nextSyncPosition = result.Max(m => m.DateTo);
+                    var nextSyncPosition = res.Measurements.Max(m => m.DateTo);
                     await syncState.SetSyncPosition(syncInfo.GSRN, nextSyncPosition);
                 }
 
-                return result;
+                return res.Measurements.ToList();
             }
             catch (Exception e)
             {

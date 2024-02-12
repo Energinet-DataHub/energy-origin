@@ -8,7 +8,7 @@ using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests.Mocks;
 
-public sealed class DataSyncWireMock : IDisposable
+public sealed class MeasurementsWireMock : IDisposable
 {
     private readonly WireMockServer server;
     private readonly Technology defaultTechnology = new Technology(
@@ -16,7 +16,7 @@ public sealed class DataSyncWireMock : IDisposable
         AibTechCode: "T010000"
     );
 
-    public DataSyncWireMock() => server = WireMockServer.Start();
+    public MeasurementsWireMock() => server = WireMockServer.Start();
 
     public string Url => server.Url!;
 
@@ -25,7 +25,7 @@ public sealed class DataSyncWireMock : IDisposable
         server.ResetMappings();
         var responseJson = BuildMeteringPointsResponse(gsrn, type, technology ?? defaultTechnology);
         server
-            .Given(Request.Create().WithPath("/meteringPoints"))
+            .Given(Request.Create().WithPath("/api/measurements/meteringpoints"))
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(responseJson));
     }
 
@@ -37,7 +37,7 @@ public sealed class DataSyncWireMock : IDisposable
             technology.AibTechCode
         });
 
-        return $"{{\"meteringPoints\":[{{\"gsrn\": \"{gsrn}\", \"gridArea\": \"DK1\", \"type\": \"{type}\", \"technology\": {technologyJson}}}]}}";
+        return $"{{\"Result\":[{{\"gsrn\": \"{gsrn}\", \"gridArea\": \"DK1\", \"type\": \"{type}\", \"technology\": {technologyJson}, \"canBeUsedForIssuingCertificates\": true}}]}}";
     }
 
     public void Dispose() => server.Dispose();

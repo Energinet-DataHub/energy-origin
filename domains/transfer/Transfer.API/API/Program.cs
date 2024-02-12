@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Text.Json.Serialization;
 using API.Cvr;
 using API.Shared.Options;
 using API.Shared.Swagger;
@@ -10,6 +11,7 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,7 +61,9 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
-builder.Services.AddActivityLog();
+builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+builder.Services.AddActivityLog(options => options.ServiceName = "transfer");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
@@ -132,7 +136,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseActivityLog("transfer");
+app.UseActivityLog();
 
 app.Run();
 

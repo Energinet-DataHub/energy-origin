@@ -1,5 +1,4 @@
 using API.ContractService;
-using API.DataSyncSyncer;
 using API.Query.API;
 using API.RabbitMq;
 using Microsoft.AspNetCore.Builder;
@@ -14,11 +13,13 @@ using Serilog.Formatting.Json;
 using System.Linq;
 using System.Text.Json.Serialization;
 using API.Configurations;
+using API.MeasurementsSyncer;
 using Asp.Versioning;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
+using Microsoft.AspNetCore.Http.Json;
 using Npgsql;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -63,6 +64,8 @@ builder.Services.AddOpenTelemetry()
             .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
+builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -78,7 +81,7 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
-builder.Services.AddActivityLog();
+builder.Services.AddActivityLog(options => options.ServiceName = "certificates");
 
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
@@ -124,7 +127,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseActivityLog("certificates");
+app.UseActivityLog();
 
 app.Run();
 

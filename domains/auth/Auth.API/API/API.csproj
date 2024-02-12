@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
         <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.3" />
+        <PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
         <PackageReference Include="IdentityModel" Version="6.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1" />
@@ -36,4 +37,9 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Unit.Tests" />
     </ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Protos\relation.proto" GrpcServices="Client" />
+	</ItemGroup>
+
 </Project>

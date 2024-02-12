@@ -42,6 +42,11 @@ public class Startup
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
 
+        services.AddOptions<OtlpOptions>()
+            .BindConfiguration(OtlpOptions.Prefix)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddValidatorsFromAssemblyContaining<Program>(lifetime: ServiceLifetime.Scoped);
         services.AddFluentValidationAutoValidation();
 
@@ -51,11 +56,6 @@ public class Startup
         services.AddSwaggerGen();
 
         services.AddLogging();
-
-        services.AddOptions<OtlpOptions>()
-            .BindConfiguration(OtlpOptions.Prefix)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
 
         var otlpConfiguration = _configuration.GetSection(OtlpOptions.Prefix);
         var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
@@ -78,6 +78,7 @@ public class Startup
                             activity.SetTag("requestVersion", httpRequestMessage.Version);
                         grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
                             activity.SetTag("responseVersion", httpResponseMessage.Version);
+                        grpcOptions.SuppressDownstreamInstrumentation = true;
                     })
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()

@@ -9,6 +9,7 @@ using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Relation.V1;
 
 namespace API.Controllers;
 
@@ -20,15 +21,14 @@ public class TermsController : ControllerBase
     [Route("terms/user/accept/{version}")]
     public async Task<IActionResult> AcceptUserTermsAsync(
         ILogger<TermsController> logger,
-        IHttpContextAccessor accessor,
         IUserService userService,
+        IHttpContextAccessor accessor,
         ICompanyService companyService,
-        IHttpClientFactory clientFactory,
         ICryptography cryptography,
-        DataSyncOptions dataSyncOptions,
         RoleOptions roleOptions,
         TermsOptions termsOptions,
         OidcOptions oidcOptions,
+        Relation.V1.Relation.RelationClient relationClient,
         int version)
     {
         if (termsOptions.PrivacyPolicyVersion < version)
@@ -99,23 +99,28 @@ public class TermsController : ControllerBase
 
         await userService.UpsertUserAsync(user);
 
-        var relationUri = dataSyncOptions.Uri?.AbsoluteUri.TrimEnd('/');
-        if (relationUri != null && AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
+        if (AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
         {
-            var client = clientFactory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = authentication;
-
-            // NOTE/TODO: The jwt and consequencely user descriptor does not yet contain SSN/CPR therefore we are using null as SSN value to create relations.
-            //            However this value should be set when available or data sync should be updated to pull SSN and TIN values from the provided jwt instead.
-            var result = await client.PostAsJsonAsync<Dictionary<string, object?>>($"{relationUri}/relations", new()
+            var request = new CreateRelationRequest
             {
-                { "ssn", null },
-                { "tin", descriptor.Organization?.Tin }
-            });
-
-            if (result.IsSuccessStatusCode == false)
+                Subject = descriptor.Subject.ToString(),
+                Actor = descriptor.Id.ToString(),
+                Ssn = "",
+                Tin = descriptor.Organization?.Tin
+            };
+            try
             {
-                logger.LogWarning("AcceptTerms: Unable to create relations for {Subject}", descriptor.Subject);
+                var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
+                if (res.Success == false)
+                {
+                    logger.LogWarning("AcceptTerms: Unable to create relations for {Subject}. Error: {ErrorMessage}",
+                        descriptor.Subject, res.ErrorMessage);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError("AcceptTerms: Unable to create relations for {Subject}. Exception: {e}",
+                                       descriptor.Subject, e);
             }
         }
 

@@ -9,12 +9,13 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using API.DataSyncSyncer;
 using API.IntegrationTests.Mocks;
+using API.MeasurementsSyncer;
 using Asp.Versioning.ApiExplorer;
 using Contracts;
 using DataContext;
 using DataContext.ValueObjects;
+using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using FluentAssertions;
@@ -37,7 +38,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     private readonly List<GrpcChannel> disposableChannels = new();
 
     public string ConnectionString { get; set; } = "";
-    public string DataSyncUrl { get; set; } = "foo";
+    public string MeasurementsUrl { get; set; } = "http://foo";
     public string WalletUrl { get; set; } = "bar";
 
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
@@ -59,8 +60,9 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
-        builder.UseSetting("Datasync:Url", DataSyncUrl);
-        builder.UseSetting("Datasync:Disabled", "false");
+        builder.UseSetting("Measurements:Url", MeasurementsUrl);
+        builder.UseSetting("Measurements:GrpcUrl", "http://foo");
+        builder.UseSetting("MeasurementsSync:Disabled", "false");
         builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
@@ -72,6 +74,13 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+            services.Configure<ActivityLogOptions>(options =>
+            {
+                options.ServiceName = "certificates";
+                options.CleanupActivityLogsOlderThanInDays = -1;
+                options.CleanupIntervalInSeconds = 3;
+            });
+
             services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {
                 options.StartTimeout = TimeSpan.FromSeconds(30);
@@ -80,8 +89,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
                 options.WaitUntilStarted = RabbitMqOptions != null;
             });
 
-            // Remove DataSyncSyncerWorker
-            services.Remove(services.First(s => s.ImplementationType == typeof(DataSyncSyncerWorker)));
+            // Remove MeasurementsSyncerWorker
+            services.Remove(services.First(s => s.ImplementationType == typeof(MeasurementsSyncerWorker)));
         });
     }
 
@@ -179,10 +188,10 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         string gsrn,
         DateTimeOffset startDate,
         MeteringPointType meteringPointType,
-        DataSyncWireMock dataSyncWireMock,
+        MeasurementsWireMock measurementsWireMock,
         Technology technology = null!)
     {
-        dataSyncWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
+        measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
 
         using var client = CreateAuthenticatedClient(subject);
         var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };

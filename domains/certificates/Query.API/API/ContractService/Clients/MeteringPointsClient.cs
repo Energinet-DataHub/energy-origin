@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
 
@@ -35,7 +36,7 @@ public class MeteringPointsClient : IMeteringPointsClient
 
         ValidateOwnerAndSubjectMatch(owner);
 
-        return await httpClient.GetFromJsonAsync<MeteringPointsResponse>("meteringPoints",
+        return await httpClient.GetFromJsonAsync<MeteringPointsResponse>("/api/measurements/meteringpoints",
             cancellationToken: cancellationToken, options: jsonSerializerOptions);
     }
 
@@ -46,6 +47,7 @@ public class MeteringPointsClient : IMeteringPointsClient
             throw new HttpRequestException($"No HTTP context found. {nameof(MeteringPointsClient)} must be used as part of a request");
 
         httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContext.Request.Headers.Authorization!);
+        httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", "20240110");
     }
 
     private void ValidateOwnerAndSubjectMatch(string owner)
@@ -57,9 +59,9 @@ public class MeteringPointsClient : IMeteringPointsClient
     }
 }
 
-public record MeteringPointsResponse(List<MeteringPoint> MeteringPoints);
+public record MeteringPointsResponse(List<MeteringPoint> Result);
 
-public record MeteringPoint(string GSRN, string GridArea, MeterType Type, Address Address, Technology Technology);
+public record MeteringPoint(string Gsrn, string GridArea, MeterType Type, Address Address, Technology Technology, bool CanBeUsedForIssuingCertificates);
 
 public enum MeterType { Consumption, Production, Child }
 

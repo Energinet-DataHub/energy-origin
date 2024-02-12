@@ -1,29 +1,26 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using API.DataSyncSyncer;
-using API.DataSyncSyncer.Client;
-using API.DataSyncSyncer.Client.Dto;
-using API.DataSyncSyncer.Persistence;
-using DataContext.ValueObjects;
+using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Persistence;
 using FluentAssertions;
-using MeasurementEvents;
+using Measurements.V1;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Testing.Extensions;
 using Xunit;
 
-namespace API.UnitTests.DataSyncSyncer;
+namespace API.UnitTests.MeasurementsSyncer;
 
-public class DataSyncServiceTest
+public class MeasurementsSyncServiceTest
 {
     private readonly MeteringPointSyncInfo syncInfo = new(
         GSRN: "gsrn",
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
         MeteringPointOwner: "meteringPointOwner");
 
-    private readonly IDataSyncClient fakeClient = Substitute.For<IDataSyncClient>();
-    private readonly ILogger<DataSyncService> fakeLogger = Substitute.For<ILogger<DataSyncService>>();
+    private readonly Measurements.V1.Measurements.MeasurementsClient fakeClient = Substitute.For<Measurements.V1.Measurements.MeasurementsClient>();
+    private readonly ILogger<MeasurementsSyncService> fakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly ISyncState fakeSyncState = Substitute.For<ISyncState>();
 
     [Fact]
@@ -35,26 +32,29 @@ public class DataSyncServiceTest
         fakeSyncState.GetPeriodStartTime(info)
             .Returns(contractStartDate.ToUnixTimeSeconds());
 
-        var fakeResponseList = new List<DataSyncDto>
+        var mockResponse = new GetMeasurementsResponse
         {
-            new(
-                GSRN: info.GSRN,
-                DateFrom: contractStartDate.ToUnixTimeSeconds(),
-                DateTo: DateTimeOffset.Now.ToUnixTimeSeconds(),
-                Quantity: 5,
-                Quality: MeasurementQuality.Measured
-            )
+            Measurements =
+            {
+                new Measurement
+                {
+                    Gsrn = info.GSRN,
+                    DateFrom = contractStartDate.ToUnixTimeSeconds(),
+                    DateTo = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                    Quantity = 5,
+                    Quality = EnergyQuantityValueQuality.Measured
+                }
+            }
         };
-
-        fakeClient.RequestAsync(string.Empty, default!, default!, default)
-            .ReturnsForAnyArgs(fakeResponseList);
+        fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
+            .Returns(mockResponse);
 
         var service = SetupService();
 
         var response = await service.FetchMeasurements(info,
             CancellationToken.None);
 
-        response.Should().Equal(fakeResponseList);
+        response.Should().Equal(mockResponse.Measurements);
     }
 
     [Fact]
@@ -66,8 +66,8 @@ public class DataSyncServiceTest
         fakeSyncState.GetPeriodStartTime(info)
             .Returns(contractStartDate.ToUnixTimeSeconds());
 
-        fakeClient.RequestAsync(string.Empty, default!, default!, default)
-            .ReturnsForAnyArgs(new List<DataSyncDto>());
+        fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
+            .Returns(new GetMeasurementsResponse());
 
         var service = SetupService();
 
@@ -75,7 +75,7 @@ public class DataSyncServiceTest
             CancellationToken.None);
 
         response.Should().BeEmpty();
-        await fakeClient.Received(1).RequestAsync(Arg.Any<string>(), Arg.Any<Period>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _ = fakeClient.Received(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class DataSyncServiceTest
             CancellationToken.None);
 
         response.Should().BeEmpty();
-        await fakeClient.DidNotReceive().RequestAsync(Arg.Any<string>(), Arg.Any<Period>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _ = fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class DataSyncServiceTest
             CancellationToken.None);
 
         response.Should().BeEmpty();
-        await fakeClient.DidNotReceive().RequestAsync(Arg.Any<string>(), Arg.Any<Period>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _ = fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
     }
 
     [Fact]
@@ -124,19 +124,24 @@ public class DataSyncServiceTest
             .Returns(contractStartDate.ToUnixTimeSeconds());
 
         var dateTo = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var fakeResponseList = new List<DataSyncDto>
+        var mockedResponse = new GetMeasurementsResponse
         {
-            new(
-                GSRN: info.GSRN,
-                DateFrom: contractStartDate.ToUnixTimeSeconds(),
-                DateTo: dateTo,
-                Quantity: 5,
-                Quality: MeasurementQuality.Measured
-            )
+            Measurements =
+            {
+                new Measurement
+                {
+                    Gsrn = info.GSRN,
+                    DateFrom = contractStartDate.ToUnixTimeSeconds(),
+                    DateTo = dateTo,
+                    Quantity = 5,
+                    Quality = EnergyQuantityValueQuality.Measured
+
+                }
+            }
         };
 
-        fakeClient.RequestAsync(string.Empty, default!, default!, default)
-            .ReturnsForAnyArgs(fakeResponseList);
+        fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
+            .Returns(mockedResponse);
 
         var service = SetupService();
 
@@ -155,10 +160,10 @@ public class DataSyncServiceTest
         fakeSyncState.GetPeriodStartTime(info)
             .Returns(contractStartDate.ToUnixTimeSeconds());
 
-        var fakeResponseList = new List<DataSyncDto>();
+        var mockedResponse = new GetMeasurementsResponse();
 
-        fakeClient.RequestAsync(string.Empty, default!, default!, default)
-            .ReturnsForAnyArgs(fakeResponseList);
+        fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
+            .Returns(mockedResponse);
 
         var service = SetupService();
 
@@ -168,15 +173,12 @@ public class DataSyncServiceTest
         await fakeSyncState.DidNotReceive().SetSyncPosition(Arg.Any<string>(), Arg.Any<long>());
     }
 
-    private DataSyncService SetupService()
+    private MeasurementsSyncService SetupService()
     {
-        var fakeFactory = Substitute.For<IDataSyncClientFactory>();
-        fakeFactory.CreateClient().ReturnsForAnyArgs(fakeClient);
-
-        return new DataSyncService(
-            factory: fakeFactory,
+        return new MeasurementsSyncService(
             logger: fakeLogger,
-            syncState: fakeSyncState
+            syncState: fakeSyncState,
+            fakeClient
         );
     }
 }

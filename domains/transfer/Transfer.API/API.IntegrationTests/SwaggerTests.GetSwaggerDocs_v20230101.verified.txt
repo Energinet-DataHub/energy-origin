@@ -9,7 +9,7 @@
     "/api/transfer/activity-log": {
       "post": {
         "tags": [
-          "API"
+          "Activity log"
         ],
         "requestBody": {
           "content": {
@@ -602,13 +602,13 @@
         "type": "object",
         "properties": {
           "start": {
-            "type": "string",
-            "format": "date-time",
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           },
           "end": {
-            "type": "string",
-            "format": "date-time",
+            "type": "integer",
+            "format": "int64",
             "nullable": true
           },
           "entityType": {
@@ -625,8 +625,8 @@
             "format": "uuid"
           },
           "timestamp": {
-            "type": "string",
-            "format": "date-time"
+            "type": "integer",
+            "format": "int64"
           },
           "actorId": {
             "type": "string",
@@ -826,8 +826,8 @@
       "EntityTypeEnum": {
         "enum": [
           "TransferAgreement",
-          "MeteringPoint",
-          "TransferAgreementProposal"
+          "TransferAgreementProposal",
+          "MeteringPoint"
         ],
         "type": "string"
       },

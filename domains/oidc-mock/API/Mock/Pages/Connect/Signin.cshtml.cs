@@ -37,7 +37,7 @@ public class SigninModel : PageModel
 
     public IActionResult OnPost()
     {
-        logger.LogDebug("OnPost: ClientId={ClientId}, Name={Name}, RedirectUri={RedirectUri}", ClientId, Name, RedirectUri);
+        logger.LogInformation("OnPost: ClientId={ClientId}, Name={Name}, RedirectUri={RedirectUri}, State={State}", ClientId, Name, RedirectUri, State);
 
         var (isValid, validationError) = client.Validate(ClientId, RedirectUri);
         if (!isValid)
@@ -62,7 +62,6 @@ public class SigninModel : PageModel
             .ToString();
 
         var uri = builder.ToString();
-
         logger.LogInformation("Login success: Name={Name}", Name);
 
         return Redirect(uri);
