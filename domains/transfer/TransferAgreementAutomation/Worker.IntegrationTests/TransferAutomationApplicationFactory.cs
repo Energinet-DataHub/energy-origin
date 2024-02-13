@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
@@ -11,9 +12,11 @@ using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Testing.Testcontainers;
+using TransferAgreementAutomation.Worker;
 using Xunit;
 
 namespace Worker.IntegrationTest;
@@ -33,6 +36,7 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
 
         return client;
     }
+
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
@@ -77,6 +81,11 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
         builder.UseSetting("Database:Name", (string)connectionStringBuilder["Database"]);
         builder.UseSetting("Database:User", (string)connectionStringBuilder["Username"]);
         builder.UseSetting("Database:Password", (string)connectionStringBuilder["Password"]);
+
+        builder.ConfigureTestServices(services =>
+        {
+            services.Remove(services.First(s => s.ImplementationType == typeof(TransferAgreementsAutomationWorker)));
+        });
     }
 
     private string GenerateToken(
