@@ -69,8 +69,6 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
         builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
         builder.UseSetting("TokenValidation:Audience", "Users");
-        builder.UseSetting("TransferApi:Url", "localhost:5001");
-        builder.UseSetting("TransferApi:Version", "20231123");
 
         var connectionStringBuilder = new DbConnectionStringBuilder
         {
