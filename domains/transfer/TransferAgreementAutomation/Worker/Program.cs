@@ -53,6 +53,8 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
     .ValidateOnStart();
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
     .ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
