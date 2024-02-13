@@ -74,8 +74,8 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
         };
         builder.UseSetting("Database:Host", (string)connectionStringBuilder["Host"]);
         builder.UseSetting("Database:Port", (string)connectionStringBuilder["Port"]);
-        builder.UseSetting("Database:Database", (string)connectionStringBuilder["Database"]);
-        builder.UseSetting("Database:Username", (string)connectionStringBuilder["Username"]);
+        builder.UseSetting("Database:Name", (string)connectionStringBuilder["Database"]);
+        builder.UseSetting("Database:User", (string)connectionStringBuilder["Username"]);
         builder.UseSetting("Database:Password", (string)connectionStringBuilder["Password"]);
     }
 
