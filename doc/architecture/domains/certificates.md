@@ -11,8 +11,6 @@
 
 The component diagram shows how the solution works, based on a RabbitMQ message broker that publishes the events received from the MeasurementsSyncer.
 
-Note: `ContractService` is currently getting information about a metering point from `DataHubFacade`. In the future it is expected to get this from the MeteringPoints domain, but this domain does not exist at this point.
-
 ![Certificate API component diagram](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/CertificateApiComponents.png)
 
 ### Message flow: Issue certificate
