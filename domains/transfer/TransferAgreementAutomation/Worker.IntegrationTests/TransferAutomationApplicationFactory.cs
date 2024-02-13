@@ -20,7 +20,7 @@ namespace Worker.IntegrationTest;
 
 public class TransferAutomationApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgresContainer postgresContainer = new ();
+    private readonly PostgresContainer postgresContainer = new();
 
     private readonly byte[] privateKey = RsaKeyGenerator.GenerateTestKey();
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
