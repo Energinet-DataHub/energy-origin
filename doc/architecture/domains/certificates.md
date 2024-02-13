@@ -22,7 +22,7 @@ The RegistryConnector listens to EnergyMeasured events from the MeasurementsSync
 
 ```mermaid
 sequenceDiagram
-    participant ms as measurementsSyncer
+    participant ms as MeasurementsSyncer
     participant rc as RegistryConnector
 
     ms->>rc: EnergyMeasured
