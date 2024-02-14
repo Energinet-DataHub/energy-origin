@@ -14,12 +14,28 @@ exporters:
 
 processors:
   batch:
+  filter/health_check_rest:
+    spans:
+      exclude:
+        match_type: strict
+        attributes:
+          - key: "http.route"
+            value: "/health"
+          - key: "url.path"
+            value: "/health"
+  filter/health_check_npgsql:
+    spans:
+      exclude:
+        match_type: strict
+        attributes:
+          - key: "db.statement"
+            value: "SELECT 1;"
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors: [batch, filter/health_check_rest, filter/health_check_npgsql]
       exporters: [otlp]
     metrics:
       receivers: [otlp]

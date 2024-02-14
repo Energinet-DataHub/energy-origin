@@ -11,7 +11,7 @@ jobs:
       matrix: ${{ env.matrix }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Validate required domain structure
         shell: bash
@@ -87,7 +87,7 @@ jobs:
       matrix:
         build: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Resolve version
         uses: ./.github/actions/docker-image-version
@@ -177,7 +177,7 @@ jobs:
       matrix:
         build: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Update environment
         uses: ./.github/actions/update-base-environment
