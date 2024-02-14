@@ -27,6 +27,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         options.SupportNonNullableReferenceTypes();
         var xmlFilePath = Path.Combine(AppContext.BaseDirectory, "documentation.xml");
         options.IncludeXmlComments(xmlFilePath);
+        options.DocumentFilter<AddContractsTagDocumentFilter>();
 
         if (environment.IsDevelopment())
         {

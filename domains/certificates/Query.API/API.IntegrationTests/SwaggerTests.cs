@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
@@ -94,6 +96,59 @@ public class SwaggerTests : TestBase, IClassFixture<QueryApiWebApplicationFactor
             await Verifier.Verify(json)
                 .UseParameters(version)
                 .UseMethodName($"GetSwaggerDocs_v{version}");
+        }
+    }
+
+    [Fact]
+    public async Task SwaggerJson_ForAllVersions_ContainsContractsTag()
+    {
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var description in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerJsonUrl = $"api-docs/certificates/{description}/swagger.json";
+            var swaggerResponse = await client.GetAsync(swaggerJsonUrl);
+            swaggerResponse.EnsureSuccessStatusCode();
+            var swaggerJson = await swaggerResponse.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(swaggerJson);
+            var tags = doc.RootElement.GetProperty("tags");
+
+            var containsContractsTag = tags.EnumerateArray().Any(tag => tag.TryGetProperty("name", out var name) && name.GetString() == "Contracts");
+
+            containsContractsTag.Should().BeTrue($"API version {description} should contain a 'Contracts' tag.");
+        }
+    }
+
+    [Fact]
+    public async Task SwaggerJson_ForAllVersions_TagHasCorrectContent()
+    {
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var description in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerJsonUrl = $"api-docs/certificates/{description}/swagger.json";
+            var swaggerResponse = await client.GetAsync(swaggerJsonUrl);
+            swaggerResponse.EnsureSuccessStatusCode();
+            var swaggerJson = await swaggerResponse.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(swaggerJson);
+            var tags = doc.RootElement.GetProperty("tags");
+
+            var contractsTag = tags.EnumerateArray()
+                .FirstOrDefault(tag => tag.GetProperty("name").GetString() == "Contracts");
+
+            var tagDetails = new
+            {
+                Name = contractsTag.GetProperty("name").GetString(),
+                Description = contractsTag.GetProperty("description").GetString()
+            };
+
+            await Verifier.Verify(tagDetails)
+                .UseParameters(description)
+                .UseMethodName($"SwaggerJson_{description}_VerifyContractsTagContent");
         }
     }
 }

@@ -16,7 +16,10 @@ public static class Startup
     {
         services.AddEndpointsApiExplorer();
         services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(c =>
+        {
+            c.EnableAnnotations();
+        });
         services.AddHttpContextAccessor();
 
         services.AddValidatorsFromAssemblyContaining<CreateContractValidator>();
