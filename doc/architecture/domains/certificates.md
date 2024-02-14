@@ -6,26 +6,23 @@
 
 ![Container diagram](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/Certificate.png)
 
-
 ### Component diagram: Certificate API
 
-The component diagram shows how the solution works, based on a RabbitMQ message broker that publishes the events received from the DataSyncSyncer.
-
-Note: `ContractService` is currently getting information about a metering point from `DataSync`. In the future it is expected to get this from the MeteringPoints domain, but this domain does not exist at this point.
+The component diagram shows how the solution works, based on a RabbitMQ message broker that publishes the events received from the MeasurementsSyncer.
 
 ![Certificate API component diagram](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/CertificateApiComponents.png)
 
 ### Message flow: Issue certificate
 The sequence diagram below shows the flow of messages between the components when issuing a single certificate. All messages are published to the message broker; the message broker is not shown in the diagram. Before that flow is possible, a wallet deposit endpoint must be created in the user's wallet; that happens as part of creating the Contract.
 
-The RegistryConnector listens to EnergyMeasured events from the DataSyncSyncer. The RegistryConnector is responsible for anything related to issuence. It utilizes MassTransit RoutingSlips in order to handle the issuence flow, which builds activities that are executed in sequence. If anything goes wrong in that sequnce, we have a subscription to handle it, which rejects the certificate.
+The RegistryConnector listens to EnergyMeasured events from the MeasurementsSyncer. The RegistryConnector is responsible for anything related to issuance. It utilizes MassTransit RoutingSlips in order to handle the issuance flow, which builds activities that are executed in sequence. If anything goes wrong in that sequnce, we have a subscription to handle it, which rejects the certificate.
 
 ```mermaid
 sequenceDiagram
-    participant dss as DataSyncSyncer
+    participant ms as MeasurementsSyncer
     participant rc as RegistryConnector
 
-    dss->>rc: EnergyMeasured
+    ms->>rc: EnergyMeasured
     rc->>rc: IssueToRegistry
     rc->>rc: WaitForComittedRegistryTransaction
     rc->>rc: MarkCertificateAsIssued

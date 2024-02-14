@@ -73,7 +73,7 @@ certificatesSubsystem = group "Certificate Subsystem" {
             this -> certStorage "Stores contracts in"
             this -> poWallet "Creates Wallet Deposit Endpoints"
         }
-        dataSyncSyncer = component "DataSyncSyncer" "Fetches measurements every hour and publishes to the message broker. ONLY NEED UNTIL INTEGRATION EVENT BUS HAS EVENTS FOR MEASUREMENTS." "Hosted background service" {
+        measurementsSyncer = component "Measurements Syncer" "Fetches measurements every hour and publishes to the message broker. ONLY NEED UNTIL INTEGRATION EVENT BUS HAS EVENTS FOR MEASUREMENTS." "Hosted background service" {
             tags "MockingComponent"
 
             this -> certRabbitMq "Publishes measurement events to"

@@ -56,7 +56,6 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHealthChecks().AddNpgSql(databaseOptions.ConnectionString);
 builder.Services.AddControllers();
 builder.Services.AddFeatureManagement();
 
@@ -107,9 +106,19 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+var dataSource = DataContext.GenerateNpgsqlDataSource(databaseOptions.ConnectionString);
+
+builder.Services.AddSingleton(dataSource);
 builder.Services.AddDbContext<DataContext>(options =>
-    options.UseNpgsql(DataContext.GenerateNpgsqlDataSource(databaseOptions.ConnectionString))
+    options.UseNpgsql(dataSource)
         .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
+
+var healthCheckConnectionStringBuilder = new NpgsqlConnectionStringBuilder(databaseOptions.ConnectionString)
+{
+    Pooling = false
+};
+
+builder.Services.AddHealthChecks().AddNpgSql(healthCheckConnectionStringBuilder.ConnectionString);
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
@@ -148,6 +157,14 @@ builder.Services.AddOpenTelemetry()
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Metrics.Name))
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
+            .AddGrpcClientInstrumentation(grpcOptions =>
+            {
+                grpcOptions.SuppressDownstreamInstrumentation = true;
+                grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+                    activity.SetTag("requestVersion", httpRequestMessage.Version);
+                grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+                    activity.SetTag("responseVersion", httpResponseMessage.Version);
+            })
             .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 

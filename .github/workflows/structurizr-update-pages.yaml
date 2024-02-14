@@ -57,10 +57,10 @@ jobs:
           STRUCTURIZR_WORKSPACE_FILENAME: views
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
 
       - name: Prepare export-diagrams script
         run: |
@@ -115,7 +115,7 @@ jobs:
           index "$ROOT" /
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ env.output }}
 
@@ -131,4 +131,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4

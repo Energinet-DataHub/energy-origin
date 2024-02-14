@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ClaimAutomation.Worker.Options;
+namespace DataContext;
 
 public class DatabaseOptions
 {

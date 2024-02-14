@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      artifacts-actions:
+        patterns:
+          - "actions/*-artifact"
+      pages-actions:
+        patterns:
+          - "actions/*pages*"
+
+  - package-ecosystem: "docker"
+    directory: "/libraries/docker"
+    schedule:
+      interval: "weekly"

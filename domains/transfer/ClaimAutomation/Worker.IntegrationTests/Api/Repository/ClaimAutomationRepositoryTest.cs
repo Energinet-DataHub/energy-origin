@@ -4,7 +4,7 @@ using DataContext;
 using DataContext.Models;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Worker.IntegrationTests.Testcontainers;
+using Testing.Testcontainers;
 using Xunit;
 
 namespace Worker.IntegrationTests.Api.Repository;

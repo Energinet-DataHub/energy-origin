@@ -1,6 +1,7 @@
+using System;
 using System.Text;
 
-namespace Worker.UnitTests;
+namespace Testing;
 
 public static class Some
 {
