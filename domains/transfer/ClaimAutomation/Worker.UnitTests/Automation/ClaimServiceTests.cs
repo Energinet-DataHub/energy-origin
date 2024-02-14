@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProjectOrigin.Common.V1;
 using ProjectOrigin.WalletSystem.V1;
+using Testing;
 using Xunit;
 using Attribute = ProjectOrigin.WalletSystem.V1.Attribute;
 
