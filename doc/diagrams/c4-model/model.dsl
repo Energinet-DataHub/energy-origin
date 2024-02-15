@@ -3,6 +3,11 @@ apiGateway = container "API Gateway" {
     technology "Traefik"
 }
 
+rabbitMqOperator = container "RabbitMQ Message Broker" {
+    description "Cross subsystem message broker"
+    technology "RabbitMQ"
+}
+
 dataHubFacadeSubsystem = group "DataHubFacade Subsystem" {
     dataHubFacadeApi = container "DataHubFacade" {
         description "Facade for DataHub 2.0 and 3.0. Simplifies interaction so clients do not have to handle DataHub certificate, SOAP parsing, pagination and Danish time zone convertion"
@@ -48,10 +53,6 @@ measurementsSubsystem = group "Measurements Subsystem" {
 }
 
 certificatesSubsystem = group "Certificate Subsystem" {
-    certRabbitMq = container "Certificate Message Broker" {
-        description ""
-        technology "RabbitMQ"
-    }
     certStorage = container "Certificate Storage" {
         tags "Data Storage"
         description "Storage for contracts and information from the issuance of a certificate"
@@ -62,7 +63,7 @@ certificatesSubsystem = group "Certificate Subsystem" {
 
         this -> poRegistry "Sends issued events to"
         this -> poWallet "Sends slices to"
-        this -> certRabbitMq "Produces and consumes messages"
+        this -> rabbitMqOperator "Produces and consumes messages"
     }
     certApi = container "Certificate API" {
         description "Contains background workers for fetching measurements and provides an API for queries related to contracts"
@@ -76,7 +77,7 @@ certificatesSubsystem = group "Certificate Subsystem" {
         measurementsSyncer = component "Measurements Syncer" "Fetches measurements every hour and publishes to the message broker. ONLY NEED UNTIL INTEGRATION EVENT BUS HAS EVENTS FOR MEASUREMENTS." "Hosted background service" {
             tags "MockingComponent"
 
-            this -> certRabbitMq "Publishes measurement events to"
+            this -> rabbitMqOperator "Publishes measurement events to"
             this -> contractService "Reads list of metering points to sync from"
             this -> measurementApi "Pulls measurements from"
         }
