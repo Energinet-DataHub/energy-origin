@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  DRY_RUN: ${{ !( (github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/')) ) }}
+  DRY_RUN: ${{ (github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/')) }}
 
 jobs:
   run-sonar:
@@ -27,13 +27,13 @@ jobs:
     uses: ./.github/workflows/build-domain.yaml
     secrets: inherit
     with:
-      dry-run: ${{ env.DRY_RUN }}
+      dry-run: ${{ env.DRY_RUN }} == false
 
   build-libraries:
     uses: ./.github/workflows/build-libraries.yaml
     secrets: inherit
     with:
-      dry-run: ${{ env.DRY_RUN }}
+      dry-run: ${{ env.DRY_RUN }} == false
 
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}
