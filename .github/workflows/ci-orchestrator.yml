@@ -29,18 +29,18 @@ jobs:
           paths: domains/certificates/**
 
   build-domain:
-    needs: [setup]
+    needs: setup
     uses: ./.github/workflows/build-domain.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dryrun }}
+      dry-run: ${{ needs.setup.outputs.dryrun }} == "true"
 
   build-libraries:
-    needs: [setup]
+    needs: setup
     uses: ./.github/workflows/build-libraries.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dryrun }}
+      dry-run: ${{ needs.setup.outputs.dryrun }} == "true"
 
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}
