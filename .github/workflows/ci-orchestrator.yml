@@ -27,14 +27,13 @@ jobs:
     uses: ./.github/workflows/build-domain.yaml
     secrets: inherit
     with:
-      dry-run: true
+      dry-run: ${{ env.DRY_RUN }}
 
   build-libraries:
     uses: ./.github/workflows/build-libraries.yaml
     secrets: inherit
     with:
-      dry-run: true
-      # dry-run: ${{ env.DRY_RUN }} == false
+      dry-run: ${{ env.DRY_RUN }}
 
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}

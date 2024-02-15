@@ -6,7 +6,7 @@ on:
       dry-run:
         description: "An indication of whether to commit/publish results"
         required: true
-        type: string
+        type: boolean
 
 jobs:
   define-matrix:
