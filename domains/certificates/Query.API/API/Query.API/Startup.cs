@@ -16,7 +16,6 @@ public static class Startup
         services.AddSwaggerGen(c =>
         {
             c.EnableAnnotations();
-            c.DocumentFilter<AddContractsTagDocumentFilter>();
         });
         services.AddHttpContextAccessor();
 
