@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 
 namespace Testing.Helpers;

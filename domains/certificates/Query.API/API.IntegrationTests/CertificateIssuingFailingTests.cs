@@ -47,6 +47,7 @@ public sealed class CertificateIssuingFailingTests :
         registryConnectorFactory.RetryOptions.RegistryTransactionStillProcessingRetryCount = 1;
         registryConnectorFactory.RetryOptions.DefaultFirstLevelRetryCount = 1;
         registryConnectorFactory.RetryOptions.DefaultSecondLevelRetryCount = 1;
+        registryConnectorFactory.RetryOptions.DefaultSecondLevelRetrySeconds = 1;
         registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
         registryConnectorFactory.ProjectOriginOptions = projectOriginStack.Options;
         registryConnectorFactory.ProjectOriginOptions.RegistryUrl = "https://someurl.com";
