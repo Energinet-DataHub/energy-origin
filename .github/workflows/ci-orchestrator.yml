@@ -9,11 +9,7 @@ on:
       - main
 
 env:
-  DRY_RUN: ${{ !(
-    (github.event_name == 'push' && github.ref_name == 'main') ||
-    (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) ||
-    (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))
-    ) }}
+  DRY_RUN: ${{ !( (github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/')) ) }}
 
 jobs:
   run-sonar:
