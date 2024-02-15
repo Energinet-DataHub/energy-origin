@@ -9,6 +9,14 @@ on:
       - main
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      dryrun: ${{ env.dryrun }}
+    steps:
+      - name: Setup variables
+        run: printf 'dryrun=${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}\n' | tee -a $GITHUB_ENV
+
   run-sonar:
     runs-on: ubuntu-latest
     outputs:
@@ -21,16 +29,18 @@ jobs:
           paths: domains/certificates/**
 
   build-domain:
+    needs: [setup]
     uses: ./.github/workflows/build-domain.yaml
     secrets: inherit
     with:
-      dry-run: ${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}
+      dry-run: ${{ needs.setups.outputs.dryrun }}
 
   build-libraries:
+    needs: [setup]
     uses: ./.github/workflows/build-libraries.yaml
     secrets: inherit
     with:
-      dry-run: ${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}
+      dry-run: ${{ needs.setups.outputs.dryrun }}
 
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}
