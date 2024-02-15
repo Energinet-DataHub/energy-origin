@@ -1,11 +1,8 @@
-using System;
-using System.IO;
 using API.Query.API.Swagger;
 using API.Query.API.v2023_01_01.ApiModels.Requests;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API.Query.API;
@@ -19,6 +16,7 @@ public static class Startup
         services.AddSwaggerGen(c =>
         {
             c.EnableAnnotations();
+            c.DocumentFilter<AddContractsTagDocumentFilter>();
         });
         services.AddHttpContextAccessor();
 
