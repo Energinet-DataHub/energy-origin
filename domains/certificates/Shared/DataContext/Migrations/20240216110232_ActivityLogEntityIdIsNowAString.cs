@@ -23,13 +23,7 @@ namespace DataContext.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
-                name: "EntityId",
-                table: "ActivityLogs",
-                type: "uuid",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "text");
+            //Makes no sense to revert string to Guid
         }
     }
 }
