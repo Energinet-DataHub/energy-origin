@@ -651,8 +651,7 @@
             "$ref": "#/components/schemas/ActionTypeEnum"
           },
           "entityId": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           }
         },
         "additionalProperties": false
