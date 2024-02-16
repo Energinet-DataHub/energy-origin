@@ -1,8 +1,0 @@
-﻿type: object
-properties:
-  registry:
-    type: string
-  streamId:
-    type: string
-    format: uuid
-additionalProperties: false
