@@ -1,7 +1,12 @@
 name: Build domain
 
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
 
 jobs:
   setup:
@@ -151,7 +156,7 @@ jobs:
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
           docker-context: .
-          dry-run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
+          dry-run: ${{ inputs.dry-run }}
           build-args: |
             SUBSYSTEM=${{ env.domain }}
             PROJECT=${{ env.service }}
@@ -184,4 +189,4 @@ jobs:
         with:
           configuration: ${{ matrix.build.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ !(github.event_name == 'push' && github.ref_name == 'main' || github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) }}
+          dry_run: ${{ inputs.dry-run }}
