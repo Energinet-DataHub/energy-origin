@@ -68,4 +68,4 @@ dotnet ef migrations script --idempotent --project Query.API/API --output migrat
 cp migrations/API.sql migrations/Worker.sql
 ```
 
-Forcing update of docker image in demo
+Forcing
