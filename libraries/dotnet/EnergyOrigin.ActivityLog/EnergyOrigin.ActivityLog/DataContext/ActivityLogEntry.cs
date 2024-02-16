@@ -7,7 +7,7 @@ public class ActivityLogEntry
     }
 
     private ActivityLogEntry(Guid id, DateTimeOffset timestamp, Guid actorId, ActorTypeEnum actorType, string actorName, string organizationTin,
-        string organizationName, EntityTypeEnum entityType, ActionTypeEnum actionType, string entityId)
+        string organizationName, EntityTypeEnum entityType, ActionTypeEnum actionType, string entityName)
     {
         Id = id;
         Timestamp = timestamp;
@@ -18,15 +18,15 @@ public class ActivityLogEntry
         OrganizationName = organizationName;
         EntityType = entityType;
         ActionType = actionType;
-        EntityId = entityId;
+        EntityName = entityName;
     }
 
     public static ActivityLogEntry Create(Guid actorId, ActorTypeEnum actorType, string actorName, string organizationTin, string organizationName,
-        EntityTypeEnum entityType, ActionTypeEnum actionType, string entityId)
+        EntityTypeEnum entityType, ActionTypeEnum actionType, string entityName)
     {
         var id = Guid.NewGuid();
         var timestamp = DateTimeOffset.UtcNow;
-        return new ActivityLogEntry(id, timestamp, actorId, actorType, actorName, organizationTin, organizationName, entityType, actionType, entityId);
+        return new ActivityLogEntry(id, timestamp, actorId, actorType, actorName, organizationTin, organizationName, entityType, actionType, entityName);
     }
 
     public enum ActorTypeEnum
@@ -69,5 +69,5 @@ public class ActivityLogEntry
     // Action
     public EntityTypeEnum EntityType { get; init; }
     public ActionTypeEnum ActionType { get; init; }
-    public string EntityId { get; init; } = "";
+    public string EntityName { get; init; } = "";
 }

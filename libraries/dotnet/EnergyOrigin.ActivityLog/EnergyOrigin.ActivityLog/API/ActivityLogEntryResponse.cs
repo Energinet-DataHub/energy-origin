@@ -22,5 +22,5 @@ public class ActivityLogEntryResponse
     // Action
     public EntityTypeEnum EntityType { get; init; }
     public ActionTypeEnum ActionType { get; init; }
-    public string EntityId { get; init; } = "";
+    public string EntityName { get; init; } = "";
 }
