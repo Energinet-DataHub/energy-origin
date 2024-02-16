@@ -45,7 +45,7 @@ public static class ActivityLogExtensions
                         {
                             Id = x.Id,
                             OrganizationTin = x.OrganizationTin,
-                            EntityName = x.EntityName,
+                            EntityId = x.EntityId,
                             Timestamp = x.Timestamp.ToUnixTimeSeconds(),
                             ActorName = x.ActorName,
                             ActorId = x.ActorId,
