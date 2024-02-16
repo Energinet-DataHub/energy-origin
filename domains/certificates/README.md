@@ -67,5 +67,3 @@ This is the commands for generating the migration SQL script for the API project
 dotnet ef migrations script --idempotent --project Query.API/API --output migrations/API.sql
 cp migrations/API.sql migrations/Worker.sql
 ```
-
-Forcing
