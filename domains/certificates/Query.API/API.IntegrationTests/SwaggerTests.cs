@@ -147,7 +147,7 @@ public class SwaggerTests : TestBase, IClassFixture<QueryApiWebApplicationFactor
 
             await Verifier.Verify(tagDetails)
                 .UseParameters(description)
-                .UseMethodName($"SwaggerJson_{description}_VerifyContractsTagContent");
+                .UseMethodName($"SwaggerJson_{description}_VerifyTagContentsOfContracts");
         }
     }
 }
