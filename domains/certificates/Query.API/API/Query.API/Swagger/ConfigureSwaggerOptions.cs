@@ -62,6 +62,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
             {
                 Title = $"Certificates Query API {description.ApiVersion}",
                 Version = description.ApiVersion.ToString(),
+                TermsOfService = new Uri("https://energioprindelse.dk/terms/"),
                 Description = description.IsDeprecated ? "This API version has been deprecated." : ""
             });
         }

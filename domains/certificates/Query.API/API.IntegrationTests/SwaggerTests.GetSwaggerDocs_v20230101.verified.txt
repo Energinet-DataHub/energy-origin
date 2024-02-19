@@ -3,6 +3,7 @@
   "info": {
     "title": "Certificates Query API 20230101",
     "description": "",
+    "termsOfService": "https://energioprindelse.dk/terms/",
     "version": "20230101"
   },
   "paths": {
