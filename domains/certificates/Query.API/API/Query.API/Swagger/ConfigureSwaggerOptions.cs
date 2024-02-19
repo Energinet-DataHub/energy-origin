@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Asp.Versioning.ApiExplorer;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -14,11 +15,17 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
 {
     private readonly IWebHostEnvironment environment;
     private readonly IApiVersionDescriptionProvider provider;
+    private readonly IConfiguration configuration;
 
-    public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider, IWebHostEnvironment environment)
+    public ConfigureSwaggerOptions(
+        IApiVersionDescriptionProvider provider,
+        IWebHostEnvironment environment,
+        IConfiguration configuration
+        )
     {
         this.environment = environment;
         this.provider = provider;
+        this.configuration = configuration;
     }
 
     public void Configure(SwaggerGenOptions options)
@@ -58,11 +65,13 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         }
         foreach (var description in provider.ApiVersionDescriptions)
         {
+            var termsOfServiceUri = configuration["TermsOfServiceUri"];
+
             options.SwaggerDoc(description.GroupName, new OpenApiInfo
             {
                 Title = $"Certificates Query API {description.ApiVersion}",
                 Version = description.ApiVersion.ToString(),
-                TermsOfService = new Uri("https://energioprindelse.dk/terms/"),
+                TermsOfService = new Uri(termsOfServiceUri!),
                 Description = description.IsDeprecated ? "This API version has been deprecated." : ""
             });
         }
