@@ -10,15 +10,8 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
-public class SwaggerTests : TestBase, IClassFixture<QueryApiWebApplicationFactory>
+public class SwaggerTests(QueryApiWebApplicationFactory factory) : TestBase, IClassFixture<QueryApiWebApplicationFactory>
 {
-    private readonly QueryApiWebApplicationFactory factory;
-
-    public SwaggerTests(QueryApiWebApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
-
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ReturnsOk()
     {

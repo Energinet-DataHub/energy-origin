@@ -8,15 +8,8 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API.Query.API.Swagger;
 
-public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
+public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : IConfigureOptions<SwaggerGenOptions>
 {
-    private readonly IApiVersionDescriptionProvider provider;
-
-    public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
-    {
-        this.provider = provider;
-    }
-
     public void Configure(SwaggerGenOptions options)
     {
         options.OperationFilter<SwaggerDefaultValues>();
