@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using API.Shared.Options;
 using Asp.Versioning.ApiExplorer;
 using API.Transfer.Api.Services;
+using API.Transfer.TransferAgreementProposalCleanup;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog;
@@ -25,6 +26,10 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using Testcontainers.PostgreSql;
 using Xunit;
+using Asp.Versioning;
+using Docker.DotNet.Models;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace API.IntegrationTests.Factories;
 
@@ -45,6 +50,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrUser = "SomeUser";
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
+    public bool WithCleanupWorker { get; set; } = false;
 
     public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
     {
@@ -97,6 +103,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.User = (string)connectionStringBuilder["Username"];
                 o.Password = (string)connectionStringBuilder["Password"];
             });
+
+            if (!WithCleanupWorker)
+            {
+                s.Remove(s.First(x => x.ImplementationType == typeof(TransferAgreementProposalCleanupWorker)));
+                s.Remove(s.First(x => x.ImplementationType == typeof(TransferAgreementProposalCleanupService)));
+            }
         });
     }
 
@@ -155,6 +167,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20230101")
     {
         var client = CreateClient();
+        AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, apiVersion);
+        return client;
+    }
+
+    private HttpClient AuthenticateHttpClient(HttpClient client, string sub, string tin = "11223344", string name = "Peter Producent",
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20230101")
+    {
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
         client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
@@ -173,9 +192,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 services.AddScoped(_ => poWalletServiceMock);
             });
         }).CreateClient();
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+        AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, apiVersion);
         return client;
     }
 
