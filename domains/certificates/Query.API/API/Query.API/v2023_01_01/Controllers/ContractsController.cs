@@ -73,7 +73,7 @@ public class ContractsController : ControllerBase
     {
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            ActivityLogEntry.ActionTypeEnum.Activated, createdContract.Id));
+            ActivityLogEntry.ActionTypeEnum.Activated, createdContract.GSRN));
 
         return CreatedAtRoute(
             "GetContract",
@@ -157,22 +157,24 @@ public class ContractsController : ControllerBase
             newEndDate,
             cancellationToken);
 
+        var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
+
         return result switch
         {
             NonExistingContract => NotFound(),
             MeteringPointOwnerNoMatch => Forbid(),
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
-            SetEndDateResult.Success => await LogChangedEndDateAndReturnOk(activityLogEntryRepository, user, id),
+            SetEndDateResult.Success => await LogChangedEndDateAndReturnOk(activityLogEntryRepository, user, contract!.GSRN),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }
 
     private async Task<OkResult> LogChangedEndDateAndReturnOk(IActivityLogEntryRepository activityLogEntryRepository, UserDescriptor user,
-        Guid contractId)
+        string gsrn)
     {
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            ActivityLogEntry.ActionTypeEnum.EndDateChanged, contractId));
+            ActivityLogEntry.ActionTypeEnum.EndDateChanged, gsrn));
 
         return Ok();
     }

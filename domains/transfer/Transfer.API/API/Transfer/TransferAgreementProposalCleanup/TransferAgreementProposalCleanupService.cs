@@ -62,7 +62,7 @@ public class TransferAgreementProposalCleanupService : ITransferAgreementProposa
 
         var activityLogEntries = oldProposals.Select(proposal => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
             string.Empty, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
-            ActivityLogEntry.ActionTypeEnum.Expired, proposal.Id));
+            ActivityLogEntry.ActionTypeEnum.Expired, proposal.Id.ToString()));
         await context.ActivityLogs.AddRangeAsync(activityLogEntries, cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken);

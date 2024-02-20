@@ -138,12 +138,12 @@ public class TransferAgreementsController : ControllerBase
         // Receiver tin entry
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Created, result.Id));
+            ActivityLogEntry.ActionTypeEnum.Created, result.Id.ToString()));
 
         // Sender tin entry
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             user.Name, result.SenderTin, result.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Created, result.Id));
+            ActivityLogEntry.ActionTypeEnum.Created, result.Id.ToString()));
     }
 
     [Authorize(Policy = PolicyName.RequiresCompany)]

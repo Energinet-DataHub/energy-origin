@@ -11,15 +11,11 @@ namespace API.IntegrationTests.Transfer.Api.v2024_01_03;
 
 public class TransferAgreementsControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
-    private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly ITestOutputHelper output;
-    private readonly Api api;
 
-    public TransferAgreementsControllerTest(TransferAgreementsApiWebApplicationFactory factory, ITestOutputHelper output)
+    public TransferAgreementsControllerTest(ITestOutputHelper output)
     {
-        this.factory = factory;
         this.output = output;
-        this.api = new Api(factory, output);
     }
 
     [Fact]
@@ -27,6 +23,10 @@ public class TransferAgreementsControllerTest : IClassFixture<TransferAgreements
     {
         var receiverTin = "12334455";
 
+        var factory = new TransferAgreementsApiWebApplicationFactory();
+        factory.WithCleanupWorker = false;
+        await factory.InitializeAsync();
+        var api = new Api(factory, output);
         // Create transfer agreement proposal
         var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
         var createdProposalId = await api.CreateTransferAgreementProposal(request);
@@ -46,6 +46,10 @@ public class TransferAgreementsControllerTest : IClassFixture<TransferAgreements
     {
         var receiverTin = "12334456";
 
+        var factory = new TransferAgreementsApiWebApplicationFactory();
+        factory.WithCleanupWorker = true;
+        await factory.InitializeAsync();
+        var api = new Api(factory, output);
         // Create transfer agreement proposal
         var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
         var createdProposalId = await api.CreateTransferAgreementProposal(request);

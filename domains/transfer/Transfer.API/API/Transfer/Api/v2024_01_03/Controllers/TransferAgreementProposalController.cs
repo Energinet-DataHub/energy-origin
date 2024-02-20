@@ -179,6 +179,6 @@ public class TransferAgreementProposalController : ControllerBase
     {
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             user.Name, user.Organization!.Tin, user.Organization!.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
-            actionType, proposal.Id));
+            actionType, proposal.Id.ToString()));
     }
 }
