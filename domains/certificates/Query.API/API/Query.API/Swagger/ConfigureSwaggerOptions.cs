@@ -12,12 +12,10 @@ namespace API.Query.API.Swagger;
 
 public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
 {
-    private readonly IWebHostEnvironment environment;
     private readonly IApiVersionDescriptionProvider provider;
 
-    public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider, IWebHostEnvironment environment)
+    public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
     {
-        this.environment = environment;
         this.provider = provider;
     }
 
@@ -29,19 +27,18 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         options.IncludeXmlComments(xmlFilePath);
         options.DocumentFilter<AddContractsTagDocumentFilter>();
 
-        if (environment.IsDevelopment())
+
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Description =
-                    "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\""
-            });
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            Name = "Authorization",
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description =
+                "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\""
+        });
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
                 {
                     new OpenApiSecurityScheme
@@ -55,7 +52,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
                     new string[] { }
                 }
             });
-        }
+
         foreach (var description in provider.ApiVersionDescriptions)
         {
             options.SwaggerDoc(description.GroupName, new OpenApiInfo
