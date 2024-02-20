@@ -12,12 +12,10 @@ namespace API.Query.API.Swagger;
 
 public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
 {
-    private readonly IWebHostEnvironment environment;
     private readonly IApiVersionDescriptionProvider provider;
 
-    public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider, IWebHostEnvironment environment)
+    public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
     {
-        this.environment = environment;
         this.provider = provider;
     }
 
