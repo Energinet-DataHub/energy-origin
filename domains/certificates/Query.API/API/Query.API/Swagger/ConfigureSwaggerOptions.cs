@@ -29,8 +29,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
         options.IncludeXmlComments(xmlFilePath);
         options.DocumentFilter<AddContractsTagDocumentFilter>();
 
-        if (environment.IsDevelopment())
-        {
+
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -55,7 +54,7 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
                     new string[] { }
                 }
             });
-        }
+
         foreach (var description in provider.ApiVersionDescriptions)
         {
             options.SwaggerDoc(description.GroupName, new OpenApiInfo
