@@ -118,6 +118,53 @@ public class SwaggerTests(QueryApiWebApplicationFactory factory) : TestBase, ICl
     }
 
     [Fact]
+    public async Task SwaggerDoc_ContainsSecurityRequirementForBearer()
+    {
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var description in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerJsonUrl = $"api-docs/certificates/{description}/swagger.json";
+            var swaggerResponse = await client.GetAsync(swaggerJsonUrl);
+            swaggerResponse.EnsureSuccessStatusCode();
+            var swaggerJson = await swaggerResponse.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(swaggerJson);
+            var securityRequirements = doc.RootElement.GetProperty("security").EnumerateArray().ToList();
+
+            var containsBearer = securityRequirements.Any(securityRequirement =>
+                securityRequirement.EnumerateObject().Any(securityScheme =>
+                    securityScheme.Name.Equals("Bearer")));
+
+            containsBearer.Should().BeTrue(
+                $"Swagger JSON for API version {description} should contain a security requirement for Bearer.");
+        }
+    }
+
+    [Fact]
+    public async Task SwaggerDoc_VerifiesFullSecurityRequirementsStructure()
+    {
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var description in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerJsonUrl = $"api-docs/certificates/{description}/swagger.json";
+            var swaggerResponse = await client.GetAsync(swaggerJsonUrl);
+            swaggerResponse.EnsureSuccessStatusCode();
+            var swaggerJson = await swaggerResponse.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(swaggerJson);
+            var security = doc.RootElement.TryGetProperty("security", out var securityElement) ? securityElement.GetRawText() : null;
+
+            await Verifier.Verify(security)
+                .UseParameters(description)
+                .UseMethodName($"SwaggerDoc_{description}_VerifiesFullSecurityRequirementsStructure");
+        }
+    }
+
+    [Fact]
     public async Task GetSwaggerDoc_AppStarted_NoChangesAccordingToSnapshot()
     {
         using var client = factory.CreateClient();
