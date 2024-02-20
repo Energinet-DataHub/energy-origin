@@ -50,7 +50,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrUser = "SomeUser";
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
-    public bool WithCleanupWorker { get; set; } = false;
+    public bool WithCleanupWorker { get; set; } = true;
 
     public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
     {
