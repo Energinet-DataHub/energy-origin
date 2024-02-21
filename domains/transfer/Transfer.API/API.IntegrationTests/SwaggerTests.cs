@@ -71,7 +71,7 @@ public class SwaggerTests(TransferAgreementsApiWebApplicationFactory factory)
         }
     }
 
-        [Fact]
+    [Fact]
     public async Task SwaggerDoc_ContainsBearerSecurityDefinition()
     {
         using var client = factory.CreateClient();
