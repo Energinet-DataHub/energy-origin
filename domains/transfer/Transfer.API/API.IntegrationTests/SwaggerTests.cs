@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using FluentAssertions;
@@ -93,6 +94,57 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
             await Verifier.Verify(json)
                 .UseParameters(version)
                 .UseMethodName($"GetSwaggerDocs_v{version}");
+        }
+    }
+
+    [Fact]
+    public async Task SwaggerDoc_ContainsBearerSecurityDefinition()
+    {
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
+            var response = await client.GetAsync(swaggerDocUrl);
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(json);
+            var components = doc.RootElement.GetProperty("components");
+            var securitySchemes = components.GetProperty("securitySchemes");
+
+            securitySchemes.TryGetProperty("Bearer", out _).Should().BeTrue(
+                $"Swagger JSON for API version {version} should contain a Bearer security scheme.");
+        }
+    }
+
+    [Fact]
+    public async Task SwaggerDoc_VerifiesFullBearerSecuritySchemeStructure()
+    {
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
+            var response = await client.GetAsync(swaggerDocUrl);
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(json);
+            var components = doc.RootElement.GetProperty("components");
+            var securitySchemes = components.GetProperty("securitySchemes");
+
+            var securitySchemesJson = securitySchemes.GetRawText();
+
+            await Verifier.Verify(securitySchemesJson)
+                .UseParameters(version)
+                .UseMethodName($"SwaggerDoc_{version}_VerifiesFullBearerSecuritySchemeStructure");
         }
     }
 }
