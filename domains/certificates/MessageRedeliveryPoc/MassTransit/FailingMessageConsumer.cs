@@ -13,9 +13,8 @@ public class MessageConsumer : IConsumer<TestMessage>
 
     public Task Consume(ConsumeContext<TestMessage> context)
     {
-
         logger.LogInformation("Attempt {RetryAttempt} to consume {Id}", context.GetRetryAttempt(), context.Message.Id.ToString());
-        // throw new Exception("Test");
+        throw new Exception("Test");
         return Task.CompletedTask;
     }
 }

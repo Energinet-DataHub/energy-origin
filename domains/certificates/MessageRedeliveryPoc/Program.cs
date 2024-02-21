@@ -26,6 +26,7 @@ services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
     x.AddConsumer<MessageConsumer>();
+    x.AddConsumer<Message2Consumer>();
 });
 services.AddHostedService<MessageProducer>();
 
