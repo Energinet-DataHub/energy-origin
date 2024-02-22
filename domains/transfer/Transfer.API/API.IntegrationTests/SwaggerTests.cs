@@ -45,7 +45,8 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
             .CreateClient();
 
         var swaggerUiResponse = await client.GetAsync("swagger");
-        swaggerUiResponse.StatusCode.Should().Be(HttpStatusCode.NotFound, "Swagger UI should not be accessible in production.");
+        swaggerUiResponse.StatusCode.Should()
+            .Be(HttpStatusCode.NotFound, "Swagger UI should not be accessible in production.");
     }
 
     [Fact]
@@ -57,7 +58,8 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
         foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
         {
             var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
-            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK, $"Swagger documentation for version {version} should be accessible.");
+            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK,
+                $"Swagger documentation for version {version} should be accessible.");
         }
     }
 
@@ -73,7 +75,8 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
         foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
         {
             var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
-            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK, $"Swagger documentation for version {version} should be accessible in production.");
+            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK,
+                $"Swagger documentation for version {version} should be accessible in production.");
         }
     }
 
@@ -145,6 +148,55 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
             await Verifier.Verify(securitySchemesJson)
                 .UseParameters(version)
                 .UseMethodName($"SwaggerDoc_{version}_VerifiesFullBearerSecuritySchemeStructure");
+        }
+    }
+
+    [Fact]
+    public async Task SwaggerDoc_ContainsSecurityRequirementForBearer()
+    {
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
+            var response = await client.GetAsync(swaggerDocUrl);
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(json);
+            var securityRequirements = doc.RootElement.GetProperty("security").EnumerateArray().ToList();
+
+            var containsBearer = securityRequirements.Any(securityRequirement =>
+                securityRequirement.EnumerateObject().Any(securityScheme =>
+                    securityScheme.Name.Equals("Bearer")));
+
+            containsBearer.Should().BeTrue(
+                $"Swagger JSON for API version {version} should contain a security requirement for Bearer.");
+        }
+    }
+
+    [Fact]
+    public async Task SwaggerDoc_VerifiesFullSecurityRequirementsStructure()
+    {
+        using var client = factory.CreateClient();
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        {
+            var swaggerJsonUrl = $"api-docs/transfer/{version}/swagger.json";
+            var swaggerResponse = await client.GetAsync(swaggerJsonUrl);
+            swaggerResponse.EnsureSuccessStatusCode();
+            var swaggerJson = await swaggerResponse.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(swaggerJson);
+            var security = doc.RootElement.TryGetProperty("security", out var securityElement) ? securityElement.GetRawText() : null;
+
+            await Verifier.Verify(security)
+                .UseParameters(version)
+                .UseMethodName($"SwaggerDoc_{version}_VerifiesFullSecurityRequirementsStructure");
         }
     }
 }
