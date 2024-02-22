@@ -123,7 +123,7 @@ public class TransferAgreementsController : ControllerBase
             var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement,
                 request.TransferAgreementProposalId);
 
-            await AppendToActivityLog(user, result);
+            await AppendToActivityLog(user, result, ActivityLogEntry.ActionTypeEnum.Accepted);
 
             return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
         }
@@ -131,19 +131,6 @@ public class TransferAgreementsController : ControllerBase
         {
             return ValidationProblem(statusCode: 409);
         }
-    }
-
-    private async Task AppendToActivityLog(UserDescriptor user, TransferAgreement result)
-    {
-        // Receiver tin entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Created, result.Id.ToString()));
-
-        // Sender tin entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, result.SenderTin, result.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Created, result.Id.ToString()));
     }
 
     [Authorize(Policy = PolicyName.RequiresCompany)]
@@ -243,6 +230,8 @@ public class TransferAgreementsController : ControllerBase
             SenderTin: transferAgreement.SenderTin,
             ReceiverTin: transferAgreement.ReceiverTin);
 
+        await AppendToActivityLog(user, transferAgreement, ActivityLogEntry.ActionTypeEnum.EndDateChanged);
+
         return Ok(response);
     }
 
@@ -255,4 +244,17 @@ public class TransferAgreementsController : ControllerBase
             SenderTin: transferAgreement.SenderTin,
             ReceiverTin: transferAgreement.ReceiverTin
         );
+
+    private async Task AppendToActivityLog(UserDescriptor user, TransferAgreement result, ActivityLogEntry.ActionTypeEnum actionType)
+    {
+        // Receiver tin entry
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
+            user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType, result.Id.ToString()));
+
+        // Sender tin entry
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
+            user.Name, result.SenderTin, result.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType, result.Id.ToString()));
+    }
 }
