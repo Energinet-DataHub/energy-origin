@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -35,7 +34,7 @@ public class Api
 
     public async Task<Guid> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
-        var result = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+        var result = await authenticatedClient.PostAsJsonAsync("api/transfer/transfer-agreement-proposals", request);
         output.WriteLine(await result.Content.ReadAsStringAsync());
         result.StatusCode.Should().Be(HttpStatusCode.Created);
         var createResponseBody = await result.Content.ReadAsStringAsync();
@@ -49,7 +48,7 @@ public class Api
         var receiverClient = MockWalletServiceAndCreateAuthenticatedClient(receiverTin);
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
 
-        var response = await receiverClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var response = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", transferAgreement);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var dto = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
         return dto!.Id;

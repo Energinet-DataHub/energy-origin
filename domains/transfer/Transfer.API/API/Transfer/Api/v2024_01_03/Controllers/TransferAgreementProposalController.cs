@@ -19,26 +19,14 @@ namespace API.Transfer.Api.v2024_01_03.Controllers;
 [Authorize]
 [ApiController]
 [ApiVersion("20240103")]
-[Route("api/transfer-agreement-proposals")]
 [Route("api/transfer/transfer-agreement-proposals")]
-public class TransferAgreementProposalController : ControllerBase
+public class TransferAgreementProposalController(
+    ITransferAgreementProposalRepository repository,
+    IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
+    ITransferAgreementRepository transferAgreementRepository,
+    IActivityLogEntryRepository activityLogEntryRepository)
+    : ControllerBase
 {
-    private readonly ITransferAgreementProposalRepository repository;
-    private readonly IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator;
-    private readonly ITransferAgreementRepository transferAgreementRepository;
-    private readonly IActivityLogEntryRepository activityLogEntryRepository;
-
-    public TransferAgreementProposalController(ITransferAgreementProposalRepository repository,
-        IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
-        ITransferAgreementRepository transferAgreementRepository,
-        IActivityLogEntryRepository activityLogEntryRepository)
-    {
-        this.repository = repository;
-        this.createTransferAgreementProposalValidator = createTransferAgreementProposalValidator;
-        this.transferAgreementRepository = transferAgreementRepository;
-        this.activityLogEntryRepository = activityLogEntryRepository;
-    }
-
     /// <summary>
     /// Create TransferAgreementProposal
     /// </summary>
@@ -164,10 +152,6 @@ public class TransferAgreementProposalController : ControllerBase
         }
 
         var user = new UserDescriptor(User);
-        if (proposal.ReceiverCompanyTin != null && user.Organization!.Tin != proposal.ReceiverCompanyTin)
-        {
-            return ValidationProblem("You cannot Deny a TransferAgreementProposal for another company");
-        }
 
         await repository.DeleteTransferAgreementProposal(id);
         await AppendToActivityLog(user, proposal, ActivityLogEntry.ActionTypeEnum.Declined);

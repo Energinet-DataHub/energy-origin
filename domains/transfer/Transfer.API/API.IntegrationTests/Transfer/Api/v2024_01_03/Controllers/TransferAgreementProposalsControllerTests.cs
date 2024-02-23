@@ -1,39 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.Transfer.Api.v2023_01_01.Dto.Requests;
-using API.Transfer.Api.v2023_11_23.Dto.Responses;
+using API.Transfer.Api.v2024_01_03.Dto.Requests;
+using API.Transfer.Api.v2024_01_03.Dto.Responses;
 using DataContext.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace API.IntegrationTests.Transfer.Api.v2023_11_23.Controllers;
+namespace API.IntegrationTests.Transfer.Api.v2024_01_03.Controllers;
 
-public class TransferAgreementProposalsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
+    : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
-    private readonly TransferAgreementsApiWebApplicationFactory factory;
-    private readonly string sub;
-    private readonly string tin;
-
-    public TransferAgreementProposalsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
-    {
-        this.factory = factory;
-        sub = Guid.NewGuid().ToString();
-        tin = "12345678";
-    }
+    private readonly string sub = Guid.NewGuid().ToString();
+    private readonly string tin = "12345678";
 
     [Fact]
     public async Task Create()
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
         var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
         var result = await authenticatedClient
-            .PostAsJsonAsync("api/transfer-agreement-proposals", body);
+            .PostAsJsonAsync("api/transfer/transfer-agreement-proposals", body);
 
         result.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -42,7 +34,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     public async Task Create_ShouldReturnUnauthorized_WhenUnauthenticated()
     {
         var client = factory.CreateUnauthenticatedClient();
-        var result = await client.PostAsync("api/transfer-agreement-proposals", null);
+        var result = await client.PostAsync("api/transfer/transfer-agreement-proposals", null);
 
         result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -54,7 +46,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     [InlineData(0, -1, HttpStatusCode.BadRequest, "End Date must be null or later than Start Date")]
     public async Task Create_ShouldFail_WhenStartOrEndDateInvalid(int startDayOffset, int? endDayOffset, HttpStatusCode expectedStatusCode, string expectedContent)
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
         var now = DateTimeOffset.UtcNow;
 
         var startDate = now.AddDays(startDayOffset).ToUnixTimeSeconds();
@@ -66,7 +58,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
             ReceiverTin: "12345678"
         );
 
-        var response = await authenticatedClient.PostAsync("api/transfer-agreement-proposals", JsonContent.Create(request));
+        var response = await authenticatedClient.PostAsync("api/transfer/transfer-agreement-proposals", JsonContent.Create(request));
 
         var validationProblemContent = await response.Content.ReadAsStringAsync();
 
@@ -79,7 +71,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     [InlineData(221860025546L, 253402300800L, "EndDate")]
     public async Task Create_ShouldFail_WhenDateInvalid(long start, long? end, string property)
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
         var receiverTin = "12345678";
 
         var request = new CreateTransferAgreementProposal(
@@ -88,7 +80,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
             ReceiverTin: receiverTin
         );
 
-        var response = await authenticatedClient.PostAsync("api/transfer-agreement-proposals", JsonContent.Create(request));
+        var response = await authenticatedClient.PostAsync("api/transfer/transfer-agreement-proposals", JsonContent.Create(request));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -102,7 +94,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     public async Task Create_ShouldFail_WhenStartDateOrEndDateCauseOverlap()
     {
         var receiverTin = "12345678";
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
         var id = Guid.NewGuid();
         await factory.SeedTransferAgreements(new List<TransferAgreement>()
         {
@@ -125,7 +117,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
             ReceiverTin: receiverTin
         );
 
-        var response = await authenticatedClient.PostAsync("api/transfer-agreement-proposals", JsonContent.Create(overlappingRequest));
+        var response = await authenticatedClient.PostAsync("api/transfer/transfer-agreement-proposals", JsonContent.Create(overlappingRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
@@ -133,7 +125,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     [Fact]
     public async Task Create_ShouldSucceed_WhenStartDateOrEndDateCauseOverlapAndReceiverTinIsNull()
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
         var id = Guid.NewGuid();
         await factory.SeedTransferAgreements(new List<TransferAgreement>()
         {
@@ -156,7 +148,7 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
             ReceiverTin: null
         );
 
-        var response = await authenticatedClient.PostAsync("api/transfer-agreement-proposals", JsonContent.Create(overlappingRequest));
+        var response = await authenticatedClient.PostAsync("api/transfer/transfer-agreement-proposals", JsonContent.Create(overlappingRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -169,14 +161,14 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     [InlineData("11223344", "ReceiverTin cannot be the same as SenderTin.")]
     public async Task Create_ShouldFail_WhenReceiverTinInvalid(string tin, string expectedContent)
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
         var request = new CreateTransferAgreementProposal(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
             ReceiverTin: tin
         );
 
-        var response = await authenticatedClient.PostAsync("api/transfer-agreement-proposals", JsonContent.Create(request));
+        var response = await authenticatedClient.PostAsync("api/transfer/transfer-agreement-proposals", JsonContent.Create(request));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -191,14 +183,14 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     [InlineData("12345678")]
     public async Task Create_ShouldSucceed_WhenReceiverTinValid(string? tin)
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
         var request = new CreateTransferAgreementProposal(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
             ReceiverTin: tin
         );
 
-        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+        var response = await authenticatedClient.PostAsJsonAsync("api/transfer/transfer-agreement-proposals", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -207,20 +199,20 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     public async Task GetTransferAgreementProposal_ShouldReturnOK_WhenInvitationExists()
     {
         var receiverTin = "11223345";
-        var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20231123");
+        var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20240103");
 
         var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
 
-        var createResponse = await senderClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+        var createResponse = await senderClient.PostAsJsonAsync("api/transfer/transfer-agreement-proposals", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
         var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
-        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20231123");
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20240103");
 
-        var getResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
+        var getResponse = await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -234,17 +226,17 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     public async Task GetTransferAgreementProposal_ShouldReturnBadRequest_WhenCurrentUserIsSender()
     {
         var receiverTin = "11223345";
-        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20231123");
+        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20240103");
 
         var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
-        var createResponse = await client.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+        var createResponse = await client.PostAsJsonAsync("api/transfer/transfer-agreement-proposals", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
         var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
-        var response = await client.GetAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
+        var response = await client.GetAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -253,20 +245,20 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     public async Task GetTransferAgreementProposal_ShouldReturnBadRequest_WhenCurrentUserIsNotTheIntendedForTheProposal()
     {
         var receiverTin = "11223345";
-        var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20231123");
+        var senderClient = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20240103");
 
         var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
 
-        var createResponse = await senderClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+        var createResponse = await senderClient.PostAsJsonAsync("api/transfer/transfer-agreement-proposals", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createResponseBody = await createResponse.Content.ReadAsStringAsync();
         var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
-        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "12345679", apiVersion: "20231123");
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "12345679", apiVersion: "20240103");
 
-        var getResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
+        var getResponse = await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -290,9 +282,9 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
 
         await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
-        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20231123");
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20240103");
 
-        var getResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{taProposal.Id}");
+        var getResponse = await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{taProposal.Id}");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -301,9 +293,9 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     public async Task GetTransferAgreementProposal_ShouldReturnNotFound_WhenInvitationDoesNotExist()
     {
         var nonExistentInvitationId = Guid.NewGuid();
-        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20231123");
+        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20240103");
 
-        var response = await client.GetAsync($"api/transfer-agreement-proposals/{nonExistentInvitationId}");
+        var response = await client.GetAsync($"api/transfer/transfer-agreement-proposals/{nonExistentInvitationId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -327,9 +319,9 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
 
         await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
-        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20231123");
+        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20240103");
 
-        var response = await client.GetAsync($"api/transfer-agreement-proposals/{taProposal.Id}");
+        var response = await client.GetAsync($"api/transfer/transfer-agreement-proposals/{taProposal.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -354,9 +346,9 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
 
         await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { proposal });
 
-        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20231123");
+        var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin, apiVersion: "20240103");
 
-        var response = await client.GetAsync($"api/transfer-agreement-proposals/{invitationId}");
+        var response = await client.GetAsync($"api/transfer/transfer-agreement-proposals/{invitationId}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -364,14 +356,14 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     [Fact]
     public async Task Delete_ShouldReturnNoContent_OnSuccessfulDelete()
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
         var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
             DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), "32132132");
-        var postResponse = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+        var postResponse = await authenticatedClient.PostAsJsonAsync("api/transfer/transfer-agreement-proposals", request);
         postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
 
-        var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer-agreement-proposals/{createdProposal!.Id}");
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -379,10 +371,10 @@ public class TransferAgreementProposalsControllerTests : IClassFixture<TransferA
     [Fact]
     public async Task Delete_ShouldReturnNotFound_WhenConnectionInvitationNonExisting()
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20231123");
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
         var randomGuid = Guid.NewGuid();
 
-        var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer-agreement-proposals/{randomGuid}");
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{randomGuid}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

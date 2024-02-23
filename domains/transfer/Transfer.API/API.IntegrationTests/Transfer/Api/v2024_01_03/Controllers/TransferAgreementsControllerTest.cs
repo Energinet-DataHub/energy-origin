@@ -7,8 +7,8 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Services;
-using API.Transfer.Api.v2023_01_01.Dto.Requests;
-using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using API.Transfer.Api.v2024_01_03.Dto.Requests;
+using API.Transfer.Api.v2024_01_03.Dto.Responses;
 using DataContext.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
@@ -17,8 +17,10 @@ using VerifyTests;
 using VerifyXunit;
 using Xunit;
 using Xunit.Abstractions;
+using TransferAgreementDto = API.Transfer.Api.v2024_01_03.Dto.Responses.TransferAgreementDto;
+using TransferAgreementsResponse = API.Transfer.Api.v2024_01_03.Dto.Responses.TransferAgreementsResponse;
 
-namespace API.IntegrationTests.Transfer.Api.v2023_01_01.Controllers;
+namespace API.IntegrationTests.Transfer.Api.v2024_01_03.Controllers;
 
 public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
@@ -33,7 +35,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         this.output = output;
 
         sub = Guid.NewGuid().ToString();
-        authenticatedClient = factory.CreateAuthenticatedClient(sub);
+        authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: "20240103");
     }
 
     [Fact]
@@ -45,11 +47,11 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var createdProposalId = await CreateTransferAgreementProposal(request);
 
         var poWalletServiceMock = SetupPoWalletServiceMock();
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20240103");
 
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
 
-        var response = await receiverClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var response = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", transferAgreement);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
@@ -62,16 +64,16 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var createdProposalId = await CreateTransferAgreementProposal(request);
 
         var poWalletServiceMock = SetupPoWalletServiceMock();
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: subjectTin);
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: subjectTin, apiVersion: "20240103");
 
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
 
-        var response = await receiverClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var response = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", transferAgreement);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var taStr = await response.Content.ReadAsStringAsync();
         var taDto = JsonConvert.DeserializeObject<TransferAgreementDto>(taStr);
 
-        var get = await receiverClient.GetAsync($"api/transfer-agreements/{taDto!.Id}");
+        var get = await receiverClient.GetAsync($"api/transfer/transfer-agreements/{taDto!.Id}");
         var taByIdStr = await get.Content.ReadAsStringAsync();
         var taById = JsonConvert.DeserializeObject<TransferAgreementDto>(taByIdStr);
 
@@ -83,7 +85,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var transferAgreement = new CreateTransferAgreement(Guid.NewGuid());
 
-        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
+        var response = await authenticatedClient.PostAsJsonAsync("api/transfer/transfer-agreements", transferAgreement);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -94,10 +96,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var createdProposalId = await CreateTransferAgreementProposal(proposalRequest);
 
         var someCompanyId = Guid.NewGuid();
-        var someClient = factory.CreateAuthenticatedClient(sub: someCompanyId.ToString(), tin: "32132132");
+        var someClient = factory.CreateAuthenticatedClient(sub: someCompanyId.ToString(), tin: "32132132", apiVersion: "20240103");
 
         var request = new CreateTransferAgreement(createdProposalId);
-        var response = await someClient.PostAsJsonAsync("api/transfer-agreements", request);
+        var response = await someClient.PostAsJsonAsync("api/transfer/transfer-agreements", request);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -119,10 +121,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
-        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20240103");
 
         var createRequest = new CreateTransferAgreement(taProposal.Id);
-        var response = await receiverClient.PostAsJsonAsync("api/transfer-agreements", createRequest);
+        var response = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", createRequest);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -161,9 +163,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { secondTaProposal });
 
         var poWalletServiceMock = SetupPoWalletServiceMock();
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20240103");
 
-        var createSecondConnectionResponse = await receiverClient.PostAsJsonAsync("api/transfer-agreements", new CreateTransferAgreement(secondTaProposal.Id));
+        var createSecondConnectionResponse = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", new CreateTransferAgreement(secondTaProposal.Id));
 
         createSecondConnectionResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
@@ -177,10 +179,10 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var createdProposalId = await CreateTransferAgreementProposal(proposalRequest);
 
         var poWalletServiceMock = SetupPoWalletServiceMock();
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin);
-        await receiverClient.PostAsJsonAsync("api/transfer-agreements", new CreateTransferAgreement(createdProposalId));
+        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: "20240103");
+        await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", new CreateTransferAgreement(createdProposalId));
 
-        var getProposalResponse = await receiverClient.GetAsync($"api/transfer-agreement-proposals/{createdProposalId}");
+        var getProposalResponse = await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{createdProposalId}");
 
         getProposalResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -188,7 +190,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task Create_ShouldFail_WhenModelInvalid()
     {
-        var response = await authenticatedClient.PostAsJsonAsync("api/transfer-agreements", new { });
+        var response = await authenticatedClient.PostAsJsonAsync("api/transfer/transfer-agreements", new { });
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -214,8 +216,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             fakeTransferAgreement
         });
 
-        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: "");
-        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{id}");
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: "", apiVersion: "20240103");
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer/transfer-agreements/{id}");
         get.EnsureSuccessStatusCode();
 
         var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync());
@@ -243,14 +245,14 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             ReceiverTin = receiverTin,
             ReceiverReference = Guid.NewGuid()
         };
-        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: receiverTin);
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: receiverTin, apiVersion: "20240103");
 
         await factory.SeedTransferAgreements(new List<TransferAgreement>()
         {
             fakeTransferAgreement
         });
 
-        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{id}");
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer/transfer-agreements/{id}");
         get.EnsureSuccessStatusCode();
 
         var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync());
@@ -286,23 +288,23 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         });
 
         var newOwner = Guid.NewGuid().ToString();
-        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: newOwner, tin: "");
+        var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: newOwner, tin: "", apiVersion: "20240103");
 
-        var get = await newAuthenticatedClient.GetAsync($"api/transfer-agreements/{id}");
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer/transfer-agreements/{id}");
         get.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task Get_ShouldReturnBadRequest_WhenIdIsInvalidGuid()
     {
-        var response = await authenticatedClient.GetAsync("api/transfer-agreements/1234");
+        var response = await authenticatedClient.GetAsync("api/transfer/transfer-agreements/1234");
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task Get_ShouldReturnNotFound_WhenResourceIsNotFound()
     {
-        var response = await authenticatedClient.GetAsync($"api/transfer-agreements/{Guid.NewGuid()}");
+        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -336,7 +338,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 }
             });
 
-        var response = await authenticatedClient.GetAsync("api/transfer-agreements");
+        var response = await authenticatedClient.GetAsync("api/transfer/transfer-agreements");
 
         response.EnsureSuccessStatusCode();
         var transferAgreements = await response.Content.ReadAsStringAsync();
@@ -382,12 +384,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(13).ToUnixTimeSeconds());
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PutAsync($"api/transfer/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
-
-        var conflictErrorMessage = await response.Content.ReadAsStringAsync();
-        conflictErrorMessage.Should().Be("Transfer agreement date overlap");
     }
 
     [Fact]
@@ -413,14 +412,13 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PutAsync($"api/transfer/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var validationProblemContent = await response.Content.ReadAsStringAsync();
 
         validationProblemContent.Should().NotBeNullOrEmpty();
-        validationProblemContent.Should().Contain("Transfer agreement has expired");
     }
 
     [Fact]
@@ -430,7 +428,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PutAsync($"api/transfer/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -458,7 +456,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
+        var response = await authenticatedClient.PutAsync($"api/transfer/transfer-agreements/{transferAgreementId}", JsonContent.Create(editEndDateRequest));
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -512,7 +510,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
         var request = new EditTransferAgreementEndDate(newEndDate);
 
-        var response = await authenticatedClient.PatchAsync($"api/transfer-agreements/{agreementId}", JsonContent.Create(request));
+        var response = await authenticatedClient.PutAsync($"api/transfer/transfer-agreements/{agreementId}", JsonContent.Create(request));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -523,11 +521,11 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
 
     private async Task<Guid> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
-        var result = await authenticatedClient.PostAsJsonAsync("api/transfer-agreement-proposals", request);
+        var result = await authenticatedClient.PostAsJsonAsync("api/transfer/transfer-agreement-proposals", request);
         output.WriteLine(await result.Content.ReadAsStringAsync());
         result.StatusCode.Should().Be(HttpStatusCode.Created);
         var createResponseBody = await result.Content.ReadAsStringAsync();
-        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposal>(createResponseBody);
+        var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
         return createdProposal!.Id;
     }

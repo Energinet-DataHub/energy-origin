@@ -6,15 +6,9 @@ using Xunit;
 
 namespace Worker.IntegrationTests.Api.v2023_11_23.Controllers;
 
-public class ClaimAutomationControllerTest : IClassFixture<ClaimAutomationApplicationFactory>
+public class ClaimAutomationControllerTest(ClaimAutomationApplicationFactory factory)
+    : IClassFixture<ClaimAutomationApplicationFactory>
 {
-    private readonly ClaimAutomationApplicationFactory factory;
-
-    public ClaimAutomationControllerTest(ClaimAutomationApplicationFactory factory)
-    {
-        this.factory = factory;
-    }
-
     [Fact]
     public async Task StopProcess_WhenClaimProcessExists_ReturnsNoContent()
     {

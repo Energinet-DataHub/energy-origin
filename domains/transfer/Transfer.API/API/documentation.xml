@@ -4,52 +4,6 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="M:API.Cvr.Api.v2023_01_01.Controllers.CvrController.GetCvrCompany(System.String)">
-            <summary>
-            Get CVR registered company information
-            </summary>
-            <param name="cvrNumber">CVR number of the company</param>
-            <response code="200">Successful operation</response>
-            <response code="404">CVR company not found</response>
-        </member>
-        <member name="P:API.Cvr.Api.v2023_01_01.Dto.Responses.CvrCompanyDto.CompanyCvr">
-            <summary>
-            Company CVR number
-            </summary>
-        </member>
-        <member name="P:API.Cvr.Api.v2023_01_01.Dto.Responses.CvrCompanyDto.CompanyName">
-            <summary>
-            Company name
-            </summary>
-        </member>
-        <member name="P:API.Cvr.Api.v2023_01_01.Dto.Responses.CvrCompanyDto.Address">
-            <summary>
-            Company address
-            </summary>
-        </member>
-        <member name="M:API.Cvr.Api.v2023_11_23.Controllers.CvrController.GetCvrCompany(System.String)">
-            <summary>
-            Get CVR registered company information
-            </summary>
-            <param name="cvrNumber">CVR number of the company</param>
-            <response code="200">Successful operation</response>
-            <response code="404">CVR company not found</response>
-        </member>
-        <member name="P:API.Cvr.Api.v2023_11_23.Dto.Responses.CvrCompanyDto.CompanyCvr">
-            <summary>
-            Company CVR number
-            </summary>
-        </member>
-        <member name="P:API.Cvr.Api.v2023_11_23.Dto.Responses.CvrCompanyDto.CompanyName">
-            <summary>
-            Company name
-            </summary>
-        </member>
-        <member name="P:API.Cvr.Api.v2023_11_23.Dto.Responses.CvrCompanyDto.Address">
-            <summary>
-            Company address
-            </summary>
-        </member>
         <member name="M:API.Cvr.Api.v2024_01_03.Controllers.CvrController.GetCvrCompanies(API.Cvr.Api.v2024_01_03.Dto.Requests.CvrRequestDto)">
             <summary>
             Get CVR registered company information for multiple CVR numbers
@@ -71,75 +25,6 @@
             <summary>
             Company address
             </summary>
-        </member>
-        <member name="M:API.Transfer.Api.v2023_01_01.Controllers.TransferAgreementProposalController.CreateTransferAgreementProposal(API.Transfer.Api.v2023_01_01.Dto.Requests.CreateTransferAgreementProposal)">
-            <summary>
-            Create TransferAgreementProposal
-            </summary>
-            <param name="request">The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.</param>
-            <response code="201">Created</response>
-            <response code="400">Bad request</response>
-            <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
-        </member>
-        <member name="M:API.Transfer.Api.v2023_01_01.Controllers.TransferAgreementProposalController.GetTransferAgreementProposal(System.Guid)">
-            <summary>
-            Get TransferAgreementProposal by Id
-            </summary>
-            <param name="id">Id of TransferAgreementProposal</param>
-            <response code="200">Successful operation</response>
-            <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
-            <response code="404">TransferAgreementProposal expired or deleted</response>
-        </member>
-        <member name="M:API.Transfer.Api.v2023_01_01.Controllers.TransferAgreementProposalController.DeleteTransferAgreementProposal(System.Guid)">
-            <summary>
-            Delete TransferAgreementProposal
-            </summary>
-            <param name="id">Id of TransferAgreementProposal</param>
-            <response code="204">Successful operation</response>
-            <response code="404">TransferAgreementProposal not found</response>
-        </member>
-        <member name="M:API.Transfer.Api.v2023_01_01.Controllers.TransferAgreementsController.Create(API.Transfer.Api.v2023_01_01.Dto.Requests.CreateTransferAgreement)">
-            <summary>
-            Add a new Transfer Agreement
-            </summary>
-            <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
-            <response code="201">Successful operation</response>
-            <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
-            <response code="404">TransferAgreementProposal expired or deleted</response>
-            <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
-        </member>
-        <member name="M:API.Transfer.Api.v2023_11_23.Controllers.TransferAgreementProposalController.CreateTransferAgreementProposal(API.Transfer.Api.v2023_11_23.Dto.Requests.CreateTransferAgreementProposal)">
-            <summary>
-            Create TransferAgreementProposal
-            </summary>
-            <param name="request">The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.</param>
-            <response code="201">Created</response>
-            <response code="400">Bad request</response>
-            <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
-        </member>
-        <member name="M:API.Transfer.Api.v2023_11_23.Controllers.TransferAgreementProposalController.GetTransferAgreementProposal(System.Guid)">
-            <summary>
-            Get TransferAgreementProposal by Id
-            </summary>
-            <param name="id">Id of TransferAgreementProposal</param>
-            <response code="200">Successful operation</response>
-            <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
-        </member>
-        <member name="M:API.Transfer.Api.v2023_11_23.Controllers.TransferAgreementProposalController.DeleteTransferAgreementProposal(System.Guid)">
-            <summary>
-            Delete TransferAgreementProposal
-            </summary>
-            <param name="id">Id of TransferAgreementProposal</param>
-            <response code="204">Successful operation</response>
-        </member>
-        <member name="M:API.Transfer.Api.v2023_11_23.Controllers.TransferAgreementsController.Create(API.Transfer.Api.v2023_11_23.Dto.Requests.CreateTransferAgreement)">
-            <summary>
-            Add a new Transfer Agreement
-            </summary>
-            <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
-            <response code="201">Successful operation</response>
-            <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
-            <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
         </member>
         <member name="M:API.Transfer.Api.v2024_01_03.Controllers.TransferAgreementProposalController.CreateTransferAgreementProposal(API.Transfer.Api.v2024_01_03.Dto.Requests.CreateTransferAgreementProposal)">
             <summary>

@@ -9,15 +9,9 @@ using Xunit.Abstractions;
 
 namespace API.IntegrationTests.Transfer.Api.v2024_01_03;
 
-public class TransferAgreementsControllerTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+public class TransferAgreementsControllerTest(ITestOutputHelper output)
+    : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
-    private readonly ITestOutputHelper output;
-
-    public TransferAgreementsControllerTest(ITestOutputHelper output)
-    {
-        this.output = output;
-    }
-
     [Fact]
     public async Task GivenProposal_WhenAcceptingProposal_ActivityLogEntryIsAdded()
     {

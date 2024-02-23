@@ -16,15 +16,8 @@ namespace ClaimAutomation.Worker.Api.v2023_11_23.Controllers;
 [ApiController]
 [ApiVersion("20231123")]
 [Route("api/claim-automation")]
-public class ClaimAutomationController : ControllerBase
+public class ClaimAutomationController(IClaimAutomationRepository claimAutomationRepository) : ControllerBase
 {
-    private readonly IClaimAutomationRepository claimAutomationRepository;
-
-    public ClaimAutomationController(IClaimAutomationRepository claimAutomationRepository)
-    {
-        this.claimAutomationRepository = claimAutomationRepository;
-    }
-
     [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpPost("start")]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 201)]
