@@ -21,24 +21,13 @@ namespace API.Transfer.Api.v2024_01_03.Controllers;
 [ApiVersion("20240103")]
 [Route("api/transfer-agreement-proposals")]
 [Route("api/transfer/transfer-agreement-proposals")]
-public class TransferAgreementProposalController : ControllerBase
+public class TransferAgreementProposalController(
+    ITransferAgreementProposalRepository repository,
+    IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
+    ITransferAgreementRepository transferAgreementRepository,
+    IActivityLogEntryRepository activityLogEntryRepository)
+    : ControllerBase
 {
-    private readonly ITransferAgreementProposalRepository repository;
-    private readonly IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator;
-    private readonly ITransferAgreementRepository transferAgreementRepository;
-    private readonly IActivityLogEntryRepository activityLogEntryRepository;
-
-    public TransferAgreementProposalController(ITransferAgreementProposalRepository repository,
-        IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
-        ITransferAgreementRepository transferAgreementRepository,
-        IActivityLogEntryRepository activityLogEntryRepository)
-    {
-        this.repository = repository;
-        this.createTransferAgreementProposalValidator = createTransferAgreementProposalValidator;
-        this.transferAgreementRepository = transferAgreementRepository;
-        this.activityLogEntryRepository = activityLogEntryRepository;
-    }
-
     /// <summary>
     /// Create TransferAgreementProposal
     /// </summary>

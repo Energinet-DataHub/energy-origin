@@ -5,10 +5,12 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
-using API.Transfer.Api.v2023_01_01.Controllers;
-using API.Transfer.Api.v2023_01_01.Dto.Requests;
-using API.Transfer.Api.v2023_01_01.Dto.Responses;
+using API.Transfer.Api.v2024_01_03.Controllers;
+using API.Transfer.Api.v2024_01_03.Dto.Requests;
+using API.Transfer.Api.v2024_01_03.Dto.Responses;
 using DataContext.Models;
+using EnergyOrigin.ActivityLog.API;
+using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.TokenValidation.Values;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +26,7 @@ public class TransferAgreementsControllerTests
     private readonly ITransferAgreementRepository mockTransferAgreementRepository = Substitute.For<ITransferAgreementRepository>();
     private readonly ITransferAgreementProposalRepository mockTransferAgreementProposalRepository = Substitute.For<ITransferAgreementProposalRepository>();
     private readonly IProjectOriginWalletService mockProjectOriginWalletDepositEndpointService = Substitute.For<IProjectOriginWalletService>();
+    private readonly IActivityLogEntryRepository mockActivityLogRepository = Substitute.For<IActivityLogEntryRepository>();
 
     private const string UserClaimNameScope = "userScope";
     private const string UserClaimNameActorLegacy = "d4f32241-442c-4043-8795-a4e6bf574e7f";
@@ -45,6 +48,8 @@ public class TransferAgreementsControllerTests
     {
         var mockHttpContextAccessor = Substitute.For<IHttpContextAccessor>();
         mockTransferAgreementRepository.AddTransferAgreementToDb(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(new TransferAgreement()));
+        mockActivityLogRepository.AddActivityLogEntryAsync(Arg.Any<ActivityLogEntry>())
+            .Returns(Task.CompletedTask);
 
         var mockContext = new DefaultHttpContext
         {
@@ -76,7 +81,8 @@ public class TransferAgreementsControllerTests
             mockTransferAgreementRepository,
             mockProjectOriginWalletDepositEndpointService,
             mockHttpContextAccessor,
-            mockTransferAgreementProposalRepository)
+            mockTransferAgreementProposalRepository,
+            mockActivityLogRepository)
         {
             ControllerContext = new ControllerContext { HttpContext = mockHttpContextAccessor.HttpContext! }
         };
@@ -201,7 +207,8 @@ public class TransferAgreementsControllerTests
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds()));
 
-        result.Result.Should().BeOfType<BadRequestObjectResult>();
+        var validationProblem = (result.Result as ObjectResult)?.Value as ValidationProblemDetails;
+        validationProblem.Should().NotBeNull();
         await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin);
     }
 
@@ -222,7 +229,11 @@ public class TransferAgreementsControllerTests
 
         var result = await controller.EditEndDate(transferAgreement.Id, new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds()));
 
-        result.Result.Should().BeOfType<ConflictObjectResult>();
+        var statusCode = (result.Result as ObjectResult)?.StatusCode;
+        statusCode.Should().Be(StatusCodes.Status409Conflict);
+
+        var validationProblem = (result.Result as ObjectResult)?.Value as ValidationProblemDetails;
+        validationProblem.Should().NotBeNull();
 
         await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin);
         await mockTransferAgreementRepository.Received(1).HasDateOverlap(Arg.Any<TransferAgreement>());

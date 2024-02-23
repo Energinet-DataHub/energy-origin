@@ -12,17 +12,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Transfer.Api.v2024_01_03.Controllers;
 
+public static class APIVertsions
+{
+    public const string ver1 = "bla";
+}
+
 [Authorize]
 [ApiController]
-[ApiVersion("20240103")]
+[ApiVersion(APIVertsions.ver1)]
 [Route("api/transfer-agreements")]
 [Route("api/transfer/transfer-agreements")]
-public class TransferAgreementHistoryEntriesController : ControllerBase
+public class TransferAgreementHistoryEntriesController(ITransferAgreementHistoryEntryRepository historyEntryRepository)
+    : ControllerBase
 {
-    private readonly ITransferAgreementHistoryEntryRepository historyEntryRepository;
-
-    public TransferAgreementHistoryEntriesController(ITransferAgreementHistoryEntryRepository historyEntryRepository) => this.historyEntryRepository = historyEntryRepository;
-
     [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(typeof(TransferAgreementHistoryEntriesResponse), 200)]
     [ProducesResponseType(typeof(void), 404)]

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using API.Shared.Helpers;
 using API.Transfer.Api.Repository;
@@ -28,28 +27,14 @@ namespace API.Transfer.Api.v2024_01_03.Controllers;
 [ApiVersion("20240103")]
 [Route("api/transfer-agreements")]
 [Route("api/transfer/transfer-agreements")]
-public class TransferAgreementsController : ControllerBase
+public class TransferAgreementsController(
+    ITransferAgreementRepository transferAgreementRepository,
+    IProjectOriginWalletService projectOriginWalletService,
+    IHttpContextAccessor httpContextAccessor,
+    ITransferAgreementProposalRepository transferAgreementProposalRepository,
+    IActivityLogEntryRepository activityLogEntryRepository)
+    : ControllerBase
 {
-    private readonly ITransferAgreementRepository transferAgreementRepository;
-    private readonly IProjectOriginWalletService projectOriginWalletService;
-    private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly ITransferAgreementProposalRepository transferAgreementProposalRepository;
-    private readonly IActivityLogEntryRepository activityLogEntryRepository;
-
-    public TransferAgreementsController(
-        ITransferAgreementRepository transferAgreementRepository,
-        IProjectOriginWalletService projectOriginWalletService,
-        IHttpContextAccessor httpContextAccessor,
-        ITransferAgreementProposalRepository transferAgreementProposalRepository,
-        IActivityLogEntryRepository activityLogEntryRepository)
-    {
-        this.transferAgreementRepository = transferAgreementRepository;
-        this.projectOriginWalletService = projectOriginWalletService;
-        this.httpContextAccessor = httpContextAccessor;
-        this.transferAgreementProposalRepository = transferAgreementProposalRepository;
-        this.activityLogEntryRepository = activityLogEntryRepository;
-    }
-
     /// <summary>
     /// Add a new Transfer Agreement
     /// </summary>

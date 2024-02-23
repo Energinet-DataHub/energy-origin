@@ -7,8 +7,8 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Services;
-using API.Transfer.Api.v2023_01_01.Dto.Requests;
-using API.Transfer.Api.v2023_11_23.Dto.Responses;
+using API.Transfer.Api.v2024_01_03.Dto.Requests;
+using API.Transfer.Api.v2024_01_03.Dto.Responses;
 using DataContext.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
@@ -17,8 +17,6 @@ using VerifyTests;
 using VerifyXunit;
 using Xunit;
 using Xunit.Abstractions;
-using TransferAgreementDto = API.Transfer.Api.v2023_01_01.Dto.Responses.TransferAgreementDto;
-using TransferAgreementsResponse = API.Transfer.Api.v2023_01_01.Dto.Responses.TransferAgreementsResponse;
 
 namespace API.IntegrationTests.Transfer.Api.v2023_11_23.Controllers;
 

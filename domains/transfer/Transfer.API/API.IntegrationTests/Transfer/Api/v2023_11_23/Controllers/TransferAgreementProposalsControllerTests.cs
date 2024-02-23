@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.Transfer.Api.v2023_01_01.Dto.Requests;
-using API.Transfer.Api.v2023_11_23.Dto.Responses;
+using API.Transfer.Api.v2024_01_03.Dto.Requests;
+using API.Transfer.Api.v2024_01_03.Dto.Responses;
 using DataContext.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
