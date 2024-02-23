@@ -136,12 +136,12 @@ public class TransferAgreementsController : ControllerBase
 
     private async Task AppendProposalAcceptedToActivityLog(UserDescriptor user, TransferAgreement result)
     {
-        // Receiver tin entry
+        // Receiver entry
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             ActivityLogEntry.ActionTypeEnum.Accepted, result.Id.ToString()));
 
-        // Sender tin entry
+        // Sender entry
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             string.Empty, result.SenderTin, result.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             ActivityLogEntry.ActionTypeEnum.Accepted, result.Id.ToString()));
@@ -251,12 +251,12 @@ public class TransferAgreementsController : ControllerBase
 
     private async Task AppendAgreementEndDateChangedToActivityLog(UserDescriptor user, TransferAgreement result)
     {
-        // Receiver tin entry
+        // Receiver entry
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             String.Empty, result.ReceiverTin, String.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             ActivityLogEntry.ActionTypeEnum.EndDateChanged, result.Id.ToString()));
 
-        // Sender tin entry
+        // Sender entry
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             user.Name, result.SenderTin, result.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             ActivityLogEntry.ActionTypeEnum.EndDateChanged, result.Id.ToString()));
