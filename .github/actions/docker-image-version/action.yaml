@@ -6,7 +6,7 @@ inputs:
   allow-dispatch:
     description: Is workflow dispatch allowed to generate a docker image version
     required: true
-    default: false
+    default: "false"
 
 outputs:
   version:
@@ -28,7 +28,7 @@ runs:
           if [ "${{ github.ref_name }}" = 'main' ]; then
             version="$(git rev-parse --short ${{ github.sha }})"
           else
-            sanitized_branch=$(printf '${{ github.ref_name }}' | sed 's/[^a-zA-Z0-9]//g') 
+            sanitized_branch=$(printf '${{ github.ref_name }}' | sed 's/[^a-zA-Z0-9]//g')
             version="${{ github.sha }}.${sanitized_branch}"
           fi
         else

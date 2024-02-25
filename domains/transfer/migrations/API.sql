@@ -424,3 +424,22 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240216131219_ActivityLogEntityIdIsNowAString') THEN
+    ALTER TABLE "ActivityLogs" ALTER COLUMN "EntityId" TYPE text;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240216131219_ActivityLogEntityIdIsNowAString') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20240216131219_ActivityLogEntityIdIsNowAString', '8.0.1');
+    END IF;
+END $EF$;
+COMMIT;
+
