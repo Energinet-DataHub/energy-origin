@@ -153,6 +153,11 @@ public class TransferAgreementProposalController(
 
         var user = new UserDescriptor(User);
 
+        if (proposal.ReceiverCompanyTin != null && user.Organization!.Tin != proposal.ReceiverCompanyTin)
+        {
+            return ValidationProblem("You cannot Deny a TransferAgreementProposal for another company");
+        }
+
         await repository.DeleteTransferAgreementProposal(id);
         await AppendToActivityLog(user, proposal, ActivityLogEntry.ActionTypeEnum.Declined);
 
