@@ -29,7 +29,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     {
         this.factory = factory;
         sub = Guid.NewGuid().ToString();
-        senderClient = factory.CreateAuthenticatedClient(sub, apiVersion:  ApiVersions.Version20240103);
+        senderClient = factory.CreateAuthenticatedClient(sub, apiVersion: ApiVersions.Version20240103);
     }
 
     [Fact]

@@ -24,7 +24,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
     [Fact]
     public async Task Create()
     {
-        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion:  ApiVersions.Version20240103);
+        var authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: ApiVersions.Version20240103);
         var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
         var result = await authenticatedClient
             .PostAsJsonAsync("api/transfer/transfer-agreement-proposals", body);
