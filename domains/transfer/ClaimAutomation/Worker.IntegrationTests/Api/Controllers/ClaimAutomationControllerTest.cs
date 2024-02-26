@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 
-namespace Worker.IntegrationTests.Api.v2023_11_23.Controllers;
+namespace Worker.IntegrationTests.Api.Controllers;
 
 public class ClaimAutomationControllerTest(ClaimAutomationApplicationFactory factory)
     : IClassFixture<ClaimAutomationApplicationFactory>

@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Asp.Versioning.ApiExplorer;
+using ClaimAutomation.Worker.Api.Controllers;
 using DataContext;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -32,7 +33,7 @@ public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>,
 
     private readonly byte[] privateKey = RsaKeyGenerator.GenerateTestKey();
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20231123")
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20231123)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =

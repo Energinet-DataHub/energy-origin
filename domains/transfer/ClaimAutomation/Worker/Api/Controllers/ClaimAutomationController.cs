@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using Asp.Versioning;
+using ClaimAutomation.Worker.Api.Dto.Response;
 using ClaimAutomation.Worker.Api.Repositories;
-using ClaimAutomation.Worker.Api.v2023_11_23.Dto.Response;
 using DataContext.Models;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -10,11 +10,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClaimAutomation.Worker.Api.v2023_11_23.Controllers;
+namespace ClaimAutomation.Worker.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20231123")]
+[ApiVersion(ApiVersions.Version20231123)]
 [Route("api/claim-automation")]
 public class ClaimAutomationController(IClaimAutomationRepository claimAutomationRepository) : ControllerBase
 {
