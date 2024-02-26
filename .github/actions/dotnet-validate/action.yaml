@@ -51,20 +51,6 @@ runs:
           dotnet sln add "$item"
         done
 
-    - name: Apply .config
-      shell: bash
-      env:
-        PATHS: ${{ inputs.paths }}
-      run: |
-        WORKSPACE=$(pwd)
-        cd "$(dirname "$(echo "$PATHS" | head -n1)")"
-        while [ ! -d .config ] && [ ! "$(pwd)" = '/' ]; do
-          cd ..
-        done
-        if [ "$(pwd)" != "$WORKSPACE" ]; then
-          test -d .config && cp -rv .config "$WORKSPACE/.config"
-        fi
-
     - name: Pin version
       shell: bash
       if: ${{ inputs.pin-version == 'true' }}
@@ -82,9 +68,7 @@ runs:
       shell: bash
       env:
         version: ""
-      run: |
-        dotnet tool restore || true
-        dotnet restore
+      run: dotnet restore
 
     - name: Lint
       shell: bash

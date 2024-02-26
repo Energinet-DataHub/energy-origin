@@ -21,8 +21,12 @@ During testing and building both locally and in pipelines there are certain step
 
 ## Decision Outcome
 
-We chose to use a tool-manifest file.
+We chose to nugets that includes required tools.
 
 ## Rationale
 
-It was the path of least resistance since the tool-manifest file was already adopted in most subsystems.
+The nuget library and the tool is always the same version when the are packed together.
+
+No new file is introduced that requires special handling in the pipeline, since nugets are specificed in the csproj file.
+
+It should be possible to have multiple versions of the same tool availble in multiple projects in the same subsystem.
