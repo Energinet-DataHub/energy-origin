@@ -651,8 +651,7 @@
             "$ref": "#/components/schemas/ActionTypeEnum"
           },
           "entityId": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1025,10 +1024,10 @@
     },
     "securitySchemes": {
       "Bearer": {
-        "type": "apiKey",
+        "type": "http",
         "description": "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\"",
-        "name": "Authorization",
-        "in": "header"
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
       }
     }
   },

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using API.Shared.Helpers;
 using API.Transfer.Api.Repository;
@@ -123,7 +124,7 @@ public class TransferAgreementsController : ControllerBase
             var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement,
                 request.TransferAgreementProposalId);
 
-            await AppendToActivityLog(user, result);
+            await AppendProposalAcceptedToActivityLog(user, result);
 
             return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
         }
@@ -133,17 +134,17 @@ public class TransferAgreementsController : ControllerBase
         }
     }
 
-    private async Task AppendToActivityLog(UserDescriptor user, TransferAgreement result)
+    private async Task AppendProposalAcceptedToActivityLog(UserDescriptor user, TransferAgreement result)
     {
-        // Receiver tin entry
+        // Receiver entry
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
             user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Created, result.Id));
+            ActivityLogEntry.ActionTypeEnum.Accepted, result.Id.ToString()));
 
-        // Sender tin entry
+        // Sender entry
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, result.SenderTin, result.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Created, result.Id));
+            string.Empty, result.SenderTin, result.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            ActivityLogEntry.ActionTypeEnum.Accepted, result.Id.ToString()));
     }
 
     [Authorize(Policy = PolicyName.RequiresCompany)]
@@ -243,7 +244,22 @@ public class TransferAgreementsController : ControllerBase
             SenderTin: transferAgreement.SenderTin,
             ReceiverTin: transferAgreement.ReceiverTin);
 
+        await AppendAgreementEndDateChangedToActivityLog(user, transferAgreement);
+
         return Ok(response);
+    }
+
+    private async Task AppendAgreementEndDateChangedToActivityLog(UserDescriptor user, TransferAgreement result)
+    {
+        // Receiver entry
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
+            String.Empty, result.ReceiverTin, String.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            ActivityLogEntry.ActionTypeEnum.EndDateChanged, result.Id.ToString()));
+
+        // Sender entry
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
+            user.Name, result.SenderTin, result.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            ActivityLogEntry.ActionTypeEnum.EndDateChanged, result.Id.ToString()));
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>

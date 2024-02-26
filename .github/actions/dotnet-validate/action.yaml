@@ -61,7 +61,9 @@ runs:
         while [ ! -d .config ] && [ ! "$(pwd)" = '/' ]; do
           cd ..
         done
-        test -d .config && cp -rv .config "$WORKSPACE/.config"
+        if [ "$(pwd)" != "$WORKSPACE" ]; then
+          test -d .config && cp -rv .config "$WORKSPACE/.config"
+        fi
 
     - name: Pin version
       shell: bash

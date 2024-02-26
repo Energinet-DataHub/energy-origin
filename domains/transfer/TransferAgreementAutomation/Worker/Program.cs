@@ -2,9 +2,11 @@ using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
+using DataContext;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -49,10 +51,10 @@ builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddOptions<TransferApiOptions>().BindConfiguration(TransferApiOptions.TransferApi)
-    .ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
     .ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
@@ -88,6 +90,11 @@ builder.Services.AddHealthChecks();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
+
+builder.Services.AddDbContext<ApplicationDbContext>(
+    (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
+    optionsLifetime: ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 builder.Services.AddSingleton<AutomationCache>();

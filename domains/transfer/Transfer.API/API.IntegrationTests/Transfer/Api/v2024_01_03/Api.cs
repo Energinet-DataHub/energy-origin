@@ -44,13 +44,22 @@ public class Api
         return createdProposal!.Id;
     }
 
-    public async Task AcceptTransferAgreementProposal(string receiverTin, Guid createdProposalId)
+    public async Task<Guid> AcceptTransferAgreementProposal(string receiverTin, Guid createdProposalId)
     {
         var receiverClient = MockWalletServiceAndCreateAuthenticatedClient(receiverTin);
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
 
         var response = await receiverClient.PostAsJsonAsync("api/transfer-agreements", transferAgreement);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var dto = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
+        return dto!.Id;
+    }
+
+    public async Task EditEndDate(Guid transferAgreementId, long endDate)
+    {
+        var request = new EditTransferAgreementEndDate(endDate);
+        var response = await authenticatedClient.PutAsJsonAsync($"api/transfer/transfer-agreements/{transferAgreementId}", request);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     public async Task<ActivityLogListEntryResponse> GetActivityLog(ActivityLogEntryFilterRequest request)

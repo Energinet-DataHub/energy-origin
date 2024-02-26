@@ -1,8 +1,0 @@
-﻿type: object
-properties:
-  fuelCode:
-    type: string
-  techCode:
-    type: string
-additionalProperties: false
-description: Technology is following the AIB standard for tech and fuel codes

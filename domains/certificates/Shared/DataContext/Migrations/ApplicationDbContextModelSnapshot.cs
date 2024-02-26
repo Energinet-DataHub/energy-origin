@@ -193,8 +193,9 @@ namespace DataContext.Migrations
                     b.Property<int>("ActorType")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("EntityType")
                         .HasColumnType("integer");
