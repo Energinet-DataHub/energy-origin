@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
+using Asp.Versioning;
 using DataContext.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
@@ -363,7 +364,9 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
         postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
 
-        var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}");
+        var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), apiVersion: "20240103", tin: "32132132");
+
+        var deleteResponse = await receiverClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
