@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.Cvr.Api.Dto.Requests;
 using API.Cvr.Api.Dto.Responses;
 using API.IntegrationTests.Factories;
+using API.Transfer.Api.Controllers;
 using FluentAssertions;
 using VerifyTests;
 using VerifyXunit;
@@ -45,7 +46,8 @@ public class CvrTransientTests : IClassFixture<TransferAgreementsApiWebApplicati
                 .WithStatusCode(HttpStatusCode.OK)
                 .WithBodyFromFile("Cvr/Api/Controllers/CvrControllerTests.cvr_response.json"));
 
-        var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), apiVersion: "20240103");
+        var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(),
+            apiVersion: ApiVersions.Version20240103);
 
         var response = await client.PostAsJsonAsync("api/cvr", cvrNumbers);
 

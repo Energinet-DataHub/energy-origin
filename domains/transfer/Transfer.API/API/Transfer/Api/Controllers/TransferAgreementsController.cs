@@ -24,7 +24,7 @@ namespace API.Transfer.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20240103")]
+[ApiVersion(ApiVersions.Version20240103)]
 [Route("api/transfer/transfer-agreements")]
 public class TransferAgreementsController(
     ITransferAgreementRepository transferAgreementRepository,
