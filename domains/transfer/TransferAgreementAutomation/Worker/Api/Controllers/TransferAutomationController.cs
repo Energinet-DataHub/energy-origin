@@ -2,13 +2,13 @@ using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TransferAgreementAutomation.Worker.Api.v2023_12_21.Dto;
+using TransferAgreementAutomation.Worker.Api.Dto;
 
-namespace TransferAgreementAutomation.Worker.Api.v2023_12_21.Controllers;
+namespace TransferAgreementAutomation.Worker.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20231123")]
+[ApiVersion(ApiVersions.Version20231123)]
 public class TransferAutomationController(AutomationCache cache) : ControllerBase
 {
     [ProducesResponseType(typeof(TransferAutomationStatus), 200)]

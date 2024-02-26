@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Testing.Testcontainers;
 using TransferAgreementAutomation.Worker;
+using TransferAgreementAutomation.Worker.Api.Controllers;
 using Xunit;
 
 namespace Worker.IntegrationTest;
@@ -27,7 +28,7 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
 
     private readonly byte[] privateKey = RsaKeyGenerator.GenerateTestKey();
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20230101")
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20231123)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
@@ -40,7 +41,7 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231123");
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20231123);
         return client;
     }
 
