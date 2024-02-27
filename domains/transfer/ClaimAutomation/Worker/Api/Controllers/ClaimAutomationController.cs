@@ -14,7 +14,7 @@ namespace ClaimAutomation.Worker.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion(ApiVersions.Version20231123)]
+[ApiVersion(ApiVersions.Version20240103)]
 [Route("api/claim-automation")]
 public class ClaimAutomationController(IClaimAutomationRepository claimAutomationRepository) : ControllerBase
 {

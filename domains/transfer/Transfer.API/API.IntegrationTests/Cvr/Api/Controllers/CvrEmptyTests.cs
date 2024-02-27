@@ -44,7 +44,7 @@ public class CvrEmptyTests : IClassFixture<TransferAgreementsApiWebApplicationFa
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(),
             apiVersion: ApiVersions.Version20240103);
 
-        var response = await client.PostAsJsonAsync("api/cvr", cvrNumbers);
+        var response = await client.PostAsJsonAsync("api/transfer/cvr", cvrNumbers);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 

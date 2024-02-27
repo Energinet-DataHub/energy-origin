@@ -45,7 +45,7 @@ public class CvrMultipleResponseTests : IClassFixture<TransferAgreementsApiWebAp
         var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(),
             apiVersion: ApiVersions.Version20240103);
 
-        var response = await client.PostAsJsonAsync("api/cvr", wrongPlusRightCvr);
+        var response = await client.PostAsJsonAsync("api/transfer/cvr", wrongPlusRightCvr);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 

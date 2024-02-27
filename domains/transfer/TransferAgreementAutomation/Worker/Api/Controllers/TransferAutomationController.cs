@@ -8,7 +8,7 @@ namespace TransferAgreementAutomation.Worker.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion(ApiVersions.Version20231123)]
+[ApiVersion(ApiVersions.Version20240103)]
 public class TransferAutomationController(AutomationCache cache) : ControllerBase
 {
     [ProducesResponseType(typeof(TransferAutomationStatus), 200)]

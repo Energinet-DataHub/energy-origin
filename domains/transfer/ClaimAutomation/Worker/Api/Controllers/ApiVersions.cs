@@ -2,5 +2,5 @@ namespace ClaimAutomation.Worker.Api.Controllers;
 
 public static class ApiVersions
 {
-    public const string Version20231123 = "20231123";
+    public const string Version20240103 = "20240103";
 }

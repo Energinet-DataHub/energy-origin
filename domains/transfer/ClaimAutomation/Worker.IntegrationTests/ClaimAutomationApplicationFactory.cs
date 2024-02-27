@@ -33,7 +33,7 @@ public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>,
 
     private readonly byte[] privateKey = RsaKeyGenerator.GenerateTestKey();
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20231123)
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20240103)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
@@ -45,7 +45,7 @@ public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>,
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20231123");
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240103);
         return client;
     }
 

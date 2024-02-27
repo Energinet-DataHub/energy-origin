@@ -5,6 +5,7 @@ using API.Cvr.Api.Clients.Cvr;
 using API.Cvr.Api.Dto.Requests;
 using API.Cvr.Api.Dto.Responses;
 using API.Cvr.Api.Models;
+using API.Transfer.Api.Controllers;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,8 +14,8 @@ namespace API.Cvr.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20240103")]
-[Route("api/cvr")]
+[ApiVersion(ApiVersions.Version20240103)]
+[Route("api/transfer/cvr")]
 public class CvrController(CvrClient client) : Controller
 {
     /// <summary>
