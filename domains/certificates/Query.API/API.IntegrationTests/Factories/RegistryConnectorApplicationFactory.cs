@@ -31,7 +31,6 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
     public RetryOptions RetryOptions { get; set; } = new()
     {
         DefaultFirstLevelRetryCount = 5,
-        DefaultSecondLevelRetryCount = 4,
         RegistryTransactionStillProcessingRetryCount = 100
     };
 
@@ -40,7 +39,6 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("Retry:DefaultFirstLevelRetryCount", RetryOptions.DefaultFirstLevelRetryCount.ToString());
-        builder.UseSetting("Retry:DefaultSecondLevelRetryCount", RetryOptions.DefaultSecondLevelRetryCount.ToString());
         builder.UseSetting("Retry:RegistryTransactionStillProcessingRetryCount", RetryOptions.RegistryTransactionStillProcessingRetryCount.ToString());
 
         if (ProjectOriginOptions != null)

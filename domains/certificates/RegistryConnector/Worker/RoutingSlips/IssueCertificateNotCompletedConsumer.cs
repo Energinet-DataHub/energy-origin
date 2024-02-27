@@ -23,21 +23,9 @@ public class IssueCertificateTerminated
     public IDictionary<string, object> Variables { get; set; } = new Dictionary<string, object>();
 }
 
-public class IssueCertificateFaulted
-{
-    public Guid CertificateId { get; set; }
-    public MeteringPointType MeteringPointType { get; set; }
-    /// <summary>
-    /// Populated by MassTransit.
-    /// The exception information from the faulting activities.
-    /// </summary>
-    public ActivityException[] ActivityExceptions { get; set; } = Array.Empty<ActivityException>();
-}
-
 
 public class IssueCertificateNotCompletedConsumer :
-    IConsumer<IssueCertificateTerminated>,
-    IConsumer<IssueCertificateFaulted>
+    IConsumer<IssueCertificateTerminated>
 {
     private readonly ApplicationDbContext dbContext;
     private readonly ILogger<IssueCertificateNotCompletedConsumer> logger;
@@ -52,15 +40,6 @@ public class IssueCertificateNotCompletedConsumer :
     {
         var message = context.Message;
         var rejectionReason = $"Terminated: {message.Variables["Reason"]}";
-
-        await Reject(message.MeteringPointType, message.CertificateId, rejectionReason);
-    }
-
-    public async Task Consume(ConsumeContext<IssueCertificateFaulted> context)
-    {
-        var message = context.Message;
-        var exceptionInfo = message.ActivityExceptions[0].ExceptionInfo;
-        var rejectionReason = $"Faulted: {exceptionInfo.ExceptionType} - {exceptionInfo.Message}";
 
         await Reject(message.MeteringPointType, message.CertificateId, rejectionReason);
     }
@@ -111,8 +90,6 @@ public class IssueCertificateNotCompletedConsumerDefinition : ConsumerDefinition
         IRegistrationContext context
         )
     {
-        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
-
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 

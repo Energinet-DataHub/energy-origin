@@ -10,8 +10,5 @@ public class RetryOptions
     public int DefaultFirstLevelRetryCount { get; set; }
 
     [Required]
-    public int DefaultSecondLevelRetryCount { get; set; }
-
-    [Required]
     public int RegistryTransactionStillProcessingRetryCount { get; set; }
 }

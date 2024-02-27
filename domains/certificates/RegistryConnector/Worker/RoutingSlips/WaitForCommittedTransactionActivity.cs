@@ -40,10 +40,10 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
 
             if (status.Status == TransactionState.Failed)
             {
-                logger.LogWarning("Transaction {id} with certificate {certificateId} failed in registry.", context.Arguments.ShaId, context.Arguments.CertificateId);
+                logger.LogWarning("Transaction {id} with certificate {certificateId} failed in registry. Reason: {reason}", context.Arguments.ShaId, context.Arguments.CertificateId, status.Message);
                 return context.Terminate(new List<KeyValuePair<string, object>>
                 {
-                    new("Reason", "Transaction failed in Registry")
+                    new("Reason", "Transaction failed in Registry. Reason: " + status.Message)
                 });
             }
 
