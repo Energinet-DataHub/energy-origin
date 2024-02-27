@@ -68,20 +68,15 @@ In the Transfer Agreements Domain, we implement a strategic approach to API vers
 Our versioning process is designed to handle breaking changes effectively.
 Say you want to create a new api version. The following steps are taken:
 
-1. **Duplication of Controllers and DTOs:**
+1. **Duplication of the endpoint with the breaking change:**
 
-    - We start by duplicating each controller and its associated data transfer objects (DTOs).
-    - After duplication the folder structure should look like this, with transfer as example:
-   ```
-    transfer/
-    ├── v2023_01_01/
-    │   ├── Controllers/
-    │   └── Dto/
-    └── v2023_11_11/
-        ├── Controllers/
-        └── Dto/
-   ```
+    - We start by duplicating the endpoint, with the breaking change and its associated data transfer objects (DTOs), if necessary.
     - Necessary modifications are then applied to these duplicates to incorporate the required changes.
+    - The new endpoint is then versioned by appending the new version number to the `ApiVersion` annotation. An example is shown below:
+      ```csharp
+      [ApiVersion("20240101")] # <--- Append new version number to the annotation
+      [Route("api/claim-automation")]
+      ```
 
 2. **Deprecation of Old Controllers:**
     - Previous versions of the controllers are marked as deprecated by setting the `Deprecated = true` flag in the `ApiVersion` annotation. An example is shown below:
