@@ -92,12 +92,6 @@ Say you want to create a new api version. The following steps are taken:
       [Route("api/claim-automation")]
       ```
 
-### Streamlining the Versioning Process
-To ease the versioning process, we utilize the `create_new_api_version.sh` Bash script:
-
-- This script automates the creation of new controller and DTO folders, following the naming convention "vYYYY_MM_DD" (e.g., "v2023_01_01").
-- Note: Manual deprecation of old API controllers is still required after running this script.
-
 ### Testing Strategy for New API Versions
 Our approach to testing new API versions involves:
 
