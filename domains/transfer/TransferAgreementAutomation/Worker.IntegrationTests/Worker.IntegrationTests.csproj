@@ -31,11 +31,4 @@
         <ProjectReference Include="..\Worker\Worker.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="SwaggerTests.GetSwaggerDocs_v20231123.verified.txt">
-        <ParentFile>SwaggerTests</ParentFile>
-        <DependentUpon>SwaggerTests.cs</DependentUpon>
-      </None>
-    </ItemGroup>
-
 </Project>

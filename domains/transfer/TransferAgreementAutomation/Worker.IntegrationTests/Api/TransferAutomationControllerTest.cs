@@ -6,7 +6,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using TransferAgreementAutomation.Worker;
-using TransferAgreementAutomation.Worker.Api.v2023_12_21.Dto;
+using TransferAgreementAutomation.Worker.Api.Dto;
 using Xunit;
 
 namespace Worker.IntegrationTest.Api;
@@ -15,7 +15,7 @@ public class TransferAutomationControllerTest(TransferAutomationApplicationFacto
     : IClassFixture<TransferAutomationApplicationFactory>
 {
     private readonly HttpClient authenticatedClient =
-        factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), apiVersion: "20231123");
+        factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
     private readonly AutomationCache cache = factory.Services.GetService<AutomationCache>()!;
 

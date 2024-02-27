@@ -16,21 +16,13 @@ public interface ITransferAgreementProposalCleanupService
     Task Run(CancellationToken stoppingToken);
 }
 
-public class TransferAgreementProposalCleanupService : ITransferAgreementProposalCleanupService
+public class TransferAgreementProposalCleanupService(
+    ILogger<TransferAgreementProposalCleanupService> logger,
+    IDbContextFactory<ApplicationDbContext> contextFactory,
+    IOptions<TransferAgreementProposalCleanupServiceOptions> options)
+    : ITransferAgreementProposalCleanupService
 {
-    private readonly ILogger<TransferAgreementProposalCleanupService> logger;
-    private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
-    private readonly TransferAgreementProposalCleanupServiceOptions options;
-
-    public TransferAgreementProposalCleanupService(
-        ILogger<TransferAgreementProposalCleanupService> logger,
-        IDbContextFactory<ApplicationDbContext> contextFactory,
-        IOptions<TransferAgreementProposalCleanupServiceOptions> options)
-    {
-        this.logger = logger;
-        this.contextFactory = contextFactory;
-        this.options = options.Value;
-    }
+    private readonly TransferAgreementProposalCleanupServiceOptions options = options.Value;
 
     public async Task Run(CancellationToken stoppingToken)
     {
