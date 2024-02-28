@@ -43,8 +43,6 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
     {
         var message = context.Message;
 
-        throw new Exception("Something went wrong! Testing");
-
         var contracts = await dbContext.Contracts.AsNoTracking().Where(c => c.GSRN == message.GSRN)
             .ToListAsync(context.CancellationToken);
         var matchingContract = contracts.Find(c => ShouldEventBeProduced(c, message));
@@ -137,9 +135,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 matchingContract.MeteringPointType, message));
 
         var routingSlip = builder.Build();
-
-        await context.Execute(routingSlip);
-        await dbContext.SaveChangesAsync(context.CancellationToken);
+        throw new Exception("Something went wrong! Testing");
     }
 
     private bool ShouldEventBeProduced(CertificateIssuingContract contract,
