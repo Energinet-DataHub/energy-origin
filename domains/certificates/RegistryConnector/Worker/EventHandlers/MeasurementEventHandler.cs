@@ -43,6 +43,8 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
     {
         var message = context.Message;
 
+        throw new Exception("Something went wrong! Testing");
+
         var contracts = await dbContext.Contracts.AsNoTracking().Where(c => c.GSRN == message.GSRN)
             .ToListAsync(context.CancellationToken);
         var matchingContract = contracts.Find(c => ShouldEventBeProduced(c, message));
