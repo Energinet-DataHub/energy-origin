@@ -84,11 +84,22 @@ Say you want to create a new api version. The following steps are taken:
       [ApiVersion("20230101")] # <--- Update version number to the annotation
       [Route("api/claim-automation")]
       ```
-   - Example: if we have a controller with a post and get endpoint, and you need to create a new version for the GET endpoint, the controller should look like this:
-       ```csharp
+
+2. **Deprecation of Old Controllers:**
+If the old endpoint is to be deprecated, the following steps are taken:
+    - Previous versions of the controllers are marked as deprecated by setting the `Deprecated = true` flag in the `ApiVersion` annotation. An example is shown below:
+      ```csharp
+      [Authorize]
+      [ApiController]
+      [ApiVersion("20230101", Deprecated = true)] # <--- Append flag to the annotation
+      [Route("api/claim-automation")]
+      ```
+3. **Example of Versioned Endpoints:**
+    - An example of versioned endpoints is shown below:
+      ```csharp
        [Authorize]
        [ApiController]
-       [ApiVersion("20230101")] # <--- Old Version remains the same
+       [ApiVersion("20230101", Deprecated = true)] # <--- Old Version remains the same, but is marked as deprecated
        [ApiVersion("20240101")] # <--- Notice how the new version is added, to indicate that this controller has endppoints for both versions
        [Route("api/claim-automation")]
        public class ClaimAutomationController : ControllerBase
@@ -114,16 +125,6 @@ Say you want to create a new api version. The following steps are taken:
          }
        }
        ```
-
-2. **Deprecation of Old Controllers:**
-If the old endpoint is to be deprecated, the following steps are taken:
-    - Previous versions of the controllers are marked as deprecated by setting the `Deprecated = true` flag in the `ApiVersion` annotation. An example is shown below:
-      ```csharp
-      [Authorize]
-      [ApiController]
-      [ApiVersion("20230101", Deprecated = true)] # <--- Append flag to the annotation
-      [Route("api/claim-automation")]
-      ```
 
 ### Testing Strategy for New API Versions
 Our approach to testing new API versions involves:
