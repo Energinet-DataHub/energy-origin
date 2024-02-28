@@ -59,8 +59,8 @@ public class IssueToRegistryActivityDefinition : ExecuteActivityDefinition<Issue
         IRegistrationContext context
         )
     {
-        endpointConfigurator.UseMessageRetry(r => r
-            .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
+        //endpointConfigurator.UseMessageRetry(r => r
+        //    .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
         endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
