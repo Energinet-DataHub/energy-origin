@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
+using API.Query.API.Controllers;
 using Asp.Versioning.ApiExplorer;
 using Contracts;
 using DataContext;
@@ -118,7 +119,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public HttpClient CreateUnauthenticatedClient() => CreateClient();
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20230101")
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20230101)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
