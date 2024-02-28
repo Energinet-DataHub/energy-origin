@@ -14,6 +14,8 @@ builder.Logging.AddConsole();
 
 services.AddMassTransit(x =>
 {
+    x.SetKebabCaseEndpointNameFormatter();
+    x.AddActivitiesFromNamespaceContaining<TestActivity>();
     x.UsingRabbitMq((context,cfg) =>
     {
         cfg.Host("localhost", "/", h => {
@@ -27,6 +29,7 @@ services.AddMassTransit(x =>
     });
     x.AddConsumer<MessageConsumer>();
     x.AddConsumer<Message2Consumer>();
+    x.AddConsumer<SomeMessageConsumer>();
 });
 services.AddHostedService<MessageProducer>();
 

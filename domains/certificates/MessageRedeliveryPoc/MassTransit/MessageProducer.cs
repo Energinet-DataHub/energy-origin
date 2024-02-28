@@ -15,7 +15,8 @@ public class MessageProducer : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await bus.Publish(new TestMessage(), stoppingToken);
+            await bus.Publish(new SomeMessage(Guid.NewGuid()), stoppingToken);
+            //await bus.Publish(new TestMessage(), stoppingToken);
             //await bus.Publish(new TestMessage2(), stoppingToken);
             await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
         }
