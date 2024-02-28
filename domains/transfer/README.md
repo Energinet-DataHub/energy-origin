@@ -86,7 +86,7 @@ Say you want to create a new api version. The following steps are taken:
       ```
 
 2. **Deprecation of Old Controllers:**
-If the old endpoint is to be deprecated, the following steps are taken:
+   If the old endpoint is to be deprecated, the following steps are taken:
     - Previous versions of the controllers are marked as deprecated by setting the `Deprecated = true` flag in the `ApiVersion` annotation. An example is shown below:
       ```csharp
       [Authorize]
@@ -95,36 +95,40 @@ If the old endpoint is to be deprecated, the following steps are taken:
       [Route("api/claim-automation")]
       ```
 3. **Example of Versioned Endpoints:**
-    - An example of versioned endpoints is shown below:
-      ```csharp
-       [Authorize]
-       [ApiController]
-       [ApiVersion("20230101", Deprecated = true)] # <--- Old Version remains the same, but is marked as deprecated
-       [ApiVersion("20240101")] # <--- Notice how the new version is added, to indicate that this controller has endppoints for both versions
-       [Route("api/claim-automation")]
-       public class ClaimAutomationController : ControllerBase
-       {
-         [ApiVersion("20230101")] # <--- Explicitly state that the old GET endpoint, is to only appear in the old version
-         [HttpGet]
-         public async Task<> GetClaimAutomationsOldVersion() # <--- This is the old version of the endpoint. It inherits the old version number, since the annotation explicitly states so.
-         {
-             // ...
-         }
 
-         [ApiVersion("20240101")] # <--- Append new version number to the annotation, To indicate that the new GET endpoint is only available in the new version
-         [HttpGet]
-         public async Task<ActionResult> GetClaimAutomationsNewVersion() # <--- This is the new version of the endpoint. It inherits the new version number, since the annotation explicitly states so.
-         {
-             // ...
-         }
+```csharp
+    [Authorize]
+    [ApiController]
+    [ApiVersion("20230101", Deprecated = true)] # <--- Old Version remains the same, but is marked as deprecated.
+    [ApiVersion("20240101")] # <--- New version added, to indicate controller has endppoints for this version as well.
+    [Route("api/claim-automation")]
+    public class ClaimAutomationController : ControllerBase
+    {
 
-         [HttpPost] # <--- Notice how the POST endpoint is not explicitly versioned, this means that it is available in both versions.
-         public async Task<ActionResult<ClaimAutomationDto>> PostClaimAutomation() # <--- This endpoint had no breaking changes, so it is not duplicated, and is available in both versions.
-         {
-             // ...
-         }
-       }
-       ```
+    // Old GET endpoint, available only in the deprecated version.
+    [ApiVersion("20230101")] # <--- Explicitly state that the old GET endpoint, is to only appear in the old version
+    [HttpGet]
+    public async Task<> GetClaimAutomationsOldVersion()
+    {
+        // Implementation for the old version...
+    }
+
+    // New GET endpoint, available only in the new version.
+    [ApiVersion("20240101")] # <--- Explicitly state that the new GET endpoint, is to only appear in the new version
+    [HttpGet]
+    public async Task<ActionResult> GetClaimAutomationsNewVersion()
+    {
+        // Implementation for the new version...
+    }
+
+    // POST endpoint, available in both versions as it has no breaking changes.
+    [HttpPost] # <--- Notice the POST endpoint is not explicitly versioned, this means it is available in both versions
+    public async Task<ActionResult<ClaimAutomationDto>> PostClaimAutomation() # <--- This endpoint is not duplicated
+    {
+        // Implementation common to both versions...
+    }
+}
+   ```
 
 ### Testing Strategy for New API Versions
 Our approach to testing new API versions involves:
