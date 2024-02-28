@@ -1,5 +1,5 @@
 {
-    "name": "ActivityLog",
+    "name": "IntegrationEvents",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {}
