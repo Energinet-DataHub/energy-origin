@@ -135,7 +135,9 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 matchingContract.MeteringPointType, message));
 
         var routingSlip = builder.Build();
-        throw new Exception("Something went wrong! Testing");
+
+        await context.Execute(routingSlip);
+        await dbContext.SaveChangesAsync(context.CancellationToken);
     }
 
     private bool ShouldEventBeProduced(CertificateIssuingContract contract,
