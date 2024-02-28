@@ -71,7 +71,7 @@ public class IssueCertificateNotCompletedConsumer :
         }
 
         var changed = await dbContext.SaveChangesAsync();
-        logger.LogInformation("{changed}", changed);
+        logger.LogInformation("Certificate with certificateId {certificateId} rejected. Reason: {reason}", certificateId, rejectionReason);
     }
 }
 
