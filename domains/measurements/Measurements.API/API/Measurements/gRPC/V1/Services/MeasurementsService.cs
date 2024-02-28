@@ -51,6 +51,7 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
                                          DateTo = MeterTimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position), state.MeterReadingOccurrence),
                                          Quantity = MeterTimeSeriesHelper.GetQuantityFromMeterReading(quantity.EnergyTimeSeriesMeasureUnit, quantity.EnergyQuantity),
                                          Quality = MeterTimeSeriesHelper.GetQuantityQualityFromMeterReading(quantity.QuantityQuality),
+                                         QuantityMissing = MeterTimeSeriesHelper.GetQuantityMissingFromMeterReading(quantity.QuantityMissingIndicator)
                                      }
                                  ) ?? Enumerable.Empty<Measurement>()
                              )
@@ -62,6 +63,7 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
                                  DateTo = group.Max(m => m.DateTo),
                                  Quantity = group.Sum(m => m.Quantity),
                                  Quality = group.Max(m => m.Quality),
+                                 QuantityMissing = group.Any(m => m.QuantityMissing)
                              })
                              .Where(measurement => measurement.DateFrom >= request.DateFrom && measurement.DateTo <= request.DateTo)
                          ?? Enumerable.Empty<Measurement>()

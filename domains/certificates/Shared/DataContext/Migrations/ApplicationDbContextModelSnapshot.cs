@@ -17,7 +17,7 @@ namespace DataContext.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "8.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -114,6 +114,19 @@ namespace DataContext.Migrations
                         .IsUnique();
 
                     b.ToTable("ConsumptionCertificates");
+                });
+
+            modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
+                {
+                    b.Property<string>("GSRN")
+                        .HasColumnType("text");
+
+                    b.Property<long>("SynchronizationPoint")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("GSRN");
+
+                    b.ToTable("MeteringPointTimeSeriesSlidingWindows");
                 });
 
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
@@ -421,6 +434,30 @@ namespace DataContext.Migrations
                         });
 
                     b.Navigation("Technology");
+                });
+
+            modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
+                {
+                    b.OwnsOne("System.Collections.Generic.List<DataContext.Models.MeasurementInterval>", "MissingMeasurements", b1 =>
+                        {
+                            b1.Property<string>("MeteringPointTimeSeriesSlidingWindowGSRN")
+                                .HasColumnType("text");
+
+                            b1.Property<int>("Capacity")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("MeteringPointTimeSeriesSlidingWindowGSRN");
+
+                            b1.ToTable("MeteringPointTimeSeriesSlidingWindows");
+
+                            b1.ToJson("MissingMeasurements");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MeteringPointTimeSeriesSlidingWindowGSRN");
+                        });
+
+                    b.Navigation("MissingMeasurements")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>

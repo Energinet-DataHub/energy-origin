@@ -3,7 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Persistence;
+using DataContext.Models;
+using DataContext.ValueObjects;
 using FluentAssertions;
+using MassTransit;
 using Measurements.V1;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -22,93 +25,19 @@ public class MeasurementsSyncServiceTest
     private readonly Measurements.V1.Measurements.MeasurementsClient fakeClient = Substitute.For<Measurements.V1.Measurements.MeasurementsClient>();
     private readonly ILogger<MeasurementsSyncService> fakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly ISyncState fakeSyncState = Substitute.For<ISyncState>();
+    private readonly IBus fakeBus = Substitute.For<IBus>();
+    private readonly MeasurementsSyncService service;
 
-    [Fact]
-    public async Task FetchMeasurements_AfterContractStartDate_DataFetched()
+    public MeasurementsSyncServiceTest()
     {
-        var contractStartDate = DateTimeOffset.Now.AddDays(-1);
-        var info = syncInfo with { StartSyncDate = contractStartDate };
-
-        fakeSyncState.GetPeriodStartTime(info)
-            .Returns(contractStartDate.ToUnixTimeSeconds());
-
-        var mockResponse = new GetMeasurementsResponse
-        {
-            Measurements =
-            {
-                new Measurement
-                {
-                    Gsrn = info.GSRN,
-                    DateFrom = contractStartDate.ToUnixTimeSeconds(),
-                    DateTo = DateTimeOffset.Now.ToUnixTimeSeconds(),
-                    Quantity = 5,
-                    Quality = EnergyQuantityValueQuality.Measured
-                }
-            }
-        };
-        fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
-            .Returns(mockResponse);
-
-        var service = SetupService();
-
-        var response = await service.FetchMeasurements(info,
-            CancellationToken.None);
-
-        response.Should().Equal(mockResponse.Measurements);
-    }
-
-    [Fact]
-    public async Task FetchMeasurements_NoMeasurements_NoDataFetched()
-    {
-        var contractStartDate = DateTimeOffset.Now.AddDays(-1);
-        var info = syncInfo with { StartSyncDate = contractStartDate };
-
-        fakeSyncState.GetPeriodStartTime(info)
-            .Returns(contractStartDate.ToUnixTimeSeconds());
-
-        fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
-            .Returns(new GetMeasurementsResponse());
-
-        var service = SetupService();
-
-        var response = await service.FetchMeasurements(info,
-            CancellationToken.None);
-
-        response.Should().BeEmpty();
-        _ = fakeClient.Received(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        service = new MeasurementsSyncService(fakeLogger, fakeSyncState, fakeClient, fakeBus, new SlidingWindowService());
     }
 
     [Fact]
     public async Task FetchMeasurements_BeforeContractStartDate_NoDataFetched()
     {
-        var contractStartDate = DateTimeOffset.Now.AddDays(1);
-        var info = syncInfo with { StartSyncDate = contractStartDate };
-
-        fakeSyncState.GetPeriodStartTime(info)
-            .Returns(contractStartDate.ToUnixTimeSeconds());
-
-        var service = SetupService();
-
-        var response = await service.FetchMeasurements(info,
-            CancellationToken.None);
-
-        response.Should().BeEmpty();
-        _ = fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
-    }
-
-    [Fact]
-    public async Task FetchMeasurements_NoPeriodStartTimeInSyncState_NoDataFetched()
-    {
-        var contractStartDate = DateTimeOffset.Now.AddDays(1);
-        var info = syncInfo with { StartSyncDate = contractStartDate };
-
-        fakeSyncState.GetPeriodStartTime(info)
-            .Returns((long?)null);
-
-        var service = SetupService();
-
-        var response = await service.FetchMeasurements(info,
-            CancellationToken.None);
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(string.Empty, UnixTimestamp.Now().Add(TimeSpan.FromDays(1)));
+        var response = await service.FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, UnixTimestamp.Now(), CancellationToken.None);
 
         response.Should().BeEmpty();
         _ = fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
@@ -117,25 +46,20 @@ public class MeasurementsSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_MeasurementsReceived_SyncPositionUpdated()
     {
-        var contractStartDate = DateTimeOffset.Now.AddDays(-1);
-        var info = syncInfo with { StartSyncDate = contractStartDate };
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(syncInfo.StartSyncDate));
 
-        fakeSyncState.GetPeriodStartTime(info)
-            .Returns(contractStartDate.ToUnixTimeSeconds());
-
-        var dateTo = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var dateTo = UnixTimestamp.Now().RoundToLatestHour().Seconds;
         var mockedResponse = new GetMeasurementsResponse
         {
             Measurements =
             {
                 new Measurement
                 {
-                    Gsrn = info.GSRN,
-                    DateFrom = contractStartDate.ToUnixTimeSeconds(),
+                    Gsrn = syncInfo.GSRN,
+                    DateFrom = slidingWindow.SynchronizationPoint.Seconds,
                     DateTo = dateTo,
                     Quantity = 5,
                     Quality = EnergyQuantityValueQuality.Measured
-
                 }
             }
         };
@@ -143,42 +67,23 @@ public class MeasurementsSyncServiceTest
         fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
             .Returns(mockedResponse);
 
-        var service = SetupService();
-
-        await service.FetchMeasurements(info,
-            CancellationToken.None);
-
-        await fakeSyncState.Received(1).SetSyncPosition(Arg.Any<string>(), Arg.Is<long>(x => x == dateTo));
+        await service.FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, CancellationToken.None);
+        await fakeSyncState.Received(1)
+            .UpdateSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.Seconds == dateTo));
     }
 
     [Fact]
     public async Task FetchMeasurements_NoMeasurementsReceived_SyncPositionNotUpdated()
     {
-        var contractStartDate = DateTimeOffset.Now.AddDays(-1);
-        var info = syncInfo with { StartSyncDate = contractStartDate };
-
-        fakeSyncState.GetPeriodStartTime(info)
-            .Returns(contractStartDate.ToUnixTimeSeconds());
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(syncInfo.StartSyncDate));
 
         var mockedResponse = new GetMeasurementsResponse();
 
         fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
             .Returns(mockedResponse);
 
-        var service = SetupService();
-
-        await service.FetchMeasurements(info,
-            CancellationToken.None);
-
-        await fakeSyncState.DidNotReceive().SetSyncPosition(Arg.Any<string>(), Arg.Any<long>());
-    }
-
-    private MeasurementsSyncService SetupService()
-    {
-        return new MeasurementsSyncService(
-            logger: fakeLogger,
-            syncState: fakeSyncState,
-            fakeClient
-        );
+        await service.FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, CancellationToken.None);
+        await fakeSyncState.Received(0)
+            .UpdateSlidingWindow(Arg.Any<MeteringPointTimeSeriesSlidingWindow>());
     }
 }
