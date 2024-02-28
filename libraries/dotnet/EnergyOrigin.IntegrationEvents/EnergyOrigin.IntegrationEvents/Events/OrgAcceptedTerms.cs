@@ -1,3 +1,3 @@
-namespace DefaultNamespace;
+namespace EnergyOrigin.IntegrationEvents.Events;
 
-public record OrgAcceptedTerms(Guid subjectId, string tin);
+public record OrgAcceptedTerms(Guid SubjectId, string Tin);

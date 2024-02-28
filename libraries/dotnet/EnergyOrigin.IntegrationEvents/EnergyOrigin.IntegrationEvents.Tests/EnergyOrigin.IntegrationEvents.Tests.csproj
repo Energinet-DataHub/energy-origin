@@ -22,4 +22,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,6 @@
-namespace EnergyOrigin.IntegrationEvents.Tests;
+using EnergyOrigin.IntegrationEvents.Events;
+
+namespace EnergyOrigin.IntegrationEvents.Tests.Events;
 
 public class OrgAcceptedTermsTests
 {
@@ -8,6 +10,7 @@ public class OrgAcceptedTermsTests
         var subjectId = Guid.NewGuid();
         var tin = "1234567890";
         var orgAcceptedTerms = new OrgAcceptedTerms(subjectId, tin);
+
         Assert.Equal(subjectId, orgAcceptedTerms.SubjectId);
         Assert.Equal(tin, orgAcceptedTerms.Tin);
     }
