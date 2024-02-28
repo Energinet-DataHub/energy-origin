@@ -1,9 +1,9 @@
 using System;
 using System.Text.RegularExpressions;
+using API.MeteringPoints.Api.Dto.Responses.Enums;
 using API.MeteringPoints.Api.Models.Constants;
-using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 
-namespace API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
+namespace API.MeteringPoints.Api.Dto.Responses;
 
 public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMeterType SubMeterType, Address Address, Technology Technology, bool CanBeUsedForIssuingCertificates)
 {

@@ -1,21 +1,20 @@
 using System;
+using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
+using API;
+using API.MeteringPoints.Api.Dto.Responses;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using Tests.Extensions;
+using Tests.Fixtures;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
-using Tests.Extensions;
-using API;
-using Microsoft.Extensions.DependencyInjection;
-using Tests.Fixtures;
-using System.Linq;
-using System.Net;
-using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
 
-namespace Tests.MeteringPoints.Api.v2024_01_10;
+namespace Tests.MeteringPoints.Api;
 
 public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
 {
