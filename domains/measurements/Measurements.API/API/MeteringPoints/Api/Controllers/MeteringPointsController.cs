@@ -1,17 +1,17 @@
-using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
-using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
+using System.Linq;
+using System.Threading.Tasks;
+using API.MeteringPoints.Api.Dto.Responses;
+using API.MeteringPoints.Api.Dto.Responses.Enums;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace API.MeteringPoints.Api.v2024_01_10.Controllers;
+namespace API.MeteringPoints.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[ApiVersion("20240110")]
+[ApiVersion(ApiVersions.Version20240110)]
 [Route("api/measurements/meteringpoints")]
 public class MeteringPointsController : ControllerBase
 {

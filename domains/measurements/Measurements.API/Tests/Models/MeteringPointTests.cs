@@ -1,7 +1,7 @@
 using Xunit;
 using System;
-using API.MeteringPoints.Api.v2024_01_10.Dto.Responses;
-using API.MeteringPoints.Api.v2024_01_10.Dto.Responses.Enums;
+using API.MeteringPoints.Api.Dto.Responses;
+using API.MeteringPoints.Api.Dto.Responses.Enums;
 using FluentAssertions;
 
 namespace Tests.Models;
