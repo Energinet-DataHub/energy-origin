@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using API.MeteringPoints.Api;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Grpc.Net.Client;
@@ -137,12 +138,12 @@ namespace Tests.Fixtures
             EnsureServer(environment);
 
             var client = _server!.CreateClient();
-            client.DefaultRequestHeaders.Add("EO_API_VERSION", "20240110");
+            client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240110);
             return client;
         }
 
         public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-            string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20240110", string environment = "Development")
+            string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20240110, string environment = "Development")
         {
             EnsureServer(environment);
             var client = _server!.CreateClient();
