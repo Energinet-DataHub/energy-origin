@@ -190,14 +190,14 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
         AddActivity<SendToWalletActivity, SendToWalletArguments>(builder,
             new SendToWalletArguments(matchingContract.WalletUrl, receiveRequest));
 
-        var issueCertificateFailedConsumerEndpoint =
-            new Uri($"exchange:{endpointNameFormatter.Consumer<IssueCertificateNotCompletedConsumer>()}");
-        builder.AddSubscription(issueCertificateFailedConsumerEndpoint, RoutingSlipEvents.Terminated,
-            x => x.Send(new IssueCertificateTerminated
-            {
-                CertificateId = certificateId,
-                MeteringPointType = matchingContract.MeteringPointType
-            }));
+        //var issueCertificateFailedConsumerEndpoint =
+        //    new Uri($"exchange:{endpointNameFormatter.Consumer<IssueCertificateNotCompletedConsumer>()}");
+        //builder.AddSubscription(issueCertificateFailedConsumerEndpoint, RoutingSlipEvents.Terminated,
+        //    x => x.Send(new IssueCertificateTerminated
+        //    {
+        //        CertificateId = certificateId,
+        //        MeteringPointType = matchingContract.MeteringPointType
+        //    }));
     }
 
     private void AddActivity<T, TArguments>(RoutingSlipBuilder routingSlipBuilder, TArguments arguments)
