@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <PackageId>EnergyOrigin.IntegrationEvents</PackageId>
+    <RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin</RepositoryUrl>
+    <Authors>Energinet</Authors>
+    <Company>Energinet DataHub A/S</Company>
+    <PackageDescription>This library contains Integration Events in Energy Origin</PackageDescription>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+  </PropertyGroup>
+
+</Project>
