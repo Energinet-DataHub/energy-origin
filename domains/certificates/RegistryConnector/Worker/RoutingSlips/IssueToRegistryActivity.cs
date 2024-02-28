@@ -32,7 +32,14 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
         var request = new SendTransactionsRequest();
         request.Transactions.Add(context.Arguments.Transaction);
 
-        await client.SendTransactionsAsync(request);
+        try
+        {
+            await client.SendTransactionsAsync(request);
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Failed to send transaction to Registry", e);
+        }
 
         return context.Completed();
     }
