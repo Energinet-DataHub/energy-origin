@@ -84,36 +84,36 @@ Say you want to create a new api version. The following steps are taken:
       [ApiVersion("20230101")] # <--- Update version number to the annotation
       [Route("api/claim-automation")]
       ```
-    - Example: if we have a controller with a post and get endpoint, and you need to create a new version for the GET endpoint, the controller should look like this:
-      ```csharp
-      [Authorize]
-      [ApiController]
-      [ApiVersion("20230101")] # <--- Old Version remains the same
-      [ApiVersion("20240101")] # <--- Notice how the new version is added, to indicate that the rest of the endpoints are also in the new version.
-      [Route("api/claim-automation")]
-      public class ClaimAutomationController : ControllerBase
-      {
-          [ApiVersion("20230101")] # <--- Explicitly state that the old GET endpoint, is to only appear in the old version
-          [HttpGet]
-          public async Task<> GetClaimAutomationsOldVersion() # <--- This is the old version of the endpoint. It inherits the old version number, since the annotation explicitly states so.
-          {
-              // ...
-          }
+   - Example: if we have a controller with a post and get endpoint, and you need to create a new version for the GET endpoint, the controller should look like this:
+       ```csharp
+       [Authorize]
+       [ApiController]
+       [ApiVersion("20230101")] # <--- Old Version remains the same
+       [ApiVersion("20240101")] # <--- Notice how the new version is added, to indicate that this controller has endppoints for both versions
+       [Route("api/claim-automation")]
+       public class ClaimAutomationController : ControllerBase
+       {
+         [ApiVersion("20230101")] # <--- Explicitly state that the old GET endpoint, is to only appear in the old version
+         [HttpGet]
+         public async Task<> GetClaimAutomationsOldVersion() # <--- This is the old version of the endpoint. It inherits the old version number, since the annotation explicitly states so.
+         {
+             // ...
+         }
 
-          [ApiVersion("20240101")] # <--- Append new version number to the annotation, To indicate that the new GET endpoint is only available in the new version
-          [HttpGet]
-          public async Task<ActionResult> GetClaimAutomationsNewVersion() # <--- This is the new version of the endpoint. It inherits the new version number, since the annotation explicitly states so.
-          {
-              // ...
-          }
+         [ApiVersion("20240101")] # <--- Append new version number to the annotation, To indicate that the new GET endpoint is only available in the new version
+         [HttpGet]
+         public async Task<ActionResult> GetClaimAutomationsNewVersion() # <--- This is the new version of the endpoint. It inherits the new version number, since the annotation explicitly states so.
+         {
+             // ...
+         }
 
-          [HttpPost] # <--- Notice how the POST endpoint is not explicitly versioned, this means that it is available in both versions.
-          public async Task<ActionResult<ClaimAutomationDto>> PostClaimAutomation() # <--- This endpoint had no breaking changes, so it is not duplicated, and is available in both versions.
-          {
-              // ...
-          }
-      }
-      ```
+         [HttpPost] # <--- Notice how the POST endpoint is not explicitly versioned, this means that it is available in both versions.
+         public async Task<ActionResult<ClaimAutomationDto>> PostClaimAutomation() # <--- This endpoint had no breaking changes, so it is not duplicated, and is available in both versions.
+         {
+             // ...
+         }
+       }
+       ```
 
 2. **Deprecation of Old Controllers:**
 If the old endpoint is to be deprecated, the following steps are taken:
