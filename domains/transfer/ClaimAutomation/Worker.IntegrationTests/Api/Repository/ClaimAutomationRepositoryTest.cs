@@ -9,15 +9,8 @@ using Xunit;
 
 namespace Worker.IntegrationTests.Api.Repository;
 
-public class ClaimAutomationRepositoryTest : IClassFixture<PostgresContainer>
+public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClassFixture<PostgresContainer>
 {
-    private readonly PostgresContainer container;
-
-    public ClaimAutomationRepositoryTest(PostgresContainer container)
-    {
-        this.container = container;
-    }
-
     [Fact]
     public async Task exception_is_thrown_when_duplicated_claim_automation_argument()
     {
