@@ -1,7 +1,7 @@
 # Handling dotnet tools
 
 * Status: accepted
-* Deciders: @codereaper
+* Deciders: @codereaper, @ckr123, @mortmh, @peteragy, @sondergaard
 * Date: 2024-02-29
 
 ---
@@ -26,3 +26,5 @@ We chose to use a tool-manifest file.
 ## Rationale
 
 It was the path of least resistance since the tool-manifest file was already adopted in most subsystems.
+
+We are not dependent on tool authors making a nuget available.
