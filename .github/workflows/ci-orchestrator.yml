@@ -18,7 +18,7 @@ jobs:
       - name: Setup variables
         run: |
           printf 'dryrun=${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}\n' | tee -a $GITHUB_ENV
-          printf 'dependabot=${{ (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'dependabot/') }}\n' | tee -a $GITHUB_ENV
+          printf 'dependabot=${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'dependabot/') }}\n' | tee -a $GITHUB_ENV
 
   run-sonar:
     runs-on: ubuntu-latest
