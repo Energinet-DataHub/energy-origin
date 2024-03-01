@@ -18,13 +18,13 @@ updates:
     open-pull-requests-limit: 0
 
   - package-ecosystem: docker
-    directory: /**/Dockerfile
+    directory: /libraries/docker/*/Dockerfile
     schedule:
       interval: daily
     open-pull-requests-limit: 0
 
   - package-ecosystem: nuget
-    directory: /domains/*
+    directory: /domains/*/*.sln
     schedule:
       interval: daily
     groups:
@@ -33,7 +33,7 @@ updates:
           - "Microsoft.EntityFrameworkCore.*"
 
   - package-ecosystem: nuget
-    directory: /libraries/dotnet/*
+    directory: /libraries/dotnet/*/*.sln
     schedule:
       interval: daily
     groups:
