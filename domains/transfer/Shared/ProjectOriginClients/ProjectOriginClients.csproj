@@ -12,16 +12,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Google.Protobuf" Version="3.25.2" />
-		<PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
-		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.60.0" />
-		<PackageReference Include="Grpc.Tools" Version="2.60.0" PrivateAssets="All" />
+		<PackageReference Include="Google.Protobuf" Version="3.25.3" />
+		<PackageReference Include="Grpc.AspNetCore" Version="2.61.0" />
+		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.61.0" />
+		<PackageReference Include="Grpc.Tools" Version="2.62.0" PrivateAssets="all" />
 		<PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="0.4.0" />
 		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="1.0.3" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Protos/common.proto" GrpcServices="None"/>
-		<Protobuf Include="Protos/wallet.proto" GrpcServices="Client"/>
+		<Protobuf Include="Protos/common.proto" GrpcServices="None" />
+		<Protobuf Include="Protos/wallet.proto" GrpcServices="Client" />
 	</ItemGroup>
 </Project>

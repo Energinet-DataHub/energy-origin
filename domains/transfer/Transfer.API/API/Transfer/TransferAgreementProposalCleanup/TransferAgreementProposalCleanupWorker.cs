@@ -6,16 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace API.Transfer.TransferAgreementProposalCleanup;
 
-public class TransferAgreementProposalCleanupWorker : BackgroundService
+public class TransferAgreementProposalCleanupWorker(IServiceProvider serviceProvider) : BackgroundService
 {
-    private readonly IServiceProvider serviceProvider;
-
-    public TransferAgreementProposalCleanupWorker(
-        IServiceProvider serviceProvider)
-    {
-        this.serviceProvider = serviceProvider;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var scope = serviceProvider.CreateScope();
