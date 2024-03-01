@@ -1,4 +1,5 @@
 version: 2
+
 updates:
   - package-ecosystem: github-actions
     directory: /
@@ -11,17 +12,28 @@ updates:
           - "actions/*-artifact"
 
   - package-ecosystem: docker
-    directory: /libraries/docker/static-files/
+    directory: /
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
 
   - package-ecosystem: docker
-    directory: /
+    directory: /**/Dockerfile
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
 
   - package-ecosystem: nuget
-    directory: /
+    directory: /domains/*
+    schedule:
+      interval: daily
+    groups:
+      "Microsoft.EntityFrameworkCore":
+        patterns:
+          - "Microsoft.EntityFrameworkCore.*"
+
+  - package-ecosystem: nuget
+    directory: /libraries/dotnet/*
     schedule:
       interval: daily
     groups:
