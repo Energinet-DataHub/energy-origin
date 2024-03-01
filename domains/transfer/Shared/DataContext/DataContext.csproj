@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Audit.EntityFramework.Core" Version="25.0.1" />
-    <PackageReference Include="EnergyOrigin.ActivityLog" Version="3.0.15" />
+    <PackageReference Include="EnergyOrigin.ActivityLog" Version="3.0.16" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
