@@ -7,6 +7,10 @@ on:
         description: "An indication of whether to commit/publish results"
         required: true
         type: string
+      dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
 
 jobs:
   setup:
@@ -181,6 +185,7 @@ jobs:
       max-parallel: 1
       matrix:
         build: ${{ fromJson(needs.setup.outputs.matrix) }}
+    if: ${{ inputs.dependabot == 'false' }}
     steps:
       - uses: actions/checkout@v4
 

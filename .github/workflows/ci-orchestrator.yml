@@ -13,9 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       dryrun: ${{ env.dryrun }}
+      dependabot: ${{ env.dependabot }}
     steps:
       - name: Setup variables
-        run: printf 'dryrun=${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}\n' | tee -a $GITHUB_ENV
+        run: |
+          printf 'dryrun=${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}\n' | tee -a $GITHUB_ENV
+          printf 'dependabot=${{ (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'dependabot/') }}\n' | tee -a $GITHUB_ENV
 
   run-sonar:
     runs-on: ubuntu-latest
@@ -34,6 +37,7 @@ jobs:
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dryrun }}
+      dependabot: ${{ needs.setup.outputs.dependabot }}
 
   build-libraries:
     needs: setup
@@ -41,6 +45,7 @@ jobs:
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dryrun }}
+      dependabot: ${{ needs.setup.outputs.dependabot }}
 
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}
