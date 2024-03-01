@@ -1,18 +1,30 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
+      interval: daily
     groups:
-      artifacts-actions:
-        patterns:
-          - "actions/*-artifact"
-      pages-actions:
+      pages-and-artifact-actions:
         patterns:
           - "actions/*pages*"
+          - "actions/*-artifact"
 
-  - package-ecosystem: "docker"
-    directory: "/libraries/docker"
+  - package-ecosystem: docker
+    directory: /libraries/docker/static-files/
     schedule:
-      interval: "weekly"
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: daily
+    groups:
+      "Microsoft.EntityFrameworkCore":
+        patterns:
+          - "Microsoft.EntityFrameworkCore.*"
