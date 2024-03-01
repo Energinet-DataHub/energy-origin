@@ -38,13 +38,13 @@ public class TokenValidationOptionsTests
     [InlineData(null, "ValidIssuer", "ValidAudience")]
     [InlineData(new byte[0], null, "ValidAudience")]
     [InlineData(new byte[0], "ValidIssuer", null)]
-    public void Properties_ShouldFailValidation_WhenRequiredPropertyIsNull(byte[] testPublicKey, string testIssuer, string testAudience)
+    public void Properties_ShouldFailValidation_WhenRequiredPropertyIsNull(byte[]? testPublicKey, string? testIssuer, string? testAudience)
     {
         var options = new TokenValidationOptions
         {
-            PublicKey = testPublicKey,
-            Issuer = testIssuer,
-            Audience = testAudience
+            PublicKey = testPublicKey!,
+            Issuer = testIssuer!,
+            Audience = testAudience!
         };
 
         var validationResults = new List<ValidationResult>();
