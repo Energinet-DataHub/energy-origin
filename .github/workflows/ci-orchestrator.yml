@@ -68,6 +68,10 @@ jobs:
     uses: ./.github/workflows/sonar-analysis-ignore.yml
     secrets: inherit
 
+  dependabot-update:
+    uses: ./.github/workflows/dependabot-update.yaml
+    secrets: inherit
+
   dependabot-validate:
     uses: ./.github/workflows/dependabot-validate.yaml
     secrets: inherit
@@ -96,6 +100,7 @@ jobs:
         sonar-analysis-ignore,
         dependabot-validate,
         workflow-validate,
+        update-dependabot,
       ]
     if: always()
     steps:
