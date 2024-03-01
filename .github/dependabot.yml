@@ -11,12 +11,12 @@ updates:
           - "actions/*-artifact"
 
   - package-ecosystem: docker
-    directory: /libraries/docker/static-files/Dockerfile
+    directory: /libraries/docker/static-files/
     schedule:
       interval: daily
 
   - package-ecosystem: docker
-    directory: /Dockerfile
+    directory: /
     schedule:
       interval: daily
 
