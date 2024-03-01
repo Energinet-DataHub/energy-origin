@@ -1,13 +1,11 @@
 name: Update dependabot configuration
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch: {}
+  workflow_call: {}
 
 jobs:
   generate:
+    if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
