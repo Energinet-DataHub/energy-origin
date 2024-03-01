@@ -2,8 +2,8 @@ name: Update dependabot configuration
 
 on:
   push:
-    # branches:
-    #   - main
+    branches:
+      - main
   workflow_dispatch: {}
 
 jobs:
@@ -15,5 +15,5 @@ jobs:
       - name: Generate dependabot.yml
         uses: Makeshift/generate-dependabot-glob-action@master
 
-      # - name: Create Pull Request
-      #   uses: peter-evans/create-pull-request@v4
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
