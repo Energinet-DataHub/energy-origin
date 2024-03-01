@@ -21,7 +21,7 @@ updates:
       interval: daily
 
   - package-ecosystem: nuget
-    directory: /
+    directory: /domains/auth
     schedule:
       interval: daily
     groups:
