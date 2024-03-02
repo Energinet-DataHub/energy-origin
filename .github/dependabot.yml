@@ -85,27 +85,3 @@ updates:
       Microsoft.EntityFrameworkCore:
         patterns:
           - Microsoft.EntityFrameworkCore.*
-  - package-ecosystem: nuget
-    directory: /libraries/dotnet/EnergyOriginAuthorization
-    schedule:
-      interval: daily
-    groups:
-      Microsoft.EntityFrameworkCore:
-        patterns:
-          - Microsoft.EntityFrameworkCore.*
-  - package-ecosystem: nuget
-    directory: /libraries/dotnet/EnergyOriginDateTimeExtension
-    schedule:
-      interval: daily
-    groups:
-      Microsoft.EntityFrameworkCore:
-        patterns:
-          - Microsoft.EntityFrameworkCore.*
-  - package-ecosystem: nuget
-    directory: /libraries/dotnet/EnergyOriginEventStore
-    schedule:
-      interval: daily
-    groups:
-      Microsoft.EntityFrameworkCore:
-        patterns:
-          - Microsoft.EntityFrameworkCore.*
