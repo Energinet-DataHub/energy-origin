@@ -4,7 +4,25 @@ on:
   workflow_call: {}
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ env.matched }}
+    steps:
+      - name: Set default value
+        shell: bash
+        run: echo "matched=false" >> $GITHUB_ENV
+
+      - name: Check for file changes
+        uses: CodeReaper/find-diff-action@v3
+        if: github.event_name == 'push'
+        id: changes
+        with:
+          paths: .github/dependabot.yml
+
   validate:
+    needs: setup
+    if: ${{ needs.setup.outputs.run == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

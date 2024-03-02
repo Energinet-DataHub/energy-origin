@@ -13,9 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       dryrun: ${{ env.dryrun }}
+      dependabot: ${{ env.dependabot }}
     steps:
       - name: Setup variables
-        run: printf 'dryrun=${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}\n' | tee -a $GITHUB_ENV
+        run: |
+          printf 'dryrun=${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}\n' | tee -a $GITHUB_ENV
+          printf 'dependabot=${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'dependabot/') }}\n' | tee -a $GITHUB_ENV
 
   run-sonar:
     runs-on: ubuntu-latest
@@ -34,6 +37,7 @@ jobs:
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dryrun }}
+      dependabot: ${{ needs.setup.outputs.dependabot }}
 
   build-libraries:
     needs: setup
@@ -41,6 +45,7 @@ jobs:
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dryrun }}
+      dependabot: ${{ needs.setup.outputs.dependabot }}
 
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}
@@ -58,14 +63,18 @@ jobs:
 
   sonar-analysis:
     needs: run-sonar
-    if: needs.run-sonar.outputs.boolean == 'true'
+    if: needs.run-sonar.outputs.boolean == 'true' && needs.setup.outputs.dependabot == 'false'
     uses: ./.github/workflows/sonar-analysis.yml
     secrets: inherit
 
   sonar-analysis-ignore:
     needs: run-sonar
-    if: needs.run-sonar.outputs.boolean == 'false'
+    if: needs.run-sonar.outputs.boolean == 'false' || needs.setup.outputs.dependabot == 'true'
     uses: ./.github/workflows/sonar-analysis-ignore.yml
+    secrets: inherit
+
+  dependabot-update:
+    uses: ./.github/workflows/dependabot-update.yaml
     secrets: inherit
 
   dependabot-validate:
@@ -95,6 +104,7 @@ jobs:
         sonar-analysis,
         sonar-analysis-ignore,
         dependabot-validate,
+        dependabot-update,
         workflow-validate,
       ]
     if: always()
