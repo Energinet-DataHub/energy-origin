@@ -30,7 +30,6 @@ public class LogoutController : ControllerBase
             return Ok(new RedirectUriResponse { RedirectionUri = redirectionUri });
         }
 
-        // trigger
         DecodableUserDescriptor descriptor;
         try
         {
