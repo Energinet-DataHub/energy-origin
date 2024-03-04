@@ -8,7 +8,7 @@ ARG PROJECT
 WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
-RUN rm -f appsettings.json || true
+RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
