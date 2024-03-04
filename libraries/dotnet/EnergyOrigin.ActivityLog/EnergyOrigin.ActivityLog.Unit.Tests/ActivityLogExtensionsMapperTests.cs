@@ -83,7 +83,7 @@ public class ActivityLogExtensionsMapperTests
     {
         var services = new ServiceCollection();
 
-        services.AddActivityLog(options => options.CleanupIntervalInSeconds = 100);
+        services.AddActivityLog(options => options.CleanupIntervalInSeconds = 15 * 60);
 
         Assert.NotNull(services.FirstOrDefault(descriptor => descriptor.ServiceType == typeof(IActivityLogEntryRepository)));
         Assert.NotNull(services.FirstOrDefault(descriptor => descriptor.ServiceType == typeof(IHostedService)));
