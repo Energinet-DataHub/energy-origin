@@ -18,6 +18,8 @@ public class ActivityLogEntryResponse
     // Owner
     public string OrganizationTin { get; init; } = ""; // CVR
     public string OrganizationName { get; init; } = ""; // Eks. "Mogens Mølleejer A/S"
+    public string OtherOrganizationTin { get; init; } = ""; // Other Organizations CVR
+    public string OtherOrganizationName { get; init; } = ""; // Eks. "Producent A/S"
 
     // Action
     public EntityTypeEnum EntityType { get; init; }

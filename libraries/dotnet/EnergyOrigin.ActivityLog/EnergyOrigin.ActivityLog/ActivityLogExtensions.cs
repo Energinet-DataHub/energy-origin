@@ -50,6 +50,8 @@ public static class ActivityLogExtensions
                             ActorName = x.ActorName,
                             ActorId = x.ActorId,
                             OrganizationName = x.OrganizationName,
+                            OtherOrganizationTin = x.OtherOrganizationTin,
+                            OtherOrganizationName = x.OtherOrganizationName,
                             EntityType = EntityTypeMapper(x.EntityType),
                             ActorType = ActorTypeMapper(x.ActorType),
                             ActionType = ActionTypeMapper(x.ActionType)

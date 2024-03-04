@@ -6,8 +6,20 @@ public class ActivityLogEntry
     {
     }
 
-    private ActivityLogEntry(Guid id, DateTimeOffset timestamp, Guid actorId, ActorTypeEnum actorType, string actorName, string organizationTin,
-        string organizationName, EntityTypeEnum entityType, ActionTypeEnum actionType, string entityId)
+    private ActivityLogEntry(
+        Guid id,
+        DateTimeOffset timestamp,
+        Guid actorId,
+        ActorTypeEnum actorType,
+        string actorName,
+        string organizationTin,
+        string organizationName,
+        string otherOrganizationTin,
+        string otherOrganizationName,
+        EntityTypeEnum entityType,
+        ActionTypeEnum actionType,
+        string entityId
+        )
     {
         Id = id;
         Timestamp = timestamp;
@@ -16,17 +28,42 @@ public class ActivityLogEntry
         ActorName = actorName;
         OrganizationTin = organizationTin;
         OrganizationName = organizationName;
+        OtherOrganizationTin = otherOrganizationTin;
+        OtherOrganizationName = otherOrganizationName;
         EntityType = entityType;
         ActionType = actionType;
         EntityId = entityId;
     }
 
-    public static ActivityLogEntry Create(Guid actorId, ActorTypeEnum actorType, string actorName, string organizationTin, string organizationName,
-        EntityTypeEnum entityType, ActionTypeEnum actionType, string entityId)
+    public static ActivityLogEntry Create(
+        Guid actorId,
+        ActorTypeEnum actorType,
+        string actorName,
+        string organizationTin,
+        string organizationName,
+        string otherOrganizationTin,
+        string otherOrganizationName,
+        EntityTypeEnum entityType,
+        ActionTypeEnum actionType,
+        string entityId
+        )
     {
         var id = Guid.NewGuid();
         var timestamp = DateTimeOffset.UtcNow;
-        return new ActivityLogEntry(id, timestamp, actorId, actorType, actorName, organizationTin, organizationName, entityType, actionType, entityId);
+        return new ActivityLogEntry(
+            id,
+            timestamp,
+            actorId,
+            actorType,
+            actorName,
+            organizationTin,
+            organizationName,
+            otherOrganizationTin,
+            otherOrganizationName,
+            entityType,
+            actionType,
+            entityId
+            );
     }
 
     public enum ActorTypeEnum
@@ -65,6 +102,8 @@ public class ActivityLogEntry
     // Owner
     public string OrganizationTin { get; init; } = ""; // CVR
     public string OrganizationName { get; init; } = ""; // Eks. "Mogens Mølleejer A/S"
+    public string OtherOrganizationTin { get; init; } = ""; // Other Organizations CVR
+    public string OtherOrganizationName { get; init; } = ""; // Other Organizations name
 
     // Action
     public EntityTypeEnum EntityType { get; init; }
