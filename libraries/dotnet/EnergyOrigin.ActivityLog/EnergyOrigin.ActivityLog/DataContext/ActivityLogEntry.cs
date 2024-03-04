@@ -102,6 +102,8 @@ public class ActivityLogEntry
     // Owner
     public string OrganizationTin { get; init; } = ""; // CVR
     public string OrganizationName { get; init; } = ""; // Eks. "Mogens Mølleejer A/S"
+
+    // Other organization
     public string OtherOrganizationTin { get; init; } = ""; // Other Organizations CVR
     public string OtherOrganizationName { get; init; } = ""; // Other Organizations name
 
