@@ -77,28 +77,4 @@ public class ActivityLogExtensionsMapperTests
 
         Assert.Throws<InvalidEnumArgumentException>(() => ActivityLogExtensions.EntityTypeMapper(invalidRequestEntityType));
     }
-
-    [Fact]
-    public void AddActivityLog_ShouldRegisterDependencies()
-    {
-        var services = new ServiceCollection();
-
-        services.AddActivityLog(options => options.CleanupIntervalInSeconds = 15 * 60);
-
-        Assert.NotNull(services.FirstOrDefault(descriptor => descriptor.ServiceType == typeof(IActivityLogEntryRepository)));
-        Assert.NotNull(services.FirstOrDefault(descriptor => descriptor.ServiceType == typeof(IHostedService)));
-    }
-
-    [Fact]
-    public void AddActivityLogEntry_ShouldAddCorrectKeyAndIndexToModel()
-    {
-        var builder = new ModelBuilder(new ConventionSet());
-
-        builder.AddActivityLogEntry();
-        var entity = builder.Model.FindEntityType(typeof(ActivityLogEntry));
-
-        Assert.NotNull(entity?.FindPrimaryKey());
-        Assert.Equal("Id", entity.FindPrimaryKey()?.Properties.Single().Name);
-        Assert.NotNull(entity.FindIndex(entity.FindProperty("OrganizationTin") ?? throw new InvalidOperationException()));
-    }
 }

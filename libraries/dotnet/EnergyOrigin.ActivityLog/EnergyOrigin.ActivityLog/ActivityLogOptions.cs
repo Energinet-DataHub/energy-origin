@@ -11,5 +11,4 @@ public class ActivityLogOptions
     public string? ServiceName { get; set; }
     public int CleanupActivityLogsOlderThanInDays { get; set; } = 60;
     public int CleanupIntervalInSeconds { get; set; } = 15 * 60; // 15 minutes
-
 }
