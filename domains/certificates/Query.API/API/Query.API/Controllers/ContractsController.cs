@@ -48,7 +48,7 @@ public class ContractsController : ControllerBase
             validationResult.AddToModelState(ModelState, null);
             return ValidationProblem(ModelState);
         }
-// trigger test
+        // trigger test
         var startDate = DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate);
         DateTimeOffset? endDate = createContract.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate.Value) : null;
 
