@@ -10,8 +10,8 @@ COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
 RUN dotnet tool restore || true
 RUN dotnet restore
-RUN dotnet build -c Release --no-restore
 RUN rm -f appsettings.json
+RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 FROM base AS final
 ARG SUBSYSTEM
