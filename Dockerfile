@@ -12,7 +12,7 @@ RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
-
+RUN rm -f appsettings.json
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
