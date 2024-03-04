@@ -8,6 +8,7 @@ ARG PROJECT
 WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
+RUN rm -f appsettings.json
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
@@ -22,5 +23,4 @@ COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
 EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
-
 ENTRYPOINT ["/app/main"]
