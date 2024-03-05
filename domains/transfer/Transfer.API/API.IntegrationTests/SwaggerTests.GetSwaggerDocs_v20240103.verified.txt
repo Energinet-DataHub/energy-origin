@@ -664,6 +664,12 @@
           "organizationName": {
             "type": "string"
           },
+          "otherOrganizationTin": {
+            "type": "string"
+          },
+          "otherOrganizationName": {
+            "type": "string"
+          },
           "entityType": {
             "$ref": "#/components/schemas/EntityTypeEnum"
           },
