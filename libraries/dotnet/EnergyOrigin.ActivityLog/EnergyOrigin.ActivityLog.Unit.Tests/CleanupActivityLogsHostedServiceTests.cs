@@ -36,7 +36,7 @@ public class CleanupActivityLogsHostedServiceTests
         cancellationTokenSource.CancelAfter(1500);
         await service.StartAsync(cancellationTokenSource.Token);
 
-        logger.ReceivedWithAnyArgs().LogInformation (default);
+        logger.ReceivedWithAnyArgs().LogInformation(default);
     }
 }
 

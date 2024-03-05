@@ -105,7 +105,7 @@ public class ActivityLogExtensionsMapperTests
     {
         var services = new ServiceCollection();
 
-        services.AddActivityLog(options: _ => {});
+        services.AddActivityLog(options: _ => { });
 
         var repositoryRegistration = services.FirstOrDefault(sd => sd.ServiceType == typeof(IActivityLogEntryRepository));
         Assert.NotNull(repositoryRegistration);
