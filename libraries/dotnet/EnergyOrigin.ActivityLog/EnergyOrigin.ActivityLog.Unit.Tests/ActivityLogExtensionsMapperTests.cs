@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+
 namespace EnergyOrigin.ActivityLog.Unit.Tests;
 
 public class ActivityLogExtensionsMapperTests
@@ -103,17 +104,8 @@ public class ActivityLogExtensionsMapperTests
     public void AddActivityLog_RegistersDependenciesCorrectly()
     {
         var services = new ServiceCollection();
-        var expectedServiceName = "TestService";
-        var expectedCleanupDays = 30;
-        var expectedCleanupInterval = 1800;
-        Action<ActivityLogOptions> optionsAction = options =>
-        {
-            options.ServiceName = expectedServiceName;
-            options.CleanupActivityLogsOlderThanInDays = expectedCleanupDays;
-            options.CleanupIntervalInSeconds = expectedCleanupInterval;
-        };
 
-        services.AddActivityLog(optionsAction);
+        services.AddActivityLog(options: _ => {});
 
         var repositoryRegistration = services.FirstOrDefault(sd => sd.ServiceType == typeof(IActivityLogEntryRepository));
         Assert.NotNull(repositoryRegistration);
