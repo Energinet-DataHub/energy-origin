@@ -2,6 +2,7 @@ using API.Models.Entities;
 using API.Repositories.Data.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Values;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -24,6 +25,8 @@ public class DataContext(DbContextOptions options)
         modelBuilder.HasPostgresEnum<ProviderKeyType>();
         modelBuilder.HasPostgresEnum<CompanyTermsType>();
         modelBuilder.HasPostgresEnum<UserTermsType>();
+
+        modelBuilder.AddTransactionalOutboxEntities();
     }
 
     public static NpgsqlDataSource GenerateNpgsqlDataSource(string connectionString)

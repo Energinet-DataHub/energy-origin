@@ -12,6 +12,7 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
@@ -68,6 +69,7 @@ builder.Services.AttachOptions<IdentityProviderOptions>().BindConfiguration(Iden
 builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 builder.Services.AddGrpcClient<Relation.V1.Relation.RelationClient>((sp, o) =>
 {
@@ -167,6 +169,29 @@ builder.Services.AddOpenTelemetry()
             })
             .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+
+builder.Services.AddMassTransit(o =>
+{
+    o.SetKebabCaseEndpointNameFormatter();
+
+    o.UsingRabbitMq((context, cfg) =>
+    {
+        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+        var url = $"rabbitmq://{options.Host}:{options.Port}";
+
+        cfg.Host(new Uri(url), h =>
+        {
+            h.Username(options.Username);
+            h.Password(options.Password);
+        });
+        cfg.ConfigureEndpoints(context);
+    });
+    o.AddEntityFrameworkOutbox<DataContext>(outboxConfigurator =>
+    {
+        outboxConfigurator.UsePostgres();
+        outboxConfigurator.UseBusOutbox();
+    });
+});
 
 var app = builder.Build();
 

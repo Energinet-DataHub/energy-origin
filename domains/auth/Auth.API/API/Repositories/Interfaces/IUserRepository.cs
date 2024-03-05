@@ -9,4 +9,5 @@ public interface IUserRepository
     Task<User?> GetUserByIdAsync(Guid id);
     Task RemoveUserAsync(User user);
     Task<IEnumerable<User>> GetUsersByTinAsync(string tin);
+    Task<User> UpdateTermsAccepted(User user);
 }

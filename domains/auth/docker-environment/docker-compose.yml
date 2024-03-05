@@ -49,7 +49,11 @@ services:
       - "4317" # OTLP gRPC default port
     volumes:
       - jaeger:/data
-
+  rabbitmq:
+    image: rabbitmq:3.11.7-management
+    ports:
+      - 5672:5672
+      - 15672:15672
   collector:
     image: otel/opentelemetry-collector:latest
     container_name: collector
