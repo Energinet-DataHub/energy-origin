@@ -1,5 +1,12 @@
+using System.ComponentModel;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.ActivityLog.HostedService;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
 
 namespace EnergyOrigin.ActivityLog.Unit.Tests;
 
@@ -38,5 +45,74 @@ public class ActivityLogExtensionsMapperTests
         Assert.Equal(expected, result);
 
         Assert.Equal(input, ActivityLogExtensions.EntityTypeMapper(ActivityLogExtensions.EntityTypeMapper(input)));
+    }
+
+    [Fact]
+    public void ActionTypeMapper_ShouldThrowInvalidEnumArgumentExceptionForUndefinedValue()
+    {
+        var invalidActionType = (ActivityLogEntry.ActionTypeEnum)(-1); // An undefined enum value
+
+        Assert.Throws<InvalidEnumArgumentException>(() => ActivityLogExtensions.ActionTypeMapper(invalidActionType));
+    }
+
+
+    [Fact]
+    public void ActorTypeMapper_ShouldThrowInvalidEnumArgumentExceptionForUndefinedValue()
+    {
+        var invalidActorType = (ActivityLogEntry.ActorTypeEnum)(-1);
+
+        Assert.Throws<InvalidEnumArgumentException>(() => ActivityLogExtensions.ActorTypeMapper(invalidActorType));
+    }
+
+    [Fact]
+    public void EntityTypeMapper_ShouldThrowInvalidEnumArgumentExceptionForUndefinedValue_FromActivityLogEntryToResponse()
+    {
+        var invalidEntityType = (ActivityLogEntry.EntityTypeEnum)(-1);
+
+        Assert.Throws<InvalidEnumArgumentException>(() => ActivityLogExtensions.EntityTypeMapper(invalidEntityType));
+    }
+
+    [Fact]
+    public void EntityTypeMapper_ShouldThrowInvalidEnumArgumentExceptionForUndefinedValue_FromResponseToActivityLogEntry()
+    {
+        var invalidRequestEntityType = (ActivityLogEntryResponse.EntityTypeEnum)(-1);
+
+        Assert.Throws<InvalidEnumArgumentException>(() => ActivityLogExtensions.EntityTypeMapper(invalidRequestEntityType));
+    }
+
+    [Fact]
+    public void AddActivityLogEntry_ShouldConfigureModelBuilderCorrectly()
+    {
+        var modelBuilder = new ModelBuilder(new ConventionSet());
+
+        modelBuilder.AddActivityLogEntry();
+
+        var entity = modelBuilder.Model.FindEntityType(typeof(ActivityLogEntry));
+
+        Assert.NotNull(entity);
+
+        Assert.Equal(nameof(ActivityLogEntry.Id),
+            entity.FindPrimaryKey()!.Properties.Single().Name);
+
+        var index = entity.GetIndexes().SingleOrDefault(x =>
+            x.Properties.Single().Name == nameof(ActivityLogEntry.OrganizationTin));
+
+        Assert.NotNull(index);
+    }
+
+    [Fact]
+    public void AddActivityLog_RegistersDependenciesCorrectly()
+    {
+        var services = new ServiceCollection();
+
+        services.AddActivityLog(options: _ => { });
+
+        var repositoryRegistration = services.FirstOrDefault(sd => sd.ServiceType == typeof(IActivityLogEntryRepository));
+        Assert.NotNull(repositoryRegistration);
+        Assert.Equal(ServiceLifetime.Scoped, repositoryRegistration.Lifetime);
+
+        var hostedServiceRegistration = services.FirstOrDefault(sd => sd.ServiceType == typeof(IHostedService) && sd.ImplementationType == typeof(CleanupActivityLogsHostedService));
+        Assert.NotNull(hostedServiceRegistration);
+        Assert.Equal(ServiceLifetime.Singleton, hostedServiceRegistration.Lifetime);
     }
 }
