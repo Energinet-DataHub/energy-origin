@@ -170,7 +170,7 @@ public class TermsController : ControllerBase
         }
         companyTerms.AcceptedVersion = version;
 
-        await userService.UpsertUserAsync(user);
+        await userService.UpdateTermsAccepted(user);
 
         logger.AuditLog(
             "{User} updated accepted Terms of service {Version} at {TimeStamp}.",
