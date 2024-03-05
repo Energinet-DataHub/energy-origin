@@ -167,7 +167,7 @@ public class TransferAgreementProposalController(
     private async Task AppendToActivityLog(UserDescriptor user, TransferAgreementProposal proposal, ActivityLogEntry.ActionTypeEnum actionType)
     {
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, user.Organization!.Tin, user.Organization!.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
+            user.Name, user.Organization!.Tin, user.Organization!.Name, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
             actionType, proposal.Id.ToString()));
     }
 }
