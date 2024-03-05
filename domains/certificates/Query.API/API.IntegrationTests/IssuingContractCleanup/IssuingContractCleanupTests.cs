@@ -46,7 +46,7 @@ public class IssuingContractCleanupTests : IClassFixture<QueryApiWebApplicationF
             StartDate = DateTimeOffset.UtcNow.AddHours(-2),
             Technology = new Technology("SomeFuelCode", "SomeTechCode"),
             WalletUrl = "http://foo",
-            WalletPublicKey = {}
+            WalletPublicKey = { }
         };
         var nullEndDateContract = new CertificateIssuingContract
         {
