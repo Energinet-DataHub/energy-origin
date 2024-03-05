@@ -45,7 +45,7 @@ public class UserRepository : IUserRepository
         dataContext.Users.Update(user);
         await publishEndpoint.Publish(new OrgAcceptedTerms((Guid)user.Id!, "12345678"));
 
-jjkjkjkjkjjjkj        await dataContext.SaveChangesAsync();
+        await dataContext.SaveChangesAsync();
         return user;
     }
 }
