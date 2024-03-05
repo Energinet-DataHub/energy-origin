@@ -69,6 +69,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
+        builder.UseSetting("TransferAgreementCleanup:SleepTime", "00:00:03");
         builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
