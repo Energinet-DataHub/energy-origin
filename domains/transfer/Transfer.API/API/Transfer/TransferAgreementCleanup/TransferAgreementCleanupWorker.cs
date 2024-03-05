@@ -49,10 +49,10 @@ public class TransferAgreementCleanupWorker(
         context.TransferAgreements.RemoveRange(expiredTransferAgreements);
 
         var senderLogEntries = expiredTransferAgreements.Select(transferAgreement => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
-                       string.Empty, transferAgreement.SenderTin, transferAgreement.SenderName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+                       string.Empty, transferAgreement.SenderTin, transferAgreement.SenderName, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
                                   ActivityLogEntry.ActionTypeEnum.Expired, transferAgreement.Id.ToString()));
         var receiverLogEntries = expiredTransferAgreements.Select(transferAgreement => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
-            string.Empty, transferAgreement.ReceiverTin, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            string.Empty, transferAgreement.ReceiverTin, string.Empty, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             ActivityLogEntry.ActionTypeEnum.Expired, transferAgreement.Id.ToString()));
         await context.ActivityLogs.AddRangeAsync(senderLogEntries, cancellationToken);
         await context.ActivityLogs.AddRangeAsync(receiverLogEntries, cancellationToken);
