@@ -19,6 +19,10 @@ public class ActivityLogEntryResponse
     public string OrganizationTin { get; init; } = ""; // CVR
     public string OrganizationName { get; init; } = ""; // Eks. "Mogens Mølleejer A/S"
 
+    // Other organization
+    public string OtherOrganizationTin { get; init; } = ""; // Other Organizations CVR
+    public string OtherOrganizationName { get; init; } = ""; // Eks. "Producent A/S"
+
     // Action
     public EntityTypeEnum EntityType { get; init; }
     public ActionTypeEnum ActionType { get; init; }
