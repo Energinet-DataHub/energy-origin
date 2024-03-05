@@ -9,7 +9,7 @@ using Npgsql;
 namespace API.Repositories.Data;
 
 public class DataContext(DbContextOptions options)
-    : DbContext(options), IUserDataContext, ICompanyDataContext, IUserProviderDataContext
+    : DbContext(options), ICompanyDataContext, IUserProviderDataContext
 {
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Company> Companies { get; set; } = null!;

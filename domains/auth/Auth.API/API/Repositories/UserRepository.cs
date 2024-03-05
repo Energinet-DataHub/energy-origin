@@ -1,4 +1,5 @@
 using API.Models.Entities;
+using API.Repositories.Data;
 using API.Repositories.Data.Interfaces;
 using API.Repositories.Interfaces;
 using EnergyOrigin.IntegrationEvents.Events;
@@ -10,10 +11,10 @@ namespace API.Repositories;
 
 public class UserRepository : IUserRepository
 {
-    private readonly IUserDataContext dataContext;
+    private readonly DataContext dataContext;
     private readonly IPublishEndpoint publishEndpoint;
 
-    public UserRepository(IUserDataContext dataContext, IPublishEndpoint publishEndpoint)
+    public UserRepository(DataContext dataContext, IPublishEndpoint publishEndpoint)
     {
         this.dataContext = dataContext;
         this.publishEndpoint = publishEndpoint;
@@ -42,9 +43,9 @@ public class UserRepository : IUserRepository
     public async Task<User> UpdateTermsAccepted(User user)
     {
         dataContext.Users.Update(user);
-        await publishEndpoint.Publish(new OrgAcceptedTerms((Guid)user.Id!, user.Company!.Tin));
+        await publishEndpoint.Publish(new OrgAcceptedTerms((Guid)user.Id!, "12345678"));
 
-        await dataContext.SaveChangesAsync();
+jjkjkjkjkjjjkj        await dataContext.SaveChangesAsync();
         return user;
     }
 }

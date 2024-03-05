@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using API.Models.Entities;
+using API.Options;
 using API.Repositories.Data;
 using API.Repositories.Data.Interfaces;
 using API.Utilities;
@@ -14,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Testcontainers.PostgreSql;
 using static API.Utilities.TokenIssuer;
 
@@ -46,7 +48,7 @@ public class AuthWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             services.AddDbContext<DataContext>(options => options
                 .UseNpgsql(DataContext.GenerateNpgsqlDataSource(testContainer.GetConnectionString()))
                 .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
-            services.AddScoped<IUserDataContext, DataContext>();
+            // services.AddScoped<IUserDataContext, DataContext>();
             services.Configure<HealthCheckServiceOptions>(healthCheckOptions =>
             {
                 var registration = healthCheckOptions.Registrations.FirstOrDefault(x => x.Name.ToLower().Equals("npgsql"));
