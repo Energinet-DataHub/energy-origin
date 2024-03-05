@@ -25,6 +25,7 @@ using Npgsql;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog.Sinks.OpenTelemetry;
+using API.IssuingContractCleanup;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +90,7 @@ builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer();
+builder.Services.AddIssuingContractCleanup();
 builder.Services.AddApiVersioning(options =>
     {
         options.AssumeDefaultVersionWhenUnspecified = false;
