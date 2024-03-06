@@ -190,20 +190,14 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
         AddActivity<SendToWalletActivity, SendToWalletArguments>(builder,
             new SendToWalletArguments(matchingContract.WalletUrl, receiveRequest));
 
-        var issueCertificateFailedConsumerEndpoint =
-            new Uri($"exchange:{endpointNameFormatter.Consumer<IssueCertificateNotCompletedConsumer>()}");
-        builder.AddSubscription(issueCertificateFailedConsumerEndpoint, RoutingSlipEvents.Terminated,
-            x => x.Send(new IssueCertificateTerminated
-            {
-                CertificateId = certificateId,
-                MeteringPointType = matchingContract.MeteringPointType
-            }));
-        builder.AddSubscription(issueCertificateFailedConsumerEndpoint, RoutingSlipEvents.Faulted,
-            x => x.Send(new IssueCertificateFaulted
-            {
-                CertificateId = certificateId,
-                MeteringPointType = matchingContract.MeteringPointType
-            }));
+        //var issueCertificateFailedConsumerEndpoint =
+        //    new Uri($"exchange:{endpointNameFormatter.Consumer<IssueCertificateNotCompletedConsumer>()}");
+        //builder.AddSubscription(issueCertificateFailedConsumerEndpoint, RoutingSlipEvents.Terminated,
+        //    x => x.Send(new IssueCertificateTerminated
+        //    {
+        //        CertificateId = certificateId,
+        //        MeteringPointType = matchingContract.MeteringPointType
+        //    }));
     }
 
     private void AddActivity<T, TArguments>(RoutingSlipBuilder routingSlipBuilder, TArguments arguments)
@@ -230,12 +224,10 @@ public class MeasurementEventHandlerDefinition : ConsumerDefinition<MeasurementE
         IRegistrationContext context
     )
     {
-        //endpointConfigurator.UseDelayedRedelivery(r => r
-        //    .Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1))
-        //    .Handle(typeof(DbUpdateException), typeof(InvalidOperationException)));
-
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3))
             .Handle(typeof(DbUpdateException), typeof(InvalidOperationException)));
+
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }

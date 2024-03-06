@@ -32,7 +32,14 @@ public class IssueToRegistryActivity : IExecuteActivity<IssueToRegistryArguments
         var request = new SendTransactionsRequest();
         request.Transactions.Add(context.Arguments.Transaction);
 
-        await client.SendTransactionsAsync(request);
+        try
+        {
+            await client.SendTransactionsAsync(request);
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Failed to send transaction to Registry", e);
+        }
 
         return context.Completed();
     }
@@ -52,10 +59,8 @@ public class IssueToRegistryActivityDefinition : ExecuteActivityDefinition<Issue
         IRegistrationContext context
         )
     {
-        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromSeconds(10)));
-
-        endpointConfigurator.UseMessageRetry(r => r
-            .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
+        //endpointConfigurator.UseMessageRetry(r => r
+        //    .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
         endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
