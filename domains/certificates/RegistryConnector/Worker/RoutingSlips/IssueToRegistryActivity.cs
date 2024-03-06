@@ -52,7 +52,7 @@ public class IssueToRegistryActivityDefinition : ExecuteActivityDefinition<Issue
         IRegistrationContext context
         )
     {
-        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromSeconds(10)));
+        endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromSeconds(retryOptions.DefaultSecondLevelRetrySeconds)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));

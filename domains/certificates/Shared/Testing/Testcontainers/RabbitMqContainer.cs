@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Contracts;
 using Testcontainers.RabbitMq;
 using Xunit;
@@ -14,6 +15,7 @@ public partial class RabbitMqContainer : IAsyncLifetime
 
     public RabbitMqContainer() =>
         testContainer = new RabbitMqBuilder()
+            .WithImage("masstransit/rabbitmq:3.12.7")
             .WithUsername("guest")
             .WithPassword("guest")
             .Build();
