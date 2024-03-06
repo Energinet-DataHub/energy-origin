@@ -1,4 +1,5 @@
 using API.Models.Entities;
+using API.Utilities;
 
 namespace API.Repositories.Interfaces;
 
@@ -9,5 +10,5 @@ public interface IUserRepository
     Task<User?> GetUserByIdAsync(Guid id);
     Task RemoveUserAsync(User user);
     Task<IEnumerable<User>> GetUsersByTinAsync(string tin);
-    Task<User> UpdateTermsAccepted(User user);
+    Task<User> UpdateTermsAccepted(User user, DecodableUserDescriptor descriptor);
 }

@@ -11,10 +11,10 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    public DbSet<RelationStatusDto> Relations { get; set; }
+    public DbSet<RelationDto> Relations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<RelationStatusDto>().HasKey(r => r.SubjectId);
+        modelBuilder.Entity<RelationDto>().HasKey(r => r.SubjectId);
     }
 }

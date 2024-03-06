@@ -1,59 +1,68 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.MeteringPoints.Api.Models;
-using EnergyOrigin.IntegrationEvents.Events;
+using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using Relation.V1;
 
 namespace API.MeteringPoints.Api.Consumer;
 
-public class TermsConsumer : IConsumer<OrgAcceptedTerms>
+public class TermsConsumer(
+    ApplicationDbContext dbContext,
+    Relation.V1.Relation.RelationClient relationClient,
+    ILogger<TermsConsumer> logger)
+    : IConsumer<OrgAcceptedTerms>
 {
-    private readonly ApplicationDbContext _dbContext;
-    private readonly Relation.V1.Relation.RelationClient _relationClient;
-
-    public TermsConsumer(ApplicationDbContext dbContext, Relation.V1.Relation.RelationClient relationClient)
-    {
-        _dbContext = dbContext;
-        _relationClient = relationClient;
-    }
-
     public async Task Consume(ConsumeContext<OrgAcceptedTerms> context)
     {
-        _dbContext.Relations.Add(new RelationStatusDto(RelationStatus.Pending, context.Message.SubjectId));
-        await _dbContext.SaveChangesAsync();
+        var relation = new RelationDto
+        {
+            Status = RelationStatus.Pending,
+            SubjectId = context.Message.SubjectId,
+            Actor = context.Message.Actor,
+            Tin = context.Message.Tin
+        };
 
-        throw new NotImplementedException();
+        dbContext.Relations.Add(relation);
+        await dbContext.SaveChangesAsync();
+
+        await CreateRelation(context.Message);
     }
 
-    public async Task CreateRelation(OrgAcceptedTerms acceptedTerms)
+    private async Task CreateRelation(OrgAcceptedTerms acceptedTerms)
     {
         var request = new CreateRelationRequest
         {
-            Subject = descriptor.Subject.ToString(),
-            Actor = descriptor.Id.ToString(),
+            Subject = acceptedTerms.SubjectId.ToString(),
+            Actor = acceptedTerms.Actor.ToString(),
             Ssn = "",
-            Tin = descriptor.Organization?.Tin
+            Tin = acceptedTerms.Tin
         };
         try
         {
-            var res = await _relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
-            if (res.Success == false)
+            var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
+            if (res.Success)
             {
-                logger.LogWarning("AcceptTerms: Unable to create relations for {Subject}. Error: {ErrorMessage}",
-                    descriptor.Subject, res.ErrorMessage);
+                var relation = dbContext.Relations.SingleOrDefault(it => it.SubjectId == acceptedTerms.SubjectId);
+                if (relation != null)
+                {
+                    relation.Status = RelationStatus.Created;
+                    await dbContext.SaveChangesAsync();
+                }
             }
             else
             {
-                _dbContext.Relations.Update(new RelationStatusDto(RelationStatus.Created, acceptedTerms.SubjectId));
-                await _dbContext.SaveChangesAsync();
+                logger.LogWarning("AcceptTerms: Unable to create relations for {SubjectId}. Error: {ErrorMessage}",
+                    acceptedTerms.SubjectId, res.ErrorMessage);
             }
         }
         catch (Exception e)
         {
-            logger.LogError("AcceptTerms: Unable to create relations for {Subject}. Exception: {e}",
-                descriptor.Subject, e);
+            logger.LogError("AcceptTerms: Unable to create relations for {SubjectId}. Exception: {e}",
+                acceptedTerms.SubjectId, e);
         }
     }
 }

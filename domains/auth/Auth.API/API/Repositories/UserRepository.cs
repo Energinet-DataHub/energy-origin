@@ -1,10 +1,9 @@
 using API.Models.Entities;
 using API.Repositories.Data;
-using API.Repositories.Data.Interfaces;
 using API.Repositories.Interfaces;
-using EnergyOrigin.IntegrationEvents.Events;
+using API.Utilities;
+using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
 using MassTransit;
-using MassTransit.RabbitMqTransport;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories;
@@ -40,10 +39,10 @@ public class UserRepository : IUserRepository
     }
 
     public async Task<IEnumerable<User>> GetUsersByTinAsync(string tin) => await dataContext.Users.Where(x => x.Company != null && x.Company.Tin == tin).Include(u => u.UserRoles).ToListAsync();
-    public async Task<User> UpdateTermsAccepted(User user)
+    public async Task<User> UpdateTermsAccepted(User user, DecodableUserDescriptor descriptor)
     {
         dataContext.Users.Update(user);
-        await publishEndpoint.Publish(new OrgAcceptedTerms((Guid)user.Id!, "12345678"));
+        await publishEndpoint.Publish(new OrgAcceptedTerms((Guid)user.Id!, descriptor.Organization?.Tin, descriptor.Id));
 
         await dataContext.SaveChangesAsync();
         return user;
