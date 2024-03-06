@@ -98,6 +98,13 @@ public class Startup
             var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
             o.Address = new Uri(options.Url);
         });
+
+        services.AddGrpcClient<Relation.V1.Relation.RelationClient>((sp, o) =>
+        {
+            var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
+            o.Address = new Uri(options.Url);
+        });
+        
         services
             .AddApiVersioning(options =>
             {
