@@ -9,9 +9,11 @@ public class OrgAcceptedTermsTests
     {
         var subjectId = Guid.NewGuid();
         var tin = "1234567890";
-        var orgAcceptedTerms = new OrgAcceptedTerms(subjectId, tin);
+        var actor = Guid.NewGuid();
+        var orgAcceptedTerms = new OrgAcceptedTerms(subjectId, tin, actor);
 
         Assert.Equal(subjectId, orgAcceptedTerms.SubjectId);
         Assert.Equal(tin, orgAcceptedTerms.Tin);
+        Assert.Equal(actor, orgAcceptedTerms.Actor);
     }
 }
