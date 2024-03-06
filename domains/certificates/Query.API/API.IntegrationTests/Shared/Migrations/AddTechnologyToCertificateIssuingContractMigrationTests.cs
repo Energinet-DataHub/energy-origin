@@ -29,7 +29,7 @@ public class AddTechnologyToCertificateIssuingContractMigrationTests : IAsyncDis
         await InsertOldContract(dbContext, Guid.NewGuid(), "123456789", "DK1");
         await InsertOldContract(dbContext, Guid.NewGuid(), "987654321", "DK2");
 
-        var applyMigration = () => migrator.MigrateAsync("20231107095405_AddTechnologyToCertificateIssuingContract");
+        var applyMigration = () => migrator.MigrateAsync();
         await applyMigration.Should().NotThrowAsync();
 
         var contractsInDb = dbContext.Contracts.ToList();
