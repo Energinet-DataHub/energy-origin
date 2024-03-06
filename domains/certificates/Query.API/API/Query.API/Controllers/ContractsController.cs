@@ -71,9 +71,18 @@ public class ContractsController : ControllerBase
     private async Task<CreatedAtRouteResult> LogCreatedAndReturnCreated(IActivityLogEntryRepository activityLogEntryRepository, UserDescriptor user,
         CertificateIssuingContract createdContract)
     {
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            ActivityLogEntry.ActionTypeEnum.Activated, createdContract.GSRN));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+                user.Subject,
+                ActivityLogEntry.ActorTypeEnum.User,
+            user.Name,
+                user.Organization!.Tin,
+                user.Organization.Name,
+                string.Empty,
+                string.Empty,
+                ActivityLogEntry.EntityTypeEnum.MeteringPoint,
+            ActivityLogEntry.ActionTypeEnum.Activated,
+                createdContract.GSRN)
+            );
 
         return CreatedAtRoute(
             "GetContract",
@@ -172,9 +181,17 @@ public class ContractsController : ControllerBase
     private async Task<OkResult> LogChangedEndDateAndReturnOk(IActivityLogEntryRepository activityLogEntryRepository, UserDescriptor user,
         string gsrn)
     {
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            ActivityLogEntry.ActionTypeEnum.EndDateChanged, gsrn));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
+            ActivityLogEntry.ActorTypeEnum.User,
+            user.Name,
+            user.Organization!.Tin,
+            user.Organization.Name,
+            string.Empty,
+            string.Empty,
+            ActivityLogEntry.EntityTypeEnum.MeteringPoint,
+            ActivityLogEntry.ActionTypeEnum.EndDateChanged,
+            gsrn)
+        );
 
         return Ok();
     }
