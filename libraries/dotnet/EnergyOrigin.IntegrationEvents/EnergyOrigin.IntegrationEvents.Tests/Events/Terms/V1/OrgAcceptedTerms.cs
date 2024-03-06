@@ -1,6 +1,6 @@
-using EnergyOrigin.IntegrationEvents.Events;
+using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
 
-namespace EnergyOrigin.IntegrationEvents.Tests.Events;
+namespace EnergyOrigin.IntegrationEvents.Tests.Events.Terms.V1;
 
 public class OrgAcceptedTermsTests
 {
