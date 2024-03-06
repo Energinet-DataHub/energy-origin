@@ -97,7 +97,6 @@ public class TermsController : ControllerBase
         }
         userTerms.AcceptedVersion = version;
 
-
         await userService.UpdateTermsAccepted(user);
 
         if (AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
