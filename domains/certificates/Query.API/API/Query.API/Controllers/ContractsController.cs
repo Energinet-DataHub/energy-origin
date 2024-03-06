@@ -72,17 +72,17 @@ public class ContractsController : ControllerBase
         CertificateIssuingContract createdContract)
     {
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-                user.Subject,
-                ActivityLogEntry.ActorTypeEnum.User,
-            user.Name,
-                user.Organization!.Tin,
-                user.Organization.Name,
-                string.Empty,
-                string.Empty,
-                ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            ActivityLogEntry.ActionTypeEnum.Activated,
-                createdContract.GSRN)
-            );
+            actorId: user.Subject,
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: user.Name,
+            organizationTin: user.Organization!.Tin,
+            organizationName: user.Organization.Name,
+            otherOrganizationTin: string.Empty,
+            otherOrganizationName: string.Empty,
+            entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
+            actionType: ActivityLogEntry.ActionTypeEnum.Activated,
+            entityId: createdContract.GSRN)
+        );
 
         return CreatedAtRoute(
             "GetContract",
@@ -182,15 +182,15 @@ public class ContractsController : ControllerBase
         string gsrn)
     {
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
-            ActivityLogEntry.ActorTypeEnum.User,
-            user.Name,
-            user.Organization!.Tin,
-            user.Organization.Name,
-            string.Empty,
-            string.Empty,
-            ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-            gsrn)
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: user.Name,
+            organizationTin: user.Organization!.Tin,
+            organizationName: user.Organization.Name,
+            otherOrganizationTin: string.Empty,
+            otherOrganizationName: string.Empty,
+            entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
+            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
+            entityId: gsrn)
         );
 
         return Ok();
