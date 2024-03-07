@@ -172,8 +172,8 @@ public class TransferAgreementProposalController(
            actorName: user.Name,
            organizationTin: user.Organization!.Tin,
            organizationName: user.Organization!.Name,
-           otherOrganizationTin: proposal.SenderCompanyTin,
-           otherOrganizationName: proposal.SenderCompanyName,
+           otherOrganizationTin: proposal.ReceiverCompanyTin ?? string.Empty,
+           otherOrganizationName: string.Empty,
            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
            actionType: actionType,
            entityId: proposal.Id.ToString())
