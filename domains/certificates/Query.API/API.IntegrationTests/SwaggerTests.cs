@@ -1,3 +1,4 @@
+using System.Configuration.Provider;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -237,5 +238,23 @@ public class SwaggerTests(QueryApiWebApplicationFactory factory) : TestBase, ICl
                 .UseParameters(description)
                 .UseMethodName($"SwaggerJson_{description}_VerifyTagContentsOfContracts");
         }
+    }
+
+    [Fact]
+    public async Task GetSwaggerDoc_GenerateSwaggerFile_ToPutInOutputImages()
+    {
+        using var client = factory.CreateClient();
+
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        var latest = provider.ApiVersionDescriptions.MaxBy(x => x.ApiVersion.MajorVersion)!;
+
+        var swaggerDocUrl = $"api-docs/certificates/{latest.GroupName}/swagger.json";
+        var response = await client.GetAsync(swaggerDocUrl);
+
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync();
+        await Verifier.Verify(json).UseMethodName($"Swagger");
     }
 }
