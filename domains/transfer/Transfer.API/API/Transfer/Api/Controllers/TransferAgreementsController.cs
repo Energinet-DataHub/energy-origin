@@ -32,7 +32,7 @@ public class TransferAgreementsController(
     IHttpContextAccessor httpContextAccessor,
     ITransferAgreementProposalRepository transferAgreementProposalRepository,
     IActivityLogEntryRepository activityLogEntryRepository
-    ) : ControllerBase
+) : ControllerBase
 {
     /// <summary>
     /// Add a new Transfer Agreement
@@ -121,14 +121,32 @@ public class TransferAgreementsController(
     private async Task AppendProposalAcceptedToActivityLog(UserDescriptor user, TransferAgreement result, TransferAgreementProposal proposal)
     {
         // Receiver entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, user.Organization!.Tin, user.Organization.Name, proposal.SenderCompanyTin, proposal.SenderCompanyName, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Accepted, result.Id.ToString()));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+            actorId: user.Subject,
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: user.Name,
+            organizationTin: user.Organization!.Tin,
+            organizationName: user.Organization.Name,
+            otherOrganizationTin: proposal.SenderCompanyTin,
+            otherOrganizationName: proposal.SenderCompanyName,
+            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
+            entityId: result.Id.ToString())
+        );
 
         // Sender entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            string.Empty, proposal.SenderCompanyTin, proposal.SenderCompanyName, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Accepted, result.Id.ToString()));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+            actorId: user.Subject,
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: string.Empty,
+            organizationTin: proposal.SenderCompanyTin,
+            organizationName: proposal.SenderCompanyName,
+            otherOrganizationTin: user.Organization!.Tin,
+            otherOrganizationName: user.Organization.Name,
+            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
+            entityId: result.Id.ToString())
+        );
     }
 
     [Authorize(Policy = PolicyName.RequiresCompany)]
@@ -236,14 +254,32 @@ public class TransferAgreementsController(
     private async Task AppendAgreementEndDateChangedToActivityLog(UserDescriptor user, TransferAgreement result)
     {
         // Receiver entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            String.Empty, result.ReceiverTin, String.Empty, user.Organization!.Tin, user.Organization.Name, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.EndDateChanged, result.Id.ToString()));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+            actorId: user.Subject,
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: String.Empty,
+            organizationTin: result.ReceiverTin,
+            organizationName: String.Empty,
+            otherOrganizationTin: user.Organization!.Tin,
+            otherOrganizationName: user.Organization.Name,
+            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
+            entityId: result.Id.ToString())
+        );
 
         // Sender entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, user.Organization!.Tin, user.Organization.Name, String.Empty, String.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.EndDateChanged, result.Id.ToString()));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+            actorId: user.Subject,
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: user.Name,
+            organizationTin: user.Organization!.Tin,
+            organizationName: user.Organization.Name,
+            otherOrganizationTin: String.Empty,
+            otherOrganizationName: String.Empty,
+            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
+            entityId: result.Id.ToString())
+        );
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
