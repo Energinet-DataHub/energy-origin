@@ -1,15 +1,11 @@
-using System.Net.Http.Headers;
 using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Values;
-using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
-using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Relation.V1;
 
 namespace API.Controllers;
 
@@ -98,11 +94,6 @@ public class TermsController : ControllerBase
         userTerms.AcceptedVersion = version;
 
         await userService.UpdateTermsAccepted(user, descriptor);
-
-        if (AuthenticationHeaderValue.TryParse(accessor.HttpContext?.Request.Headers.Authorization, out var authentication))
-        {
-
-        }
 
         logger.AuditLog(
             "{User} updated accepted Privacy policy {Version} at {TimeStamp}.",
