@@ -1,10 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>true</IsPackable>
+		<PackageId>EnergyOrigin.Setup</PackageId>
+		<RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin</RepositoryUrl>
+		<Authors>Energinet</Authors>
+		<Company>Energinet DataHub A/S</Company>
+		<PackageDescription>This library contains functions for setting up Energy Origin solutions with logging, swagger, api versioning and OpenTelemetry</PackageDescription>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
