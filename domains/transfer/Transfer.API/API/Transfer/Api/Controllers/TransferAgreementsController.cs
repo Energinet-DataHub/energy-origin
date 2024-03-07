@@ -99,6 +99,7 @@ public class TransferAgreementsController(
             SenderId = proposal.SenderCompanyId,
             SenderName = proposal.SenderCompanyName,
             SenderTin = proposal.SenderCompanyTin,
+            ReceiverName = user.Organization!.Name,
             ReceiverTin = proposal.ReceiverCompanyTin,
             ReceiverReference = receiverReference
         };
@@ -259,7 +260,7 @@ public class TransferAgreementsController(
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: String.Empty,
             organizationTin: result.ReceiverTin,
-            organizationName: String.Empty,
+            organizationName: result.ReceiverName,
             otherOrganizationTin: user.Organization!.Tin,
             otherOrganizationName: user.Organization.Name,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
@@ -274,8 +275,8 @@ public class TransferAgreementsController(
             actorName: user.Name,
             organizationTin: user.Organization!.Tin,
             organizationName: user.Organization.Name,
-            otherOrganizationTin: String.Empty,
-            otherOrganizationName: String.Empty,
+            otherOrganizationTin: result.ReceiverTin,
+            otherOrganizationName: result.ReceiverName,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
             entityId: result.Id.ToString())
