@@ -50,7 +50,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider, st
         {
             options.SwaggerDoc(description.GroupName, new OpenApiInfo
             {
-                Title = $"{subsystemName.FirstCharToUpper()} Query API {description.ApiVersion}",
+                Title = $"{subsystemName.FirstCharToUpper()} API {description.ApiVersion}",
                 Version = description.ApiVersion.ToString(),
                 Description = description.IsDeprecated ? "This API version has been deprecated." : ""
             });
