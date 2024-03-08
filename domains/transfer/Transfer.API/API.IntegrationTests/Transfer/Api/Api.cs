@@ -33,7 +33,7 @@ public class Api
         sub = Guid.NewGuid().ToString();
         tin = "11223344";
         cpn = "Producent A/S";
-        authenticatedClient = factory.CreateAuthenticatedClient(sub, tin, cpn,  apiVersion: apiVersion);
+        authenticatedClient = factory.CreateAuthenticatedClient(sub, tin, cpn, apiVersion: apiVersion);
     }
 
     public async Task<Guid> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)

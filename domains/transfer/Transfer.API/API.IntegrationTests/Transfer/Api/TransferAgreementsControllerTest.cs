@@ -61,10 +61,10 @@ public class TransferAgreementsControllerTest(ITestOutputHelper output)
 
         var proposalLogEntryForReceiver = receiverLog.ActivityLogEntries.First();
 
-            Assert.Equal(receiverTin, proposalLogEntryForReceiver.OrganizationTin);
-            Assert.Equal(receiverName, proposalLogEntryForReceiver.OrganizationName);
-            Assert.Equal("11223344", proposalLogEntryForReceiver.OtherOrganizationTin);
-            Assert.Equal("Producent A/S", proposalLogEntryForReceiver.OtherOrganizationName);
+        Assert.Equal(receiverTin, proposalLogEntryForReceiver.OrganizationTin);
+        Assert.Equal(receiverName, proposalLogEntryForReceiver.OrganizationName);
+        Assert.Equal("11223344", proposalLogEntryForReceiver.OtherOrganizationTin);
+        Assert.Equal("Producent A/S", proposalLogEntryForReceiver.OtherOrganizationName);
     }
 
     [Fact]
