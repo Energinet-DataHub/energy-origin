@@ -137,13 +137,13 @@ public class TransferAgreementsController(
 
         // Sender entry
         await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: user.Subject,
+            actorId: Guid.Empty,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: string.Empty,
             organizationTin: proposal.SenderCompanyTin,
             organizationName: proposal.SenderCompanyName,
-            otherOrganizationTin: user.Organization!.Tin,
-            otherOrganizationName: user.Organization.Name,
+            otherOrganizationTin: result.ReceiverTin,
+            otherOrganizationName: result.ReceiverName,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
             entityId: result.Id.ToString())
