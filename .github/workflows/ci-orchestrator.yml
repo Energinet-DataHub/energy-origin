@@ -12,13 +12,11 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      dryrun: ${{ env.dryrun }}
-      dependabot: ${{ env.dependabot }}
+      dry-run: ${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}
+      is-dependabot: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
     steps:
       - name: Setup variables
-        run: |
-          printf 'dryrun=${{ !((github.event_name == 'push' && github.ref_name == 'main') || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}\n' | tee -a $GITHUB_ENV
-          printf 'dependabot=${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'dependabot/') }}\n' | tee -a $GITHUB_ENV
+        run: exit 0
 
   run-sonar:
     runs-on: ubuntu-latest
@@ -36,16 +34,16 @@ jobs:
     uses: ./.github/workflows/build-domain.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dryrun }}
-      dependabot: ${{ needs.setup.outputs.dependabot }}
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
 
   build-libraries:
     needs: setup
     uses: ./.github/workflows/build-libraries.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dryrun }}
-      dependabot: ${{ needs.setup.outputs.dependabot }}
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
 
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}
@@ -63,13 +61,13 @@ jobs:
 
   sonar-analysis:
     needs: run-sonar
-    if: needs.run-sonar.outputs.boolean == 'true' && needs.setup.outputs.dependabot == 'false'
+    if: needs.run-sonar.outputs.boolean == 'true' && needs.setup.outputs.is-dependabot == 'false'
     uses: ./.github/workflows/sonar-analysis.yml
     secrets: inherit
 
   sonar-analysis-ignore:
     needs: run-sonar
-    if: needs.run-sonar.outputs.boolean == 'false' || needs.setup.outputs.dependabot == 'true'
+    if: needs.run-sonar.outputs.boolean == 'false' || needs.setup.outputs.is-dependabot == 'true'
     uses: ./.github/workflows/sonar-analysis-ignore.yml
     secrets: inherit
 

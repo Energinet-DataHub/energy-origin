@@ -96,7 +96,7 @@ runs:
       shell: bash
       env:
         version: ""
-      run: dotnet test --no-restore --verbosity normal -warnaserror
+      run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal"
 
     - name: Validate migration
       shell: bash
