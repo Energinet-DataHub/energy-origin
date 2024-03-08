@@ -61,7 +61,7 @@ jobs:
 
   sonar-analysis:
     needs: run-sonar
-    if: ${{ needs.run-sonar.outputs.boolean == 'true' && needs.setup.outputs.is-dependabot == 'false' }}
+    if: needs.run-sonar.outputs.boolean == 'true' && needs.setup.outputs.is-dependabot == 'false'
     uses: ./.github/workflows/sonar-analysis.yml
     secrets: inherit
 
