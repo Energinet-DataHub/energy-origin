@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using API;
@@ -9,7 +10,7 @@ namespace Tests;
 public class HealthControllerTests : MeasurementsTestBase
 {
     public HealthControllerTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture)
+        : base(serverFixture, null)
     {
     }
 

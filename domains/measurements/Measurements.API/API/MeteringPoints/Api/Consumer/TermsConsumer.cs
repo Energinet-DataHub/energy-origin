@@ -3,17 +3,19 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.MeteringPoints.Api.Models;
+using API.Options;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
+using Grpc.Core;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Relation.V1;
 
 namespace API.MeteringPoints.Api.Consumer;
 
 public class TermsConsumer(
     ApplicationDbContext dbContext,
-    Relation.V1.Relation.RelationClient relationClient,
-    ILogger<TermsConsumer> logger)
+    Relation.V1.Relation.RelationClient relationClient)
     : IConsumer<OrgAcceptedTerms>
 {
     public async Task Consume(ConsumeContext<OrgAcceptedTerms> context)
@@ -41,28 +43,35 @@ public class TermsConsumer(
             Ssn = "",
             Tin = acceptedTerms.Tin
         };
-        try
+
+        var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
+        if (res.Success)
         {
-            var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
-            if (res.Success)
+            var relation = dbContext.Relations.SingleOrDefault(it => it.SubjectId == acceptedTerms.SubjectId);
+            if (relation != null)
             {
-                var relation = dbContext.Relations.SingleOrDefault(it => it.SubjectId == acceptedTerms.SubjectId);
-                if (relation != null)
-                {
-                    relation.Status = RelationStatus.Created;
-                    await dbContext.SaveChangesAsync();
-                }
-            }
-            else
-            {
-                logger.LogWarning("AcceptTerms: Unable to create relations for {SubjectId}. Error: {ErrorMessage}",
-                    acceptedTerms.SubjectId, res.ErrorMessage);
+                relation.Status = RelationStatus.Created;
+                await dbContext.SaveChangesAsync();
             }
         }
-        catch (Exception e)
-        {
-            logger.LogError("AcceptTerms: Unable to create relations for {SubjectId}. Exception: {e}",
-                acceptedTerms.SubjectId, e);
-        }
+    }
+}
+
+public class TermsConsumerErrorDefinition : ConsumerDefinition<TermsConsumer>
+{
+    private readonly RetryOptions _retryOptions;
+
+    public TermsConsumerErrorDefinition(IOptions<RetryOptions> retryOptions)
+    {
+        _retryOptions = retryOptions.Value;
+    }
+    protected override void ConfigureConsumer(
+        IReceiveEndpointConfigurator endpointConfigurator,
+        IConsumerConfigurator<TermsConsumer> consumerConfigurator,
+        IRegistrationContext context
+    )
+    {
+        endpointConfigurator.UseMessageRetry(r => r
+            .Incremental(_retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
     }
 }

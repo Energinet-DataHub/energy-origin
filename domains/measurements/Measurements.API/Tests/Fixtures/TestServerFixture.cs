@@ -132,6 +132,12 @@ namespace Tests.Fixtures
                 HttpHandler = _handler
             });
         }
+        public IServiceScope ServiceScope()
+        {
+            EnsureServer();
+
+            return _host!.Services.CreateScope();
+        }
 
         public HttpClient CreateUnauthenticatedClient(string environment = "Development")
         {

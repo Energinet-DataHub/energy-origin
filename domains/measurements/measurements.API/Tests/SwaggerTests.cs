@@ -13,7 +13,7 @@ namespace Tests;
 public class SwaggerTests : MeasurementsTestBase
 {
     public SwaggerTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture)
+        : base(serverFixture, null)
     {
     }
 

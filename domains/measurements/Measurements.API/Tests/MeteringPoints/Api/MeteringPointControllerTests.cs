@@ -19,7 +19,7 @@ namespace Tests.MeteringPoints.Api;
 public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
 {
     public MeteringPointControllerTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture)
+        : base(serverFixture, null)
     {
     }
 

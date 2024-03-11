@@ -21,7 +21,7 @@ namespace Tests.Measurements.gRPC.V1.Services;
 public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
 {
     public MeasurementsServiceTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture)
+        : base(serverFixture, null)
     {
     }
 

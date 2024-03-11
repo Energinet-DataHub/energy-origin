@@ -7,6 +7,7 @@ using EnergyOrigin.TokenValidation.Options;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text.Json.Serialization;
+using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -16,6 +17,7 @@ using EnergyOrigin.TokenValidation.Utilities;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -38,6 +40,10 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_configuration.GetConnectionString("Postgres")),
+            optionsLifetime: ServiceLifetime.Singleton);
+        services.AddDbContextFactory<ApplicationDbContext>();
+
         services.AddHealthChecks();
 
         services.AddControllers().AddJsonOptions(options =>
@@ -69,7 +75,7 @@ public class Startup
         {
             o.SetKebabCaseEndpointNameFormatter();
 
-            o.AddConsumer<TermsConsumer>();
+            o.AddConsumer<TermsConsumer, TermsConsumerErrorDefinition>();
 
             o.UsingRabbitMq((context, cfg) =>
             {

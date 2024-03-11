@@ -1,9 +1,13 @@
 using API;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using FluentAssertions.Common;
+using Microsoft.Extensions.DependencyInjection;
 using Tests.Fixtures;
+using Tests.TestContainers;
 using Xunit;
 
 namespace Tests;
@@ -14,7 +18,8 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
     public string DataHubFacadeUrl { get; set; } = "http://someurl.com";
     public string otlpEndpoint { get; set; } = "http://someurl";
 
-    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture)
+
+    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture, Dictionary<string, string?>? options)
     {
         _serverFixture = serverFixture;
 
@@ -31,13 +36,15 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
 
         var config = new Dictionary<string, string?>()
         {
-            {"Otlp:ReceiverEndpoint", otlpEndpoint},
-            {"TokenValidation:PublicKey", publicKeyBase64},
-            {"TokenValidation:Issuer", "demo.energioprindelse.dk"},
-            {"TokenValidation:Audience", "Users"},
-            {"DataHubFacade:Url", DataHubFacadeUrl},
-            {"DataSync:Endpoint", "https://example.com"}
+            { "Otlp:ReceiverEndpoint", otlpEndpoint },
+            { "TokenValidation:PublicKey", publicKeyBase64 },
+            { "TokenValidation:Issuer", "demo.energioprindelse.dk" },
+            { "TokenValidation:Audience", "Users" },
+            { "DataHubFacade:Url", DataHubFacadeUrl },
+            { "DataSync:Endpoint", "https://example.com" }
         };
+
+        options?.ToList().ForEach(x => config[x.Key] = x.Value);
 
         _serverFixture.ConfigureHostConfiguration(config);
     }
