@@ -26,46 +26,16 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog.Sinks.OpenTelemetry;
 using API.IssuingContractCleanup;
+using EnergyOrigin.Setup;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-var log = new LoggerConfiguration()
-    .Filter.ByExcluding("RequestPath like '/health%'")
-    .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .WriteTo.OpenTelemetry(options =>
-    {
-        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
-        options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
-                               IncludedData.TraceIdField | IncludedData.SpanIdField;
-    });
+builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
 
-var console = builder.Environment.IsDevelopment()
-    ? log.WriteTo.Console()
-    : log.WriteTo.Console(new JsonFormatter());
-
-builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(console.CreateLogger());
-
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService(serviceName: "Query.API"))
-    .WithMetrics(meterProviderBuilder =>
-        meterProviderBuilder
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddProcessInstrumentation()
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
-    .WithTracing(tracerProviderBuilder =>
-        tracerProviderBuilder
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddNpgsql()
-            .AddSource(DiagnosticHeaders.DefaultListenerName)
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+builder.AddOpenTelemetryMetricsAndTracing("Query.API", otlpOptions.ReceiverEndpoint);
 
 builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
