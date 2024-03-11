@@ -15,3 +15,6 @@ jobs:
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
+        with:
+          title: 'Update dependabot configuration'
+          body: '**Close and reopen this PR for checks to run.**'
