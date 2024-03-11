@@ -21,6 +21,8 @@ public class Api
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly ITestOutputHelper output;
     private readonly string sub;
+    private readonly string tin;
+    private readonly string cpn;
     private readonly HttpClient authenticatedClient;
     private readonly string apiVersion = "20240103";
 
@@ -29,7 +31,9 @@ public class Api
         this.factory = factory;
         this.output = output;
         sub = Guid.NewGuid().ToString();
-        authenticatedClient = factory.CreateAuthenticatedClient(sub, apiVersion: apiVersion);
+        tin = "11223344";
+        cpn = "Producent A/S";
+        authenticatedClient = factory.CreateAuthenticatedClient(sub, tin, cpn, apiVersion: apiVersion);
     }
 
     public async Task<Guid> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
@@ -43,9 +47,9 @@ public class Api
         return createdProposal!.Id;
     }
 
-    public async Task<Guid> AcceptTransferAgreementProposal(string receiverTin, Guid createdProposalId)
+    public async Task<Guid> AcceptTransferAgreementProposal(string receiverTin, string receiverName, Guid createdProposalId)
     {
-        var receiverClient = MockWalletServiceAndCreateAuthenticatedClient(receiverTin);
+        var receiverClient = MockWalletServiceAndCreateAuthenticatedClient(receiverTin, receiverName);
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
 
         var response = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", transferAgreement);
@@ -66,9 +70,9 @@ public class Api
         return await GetActivityLog(authenticatedClient, request);
     }
 
-    public async Task<ActivityLogListEntryResponse> GetActivityLog(string tin, ActivityLogEntryFilterRequest request)
+    public async Task<ActivityLogListEntryResponse> GetActivityLog(string tin, string cpn, ActivityLogEntryFilterRequest request)
     {
-        return await GetActivityLog(factory.CreateAuthenticatedClient(sub, apiVersion: apiVersion, tin: tin), request);
+        return await GetActivityLog(factory.CreateAuthenticatedClient(sub, apiVersion: apiVersion, tin: tin, cpn: cpn), request);
     }
 
     public async Task<ActivityLogListEntryResponse> GetActivityLog(HttpClient client, ActivityLogEntryFilterRequest request)
@@ -81,9 +85,9 @@ public class Api
         return log!;
     }
 
-    public HttpClient MockWalletServiceAndCreateAuthenticatedClient(string receiverTin)
+    public HttpClient MockWalletServiceAndCreateAuthenticatedClient(string receiverTin, string receiverName)
     {
-        return factory.CreateAuthenticatedClient(SetupPoWalletServiceMock(), sub: Guid.NewGuid().ToString(), tin: receiverTin, apiVersion: apiVersion);
+        return factory.CreateAuthenticatedClient(SetupPoWalletServiceMock(), sub: Guid.NewGuid().ToString(), tin: receiverTin, cpn: receiverName, apiVersion: apiVersion);
     }
 
     private IProjectOriginWalletService SetupPoWalletServiceMock()

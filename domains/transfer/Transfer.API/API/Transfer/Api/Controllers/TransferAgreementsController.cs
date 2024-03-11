@@ -32,7 +32,7 @@ public class TransferAgreementsController(
     IHttpContextAccessor httpContextAccessor,
     ITransferAgreementProposalRepository transferAgreementProposalRepository,
     IActivityLogEntryRepository activityLogEntryRepository
-    ) : ControllerBase
+) : ControllerBase
 {
     /// <summary>
     /// Add a new Transfer Agreement
@@ -99,6 +99,7 @@ public class TransferAgreementsController(
             SenderId = proposal.SenderCompanyId,
             SenderName = proposal.SenderCompanyName,
             SenderTin = proposal.SenderCompanyTin,
+            ReceiverName = user.Organization!.Name,
             ReceiverTin = proposal.ReceiverCompanyTin,
             ReceiverReference = receiverReference
         };
@@ -108,7 +109,7 @@ public class TransferAgreementsController(
             var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement,
                 request.TransferAgreementProposalId);
 
-            await AppendProposalAcceptedToActivityLog(user, result);
+            await AppendProposalAcceptedToActivityLog(user, result, proposal);
 
             return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
         }
@@ -118,17 +119,35 @@ public class TransferAgreementsController(
         }
     }
 
-    private async Task AppendProposalAcceptedToActivityLog(UserDescriptor user, TransferAgreement result)
+    private async Task AppendProposalAcceptedToActivityLog(UserDescriptor user, TransferAgreement result, TransferAgreementProposal proposal)
     {
         // Receiver entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, user.Organization!.Tin, user.Organization.Name, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Accepted, result.Id.ToString()));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+            actorId: user.Subject,
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: user.Name,
+            organizationTin: user.Organization!.Tin,
+            organizationName: user.Organization.Name,
+            otherOrganizationTin: proposal.SenderCompanyTin,
+            otherOrganizationName: proposal.SenderCompanyName,
+            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
+            entityId: result.Id.ToString())
+        );
 
         // Sender entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            string.Empty, result.SenderTin, result.SenderName, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Accepted, result.Id.ToString()));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+            actorId: Guid.Empty,
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: string.Empty,
+            organizationTin: proposal.SenderCompanyTin,
+            organizationName: proposal.SenderCompanyName,
+            otherOrganizationTin: result.ReceiverTin,
+            otherOrganizationName: result.ReceiverName,
+            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
+            entityId: result.Id.ToString())
+        );
     }
 
     [Authorize(Policy = PolicyName.RequiresCompany)]
@@ -236,14 +255,32 @@ public class TransferAgreementsController(
     private async Task AppendAgreementEndDateChangedToActivityLog(UserDescriptor user, TransferAgreement result)
     {
         // Receiver entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            String.Empty, result.ReceiverTin, String.Empty, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.EndDateChanged, result.Id.ToString()));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+            actorId: user.Subject,
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: String.Empty,
+            organizationTin: result.ReceiverTin,
+            organizationName: result.ReceiverName,
+            otherOrganizationTin: user.Organization!.Tin,
+            otherOrganizationName: user.Organization.Name,
+            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
+            entityId: result.Id.ToString())
+        );
 
         // Sender entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject, ActivityLogEntry.ActorTypeEnum.User,
-            user.Name, result.SenderTin, result.SenderName, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.EndDateChanged, result.Id.ToString()));
+        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+            actorId: user.Subject,
+            actorType: ActivityLogEntry.ActorTypeEnum.User,
+            actorName: user.Name,
+            organizationTin: user.Organization!.Tin,
+            organizationName: user.Organization.Name,
+            otherOrganizationTin: result.ReceiverTin,
+            otherOrganizationName: result.ReceiverName,
+            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
+            entityId: result.Id.ToString())
+        );
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
