@@ -71,5 +71,5 @@ runs:
     - name: Publish
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
-      if: ${{ inputs.upload }} == 'true'
+      if: ${{ inputs.upload == 'true' }}
       run: dotnet nuget push build/*.nupkg --api-key ${{ inputs.nuget-api-key }} --source https://api.nuget.org/v3/index.json
