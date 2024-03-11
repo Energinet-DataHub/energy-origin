@@ -37,11 +37,7 @@ builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
 
 builder.AddOpenTelemetryMetricsAndTracing("Query.API", otlpOptions.ReceiverEndpoint);
 
-builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-builder.Services.AddControllers()
-    .AddJsonOptions(o =>
-        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddControllersWithEnumsAsStrings();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
