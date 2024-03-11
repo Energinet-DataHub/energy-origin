@@ -16,7 +16,7 @@ public static class IServiceCollectionExtensions
             new ConfigureSwaggerOptions(s.GetRequiredService<IApiVersionDescriptionProvider>(), subsystemName));
     }
 
-    public static void AddApiVersioning(this IServiceCollection services)
+    public static void AddVersioningToApi(this IServiceCollection services)
     {
         services.AddApiVersioning(options =>
             {
