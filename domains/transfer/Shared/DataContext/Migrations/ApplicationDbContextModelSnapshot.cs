@@ -45,6 +45,10 @@ namespace DataContext.Migrations
                     b.Property<DateTimeOffset?>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("ReceiverReference")
                         .HasColumnType("uuid");
 
