@@ -6,26 +6,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using OpenTelemetry.Metrics;
-using Serilog;
-using Serilog.Formatting.Json;
 using System.Linq;
-using System.Text.Json.Serialization;
 using API.Configurations;
 using API.MeasurementsSyncer;
-using Asp.Versioning;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
-using MassTransit.Logging;
-using Microsoft.AspNetCore.Http.Json;
-using Npgsql;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using Serilog.Sinks.OpenTelemetry;
 using API.IssuingContractCleanup;
+using Asp.Versioning;
 using EnergyOrigin.Setup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -75,20 +64,7 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health");
 
-app.UseSwagger(o => o.RouteTemplate = "api-docs/certificates/{documentName}/swagger.json");
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwaggerUI(
-        options =>
-        {
-            foreach (var description in app.DescribeApiVersions().OrderByDescending(x => x.GroupName))
-            {
-                options.SwaggerEndpoint(
-                    $"/api-docs/certificates/{description.GroupName}/swagger.json",
-                    $"API v{description.GroupName}");
-            }
-        });
-}
+app.AddSwagger("certificates");
 
 app.UseHttpsRedirection();
 
