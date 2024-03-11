@@ -50,7 +50,7 @@ public class ActivityLogEntryOtherOrgFieldsTests : MigrationsTestBase
         logEntriesInDb.First().OtherOrganizationName.Should().Be(string.Empty);
     }
 
-       [Fact]
+    [Fact]
     public async Task ApplyMigration_WhenDataExistsInDatabase()
     {
         await using var dbContext = await CreateNewCleanDatabase();
