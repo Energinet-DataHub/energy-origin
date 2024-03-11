@@ -24,6 +24,11 @@ inputs:
     description: A valid api key to publish to the NuGet repository
     required: true
 
+  upload:
+    description: Whether or not to upload the nuget
+    required: false
+    default: ${{ startsWith(github.ref, 'refs/heads/main') }}
+
 runs:
   using: composite
 
@@ -66,5 +71,5 @@ runs:
     - name: Publish
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
-      if: startsWith(github.ref, 'refs/heads/main')
+      if: ${{ inputs.upload }}
       run: dotnet nuget push build/*.nupkg --api-key ${{ inputs.nuget-api-key }} --source https://api.nuget.org/v3/index.json
