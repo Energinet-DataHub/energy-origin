@@ -35,11 +35,11 @@ jobs:
 
       - name: Build nugets matrix
         shell: bash
-        run: echo "nugets=$(find libraries/dotnet/ -mindepth 1 -maxdepth 1 -type d | jq -nRc '[inputs])" >> "$GITHUB_ENV"
+        run: echo "nugets=$(find libraries/dotnet/ -mindepth 1 -maxdepth 1 -type d | jq -nRc '[inputs]')" >> "$GITHUB_ENV"
 
       - name: Build dockers matrix
         shell: bash
-        run: echo "dockers=$(find libraries/docker/ -mindepth 1 -maxdepth 1 -type d | jq -nRc '[inputs])" >> "$GITHUB_ENV"
+        run: echo "dockers=$(find libraries/docker/ -mindepth 1 -maxdepth 1 -type d | jq -nRc '[inputs]')" >> "$GITHUB_ENV"
 
   test-subsystems:
     name: Test subsystems
