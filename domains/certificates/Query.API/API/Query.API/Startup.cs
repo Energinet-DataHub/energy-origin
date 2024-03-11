@@ -1,13 +1,8 @@
-using System;
-using System.IO;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.Swagger;
 using EnergyOrigin.Setup;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API.Query.API;
 

@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System.Linq;
 using API.Configurations;
 using API.MeasurementsSyncer;
 using DataContext;
@@ -14,7 +12,6 @@ using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using API.IssuingContractCleanup;
-using Asp.Versioning;
 using EnergyOrigin.Setup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,14 +43,7 @@ builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddDataSyncSyncer();
 builder.Services.AddIssuingContractCleanup();
-builder.Services.AddApiVersioning(options =>
-    {
-        options.AssumeDefaultVersionWhenUnspecified = false;
-        options.ReportApiVersions = true;
-        options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
-    })
-    .AddMvc()
-    .AddApiExplorer();
+builder.Services.AddVersioningToApi();
 
 var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
