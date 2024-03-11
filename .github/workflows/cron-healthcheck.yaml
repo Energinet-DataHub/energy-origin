@@ -51,8 +51,6 @@ jobs:
         path: ${{ fromJson(needs.setup.outputs.subsystems) }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: ${{ matrix.path }}
 
       - name: Resolve version
         uses: ./.github/actions/docker-image-version
@@ -148,8 +146,6 @@ jobs:
         path: ${{ fromJson(needs.setup.outputs.dockers) }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: ${{ matrix.path }}
 
       - name: Resolve version
         uses: ./.github/actions/docker-image-version
