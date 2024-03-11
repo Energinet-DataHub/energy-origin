@@ -5,6 +5,7 @@ using API;
 using Asp.Versioning.ApiExplorer;
 using FluentAssertions;
 using Tests.Fixtures;
+using Tests.TestContainers;
 using VerifyXunit;
 using Xunit;
 
@@ -12,8 +13,8 @@ namespace Tests;
 
 public class SwaggerTests : MeasurementsTestBase
 {
-    public SwaggerTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture, null)
+    public SwaggerTests(TestServerFixture<Startup> serverFixture, PostgresContainer dbContainer, RabbitMqContainer rabbitMqContainer)
+        : base(serverFixture, dbContainer, rabbitMqContainer, null)
     {
     }
 

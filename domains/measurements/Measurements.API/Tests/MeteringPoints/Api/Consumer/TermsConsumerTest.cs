@@ -19,18 +19,10 @@ using Xunit;
 
 namespace Tests.MeteringPoints.Api.Consumer;
 
-public class TermsConsumerTest : MeasurementsTestBase,
-    IClassFixture<PostgresContainer>, IClassFixture<RabbitMqContainer>
+public class TermsConsumerTest : MeasurementsTestBase, IDisposable
 {
     public TermsConsumerTest(TestServerFixture<Startup> serverFixture, PostgresContainer dbContainer,
-        RabbitMqContainer rabbitMqContainer) : base(serverFixture, new Dictionary<string, string?>()
-    {
-        { "RabbitMq:Host", rabbitMqContainer.Options.Host },
-        { "RabbitMq:Port", rabbitMqContainer.Options.Port.ToString() },
-        { "RabbitMq:Username", rabbitMqContainer.Options.Username },
-        { "RabbitMq:Password", rabbitMqContainer.Options.Password },
-        { "ConnectionStrings:Postgres", dbContainer.ConnectionString }
-    })
+        RabbitMqContainer rabbitMqContainer) : base(serverFixture, dbContainer, rabbitMqContainer, null)
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString)
             .Options;
@@ -38,10 +30,28 @@ public class TermsConsumerTest : MeasurementsTestBase,
         dbContext.Database.EnsureCreated();
     }
 
+    public void Dispose()
+    {
+        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
+    }
+
     [Fact]
     public async Task when_accepted_terms_relation_is_pending()
     {
         var @event = new OrgAcceptedTerms(Guid.NewGuid(), "11111111", Guid.NewGuid());
+        var relationMock = new CreateRelationResponse() { ErrorMessage = "Error", Success = false};
+
+
+        var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
+        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
+
+        _serverFixture.ConfigureTestServices += services =>
+        {
+            var mpClient = services.Single(d =>
+                d.ServiceType == typeof(Relation.V1.Relation.RelationClient));
+            services.Remove(mpClient);
+            services.AddSingleton(clientMock);
+        };
 
         using var scope = _serverFixture.ServiceScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -57,8 +67,8 @@ public class TermsConsumerTest : MeasurementsTestBase,
     {
         var relationMock = new CreateRelationResponse() { ErrorMessage = "", Success = true};
 
-        var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
 
+        var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
         clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
 
         _serverFixture.ConfigureTestServices += services =>
@@ -69,14 +79,13 @@ public class TermsConsumerTest : MeasurementsTestBase,
             services.AddSingleton(clientMock);
         };
 
-        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "11111111", Guid.NewGuid());
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "22222222", Guid.NewGuid());
 
         using var scope = _serverFixture.ServiceScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await scope.ServiceProvider.GetRequiredService<IPublishEndpoint>().Publish(@event);
-        await Task.Delay(1000);
-
+        await scope.ServiceProvider.GetRequiredService<IBus>().Publish(@event);
+        await Task.Delay(2000);
         var relation = await dbContext.Relations.FirstOrDefaultAsync(it => it.SubjectId == @event.SubjectId);
         relation!.Status.Should().Be(RelationStatus.Created);
     }

@@ -15,13 +15,14 @@ using FluentAssertions;
 using VerifyTests;
 using System.Globalization;
 using API.Measurements.Helpers;
+using Tests.TestContainers;
 
 namespace Tests.Measurements.gRPC.V1.Services;
 
 public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
 {
-    public MeasurementsServiceTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture, null)
+    public MeasurementsServiceTests(TestServerFixture<Startup> serverFixture, RabbitMqContainer rabbitMqContainer, PostgresContainer dbContainer)
+        : base(serverFixture, dbContainer, rabbitMqContainer, null)
     {
     }
 

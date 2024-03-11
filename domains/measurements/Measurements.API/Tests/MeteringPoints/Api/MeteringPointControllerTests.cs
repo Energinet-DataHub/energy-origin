@@ -4,12 +4,15 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API;
+using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Dto.Responses;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Tests.Extensions;
 using Tests.Fixtures;
+using Tests.TestContainers;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
@@ -18,9 +21,13 @@ namespace Tests.MeteringPoints.Api;
 
 public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
 {
-    public MeteringPointControllerTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture, null)
+    public MeteringPointControllerTests(TestServerFixture<Startup> serverFixture, PostgresContainer dbContainer, RabbitMqContainer rabbitMqContainer)
+        : base(serverFixture, dbContainer, rabbitMqContainer, null)
     {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString)
+            .Options;
+        using var dbContext = new ApplicationDbContext(options);
+        dbContext.Database.EnsureCreated();
     }
 
     public void Dispose()

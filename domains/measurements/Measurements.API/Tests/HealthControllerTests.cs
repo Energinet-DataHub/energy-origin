@@ -3,14 +3,15 @@ using System.Net;
 using System.Threading.Tasks;
 using API;
 using Tests.Fixtures;
+using Tests.TestContainers;
 using Xunit;
 
 namespace Tests;
 
 public class HealthControllerTests : MeasurementsTestBase
 {
-    public HealthControllerTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture, null)
+    public HealthControllerTests(TestServerFixture<Startup> serverFixture, PostgresContainer postgresContainer, RabbitMqContainer rabbitMqContainer)
+        : base(serverFixture, postgresContainer, rabbitMqContainer, null)
     {
     }
 

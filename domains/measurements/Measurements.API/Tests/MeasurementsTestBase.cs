@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using API.MeteringPoints.Api;
 using FluentAssertions.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Tests.Fixtures;
 using Tests.TestContainers;
@@ -12,14 +14,14 @@ using Xunit;
 
 namespace Tests;
 
-public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
+public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>, IClassFixture<PostgresContainer>, IClassFixture<RabbitMqContainer>
 {
     protected readonly TestServerFixture<Startup> _serverFixture;
     public string DataHubFacadeUrl { get; set; } = "http://someurl.com";
     public string otlpEndpoint { get; set; } = "http://someurl";
 
 
-    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture, Dictionary<string, string?>? options)
+    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture, PostgresContainer dbContainer, RabbitMqContainer rabbitMqContainer, Dictionary<string, string?>? options)
     {
         _serverFixture = serverFixture;
 
@@ -41,7 +43,12 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
             { "TokenValidation:Issuer", "demo.energioprindelse.dk" },
             { "TokenValidation:Audience", "Users" },
             { "DataHubFacade:Url", DataHubFacadeUrl },
-            { "DataSync:Endpoint", "https://example.com" }
+            { "DataSync:Endpoint", "https://example.com" },
+            { "RabbitMq:Host", rabbitMqContainer.Options.Host },
+            { "RabbitMq:Port", rabbitMqContainer.Options.Port.ToString() },
+            { "RabbitMq:Username", rabbitMqContainer.Options.Username },
+            { "RabbitMq:Password", rabbitMqContainer.Options.Password },
+            { "ConnectionStrings:Postgres", dbContainer.ConnectionString }
         };
 
         options?.ToList().ForEach(x => config[x.Key] = x.Value);
