@@ -31,7 +31,7 @@ jobs:
             projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$runtime"; done <<< $csprojects | jq -sc '.')
             printf '{"projects":%s}\n' "$projects"
           done | jq -sc > /tmp/json
-          echo "matrix=$(jq '.[].projects[]' /tmp/json | jq -scr '. | unique')" >> "$GITHUB_ENV"
+          echo "subsystems=$(jq '.[].projects[]' /tmp/json | jq -scr '. | unique')" >> "$GITHUB_ENV"
 
       - name: Build nugets matrix
         shell: bash
@@ -144,8 +144,6 @@ jobs:
         path: ${{ fromJson(needs.setup.outputs.dockers) }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: ${{ matrix.path }}
 
       - name: Prepare variables
         shell: bash
