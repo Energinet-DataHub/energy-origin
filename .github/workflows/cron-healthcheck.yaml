@@ -35,7 +35,7 @@ jobs:
 
       - name: Build nugets matrix
         shell: bash
-        run: echo "nugets=$(find libraries/dotnet/ -mindepth 1 -maxdepth 1 -type d | jq -nRc '[inputs]')" >> "$GITHUB_ENV"
+        run: echo "nugets=$(find libraries/dotnet -name "*.csproj" ! -name "*.Tests.csproj" -exec dirname {} \; | jq -nRc '[inputs]')" >> "$GITHUB_ENV"
 
       - name: Build dockers matrix
         shell: bash
@@ -48,12 +48,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        path: ${{ fromJson(needs.setup.outputs.subsystems) }}
+        build: ${{ fromJson(needs.setup.outputs.subsystems) }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Resolve version
-        uses: ./.github/actions/docker-image-version
 
       - name: Resolve
         shell: bash
@@ -82,6 +79,7 @@ jobs:
             echo "domain=${domain}"
             echo "name=${name}"
             echo "path=${path}"
+            echo "version=abcdefg"
           } >> $GITHUB_ENV
 
       - name: Validate project
@@ -146,9 +144,8 @@ jobs:
         path: ${{ fromJson(needs.setup.outputs.dockers) }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Resolve version
-        uses: ./.github/actions/docker-image-version
+        with:
+          sparse-checkout: ${{ matrix.path }}
 
       - name: Prepare variables
         shell: bash
@@ -163,6 +160,7 @@ jobs:
             echo "context=$context"
             echo "docker=$docker"
             echo "name=$name"
+            echo "version=abcdefg"
           } >> "$GITHUB_ENV"
 
       - name: Push image
