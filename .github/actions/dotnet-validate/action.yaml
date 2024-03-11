@@ -27,7 +27,7 @@ runs:
 
   steps:
     - name: Setup dotnet
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
@@ -96,7 +96,7 @@ runs:
       shell: bash
       env:
         version: ""
-      run: dotnet test --no-restore --verbosity normal -warnaserror
+      run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal"
 
     - name: Validate migration
       shell: bash
