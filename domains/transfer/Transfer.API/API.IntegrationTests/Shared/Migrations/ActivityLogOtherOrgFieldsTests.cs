@@ -19,14 +19,12 @@ public class ActivityLogEntryOtherOrgFieldsTests : MigrationsTestBase
     public async Task GivenMigrationApplied_IfNewActivityLogEntryIsCreated_OtherOrganizationFieldsExist()
     {
         await using var dbContext = await CreateNewCleanDatabase();
-
         var migrator = dbContext.GetService<IMigrator>();
-
         var applyMigration = () => migrator.MigrateAsync();
+
         await applyMigration.Should().NotThrowAsync();
 
         await InsertNewActivityLogEntry(dbContext, Guid.NewGuid());
-
         var logEntriesInDb = dbContext.ActivityLogs.ToList();
 
         logEntriesInDb.Count.Should().Be(1);
@@ -38,14 +36,11 @@ public class ActivityLogEntryOtherOrgFieldsTests : MigrationsTestBase
     public async Task GivenActivityLogExists_IfMigrationApplied_OldActivityLogsOtherOrganizationFieldsEqualStringEmpty()
     {
         await using var dbContext = await CreateNewCleanDatabase();
-
         var migrator = dbContext.GetService<IMigrator>();
-
         await migrator.MigrateAsync("20240216131219_ActivityLogEntityIdIsNowAString");
-
         await InsertOldActivityLogEntry(dbContext, Guid.NewGuid());
-
         var applyMigration = () => migrator.MigrateAsync();
+
         await applyMigration.Should().NotThrowAsync();
 
         var logEntriesInDb = dbContext.ActivityLogs.ToList();
