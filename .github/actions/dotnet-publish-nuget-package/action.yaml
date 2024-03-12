@@ -61,12 +61,12 @@ runs:
     - name: Test
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet test --no-restore --verbosity normal *.Tests -warnaserror
+      run: dotnet test --no-restore --verbosity normal *.Tests -warnaserror --logger:"console;verbosity=normal"
 
     - name: Pack
       shell: bash
       working-directory: ${{ inputs.solution-file-folder }}
-      run: dotnet pack --output build --configuration Release --no-restore -warnaserror -p:Version=${{ inputs.package-version }} ${{ inputs.project-name }}
+      run: dotnet pack --output build --configuration Release --no-restore -p:Version=${{ inputs.package-version }} ${{ inputs.project-name }}
 
     - name: Publish
       shell: bash

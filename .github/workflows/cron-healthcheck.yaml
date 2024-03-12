@@ -83,13 +83,18 @@ jobs:
           } >> $GITHUB_ENV
 
       - name: Validate project
-        if: ${{ (github.event_name == 'push' && github.ref_name == 'main') }} == false
         uses: ./.github/actions/dotnet-validate
         with:
           dotnet-version: ${{ matrix.build.sdkVersion }}
           pin-version: true
           paths: ${{ env.paths }}
           sql-file: ${{ env.migration }}
+
+      - name: Check license
+        uses: ./.github/actions/dotnet-check-license
+        with:
+          project-folder: ${{ env.path }}
+          license-mapping-file: .mapped-licenses.json
 
   test-nugets:
     name: Test nugets
@@ -133,6 +138,12 @@ jobs:
           nuget-api-key: not-a-valid-secret
           dotnet-version: ${{ env.SDK_VERSION }}
           upload: false
+
+      - name: Check license
+        uses: ./.github/actions/dotnet-check-license
+        with:
+          project-folder: ${{ env.SOLUTION }}/${{ env.PROJECT }}
+          license-mapping-file: .mapped-licenses.json
 
   test-dockers:
     name: Test dockers
