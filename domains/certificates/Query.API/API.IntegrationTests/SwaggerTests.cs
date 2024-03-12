@@ -186,6 +186,29 @@ public class SwaggerTests(QueryApiWebApplicationFactory factory) : TestBase, ICl
     }
 
     [Fact]
+    public async Task GetSwaggerDoc_AppStarted_LatestVersionNoChangesAccordingToSnapshot()
+    {
+        using var client = factory.CreateClient();
+
+        var provider = factory.GetApiVersionDescriptionProvider();
+
+        var latestVersion = provider.ApiVersionDescriptions
+            .OrderByDescending(v => v.ApiVersion)
+            .Select(v => v.GroupName)
+            .FirstOrDefault();
+
+        var swaggerDocUrl = $"api-docs/certificates/{latestVersion}/swagger.json";
+        var response = await client.GetAsync(swaggerDocUrl);
+
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync();
+        await Verifier.Verify(json)
+            .UseParameters(latestVersion)
+            .UseMethodName($"swagger.json");
+    }
+
+    [Fact]
     public async Task SwaggerJson_ForAllVersions_ContainsContractsTag()
     {
         using var client = factory.CreateClient();

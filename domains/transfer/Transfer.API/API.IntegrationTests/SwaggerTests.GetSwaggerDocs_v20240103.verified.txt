@@ -948,6 +948,9 @@
           "senderTin": {
             "type": "string"
           },
+          "receiverName": {
+            "type": "string"
+          },
           "receiverTin": {
             "type": "string"
           },

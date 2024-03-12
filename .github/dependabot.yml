@@ -78,6 +78,14 @@ updates:
         patterns:
           - Microsoft.EntityFrameworkCore.*
   - package-ecosystem: nuget
+    directory: /libraries/dotnet/EnergyOrigin.Setup
+    schedule:
+      interval: daily
+    groups:
+      Microsoft.EntityFrameworkCore:
+        patterns:
+          - Microsoft.EntityFrameworkCore.*
+  - package-ecosystem: nuget
     directory: /libraries/dotnet/EnergyOrigin.TokenValidation
     schedule:
       interval: daily
