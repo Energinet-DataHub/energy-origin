@@ -190,9 +190,9 @@ public class TransferAgreementsController(
 
     [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(200)]
-    [ProducesResponseType(typeof(ValidationProblemDetails),400)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
-    [ProducesResponseType(typeof(ValidationProblemDetails),409)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), 409)]
     [HttpPut("{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
     {
