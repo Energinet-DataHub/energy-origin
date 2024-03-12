@@ -44,7 +44,7 @@ public class TransferAgreementsController(
     [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpPost]
     [ProducesResponseType(typeof(TransferAgreement), 201)]
-    [ProducesResponseType(typeof(void), 400)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 409)]
     public async Task<ActionResult> Create(CreateTransferAgreement request)
@@ -190,9 +190,9 @@ public class TransferAgreementsController(
 
     [Authorize(Policy = PolicyName.RequiresCompany)]
     [ProducesResponseType(200)]
-    [ProducesResponseType(400)]
+    [ProducesResponseType(typeof(ValidationProblemDetails),400)]
     [ProducesResponseType(typeof(void), 404)]
-    [ProducesResponseType(409)]
+    [ProducesResponseType(typeof(ValidationProblemDetails),409)]
     [HttpPut("{id}")]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
     {
