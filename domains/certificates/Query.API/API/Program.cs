@@ -21,7 +21,7 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
 
-builder.AddOpenTelemetryMetricsAndTracing("Query.API", otlpOptions.ReceiverEndpoint);
+builder.AddOpenTelemetryMetricsAndTracing("Certificates.API", otlpOptions.ReceiverEndpoint);
 
 builder.Services.AddControllersWithEnumsAsStrings();
 
