@@ -3,7 +3,7 @@ name: Health checks
 on:
   push:
     branches:
-      - add-cron-health-check
+      - main
   workflow_dispatch: {}
   schedule:
     - cron: "30 5,17 * * *"
