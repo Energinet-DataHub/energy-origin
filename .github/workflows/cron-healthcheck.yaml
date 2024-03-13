@@ -52,6 +52,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - run: exit 1
+
       - name: Resolve
         shell: bash
         env:
@@ -182,9 +184,13 @@ jobs:
           dry-run: true
 
   report:
+    needs:
+      - test-subsystems
+      - test-nugets
+      - test-dockers
     name: Report on failure
     runs-on: ubuntu-latest
-    # if: failure()
+    if: ${{ always() && contains(join(needs.*.result, ','), 'failure') }}
     steps:
       - name: Create issue
         uses: dacbd/create-issue-action@v2
