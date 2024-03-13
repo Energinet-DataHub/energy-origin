@@ -180,3 +180,21 @@ jobs:
           image-tag: ${{ env.version }}
           docker-context: ${{ env.context }}
           dry-run: true
+
+  report:
+    name: Report on failure
+    runs-on: ubuntu-latest
+    # if: failure()
+    steps:
+      - name: Create issue
+        uses: dacbd/create-issue-action@v2
+        with:
+          token: ${{ github.token }}
+          title: Health checks run failed
+          body: |
+            ### Context
+            [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
+            Workflow name - `${{ github.workflow }}`
+            Job -           `${{ github.job }}`
+            status -        `${{ job.status }}`
