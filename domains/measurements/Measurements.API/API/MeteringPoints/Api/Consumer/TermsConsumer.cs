@@ -7,6 +7,7 @@ using API.Options;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
 using Grpc.Core;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Relation.V1;
@@ -47,7 +48,7 @@ public class TermsConsumer(
         var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
         if (res.Success)
         {
-            var relation = dbContext.Relations.SingleOrDefault(it => it.SubjectId == acceptedTerms.SubjectId);
+            var relation = await dbContext.Relations.SingleOrDefaultAsync(it => it.SubjectId == acceptedTerms.SubjectId);
             if (relation != null)
             {
                 relation.Status = RelationStatus.Created;

@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using API;
 using API.MeteringPoints.Api;
+using API.MeteringPoints.Api.Consumer;
 using API.MeteringPoints.Api.Models;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
 using FluentAssertions;
 using MassTransit;
+using MassTransit.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -39,7 +41,7 @@ public class TermsConsumerTest : MeasurementsTestBase, IDisposable
     public async Task when_accepted_terms_relation_is_pending()
     {
         var @event = new OrgAcceptedTerms(Guid.NewGuid(), "11111111", Guid.NewGuid());
-        var relationMock = new CreateRelationResponse() { ErrorMessage = "Error", Success = false};
+        var relationMock = new CreateRelationResponse() { ErrorMessage = "Error", Success = false };
 
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
@@ -65,28 +67,22 @@ public class TermsConsumerTest : MeasurementsTestBase, IDisposable
     [Fact]
     public async Task when_datahub_relation_is_created_relationstatus_is_created()
     {
-        var relationMock = new CreateRelationResponse() { ErrorMessage = "", Success = true};
+        var relationMock = new CreateRelationResponse() { ErrorMessage = "", Success = true };
 
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
         clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
 
-        _serverFixture.ConfigureTestServices += services =>
-        {
-            var mpClient = services.Single(d =>
-                d.ServiceType == typeof(Relation.V1.Relation.RelationClient));
-            services.Remove(mpClient);
-            services.AddSingleton(clientMock);
-        };
-
-        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "22222222", Guid.NewGuid());
-
         using var scope = _serverFixture.ServiceScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "22222222", Guid.NewGuid());
+
         await scope.ServiceProvider.GetRequiredService<IBus>().Publish(@event);
-        await Task.Delay(2000);
-        var relation = await dbContext.Relations.FirstOrDefaultAsync(it => it.SubjectId == @event.SubjectId);
-        relation!.Status.Should().Be(RelationStatus.Created);
+        await Task.Delay(10000);
+
+        var relation = await dbContext.RepeatedlyFirstOrDefaultAsyncUntil<RelationDto>(it => it.Status == RelationStatus.Created)!;
+
+        relation.Status.Should().Be(RelationStatus.Created);
     }
 }
