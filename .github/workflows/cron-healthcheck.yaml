@@ -52,8 +52,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: exit 1
-
       - name: Resolve
         shell: bash
         env:
