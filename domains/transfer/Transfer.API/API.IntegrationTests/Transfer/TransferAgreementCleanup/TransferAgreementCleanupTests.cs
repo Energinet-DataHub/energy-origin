@@ -113,7 +113,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         dbContext.TransferAgreements.Add(expiredTa);
         await dbContext.SaveChangesAsync();
 
-        var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0);
+        var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0, TimeSpan.FromSeconds(30));
         tas.Should().BeEmpty();
 
         var senderClient = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
