@@ -1,9 +1,6 @@
 name: Health checks
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch: {}
   schedule:
     - cron: "30 5,17 * * *"
