@@ -16,6 +16,7 @@
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
+    <PackageReference Include="EnergyOrigin.Setup" Version="1.0.2" />
     <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
     <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.2" />
