@@ -94,7 +94,7 @@ public class TransferAgreementProposalCleanupServiceTests : IClassFixture<Transf
         dbContext.TransferAgreementProposals.Add(oldInvitation);
         await dbContext.SaveChangesAsync();
 
-        var invitations = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreementProposal>(0);
+        var invitations = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreementProposal>(0, TimeSpan.FromSeconds(30));
 
         invitations.Should().BeEmpty();
         var client = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
