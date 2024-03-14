@@ -52,25 +52,6 @@ public class ActivityLogEntryOtherOrgFieldsTests : IAsyncDisposable
         logEntriesInDb.First().OtherOrganizationName.Should().Be(string.Empty);
     }
 
-    [Fact]
-    public async Task ApplyMigration_WhenDataExistsInDatabase()
-    {
-        await using var dbContext = await CreateNewCleanDatabase();
-
-        var migrator = dbContext.GetService<IMigrator>();
-
-        await migrator.MigrateAsync("20240125131645_AddActivityLog");
-
-        await InsertOldActivityLogEntry(dbContext, Guid.NewGuid());
-
-        var applyMigration = () => migrator.MigrateAsync();
-        await applyMigration.Should().NotThrowAsync();
-
-        var logEntriesInDb = dbContext.ActivityLogs.ToList();
-
-        logEntriesInDb.Count.Should().Be(1);
-    }
-
     private static async Task InsertOldActivityLogEntry(ApplicationDbContext dbContext, Guid id)
     {
         var logEntryTable = dbContext.Model.FindEntityType(typeof(ActivityLogEntry))!.GetTableName();
