@@ -78,22 +78,7 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        //app.AddSwagger(env, "measurements");
-        var provider = app.ApplicationServices.GetRequiredService<IApiVersionDescriptionProvider>();
-        app.UseSwagger(o => o.RouteTemplate = "api-docs/measurements/{documentName}/swagger.json");
-        if (env.IsDevelopment())
-        {
-            app.UseSwaggerUI(
-                options =>
-                {
-                    foreach (var description in provider.ApiVersionDescriptions.OrderByDescending(x => x.GroupName))
-                    {
-                        options.SwaggerEndpoint(
-                            $"/api-docs/measurements/{description.GroupName}/swagger.json",
-                            $"API v{description.GroupName}");
-                    }
-                });
-        }
+        app.AddSwagger(env, "measurements");
 
         app.UseRouting();
 
