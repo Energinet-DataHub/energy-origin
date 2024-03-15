@@ -11,6 +11,7 @@ using EnergyOrigin.ActivityLog.API;
 using System.Net;
 using System.Net.Http.Json;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Transfer.TransferAgreementCleanup;
 
@@ -25,7 +26,6 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         this.factory = factory;
         sub = Guid.NewGuid();
         tin = "11223344";
-        factory.CreateClient();
     }
 
     [Fact]
@@ -34,8 +34,8 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        dbContext.TransferAgreements.RemoveRange(dbContext.TransferAgreements);
-        await dbContext.SaveChangesAsync();
+        await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
+        await dbContext.TransferAgreements.ExecuteDeleteAsync();
 
         var expiredTa = new TransferAgreement
         {
@@ -94,8 +94,8 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        dbContext.TransferAgreements.RemoveRange(dbContext.TransferAgreements);
-        await dbContext.SaveChangesAsync();
+        await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
+        await dbContext.TransferAgreements.ExecuteDeleteAsync();
 
         var expiredTa = new TransferAgreement
         {
@@ -118,7 +118,8 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
 
         var senderClient = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
 
-        var senderPost = await senderClient.PostAsJsonAsync("api/transfer/activity-log", new ActivityLogEntryFilterRequest(null, null, null));
+        var senderPost = await senderClient.PostAsJsonAsync("api/transfer/activity-log",
+            new ActivityLogEntryFilterRequest(null, null, null));
         senderPost.StatusCode.Should().Be(HttpStatusCode.OK);
         var senderLogResponseBody = await senderPost.Content.ReadAsStringAsync();
         var senderLogs = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(senderLogResponseBody);
@@ -126,10 +127,64 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
 
         var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
 
-        var receiverPost = await receiverClient.PostAsJsonAsync("api/transfer/activity-log", new ActivityLogEntryFilterRequest(null, null, null));
+        var receiverPost = await receiverClient.PostAsJsonAsync("api/transfer/activity-log",
+            new ActivityLogEntryFilterRequest(null, null, null));
         receiverPost.StatusCode.Should().Be(HttpStatusCode.OK);
         var receiverLogResponseBody = await receiverPost.Content.ReadAsStringAsync();
         var receiverLogs = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(receiverLogResponseBody);
         receiverLogs!.ActivityLogEntries.Should().ContainSingle();
+
+        dbContext.TransferAgreementHistoryEntries.RemoveRange(dbContext.TransferAgreementHistoryEntries);
+        dbContext.TransferAgreements.RemoveRange(dbContext.TransferAgreements);
+        await dbContext.SaveChangesAsync();
+    }
+
+    [Fact]
+    public async Task ShouldDeleteTaHistoryEntries()
+    {
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
+        await dbContext.TransferAgreements.ExecuteDeleteAsync();
+
+        var expiredTa = new TransferAgreement
+        {
+            Id = Guid.NewGuid(),
+            EndDate = DateTimeOffset.UtcNow.AddHours(-1),
+            ReceiverTin = "12345678",
+            SenderName = "SomeSender",
+            SenderTin = tin,
+            ReceiverReference = Guid.NewGuid(),
+            SenderId = sub,
+            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            TransferAgreementNumber = 0
+        };
+
+        var history = new TransferAgreementHistoryEntry
+        {
+            Id = Guid.NewGuid(),
+            TransferAgreementId = expiredTa.Id,
+            EndDate = DateTimeOffset.UtcNow.AddHours(-1),
+            ReceiverTin = tin,
+            SenderName = "SomeSender",
+            SenderTin = "12345678",
+            SenderId = sub,
+            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            ActorId = Guid.NewGuid().ToString(),
+            ActorName = "SomeName",
+            AuditAction = "Created",
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-1)
+        };
+
+        dbContext.TransferAgreements.Add(expiredTa);
+        dbContext.TransferAgreementHistoryEntries.Add(history);
+        await dbContext.SaveChangesAsync();
+
+        var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0, TimeSpan.FromSeconds(30));
+        tas.Should().BeEmpty();
+
+        var hEntries = await dbContext.TransferAgreementHistoryEntries.ToListAsync();
+        hEntries.Should().BeEmpty();
     }
 }
