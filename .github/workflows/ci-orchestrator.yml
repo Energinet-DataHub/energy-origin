@@ -12,7 +12,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      dry-run: ${{ (github.event_name == 'push' && github.ref_name == 'main') == false && false == (github.event_name == 'pull_request' && (startsWith(github.event.pull_request.head.ref, 'preview/') || startsWith(github.event.pull_request.head.ref, 'vcluster/')) }}
+      dry-run: ${{ (github.event_name == 'push' && github.ref_name == 'main') == false && false == (github.event_name == 'pull_request' && (startsWith(github.event.pull_request.head.ref, 'preview/') || startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}
       is-dependabot: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
     steps:
       - name: Setup variables
