@@ -1,7 +1,5 @@
 using System;
-using System.Linq;
 using API.Options;
-using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Options;
 using Microsoft.Extensions.Options;
 using FluentValidation;
@@ -12,8 +10,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Asp.Versioning.ApiExplorer;
-using Microsoft.Extensions.Hosting;
 
 namespace API;
 
