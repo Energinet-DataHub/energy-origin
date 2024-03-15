@@ -57,9 +57,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Shared\Transfer.Infrastructure\Transfer.Infrastructure.csproj" />
-      <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
-      <ProjectReference Include="..\..\Transfer.Application\Transfer.Application.csproj" />
+      <ProjectReference Include="..\..\..\Application\Transfer.Application\Transfer.Application.csproj" />
+      <ProjectReference Include="..\..\..\Infrastructure\ProjectOriginClients\ProjectOriginClients.csproj" />
+      <ProjectReference Include="..\..\..\Infrastructure\Transfer.Infrastructure\Transfer.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

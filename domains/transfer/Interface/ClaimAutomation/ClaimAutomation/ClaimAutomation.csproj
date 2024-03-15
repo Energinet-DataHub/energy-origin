@@ -7,8 +7,8 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
     <DocumentationFile>documentation.xml</DocumentationFile>
-    <RootNamespace>TransferAgreementAutomation.Worker</RootNamespace>
-    <AssemblyName>TransferAgreementAutomation.Worker</AssemblyName>
+    <RootNamespace>ClaimAutomation.Worker</RootNamespace>
+    <AssemblyName>ClaimAutomation.Worker</AssemblyName>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
@@ -16,9 +16,9 @@
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
+    <PackageReference Include="EnergyOrigin.Setup" Version="1.0.2" />
     <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
     <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.2" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
@@ -34,8 +34,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared\Transfer.Infrastructure\Transfer.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
+    <ProjectReference Include="..\..\..\Core\Transfer.Domain\Transfer.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\ProjectOriginClients\ProjectOriginClients.csproj" />
+    <ProjectReference Include="..\..\..\Infrastructure\Transfer.Infrastructure\Transfer.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="API.IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,4 +48,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
 </Project>

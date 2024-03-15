@@ -42,7 +42,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\TransferAPI\TransferAPI.csproj" />
+        <ProjectReference Include="..\..\Interface\TransferAPI\TransferAPI\TransferAPI.csproj" />
     </ItemGroup>
 
 	<ItemGroup>

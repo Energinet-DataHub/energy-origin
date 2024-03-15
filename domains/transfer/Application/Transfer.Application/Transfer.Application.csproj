@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Transfer.Domain\Transfer.Domain.csproj" />
+      <ProjectReference Include="..\..\Core\Transfer.Domain\Transfer.Domain.csproj" />
     </ItemGroup>
 
 </Project>
