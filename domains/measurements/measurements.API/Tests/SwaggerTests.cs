@@ -13,8 +13,8 @@ namespace Tests;
 
 public class SwaggerTests : MeasurementsTestBase
 {
-    public SwaggerTests(TestServerFixture<Startup> serverFixture, PostgresContainer dbContainer, RabbitMqContainer rabbitMqContainer)
-        : base(serverFixture, dbContainer, rabbitMqContainer, null)
+    public SwaggerTests(TestServerFixture<Startup> serverFixture)
+        : base(serverFixture)
     {
     }
 

@@ -19,9 +19,13 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json.Serialization;
 using API.MeteringPoints.Api;
+using API.MeteringPoints.Api.Consumer;
+using Contracts;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Grpc.Net.Client;
@@ -31,6 +35,7 @@ using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Tests.Fixtures.TestServerHelpers;
 using Xunit.Abstractions;
 
@@ -40,6 +45,7 @@ namespace Tests.Fixtures
 
     public class TestServerFixture<TStartup> : IDisposable where TStartup : class
     {
+        public string? ConnectionString  { get; set; } = String.Empty;
         public byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
         private TestServer? _server;
@@ -70,6 +76,9 @@ namespace Tests.Fixtures
 
         public void ConfigureHostConfiguration(Dictionary<string, string?> configuration)
         {
+            if (!string.IsNullOrEmpty(ConnectionString))
+                configuration.Add("ConnectionStrings:Postgres", ConnectionString);
+
             _configurationDictionary = configuration;
         }
 
@@ -84,7 +93,6 @@ namespace Tests.Fixtures
             if (_host == null)
             {
                 var builder = new HostBuilder();
-
                 if (_configurationDictionary != null)
                 {
                     builder.ConfigureHostConfiguration(config =>
@@ -117,6 +125,11 @@ namespace Tests.Fixtures
                 _host = builder.Start();
                 _server = _host.GetTestServer();
                 _handler = _server.CreateHandler();
+                if (!string.IsNullOrEmpty(ConnectionString))
+                {
+                    var dbContext = _host.Services.GetRequiredService<ApplicationDbContext>();
+                    dbContext.Database.EnsureCreated();
+                }
             }
         }
 
@@ -131,12 +144,6 @@ namespace Tests.Fixtures
                 LoggerFactory = LoggerFactory,
                 HttpHandler = _handler
             });
-        }
-        public IServiceScope ServiceScope()
-        {
-            EnsureServer();
-
-            return _host!.Services.CreateScope();
         }
 
         public HttpClient CreateUnauthenticatedClient(string environment = "Development")

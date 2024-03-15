@@ -1,88 +1,89 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API;
 using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
 using API.MeteringPoints.Api.Models;
+using Contracts;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
 using FluentAssertions;
 using MassTransit;
-using MassTransit.Testing;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using Relation.V1;
 using Tests.Extensions;
-using Tests.Fixtures;
 using Tests.TestContainers;
 using Xunit;
 
 namespace Tests.MeteringPoints.Api.Consumer;
 
-public class TermsConsumerTest : MeasurementsTestBase, IDisposable
+public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Startup>>, IClassFixture<PostgresContainer>
 {
-    public TermsConsumerTest(TestServerFixture<Startup> serverFixture, PostgresContainer dbContainer,
-        RabbitMqContainer rabbitMqContainer) : base(serverFixture, dbContainer, rabbitMqContainer, null)
+    private readonly CustomWebApplicationFactory<Startup> _factory;
+
+    public TermsConsumerTest(CustomWebApplicationFactory<Startup> factory, PostgresContainer postgresContainer)
     {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString)
-            .Options;
-        using var dbContext = new ApplicationDbContext(options);
-        dbContext.Database.EnsureCreated();
+        factory.ConnectionString = postgresContainer.ConnectionString;
+        _factory = factory;
     }
 
-    public void Dispose()
-    {
-        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
-    }
-
-    [Fact]
-    public async Task when_accepted_terms_relation_is_pending()
-    {
-        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "11111111", Guid.NewGuid());
-        var relationMock = new CreateRelationResponse() { ErrorMessage = "Error", Success = false };
-
-
-        var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
-        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
-
-        _serverFixture.ConfigureTestServices += services =>
-        {
-            var mpClient = services.Single(d =>
-                d.ServiceType == typeof(Relation.V1.Relation.RelationClient));
-            services.Remove(mpClient);
-            services.AddSingleton(clientMock);
-        };
-
-        using var scope = _serverFixture.ServiceScope();
-        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        await scope.ServiceProvider.GetRequiredService<IPublishEndpoint>().Publish(@event);
-
-        var relation = await dbContext.Relations.FirstOrDefaultAsync(it => it.SubjectId == @event.SubjectId);
-        relation!.Status.Should().Be(RelationStatus.Pending);
-    }
 
     [Fact]
     public async Task when_datahub_relation_is_created_relationstatus_is_created()
     {
         var relationMock = new CreateRelationResponse() { ErrorMessage = "", Success = true };
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "22222222", Guid.NewGuid());
+        var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
+        contextMock.Message.Returns(@event);
 
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
+            .Options;
+        var dbContext = new ApplicationDbContext(contextOptions);
+        dbContext.Database.EnsureCreated();
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
         clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
 
-        using var scope = _serverFixture.ServiceScope();
-        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var consumer = new TermsConsumer(dbContext, clientMock);
+        await consumer.Consume(contextMock);
+        var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId);
+        relation!.Status.Should().Be(RelationStatus.Created);
+    }
 
+    [Fact]
+    public async Task when_datahub_relation_is_not_created_relationstatus_is_pending()
+    {
+        var relationMock = new CreateRelationResponse() { ErrorMessage = "Error", Success = false };
         var @event = new OrgAcceptedTerms(Guid.NewGuid(), "22222222", Guid.NewGuid());
+        var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
+        contextMock.Message.Returns(@event);
 
-        await scope.ServiceProvider.GetRequiredService<IBus>().Publish(@event);
-        await Task.Delay(10000);
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
+            .Options;
+        var dbContext = new ApplicationDbContext(contextOptions);
+        dbContext.Database.EnsureCreated();
 
-        var relation = await dbContext.RepeatedlyFirstOrDefaultAsyncUntil<RelationDto>(it => it.Status == RelationStatus.Created)!;
+        var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
+        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
 
-        relation.Status.Should().Be(RelationStatus.Created);
+        var consumer = new TermsConsumer(dbContext, clientMock);
+        await consumer.Consume(contextMock);
+        var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId);
+        relation!.Status.Should().Be(RelationStatus.Pending);
+    }
+}
+
+public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
+{
+    public string ConnectionString { get; set; } = "";
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
     }
 }

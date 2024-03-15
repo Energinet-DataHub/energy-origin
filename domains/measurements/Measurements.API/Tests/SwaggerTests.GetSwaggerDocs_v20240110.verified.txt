@@ -86,7 +86,7 @@
               "$ref": "#/components/schemas/MeteringPoint"
             }
           },
-          "relation": {
+          "status": {
             "$ref": "#/components/schemas/RelationStatus"
           }
         },

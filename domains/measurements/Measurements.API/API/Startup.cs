@@ -40,7 +40,8 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_configuration.GetConnectionString("Postgres")),
+        services.AddDbContext<ApplicationDbContext>(
+            options => options.UseNpgsql(_configuration.GetConnectionString("Postgres")),
             optionsLifetime: ServiceLifetime.Singleton);
         services.AddDbContextFactory<ApplicationDbContext>();
 
@@ -149,8 +150,10 @@ public class Startup
             .AddMvc()
             .AddApiExplorer();
 
-        services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-        var tokenValidationOptions = _configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+        services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
+            .ValidateDataAnnotations().ValidateOnStart();
+        var tokenValidationOptions =
+            _configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
         services.AddTokenValidation(tokenValidationOptions);
 
         services.AddGrpc();

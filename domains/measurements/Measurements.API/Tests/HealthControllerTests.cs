@@ -10,8 +10,8 @@ namespace Tests;
 
 public class HealthControllerTests : MeasurementsTestBase
 {
-    public HealthControllerTests(TestServerFixture<Startup> serverFixture, PostgresContainer postgresContainer, RabbitMqContainer rabbitMqContainer)
-        : base(serverFixture, postgresContainer, rabbitMqContainer, null)
+    public HealthControllerTests(TestServerFixture<Startup> serverFixture)
+        : base(serverFixture)
     {
     }
 

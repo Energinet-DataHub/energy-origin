@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.MeteringPoints.Api.Models;
 using API.Options;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
-using Grpc.Core;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Relation.V1;
 
@@ -32,6 +29,7 @@ public class TermsConsumer(
         dbContext.Relations.Add(relation);
         await dbContext.SaveChangesAsync();
 
+
         await CreateRelation(context.Message);
     }
 
@@ -48,7 +46,8 @@ public class TermsConsumer(
         var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
         if (res.Success)
         {
-            var relation = await dbContext.Relations.SingleOrDefaultAsync(it => it.SubjectId == acceptedTerms.SubjectId);
+            var relation =
+                await dbContext.Relations.SingleOrDefaultAsync(it => it.SubjectId == acceptedTerms.SubjectId);
             if (relation != null)
             {
                 relation.Status = RelationStatus.Created;
@@ -66,6 +65,7 @@ public class TermsConsumerErrorDefinition : ConsumerDefinition<TermsConsumer>
     {
         _retryOptions = retryOptions.Value;
     }
+
     protected override void ConfigureConsumer(
         IReceiveEndpointConfigurator endpointConfigurator,
         IConsumerConfigurator<TermsConsumer> consumerConfigurator,

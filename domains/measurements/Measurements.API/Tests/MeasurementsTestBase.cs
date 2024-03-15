@@ -1,27 +1,24 @@
 using API;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using API.MeteringPoints.Api;
-using FluentAssertions.Common;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Tests.Fixtures;
 using Tests.TestContainers;
 using Xunit;
 
 namespace Tests;
 
-public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>, IClassFixture<PostgresContainer>, IClassFixture<RabbitMqContainer>
+public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
 {
     protected readonly TestServerFixture<Startup> _serverFixture;
+
     public string DataHubFacadeUrl { get; set; } = "http://someurl.com";
     public string otlpEndpoint { get; set; } = "http://someurl";
 
 
-    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture, PostgresContainer dbContainer, RabbitMqContainer rabbitMqContainer, Dictionary<string, string?>? options)
+    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture)
     {
         _serverFixture = serverFixture;
 
@@ -44,14 +41,11 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>, I
             { "TokenValidation:Audience", "Users" },
             { "DataHubFacade:Url", DataHubFacadeUrl },
             { "DataSync:Endpoint", "https://example.com" },
-            { "RabbitMq:Host", rabbitMqContainer.Options.Host },
-            { "RabbitMq:Port", rabbitMqContainer.Options.Port.ToString() },
-            { "RabbitMq:Username", rabbitMqContainer.Options.Username },
-            { "RabbitMq:Password", rabbitMqContainer.Options.Password },
-            { "ConnectionStrings:Postgres", dbContainer.ConnectionString }
+            { "RabbitMq:Host", "localhost" },
+            { "RabbitMq:Port", "5672" },
+            { "RabbitMq:Username", "guest" },
+            { "RabbitMq:Password", "guest" }
         };
-
-        options?.ToList().ForEach(x => config[x.Key] = x.Value);
 
         _serverFixture.ConfigureHostConfiguration(config);
     }
