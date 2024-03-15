@@ -38,5 +38,21 @@
             "nemid.common_name": "Peter Producent",
             "nemid.company_name": "Producent A/S"
         }
+    },
+    {
+        "name": "Jack Griffin",
+        "isSelectable": false,
+        "description": "Tredjepart virksomhed som er usynlig",
+        "imageUrl": "https://dummyimage.com/200x200/02525e/fff&text=baz",
+        "idToken": {
+            "sub": "6E45EAA2-D2D1-4831-A3FF-9BB0945A888F",
+            "idp": "nemid"
+        },
+        "userinfoToken": {
+            "sub": "6E45EAA2-D2D1-4831-A3FF-9BB0945A888F",
+            "identity_type": "professional",
+            "nemid.cvr": "87654321",
+            "nemid.company_name": "Monocane Inc"
+        }
     }
 ]
