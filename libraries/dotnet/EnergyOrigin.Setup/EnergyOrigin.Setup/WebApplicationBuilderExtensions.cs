@@ -29,4 +29,25 @@ public static class WebApplicationBuilderExtensions
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(console.CreateLogger());
     }
+
+    public static void AddSerilogWithOpenTelemetryWithoutOutboxLogs(this WebApplicationBuilder builder, Uri oltpReceiverEndpoint)
+    {
+        var log = new LoggerConfiguration()
+            .Filter.ByExcluding("RequestPath like '/health%'")
+            .Filter.ByExcluding("RequestPath like '/metrics%'")
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning)
+            .WriteTo.OpenTelemetry(options =>
+            {
+                options.Endpoint = oltpReceiverEndpoint.ToString();
+                options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
+                                       IncludedData.TraceIdField | IncludedData.SpanIdField;
+            });
+
+        var console = builder.Environment.IsDevelopment()
+            ? log.WriteTo.Console()
+            : log.WriteTo.Console(new JsonFormatter());
+
+        builder.Logging.ClearProviders();
+        builder.Logging.AddSerilog(console.CreateLogger());
+    }
 }
