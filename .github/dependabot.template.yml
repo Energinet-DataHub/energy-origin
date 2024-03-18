@@ -27,6 +27,7 @@ updates:
     directory: /domains/*/*.sln
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
     groups:
       "Microsoft.EntityFrameworkCore":
         patterns:
@@ -36,6 +37,7 @@ updates:
     directory: /libraries/dotnet/*/*.sln
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
     groups:
       "Microsoft.EntityFrameworkCore":
         patterns:
