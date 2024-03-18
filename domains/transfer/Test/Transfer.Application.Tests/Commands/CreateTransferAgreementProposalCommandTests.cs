@@ -8,7 +8,6 @@ using System;
 using Transfer.Domain.Entities;
 using FluentAssertions;
 using Transfer.Application.Exceptions;
-using NSubstitute.ExceptionExtensions;
 
 namespace Transfer.Application.Tests.Commands;
 
@@ -38,7 +37,7 @@ public class CreateTransferAgreementProposalCommandTests
     }
 
     [Fact]
-    public Task ShouldThrowExceptionWhenDateOverlap()
+    public async Task ShouldThrowExceptionWhenDateOverlap()
     {
         var taRepo = Substitute.For<ITransferAgreementRepository>();
         var taProposalRepo = Substitute.For<ITransferAgreementProposalRepository>();
@@ -55,6 +54,6 @@ public class CreateTransferAgreementProposalCommandTests
 
         var action = () => handler.Handle(cmd, default);
 
-        //action.Should().Throw<TransferAgreementOverlapsException>();
+        await action.Should().ThrowAsync<TransferAgreementOverlapsException>();
     }
 }
