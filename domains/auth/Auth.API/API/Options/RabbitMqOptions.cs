@@ -1,4 +1,4 @@
-﻿namespace API.Options;
+namespace API.Options;
 
 public class RabbitMqOptions
 {
