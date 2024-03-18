@@ -28,13 +28,13 @@ dotnet tool install --global dotnet-ef
 Adding a migration can be done like this:
 
 ```shell
-dotnet ef migrations add NameOfMigrations --project .\Infrastructure\Transfer.Infrastructure\Transfer.Infrastructure.csproj --startup-project .\Interface\TransferAPI\TransferAPI\TransferAPI.csproj --context DataContext.ApplicationDbContext
+dotnet ef migrations add NameOfMigrations --project .\Infrastructure\Transfer.Infrastructure\Transfer.Infrastructure.csproj --startup-project .\Interface\TransferAPI\TransferAPI.csproj --context DataContext.ApplicationDbContext
 ```
 
 Updating your local database can be done using this command:
 
 ```shell
-dotnet ef database update --project .\Infrastructure\Transfer.Infrastructure\Transfer.Infrastructure.csproj --startup-project .\Interface\TransferAPI\TransferAPI\TransferAPI.csproj --context DataContext.ApplicationDbContext
+dotnet ef database update --project .\Infrastructure\Transfer.Infrastructure\Transfer.Infrastructure.csproj --startup-project .\Interface\TransferAPI\TransferAPI.csproj --context DataContext.ApplicationDbContext
 ```
 
 The argument `--project .\Infrastructure\Transfer.Infrastructure\Transfer.Infrastructure.csproj` can be omitted if the working directory is changed to .\Infrastructure\Transfer.Infrastructure\Transfer.Infrastructure.csproj.
@@ -56,5 +56,5 @@ You must manually remember to generate the complete SQL migration script after a
 This is the command for generating the migration SQL script for the API project:
 
 ```shell
-dotnet ef migrations script --idempotent --project .\Interface\TransferAPI\TransferAPI\ --output migrations/API.sql
+dotnet ef migrations script --idempotent --project .\Interface\TransferAPI\ --output migrations/API.sql
 ```
