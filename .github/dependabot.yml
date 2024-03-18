@@ -15,17 +15,14 @@ updates:
     directory: /
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
   - package-ecosystem: docker
     directory: /libraries/docker/static-files
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
   - package-ecosystem: nuget
     directory: /domains/auth
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
     groups:
       Microsoft.EntityFrameworkCore:
         patterns:
@@ -34,7 +31,6 @@ updates:
     directory: /domains/certificates
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
     groups:
       Microsoft.EntityFrameworkCore:
         patterns:
@@ -43,7 +39,6 @@ updates:
     directory: /domains/measurements
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
     groups:
       Microsoft.EntityFrameworkCore:
         patterns:
@@ -52,7 +47,6 @@ updates:
     directory: /domains/oidc-mock
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
     groups:
       Microsoft.EntityFrameworkCore:
         patterns:
@@ -61,7 +55,6 @@ updates:
     directory: /domains/transfer
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
     groups:
       Microsoft.EntityFrameworkCore:
         patterns:
@@ -70,7 +63,6 @@ updates:
     directory: /libraries/dotnet/EnergyOrigin.ActivityLog
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
     groups:
       Microsoft.EntityFrameworkCore:
         patterns:
@@ -79,7 +71,6 @@ updates:
     directory: /libraries/dotnet/EnergyOrigin.IntegrationEvents
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
     groups:
       Microsoft.EntityFrameworkCore:
         patterns:
@@ -88,7 +79,6 @@ updates:
     directory: /libraries/dotnet/EnergyOrigin.Setup
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
     groups:
       Microsoft.EntityFrameworkCore:
         patterns:
@@ -97,7 +87,6 @@ updates:
     directory: /libraries/dotnet/EnergyOrigin.TokenValidation
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
     groups:
       Microsoft.EntityFrameworkCore:
         patterns:
