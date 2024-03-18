@@ -4,6 +4,7 @@ using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using EnergyOrigin.Setup.Swagger;
 using MassTransit.Logging;
+using MassTransit.Monitoring;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -90,6 +91,34 @@ public static class IServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddNpgsql()
+                    .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
+    }
+    public static void AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit(this IServiceCollection services, Action<ResourceBuilder> configResource, Uri oltpReceiverEndpoint)
+    {
+        services.AddOpenTelemetry()
+            .ConfigureResource(configResource)
+            .WithMetrics(meterProviderBuilder =>
+                meterProviderBuilder
+                    .AddHttpClientInstrumentation()
+                    .AddAspNetCoreInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddProcessInstrumentation()
+                    .AddMeter(InstrumentationOptions.MeterName)
+                    .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint))
+            .WithTracing(tracerProviderBuilder =>
+                tracerProviderBuilder
+                    .AddGrpcClientInstrumentation(grpcOptions =>
+                    {
+                        grpcOptions.SuppressDownstreamInstrumentation = true;
+                        grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+                            activity.SetTag("requestVersion", httpRequestMessage.Version);
+                        grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+                            activity.SetTag("responseVersion", httpResponseMessage.Version);
+                    })
+                    .AddHttpClientInstrumentation()
+                    .AddAspNetCoreInstrumentation()
+                    .AddNpgsql()
+                    .AddSource(DiagnosticHeaders.DefaultListenerName)
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
     }
 }
