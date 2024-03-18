@@ -14,15 +14,8 @@ public interface ITransferAgreementProposalRepository
     Task<TransferAgreementProposal?> GetNonExpiredTransferAgreementProposalAsNoTracking(Guid id);
 }
 
-public class TransferAgreementProposalRepository : ITransferAgreementProposalRepository
+public class TransferAgreementProposalRepository(ApplicationDbContext context) : ITransferAgreementProposalRepository
 {
-    private readonly ApplicationDbContext context;
-
-    public TransferAgreementProposalRepository(ApplicationDbContext context)
-    {
-        this.context = context;
-    }
-
     public async Task AddTransferAgreementProposal(TransferAgreementProposal proposal)
     {
         context.TransferAgreementProposals.Add(proposal);

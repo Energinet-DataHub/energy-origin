@@ -24,7 +24,7 @@ public class AddTransferAgreementProposalsAndDeleteConnectionsMigrationTests : M
         await InsertOldConnection(dbContext, Guid.NewGuid(), Guid.NewGuid(), "12345678", Guid.NewGuid(), "11223344");
         await InsertOldConnectionInvitation(dbContext, Guid.NewGuid(), Guid.NewGuid(), "12345678", DateTimeOffset.UtcNow);
 
-        var applyMigration = () => migrator.Migrate("20231123093303_AddTransferAgreementProposalsAndDeleteConnections");
+        var applyMigration = () => migrator.Migrate();
         applyMigration.Should().NotThrow();
     }
 

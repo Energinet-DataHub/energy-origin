@@ -28,7 +28,7 @@ public class ActivityLogEntityIdIsNowAStringTests : IAsyncDisposable
 
         await InsertOldActivityLogEntry(dbContext, Guid.NewGuid());
 
-        var applyMigration = () => migrator.MigrateAsync("20240216110232_ActivityLogEntityIdIsNowAString");
+        var applyMigration = () => migrator.MigrateAsync();
         await applyMigration.Should().NotThrowAsync();
 
         var logEntriesInDb = dbContext.ActivityLogs.ToList();

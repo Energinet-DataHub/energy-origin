@@ -4,6 +4,8 @@ using System.Text.Json.Serialization;
 using API.Transfer.Api.Options;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
+using API.Transfer.TransferAgreementCleanup;
+using API.Transfer.TransferAgreementCleanup.Options;
 using API.Transfer.TransferAgreementProposalCleanup;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
 using Audit.Core;
@@ -20,6 +22,8 @@ public static class Startup
     {
         services.AddOptions<TransferAgreementProposalCleanupServiceOptions>()
             .BindConfiguration(TransferAgreementProposalCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+        services.AddOptions<TransferAgreementCleanupOptions>()
+            .BindConfiguration(TransferAgreementCleanupOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
         services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
             .ValidateDataAnnotations().ValidateOnStart();
 
@@ -71,5 +75,6 @@ public static class Startup
         });
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
+        services.AddHostedService<TransferAgreementCleanupWorker>();
     }
 }

@@ -17,7 +17,7 @@ namespace DataContext.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.1")
+                .HasAnnotation("ProductVersion", "8.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -205,6 +205,14 @@ namespace DataContext.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("OrganizationTin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OtherOrganizationName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OtherOrganizationTin")
                         .IsRequired()
                         .HasColumnType("text");
 

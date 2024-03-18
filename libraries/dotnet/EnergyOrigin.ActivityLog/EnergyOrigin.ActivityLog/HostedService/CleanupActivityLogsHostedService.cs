@@ -14,7 +14,7 @@ public class CleanupActivityLogsHostedService(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} running.");
+        logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} running");
 
         using PeriodicTimer timer = new(TimeSpan.FromSeconds(activityLogOptions.Value.CleanupIntervalInSeconds));
 
@@ -27,7 +27,7 @@ public class CleanupActivityLogsHostedService(
         }
         catch (OperationCanceledException)
         {
-            logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} is stopping.");
+            logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} is stopping");
         }
     }
 
@@ -40,6 +40,7 @@ public class CleanupActivityLogsHostedService(
             .Where(x => x.Timestamp < DateTimeOffset.UtcNow.AddDays(-1 * activityLogOptions.Value.CleanupActivityLogsOlderThanInDays))
             .ExecuteDeleteAsync();
 
-        logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} cleaned up: {deleted} activity log entries", deleted);
+        logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} cleaned up: {deleted} activity log entries",
+            deleted);
     }
 }

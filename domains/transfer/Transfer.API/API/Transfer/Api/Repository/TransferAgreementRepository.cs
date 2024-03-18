@@ -8,16 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;
 
-public class TransferAgreementRepository : ITransferAgreementRepository
+public class TransferAgreementRepository(ApplicationDbContext context) : ITransferAgreementRepository
 {
-    private readonly ApplicationDbContext context;
-    public TransferAgreementRepository(ApplicationDbContext context) => this.context = context;
-
     public async Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement)
     {
         var agreements = await context.TransferAgreements.Where(t =>
             t.SenderId == transferAgreement.SenderId)
             .ToListAsync();
+
         var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
         transferAgreement.TransferAgreementNumber = transferAgreementNumber;
         context.TransferAgreements.Add(transferAgreement);

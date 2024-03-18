@@ -52,7 +52,7 @@ public class SigninModel : PageModel
             return BadRequest($"User '{Name}' not found");
         }
 
-        var code = userDescriptor.Name.ToMd5() ?? "";
+        var code = userDescriptor.Subject?.ToMd5() ?? "";
 
         var builder = new UriBuilder(RedirectUri ?? "");
         builder.Query = QueryString
