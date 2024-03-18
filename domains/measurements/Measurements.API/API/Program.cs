@@ -10,7 +10,7 @@ Log.Logger = configuration.GetSeriLogger();
 try
 {
     Log.Information("Starting server.");
-    WebApplication app = configuration.BuildApp();
+    WebApplication app = configuration.BuildApp(args);
 
     await app.RunAsync();
     Log.Information("Server stopped.");

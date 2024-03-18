@@ -50,6 +50,6 @@ public class MeteringPointsController : ControllerBase
             .Select(MeteringPoint.CreateFrom)
             .ToList();
 
-        return Ok(new GetMeteringPointsResponse(meteringPoints, relation?.Status)); // TODO: Fix
+        return Ok(new GetMeteringPointsResponse(meteringPoints, relation?.Status));
     }
 }

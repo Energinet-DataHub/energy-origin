@@ -25,6 +25,7 @@ using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
+using API.MeteringPoints.Api.Models;
 using Contracts;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -45,7 +46,6 @@ namespace Tests.Fixtures
 
     public class TestServerFixture<TStartup> : IDisposable where TStartup : class
     {
-        public string? ConnectionString  { get; set; } = String.Empty;
         public byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
         private TestServer? _server;
@@ -76,9 +76,6 @@ namespace Tests.Fixtures
 
         public void ConfigureHostConfiguration(Dictionary<string, string?> configuration)
         {
-            if (!string.IsNullOrEmpty(ConnectionString))
-                configuration.Add("ConnectionStrings:Postgres", ConnectionString);
-
             _configurationDictionary = configuration;
         }
 
@@ -125,11 +122,6 @@ namespace Tests.Fixtures
                 _host = builder.Start();
                 _server = _host.GetTestServer();
                 _handler = _server.CreateHandler();
-                if (!string.IsNullOrEmpty(ConnectionString))
-                {
-                    var dbContext = _host.Services.GetRequiredService<ApplicationDbContext>();
-                    dbContext.Database.EnsureCreated();
-                }
             }
         }
 

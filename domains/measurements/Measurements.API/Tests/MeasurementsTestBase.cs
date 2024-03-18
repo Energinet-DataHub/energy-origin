@@ -1,6 +1,7 @@
 using API;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
 using API.MeteringPoints.Api;
@@ -18,7 +19,7 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
     public string otlpEndpoint { get; set; } = "http://someurl";
 
 
-    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture)
+    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture, string connectionString = "")
     {
         _serverFixture = serverFixture;
 
@@ -46,6 +47,9 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
             { "RabbitMq:Username", "guest" },
             { "RabbitMq:Password", "guest" }
         };
+
+        if (!string.IsNullOrEmpty(connectionString))
+            config.Add("ConnectionStrings:Postgres", connectionString);
 
         _serverFixture.ConfigureHostConfiguration(config);
     }

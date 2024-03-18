@@ -12,9 +12,9 @@ namespace API.Extensions;
 
 public static class ConfigurationExtensions
 {
-    public static WebApplication BuildApp(this IConfigurationRoot configuration)
+    public static WebApplication BuildApp(this IConfigurationRoot configuration, string[] args)
     {
-        var builder = WebApplication.CreateBuilder();
+        var builder = WebApplication.CreateBuilder(args);
 
         builder.Configuration.Sources.Clear();
         builder.Configuration.AddConfiguration(configuration, shouldDisposeConfiguration: true);
