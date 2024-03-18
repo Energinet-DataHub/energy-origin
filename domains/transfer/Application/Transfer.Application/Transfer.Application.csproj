@@ -12,6 +12,10 @@
       <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
     </ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="Transfer.Application.Tests" />
+	</ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\Core\Transfer.Domain\Transfer.Domain.csproj" />
     </ItemGroup>
