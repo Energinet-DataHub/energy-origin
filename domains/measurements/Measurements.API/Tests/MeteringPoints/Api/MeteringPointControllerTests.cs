@@ -275,25 +275,25 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
     }
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
             string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20240110)
-        {
-            var client = CreateClient();
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
-            client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
-            return client;
-        }
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+        return client;
+    }
 
-        private string GenerateToken(
-            string scope = "",
-            string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
-            string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
-            string tin = "11223344",
-            string cpn = "Producent A/S",
-            string name = "Peter Producent",
-            string issuer = "demo.energioprindelse.dk",
-            string audience = "Users")
-        {
-            var claims = new Dictionary<string, object>()
+    private string GenerateToken(
+        string scope = "",
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
+        string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
+        string tin = "11223344",
+        string cpn = "Producent A/S",
+        string name = "Peter Producent",
+        string issuer = "demo.energioprindelse.dk",
+        string audience = "Users")
+    {
+        var claims = new Dictionary<string, object>()
             {
                 { UserClaimName.Scope, scope },
                 { UserClaimName.ActorLegacy, actor },
@@ -312,16 +312,16 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
                 { UserClaimName.AssignedRoles, ""}
             };
 
-            var signedJwtToken = new TokenSigner(PrivateKey).Sign(
-                sub,
-                name,
-                issuer,
-                audience,
-                null,
-                60,
-                claims
-            );
+        var signedJwtToken = new TokenSigner(PrivateKey).Sign(
+            sub,
+            name,
+            issuer,
+            audience,
+            null,
+            60,
+            claims
+        );
 
-            return signedJwtToken;
-        }
+        return signedJwtToken;
+    }
 }

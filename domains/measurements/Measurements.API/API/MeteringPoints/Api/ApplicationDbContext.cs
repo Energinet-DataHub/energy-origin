@@ -1,4 +1,4 @@
-﻿using API.MeteringPoints.Api.Models;
+using API.MeteringPoints.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.MeteringPoints.Api;
