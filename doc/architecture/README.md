@@ -75,6 +75,13 @@ of normal users and OIDC to existing IAM for administrative users.
 
 ---
 
+## Architecture
+
+Energy Origin solutions follows the Domain-Driven Hexagon of Clean Architecture as shown below. See Transfer subsystem for an exampled implementation.
+
+![Domain-Driven Hexagon](diagrams/ddhexagon.jpg)
+---
+
 ## Test Strategy
 
 All code must be sufficiently tested by unit and integrations tests,
