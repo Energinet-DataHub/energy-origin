@@ -1,12 +1,10 @@
 using API;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Security.Cryptography;
 using System.Text;
-using API.MeteringPoints.Api;
+using Contracts;
 using Tests.Fixtures;
-using Tests.TestContainers;
 using Xunit;
 
 namespace Tests;
@@ -19,7 +17,7 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
     public string otlpEndpoint { get; set; } = "http://someurl";
 
 
-    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture, string connectionString = "")
+    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture, RabbitMqOptions? rabbitMqOptions = null, string connectionString = "")
     {
         _serverFixture = serverFixture;
 
@@ -47,6 +45,13 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
             { "RabbitMq:Username", "guest" },
             { "RabbitMq:Password", "guest" }
         };
+        if (rabbitMqOptions != null)
+        {
+            config["RabbitMq:Host"] = rabbitMqOptions.Host;
+            config["RabbitMq:Port"] = rabbitMqOptions.Port.ToString();
+            config["RabbitMq:Username"] = rabbitMqOptions.Username;
+            config["RabbitMq:Password"] = rabbitMqOptions.Password;
+        }
 
         if (!string.IsNullOrEmpty(connectionString))
             config.Add("ConnectionStrings:Postgres", connectionString);

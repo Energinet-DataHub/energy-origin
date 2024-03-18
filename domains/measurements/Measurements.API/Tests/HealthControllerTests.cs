@@ -2,14 +2,15 @@ using System.Net;
 using System.Threading.Tasks;
 using API;
 using Tests.Fixtures;
+using Tests.TestContainers;
 using Xunit;
 
 namespace Tests;
 
-public class HealthControllerTests : MeasurementsTestBase
+public class HealthControllerTests : MeasurementsTestBase, IClassFixture<RabbitMqContainer>, IClassFixture<PostgresContainer>
 {
-    public HealthControllerTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture)
+    public HealthControllerTests(TestServerFixture<Startup> serverFixture, RabbitMqContainer rabbitMqContainer, PostgresContainer postgresContainer)
+        : base(serverFixture, rabbitMqContainer.Options, postgresContainer.ConnectionString)
     {
     }
 
