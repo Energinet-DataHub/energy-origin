@@ -25,7 +25,7 @@ public static class IApplicationBuilderExtensions
                     foreach (var description in provider.ApiVersionDescriptions.OrderByDescending(x => x.GroupName))
                     {
                         options.SwaggerEndpoint(
-                            $"/api-docs/" + subsystemName + "/{description.GroupName}/swagger.json",
+                            $"/api-docs/{subsystemName}/{description.GroupName}/swagger.json",
                             $"API v{description.GroupName}");
                     }
                 });
