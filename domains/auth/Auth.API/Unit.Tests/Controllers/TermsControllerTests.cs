@@ -2,6 +2,7 @@ using API.Controllers;
 using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
+using API.Utilities;
 using API.Values;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -70,11 +71,11 @@ public class TermsControllerTests
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
-        await userService.Received(1).UpsertUserAsync(Arg.Is<User>(y =>
+        await userService.Received(1).UpdateTermsAccepted(Arg.Is<User>(y =>
             y.UserTerms.First().AcceptedVersion == newAcceptedTermsVersion
             && y.Name == name
             && y.AllowCprLookup == allowCprLookup
-            && y.Id == id));
+            && y.Id == id), Arg.Any<DecodableUserDescriptor>());
     }
 
     [Fact]
@@ -99,7 +100,7 @@ public class TermsControllerTests
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
-        await userService.Received(1).UpsertUserAsync(Arg.Is<User>(y =>
+        await userService.Received(1).UpdateTermsAccepted(Arg.Is<User>(y =>
             y.UserTerms.First().AcceptedVersion == newAcceptedTermsVersion
             && y.Name == name
             && y.AllowCprLookup == allowCprLookup
@@ -109,7 +110,7 @@ public class TermsControllerTests
             && y.Company.Name == organization.Name
             && y.UserProviders.Count() == 1
             && y.UserProviders.First().ProviderKeyType == providerKeyType
-            && y.UserProviders.First().UserProviderKey == providerKey));
+            && y.UserProviders.First().UserProviderKey == providerKey), Arg.Any<DecodableUserDescriptor>());
     }
 
     [Fact]
