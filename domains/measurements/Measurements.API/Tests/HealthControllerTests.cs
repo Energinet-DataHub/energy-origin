@@ -1,6 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using API;
+using Tests.Extensions;
 using Tests.Fixtures;
 using Tests.TestContainers;
 using Xunit;
@@ -17,7 +18,9 @@ public class HealthControllerTests : MeasurementsTestBase, IClassFixture<RabbitM
     [Fact]
     public async Task Health_ShouldReturnOk_WhenStarted()
     {
-        var response = await _serverFixture.CreateUnauthenticatedClient().GetAsync("/health");
+        var client = _serverFixture.CreateUnauthenticatedClient();
+        var response = await client.RepeatedlyQueryUntil("/health", response => response.IsSuccessStatusCode);
+
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using Contracts;
+using Testcontainers.RabbitMq;
 using Tests.Fixtures;
 using Xunit;
 
@@ -12,7 +14,6 @@ namespace Tests;
 public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
 {
     protected readonly TestServerFixture<Startup> _serverFixture;
-
     public string DataHubFacadeUrl { get; set; } = "http://someurl.com";
     public string otlpEndpoint { get; set; } = "http://someurl";
 
