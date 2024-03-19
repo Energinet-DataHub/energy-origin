@@ -6,10 +6,7 @@ using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
-using Relation.V1;
 using WireMock.Server;
-using Testing.Extensions;
 
 namespace Integration.Tests.Controllers;
 
@@ -54,18 +51,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             UserTerms = new List<UserTerms> { new() { AcceptedVersion = 1 } }
         });
 
-        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
-        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
-            .Returns(new CreateRelationResponse
-            {
-                ErrorMessage = "",
-                Success = true
-            });
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             builder.ConfigureTestServices(services =>
             {
-                services.AddSingleton(_ => relationClient);
                 services.AddScoped(_ => options);
             });
         });
@@ -111,17 +100,9 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             RoleConfigurations = new() { new() { Key = role, Name = role, IsDefault = true } }
         };
 
-        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
-        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
-            .Returns(new CreateRelationResponse
-            {
-                ErrorMessage = "",
-                Success = true
-            });
 
         var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services =>
         {
-            services.AddSingleton(_ => relationClient);
             services.AddScoped(_ => options);
             services.AddScoped(_ => roleOptions);
         }));
@@ -171,20 +152,8 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             await dbContext.SaveChangesAsync();
         }
 
-        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
-        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
-            .Returns(new CreateRelationResponse
-            {
-                ErrorMessage = "",
-                Success = true
-            });
-
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton(_ => relationClient);
-            });
             builder.UseSetting($"{OidcOptions.Prefix}:{nameof(OidcOptions.IdGeneration)}",
                 nameof(OidcOptions.Generation.Predictable));
         });
@@ -215,20 +184,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             }
         });
 
-        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
-        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
-            .Returns(new CreateRelationResponse
-            {
-                ErrorMessage = "",
-                Success = true
-            });
-        var client = factory.CreateAuthenticatedClient(user, config: builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton(_ => relationClient);
-            });
-        });
+        var client = factory.CreateAuthenticatedClient(user);
 
         var response = await client.PutAsync("terms/user/accept/2", null);
 

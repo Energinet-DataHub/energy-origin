@@ -71,12 +71,6 @@ builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Pref
 builder.Services.AttachOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
-builder.Services.AddGrpcClient<Relation.V1.Relation.RelationClient>((sp, o) =>
-{
-    var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
-    o.Address = new Uri(options.Url);
-});
-
 builder.AddTokenValidation(new TokenValidationOptions
 {
     PublicKey = tokenOptions.PublicKeyPem,

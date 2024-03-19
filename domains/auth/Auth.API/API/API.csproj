@@ -43,8 +43,4 @@
         <InternalsVisibleTo Include="Unit.Tests"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Protobuf Include="Protos\relation.proto" GrpcServices="Client"/>
-    </ItemGroup>
-
 </Project>

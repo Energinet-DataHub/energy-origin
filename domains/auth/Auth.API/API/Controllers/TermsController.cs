@@ -24,7 +24,6 @@ public class TermsController : ControllerBase
         RoleOptions roleOptions,
         TermsOptions termsOptions,
         OidcOptions oidcOptions,
-        Relation.V1.Relation.RelationClient relationClient,
         int version)
     {
         if (termsOptions.PrivacyPolicyVersion < version)
