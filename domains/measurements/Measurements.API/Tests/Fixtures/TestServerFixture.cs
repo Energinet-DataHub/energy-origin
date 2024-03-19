@@ -19,15 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using API.MeteringPoints.Api;
-using API.MeteringPoints.Api.Consumer;
-using API.MeteringPoints.Api.Models;
-using Contracts;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Grpc.Net.Client;
@@ -37,13 +31,8 @@ using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Testcontainers.PostgreSql;
-using Testcontainers.RabbitMq;
 using Tests.Fixtures.TestServerHelpers;
-using Xunit;
 using Xunit.Abstractions;
-using RabbitMqContainer = Testcontainers.RabbitMq.RabbitMqContainer;
 
 namespace Tests.Fixtures
 {

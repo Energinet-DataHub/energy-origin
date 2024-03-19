@@ -1,9 +1,6 @@
 using API.Models.Entities;
 using API.Repositories.Data;
 using API.Repositories.Interfaces;
-using API.Utilities;
-using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories;
@@ -11,12 +8,10 @@ namespace API.Repositories;
 public class UserRepository : IUserRepository
 {
     private readonly DataContext dataContext;
-    private readonly IPublishEndpoint publishEndpoint;
 
-    public UserRepository(DataContext dataContext, IPublishEndpoint publishEndpoint)
+    public UserRepository(DataContext dataContext)
     {
         this.dataContext = dataContext;
-        this.publishEndpoint = publishEndpoint;
     }
 
     public async Task<User> UpsertUserAsync(User user)
@@ -39,12 +34,13 @@ public class UserRepository : IUserRepository
     }
 
     public async Task<IEnumerable<User>> GetUsersByTinAsync(string tin) => await dataContext.Users.Where(x => x.Company != null && x.Company.Tin == tin).Include(u => u.UserRoles).ToListAsync();
-    public async Task<User> UpdateTermsAccepted(User user, DecodableUserDescriptor descriptor)
+    public void UpdateTermsAccepted(User user)
     {
         dataContext.Users.Update(user);
-        await publishEndpoint.Publish(new OrgAcceptedTerms((Guid)user.Id!, descriptor.Organization?.Tin, descriptor.Id));
+    }
 
+    public async Task SaveChangeAsync()
+    {
         await dataContext.SaveChangesAsync();
-        return user;
     }
 }
