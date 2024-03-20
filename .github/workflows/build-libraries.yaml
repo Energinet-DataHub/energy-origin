@@ -7,6 +7,10 @@ on:
         description: "An indication of whether to commit/publish results"
         required: true
         type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
 
 jobs:
   define-matrix:
@@ -164,6 +168,7 @@ jobs:
       max-parallel: 1
       matrix:
         item: ${{ fromJson(needs.define-matrix.outputs.dockerfiles) }}
+    if: ${{ inputs.is-dependabot == 'false' }}
     steps:
       - uses: actions/checkout@v4
 

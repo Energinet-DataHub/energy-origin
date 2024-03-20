@@ -1,7 +1,7 @@
 ﻿{
   "openapi": "3.0.1",
   "info": {
-    "title": "Certificates Query API 20230101",
+    "title": "Certificates API 20230101",
     "description": "",
     "version": "20230101"
   },
@@ -313,6 +313,12 @@
             "type": "string"
           },
           "organizationName": {
+            "type": "string"
+          },
+          "otherOrganizationTin": {
+            "type": "string"
+          },
+          "otherOrganizationName": {
             "type": "string"
           },
           "entityType": {

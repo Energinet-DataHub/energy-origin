@@ -1,25 +1,18 @@
 using System;
-using System.Linq;
-using System.Text.Json.Serialization;
-using Asp.Versioning;
 using DataContext;
+using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using ProjectOrigin.WalletSystem.V1;
-using Serilog;
-using Serilog.Formatting.Json;
-using Serilog.Sinks.OpenTelemetry;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
@@ -32,22 +25,7 @@ var builder = WebApplication.CreateBuilder(args);
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-var loggerConfiguration = new LoggerConfiguration()
-    .Filter.ByExcluding("RequestPath like '/health%'")
-    .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .WriteTo.OpenTelemetry(options =>
-    {
-        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
-        options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
-                               IncludedData.TraceIdField | IncludedData.SpanIdField;
-    });
-
-loggerConfiguration = builder.Environment.IsDevelopment()
-    ? loggerConfiguration.WriteTo.Console()
-    : loggerConfiguration.WriteTo.Console(new JsonFormatter());
-
-builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
@@ -82,8 +60,7 @@ builder.Services.AddOpenTelemetry()
             .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddControllersWithEnumsAsStrings();
 
 builder.Services.AddAuthorization();
 builder.Services.AddHealthChecks();
@@ -107,14 +84,7 @@ builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     o.Address = new Uri(options.WalletUrl);
 });
-builder.Services.AddApiVersioning(options =>
-    {
-        options.AssumeDefaultVersionWhenUnspecified = false;
-        options.ReportApiVersions = true;
-        options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
-    })
-    .AddMvc()
-    .AddApiExplorer();
+builder.Services.AddVersioningToApi();
 
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddSwaggerGen();
@@ -127,18 +97,7 @@ builder.AddTokenValidation(tokenValidationOptions);
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
-app.UseSwagger(o => o.RouteTemplate = "api-docs/transfer-automation/{documentName}/swagger.json");
-if (app.Environment.IsDevelopment())
-    app.UseSwaggerUI(
-        options =>
-        {
-            foreach (var description in app.DescribeApiVersions().OrderByDescending(x => x.GroupName))
-            {
-                options.SwaggerEndpoint(
-                    $"/api-docs/transfer-automation/{description.GroupName}/swagger.json",
-                    $"API v{description.GroupName}");
-            }
-        });
+app.AddSwagger("transfer-automation");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

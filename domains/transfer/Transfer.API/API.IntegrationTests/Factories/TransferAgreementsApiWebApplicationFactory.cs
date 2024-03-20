@@ -69,6 +69,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
+        builder.UseSetting("TransferAgreementCleanup:SleepTime", "00:00:03");
         builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
@@ -159,25 +160,25 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     }
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20240103")
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Producent A/S", string apiVersion = "20240103")
     {
         var client = CreateClient();
-        AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, apiVersion);
+        AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, cpn, apiVersion: apiVersion);
         return client;
     }
 
     private HttpClient AuthenticateHttpClient(HttpClient client, string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20240103")
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Producent A/S", string apiVersion = "20240103")
     {
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
+            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor, cpn: cpn));
         client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
         return client;
     }
 
     public HttpClient CreateAuthenticatedClient(IProjectOriginWalletService poWalletServiceMock, string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = "20240103")
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Peter Producent A/S", string apiVersion = "20240103")
     {
         var client = WithWebHostBuilder(builder =>
         {
@@ -187,7 +188,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 services.AddScoped(_ => poWalletServiceMock);
             });
         }).CreateClient();
-        AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, apiVersion);
+        AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, cpn: cpn, apiVersion);
         return client;
     }
 
