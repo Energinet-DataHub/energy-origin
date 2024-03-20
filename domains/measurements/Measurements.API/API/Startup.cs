@@ -35,8 +35,22 @@ public class Startup
             options => options.UseNpgsql(_configuration.GetConnectionString("Postgres")),
             optionsLifetime: ServiceLifetime.Singleton);
         services.AddDbContextFactory<ApplicationDbContext>();
+
         services.AddHealthChecks()
-            .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+            .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+            .AddRabbitMQ((sp, _) =>
+            {
+                var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+                var factory = new ConnectionFactory
+                {
+                    HostName = options.Host,
+                    Port = options.Port ?? 0,
+                    UserName = options.Username,
+                    Password = options.Password,
+                    AutomaticRecoveryEnabled = true,
+                };
+                factory.CreateConnection();
+            });
 
         services.AddControllersWithEnumsAsStrings();
 
