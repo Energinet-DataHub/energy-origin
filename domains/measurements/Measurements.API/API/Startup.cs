@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RabbitMQ.Client;
 
 namespace API;
 
@@ -34,8 +35,8 @@ public class Startup
             options => options.UseNpgsql(_configuration.GetConnectionString("Postgres")),
             optionsLifetime: ServiceLifetime.Singleton);
         services.AddDbContextFactory<ApplicationDbContext>();
-
-        services.AddHealthChecks();
+        services.AddHealthChecks()
+            .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
 
         services.AddControllersWithEnumsAsStrings();
 

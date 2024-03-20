@@ -25,6 +25,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
+		<PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.0" />
 		<PackageReference Include="EnergyOrigin.Setup" Version="1.0.6" />
 		<PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.4" />
 		<PackageReference Include="EnergyOrigin.IntegrationEvents" Version="1.0.4" />
