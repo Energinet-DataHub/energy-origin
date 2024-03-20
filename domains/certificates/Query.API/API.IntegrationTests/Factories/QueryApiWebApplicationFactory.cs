@@ -64,6 +64,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Measurements:Url", MeasurementsUrl);
         builder.UseSetting("Measurements:GrpcUrl", "http://foo");
         builder.UseSetting("MeasurementsSync:Disabled", "false");
+        builder.UseSetting("IssuingContractCleanup:SleepTime", "00:00:03");
         builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");

@@ -140,6 +140,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             StartDate = DateTimeOffset.UtcNow,
             Id = Guid.NewGuid(),
             ReceiverReference = Guid.NewGuid(),
+            ReceiverName = "Prod A/S",
             ReceiverTin = receiverTin,
             SenderId = new Guid(sub),
             SenderName = "SomeOrg",
@@ -208,6 +209,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             SenderId = subject,
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
+            ReceiverName = "Hestesko A/S",
             ReceiverTin = "87654321",
             ReceiverReference = Guid.NewGuid()
         };
@@ -243,6 +245,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             SenderId = Guid.NewGuid(),
             SenderName = "nrgi A/S",
             SenderTin = "44332211",
+            ReceiverName = "Moelle A/S",
             ReceiverTin = receiverTin,
             ReceiverReference = Guid.NewGuid()
         };
@@ -283,6 +286,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 SenderId = Guid.NewGuid(),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
+                ReceiverName = "Moelle A/S",
                 ReceiverTin = "12345678",
                 ReceiverReference = Guid.NewGuid()
             }
@@ -323,6 +327,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = Guid.NewGuid(),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
+                    ReceiverName = "Producent A/S",
                     ReceiverTin = "11223344",
                     ReceiverReference = Guid.NewGuid()
                 },
@@ -334,6 +339,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     SenderId = Guid.Parse(sub),
                     SenderName = "Producent A/S",
                     SenderTin = "11223344",
+                    ReceiverName = "Test A/S",
                     ReceiverTin = "87654321",
                     ReceiverReference = Guid.NewGuid()
                 }
@@ -365,6 +371,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
+                ReceiverName = "Producent A/S",
                 ReceiverTin = receiverTin,
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 1
@@ -377,6 +384,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 EndDate = DateTimeOffset.UtcNow.AddDays(15),
                 SenderName = "nrgi A/S",
                 SenderTin = "44332211",
+                ReceiverName = "Producent A/S",
                 ReceiverTin = receiverTin,
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 2
@@ -406,6 +414,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
+                    ReceiverName = "Producent A/S",
                     ReceiverTin = "11223344",
                     ReceiverReference = Guid.NewGuid()
                 }
@@ -450,6 +459,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
+                    ReceiverName = "Producent A/S",
                     ReceiverTin = "11223344",
                     ReceiverReference = Guid.NewGuid()
                 }
@@ -503,6 +513,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     EndDate = DateTimeOffset.UtcNow.AddDays(10),
                     SenderName = "nrgi A/S",
                     SenderTin = "44332211",
+                    ReceiverName = "Producent A/S",
                     ReceiverTin = "1122334",
                     ReceiverReference = Guid.NewGuid()
                 }

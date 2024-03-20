@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.ActivityLog.HostedService;
@@ -50,6 +51,8 @@ public static class ActivityLogExtensions
                             ActorName = x.ActorName,
                             ActorId = x.ActorId,
                             OrganizationName = x.OrganizationName,
+                            OtherOrganizationTin = x.OtherOrganizationTin,
+                            OtherOrganizationName = x.OtherOrganizationName,
                             EntityType = EntityTypeMapper(x.EntityType),
                             ActorType = ActorTypeMapper(x.ActorType),
                             ActionType = ActionTypeMapper(x.ActionType)
@@ -78,7 +81,7 @@ public static class ActivityLogExtensions
             ActivityLogEntry.ActionTypeEnum.Deactivated => ActivityLogEntryResponse.ActionTypeEnum.Deactivated,
             ActivityLogEntry.ActionTypeEnum.EndDateChanged => ActivityLogEntryResponse.ActionTypeEnum.EndDateChanged,
             ActivityLogEntry.ActionTypeEnum.Expired => ActivityLogEntryResponse.ActionTypeEnum.Expired,
-            _ => throw new NotImplementedException()
+            _ => throw new InvalidEnumArgumentException()
         };
 
     public static ActivityLogEntryResponse.ActorTypeEnum ActorTypeMapper(ActivityLogEntry.ActorTypeEnum actorType) =>
@@ -86,7 +89,7 @@ public static class ActivityLogExtensions
         {
             ActivityLogEntry.ActorTypeEnum.User => ActivityLogEntryResponse.ActorTypeEnum.User,
             ActivityLogEntry.ActorTypeEnum.System => ActivityLogEntryResponse.ActorTypeEnum.System,
-            _ => throw new NotImplementedException()
+            _ => throw new InvalidEnumArgumentException()
         };
 
     public static ActivityLogEntryResponse.EntityTypeEnum EntityTypeMapper(ActivityLogEntry.EntityTypeEnum entityType) =>
@@ -95,7 +98,7 @@ public static class ActivityLogExtensions
             ActivityLogEntry.EntityTypeEnum.TransferAgreement => ActivityLogEntryResponse.EntityTypeEnum.TransferAgreement,
             ActivityLogEntry.EntityTypeEnum.MeteringPoint => ActivityLogEntryResponse.EntityTypeEnum.MeteringPoint,
             ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal => ActivityLogEntryResponse.EntityTypeEnum.TransferAgreementProposal,
-            _ => throw new NotImplementedException()
+            _ => throw new InvalidEnumArgumentException()
         };
 
     public static ActivityLogEntry.EntityTypeEnum EntityTypeMapper(ActivityLogEntryResponse.EntityTypeEnum requestEntityType) =>
@@ -104,6 +107,6 @@ public static class ActivityLogExtensions
             ActivityLogEntryResponse.EntityTypeEnum.TransferAgreement => ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             ActivityLogEntryResponse.EntityTypeEnum.MeteringPoint => ActivityLogEntry.EntityTypeEnum.MeteringPoint,
             ActivityLogEntryResponse.EntityTypeEnum.TransferAgreementProposal => ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
-            _ => throw new NotImplementedException()
+            _ => throw new InvalidEnumArgumentException()
         };
 }

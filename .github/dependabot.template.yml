@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+    groups:
+      pages-and-artifact-actions:
+        patterns:
+          - "actions/*pages*"
+          - "actions/*-artifact"
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /libraries/docker/*/Dockerfile
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /domains/*/*.sln
+    schedule:
+      interval: daily
+    groups:
+      "Microsoft.EntityFrameworkCore":
+        patterns:
+          - "Microsoft.EntityFrameworkCore.*"
+
+  - package-ecosystem: nuget
+    directory: /libraries/dotnet/*/*.sln
+    schedule:
+      interval: daily
+    groups:
+      "Microsoft.EntityFrameworkCore":
+        patterns:
+          - "Microsoft.EntityFrameworkCore.*"

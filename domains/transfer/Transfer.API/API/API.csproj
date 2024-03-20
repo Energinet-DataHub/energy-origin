@@ -19,29 +19,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
-        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
-        <PackageReference Include="Audit.EntityFramework.Core" Version="23.0.0" />
-        <PackageReference Include="Audit.NET" Version="23.0.0" />
-        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.3" />
+        <PackageReference Include="Audit.EntityFramework.Core" Version="25.0.1" />
+        <PackageReference Include="Audit.NET" Version="25.0.3" />
+        <PackageReference Include="EnergyOrigin.Setup" Version="1.0.6" />
+        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.4" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
         <PackageReference Include="IdentityModel" Version="6.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.1" />
-        <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.1" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.7.0" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.7.0" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Process" Version="0.5.0-beta.2" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.7.0" />
-        <PackageReference Include="Polly" Version="8.2.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.2" />
+        <PackageReference Include="Polly" Version="8.3.1" />
         <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
-        <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-        <PackageReference Include="Serilog.Expressions" Version="4.0.0" />
-        <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="2.0.0-dev-00270" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>
