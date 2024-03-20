@@ -36,7 +36,7 @@ public class Startup
             optionsLifetime: ServiceLifetime.Singleton);
         services.AddDbContextFactory<ApplicationDbContext>();
         services.AddHealthChecks()
-            .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+            .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
         services.AddControllersWithEnumsAsStrings();
 
