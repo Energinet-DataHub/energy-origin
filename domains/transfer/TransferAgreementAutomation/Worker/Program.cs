@@ -1,8 +1,6 @@
 using System;
 using DataContext;
 using EnergyOrigin.Setup;
-using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,12 +11,10 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using ProjectOrigin.WalletSystem.V1;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
-using TransferAgreementAutomation.Worker.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,12 +56,7 @@ builder.Services.AddOpenTelemetry()
             .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
 
-builder.Services.AddControllersWithEnumsAsStrings();
-
-builder.Services.AddAuthorization();
 builder.Services.AddHealthChecks();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 
 builder.Services.AddDbContext<ApplicationDbContext>(
@@ -74,7 +65,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
-builder.Services.AddSingleton<AutomationCache>();
 builder.Services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
 builder.Services.AddSingleton<IProjectOriginWalletService, ProjectOriginWalletService>();
 
@@ -84,26 +74,10 @@ builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     o.Address = new Uri(options.WalletUrl);
 });
-builder.Services.AddVersioningToApi();
-
-builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-builder.Services.AddSwaggerGen();
-
-var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-
-builder.AddTokenValidation(tokenValidationOptions);
 
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
-app.AddSwagger("transfer-automation");
-
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();
 
