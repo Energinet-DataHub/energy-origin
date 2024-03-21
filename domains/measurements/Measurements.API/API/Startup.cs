@@ -2,14 +2,20 @@ using System;
 using API.Options;
 using EnergyOrigin.TokenValidation.Options;
 using Microsoft.Extensions.Options;
+using API.MeteringPoints.Api;
+using API.MeteringPoints.Api.Consumer;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using EnergyOrigin.Setup;
+using Contracts;
 using EnergyOrigin.TokenValidation.Utilities;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RabbitMQ.Client;
 
 namespace API;
 
@@ -25,7 +31,26 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddHealthChecks();
+        services.AddDbContext<ApplicationDbContext>(
+            options => options.UseNpgsql(_configuration.GetConnectionString("Postgres")),
+            optionsLifetime: ServiceLifetime.Singleton);
+        services.AddDbContextFactory<ApplicationDbContext>();
+
+        services.AddHealthChecks()
+            .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+            .AddRabbitMQ((sp, o) =>
+            {
+                var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+                var factory = new ConnectionFactory
+                {
+                    HostName = options.Host,
+                    Port = options.Port ?? 0,
+                    UserName = options.Username,
+                    Password = options.Password,
+                    AutomaticRecoveryEnabled = true,
+                };
+                o.Connection = factory.CreateConnection();
+            });
 
         services.AddControllersWithEnumsAsStrings();
 
@@ -43,6 +68,31 @@ public class Startup
         services.AddSwaggerGen();
 
         services.AddLogging();
+
+        services.AddOptions<RabbitMqOptions>()
+            .BindConfiguration(RabbitMqOptions.RabbitMq)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddMassTransit(o =>
+        {
+            o.SetKebabCaseEndpointNameFormatter();
+
+            o.AddConsumer<TermsConsumer, TermsConsumerErrorDefinition>();
+
+            o.UsingRabbitMq((context, cfg) =>
+            {
+                var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+                var url = $"rabbitmq://{options.Host}:{options.Port}";
+
+                cfg.Host(new Uri(url), h =>
+                {
+                    h.Username(options.Username);
+                    h.Password(options.Password);
+                });
+                cfg.ConfigureEndpoints(context);
+            });
+        });
 
         var otlpConfiguration = _configuration.GetSection(OtlpOptions.Prefix);
         var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
@@ -63,10 +113,19 @@ public class Startup
             var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
             o.Address = new Uri(options.Url);
         });
+
+        services.AddGrpcClient<Relation.V1.Relation.RelationClient>((sp, o) =>
+        {
+            var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
+            o.Address = new Uri(options.Url);
+        });
+
         services.AddVersioningToApi();
 
-        services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-        var tokenValidationOptions = _configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+        services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
+            .ValidateDataAnnotations().ValidateOnStart();
+        var tokenValidationOptions =
+            _configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
         services.AddTokenValidation(tokenValidationOptions);
 
         services.AddGrpc();

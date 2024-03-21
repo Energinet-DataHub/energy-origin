@@ -16,7 +16,7 @@ Log.Logger = LoggerBuilder.BuildSerilogger(otlpOptions!.ReceiverEndpoint);
 try
 {
     Log.Information("Starting server.");
-    WebApplication app = configuration.BuildApp();
+    WebApplication app = configuration.BuildApp(args);
 
     await app.RunAsync();
     Log.Information("Server stopped.");
