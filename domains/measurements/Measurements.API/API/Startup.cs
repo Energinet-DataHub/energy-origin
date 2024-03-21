@@ -38,7 +38,7 @@ public class Startup
 
         services.AddHealthChecks()
             .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
-            .AddRabbitMQ((sp, _) =>
+            .AddRabbitMQ((sp, o) =>
             {
                 var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
                 var factory = new ConnectionFactory
@@ -49,7 +49,7 @@ public class Startup
                     Password = options.Password,
                     AutomaticRecoveryEnabled = true,
                 };
-                factory.CreateConnection();
+                o.Connection = factory.CreateConnection();
             });
 
         services.AddControllersWithEnumsAsStrings();
