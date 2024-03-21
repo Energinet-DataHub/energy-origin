@@ -22,6 +22,7 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using RabbitMQ.Client;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -114,7 +115,21 @@ var healthCheckConnectionStringBuilder = new NpgsqlConnectionStringBuilder(datab
     Pooling = false
 };
 
-builder.Services.AddHealthChecks().AddNpgSql(healthCheckConnectionStringBuilder.ConnectionString);
+builder.Services.AddHealthChecks()
+    .AddNpgSql(healthCheckConnectionStringBuilder.ConnectionString)
+    .AddRabbitMQ((sp, o) =>
+    {
+        var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+        var factory = new ConnectionFactory
+        {
+            HostName = options.Host,
+            Port = options.Port ?? 0,
+            UserName = options.Username,
+            Password = options.Password,
+            AutomaticRecoveryEnabled = true,
+        };
+        o.Connection = factory.CreateConnection();
+    });
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
