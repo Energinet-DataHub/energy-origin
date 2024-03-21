@@ -9,7 +9,7 @@
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0"/>
         <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.0" />
-        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.4"/>
+        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.5"/>
         <PackageReference Include="Grpc.AspNetCore" Version="2.61.0"/>
         <PackageReference Include="EnergyOrigin.IntegrationEvents" Version="1.0.4"/>
         <PackageReference Include="IdentityModel" Version="6.2.0"/>
