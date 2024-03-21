@@ -6,7 +6,6 @@ using DataContext.Models;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.Common.V1;
@@ -21,19 +20,16 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly WalletService.WalletServiceClient walletServiceClient;
     private readonly ITransferAgreementAutomationMetrics metrics;
-    private readonly AutomationCache cache;
 
     public ProjectOriginWalletService(
         ILogger<ProjectOriginWalletService> logger,
         WalletService.WalletServiceClient walletServiceClient,
-        ITransferAgreementAutomationMetrics metrics,
-        AutomationCache cache
+        ITransferAgreementAutomationMetrics metrics
     )
     {
         this.logger = logger;
         this.walletServiceClient = walletServiceClient;
         this.metrics = metrics;
-        this.cache = cache;
     }
 
     public async Task TransferCertificates(TransferAgreement transferAgreement)
@@ -71,23 +67,9 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
             await walletServiceClient
                 .TransferCertificateAsync(request, header);
-            SetTransferAttempt(certificate.FederatedId.StreamId.Value);
         }
 
         metrics.SetNumberOfCertificates(certificatesCount);
-    }
-
-    private void SetTransferAttempt(string certificateId)
-    {
-        var attempt = cache.Cache.Get(certificateId);
-        if (attempt == null)
-        {
-            cache.Cache.Set(certificateId, 1, TimeSpan.FromHours(2));
-        }
-        else
-        {
-            metrics.AddTransferError();
-        }
     }
 
     private static Metadata SetupDummyAuthorizationHeader(string owner)

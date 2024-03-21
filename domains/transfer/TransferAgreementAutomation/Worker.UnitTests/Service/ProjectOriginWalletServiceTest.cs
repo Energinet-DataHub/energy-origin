@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProjectOrigin.Common.V1;
 using ProjectOrigin.WalletSystem.V1;
-using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Service;
 using Xunit;
@@ -16,47 +15,15 @@ public class ProjectOriginWalletServiceTest
 {
     private readonly ProjectOriginWalletService service;
     private readonly WalletService.WalletServiceClient fakeWalletServiceClient;
-    private readonly ITransferAgreementAutomationMetrics fakeMetrics;
-
 
     public ProjectOriginWalletServiceTest()
     {
         var fakeLogger = Substitute.For<ILogger<ProjectOriginWalletService>>();
         fakeWalletServiceClient = Substitute.For<WalletService.WalletServiceClient>();
-        fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
-        var fakeCache = new AutomationCache();
+        var fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
 
-        service = new ProjectOriginWalletService(fakeLogger, fakeWalletServiceClient, fakeMetrics, fakeCache);
+        service = new ProjectOriginWalletService(fakeLogger, fakeWalletServiceClient, fakeMetrics);
     }
-
-    [Fact]
-    public async Task TransferCertificates_CertificateNotTransfer_ShouldSetMetric()
-    {
-        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(3));
-
-        var certificate = new GranularCertificate
-        {
-            Type = GranularCertificateType.Production,
-            Start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddHours(1)),
-            End = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddHours(2)),
-            FederatedId = new FederatedStreamId() { StreamId = new Uuid() { Value = Guid.NewGuid().ToString() } }
-        };
-
-        var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse { GranularCertificates = { certificate } }
-        );
-        var fakeTransferResponse = CreateAsyncUnaryCall(
-            new TransferResponse() { }
-        );
-        SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
-
-        await service.TransferCertificates(transferAgreement);
-        fakeMetrics.DidNotReceive().AddTransferError();
-
-        await service.TransferCertificates(transferAgreement);
-        fakeMetrics.Received(1).AddTransferError();
-    }
-
 
     [Fact]
     public async Task TransferCertificates_TransferAgreementNoEndDate_ShouldCallWalletTransferCertificate()
