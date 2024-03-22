@@ -13,6 +13,5 @@ public interface ITransferAgreementRepository
     Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin);
     Task<List<TransferAgreement>> GetAllTransferAgreements();
     Task<bool> HasDateOverlap(TransferAgreement transferAgreement);
-    Task Save();
     Task<bool> HasDateOverlap(TransferAgreementProposal proposal);
 }
