@@ -24,22 +24,33 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using RabbitMQ.Client;
 using Serilog;
-using Serilog.Enrichers.Span;
+using Serilog.Events;
 using Serilog.Formatting.Json;
+using Serilog.Sinks.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var log = new LoggerConfiguration()
-    .Filter.ByExcluding("RequestPath like '/health%'")
-    .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .Enrich.WithSpan();
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-var console = builder.Environment.IsDevelopment()
-    ? log.WriteTo.Console()
-    : log.WriteTo.Console(new JsonFormatter());
+LoggerConfiguration config = new LoggerConfiguration()
+    .Filter
+    .ByExcluding("RequestPath like '/health%'").Filter.ByExcluding("RequestPath like '/metrics%'")
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+    .WriteTo.OpenTelemetry(options =>
+    {
+        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
+        options.IncludedData = IncludedData.TraceIdField | IncludedData.SpanIdField |
+                               IncludedData.MessageTemplateRenderingsAttribute;
+    });
+
+LoggerConfiguration loggerConfiguration = builder.Environment.IsDevelopment()
+    ? config.WriteTo.Console()
+    : config.WriteTo.Console(new JsonFormatter());
 
 builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(console.CreateLogger());
+builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+
 
 if (builder.Environment.IsTest())
 {
@@ -52,8 +63,6 @@ var tokenOptions = tokenConfiguration.Get<TokenOptions>()!;
 var databaseConfiguration = builder.Configuration.GetSection(DatabaseOptions.Prefix);
 var databaseOptions = databaseConfiguration.Get<DatabaseOptions>()!;
 
-var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
-var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
@@ -61,16 +70,26 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 builder.Services.AddFeatureManagement();
 
-builder.Services.AttachOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AttachOptions<CryptographyOptions>().BindConfiguration(CryptographyOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AttachOptions<TermsOptions>().BindConfiguration(TermsOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AttachOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AttachOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AttachOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AttachOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AttachOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AttachOptions<CryptographyOptions>().BindConfiguration(CryptographyOptions.Prefix)
+    .ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<TermsOptions>().BindConfiguration(TermsOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AttachOptions<TokenOptions>().BindConfiguration(TokenOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AttachOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AttachOptions<IdentityProviderOptions>().BindConfiguration(IdentityProviderOptions.Prefix)
+    .ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AttachOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix)
+    .ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AttachOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.AddTokenValidation(new TokenValidationOptions
 {
@@ -90,16 +109,22 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement() {
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
-        new OpenApiSecurityScheme {
-            Reference = new OpenApiReference {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"},
-            Scheme = "oauth2",
-            Name = "Bearer",
-            In = ParameterLocation.Header,
-        }, new List<string>() }
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
+        }
     });
 });
 
@@ -229,4 +254,6 @@ catch (Exception e)
     throw;
 }
 
-public partial class Program { }
+public partial class Program
+{
+}
