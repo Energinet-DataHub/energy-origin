@@ -6,10 +6,7 @@ using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
-using Relation.V1;
 using WireMock.Server;
-using Testing.Extensions;
 
 namespace Integration.Tests.Controllers;
 
@@ -24,17 +21,6 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
         var client = factory.CreateAnonymousClient();
 
         var result = await client.PutAsync("terms/user/accept/1", null);
-
-        Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-    }
-
-    [Fact]
-    public async Task AcceptCompanyAsync_ShouldReturnUnauthorized_WhenInvokedWithoutAuthorization()
-    {
-        var client = factory.CreateAnonymousClient();
-
-        var result = await client.PutAsync("terms/company/accept/1", null);
 
         Assert.NotNull(result);
         Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
@@ -65,18 +51,10 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             UserTerms = new List<UserTerms> { new() { AcceptedVersion = 1 } }
         });
 
-        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
-        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
-            .Returns(new CreateRelationResponse
-            {
-                ErrorMessage = "",
-                Success = true
-            });
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
             builder.ConfigureTestServices(services =>
             {
-                services.AddSingleton(_ => relationClient);
                 services.AddScoped(_ => options);
             });
         });
@@ -122,17 +100,9 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             RoleConfigurations = new() { new() { Key = role, Name = role, IsDefault = true } }
         };
 
-        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
-        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
-            .Returns(new CreateRelationResponse
-            {
-                ErrorMessage = "",
-                Success = true
-            });
 
         var client = factory.CreateAuthenticatedClient(user, config: builder => builder.ConfigureTestServices(services =>
         {
-            services.AddSingleton(_ => relationClient);
             services.AddScoped(_ => options);
             services.AddScoped(_ => roleOptions);
         }));
@@ -182,20 +152,8 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             await dbContext.SaveChangesAsync();
         }
 
-        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
-        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
-            .Returns(new CreateRelationResponse
-            {
-                ErrorMessage = "",
-                Success = true
-            });
-
         var client = factory.CreateAuthenticatedClient(user, config: builder =>
         {
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton(_ => relationClient);
-            });
             builder.UseSetting($"{OidcOptions.Prefix}:{nameof(OidcOptions.IdGeneration)}",
                 nameof(OidcOptions.Generation.Predictable));
         });
@@ -226,20 +184,7 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
             }
         });
 
-        var relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
-        relationClient.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: CancellationToken.None)
-            .Returns(new CreateRelationResponse
-            {
-                ErrorMessage = "",
-                Success = true
-            });
-        var client = factory.CreateAuthenticatedClient(user, config: builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddSingleton(_ => relationClient);
-            });
-        });
+        var client = factory.CreateAuthenticatedClient(user);
 
         var response = await client.PutAsync("terms/user/accept/2", null);
 
@@ -274,127 +219,5 @@ public class TermsControllerTests : IClassFixture<AuthWebApplicationFactory>
 
         Assert.NotNull(response);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task AcceptCompanyAsync_ShouldReturnOkAndCreateCompanyTerms_WhenCompanyTermsExists(int acceptedVersion)
-    {
-        var user = await factory.AddUserToDatabaseAsync(new User
-        {
-            Name = Guid.NewGuid().ToString(),
-            AllowCprLookup = false,
-            Company = new Company
-            {
-                Id = Guid.NewGuid(),
-                Name = "TestCompany",
-                Tin = Guid.NewGuid().ToString(),
-                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 1 } }
-            },
-            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
-        });
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
-
-        var result = await client.PutAsync($"terms/company/accept/{acceptedVersion}", null);
-
-        var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).SingleOrDefault(x => x.Name == user.Name)!.Company!;
-        Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        Assert.Contains(company.CompanyTerms, x => x.Type == CompanyTermsType.TermsOfService && x.AcceptedVersion == acceptedVersion);
-    }
-
-    [Fact]
-    public async Task AcceptCompanyAsync_ShouldReturnOkAndCreateCompanyTerms_WhenCompanyTermsDoesNotExist()
-    {
-        var user = await factory.AddUserToDatabaseAsync(new User
-        {
-            Name = Guid.NewGuid().ToString(),
-            AllowCprLookup = false,
-            Company = new Company
-            {
-                Id = Guid.NewGuid(),
-                Name = "TestCompany",
-                Tin = Guid.NewGuid().ToString()
-            },
-            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
-        });
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
-
-        var result = await client.PutAsync("terms/company/accept/2", null);
-
-        var company = factory.DataContext.Users.Include(x => x.Company).ThenInclude(x => x!.CompanyTerms).SingleOrDefault(x => x.Name == user.Name)!.Company!;
-        Assert.NotNull(result);
-        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        Assert.Contains(company.CompanyTerms, x => x is { Type: CompanyTermsType.TermsOfService, AcceptedVersion: 2 });
-    }
-
-    [Fact]
-    public async Task AcceptCompanyAsync_ShouldReturnBadRequestError_WhenAcceptingOlderVersion()
-    {
-        var user = await factory.AddUserToDatabaseAsync(new User
-        {
-            Name = Guid.NewGuid().ToString(),
-            AllowCprLookup = false,
-            Company = new Company
-            {
-                Id = Guid.NewGuid(),
-                Name = "TestCompany",
-                Tin = Guid.NewGuid().ToString(),
-                CompanyTerms = new List<CompanyTerms> { new() { Type = CompanyTermsType.TermsOfService, AcceptedVersion = 3 } }
-            },
-            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
-        });
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
-
-        var response = await client.PutAsync("terms/company/accept/2", null);
-
-        Assert.NotNull(response);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task AcceptCompanyAsync_ShouldReturnBadRequestError_WhenTermsVersionIsInvalid()
-    {
-        var user = await factory.AddUserToDatabaseAsync(new User
-        {
-            Name = Guid.NewGuid().ToString(),
-            AllowCprLookup = false,
-            Company = new Company
-            {
-                Id = Guid.NewGuid(),
-                Name = "TestCompany",
-                Tin = Guid.NewGuid().ToString()
-            },
-            UserProviders = new List<UserProvider> { new() { ProviderKeyType = ProviderKeyType.MitIdUuid, UserProviderKey = Guid.NewGuid().ToString() } }
-        });
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
-
-        var response = await client.PutAsync("terms/company/accept/10", null);
-
-        Assert.NotNull(response);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task AcceptCompanyAsync_ShouldReturnUnauthorized_WhenRequestIsNotAuthenticated()
-    {
-        var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user);
-
-        var response = await client.PutAsync("terms/company/accept/10", null);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task AcceptCompanyAsync_ShouldReturnUnauthorized_WhenRequestIsAuthenticatedByPrivateUser()
-    {
-        var user = await factory.AddUserToDatabaseAsync();
-        var client = factory.CreateAuthenticatedClient(user, role: RoleKey.OrganizationAdmin);
-
-        var response = await client.PutAsync("terms/company/accept/10", null);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 }

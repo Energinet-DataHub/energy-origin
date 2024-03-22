@@ -46,6 +46,11 @@ public class TransferAgreementCleanupWorker(
         var expiredTransferAgreements = context.TransferAgreements
             .Where(ta => ta.EndDate != null && ta.EndDate < DateTimeOffset.UtcNow);
 
+        var expiredTaIds = expiredTransferAgreements.Select(ta => ta.Id).ToList();
+        var historyEntries = context.TransferAgreementHistoryEntries
+            .Where(h => expiredTaIds.Contains(h.TransferAgreementId));
+
+        context.TransferAgreementHistoryEntries.RemoveRange(historyEntries);
         context.TransferAgreements.RemoveRange(expiredTransferAgreements);
 
         var senderLogEntries = expiredTransferAgreements.Select(transferAgreement => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
