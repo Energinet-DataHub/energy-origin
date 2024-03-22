@@ -23,29 +23,29 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
     }
 
     views {
-        systemContext energyOrigin "SystemContextEO" {
+        systemContext energyOrigin "EnergyOriginSystemContext" {
             title "[System Context] Energy Origin"
             include *
             autoLayout
         }
-        container energyOrigin "ContainerEO" {
+        container energyOrigin "EnergyOriginContainers" {
             title "[Container] Energy Origin"
             include *
             autoLayout
         }
 
         # Specific area container views
-        container energyOrigin "DataHubFacade" {
+        container energyOrigin "DataHubFacadeContainers" {
             title "[Container Context] DataHubFacade"
             include ->dataHubFacadeSubsystem->
             autoLayout
         }
-        container energyOrigin "Auth" {
+        container energyOrigin "AuthContainers" {
             title "[Container Context] Auth"
             include ->authSubsystem-> dataHubFacadeApi->
             autoLayout
         }
-        container energyOrigin "Measurements" {
+        container energyOrigin "MeasurementsContainers" {
             title "[Container Context] Measurements"
             include ->measurementsSubsystem-> dataHubFacadeApi->
             autolayout
@@ -55,7 +55,7 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include *
             autoLayout
         }
-        container energyOrigin "Certificate" {
+        container energyOrigin "CertificateContainers" {
             title "[Container Context] Certificates"
             include ->certificatesSubsystem->
             autoLayout
@@ -65,7 +65,7 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include *
             autoLayout
         }
-        container energyOrigin "Transfer" {
+        container energyOrigin "TransferContainers" {
             title "[Container] Transfer"
             include ->transferSubsystem->
             autoLayout
