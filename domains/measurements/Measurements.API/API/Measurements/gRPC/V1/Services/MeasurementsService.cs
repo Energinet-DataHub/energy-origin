@@ -43,30 +43,30 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
         var measurements = dhResponse.GetMeterTimeSeriesResult.MeterTimeSeriesMeteringPoint.SelectMany(
             mp => mp.MeteringPointStates?.SelectMany(
                 state => state.NonProfiledEnergyQuantities?.SelectMany(
-                    item => item.EnergyQuantityValues?.Select(
-                        quantity => new Measurement
-                        {
-                            Gsrn = mp.MeteringPointId,
-                            DateFrom = MeterTimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position) - 1, state.MeterReadingOccurrence),
-                            DateTo = MeterTimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position), state.MeterReadingOccurrence),
-                            Quantity = MeterTimeSeriesHelper.GetQuantityFromMeterReading(quantity.EnergyTimeSeriesMeasureUnit, quantity.EnergyQuantity),
-                            Quality = MeterTimeSeriesHelper.GetQuantityQualityFromMeterReading(quantity.QuantityQuality),
-                        }
-                    ) ?? Enumerable.Empty<Measurement>()
-                )
-                .GroupBy(measurement => measurement.DateFrom.ZeroedHour())
-                    .Select(group => new Measurement
-                    {
-                        Gsrn = mp.MeteringPointId,
-                        DateFrom = group.Min(m => m.DateFrom),
-                        DateTo = group.Max(m => m.DateTo),
-                        Quantity = group.Sum(m => m.Quantity),
-                        Quality = group.Max(m => m.Quality),
-                    })
-                .Where(measurement => measurement.DateFrom >= request.DateFrom && measurement.DateTo <= request.DateTo)
-                 ?? Enumerable.Empty<Measurement>()
+                                 item => item.EnergyQuantityValues?.Select(
+                                     quantity => new Measurement
+                                     {
+                                         Gsrn = mp.MeteringPointId,
+                                         DateFrom = MeterTimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position) - 1, state.MeterReadingOccurrence),
+                                         DateTo = MeterTimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position), state.MeterReadingOccurrence),
+                                         Quantity = MeterTimeSeriesHelper.GetQuantityFromMeterReading(quantity.EnergyTimeSeriesMeasureUnit, quantity.EnergyQuantity),
+                                         Quality = MeterTimeSeriesHelper.GetQuantityQualityFromMeterReading(quantity.QuantityQuality),
+                                     }
+                                 ) ?? Enumerable.Empty<Measurement>()
+                             )
+                             .GroupBy(measurement => measurement.DateFrom.ZeroedHour())
+                             .Select(group => new Measurement
+                             {
+                                 Gsrn = mp.MeteringPointId,
+                                 DateFrom = group.Min(m => m.DateFrom),
+                                 DateTo = group.Max(m => m.DateTo),
+                                 Quantity = group.Sum(m => m.Quantity),
+                                 Quality = group.Max(m => m.Quality),
+                             })
+                             .Where(measurement => measurement.DateFrom >= request.DateFrom && measurement.DateTo <= request.DateTo)
+                         ?? Enumerable.Empty<Measurement>()
             ) ?? Enumerable.Empty<Measurement>()
-        ) ?? Enumerable.Empty<Measurement>();
+        );
 
         var response = new GetMeasurementsResponse();
         response.Measurements.AddRange(measurements);
