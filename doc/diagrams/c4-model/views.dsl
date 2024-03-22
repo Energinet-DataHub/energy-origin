@@ -29,7 +29,7 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             autoLayout
         }
         container energyOrigin "EnergyOriginContainers" {
-            title "[Container] Energy Origin"
+            title "[Container Context] Energy Origin"
             include *
             autoLayout
         }
@@ -61,17 +61,17 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             autoLayout
         }
         component certApi "CertificateApiComponents" {
-            title "[Component] Certificate API"
+            title "[Component Context] Certificate API"
             include *
             autoLayout
         }
         container energyOrigin "TransferContainers" {
-            title "[Container] Transfer"
+            title "[Container Context] Transfer"
             include ->transferSubsystem->
             autoLayout
         }
         component transferApi "TransferApiComponents" {
-            title "[Component] Transfer API"
+            title "[Component Context] Transfer API"
             include *
             autoLayout
         }
