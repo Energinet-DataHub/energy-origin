@@ -140,21 +140,23 @@ var healthCheckConnectionStringBuilder = new NpgsqlConnectionStringBuilder(datab
     Pooling = false
 };
 
-builder.Services.AddHealthChecks()
-    .AddNpgSql(healthCheckConnectionStringBuilder.ConnectionString)
-    .AddRabbitMQ((sp, o) =>
+builder.Services.AddSingleton<IConnection>(sp =>
     {
         var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+
         var factory = new ConnectionFactory
         {
             HostName = options.Host,
             Port = options.Port ?? 0,
             UserName = options.Username,
             Password = options.Password,
-            AutomaticRecoveryEnabled = true,
+            AutomaticRecoveryEnabled = true
         };
-        o.Connection = factory.CreateConnection();
-    });
+        return factory.CreateConnection();
+    })
+    .AddHealthChecks()
+    .AddNpgSql(healthCheckConnectionStringBuilder.ConnectionString)
+    .AddRabbitMQ();
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
@@ -164,6 +166,7 @@ builder.Services.AddSingleton<IDiscoveryCache>(providers =>
         CacheDuration = options.CacheDuration
     };
 });
+
 builder.Services.AddSingleton<ICryptography, Cryptography>();
 builder.Services.AddSingleton<ITokenIssuer, TokenIssuer>();
 builder.Services.AddSingleton<IMetrics, Metrics>();
