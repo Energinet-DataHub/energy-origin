@@ -2,13 +2,14 @@ using API.Models.Entities;
 using API.Repositories.Data.Interfaces;
 using API.Values;
 using EnergyOrigin.TokenValidation.Values;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace API.Repositories.Data;
 
 public class DataContext(DbContextOptions options)
-    : DbContext(options), IUserDataContext, ICompanyDataContext, IUserProviderDataContext
+    : DbContext(options), ICompanyDataContext, IUserProviderDataContext
 {
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Company> Companies { get; set; } = null!;
@@ -24,6 +25,8 @@ public class DataContext(DbContextOptions options)
         modelBuilder.HasPostgresEnum<ProviderKeyType>();
         modelBuilder.HasPostgresEnum<CompanyTermsType>();
         modelBuilder.HasPostgresEnum<UserTermsType>();
+
+        modelBuilder.AddTransactionalOutboxEntities();
     }
 
     public static NpgsqlDataSource GenerateNpgsqlDataSource(string connectionString)
