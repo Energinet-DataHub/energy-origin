@@ -1,10 +1,9 @@
 {
-    "name": "C# (.NET)",
+    "name": "OIDC mock",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {}
     },
-    "postCreateCommand": "dotnet tool install --global dotnet-outdated-tool ; dotnet restore",
     "remoteUser": "vscode",
     "remoteEnv": {
         "PATH": "${containerEnv:PATH}:~/.dotnet/tools"

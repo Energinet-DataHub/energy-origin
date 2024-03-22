@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.0.1",
   "info": {
     "title": "Certificates API 20230101",
@@ -6,35 +6,6 @@
     "version": "20230101"
   },
   "paths": {
-    "/api/certificates/activity-log": {
-      "post": {
-        "tags": [
-          "Activity log"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ActivityLogEntryFilterRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ActivityLogListEntryResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/certificates/contracts": {
       "post": {
         "tags": [
@@ -257,104 +228,6 @@
   },
   "components": {
     "schemas": {
-      "ActionTypeEnum": {
-        "enum": [
-          "Created",
-          "Accepted",
-          "Declined",
-          "Activated",
-          "Deactivated",
-          "EndDateChanged",
-          "Expired"
-        ],
-        "type": "string"
-      },
-      "ActivityLogEntryFilterRequest": {
-        "type": "object",
-        "properties": {
-          "start": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "end": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "entityType": {
-            "$ref": "#/components/schemas/EntityTypeEnum"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ActivityLogEntryResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "timestamp": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "actorId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "actorType": {
-            "$ref": "#/components/schemas/ActorTypeEnum"
-          },
-          "actorName": {
-            "type": "string"
-          },
-          "organizationTin": {
-            "type": "string"
-          },
-          "organizationName": {
-            "type": "string"
-          },
-          "otherOrganizationTin": {
-            "type": "string"
-          },
-          "otherOrganizationName": {
-            "type": "string"
-          },
-          "entityType": {
-            "$ref": "#/components/schemas/EntityTypeEnum"
-          },
-          "actionType": {
-            "$ref": "#/components/schemas/ActionTypeEnum"
-          },
-          "entityId": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ActivityLogListEntryResponse": {
-        "type": "object",
-        "properties": {
-          "activityLogEntries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ActivityLogEntryResponse"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ActorTypeEnum": {
-        "enum": [
-          "User",
-          "System"
-        ],
-        "type": "string"
-      },
       "Contract": {
         "type": "object",
         "properties": {
@@ -435,14 +308,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "EntityTypeEnum": {
-        "enum": [
-          "TransferAgreement",
-          "TransferAgreementProposal",
-          "MeteringPoint"
-        ],
-        "type": "string"
       },
       "MeteringPointType": {
         "enum": [

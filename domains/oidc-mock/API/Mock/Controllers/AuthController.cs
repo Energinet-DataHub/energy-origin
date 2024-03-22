@@ -72,7 +72,13 @@ public class AuthController : Controller
             return BadRequest(validationError);
         }
 
-        var user = users.FirstOrDefault(u => string.Equals(u.Name.ToMd5(), code));
+        if (string.IsNullOrEmpty(code))
+        {
+            logger.LogDebug("connect/token: Invalid code - no code given");
+            return BadRequest("Invalid code - no code given");
+        }
+
+        var user = users.FirstOrDefault(u => string.Equals(u.Subject?.ToMd5(), code));
         if (user == null)
         {
             logger.LogDebug("connect/token: Invalid code - no matching user");

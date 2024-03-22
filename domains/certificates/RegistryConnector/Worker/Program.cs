@@ -1,51 +1,26 @@
 using System;
 using Contracts;
 using DataContext;
+using EnergyOrigin.Setup;
 using MassTransit;
-using MassTransit.Logging;
-using MassTransit.Monitoring;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Npgsql;
-using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Converters;
 using RegistryConnector.Worker.EventHandlers;
 using RegistryConnector.Worker.RoutingSlips;
-using Serilog;
-using Serilog.Formatting.Json;
-using Serilog.Sinks.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-var log = new LoggerConfiguration()
-    .Filter.ByExcluding("RequestPath like '/health%'")
-    .Filter.ByExcluding("RequestPath like '/metrics%'")
-    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning)
-    .WriteTo.OpenTelemetry(options =>
-    {
-        options.Endpoint = otlpOptions.ReceiverEndpoint.ToString();
-        options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
-                               IncludedData.TraceIdField | IncludedData.SpanIdField;
-    });
-
-var console = builder.Environment.IsDevelopment()
-    ? log.WriteTo.Console()
-    : log.WriteTo.Console(new JsonFormatter());
-
-builder.Logging.ClearProviders();
-builder.Logging.AddSerilog(console.CreateLogger());
+builder.AddSerilogWithOpenTelemetryWithoutOutboxLogs(otlpOptions.ReceiverEndpoint);
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
@@ -112,31 +87,7 @@ void ConfigureResource(ResourceBuilder r)
         serviceInstanceId: Environment.MachineName);
 }
 
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(ConfigureResource)
-    .WithMetrics(meterProviderBuilder =>
-        meterProviderBuilder
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddRuntimeInstrumentation()
-            .AddProcessInstrumentation()
-            .AddMeter(InstrumentationOptions.MeterName)
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint))
-    .WithTracing(tracerProviderBuilder =>
-        tracerProviderBuilder
-            .AddGrpcClientInstrumentation(grpcOptions =>
-            {
-                grpcOptions.SuppressDownstreamInstrumentation = true;
-                grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
-                    activity.SetTag("requestVersion", httpRequestMessage.Version);
-                grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
-                    activity.SetTag("responseVersion", httpResponseMessage.Version);
-            })
-            .AddHttpClientInstrumentation()
-            .AddAspNetCoreInstrumentation()
-            .AddNpgsql()
-            .AddSource(DiagnosticHeaders.DefaultListenerName)
-            .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit(ConfigureResource, otlpOptions.ReceiverEndpoint);
 
 var app = builder.Build();
 
