@@ -77,7 +77,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230911185804_Initial') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230911185804_Initial', '8.0.2');
+    VALUES ('20230911185804_Initial', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -115,7 +115,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231017070514_AddedConsumptionCertificates') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231017070514_AddedConsumptionCertificates', '8.0.2');
+    VALUES ('20231017070514_AddedConsumptionCertificates', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -141,7 +141,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231107095405_AddTechnologyToCertificateIssuingContract') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231107095405_AddTechnologyToCertificateIssuingContract', '8.0.2');
+    VALUES ('20231107095405_AddTechnologyToCertificateIssuingContract', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -167,7 +167,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153157_RemoveTechnologyColumnsFromContracts') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231115153157_RemoveTechnologyColumnsFromContracts', '8.0.2');
+    VALUES ('20231115153157_RemoveTechnologyColumnsFromContracts', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -193,7 +193,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115153942_AddTechnologyToContractsTable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231115153942_AddTechnologyToContractsTable', '8.0.2');
+    VALUES ('20231115153942_AddTechnologyToContractsTable', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -219,7 +219,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231115155411_UpdateNullTechnologyCodes') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231115155411_UpdateNullTechnologyCodes', '8.0.2');
+    VALUES ('20231115155411_UpdateNullTechnologyCodes', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -338,7 +338,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231220131700_AddOutbox') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231220131700_AddOutbox', '8.0.2');
+    VALUES ('20231220131700_AddOutbox', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -357,7 +357,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240122103441_UpdateToOutbox') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240122103441_UpdateToOutbox', '8.0.2');
+    VALUES ('20240122103441_UpdateToOutbox', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -395,7 +395,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240125131645_AddActivityLog') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240125131645_AddActivityLog', '8.0.2');
+    VALUES ('20240125131645_AddActivityLog', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -414,7 +414,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240216110232_ActivityLogEntityIdIsNowAString') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240216110232_ActivityLogEntityIdIsNowAString', '8.0.2');
+    VALUES ('20240216110232_ActivityLogEntityIdIsNowAString', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -440,7 +440,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240306103908_AddOtherOrgToActivityLog') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240306103908_AddOtherOrgToActivityLog', '8.0.2');
+    VALUES ('20240306103908_AddOtherOrgToActivityLog', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
