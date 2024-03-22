@@ -4,7 +4,6 @@
         "dockerfile": "Dockerfile",
         "args": {}
     },
-    "postCreateCommand": "dotnet tool install --global dotnet-outdated-tool ; dotnet tool install --global dotnet-ef ; dotnet restore",
     "remoteUser": "vscode",
     "remoteEnv": {
         "PATH": "${containerEnv:PATH}:~/.dotnet/tools"

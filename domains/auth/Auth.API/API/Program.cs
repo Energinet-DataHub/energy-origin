@@ -12,6 +12,7 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using IdentityModel.Client;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
@@ -21,6 +22,7 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using RabbitMQ.Client;
 using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
@@ -68,12 +70,7 @@ builder.Services.AttachOptions<IdentityProviderOptions>().BindConfiguration(Iden
 builder.Services.AttachOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<RoleOptions>().BindConfiguration(RoleOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AttachOptions<DataHubFacadeOptions>().BindConfiguration(DataHubFacadeOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-
-builder.Services.AddGrpcClient<Relation.V1.Relation.RelationClient>((sp, o) =>
-{
-    var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
-    o.Address = new Uri(options.Url);
-});
+builder.Services.AttachOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 builder.AddTokenValidation(new TokenValidationOptions
 {
@@ -118,7 +115,21 @@ var healthCheckConnectionStringBuilder = new NpgsqlConnectionStringBuilder(datab
     Pooling = false
 };
 
-builder.Services.AddHealthChecks().AddNpgSql(healthCheckConnectionStringBuilder.ConnectionString);
+builder.Services.AddHealthChecks()
+    .AddNpgSql(healthCheckConnectionStringBuilder.ConnectionString)
+    .AddRabbitMQ((sp, o) =>
+    {
+        var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+        var factory = new ConnectionFactory
+        {
+            HostName = options.Host,
+            Port = options.Port ?? 0,
+            UserName = options.Username,
+            Password = options.Password,
+            AutomaticRecoveryEnabled = true,
+        };
+        o.Connection = factory.CreateConnection();
+    });
 
 builder.Services.AddSingleton<IDiscoveryCache>(providers =>
 {
@@ -134,7 +145,6 @@ builder.Services.AddSingleton<IMetrics, Metrics>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserDataContext, DataContext>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICompanyDataContext, DataContext>();
@@ -167,6 +177,29 @@ builder.Services.AddOpenTelemetry()
             })
             .AddNpgsql()
             .AddOtlpExporter(o => o.Endpoint = otlpOptions.ReceiverEndpoint));
+
+builder.Services.AddMassTransit(o =>
+{
+    o.SetKebabCaseEndpointNameFormatter();
+
+    o.UsingRabbitMq((context, cfg) =>
+    {
+        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+        var url = $"rabbitmq://{options.Host}:{options.Port}";
+
+        cfg.Host(new Uri(url), h =>
+        {
+            h.Username(options.Username);
+            h.Password(options.Password);
+        });
+        cfg.ConfigureEndpoints(context);
+    });
+    o.AddEntityFrameworkOutbox<DataContext>(outboxConfigurator =>
+    {
+        outboxConfigurator.UsePostgres();
+        outboxConfigurator.UseBusOutbox();
+    });
+});
 
 var app = builder.Build();
 

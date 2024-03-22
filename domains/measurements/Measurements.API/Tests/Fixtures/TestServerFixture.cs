@@ -84,7 +84,6 @@ namespace Tests.Fixtures
             if (_host == null)
             {
                 var builder = new HostBuilder();
-
                 if (_configurationDictionary != null)
                 {
                     builder.ConfigureHostConfiguration(config =>
