@@ -36,21 +36,23 @@ public class Startup
             optionsLifetime: ServiceLifetime.Singleton);
         services.AddDbContextFactory<ApplicationDbContext>();
 
-        services.AddHealthChecks()
-            .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
-            .AddRabbitMQ((sp, o) =>
+        services.AddSingleton<IConnection>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+
                 var factory = new ConnectionFactory
                 {
                     HostName = options.Host,
                     Port = options.Port ?? 0,
                     UserName = options.Username,
                     Password = options.Password,
-                    AutomaticRecoveryEnabled = true,
+                    AutomaticRecoveryEnabled = true
                 };
-                o.Connection = factory.CreateConnection();
-            });
+                return factory.CreateConnection();
+            })
+            .AddHealthChecks()
+            .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+            .AddRabbitMQ();
 
         services.AddControllersWithEnumsAsStrings();
 
