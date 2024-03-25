@@ -23,29 +23,29 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
     }
 
     views {
-        systemContext energyOrigin "SystemContextEO" {
+        systemContext energyOrigin "EnergyOriginSystemContext" {
             title "[System Context] Energy Origin"
             include *
             autoLayout
         }
-        container energyOrigin "ContainerEO" {
-            title "[Container] Energy Origin"
+        container energyOrigin "EnergyOriginContainers" {
+            title "[Container Context] Energy Origin"
             include *
             autoLayout
         }
 
         # Specific area container views
-        container energyOrigin "DataHubFacade" {
+        container energyOrigin "DataHubFacadeContainers" {
             title "[Container Context] DataHubFacade"
             include ->dataHubFacadeSubsystem->
             autoLayout
         }
-        container energyOrigin "Auth" {
+        container energyOrigin "AuthContainers" {
             title "[Container Context] Auth"
             include ->authSubsystem-> dataHubFacadeApi->
             autoLayout
         }
-        container energyOrigin "Measurements" {
+        container energyOrigin "MeasurementsContainers" {
             title "[Container Context] Measurements"
             include ->measurementsSubsystem-> dataHubFacadeApi->
             autolayout
@@ -55,23 +55,23 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include *
             autoLayout
         }
-        container energyOrigin "Certificate" {
+        container energyOrigin "CertificateContainers" {
             title "[Container Context] Certificates"
             include ->certificatesSubsystem->
             autoLayout
         }
         component certApi "CertificateApiComponents" {
-            title "[Component] Certificate API"
+            title "[Component Context] Certificate API"
             include *
             autoLayout
         }
-        container energyOrigin "Transfer" {
-            title "[Container] Transfer"
+        container energyOrigin "TransferContainers" {
+            title "[Container Context] Transfer"
             include ->transferSubsystem->
             autoLayout
         }
         component transferApi "TransferApiComponents" {
-            title "[Component] Transfer API"
+            title "[Component Context] Transfer API"
             include *
             autoLayout
         }
