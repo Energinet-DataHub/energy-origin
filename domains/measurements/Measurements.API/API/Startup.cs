@@ -75,6 +75,8 @@ public class Startup
             .BindConfiguration(RabbitMqOptions.RabbitMq)
             .ValidateDataAnnotations()
             .ValidateOnStart();
+        services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations().ValidateOnStart();
+
 
         services.AddMassTransit(o =>
         {
