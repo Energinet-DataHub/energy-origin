@@ -85,6 +85,9 @@
             "items": {
               "$ref": "#/components/schemas/MeteringPoint"
             }
+          },
+          "status": {
+            "$ref": "#/components/schemas/RelationStatus"
           }
         },
         "additionalProperties": false
@@ -123,6 +126,13 @@
           }
         },
         "additionalProperties": false
+      },
+      "RelationStatus": {
+        "enum": [
+          "Pending",
+          "Created"
+        ],
+        "type": "string"
       },
       "SubMeterType": {
         "enum": [

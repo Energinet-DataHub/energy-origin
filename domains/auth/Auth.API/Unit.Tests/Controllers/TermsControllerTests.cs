@@ -2,6 +2,7 @@ using API.Controllers;
 using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
+using API.Utilities;
 using API.Values;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -23,7 +24,6 @@ public class TermsControllerTests
     private readonly IHttpContextAccessor accessor = Substitute.For<IHttpContextAccessor>();
     private readonly IUserService userService = Substitute.For<IUserService>();
     private readonly ICompanyService companyService = Substitute.For<ICompanyService>();
-    private readonly Relation.V1.Relation.RelationClient relationClient = Substitute.For<Relation.V1.Relation.RelationClient>();
     private readonly MockHttpMessageHandler http = new();
     private readonly IOptions<DataHubFacadeOptions> dataHubFacadeOptions = Substitute.For<IOptions<DataHubFacadeOptions>>();
     private readonly ICryptography cryptography;
@@ -66,15 +66,15 @@ public class TermsControllerTests
             UserTerms = new List<UserTerms> { new() { Type = UserTermsType.PrivacyPolicy, AcceptedVersion = oldAcceptedTermsVersion } }
         });
 
-        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, newAcceptedTermsVersion);
+        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
-        await userService.Received(1).UpsertUserAsync(Arg.Is<User>(y =>
+        await userService.Received(1).UpdateTermsAccepted(Arg.Is<User>(y =>
             y.UserTerms.First().AcceptedVersion == newAcceptedTermsVersion
             && y.Name == name
             && y.AllowCprLookup == allowCprLookup
-            && y.Id == id));
+            && y.Id == id), Arg.Any<DecodableUserDescriptor>());
     }
 
     [Fact]
@@ -95,11 +95,11 @@ public class TermsControllerTests
 
         controller.PrepareUser(id: id, name: name, organization: organization, allowCprLookup: $"{allowCprLookup}", encryptedProviderKeys: cryptography.Encrypt($"{providerKeyType}={providerKey}"));
 
-        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, newAcceptedTermsVersion);
+        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, newAcceptedTermsVersion);
         Assert.NotNull(result);
         Assert.IsType<OkResult>(result);
 
-        await userService.Received(1).UpsertUserAsync(Arg.Is<User>(y =>
+        await userService.Received(1).UpdateTermsAccepted(Arg.Is<User>(y =>
             y.UserTerms.First().AcceptedVersion == newAcceptedTermsVersion
             && y.Name == name
             && y.AllowCprLookup == allowCprLookup
@@ -109,11 +109,11 @@ public class TermsControllerTests
             && y.Company.Name == organization.Name
             && y.UserProviders.Count() == 1
             && y.UserProviders.First().ProviderKeyType == providerKeyType
-            && y.UserProviders.First().UserProviderKey == providerKey));
+            && y.UserProviders.First().UserProviderKey == providerKey), Arg.Any<DecodableUserDescriptor>());
     }
 
     [Fact]
-    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenPrincipalIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, 3));
+    public async Task AcceptTermsAsync_ShouldThrowNullReferenceException_WhenPrincipalIsNull() => await Assert.ThrowsAsync<PropertyMissingException>(async () => await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, 3));
 
     [Fact]
     public async Task AcceptUserTermsAsync_ShouldThrowArgumentException_WhenUserHasAlreadyAcceptedNewerTermsVersion()
@@ -131,7 +131,7 @@ public class TermsControllerTests
             }
         );
 
-        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, relationClient, 1);
+        var result = await controller.AcceptUserTermsAsync(logger, userService, accessor, companyService, cryptography, roleOptions, termsOptions, oidcOptions, 1);
 
         Assert.NotNull(result);
         Assert.IsType<BadRequestObjectResult>(result);

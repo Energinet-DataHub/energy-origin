@@ -15,6 +15,8 @@ using FluentAssertions;
 using VerifyTests;
 using System.Globalization;
 using API.Measurements.Helpers;
+using API.MeteringPoints.Api;
+using Tests.TestContainers;
 
 namespace Tests.Measurements.gRPC.V1.Services;
 

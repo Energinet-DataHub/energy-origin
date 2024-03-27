@@ -4,34 +4,37 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API;
+using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Dto.Responses;
+using API.MeteringPoints.Api.Models;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Tests.Extensions;
-using Tests.Fixtures;
+using Tests.TestContainers;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
 
 namespace Tests.MeteringPoints.Api;
 
-public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
+public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>, IClassFixture<PostgresContainer>
 {
-    public MeteringPointControllerTests(TestServerFixture<Startup> serverFixture)
-        : base(serverFixture)
-    {
-    }
+    private readonly CustomMeterPointWebApplicationFactory<Startup> _factory;
 
-    public void Dispose()
+    public MeteringPointControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory, PostgresContainer postgresContainer)
+
     {
-        _serverFixture.RefreshHostAndGrpcChannelOnNextClient();
+        factory.ConnectionString = postgresContainer.ConnectionString;
+        _factory = factory;
+        _factory.Start();
     }
 
     [Fact]
     public async Task Unauthorized()
     {
-        var client = _serverFixture.CreateUnauthenticatedClient();
+        var client = _factory.CreateUnauthenticatedClient();
 
         var response = await client.GetAsync("api/measurements/meteringpoints");
 
@@ -41,8 +44,6 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
     [Fact]
     public async Task GetMeteringPoints()
     {
-        var clientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-
         var mockedResponse = new Meteringpoint.V1.MeteringPointsResponse
         {
             MeteringPoints =
@@ -62,18 +63,25 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
                 }
             }
         };
-
+        var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
         clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
             .Returns(mockedResponse);
-        _serverFixture.ConfigureTestServices += services =>
-        {
-            var mpClient = services.Single(d =>
-                d.ServiceType == typeof(Meteringpoint.V1.Meteringpoint.MeteringpointClient));
-            services.Remove(mpClient);
-            services.AddSingleton(clientMock);
-        };
 
-        var client = _serverFixture.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+        var subject = Guid.NewGuid();
+        var client = _factory.CreateAuthenticatedClient(subject.ToString());
+
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
+            .Options;
+        var dbContext = new ApplicationDbContext(contextOptions);
+        dbContext.Database.EnsureCreated();
+
+        dbContext.Relations.Add(new RelationDto()
+        {
+            SubjectId = subject,
+            Status = RelationStatus.Created,
+            Actor = Guid.NewGuid()
+        });
+        dbContext.SaveChanges();
 
         var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/measurements/meteringpoints");
 
@@ -81,15 +89,16 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
         var settings = new VerifySettings();
         settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
-        response!.Result.First().SubMeterType.Should().Be(MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
-        response.Result.First().Type.Should().Be(MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
+        response!.Result.First().SubMeterType.Should()
+            .Be(MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
+        response.Result.First().Type.Should()
+            .Be(MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
     }
 
     [Fact]
     public async Task GetMeteringPoints_GivenChildMp_ExpectChildMpOmitted()
     {
         var childTypeOfMp = "D01";
-        var clientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
         var mockedResponse = new Meteringpoint.V1.MeteringPointsResponse
         {
@@ -123,18 +132,12 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
                 }
             }
         };
+        var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
         clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
             .Returns(mockedResponse);
-        _serverFixture.ConfigureTestServices += services =>
-        {
-            var mpClient = services.Single(d =>
-                d.ServiceType == typeof(Meteringpoint.V1.Meteringpoint.MeteringpointClient));
-            services.Remove(mpClient);
-            services.AddSingleton(clientMock);
-        };
 
-        var client = _serverFixture.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+        var client = _factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
         var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/measurements/meteringpoints");
 
@@ -142,8 +145,10 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
         var settings = new VerifySettings();
         settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
-        response!.Result.First().SubMeterType.Should().Be(MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
-        response.Result.First().Type.Should().Be(MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
+        response!.Result.First().SubMeterType.Should()
+            .Be(MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
+        response.Result.First().Type.Should()
+            .Be(MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
     }
 
     [Theory]
@@ -167,11 +172,10 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
     [InlineData("    streetName", "buildingNo", "floor", "room")]
     [InlineData("    streetName", "    buildingNo", "    floor", "    room")]
     [InlineData("streetName", "buildingNo", "    floor", "room")]
-
-    public async void EmptyAddressInformation_GetMeteringPoint_AddressLinesWithoutWhiteSpace(string streetName, string buildingNumber, string floor, string room)
+    public async Task EmptyAddressInformation_GetMeteringPoint_AddressLinesWithoutWhiteSpace(string streetName,
+        string buildingNumber, string floor, string room)
     {
-        var clientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-
+        var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
         clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
             .Returns(new Meteringpoint.V1.MeteringPointsResponse
             {
@@ -192,14 +196,9 @@ public class MeteringPointControllerTests : MeasurementsTestBase, IDisposable
                     }
                 }
             });
-        _serverFixture.ConfigureTestServices += services =>
-        {
-            var mpClient = services.Single(d => d.ServiceType == typeof(Meteringpoint.V1.Meteringpoint.MeteringpointClient));
-            services.Remove(mpClient);
-            services.AddSingleton(clientMock);
-        };
 
-        var client = _serverFixture.CreateAuthenticatedClient(Guid.NewGuid().ToString());
+
+        var client = _factory.CreateAuthenticatedClient(Guid.NewGuid().ToString());
 
         var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/measurements/meteringpoints");
 
