@@ -14,7 +14,6 @@ public class ActivityLogEntryRepository(DbContext dbContext) : IActivityLogEntry
     public async Task AddActivityLogEntryAsync(ActivityLogEntry activityLogEntry)
     {
         await dbContext.Set<ActivityLogEntry>().AddAsync(activityLogEntry);
-        await dbContext.SaveChangesAsync();
     }
 
     public async Task<IList<ActivityLogEntry>> GetActivityLogAsync(string tin, ActivityLogEntryFilterRequest request)

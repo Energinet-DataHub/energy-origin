@@ -43,13 +43,14 @@ public class MeteringPointsController : ControllerBase
         };
         var response = await _client.GetOwnedMeteringPointsAsync(request);
 
-        var relation = _dbContext.Relations.SingleOrDefault(u => u.SubjectId == user.Subject);
-
         var meteringPoints = response.MeteringPoints
             .Where(mp => MeteringPoint.GetMeterType(mp.TypeOfMp) != MeterType.Child)
             .Select(MeteringPoint.CreateFrom)
             .ToList();
 
-        return Ok(new GetMeteringPointsResponse(meteringPoints, relation?.Status));
+        var relation = _dbContext.Relations.FirstOrDefault(u => u.SubjectId == user.Subject);
+        var status = relation?.Status ?? (meteringPoints.Count != 0 ? RelationStatus.Created : RelationStatus.Pending);
+
+        return Ok(new GetMeteringPointsResponse(meteringPoints, status));
     }
 }

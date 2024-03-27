@@ -19,11 +19,13 @@ using Xunit;
 
 namespace Tests.MeteringPoints.Api;
 
-public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>, IClassFixture<PostgresContainer>
+public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>,
+    IClassFixture<PostgresContainer>
 {
     private readonly CustomMeterPointWebApplicationFactory<Startup> _factory;
 
-    public MeteringPointControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory, PostgresContainer postgresContainer)
+    public MeteringPointControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory,
+        PostgresContainer postgresContainer)
 
     {
         factory.ConnectionString = postgresContainer.ConnectionString;
@@ -39,6 +41,24 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
         var response = await client.GetAsync("api/measurements/meteringpoints");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task NoMeteringPointsReturnsPendingRelation()
+    {
+        var mockedResponse = new Meteringpoint.V1.MeteringPointsResponse();
+
+        var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
+            .Returns(mockedResponse);
+
+        var subject = Guid.NewGuid();
+        var client = _factory.CreateAuthenticatedClient(subject.ToString());
+
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>("api/measurements/meteringpoints");
+
+        response.Should().NotBeNull();
+        response!.Status.Should().Be(RelationStatus.Pending);
     }
 
     [Fact]
