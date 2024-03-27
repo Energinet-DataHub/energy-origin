@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace API.ContractService.Repositories;
 
@@ -16,16 +17,15 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
     public CertificateIssuingContractRepository(ApplicationDbContext dbContext)
         => this.dbContext = dbContext;
 
-    public Task Save(CertificateIssuingContract certificateIssuingContract)
+    public ValueTask<EntityEntry<CertificateIssuingContract>> Save(
+        CertificateIssuingContract certificateIssuingContract)
     {
-        dbContext.Add(certificateIssuingContract);
-        return dbContext.SaveChangesAsync();
+        return dbContext.AddAsync(certificateIssuingContract);
     }
 
-    public Task Update(CertificateIssuingContract certificateIssuingContract)
+    public void Update(CertificateIssuingContract certificateIssuingContract)
     {
         dbContext.Update(certificateIssuingContract);
-        return dbContext.SaveChangesAsync();
     }
 
     public async Task<IReadOnlyList<CertificateIssuingContract>> GetByGsrn(string gsrn, CancellationToken cancellationToken) =>
