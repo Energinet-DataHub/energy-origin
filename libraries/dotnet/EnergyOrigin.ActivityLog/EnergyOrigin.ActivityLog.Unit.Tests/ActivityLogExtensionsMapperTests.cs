@@ -107,6 +107,10 @@ public class ActivityLogExtensionsMapperTests
 
         services.AddActivityLog(options: _ => { });
 
+        var repositoryRegistration = services.FirstOrDefault(sd => sd.ServiceType == typeof(IActivityLogEntryRepository));
+        Assert.NotNull(repositoryRegistration);
+        Assert.Equal(ServiceLifetime.Scoped, repositoryRegistration.Lifetime);
+
         var hostedServiceRegistration = services.FirstOrDefault(sd => sd.ServiceType == typeof(IHostedService) && sd.ImplementationType == typeof(CleanupActivityLogsHostedService));
         Assert.NotNull(hostedServiceRegistration);
         Assert.Equal(ServiceLifetime.Singleton, hostedServiceRegistration.Lifetime);
