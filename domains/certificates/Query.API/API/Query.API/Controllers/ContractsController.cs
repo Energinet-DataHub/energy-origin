@@ -5,10 +5,8 @@ using System.Threading.Tasks;
 using API.ContractService;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
+using API.UnitOfWork;
 using Asp.Versioning;
-using DataContext.Models;
-using EnergyOrigin.ActivityLog.API;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -36,11 +34,9 @@ public class ContractsController : ControllerBase
         [FromBody] CreateContract createContract,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
-        [FromServices] IActivityLogEntryRepository activityLogEntryRepository,
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
 
         var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
         if (!validationResult.IsValid)
@@ -54,7 +50,7 @@ public class ContractsController : ControllerBase
 
         var result = await service.Create(
             createContract.GSRN,
-            meteringPointOwner,
+            user,
             startDate,
             endDate,
             cancellationToken);
@@ -63,31 +59,9 @@ public class ContractsController : ControllerBase
         {
             GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
             ContractAlreadyExists => ValidationProblem(statusCode: 409),
-            CreateContractResult.Success(var createdContract) => await LogCreatedAndReturnCreated(activityLogEntryRepository, user, createdContract),
+            CreateContractResult.Success(var createdContract) => CreatedAtRoute("GetContract", new { id = createdContract.Id }, Contract.CreateFrom(createdContract)),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
-    }
-
-    private async Task<CreatedAtRouteResult> LogCreatedAndReturnCreated(IActivityLogEntryRepository activityLogEntryRepository, UserDescriptor user,
-        CertificateIssuingContract createdContract)
-    {
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: user.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: user.Name,
-            organizationTin: user.Organization!.Tin,
-            organizationName: user.Organization.Name,
-            otherOrganizationTin: string.Empty,
-            otherOrganizationName: string.Empty,
-            entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            actionType: ActivityLogEntry.ActionTypeEnum.Activated,
-            entityId: createdContract.GSRN)
-        );
-
-        return CreatedAtRoute(
-            "GetContract",
-            new { id = createdContract.Id },
-            Contract.CreateFrom(createdContract));
     }
 
     /// <summary>
@@ -145,11 +119,9 @@ public class ContractsController : ControllerBase
         [FromBody] EditContractEndDate editContractEndDate,
         [FromServices] IValidator<EditContractEndDate> validator,
         [FromServices] IContractService service,
-        [FromServices] IActivityLogEntryRepository activityLogEntryRepository,
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
 
         var validationResult = await validator.ValidateAsync(editContractEndDate, cancellationToken);
         if (!validationResult.IsValid)
@@ -162,37 +134,17 @@ public class ContractsController : ControllerBase
 
         var result = await service.SetEndDate(
             id,
-            meteringPointOwner,
+            user,
             newEndDate,
             cancellationToken);
-
-        var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
 
         return result switch
         {
             NonExistingContract => NotFound(),
             MeteringPointOwnerNoMatch => Forbid(),
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
-            SetEndDateResult.Success => await LogChangedEndDateAndReturnOk(activityLogEntryRepository, user, contract!.GSRN),
+            SetEndDateResult.Success => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
-    }
-
-    private async Task<OkResult> LogChangedEndDateAndReturnOk(IActivityLogEntryRepository activityLogEntryRepository, UserDescriptor user,
-        string gsrn)
-    {
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: user.Name,
-            organizationTin: user.Organization!.Tin,
-            organizationName: user.Organization.Name,
-            otherOrganizationTin: string.Empty,
-            otherOrganizationName: string.Empty,
-            entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-            entityId: gsrn)
-        );
-
-        return Ok();
     }
 }
