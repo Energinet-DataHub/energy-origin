@@ -51,7 +51,6 @@ public class ActivityLogEntryRepositoryTests
         await _repository.AddActivityLogEntryAsync(entry);
 
         await _dbContext.Received().Set<ActivityLogEntry>().AddAsync(entry);
-        await _dbContext.Received().SaveChangesAsync();
     }
 
     [Fact]

@@ -33,7 +33,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230203091258_AddUserTable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230203091258_AddUserTable', '8.0.2');
+    VALUES ('20230203091258_AddUserTable', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -141,7 +141,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230328142531_AddCompanyAndUserProviderTable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230328142531_AddCompanyAndUserProviderTable', '8.0.2');
+    VALUES ('20230328142531_AddCompanyAndUserProviderTable', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -160,7 +160,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230413105444_AddEiaProviderKeyTypeEnum') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230413105444_AddEiaProviderKeyTypeEnum', '8.0.2');
+    VALUES ('20230413105444_AddEiaProviderKeyTypeEnum', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -179,7 +179,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230424102319_RenameColumn') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230424102319_RenameColumn', '8.0.2');
+    VALUES ('20230424102319_RenameColumn', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -276,7 +276,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230815131520_RolesAndTerms') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230815131520_RolesAndTerms', '8.0.2');
+    VALUES ('20230815131520_RolesAndTerms', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
@@ -396,7 +396,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240229132705_AddOutBox') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240229132705_AddOutBox', '8.0.2');
+    VALUES ('20240229132705_AddOutBox', '8.0.3');
     END IF;
 END $EF$;
 COMMIT;
