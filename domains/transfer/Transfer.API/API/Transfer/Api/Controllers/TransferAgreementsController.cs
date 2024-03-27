@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using API.Shared.Helpers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
 using API.UnitOfWork;
 using Asp.Versioning;
@@ -29,7 +28,6 @@ namespace API.Transfer.Api.Controllers;
 public class TransferAgreementsController(
     IProjectOriginWalletService projectOriginWalletService,
     IHttpContextAccessor httpContextAccessor,
-    ITransferAgreementProposalRepository transferAgreementProposalRepository,
     IUnitOfWork unitOfWork
 ) : ControllerBase
 {
@@ -54,7 +52,7 @@ public class TransferAgreementsController(
         }
 
         var proposal =
-            await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
+            await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
         if (proposal == null)
         {
             return NotFound();

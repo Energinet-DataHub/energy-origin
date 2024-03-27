@@ -54,6 +54,7 @@ public class TransferAgreementsControllerTests
             .Returns(Task.CompletedTask);
         mockUnitOfWork.TransferAgreementRepo.Returns(mockTransferAgreementRepository);
         mockUnitOfWork.ActivityLogEntryRepo.Returns(mockActivityLogRepository);
+        mockUnitOfWork.TransferAgreementProposalRepo.Returns(mockTransferAgreementProposalRepository);
 
         var mockContext = new DefaultHttpContext
         {
@@ -84,7 +85,6 @@ public class TransferAgreementsControllerTests
         controller = new TransferAgreementsController(
             mockProjectOriginWalletDepositEndpointService,
             mockHttpContextAccessor,
-            mockTransferAgreementProposalRepository,
             mockUnitOfWork)
         {
             ControllerContext = new ControllerContext { HttpContext = mockHttpContextAccessor.HttpContext! }

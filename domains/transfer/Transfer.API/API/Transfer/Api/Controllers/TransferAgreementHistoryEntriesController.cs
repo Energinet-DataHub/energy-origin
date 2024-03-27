@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Transfer.Api.Dto.Responses;
-using API.Transfer.Api.Repository;
+using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -16,7 +16,7 @@ namespace API.Transfer.Api.Controllers;
 [ApiController]
 [ApiVersion(ApiVersions.Version20240103)]
 [Route("api/transfer/transfer-agreements")]
-public class TransferAgreementHistoryEntriesController(ITransferAgreementHistoryEntryRepository historyEntryRepository)
+public class TransferAgreementHistoryEntriesController(IUnitOfWork unitOfWork)
     : ControllerBase
 {
     [Authorize(Policy = PolicyName.RequiresCompany)]
@@ -27,7 +27,7 @@ public class TransferAgreementHistoryEntriesController(ITransferAgreementHistory
     {
         var user = new UserDescriptor(User);
 
-        var histories = await historyEntryRepository.GetHistoryEntriesForTransferAgreement(
+        var histories = await unitOfWork.TransferAgreementHistoryEntryRepo.GetHistoryEntriesForTransferAgreement(
             transferAgreementId,
             user.Subject.ToString(),
             user.Organization!.Tin,

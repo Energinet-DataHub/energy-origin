@@ -10,6 +10,7 @@ public interface IUnitOfWork
     ITransferAgreementRepository TransferAgreementRepo { get; }
     IActivityLogEntryRepository ActivityLogEntryRepo { get; }
     ITransferAgreementProposalRepository TransferAgreementProposalRepo { get; }
+    ITransferAgreementHistoryEntryRepository TransferAgreementHistoryEntryRepo { get; }
 
     Task SaveAsync();
 }
@@ -20,6 +21,7 @@ public class UnitOfWork : IUnitOfWork
     private ITransferAgreementRepository transferAgreementRepo = null!;
     private IActivityLogEntryRepository activityLogEntryRepo = null!;
     private ITransferAgreementProposalRepository transferAgreementProposalRepo = null!;
+    private ITransferAgreementHistoryEntryRepository transferAgreementHistoryEntryRepo = null!;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -47,6 +49,14 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return transferAgreementProposalRepo ??= new TransferAgreementProposalRepository(context);
+        }
+    }
+
+    public ITransferAgreementHistoryEntryRepository TransferAgreementHistoryEntryRepo
+    {
+        get
+        {
+            return transferAgreementHistoryEntryRepo ??= new TransferAgreementHistoryEntryRepository(context);
         }
     }
 
