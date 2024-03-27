@@ -20,7 +20,6 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
         transferAgreement.TransferAgreementNumber = transferAgreementNumber;
         context.TransferAgreements.Add(transferAgreement);
 
-        await context.SaveChangesAsync();
         return transferAgreement;
     }
 
@@ -40,8 +39,6 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
             context.TransferAgreementProposals.Remove(proposal);
         }
 
-        await context.SaveChangesAsync();
-
         return newTransferAgreement;
     }
 
@@ -58,8 +55,6 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
             .TransferAgreements
             .Where(agreement => agreement.Id == id && (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)))
             .FirstOrDefaultAsync();
-
-    public async Task Save() => await context.SaveChangesAsync();
 
     public async Task<bool> HasDateOverlap(TransferAgreement transferAgreement)
     {

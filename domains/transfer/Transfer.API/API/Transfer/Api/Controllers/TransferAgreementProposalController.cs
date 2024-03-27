@@ -2,10 +2,9 @@ using System;
 using System.Threading.Tasks;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using API.Transfer.Api.Repository;
+using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
-using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -21,10 +20,8 @@ namespace API.Transfer.Api.Controllers;
 [ApiVersion(ApiVersions.Version20240103)]
 [Route("api/transfer/transfer-agreement-proposals")]
 public class TransferAgreementProposalController(
-    ITransferAgreementProposalRepository repository,
     IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
-    ITransferAgreementRepository transferAgreementRepository,
-    IActivityLogEntryRepository activityLogEntryRepository)
+    IUnitOfWork unitOfWork)
     : ControllerBase
 {
     /// <summary>
@@ -63,7 +60,7 @@ public class TransferAgreementProposalController(
 
         if (request.ReceiverTin != null)
         {
-            var hasConflict = await transferAgreementRepository.HasDateOverlap(newProposal);
+            var hasConflict = await unitOfWork.TransferAgreementRepo.HasDateOverlap(newProposal);
 
             if (hasConflict)
             {
@@ -73,9 +70,11 @@ public class TransferAgreementProposalController(
             }
         }
 
-        await repository.AddTransferAgreementProposal(newProposal);
+        await unitOfWork.TransferAgreementProposalRepo.AddTransferAgreementProposal(newProposal);
 
         await AppendToActivityLog(user, newProposal, ActivityLogEntry.ActionTypeEnum.Created);
+
+        await unitOfWork.SaveAsync();
 
         var response = new TransferAgreementProposalResponse(
             newProposal.Id,
@@ -100,7 +99,7 @@ public class TransferAgreementProposalController(
     [HttpGet("{id}")]
     public async Task<ActionResult<TransferAgreementProposalResponse>> GetTransferAgreementProposal(Guid id)
     {
-        var proposal = await repository.GetNonExpiredTransferAgreementProposal(id);
+        var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposal(id);
 
         if (proposal == null)
         {
@@ -144,7 +143,7 @@ public class TransferAgreementProposalController(
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteTransferAgreementProposal(Guid id)
     {
-        var proposal = await repository.GetNonExpiredTransferAgreementProposal(id);
+        var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposal(id);
 
         if (proposal == null)
         {
@@ -158,15 +157,17 @@ public class TransferAgreementProposalController(
             return ValidationProblem("You cannot Deny a TransferAgreementProposal for another company");
         }
 
-        await repository.DeleteTransferAgreementProposal(id);
+        await unitOfWork.TransferAgreementProposalRepo.DeleteTransferAgreementProposal(id);
         await AppendToActivityLog(user, proposal, ActivityLogEntry.ActionTypeEnum.Declined);
+
+        await unitOfWork.SaveAsync();
 
         return NoContent();
     }
 
     private async Task AppendToActivityLog(UserDescriptor user, TransferAgreementProposal proposal, ActivityLogEntry.ActionTypeEnum actionType)
     {
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
            actorId: user.Subject,
            actorType: ActivityLogEntry.ActorTypeEnum.User,
            actorName: user.Name,

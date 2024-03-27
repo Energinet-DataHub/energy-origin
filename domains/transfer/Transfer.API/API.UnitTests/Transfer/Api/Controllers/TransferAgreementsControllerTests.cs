@@ -8,6 +8,7 @@ using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
+using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
@@ -27,6 +28,7 @@ public class TransferAgreementsControllerTests
     private readonly ITransferAgreementProposalRepository mockTransferAgreementProposalRepository = Substitute.For<ITransferAgreementProposalRepository>();
     private readonly IProjectOriginWalletService mockProjectOriginWalletDepositEndpointService = Substitute.For<IProjectOriginWalletService>();
     private readonly IActivityLogEntryRepository mockActivityLogRepository = Substitute.For<IActivityLogEntryRepository>();
+    private readonly IUnitOfWork mockUnitOfWork = Substitute.For<IUnitOfWork>();
 
     private const string UserClaimNameScope = "userScope";
     private const string UserClaimNameActorLegacy = "d4f32241-442c-4043-8795-a4e6bf574e7f";
@@ -50,6 +52,9 @@ public class TransferAgreementsControllerTests
         mockTransferAgreementRepository.AddTransferAgreementToDb(Arg.Any<TransferAgreement>()).Returns(Task.FromResult(new TransferAgreement()));
         mockActivityLogRepository.AddActivityLogEntryAsync(Arg.Any<ActivityLogEntry>())
             .Returns(Task.CompletedTask);
+        mockUnitOfWork.TransferAgreementRepo.Returns(mockTransferAgreementRepository);
+        mockUnitOfWork.ActivityLogEntryRepo.Returns(mockActivityLogRepository);
+        mockUnitOfWork.TransferAgreementProposalRepo.Returns(mockTransferAgreementProposalRepository);
 
         var mockContext = new DefaultHttpContext
         {
@@ -78,11 +83,9 @@ public class TransferAgreementsControllerTests
         mockHttpContextAccessor.HttpContext.Returns(mockContext);
 
         controller = new TransferAgreementsController(
-            mockTransferAgreementRepository,
             mockProjectOriginWalletDepositEndpointService,
             mockHttpContextAccessor,
-            mockTransferAgreementProposalRepository,
-            mockActivityLogRepository)
+            mockUnitOfWork)
         {
             ControllerContext = new ControllerContext { HttpContext = mockHttpContextAccessor.HttpContext! }
         };
@@ -263,7 +266,7 @@ public class TransferAgreementsControllerTests
         transferAgreement.EndDate.Should().BeCloseTo(DateTimeOffset.FromUnixTimeSeconds(newEndDate), TimeSpan.FromSeconds(1));
         await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin);
         await mockTransferAgreementRepository.Received(1).HasDateOverlap(Arg.Any<TransferAgreement>());
-        await mockTransferAgreementRepository.Received(1).Save();
+        await mockUnitOfWork.Received(1).SaveAsync();
     }
 
     [Fact]
@@ -291,6 +294,6 @@ public class TransferAgreementsControllerTests
         transferAgreement.EndDate.Should().BeNull();
         await mockTransferAgreementRepository.Received(1).GetTransferAgreement(transferAgreement.Id, UserClaimNameOrganizationId, UserClaimNameTin);
         await mockTransferAgreementRepository.Received(1).HasDateOverlap(Arg.Any<TransferAgreement>());
-        await mockTransferAgreementRepository.Received(1).Save();
+        await mockUnitOfWork.Received(1).SaveAsync();
     }
 }
