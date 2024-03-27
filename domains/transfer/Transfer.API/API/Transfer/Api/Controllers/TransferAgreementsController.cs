@@ -51,8 +51,7 @@ public class TransferAgreementsController(
             return ValidationProblem("Must set TransferAgreementProposalId");
         }
 
-        var proposal =
-            await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
+        var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
         if (proposal == null)
         {
             return NotFound();
