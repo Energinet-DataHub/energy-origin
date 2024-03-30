@@ -21,14 +21,14 @@ builder.Services.AddAuthentication(options =>
         //options.Authority = "https://login.microsoftonline.com/0eeb4972-4d01-4383-8f7c-80a38383d208";
         options.ClientId = "260556911018049539@eo";
         options.ClientSecret = "aXyjC6hAHT2crvNKaEHNvJlxdfaemiJceRQp5CJRkoLfiM664l8RtF43EVjWMNrk";
-        options.ResponseType = OpenIdConnectResponseType.IdTokenToken;
+        options.ResponseType = OpenIdConnectResponseType.Code;
         options.CallbackPath = "/signin-oidc";
         options.SignedOutCallbackPath = "/signout-callback-oidc";
         options.MetadataAddress = "http://localhost:8080/.well-known/openid-configuration";
+        options.RequireHttpsMetadata = false;
         options.SaveTokens = true;
         options.GetClaimsFromUserInfoEndpoint = true;
 
-        options.Scope.Add("https://datahubeouenerginet.onmicrosoft.com/529a55d0-68c7-4129-ba3c-e06d4f1038c4/Test.Scope");
     })
     .AddOpenIdConnect("mitid", options =>
     {
