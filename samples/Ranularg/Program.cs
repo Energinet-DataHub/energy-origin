@@ -19,20 +19,16 @@ builder.Services.AddAuthentication(options =>
     .AddOpenIdConnect("oidc", options =>
     {
         //options.Authority = "https://login.microsoftonline.com/0eeb4972-4d01-4383-8f7c-80a38383d208";
-        options.ClientId = "529a55d0-68c7-4129-ba3c-e06d4f1038c4";
-        options.ClientSecret = "w3c...";
-
+        options.ClientId = "260556911018049539@eo";
+        options.ClientSecret = "aXyjC6hAHT2crvNKaEHNvJlxdfaemiJceRQp5CJRkoLfiM664l8RtF43EVjWMNrk";
+        options.ResponseType = OpenIdConnectResponseType.IdTokenToken;
         options.CallbackPath = "/signin-oidc";
         options.SignedOutCallbackPath = "/signout-callback-oidc";
-
+        options.MetadataAddress = "http://localhost:8080/.well-known/openid-configuration";
         options.SaveTokens = true;
-        options.ResponseType = OpenIdConnectResponseType.IdTokenToken;
-
-        options.Scope.Add("https://datahubeouenerginet.onmicrosoft.com/529a55d0-68c7-4129-ba3c-e06d4f1038c4/Test.Scope");
-
         options.GetClaimsFromUserInfoEndpoint = true;
 
-        options.MetadataAddress = "https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/B2C_1_SUSI/v2.0/.well-known/openid-configuration";
+        options.Scope.Add("https://datahubeouenerginet.onmicrosoft.com/529a55d0-68c7-4129-ba3c-e06d4f1038c4/Test.Scope");
     })
     .AddOpenIdConnect("mitid", options =>
     {
