@@ -3,10 +3,10 @@
 # Ensure dotnet-outdated is installed or updated
 if dotnet tool list -g | grep -q 'dotnet-outdated'; then
  echo "dotnet-outdated is already installed. Updating..."
- dotnet tool update --global dotnet-outdated
+ dotnet tool update --global dotnet-outdated-tool
 else
  echo "Installing dotnet-outdated..."
- dotnet tool install --global dotnet-outdated
+ dotnet tool install --global dotnet-outdated-tool
 fi
 
 echo "Navigating to the base directory..."
