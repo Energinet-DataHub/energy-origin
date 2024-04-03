@@ -1,13 +1,5 @@
 ﻿#!/bin/bash
 
-if dotnet tool list -g | grep -q 'dotnet-outdated'; then
-  echo "dotnet-outdated is already installed. Updating..."
-  dotnet tool update --global dotnet-outdated
-else
-  echo "Installing dotnet-outdated..."
-  dotnet tool install --global dotnet-outdated
-fi
-
 cd .. || exit
 
 find libraries/dotnet -type f -name '*.sln' | while read -r slnFile; do
