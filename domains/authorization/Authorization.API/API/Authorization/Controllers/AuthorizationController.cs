@@ -30,7 +30,7 @@ public class AuthorizationController : ControllerBase
 
         logger.LogWarning("Headers: {headers}, Body:", headers, body);
 
-        return new AuthorizationResponse(new[] { "12345678" });
+        return new AuthorizationResponse(new[] { "123456789", "987654321", "112233445" });
     }
 }
 
