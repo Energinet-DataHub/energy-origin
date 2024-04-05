@@ -1,11 +1,52 @@
-# Azure B2C 
+# Authentication & authorization 
 
-Link to description of flow by Microsoft [Client Credentials Grant](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow)
+## Consent
 
+This section describes the first version of consent functionality in Energy Origin. Consent is provided by a user to a 3rd party client.
+
+### Definitions
+
+- 3rd party client: A third party company using the APIs exposed by Energy Origin. A 3rd party client may have software systems running and interacting with the Energy Origin APIs without user interaction.
+- User: A user authenticated with MitID erhverv and acting as employee in a company. A user may be employeed in multiple companies, but is forced to select a specific company as part of MitID authenticattion.
+- TIN: Tax Identification Number, in Denmark the CVR number.
+
+### Conceptual overview
+
+``` Mermaid 
+erDiagram
+  User }o--o{ Organization : employed
+  User {
+    uuid id
+    string name
+  }
+  Organization ||--o{ MeteringPoint : owns
+  Organization ||--o{ Wallet : owns
+  Organization {
+    string tin
+    string Name
+  }
+  MeteringPoint {
+    string gsrn
+  }
+  Wallet {
+    uuid id
+  }
+  Client }o--o{ Organization : Consent
+  Client {
+    string Name
+  }
+```
+
+A user authenticating using MitID will work in the context of  asingle organization and TIN. To work in the context of another organization, the user will need to authenticate again and select a different organization.
+
+A client will be authenticated to work in the context of all the organizations it has been granted consent to. Imagine the client is running a software system trading certificates on behalf of all the organizations it has been granted consent to.
+
+Our use of the Client Credentials flow is described by Microsoft in the following article [Client Credentials Grant](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow).
+
+### System context
 
 ``` Mermaid 
 C4Context
-  title Authentication & Authorization 
   Person(user, "MitID Erhverv user")
   Enterprise_Boundary(eoBoundary, "Energy Origin") {
     System(WEB, "Energy Origin WEB", "")
