@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 using API.Shared.Helpers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
+using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
-using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -27,11 +26,9 @@ namespace API.Transfer.Api.Controllers;
 [ApiVersion(ApiVersions.Version20240103)]
 [Route("api/transfer/transfer-agreements")]
 public class TransferAgreementsController(
-    ITransferAgreementRepository transferAgreementRepository,
     IProjectOriginWalletService projectOriginWalletService,
     IHttpContextAccessor httpContextAccessor,
-    ITransferAgreementProposalRepository transferAgreementProposalRepository,
-    IActivityLogEntryRepository activityLogEntryRepository
+    IUnitOfWork unitOfWork
 ) : ControllerBase
 {
     /// <summary>
@@ -54,8 +51,7 @@ public class TransferAgreementsController(
             return ValidationProblem("Must set TransferAgreementProposalId");
         }
 
-        var proposal =
-            await transferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
+        var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
         if (proposal == null)
         {
             return NotFound();
@@ -75,7 +71,9 @@ public class TransferAgreementsController(
 
         proposal.ReceiverCompanyTin ??= user.Organization!.Tin;
 
-        var hasConflict = await transferAgreementRepository.HasDateOverlap(proposal);
+        var taRepo = unitOfWork.TransferAgreementRepo;
+
+        var hasConflict = await taRepo.HasDateOverlap(proposal);
         if (hasConflict)
         {
             return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range",
@@ -106,10 +104,12 @@ public class TransferAgreementsController(
 
         try
         {
-            var result = await transferAgreementRepository.AddTransferAgreementAndDeleteProposal(transferAgreement,
+            var result = await taRepo.AddTransferAgreementAndDeleteProposal(transferAgreement,
                 request.TransferAgreementProposalId);
 
             await AppendProposalAcceptedToActivityLog(user, result, proposal);
+
+            await unitOfWork.SaveAsync();
 
             return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
         }
@@ -122,7 +122,7 @@ public class TransferAgreementsController(
     private async Task AppendProposalAcceptedToActivityLog(UserDescriptor user, TransferAgreement result, TransferAgreementProposal proposal)
     {
         // Receiver entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
             actorId: user.Subject,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: user.Name,
@@ -136,7 +136,7 @@ public class TransferAgreementsController(
         );
 
         // Sender entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
             actorId: Guid.Empty,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: string.Empty,
@@ -158,7 +158,7 @@ public class TransferAgreementsController(
     {
         var user = new UserDescriptor(User);
 
-        var result = await transferAgreementRepository.GetTransferAgreement(id, user.Subject.ToString(), user.Organization!.Tin);
+        var result = await unitOfWork.TransferAgreementRepo.GetTransferAgreement(id, user.Subject.ToString(), user.Organization!.Tin);
 
         if (result == null)
         {
@@ -175,7 +175,7 @@ public class TransferAgreementsController(
     {
         var user = new UserDescriptor(User);
 
-        var transferAgreements = await transferAgreementRepository.GetTransferAgreementsList(user.Subject, user.Organization!.Tin);
+        var transferAgreements = await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(user.Subject, user.Organization!.Tin);
 
         if (!transferAgreements.Any())
         {
@@ -211,7 +211,8 @@ public class TransferAgreementsController(
             ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value)
             : (DateTimeOffset?)null;
 
-        var transferAgreement = await transferAgreementRepository.GetTransferAgreement(id, user.Subject.ToString(), user.Organization!.Tin);
+        var taRepo = unitOfWork.TransferAgreementRepo;
+        var transferAgreement = await taRepo.GetTransferAgreement(id, user.Subject.ToString(), user.Organization!.Tin);
 
         if (transferAgreement == null || transferAgreement.SenderId != user.Subject)
         {
@@ -230,14 +231,12 @@ public class TransferAgreementsController(
             ReceiverTin = transferAgreement.ReceiverTin
         };
 
-        if (await transferAgreementRepository.HasDateOverlap(overlapQuery))
+        if (await taRepo.HasDateOverlap(overlapQuery))
         {
             return ValidationProblem("Transfer agreement date overlap", statusCode: 409);
         }
 
         transferAgreement.EndDate = endDate;
-
-        await transferAgreementRepository.Save();
 
         var response = new TransferAgreementDto(
             Id: transferAgreement.Id,
@@ -249,13 +248,15 @@ public class TransferAgreementsController(
 
         await AppendAgreementEndDateChangedToActivityLog(user, transferAgreement);
 
+        await unitOfWork.SaveAsync();
+
         return Ok(response);
     }
 
     private async Task AppendAgreementEndDateChangedToActivityLog(UserDescriptor user, TransferAgreement result)
     {
         // Receiver entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
             actorId: user.Subject,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: String.Empty,
@@ -269,7 +270,7 @@ public class TransferAgreementsController(
         );
 
         // Sender entry
-        await activityLogEntryRepository.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
             actorId: user.Subject,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: user.Name,

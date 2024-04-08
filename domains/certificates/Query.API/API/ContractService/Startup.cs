@@ -1,6 +1,5 @@
 using API.Configurations;
 using API.ContractService.Clients;
-using API.ContractService.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -18,8 +17,6 @@ public static class Startup
         services.AddScoped<IContractService, ContractServiceImpl>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
-
-        services.AddScoped<ICertificateIssuingContractRepository, CertificateIssuingContractRepository>();
 
         services.AddHttpClient<IMeteringPointsClient, MeteringPointsClient>((sp, client) =>
         {

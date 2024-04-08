@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using API.Transfer.Api.Options;
-using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementCleanup;
 using API.Transfer.TransferAgreementCleanup.Options;
@@ -64,10 +63,7 @@ public static class Startup
                     })
                 ));
 
-        services.AddScoped<ITransferAgreementRepository, TransferAgreementRepository>();
         services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
-        services.AddScoped<ITransferAgreementHistoryEntryRepository, TransferAgreementHistoryEntryRepository>();
-        services.AddScoped<ITransferAgreementProposalRepository, TransferAgreementProposalRepository>();
         services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
         {
             var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
