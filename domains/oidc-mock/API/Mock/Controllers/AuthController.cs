@@ -32,7 +32,7 @@ public class AuthController : Controller
 
     [HttpGet]
     [Route("Connect/demo-token")]
-    public async Task<IActionResult> GetDemoToken(string subjectId, IHttpClientFactory clientFactory)
+    public async Task<IActionResult> GetDemoToken([FromQuery] string subjectId, [FromServices] IHttpClientFactory clientFactory)
     {
         var subjectMd5 = GetMd5Hash(subjectId);
         var httpClient = clientFactory.CreateClient();
