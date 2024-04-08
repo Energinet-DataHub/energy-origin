@@ -28,7 +28,7 @@ public class AuthController : Controller
 
 
     [HttpGet]
-    [Route("auth/demo-token")]
+    [Route("Connect/demo-token")]
     public async Task<IActionResult> GetDemoToken([FromQuery] string subjectId, [FromServices] IHttpClientFactory clientFactory)
     {
         using MD5 md5 = MD5.Create();
