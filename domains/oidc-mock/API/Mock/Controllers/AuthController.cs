@@ -31,7 +31,7 @@ public class AuthController : Controller
 
 
     [HttpGet]
-    [Route("Connect/demo-token")]
+    [Route("/oidc-mock/token")]
     public async Task<IActionResult> GetDemoToken([FromQuery] string subjectId, [FromServices] IHttpClientFactory clientFactory)
     {
         var subjectMd5 = GetMd5Hash(subjectId);
