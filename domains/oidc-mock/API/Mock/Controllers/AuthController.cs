@@ -39,7 +39,7 @@ public class AuthController : Controller
 
         var response = await httpClient.GetAsync("https://demo.energioprindelse.dk/api/auth/oidc/callback?code=" + subjectMd5);
         var jwt = HttpUtility.ParseQueryString(response.RequestMessage.RequestUri.Query).Get("token");
-        return Ok(new {Token = jwt});
+        return Ok(new { Token = jwt });
     }
 
     [HttpPost]
