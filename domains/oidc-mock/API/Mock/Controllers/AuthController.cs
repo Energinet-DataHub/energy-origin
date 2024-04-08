@@ -1,4 +1,6 @@
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
+using System.Web;
 using API.Mock.Models;
 using Microsoft.AspNetCore.Mvc;
 using Oidc.Mock.Extensions;
@@ -22,6 +24,22 @@ public class AuthController : Controller
         this.tokenGenerator = tokenGenerator;
         this.logger = logger;
         this.options = options;
+    }
+
+
+    [HttpGet]
+    [Route("auth/demo-token")]
+    public async Task<IActionResult> GetDemoToken([FromQuery] string subjectId, [FromServices] IHttpClientFactory clientFactory)
+    {
+        using MD5 md5 = MD5.Create();
+        byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(subjectId);
+        byte[] hashBytes = md5.ComputeHash(inputBytes);
+        var subjectMd5 = Convert.ToHexString(hashBytes).ToUpper();
+        var httpClient = clientFactory.CreateClient();
+
+        var response = await httpClient.GetAsync("https://demo.energioprindelse.dk/api/auth/oidc/callback?code=" + subjectMd5);
+        var jwt = HttpUtility.ParseQueryString(response.RequestMessage.RequestUri.Query).Get("token");
+        return Ok(new {Token = jwt});
     }
 
     [HttpPost]

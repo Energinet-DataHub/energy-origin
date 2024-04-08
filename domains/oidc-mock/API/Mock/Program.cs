@@ -20,6 +20,7 @@ builder.Services.AddSingleton(_ =>
         builder.Configuration[Configuration.ClientSecretKey]!,
         builder.Configuration[Configuration.ClientRedirectUriKey]!));
 builder.Services.AddSingleton(x => new Options(Host: builder.Configuration[Configuration.Host]!));
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
