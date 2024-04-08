@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using API.Transfer.Api.Repository;
 using DataContext;
@@ -5,7 +6,7 @@ using EnergyOrigin.ActivityLog.API;
 
 namespace API.UnitOfWork;
 
-public interface IUnitOfWork
+public interface IUnitOfWork : IAsyncDisposable
 {
     ITransferAgreementRepository TransferAgreementRepo { get; }
     IActivityLogEntryRepository ActivityLogEntryRepo { get; }
@@ -30,38 +31,32 @@ public class UnitOfWork : IUnitOfWork
 
     public ITransferAgreementRepository TransferAgreementRepo
     {
-        get
-        {
-            return transferAgreementRepo ??= new TransferAgreementRepository(context);
-        }
+        get => transferAgreementRepo ??= new TransferAgreementRepository(context);
     }
 
     public IActivityLogEntryRepository ActivityLogEntryRepo
     {
-        get
-        {
-            return activityLogEntryRepo ??= new ActivityLogEntryRepository(context);
-        }
+        get => activityLogEntryRepo ??= new ActivityLogEntryRepository(context);
     }
 
     public ITransferAgreementProposalRepository TransferAgreementProposalRepo
     {
-        get
-        {
-            return transferAgreementProposalRepo ??= new TransferAgreementProposalRepository(context);
-        }
+        get => transferAgreementProposalRepo ??= new TransferAgreementProposalRepository(context);
     }
 
     public ITransferAgreementHistoryEntryRepository TransferAgreementHistoryEntryRepo
     {
-        get
-        {
-            return transferAgreementHistoryEntryRepo ??= new TransferAgreementHistoryEntryRepository(context);
-        }
+        get => transferAgreementHistoryEntryRepo ??= new TransferAgreementHistoryEntryRepository(context);
     }
 
     public Task SaveAsync()
     {
         return context.SaveChangesAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await context.DisposeAsync();
+        context = null!;
     }
 }
