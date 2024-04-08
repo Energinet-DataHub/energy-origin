@@ -57,6 +57,5 @@ public class UnitOfWork : IUnitOfWork
     public async ValueTask DisposeAsync()
     {
         await context.DisposeAsync();
-        context = null!;
     }
 }
