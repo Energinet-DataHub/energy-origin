@@ -1,5 +1,7 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
+using System.Text;
 using System.Web;
 using API.Mock.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +19,8 @@ public class AuthController : Controller
     private readonly ILogger<AuthController> logger;
     private readonly Options options;
 
-    public AuthController(Client client, User[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger, Options options)
+    public AuthController(Client client, User[] users, IJwtTokenGenerator tokenGenerator,
+        ILogger<AuthController> logger, Options options)
     {
         this.client = client;
         this.users = users;
@@ -29,17 +32,27 @@ public class AuthController : Controller
 
     [HttpGet]
     [Route("Connect/demo-token")]
-    public async Task<IActionResult> GetDemoToken([FromQuery] string subjectId, [FromServices] IHttpClientFactory clientFactory)
+    public async Task<IActionResult> GetDemoToken(string subjectId, IHttpClientFactory clientFactory)
     {
-        using MD5 md5 = MD5.Create();
-        byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(subjectId);
-        byte[] hashBytes = md5.ComputeHash(inputBytes);
-        var subjectMd5 = Convert.ToHexString(hashBytes).ToUpper();
+        var subjectMd5 = GetMd5Hash(subjectId);
         var httpClient = clientFactory.CreateClient();
+        var response = await httpClient.GetAsync($"https://demo.energioprindelse.dk/api/auth/oidc/callback?code={subjectMd5}");
 
-        var response = await httpClient.GetAsync("https://demo.energioprindelse.dk/api/auth/oidc/callback?code=" + subjectMd5);
-        var jwt = HttpUtility.ParseQueryString(response.RequestMessage.RequestUri.Query).Get("token");
+        if (!response.IsSuccessStatusCode)
+        {
+            return BadRequest();
+        }
+
+        var jwt = HttpUtility.ParseQueryString(response.RequestMessage?.RequestUri?.Query!).Get("token");
         return Ok(new { Token = jwt });
+    }
+
+    private static string GetMd5Hash(string input)
+    {
+        using var md5 = MD5.Create();
+        var inputBytes = Encoding.ASCII.GetBytes(input);
+        var hashBytes = md5.ComputeHash(inputBytes);
+        return Convert.ToHexString(hashBytes).ToUpper();
     }
 
     [HttpPost]
@@ -70,8 +83,10 @@ public class AuthController : Controller
     public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
         var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]!);
-        logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}", $"{authorizationHeader.Scheme} {authorizationHeader.Parameter}");
-        logger.LogDebug("connect/token: form data: {Data}", string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")));
+        logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}",
+            $"{authorizationHeader.Scheme} {authorizationHeader.Parameter}");
+        logger.LogDebug("connect/token: form data: {Data}",
+            string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")));
 
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -148,15 +163,25 @@ public class AuthController : Controller
             frontchannel_logout_session_supported = true,
             backchannel_logout_supported = true,
             backchannel_logout_session_supported = true,
-            grant_types_supported = new[] { "authorization_code", "client_credentials", "refresh_token", "implicit", "urn:openid:params:grant-type:ciba" },
-            response_types_supported = new[] { "code", "token", "id_token", "id_token token", "code id_token", "code token", "code id_token token" },
+            grant_types_supported = new[]
+            {
+                "authorization_code", "client_credentials", "refresh_token", "implicit",
+                "urn:openid:params:grant-type:ciba"
+            },
+            response_types_supported = new[]
+                { "code", "token", "id_token", "id_token token", "code id_token", "code token", "code id_token token" },
             response_modes_supported = new[] { "form_post", "query", "fragment" },
-            token_endpoint_auth_methods_supported = new[] { "client_secret_basic", "client_secret_post", "private_key_jwt" },
+            token_endpoint_auth_methods_supported =
+                new[] { "client_secret_basic", "client_secret_post", "private_key_jwt" },
             id_token_signing_alg_values_supported = new[] { "RS256" },
             subject_types_supported = new[] { "public" },
             code_challenge_methods_supported = new[] { "plain", "RS256" },
             request_parameter_supported = true,
-            request_object_signing_alg_values_supported = new[] { "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512", "HS256", "HS384", "HS512" },
+            request_object_signing_alg_values_supported = new[]
+            {
+                "RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512", "HS256", "HS384",
+                "HS512"
+            },
             request_uri_parameter_supported = true,
             authorization_response_iss_parameter_supported = true,
             backchannel_token_delivery_modes_supported = new[] { "poll" },
