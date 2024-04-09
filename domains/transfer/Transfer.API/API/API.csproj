@@ -20,8 +20,6 @@
 
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.1" />
-        <PackageReference Include="Audit.EntityFramework.Core" Version="25.0.4" />
-        <PackageReference Include="Audit.NET" Version="25.0.4" />
         <PackageReference Include="EnergyOrigin.Setup" Version="1.0.9" />
         <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.0.6" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />

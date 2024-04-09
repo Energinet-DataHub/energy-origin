@@ -127,7 +127,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         foreach (var agreement in transferAgreements)
         {
             await InsertTransferAgreement(dbContext, agreement);
-            await InsertTransferAgreementHistoryEntry(dbContext, agreement);
         }
     }
 
@@ -255,31 +254,5 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
-    }
-
-    private static async Task InsertTransferAgreementHistoryEntry(ApplicationDbContext dbContext, TransferAgreement agreement)
-    {
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
-
-        var historyQuery =
-            $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
-            "VALUES (@Id, @CreatedAt, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
-        object[] historyFields =
-        {
-            new NpgsqlParameter("Id", Guid.NewGuid()),
-            new NpgsqlParameter("CreatedAt", DateTime.UtcNow),
-            new NpgsqlParameter("AuditAction", "Insert"),
-            new NpgsqlParameter("ActorId", "Test"),
-            new NpgsqlParameter("ActorName", "Test"),
-            new NpgsqlParameter("TransferAgreementId", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
-        };
-
-        await dbContext.Database.ExecuteSqlRawAsync(historyQuery, historyFields);
     }
 }

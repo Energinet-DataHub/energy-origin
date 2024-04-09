@@ -34,7 +34,6 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
 
         var expiredTa = new TransferAgreement
@@ -94,7 +93,6 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
 
         var expiredTa = new TransferAgreement
@@ -134,7 +132,6 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         var receiverLogs = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(receiverLogResponseBody);
         receiverLogs!.ActivityLogEntries.Should().ContainSingle();
 
-        dbContext.TransferAgreementHistoryEntries.RemoveRange(dbContext.TransferAgreementHistoryEntries);
         dbContext.TransferAgreements.RemoveRange(dbContext.TransferAgreements);
         await dbContext.SaveChangesAsync();
     }
@@ -145,7 +142,6 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
 
         var expiredTa = new TransferAgreement
@@ -161,30 +157,11 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
             TransferAgreementNumber = 0
         };
 
-        var history = new TransferAgreementHistoryEntry
-        {
-            Id = Guid.NewGuid(),
-            TransferAgreementId = expiredTa.Id,
-            EndDate = DateTimeOffset.UtcNow.AddHours(-1),
-            ReceiverTin = tin,
-            SenderName = "SomeSender",
-            SenderTin = "12345678",
-            SenderId = sub,
-            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
-            ActorId = Guid.NewGuid().ToString(),
-            ActorName = "SomeName",
-            AuditAction = "Created",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-1)
-        };
 
         dbContext.TransferAgreements.Add(expiredTa);
-        dbContext.TransferAgreementHistoryEntries.Add(history);
         await dbContext.SaveChangesAsync();
 
         var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0, TimeSpan.FromSeconds(30));
         tas.Should().BeEmpty();
-
-        var hEntries = await dbContext.TransferAgreementHistoryEntries.ToListAsync();
-        hEntries.Should().BeEmpty();
     }
 }
