@@ -70,7 +70,7 @@ message WalletDepositEndpoint {
 }
 
 message QueryRequest {
-    // Later filters will be added.
+    Filter filter = 1;
 }
 
 message QueryResponse {
@@ -84,7 +84,9 @@ message TransferRequest {
     repeated string hashed_attributes = 4; // the hashed attribute keys to transfer
 }
 
-message TransferResponse {} // not yet sure what to return
+message TransferResponse {
+    project_origin.common.v1.Uuid transfer_id = 1;
+}
 
 message ClaimRequest {
     project_origin.common.v1.FederatedStreamId consumption_certificate_id = 1;
