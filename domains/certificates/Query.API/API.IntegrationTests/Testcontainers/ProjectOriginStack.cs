@@ -16,7 +16,7 @@ public class ProjectOriginStack : RegistryFixture
     private readonly Lazy<IContainer> walletContainer;
     private readonly PostgreSqlContainer postgresContainer;
 
-    private const int WalletGrpcPort = 5001;
+    private const int WalletHttpPort = 5000;
 
     public ProjectOriginStack()
     {
@@ -40,7 +40,7 @@ public class ProjectOriginStack : RegistryFixture
             return new ContainerBuilder()
                 .WithImage("ghcr.io/project-origin/wallet-server:0.10.3")
                 .WithNetwork(Network)
-                .WithPortBinding(hostPort, WalletGrpcPort)
+                .WithPortBinding(hostPort, WalletHttpPort)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{hostPort}/")
                 .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
@@ -50,7 +50,7 @@ public class ProjectOriginStack : RegistryFixture
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
                 .WithEnvironment("MessageBroker__Type", "InMemory")
                 .WithEnvironment("jwt__AllowAnyJwtToken", "true")
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(WalletGrpcPort))
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(WalletHttpPort))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
         });
@@ -65,7 +65,7 @@ public class ProjectOriginStack : RegistryFixture
         WalletUrl = WalletUrl
     };
 
-    public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(WalletGrpcPort)).Uri.ToString();
+    public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(WalletHttpPort)).Uri.ToString();
 
     public override async Task InitializeAsync()
     {

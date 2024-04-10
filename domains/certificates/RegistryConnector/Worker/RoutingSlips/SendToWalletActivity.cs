@@ -1,11 +1,13 @@
 using System;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using DataContext;
-using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ProjectOrigin.WalletSystem.V1;
+using ProjectOriginClients;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 
@@ -23,14 +25,15 @@ public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
     public async Task<ExecutionResult> Execute(ExecuteContext<SendToWalletArguments> context)
     {
         logger.LogInformation("Sending slice to Wallet for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
-            context.Arguments.ReceiveRequest.CertificateId.StreamId.Value, context.TrackingNumber);
+            context.Arguments.ReceiveRequest.CertificateId.StreamId, context.TrackingNumber);
 
-        using var channel = GrpcChannel.ForAddress(context.Arguments.WalletUrl);
-        var client = new ReceiveSliceService.ReceiveSliceServiceClient(channel);
+        var client = new HttpClient();
+        var requestStr = JsonSerializer.Serialize(context.Arguments.ReceiveRequest);
+        var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
         // The Wallet is idempotent wrt. sending the same ReceiveRequest.
-
-        await client.ReceiveSliceAsync(context.Arguments.ReceiveRequest);
+        var res = await client.PostAsync(context.Arguments.WalletUrl, content);
+        res.EnsureSuccessStatusCode();
 
         return context.Completed();
     }
