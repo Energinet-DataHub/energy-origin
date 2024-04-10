@@ -9,6 +9,8 @@ This section describes the first version of consent functionality in Energy Orig
 - 3rd party client: A third party company using the APIs exposed by Energy Origin. A 3rd party client may have software systems running and interacting with the Energy Origin APIs without user interaction.
 - User: A user authenticated with MitID erhverv and acting as employee in a company. A user may be employeed in multiple companies, but is forced to select a specific company as part of MitID authenticattion.
 - TIN: Tax Identification Number, in Denmark the CVR number.
+- Terms: Terms a user must agree to, before using Energy Origin Web application or APIs.
+- Consent: A user grants consent to a 3rd party. The 3rd party may after being granted consent, use Energy Origin APIs on behalf of the user. 
 
 ### Conceptual overview
 
@@ -16,22 +18,28 @@ This section describes the first version of consent functionality in Energy Orig
 erDiagram
   User }o--o{ Organization : employed
   User {
-    uuid id
-    string name
+    uuid Id
+    string Name
   }
   Organization ||--o{ MeteringPoint : owns
   Organization ||--o{ Wallet : owns
   Organization {
-    string tin
+    string Tin
     string Name
   }
+  Consent {
+    timestamp Start
+    timestamp Expiration
+  }
   MeteringPoint {
-    string gsrn
+    string GSRN
   }
   Wallet {
-    uuid id
+    uuid Id
   }
-  Client }o--o{ Organization : Consent
+  User ||--o{ Consent : "Granted by"
+  Client ||--o{ Consent : "Granted to"
+  Organization ||--o{ Consent : "Consent to"
   Client {
     string Name
   }
@@ -43,29 +51,55 @@ A client will be authenticated to work in the context of all the organizations i
 
 Our use of the Client Credentials flow is described by Microsoft in the following article [Client Credentials Grant](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow).
 
-### System context
+## System context
 
 ``` Mermaid 
 C4Context
   Person(user, "MitID Erhverv user")
   Enterprise_Boundary(eoBoundary, "Energy Origin") {
-    System(WEB, "Energy Origin WEB", "")
+    System(WEB, "Energy Origin", "Web app")
     System(API, "Energy Origin API", "HTTP API") 
-    System_Boundary(AUTH, "Authentication") {
+    System_Boundary(Authorization, "Authentication") {
       System(B2C, "Azure AD B2C", "Energy Origin Identity Provider")
+      System(authorizationAPI, "Authorization API", "Energy Origin authorization")
     }
   }
   System_Ext(MitID, "MitID", "Signaturgruppen MitID provider")
   Rel(user, WEB, "Access resources and provide consent", "OpenID Connect")
-  Rel(user, MitID, "Logs in", "")
+  Rel(user, MitID, "Logs in", "HTTPS")
   Rel(WEB, B2C, "Delegates log in ", "OpenID Connect")
   Rel(WEB, API, "Uses HTTP APIs", "HTTPS")
+  Rel(WEB, authorizationAPI, "Updates consent", "HTTPS")
   Rel(B2C, MitID, "Delegates authentication of MitID users", "OpenID Connect")
+  Rel(B2C, authorizationAPI, "Fetches authorization claims", "HTTPS")
+
+UpdateElementStyle(eoBoundary, $fontColor="lightgrey", $bgColor="transparent", $borderColor="lightgrey")
+UpdateElementStyle(Authorization, $fontColor="lightgrey", $bgColor="transparent", $borderColor="lightgrey")
+  UpdateElementStyle(user, $fontColor="black", $bgColor="lightgrey", $borderColor="black")
+  UpdateElementStyle(MitID, $fontColor="black", $bgColor="lightgrey", $borderColor="white")
+  UpdateRelStyle(WEB, B2C, $textColor="lightgrey", $lineColor="lightgrey")
+  UpdateRelStyle(user, MitID, $textColor="lightgrey", $lineColor="lightgrey")
+  UpdateRelStyle(B2C, MitID, $textColor="lightgrey", $lineColor="lightgrey")
+  UpdateRelStyle(WEB, API, $textColor="lightgrey", $lineColor="lightgrey")
+  UpdateRelStyle(user, WEB, $textColor="lightgrey", $lineColor="lightgrey")
+  UpdateRelStyle(B2C, authorizationAPI, $textColor="lightgrey", $lineColor="lightgrey")
+  UpdateRelStyle(WEB, authorizationAPI, $textColor="lightgrey", $lineColor="lightgrey")
+  
+```
+
+## Sign-up flow
+
+Fist time a MitID user logs into the Energy Origin Web application, the user will have to go through some steps. After agreeing to terms and conditions, a 'shadow' user will be creater in B2C. 
+
+``` Mermaid 
+sequenceDiagram
+    actor User
+    
 ```
 
 ## Grant consent to 3rd party
 
-Grant consent for 3rd party client to access and administer data in Energy Origin.
+Grant consent for 3rd party client to access and manage data in Energy Origin.
 
 ``` Mermaid 
 sequenceDiagram
@@ -98,22 +132,6 @@ sequenceDiagram
 
 ## 3rd party access
 
-### Register B2C as client
-
-Azure B2C itself will have to be registered as a client. This allows B2C to obtain a token for itself and call the EO authorization API. 
-
-![New App Registration](/images/new_app_registration.png)
-
-Provide the name `self` for the app, and register by clicking `Register`.
-
-Afterwards change settings in the manifest file. Make sure the following two settings are present: `"signInAudience": "AzureADMyOrg"` and `"accessTokenAcceptedVersion": 2`.
-
-Add a new client secret to the app registration.
-
-![New Client Secret](/images/new_client_secret.png)
-
-Make sure to copy the secret value and store it somewhere safe. Use client id and client secret to configure client_credentials custom policy.
-
 Call Energy Origin API as 3rd party client on behalf of organization.
 
 ``` Mermaid 
@@ -141,6 +159,24 @@ sequenceDiagram
     ClientApp->>Cert: API call (token)
 ```
 
+## Deployment
+
+### Register B2C as client
+
+Azure B2C itself will have to be registered as a client. This allows B2C to obtain a token for itself and call the EO authorization API. 
+
+![New App Registration](/images/new_app_registration.png)
+
+Provide the name `self` for the app, and register by clicking `Register`.
+
+Afterwards change settings in the manifest file. Make sure the following two settings are present: `"signInAudience": "AzureADMyOrg"` and `"accessTokenAcceptedVersion": 2`.
+
+Add a new client secret to the app registration.
+
+![New Client Secret](/images/new_client_secret.png)
+
+Make sure to copy the secret value and store it somewhere safe. Use client id and client secret to configure client_credentials custom policy.
+
 ## Links
 
  [MitID test user tool](https://pp.mitid.dk/test-tool/frontend/#/view-identity)
@@ -153,6 +189,8 @@ sequenceDiagram
 [Confluence: MitID test brugere](https://energinet.atlassian.net/wiki/spaces/ElOverblik/pages/678133811)
 
 [Confluence: Driftinfo hos Netsbroker](https://energinet.atlassian.net/wiki/spaces/ElOverblik/pages/307232769)
+
+[EID](https://www.signicat.com/products/identity-proofing/eid-hub)
 
 ## Test with ngrok on localhost
 
