@@ -14,6 +14,7 @@ using API.Transfer.TransferAgreementProposalCleanup;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog;
+using EnergyOrigin.ActivityLog.HostedService;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Hosting;
@@ -104,6 +105,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             {
                 s.Remove(s.First(x => x.ImplementationType == typeof(TransferAgreementProposalCleanupWorker)));
                 s.Remove(s.First(x => x.ImplementationType == typeof(TransferAgreementProposalCleanupService)));
+                s.Remove(s.First(x => x.ImplementationType == typeof(CleanupActivityLogsHostedService)));
             }
         });
     }
