@@ -57,7 +57,7 @@ internal class ContractServiceImpl : IContractService
         {
             var createWalletResponse = await walletClient.CreateWallet(user.Subject.ToString(), cancellationToken);
 
-            if(createWalletResponse == null)
+            if (createWalletResponse == null)
                 throw new ApplicationException("Failed to create wallet.");
 
             wallet = new Wallet(user.Subject, createWalletResponse.WalletId);

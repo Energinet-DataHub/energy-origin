@@ -53,7 +53,7 @@ public sealed class CertificateIssuingTests :
     public async Task GetList_NoCertificates_ReturnsNoContent()
     {
         var subject = Guid.NewGuid().ToString();
-        
+
         var client = factory.CreateWalletClient(subject);
 
         var queryResponse = await client.QueryCertificates();
