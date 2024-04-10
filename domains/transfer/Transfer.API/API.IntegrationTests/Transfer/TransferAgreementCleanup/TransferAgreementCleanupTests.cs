@@ -92,7 +92,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
     {
         var receiverTin = "12345677";
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
