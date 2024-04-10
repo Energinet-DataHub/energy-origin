@@ -192,7 +192,7 @@ public class OidcControllerTests
         Assert.NotNull(result);
         Assert.IsType<TokenResponse>(result);
 
-        Assert.Equal(tokenEndpoint.AbsoluteUri, result.HttpResponse.RequestMessage?.RequestUri?.AbsoluteUri);
+        Assert.Equal(tokenEndpoint.AbsoluteUri, result.HttpResponse?.RequestMessage?.RequestUri?.AbsoluteUri);
         Assert.False(result.IsError);
 
         Assert.Equal(accessToken, result.AccessToken);

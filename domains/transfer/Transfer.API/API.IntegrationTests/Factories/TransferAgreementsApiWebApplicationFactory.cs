@@ -113,7 +113,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
-        using var serviceScope = host.Services.CreateScope();
+        var serviceScope = host.Services.CreateScope();
         var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Database.Migrate();
 
