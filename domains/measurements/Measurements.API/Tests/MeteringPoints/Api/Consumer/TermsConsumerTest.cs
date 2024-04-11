@@ -41,9 +41,9 @@ public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Start
         var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
         contextMock.Message.Returns(@event);
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(_factory.ConnectionString)
             .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
+        var dbContext = new TransferDbContext(contextOptions);
         dbContext.Database.EnsureCreated();
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
@@ -63,9 +63,9 @@ public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Start
         var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
         contextMock.Message.Returns(@event);
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(_factory.ConnectionString)
             .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
+        var dbContext = new TransferDbContext(contextOptions);
         dbContext.Database.EnsureCreated();
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();

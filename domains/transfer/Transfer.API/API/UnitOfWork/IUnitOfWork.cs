@@ -18,13 +18,13 @@ public interface IUnitOfWork : IAsyncDisposable
 
 public class UnitOfWork : IUnitOfWork
 {
-    private ApplicationDbContext context;
+    private TransferDbContext context;
     private ITransferAgreementRepository transferAgreementRepo = null!;
     private IActivityLogEntryRepository activityLogEntryRepo = null!;
     private ITransferAgreementProposalRepository transferAgreementProposalRepo = null!;
     private ITransferAgreementHistoryEntryRepository transferAgreementHistoryEntryRepo = null!;
 
-    public UnitOfWork(ApplicationDbContext context)
+    public UnitOfWork(TransferDbContext context)
     {
         this.context = context;
     }

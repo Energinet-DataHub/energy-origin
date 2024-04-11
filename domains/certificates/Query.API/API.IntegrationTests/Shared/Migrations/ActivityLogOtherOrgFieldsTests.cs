@@ -52,7 +52,7 @@ public class ActivityLogEntryOtherOrgFieldsTests : IAsyncDisposable
         logEntriesInDb.First().OtherOrganizationName.Should().Be(string.Empty);
     }
 
-    private static async Task InsertOldActivityLogEntry(ApplicationDbContext dbContext, Guid id)
+    private static async Task InsertOldActivityLogEntry(TransferDbContext dbContext, Guid id)
     {
         var logEntryTable = dbContext.Model.FindEntityType(typeof(ActivityLogEntry))!.GetTableName();
 
@@ -96,7 +96,7 @@ public class ActivityLogEntryOtherOrgFieldsTests : IAsyncDisposable
         await dbContext.Database.ExecuteSqlRawAsync(logEntryQuery, logEntryFields);
     }
 
-    private static async Task InsertNewActivityLogEntry(ApplicationDbContext dbContext, Guid id)
+    private static async Task InsertNewActivityLogEntry(TransferDbContext dbContext, Guid id)
     {
         var logEntryTable = dbContext.Model.FindEntityType(typeof(ActivityLogEntry))?.GetTableName();
 
@@ -146,13 +146,13 @@ public class ActivityLogEntryOtherOrgFieldsTests : IAsyncDisposable
         await dbContext.Database.ExecuteSqlRawAsync(logEntryQuery, logEntryFields);
     }
 
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
+    private async Task<TransferDbContext> CreateNewCleanDatabase()
     {
         await container.InitializeAsync();
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(container.ConnectionString)
             .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
+        var dbContext = new TransferDbContext(contextOptions);
         return dbContext;
     }
 

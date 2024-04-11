@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.IntegrationTests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.UnitTests", "ClaimAutomation\Worker.UnitTests\Worker.UnitTests.csproj", "{0B2EB2DF-19E2-43CE-B13E-A9DDE286309A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataContext", "Shared\DataContext\DataContext.csproj", "{EE0D601E-22DA-4F17-B912-C5E0E0EDA078}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransferDataContext", "Shared\TransferDataContext\TransferDataContext.csproj", "{EE0D601E-22DA-4F17-B912-C5E0E0EDA078}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.csproj", "{C1AB7C2C-C451-4EA4-9D3E-4C894B992836}"
 EndProject

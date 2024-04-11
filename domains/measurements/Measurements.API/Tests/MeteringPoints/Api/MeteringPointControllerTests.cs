@@ -90,9 +90,9 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
         var subject = Guid.NewGuid();
         var client = _factory.CreateAuthenticatedClient(subject.ToString());
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(_factory.ConnectionString)
             .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
+        var dbContext = new TransferDbContext(contextOptions);
         dbContext.Database.EnsureCreated();
 
         dbContext.Relations.Add(new RelationDto()

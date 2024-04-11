@@ -17,9 +17,9 @@ namespace API.MeteringPoints.Api.Controllers;
 public class MeteringPointsController : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
-    private readonly ApplicationDbContext _dbContext;
+    private readonly TransferDbContext _dbContext;
 
-    public MeteringPointsController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client, ApplicationDbContext dbContext)
+    public MeteringPointsController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client, TransferDbContext dbContext)
     {
         _client = client;
         _dbContext = dbContext;

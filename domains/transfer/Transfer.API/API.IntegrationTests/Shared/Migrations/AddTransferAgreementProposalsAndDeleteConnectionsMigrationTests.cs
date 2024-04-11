@@ -28,7 +28,7 @@ public class AddTransferAgreementProposalsAndDeleteConnectionsMigrationTests : M
         applyMigration.Should().NotThrow();
     }
 
-    private static async Task InsertOldConnection(ApplicationDbContext dbContext, Guid id, Guid companyAId, string companyATin, Guid companyBId, string companyBTin)
+    private static async Task InsertOldConnection(TransferDbContext dbContext, Guid id, Guid companyAId, string companyATin, Guid companyBId, string companyBTin)
     {
         var connectionsTable = "Connections";
 
@@ -46,7 +46,7 @@ public class AddTransferAgreementProposalsAndDeleteConnectionsMigrationTests : M
         await dbContext.Database.ExecuteSqlRawAsync(connectionsQuery, connectionsFields);
     }
 
-    private static async Task InsertOldConnectionInvitation(ApplicationDbContext dbContext, Guid id, Guid senderCompanyId, string senderCompanyTin, DateTimeOffset createdAt)
+    private static async Task InsertOldConnectionInvitation(TransferDbContext dbContext, Guid id, Guid senderCompanyId, string senderCompanyTin, DateTimeOffset createdAt)
     {
         var table = "ConnectionInvitations";
 

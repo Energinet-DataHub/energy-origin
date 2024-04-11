@@ -46,7 +46,7 @@ public class ExampledMigrationTests : IAsyncDisposable
         tas.Count.Should().Be(2);
     }
 
-    private static async Task InsertOldTransferAgreement(ApplicationDbContext dbContext, Guid id, DateTimeOffset startDate, DateTimeOffset endDate, Guid senderId, string senderName,
+    private static async Task InsertOldTransferAgreement(TransferDbContext dbContext, Guid id, DateTimeOffset startDate, DateTimeOffset endDate, Guid senderId, string senderName,
         string senderTin, string receiverTin, Guid receiverReference)
     {
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
@@ -68,13 +68,13 @@ public class ExampledMigrationTests : IAsyncDisposable
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
     }
 
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
+    private async Task<TransferDbContext> CreateNewCleanDatabase()
     {
         await container.InitializeAsync();
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(container.ConnectionString)
             .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
+        var dbContext = new TransferDbContext(contextOptions);
         return dbContext;
     }
 

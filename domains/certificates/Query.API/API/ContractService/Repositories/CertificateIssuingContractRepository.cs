@@ -12,9 +12,9 @@ namespace API.ContractService.Repositories;
 
 internal class CertificateIssuingContractRepository : ICertificateIssuingContractRepository
 {
-    private readonly ApplicationDbContext dbContext;
+    private readonly TransferDbContext dbContext;
 
-    public CertificateIssuingContractRepository(ApplicationDbContext dbContext)
+    public CertificateIssuingContractRepository(TransferDbContext dbContext)
         => this.dbContext = dbContext;
 
     public ValueTask<EntityEntry<CertificateIssuingContract>> Save(

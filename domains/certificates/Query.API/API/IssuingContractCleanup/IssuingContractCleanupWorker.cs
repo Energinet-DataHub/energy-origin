@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace API.IssuingContractCleanup;
 
 public class IssuingContractCleanupWorker(
-    IDbContextFactory<ApplicationDbContext> contextFactory,
+    IDbContextFactory<TransferDbContext> contextFactory,
     ILogger<IssuingContractCleanupWorker> logger,
     IOptions<IssuingContractCleanupOptions> options) : BackgroundService
 {

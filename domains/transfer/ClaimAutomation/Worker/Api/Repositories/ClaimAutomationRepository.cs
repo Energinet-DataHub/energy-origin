@@ -10,9 +10,9 @@ namespace ClaimAutomation.Worker.Api.Repositories;
 
 public class ClaimAutomationRepository : IClaimAutomationRepository
 {
-    private readonly IDbContextFactory<ApplicationDbContext> contextFactory;
+    private readonly IDbContextFactory<TransferDbContext> contextFactory;
 
-    public ClaimAutomationRepository(IDbContextFactory<ApplicationDbContext> contextFactory)
+    public ClaimAutomationRepository(IDbContextFactory<TransferDbContext> contextFactory)
     {
         this.contextFactory = contextFactory;
     }

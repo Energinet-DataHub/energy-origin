@@ -74,16 +74,16 @@ public sealed class CertificateIssuingFailingTests :
 
         await factory.GetMassTransitBus().Publish(measurement);
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(factory.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(factory.ConnectionString)
             .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
+        var dbContext = new TransferDbContext(contextOptions);
 
         var cert = await RepeatedlyQueryProductionCertsUntilRejected(dbContext, 1);
 
         cert.First().IsRejected.Should().BeTrue();
     }
 
-    private static async Task<List<ProductionCertificate>> RepeatedlyQueryProductionCertsUntilRejected(ApplicationDbContext dbContext, int count, TimeSpan? timeLimit = null)
+    private static async Task<List<ProductionCertificate>> RepeatedlyQueryProductionCertsUntilRejected(TransferDbContext dbContext, int count, TimeSpan? timeLimit = null)
     {
         var limit = timeLimit ?? TimeSpan.FromSeconds(15);
 

@@ -14,13 +14,13 @@ namespace API.IntegrationTests.Shared.Migrations
             container = new PostgresContainer();
         }
 
-        protected async Task<ApplicationDbContext> CreateNewCleanDatabase()
+        protected async Task<TransferDbContext> CreateNewCleanDatabase()
         {
             await container.InitializeAsync();
 
-            var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
+            var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(container.ConnectionString)
                 .Options;
-            var dbContext = new ApplicationDbContext(contextOptions);
+            var dbContext = new TransferDbContext(contextOptions);
             return dbContext;
         }
 

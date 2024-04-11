@@ -31,10 +31,10 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDbContext<ApplicationDbContext>(
+        services.AddDbContext<TransferDbContext>(
             options => options.UseNpgsql(_configuration.GetConnectionString("Postgres")),
             optionsLifetime: ServiceLifetime.Singleton);
-        services.AddDbContextFactory<ApplicationDbContext>();
+        services.AddDbContextFactory<TransferDbContext>();
 
         services.AddSingleton<IConnection>(sp =>
             {

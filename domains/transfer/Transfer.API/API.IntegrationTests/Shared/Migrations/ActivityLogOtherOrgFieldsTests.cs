@@ -69,7 +69,7 @@ public class ActivityLogEntryOtherOrgFieldsTests : MigrationsTestBase
         logEntriesInDb.Count.Should().Be(1);
     }
 
-    private static async Task InsertOldActivityLogEntry(ApplicationDbContext dbContext, Guid id)
+    private static async Task InsertOldActivityLogEntry(TransferDbContext dbContext, Guid id)
     {
         var logEntryTable = dbContext.Model.FindEntityType(typeof(ActivityLogEntry))?.GetTableName();
 
@@ -113,7 +113,7 @@ public class ActivityLogEntryOtherOrgFieldsTests : MigrationsTestBase
         await dbContext.Database.ExecuteSqlRawAsync(logEntryQuery, logEntryFields);
     }
 
-    private static async Task InsertNewActivityLogEntry(ApplicationDbContext dbContext, Guid id)
+    private static async Task InsertNewActivityLogEntry(TransferDbContext dbContext, Guid id)
     {
         var logEntryTable = dbContext.Model.FindEntityType(typeof(ActivityLogEntry))?.GetTableName();
 

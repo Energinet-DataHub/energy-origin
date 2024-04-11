@@ -31,7 +31,7 @@ public static class DbContextExtension
         throw new Exception($"Entity not found within the time limit ({limit.TotalSeconds} seconds)");
     }
 
-    public static async Task TruncateTransferAgreementsTables(this ApplicationDbContext dbContext)
+    public static async Task TruncateTransferAgreementsTables(this TransferDbContext dbContext)
     {
         var transfersTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
         var historyEntriesTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();

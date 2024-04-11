@@ -32,7 +32,7 @@ public class TransferAgreementProposalCleanupServiceTests : IClassFixture<Transf
     public async Task Run_ShouldDeleteOldInvitations_WhenInvoked()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
 
         dbContext.TransferAgreementProposals.RemoveRange(dbContext.TransferAgreementProposals);
         await dbContext.SaveChangesAsync();
@@ -74,7 +74,7 @@ public class TransferAgreementProposalCleanupServiceTests : IClassFixture<Transf
     public async Task ShouldCreateActivityLogEntry_WhenDeleting()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
 
         dbContext.TransferAgreementProposals.RemoveRange(dbContext.TransferAgreementProposals);
         await dbContext.SaveChangesAsync();

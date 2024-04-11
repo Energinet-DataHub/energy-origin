@@ -26,13 +26,13 @@ public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClass
         dbContext.Invoking(db => db.SaveChanges()).Should().Throw<DbUpdateException>();
     }
 
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
+    private async Task<TransferDbContext> CreateNewCleanDatabase()
     {
         await container.InitializeAsync();
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(container.ConnectionString)
             .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
+        var dbContext = new TransferDbContext(contextOptions);
         return dbContext;
     }
 }

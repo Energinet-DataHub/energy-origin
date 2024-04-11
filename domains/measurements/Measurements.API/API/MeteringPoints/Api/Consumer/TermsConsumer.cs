@@ -12,7 +12,7 @@ using Relation.V1;
 namespace API.MeteringPoints.Api.Consumer;
 
 public class TermsConsumer(
-    ApplicationDbContext dbContext,
+    TransferDbContext dbContext,
     Relation.V1.Relation.RelationClient relationClient)
     : IConsumer<OrgAcceptedTerms>
 {

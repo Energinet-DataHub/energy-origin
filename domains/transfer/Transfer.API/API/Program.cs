@@ -29,10 +29,10 @@ builder.Services.Configure<JsonOptions>(options => options.SerializerOptions.Con
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
+builder.Services.AddDbContext<DbContext, TransferDbContext>(
     (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
     optionsLifetime: ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<ApplicationDbContext>();
+builder.Services.AddDbContextFactory<TransferDbContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddHealthChecks()

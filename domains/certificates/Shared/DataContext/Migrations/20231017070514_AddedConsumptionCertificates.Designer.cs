@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataContext.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(TransferDbContext))]
     [Migration("20231017070514_AddedConsumptionCertificates")]
     partial class AddedConsumptionCertificates
     {

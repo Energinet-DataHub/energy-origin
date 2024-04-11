@@ -114,7 +114,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         var host = base.CreateHost(builder);
         var serviceScope = host.Services.CreateScope();
-        var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = serviceScope.ServiceProvider.GetRequiredService<TransferDbContext>();
         dbContext.Database.Migrate();
 
         return host;
@@ -123,7 +123,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public async Task SeedTransferAgreements(IEnumerable<TransferAgreement> transferAgreements)
     {
         using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
         await dbContext.TruncateTransferAgreementsTables();
 
         foreach (var agreement in transferAgreements)
@@ -136,7 +136,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public async Task SeedTransferAgreementsSaveChangesAsync(TransferAgreement transferAgreement)
     {
         using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
         dbContext.TransferAgreements.Add(transferAgreement);
         await dbContext.SaveChangesAsync();
     }
@@ -144,7 +144,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public async Task SeedTransferAgreementProposals(IEnumerable<TransferAgreementProposal> proposals)
     {
         using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
 
         foreach (var proposal in proposals)
         {
@@ -237,7 +237,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return signedJwtToken;
     }
 
-    private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)
+    private static async Task InsertTransferAgreement(TransferDbContext dbContext, TransferAgreement agreement)
     {
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
 
@@ -259,7 +259,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
     }
 
-    private static async Task InsertTransferAgreementHistoryEntry(ApplicationDbContext dbContext, TransferAgreement agreement)
+    private static async Task InsertTransferAgreementHistoryEntry(TransferDbContext dbContext, TransferAgreement agreement)
     {
         var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
 

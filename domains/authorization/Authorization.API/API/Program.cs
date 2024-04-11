@@ -22,10 +22,10 @@ builder.Services.AddControllersWithEnumsAsStrings();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-// builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
+// builder.Services.AddDbContext<DbContext, TransferDbContext>(
 //     options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
 //     optionsLifetime: ServiceLifetime.Singleton);
-// builder.Services.AddDbContextFactory<ApplicationDbContext>();
+// builder.Services.AddDbContextFactory<TransferDbContext>();
 // builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //builder.Services.AddHealthChecks().AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);

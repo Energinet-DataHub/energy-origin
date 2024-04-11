@@ -109,7 +109,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         if (string.IsNullOrWhiteSpace(ConnectionString))
             return host;
 
-        var factory = host.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+        var factory = host.Services.GetRequiredService<IDbContextFactory<TransferDbContext>>();
 
         using var dbContext = factory.CreateDbContext();
         dbContext.Database.Migrate();

@@ -11,8 +11,8 @@ namespace API.Transfer.Api.Repository;
 
 public class TransferAgreementHistoryEntryRepository : ITransferAgreementHistoryEntryRepository
 {
-    private readonly ApplicationDbContext context;
-    public TransferAgreementHistoryEntryRepository(ApplicationDbContext context) => this.context = context;
+    private readonly TransferDbContext context;
+    public TransferAgreementHistoryEntryRepository(TransferDbContext context) => this.context = context;
 
     public async Task<List<TransferAgreementHistoryEntry>> GetHistoryEntriesForTransferAgreement(
         Guid transferAgreementId, string subject, string tin) =>

@@ -23,9 +23,9 @@ public class RollbackMigrationTests : IAsyncDisposable
     {
         await container.InitializeAsync();
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(container.ConnectionString)
             .Options;
-        await using var dbContext = new ApplicationDbContext(contextOptions);
+        await using var dbContext = new TransferDbContext(contextOptions);
         await dbContext.Database.MigrateAsync();
 
         var migrator = dbContext.Database.GetService<IMigrator>();

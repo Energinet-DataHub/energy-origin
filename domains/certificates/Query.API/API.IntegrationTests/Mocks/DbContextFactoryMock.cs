@@ -7,15 +7,15 @@ using Xunit;
 
 namespace API.IntegrationTests.Mocks;
 
-public class DbContextFactoryMock : IDbContextFactory<ApplicationDbContext>, IAsyncLifetime
+public class DbContextFactoryMock : IDbContextFactory<TransferDbContext>, IAsyncLifetime
 {
     private readonly PostgresContainer dbContainer = new();
-    private readonly ConcurrentBag<ApplicationDbContext?> disposableContexts = new();
+    private readonly ConcurrentBag<TransferDbContext?> disposableContexts = new();
 
-    public ApplicationDbContext CreateDbContext()
+    public TransferDbContext CreateDbContext()
     {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
-        var dbContext = new ApplicationDbContext(options);
+        var options = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
+        var dbContext = new TransferDbContext(options);
         dbContext.Database.EnsureCreated();
         disposableContexts.Add(dbContext);
         return dbContext;

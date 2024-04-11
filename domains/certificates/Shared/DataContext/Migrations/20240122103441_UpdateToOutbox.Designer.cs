@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataContext.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(TransferDbContext))]
     [Migration("20240122103441_UpdateToOutbox")]
     partial class UpdateToOutbox
     {

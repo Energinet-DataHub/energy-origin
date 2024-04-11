@@ -96,7 +96,7 @@ public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>,
     {
         var host = base.CreateHost(builder);
         var serviceScope = host.Services.CreateScope();
-        var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = serviceScope.ServiceProvider.GetRequiredService<TransferDbContext>();
         dbContext.Database.Migrate();
 
         return host;

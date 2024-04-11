@@ -28,7 +28,7 @@ public class IssuingContractCleanupTests : IClassFixture<QueryApiWebApplicationF
     public async Task ShouldOnlyDeleteExpiredIssuingContracts()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
 
         dbContext.Contracts.RemoveRange(dbContext.Contracts);
         await dbContext.SaveChangesAsync();

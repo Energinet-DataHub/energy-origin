@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;
 
-public class TransferAgreementRepository(ApplicationDbContext context) : ITransferAgreementRepository
+public class TransferAgreementRepository(TransferDbContext context) : ITransferAgreementRepository
 {
     public async Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement)
     {

@@ -36,10 +36,10 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
     .ValidateOnStart();
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
-builder.Services.AddDbContext<ApplicationDbContext>(
+builder.Services.AddDbContext<TransferDbContext>(
     (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
     optionsLifetime: ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<ApplicationDbContext>();
+builder.Services.AddDbContextFactory<TransferDbContext>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));

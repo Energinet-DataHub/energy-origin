@@ -32,7 +32,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
     public async Task ShouldOnlyDeleteExpiredTransferAgreements()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
 
         await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
@@ -96,7 +96,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         await customFactory.InitializeAsync();
         var receiverTin = "12345677";
         using var scope = customFactory.Services.CreateScope();
-        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
 
         await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
@@ -147,7 +147,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
     public async Task ShouldDeleteTaHistoryEntries()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>();
 
         await dbContext.TransferAgreementHistoryEntries.ExecuteDeleteAsync();
         await dbContext.TransferAgreements.ExecuteDeleteAsync();

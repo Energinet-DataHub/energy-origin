@@ -12,7 +12,7 @@ Activity log is built around logging activities in the different sub modules of 
 1. Register DbContext as part of normal EF Core setup in Program.cs
 
 ```csharp
-builder.Services.AddDbContext<DbContext, ApplicationDbContext>
+builder.Services.AddDbContext<DbContext, TransferDbContext>
 {
     // Normal setup
 }
@@ -39,7 +39,7 @@ app.MapControllers();
 builder.Services.AddActivityLog();
 ```
 
-4. Add DbSet and modelBuilder in ApplicationDbContext.cs
+4. Add DbSet and modelBuilder in TransferDbContext.cs
 ```csharp
 modelBuilder.AddActivityLogEntry();
 ....

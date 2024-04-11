@@ -51,7 +51,7 @@ public class UpdateNullTechnologyCodesMigrationTests : IAsyncDisposable
         consumptionContractAfterMigration!.Technology.Should().BeNull();
     }
 
-    private static async Task InsertContractWithEmptyTechnologyFields(ApplicationDbContext dbContext, Guid id, string gsrn, string gridArea, MeteringPointType meteringPointType)
+    private static async Task InsertContractWithEmptyTechnologyFields(TransferDbContext dbContext, Guid id, string gsrn, string gridArea, MeteringPointType meteringPointType)
     {
         var contractsTable = dbContext.Model.FindEntityType(typeof(CertificateIssuingContract))!.GetTableName();
 
@@ -102,14 +102,14 @@ public class UpdateNullTechnologyCodesMigrationTests : IAsyncDisposable
         await dbContext.Database.ExecuteSqlRawAsync(contractQuery, contractFields);
     }
 
-    private async Task<ApplicationDbContext> CreateDbContext()
+    private async Task<TransferDbContext> CreateDbContext()
     {
         await container.InitializeAsync();
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>()
                                 .UseNpgsql(container.ConnectionString)
                                 .Options;
 
-        var dbContext = new ApplicationDbContext(contextOptions);
+        var dbContext = new TransferDbContext(contextOptions);
         return dbContext;
     }
 

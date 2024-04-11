@@ -17,7 +17,7 @@ public class TransferAgreementsAutomationWorker(
     ILogger<TransferAgreementsAutomationWorker> logger,
     ITransferAgreementAutomationMetrics metrics,
     IServiceProvider provider,
-    IDbContextFactory<ApplicationDbContext> contextFactory)
+    IDbContextFactory<TransferDbContext> contextFactory)
     : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

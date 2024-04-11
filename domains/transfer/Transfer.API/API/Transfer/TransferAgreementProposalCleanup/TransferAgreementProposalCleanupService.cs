@@ -18,7 +18,7 @@ public interface ITransferAgreementProposalCleanupService
 
 public class TransferAgreementProposalCleanupService(
     ILogger<TransferAgreementProposalCleanupService> logger,
-    IDbContextFactory<ApplicationDbContext> contextFactory,
+    IDbContextFactory<TransferDbContext> contextFactory,
     IOptions<TransferAgreementProposalCleanupServiceOptions> options)
     : ITransferAgreementProposalCleanupService
 {

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 namespace API.Transfer.TransferAgreementCleanup;
 
 public class TransferAgreementCleanupWorker(
-    IDbContextFactory<ApplicationDbContext> contextFactory,
+    IDbContextFactory<TransferDbContext> contextFactory,
     ILogger<TransferAgreementCleanupWorker> logger,
     IOptions<TransferAgreementCleanupOptions> options)
     : BackgroundService
