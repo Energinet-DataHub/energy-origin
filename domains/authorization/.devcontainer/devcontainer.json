@@ -1,0 +1,29 @@
+{
+    "name": "Certificate domain",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {}
+    },
+    "postCreateCommand": "dotnet restore",
+    "remoteUser": "vscode",
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:~/.dotnet/tools"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "EditorConfig.EditorConfig",
+                "ms-dotnettools.csharp",
+                "formulahendry.dotnet-test-explorer",
+                "ryanluker.vscode-coverage-gutters"
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "omnisharp.enableRoslynAnalyzers": true
+            }
+        }
+    }
+}

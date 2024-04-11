@@ -8,7 +8,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Grpc.Core.Testing" Version="2.46.6" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.4" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
         <PackageReference Include="NSubstitute" Version="5.1.0" />
         <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">

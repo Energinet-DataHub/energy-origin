@@ -16,6 +16,7 @@ public static class IServiceCollectionExtensions
             options.MapInboundClaims = false;
             options.TokenValidationParameters = validationParameters;
         });
+
         services.AddAuthorization(options => options.AddPolicy(PolicyName.RequiresCompany, policy => policy.RequireClaim(UserClaimName.Tin)));
     }
 }
