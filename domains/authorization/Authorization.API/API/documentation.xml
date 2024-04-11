@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>API</name>
+    </assembly>
+    <members>
+        <member name="M:API.Authorization.Controllers.AuthorizationController.CreateContract(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationRequest)">
+            <summary>
+            Retreives Authorization Model.
+            </summary>
+        </member>
+    </members>
+</doc>
