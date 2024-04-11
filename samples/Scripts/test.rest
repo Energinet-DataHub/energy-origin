@@ -1,9 +1,8 @@
 
 
-POST https://2592pocauthorizationservice.at.energioprindelse.dk/api/authorization/
+POST https://demo.energioprindelse.dk/api/authorization/
 Content-Type: application/json
 
 {
     "client_id": "529a55d0-68c7-4129-ba3c-e06d4f1038c4"
 }
-
