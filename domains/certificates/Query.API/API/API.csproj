@@ -38,6 +38,10 @@
     <None Update="documentation.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="../API.IntegrationTests/SwaggerTests.GetSwaggerDocs_*.verified.txt">
+      <Link>swagger.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 	<ItemGroup>
