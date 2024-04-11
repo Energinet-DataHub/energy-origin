@@ -1,7 +1,5 @@
 name: Build domain
 
-name: Build domain
-
 on:
   workflow_call:
     inputs:
@@ -19,34 +17,75 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.build_matrix.outputs.project_matrix }}
+      matrix: ${{ env.matrix }}
 
     steps:
       - uses: actions/checkout@v4
 
-      # Removed the domain structure validation to increase flexibility
-
-      - name: Find changed directories
-        id: find_changed_dirs
-        uses: futuratrepadeira/changed-files@v3.3.0
-        with:
-          repo_token: ${{ github.token }}
-          pattern: '**/*'
-          result_format: 'json'
-
-      - name: Generate build matrix
-        id: build_matrix
-        run: |
-          CHANGED_DIRS=$(echo '${{ steps.find_changed_dirs.outputs.modified_files }}' | jq '[.[] | select(test("^domains/[^/]+($|/)")) | split("/")[1]] | unique')
-          PROJECT_MATRIX="[]"
-          for DIR in $(echo $CHANGED_DIRS | jq -r '.[]'); do
-            # Adjust the criteria as needed to include projects based on your structure
-            if [ -f "domains/$DIR/global.json" ]; then
-              PROJECT_MATRIX=$(echo $PROJECT_MATRIX | jq --arg DIR "$DIR" '. + [{"path": "domains/" + $DIR}]')
-            fi
-          done
-          echo "::set-output name=project_matrix::$(echo $PROJECT_MATRIX)"
+      - name: Validate required domain structure
         shell: bash
+        run: |
+          function required_folder {
+            [ -d "$1" ] || { printf '::error title=Missing folder::%s\n' "$1"; exit 1; }
+          }
+
+          function required_file {
+            [ -f "$1" ] || { printf '::error title=Missing file::%s\n' "$1"; exit 1; }
+          }
+
+          find domains -mindepth 1 -maxdepth 1 -type d | while read domain; do
+            required_folder "$domain/.devcontainer"
+            required_file "$domain/.devcontainer/Dockerfile"
+            required_file "$domain/.devcontainer/devcontainer.json"
+            required_file "$domain"/*.sln
+          done
+
+      - uses: CodeReaper/find-diff-action@v3
+        id: diff
+        with:
+          paths: domains/*/
+
+      - name: Set default matrix
+        shell: bash
+        run: |
+          echo "matrix=[]" >> "$GITHUB_ENV"
+
+      - name: Build relevant matrix
+        if: ${{ steps.diff.outputs.list != '' }}
+        shell: bash
+        env:
+          LIST: ${{ steps.diff.outputs.list }}
+        run: |
+          while read domain; do
+            [ -d "$domain" ] || continue
+            [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
+            settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
+            sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
+            runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
+            csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
+            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$runtime"; done <<< $csprojects | jq -sc '.')
+            printf '{"projects":%s}\n' "$projects"
+          done <<< $LIST > /tmp/json
+
+          if [ ! -s /tmp/json ]; then
+            exit 0
+          fi
+
+          matrix=$(jq -sc '.' < /tmp/json)
+          echo '::group::Matrix'
+          echo "$matrix" | jq -r '.'
+          echo '::endgroup::'
+
+          projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
+          echo "matrix=$projects" >> "$GITHUB_ENV"
+
+      - name: Matrix
+        shell: bash
+        run: |
+          echo '::group::Raw'
+          printf '${{ env.matrix }}\n'
+          echo '::endgroup::'
+          printf '${{ env.matrix }}' | jq -r '.'
 
   build-projects:
     name: Build projects
@@ -54,16 +93,42 @@ jobs:
     needs: setup
     if: ${{ needs.setup.outputs.matrix != '[]' }}
     strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+      matrix:
+        build: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
-      # Simplified the build steps to focus on building without strict domain structure
-      - name: Build
+      - name: Resolve version
+        uses: ./.github/actions/docker-image-version
+
+      - name: Resolve
+        shell: bash
+        env:
+          PROJECT: ${{ matrix.build.path }}
+          CONFIGURATION: ${{ matrix.build.configuration }}
         run: |
-          # Example build command; adjust as necessary for your project structure
-          dotnet build ${{ matrix.build.path }} -c Release
+          projects=$(dirname "$PROJECT")
+          domain=$(dirname "$projects")
+          name=$(yq '.name' "$CONFIGURATION")
+          service=${PROJECT#"$domain"}
+          path=$(find "$PROJECT" -name "*.csproj" | head -n1)
+          paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
+          migration="$domain/migrations/$(basename "$PROJECT").sql"
+          if [ ! -f "$migration" ]; then
+            migration=""
+          fi
+
+          EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
+          {
+            printf "paths<<%s\n" "$EOF"
+            printf "%s\n" "$paths"
+            printf "%s\n" "$EOF"
+            echo "migration=${migration}"
+            echo "service=${service}"
+            echo "domain=${domain}"
+            echo "name=${name}"
+            echo "path=${path}"
+          } >> $GITHUB_ENV
 
       - name: Validate project
         if: ${{ (github.event_name == 'push' && github.ref_name == 'main') }} == false
