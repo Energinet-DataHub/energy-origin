@@ -8,15 +8,19 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using API.MeasurementsSyncer;
 using Asp.Versioning.ApiExplorer;
 using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementProposalCleanup;
+using Contracts;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.HostedService;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
+using Grpc.Net.Client;
+using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -32,6 +36,12 @@ namespace API.IntegrationTests.Factories;
 public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer testContainer = new PostgreSqlBuilder().WithImage("postgres:15.2").Build();
+
+    private readonly List<GrpcChannel> disposableChannels = new();
+    public RabbitMqOptions? RabbitMqOptions { get; set; }
+
+    public string ConnectionString { get; set; } = "";
+    public string MeasurementsUrl { get; set; } = "http://foo";
 
     public Task InitializeAsync() => testContainer.StartAsync();
 
@@ -79,6 +89,17 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
         builder.UseSetting("TokenValidation:Audience", "Users");
 
+        // Certificate
+        builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
+        builder.UseSetting("Measurements:Url", MeasurementsUrl);
+        builder.UseSetting("Measurements:GrpcUrl", "http://foo");
+        builder.UseSetting("MeasurementsSync:Disabled", "false");
+        builder.UseSetting("IssuingContractCleanup:SleepTime", "00:00:03");
+        builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
+        builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
+        builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
+        builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
+
         builder.ConfigureTestServices(s =>
         {
             s.Configure<ActivityLogOptions>(options =>
@@ -87,6 +108,18 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 options.CleanupActivityLogsOlderThanInDays = -1;
                 options.CleanupIntervalInSeconds = 3;
             });
+
+            s.AddOptions<MassTransitHostOptions>().Configure(options =>
+            {
+                options.StartTimeout = TimeSpan.FromSeconds(30);
+                options.StopTimeout = TimeSpan.FromSeconds(5);
+                // Ensure masstransit bus is started when we run our health checks
+                options.WaitUntilStarted = RabbitMqOptions != null;
+            });
+
+            // Remove MeasurementsSyncerWorker
+            s.Remove(s.First(s => s.ImplementationType == typeof(MeasurementsSyncerWorker)));
+
 
             s.Configure<DatabaseOptions>(o =>
             {
