@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+package project_origin.electricity.v1;
+
+message IssuedEvent {
+    project_origin.common.v1.FederatedStreamId certificate_id = 1;
+    GranularCertificateType type = 2;
+    DateInterval period = 3;
+    string grid_area = 4;
+    bytes asset_id_hash = 5;
+    Commitment quantity_commitment = 6;
+    PublicKey owner_public_key = 7;
+    repeated Attribute attributes = 8;
+}
+
+message TransferredEvent{
+    project_origin.common.v1.FederatedStreamId certificate_id = 1;
+    bytes source_slice_hash = 2;
+    PublicKey new_owner = 3;
+}
+
+message SlicedEvent{
+    message Slice {
+        Commitment quantity = 1;
+        PublicKey new_owner = 2;
+    }
+
+    project_origin.common.v1.FederatedStreamId certificate_id = 1;
+    bytes source_slice_hash = 2;
+    repeated Slice new_slices = 3;
+    bytes sum_proof = 4;
+}
+
+message AllocatedEvent {
+    project_origin.common.v1.Uuid allocation_id = 1;
+    project_origin.common.v1.FederatedStreamId  production_certificate_id = 2;
+    project_origin.common.v1.FederatedStreamId  consumption_certificate_id = 3;
+    bytes production_source_slice_hash = 4;
+    bytes consumption_source_slice_hash = 5;
+    bytes equality_proof = 6;
+}
+
+message ClaimedEvent {
+    project_origin.common.v1.FederatedStreamId  certificate_id = 1;
+    project_origin.common.v1.Uuid allocation_id = 2;
+}
+
+enum GranularCertificateType {
+    INVALID = 0;
+    CONSUMPTION = 1;
+    PRODUCTION = 2;
+}
+
+message Attribute {
+    string key = 1;
+    string value = 2;
+    AttributeType type = 3;
+}
+
+enum AttributeType {
+    CLEARTEXT = 0;
+    HASHED = 1;
+}
+
+message DateInterval {
+    google.protobuf.Timestamp start = 1;
+    google.protobuf.Timestamp end = 2;
+}
+
+message Commitment {
+    bytes content = 1;
+    bytes range_proof = 2;
+}
+
+message CommitmentPublication {
+    uint32 message = 1;
+    bytes r_value = 2;
+}
+
+message PublicKey {
+    bytes content = 1;
+    KeyType type = 2;
+}
+
+enum KeyType {
+    Secp256k1 = 0;
+    ED25519 = 1;
+}

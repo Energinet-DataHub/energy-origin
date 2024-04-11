@@ -22,6 +22,8 @@
 
 	<ItemGroup>
 		<Protobuf Include="Protos/common.proto" GrpcServices="None" />
+		<Protobuf Include="Protos/electricity.proto" ProtoRoot="Protos" GrpcServices="None" />
+		<Protobuf Include="Protos/registry.proto" ProtoRoot="Protos" GrpcServices="Client" />
 		<Protobuf Include="Protos/wallet.proto" GrpcServices="Client" />
 	</ItemGroup>
 </Project>
