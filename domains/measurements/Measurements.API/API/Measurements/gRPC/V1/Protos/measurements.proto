@@ -25,6 +25,7 @@ message Measurement {
 	int64 dateTo = 3;
 	int64 quantity = 4;
 	EnergyQuantityValueQuality quality = 5;
+	bool quantityMissing = 6;
 }
 
 enum EnergyQuantityValueQuality {
