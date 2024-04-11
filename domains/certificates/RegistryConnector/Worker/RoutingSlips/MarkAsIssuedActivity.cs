@@ -14,10 +14,10 @@ public record MarkAsIssuedArguments(Guid CertificateId, MeteringPointType Meteri
 
 public class MarkAsIssuedActivity : IExecuteActivity<MarkAsIssuedArguments>
 {
-    private readonly TransferDbContext dbContext;
+    private readonly CertificateDbContext dbContext;
     private readonly ILogger<MarkAsIssuedActivity> logger;
 
-    public MarkAsIssuedActivity(TransferDbContext dbContext, ILogger<MarkAsIssuedActivity> logger)
+    public MarkAsIssuedActivity(CertificateDbContext dbContext, ILogger<MarkAsIssuedActivity> logger)
     {
         this.dbContext = dbContext;
         this.logger = logger;
@@ -73,6 +73,6 @@ public class MarkAsIssuedActivityDefinition : ExecuteActivityDefinition<MarkAsIs
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<TransferDbContext>(context);
+        endpointConfigurator.UseEntityFrameworkOutbox<CertificateDbContext>(context);
     }
 }

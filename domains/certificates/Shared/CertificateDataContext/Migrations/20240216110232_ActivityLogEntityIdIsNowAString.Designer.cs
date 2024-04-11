@@ -11,21 +11,21 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataContext.Migrations
 {
-    [DbContext(typeof(TransferDbContext))]
-    [Migration("20240306103908_AddOtherOrgToActivityLog")]
-    partial class AddOtherOrgToActivityLog
+    [DbContext(typeof(CertificateDbContext))]
+    [Migration("20240216110232_ActivityLogEntityIdIsNowAString")]
+    partial class ActivityLogEntityIdIsNowAString
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DataContext.Models.CertificateIssuingContract", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.CertificateIssuingContract", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -74,7 +74,7 @@ namespace DataContext.Migrations
                     b.ToTable("Contracts");
                 });
 
-            modelBuilder.Entity("DataContext.Models.ConsumptionCertificate", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.ConsumptionCertificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -119,7 +119,7 @@ namespace DataContext.Migrations
                     b.ToTable("ConsumptionCertificates");
                 });
 
-            modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.ProductionCertificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -164,7 +164,7 @@ namespace DataContext.Migrations
                     b.ToTable("ProductionCertificates");
                 });
 
-            modelBuilder.Entity("DataContext.Models.SynchronizationPosition", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.SynchronizationPosition", b =>
                 {
                     b.Property<string>("GSRN")
                         .HasColumnType("text");
@@ -177,7 +177,7 @@ namespace DataContext.Migrations
                     b.ToTable("SynchronizationPositions");
                 });
 
-            modelBuilder.Entity("EnergyOrigin.ActivityLog.DataContext.ActivityLogEntry", b =>
+            modelBuilder.Entity("EnergyOrigin.ActivityLog.CertificateDataContext.ActivityLogEntry", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -208,14 +208,6 @@ namespace DataContext.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("OrganizationTin")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("OtherOrganizationName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("OtherOrganizationTin")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -400,9 +392,9 @@ namespace DataContext.Migrations
                     b.ToTable("OutboxState");
                 });
 
-            modelBuilder.Entity("DataContext.Models.CertificateIssuingContract", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.CertificateIssuingContract", b =>
                 {
-                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("CertificateDataContext.ValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("CertificateIssuingContractId")
                                 .HasColumnType("uuid");
@@ -426,9 +418,9 @@ namespace DataContext.Migrations
                     b.Navigation("Technology");
                 });
 
-            modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.ProductionCertificate", b =>
                 {
-                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("CertificateDataContext.ValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("ProductionCertificateId")
                                 .HasColumnType("uuid");

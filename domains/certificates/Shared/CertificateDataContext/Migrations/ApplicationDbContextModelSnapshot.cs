@@ -3,7 +3,6 @@ using System;
 using DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,21 +10,19 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataContext.Migrations
 {
-    [DbContext(typeof(TransferDbContext))]
-    [Migration("20231220131700_AddOutbox")]
-    partial class AddOutbox
+    [DbContext(typeof(CertificateDbContext))]
+    partial class TransferDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.11")
+                .HasAnnotation("ProductVersion", "8.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DataContext.Models.CertificateIssuingContract", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.CertificateIssuingContract", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -74,7 +71,7 @@ namespace DataContext.Migrations
                     b.ToTable("Contracts");
                 });
 
-            modelBuilder.Entity("DataContext.Models.ConsumptionCertificate", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.ConsumptionCertificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -119,7 +116,7 @@ namespace DataContext.Migrations
                     b.ToTable("ConsumptionCertificates");
                 });
 
-            modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.ProductionCertificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -164,7 +161,7 @@ namespace DataContext.Migrations
                     b.ToTable("ProductionCertificates");
                 });
 
-            modelBuilder.Entity("DataContext.Models.SynchronizationPosition", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.SynchronizationPosition", b =>
                 {
                     b.Property<string>("GSRN")
                         .HasColumnType("text");
@@ -175,6 +172,59 @@ namespace DataContext.Migrations
                     b.HasKey("GSRN");
 
                     b.ToTable("SynchronizationPositions");
+                });
+
+            modelBuilder.Entity("EnergyOrigin.ActivityLog.CertificateDataContext.ActivityLogEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ActionType")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActorName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ActorType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("EntityType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OrganizationName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OrganizationTin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OtherOrganizationName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OtherOrganizationTin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationTin")
+                        .HasAnnotation("SqlServer:Clustered", false);
+
+                    b.ToTable("ActivityLogs");
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
@@ -278,6 +328,10 @@ namespace DataContext.Migrations
                     b.Property<Guid>("MessageId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("OutboxId")
                         .HasColumnType("uuid");
 
@@ -343,9 +397,9 @@ namespace DataContext.Migrations
                     b.ToTable("OutboxState");
                 });
 
-            modelBuilder.Entity("DataContext.Models.CertificateIssuingContract", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.CertificateIssuingContract", b =>
                 {
-                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("CertificateDataContext.ValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("CertificateIssuingContractId")
                                 .HasColumnType("uuid");
@@ -369,9 +423,9 @@ namespace DataContext.Migrations
                     b.Navigation("Technology");
                 });
 
-            modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
+            modelBuilder.Entity("CertificateDataContext.Models.ProductionCertificate", b =>
                 {
-                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("CertificateDataContext.ValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("ProductionCertificateId")
                                 .HasColumnType("uuid");

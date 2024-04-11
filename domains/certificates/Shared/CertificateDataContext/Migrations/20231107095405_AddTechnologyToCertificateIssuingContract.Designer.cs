@@ -11,9 +11,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataContext.Migrations
 {
-    [DbContext(typeof(TransferDbContext))]
-    [Migration("20231115155411_UpdateNullTechnologyCodes")]
-    partial class UpdateNullTechnologyCodes
+    [DbContext(typeof(CertificateDbContext))]
+    [Migration("20231107095405_AddTechnologyToCertificateIssuingContract")]
+    partial class AddTechnologyToCertificateIssuingContract
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -200,7 +200,8 @@ namespace DataContext.Migrations
                                 .HasForeignKey("CertificateIssuingContractId");
                         });
 
-                    b.Navigation("Technology");
+                    b.Navigation("Technology")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>

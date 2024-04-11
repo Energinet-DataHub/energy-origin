@@ -25,9 +25,9 @@ builder.AddSerilogWithOpenTelemetryWithoutOutboxLogs(otlpOptions.ReceiverEndpoin
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddDbContext<TransferDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+builder.Services.AddDbContext<CertificateDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
     optionsLifetime: ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<TransferDbContext>();
+builder.Services.AddDbContextFactory<CertificateDbContext>();
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations().ValidateOnStart();
@@ -74,7 +74,7 @@ builder.Services.AddMassTransit(o =>
         });
     });
 
-    o.AddEntityFrameworkOutbox<TransferDbContext>(outboxConfigurator =>
+    o.AddEntityFrameworkOutbox<CertificateDbContext>(outboxConfigurator =>
     {
         outboxConfigurator.UsePostgres();
         outboxConfigurator.UseBusOutbox();

@@ -39,10 +39,10 @@ public class IssueCertificateNotCompletedConsumer :
     IConsumer<IssueCertificateTerminated>,
     IConsumer<IssueCertificateFaulted>
 {
-    private readonly TransferDbContext dbContext;
+    private readonly CertificateDbContext dbContext;
     private readonly ILogger<IssueCertificateNotCompletedConsumer> logger;
 
-    public IssueCertificateNotCompletedConsumer(TransferDbContext dbContext, ILogger<IssueCertificateNotCompletedConsumer> logger)
+    public IssueCertificateNotCompletedConsumer(CertificateDbContext dbContext, ILogger<IssueCertificateNotCompletedConsumer> logger)
     {
         this.dbContext = dbContext;
         this.logger = logger;
@@ -116,6 +116,6 @@ public class IssueCertificateNotCompletedConsumerDefinition : ConsumerDefinition
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<TransferDbContext>(context);
+        endpointConfigurator.UseEntityFrameworkOutbox<CertificateDbContext>(context);
     }
 }

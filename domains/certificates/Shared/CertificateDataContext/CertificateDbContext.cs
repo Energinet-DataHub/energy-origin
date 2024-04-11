@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace DataContext;
 
-public class TransferDbContext : DbContext
+public class CertificateDbContext : DbContext
 {
-    public TransferDbContext(DbContextOptions<TransferDbContext> options) : base(options)
+    public CertificateDbContext(DbContextOptions<CertificateDbContext> options) : base(options)
     {
     }
 
@@ -41,15 +41,15 @@ public class TransferDbContext : DbContext
 
 // Some of the EF Core Tools commands (for example, the Migrations commands) require a derived DbContext instance to be created at design time
 // By implementing the class below, the EF Core Tools will automatically use that for creating the DbContext
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<TransferDbContext>
+public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<CertificateDbContext>
 {
-    public TransferDbContext CreateDbContext(string[] args)
+    public CertificateDbContext CreateDbContext(string[] args)
     {
         const string connectionString = "host=localhost;Port=5432;Database=Database;username=postgres;password=postgres;";
 
-        var optionsBuilder = new DbContextOptionsBuilder<TransferDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<CertificateDbContext>();
         optionsBuilder.UseNpgsql(connectionString);
 
-        return new TransferDbContext(optionsBuilder.Options);
+        return new CertificateDbContext(optionsBuilder.Options);
     }
 }

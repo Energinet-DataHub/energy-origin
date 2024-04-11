@@ -17,7 +17,7 @@ namespace API.IntegrationTests.Repositories;
 
 public class SyncStateTests : IClassFixture<DbContextFactoryMock>
 {
-    private readonly IDbContextFactory<TransferDbContext> factory;
+    private readonly IDbContextFactory<CertificateDbContext> factory;
 
     public SyncStateTests(DbContextFactoryMock mock) => factory = mock;
 
@@ -84,7 +84,7 @@ public class SyncStateTests : IClassFixture<DbContextFactoryMock>
     {
         var info = CreateSyncInfo();
 
-        var factoryMock = Substitute.For<IDbContextFactory<TransferDbContext>>();
+        var factoryMock = Substitute.For<IDbContextFactory<CertificateDbContext>>();
         factoryMock.CreateDbContextAsync().ThrowsForAnyArgs<Exception>();
 
         var syncState = new SyncState(factoryMock, Substitute.For<ILogger<SyncState>>());

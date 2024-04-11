@@ -46,7 +46,7 @@
         <ProjectReference Include="..\..\RegistryConnector\Worker\Worker.csproj">
             <Aliases>registryConnector</Aliases>
         </ProjectReference>
-        <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
+        <ProjectReference Include="..\..\Shared\CertificateDataContext\CertificateDataContext.csproj" />
         <ProjectReference Include="..\..\Shared\Testing\Testing.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>

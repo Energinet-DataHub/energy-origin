@@ -28,7 +28,7 @@ public class RollbackMigrationTests :
     public async Task can_rollback_all_migrations()
     {
         factory.Start();
-        var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<TransferDbContext>>();
+        var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<CertificateDbContext>>();
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var migrator = dbContext.Database.GetService<IMigrator>();

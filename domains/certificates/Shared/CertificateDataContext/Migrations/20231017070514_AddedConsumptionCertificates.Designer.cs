@@ -11,9 +11,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataContext.Migrations
 {
-    [DbContext(typeof(TransferDbContext))]
-    [Migration("20231115153942_AddTechnologyToContractsTable")]
-    partial class AddTechnologyToContractsTable
+    [DbContext(typeof(CertificateDbContext))]
+    [Migration("20231017070514_AddedConsumptionCertificates")]
+    partial class AddedConsumptionCertificates
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -175,32 +175,6 @@ namespace DataContext.Migrations
                     b.HasKey("GSRN");
 
                     b.ToTable("SynchronizationPositions");
-                });
-
-            modelBuilder.Entity("API.ContractService.CertificateIssuingContract", b =>
-                {
-                    b.OwnsOne("CertificateValueObjects.Technology", "Technology", b1 =>
-                        {
-                            b1.Property<Guid>("CertificateIssuingContractId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("FuelCode")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("TechCode")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("CertificateIssuingContractId");
-
-                            b1.ToTable("Contracts");
-
-                            b1.WithOwner()
-                                .HasForeignKey("CertificateIssuingContractId");
-                        });
-
-                    b.Navigation("Technology");
                 });
 
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>

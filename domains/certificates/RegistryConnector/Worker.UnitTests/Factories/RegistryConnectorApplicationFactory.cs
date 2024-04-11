@@ -69,7 +69,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<Program
 
     public IServiceScope ServiceScope() => Services.CreateScope();
 
-    public TransferDbContext GetDbContext() => Services.GetRequiredService<IDbContextFactory<TransferDbContext>>().CreateDbContext();
+    public CertificateDbContext GetDbContext() => Services.GetRequiredService<IDbContextFactory<CertificateDbContext>>().CreateDbContext();
 
     public IPublishEndpoint GetMassTransitBus() => Services.GetRequiredService<IPublishEndpoint>();
 

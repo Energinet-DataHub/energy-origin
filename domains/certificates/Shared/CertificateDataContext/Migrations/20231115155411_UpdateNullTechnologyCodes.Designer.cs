@@ -11,9 +11,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataContext.Migrations
 {
-    [DbContext(typeof(TransferDbContext))]
-    [Migration("20230911185804_Initial")]
-    partial class Initial
+    [DbContext(typeof(CertificateDbContext))]
+    [Migration("20231115155411_UpdateNullTechnologyCodes")]
+    partial class UpdateNullTechnologyCodes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -74,6 +74,51 @@ namespace DataContext.Migrations
                     b.ToTable("Contracts");
                 });
 
+            modelBuilder.Entity("API.Data.ConsumptionCertificate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("BlindingValue")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<long>("DateFrom")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("DateTo")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("GridArea")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Gsrn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("IssuedState")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MeteringPointOwner")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("Quantity")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Gsrn", "DateFrom", "DateTo")
+                        .IsUnique();
+
+                    b.ToTable("ConsumptionCertificates");
+                });
+
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>
                 {
                     b.Property<Guid>("Id")
@@ -130,6 +175,32 @@ namespace DataContext.Migrations
                     b.HasKey("GSRN");
 
                     b.ToTable("SynchronizationPositions");
+                });
+
+            modelBuilder.Entity("API.ContractService.CertificateIssuingContract", b =>
+                {
+                    b.OwnsOne("CertificateValueObjects.Technology", "Technology", b1 =>
+                        {
+                            b1.Property<Guid>("CertificateIssuingContractId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("FuelCode")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("TechCode")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("CertificateIssuingContractId");
+
+                            b1.ToTable("Contracts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CertificateIssuingContractId");
+                        });
+
+                    b.Navigation("Technology");
                 });
 
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>

@@ -11,6 +11,7 @@
         "tags": [
           "Contracts"
         ],
+        "summary": "Create a contract that activates granular certificate generation for a metering point",
         "parameters": [
           {
             "name": "EO_API_VERSION",
@@ -170,6 +171,7 @@
         "tags": [
           "Contracts"
         ],
+        "summary": "Edit the end date for contract",
         "parameters": [
           {
             "name": "id",

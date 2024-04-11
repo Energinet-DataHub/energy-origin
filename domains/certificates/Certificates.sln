@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API.IntegrationTests", "Que
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectOriginClients", "Shared\ProjectOriginClients\ProjectOriginClients.csproj", "{D2A36747-5FD5-4F32-90C7-CDEC098DCAA3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataContext", "Shared\DataContext\DataContext.csproj", "{6BDDC47E-B6E8-4F1D-847B-3823A5B377B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CertificateDataContext", "Shared\CertificateDataContext\CertificateDataContext.csproj", "{6BDDC47E-B6E8-4F1D-847B-3823A5B377B2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Shared\Testing\Testing.csproj", "{057A53B3-330F-43B2-99BF-94E2D3043F92}"
 EndProject

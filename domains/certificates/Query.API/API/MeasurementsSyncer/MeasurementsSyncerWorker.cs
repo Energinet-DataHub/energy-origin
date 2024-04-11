@@ -20,13 +20,13 @@ internal class MeasurementsSyncerWorker : BackgroundService
 {
     private readonly IBus bus;
     private readonly ILogger<MeasurementsSyncerWorker> logger;
-    private readonly IDbContextFactory<TransferDbContext> contextFactory;
+    private readonly IDbContextFactory<CertificateDbContext> contextFactory;
     private readonly MeasurementsSyncService measurementsSyncService;
     private readonly MeasurementsSyncOptions options;
 
     public MeasurementsSyncerWorker(
         ILogger<MeasurementsSyncerWorker> logger,
-        IDbContextFactory<TransferDbContext> contextFactory,
+        IDbContextFactory<CertificateDbContext> contextFactory,
         IBus bus,
         MeasurementsSyncService measurementsSyncService,
         IOptions<MeasurementsSyncOptions> options)

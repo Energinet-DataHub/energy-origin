@@ -90,7 +90,7 @@ public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefi
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3))
             .Ignore(typeof(TransientException), typeof(RegistryTransactionStillProcessingException)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<TransferDbContext>(context);
+        endpointConfigurator.UseEntityFrameworkOutbox<CertificateDbContext>(context);
     }
 }
 

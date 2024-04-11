@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
-    <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
+    <ProjectReference Include="..\..\Shared\CertificateDataContext\CertificateDataContext.csproj" />
     <ProjectReference Include="..\..\Shared\MeasurementEvents\MeasurementEvents.csproj" />
     <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
   </ItemGroup>

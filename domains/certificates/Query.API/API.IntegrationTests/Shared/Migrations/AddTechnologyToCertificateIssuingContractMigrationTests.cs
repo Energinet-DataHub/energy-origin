@@ -37,7 +37,7 @@ public class AddTechnologyToCertificateIssuingContractMigrationTests : IAsyncDis
         contractsInDb.Count.Should().Be(2);
     }
 
-    private static async Task InsertOldContract(TransferDbContext dbContext, Guid id, string gsrn, string gridArea)
+    private static async Task InsertOldContract(CertificateDbContext dbContext, Guid id, string gsrn, string gridArea)
     {
         var contractsTable = dbContext.Model.FindEntityType(typeof(CertificateIssuingContract))!.GetTableName();
 
@@ -81,13 +81,13 @@ public class AddTechnologyToCertificateIssuingContractMigrationTests : IAsyncDis
         await dbContext.Database.ExecuteSqlRawAsync(contractQuery, contractFields);
     }
 
-    private async Task<TransferDbContext> CreateNewCleanDatabase()
+    private async Task<CertificateDbContext> CreateNewCleanDatabase()
     {
         await container.InitializeAsync();
 
-        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(container.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<CertificateDbContext>().UseNpgsql(container.ConnectionString)
             .Options;
-        var dbContext = new TransferDbContext(contextOptions);
+        var dbContext = new CertificateDbContext(contextOptions);
         return dbContext;
     }
 

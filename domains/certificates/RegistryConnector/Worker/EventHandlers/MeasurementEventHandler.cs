@@ -24,12 +24,12 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 {
     private readonly IEndpointNameFormatter endpointNameFormatter;
     private readonly ProjectOriginOptions projectOriginOptions;
-    private readonly TransferDbContext dbContext;
+    private readonly CertificateDbContext dbContext;
     private readonly ILogger<MeasurementEventHandler> logger;
     private readonly IKeyGenerator keyGenerator;
 
     public MeasurementEventHandler(IEndpointNameFormatter endpointNameFormatter,
-        IOptions<ProjectOriginOptions> projectOriginOptions, TransferDbContext dbContext,
+        IOptions<ProjectOriginOptions> projectOriginOptions, CertificateDbContext dbContext,
         ILogger<MeasurementEventHandler> logger, IKeyGenerator keyGenerator)
     {
         this.endpointNameFormatter = endpointNameFormatter;

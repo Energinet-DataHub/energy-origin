@@ -9,10 +9,10 @@ namespace API.MeasurementsSyncer.Persistence;
 
 public class SyncState : ISyncState
 {
-    private readonly IDbContextFactory<TransferDbContext> factory;
+    private readonly IDbContextFactory<CertificateDbContext> factory;
     private readonly ILogger<SyncState> logger;
 
-    public SyncState(IDbContextFactory<TransferDbContext> factory, ILogger<SyncState> logger)
+    public SyncState(IDbContextFactory<CertificateDbContext> factory, ILogger<SyncState> logger)
     {
         this.factory = factory;
         this.logger = logger;

@@ -56,6 +56,6 @@ public class SendToWalletActivityDefinition : ExecuteActivityDefinition<SendToWa
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
 
-        endpointConfigurator.UseEntityFrameworkOutbox<TransferDbContext>(context);
+        endpointConfigurator.UseEntityFrameworkOutbox<CertificateDbContext>(context);
     }
 }

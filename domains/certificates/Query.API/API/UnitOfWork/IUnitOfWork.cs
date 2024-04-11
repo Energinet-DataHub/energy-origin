@@ -15,11 +15,11 @@ public interface IUnitOfWork
 
 public class UnitOfWork : IUnitOfWork
 {
-    private TransferDbContext context;
+    private CertificateDbContext context;
     private IActivityLogEntryRepository activityLogEntryRepo = null!;
     private ICertificateIssuingContractRepository certificateIssuingContractRepo = null!;
 
-    public UnitOfWork(TransferDbContext context)
+    public UnitOfWork(CertificateDbContext context)
     {
         this.context = context;
     }

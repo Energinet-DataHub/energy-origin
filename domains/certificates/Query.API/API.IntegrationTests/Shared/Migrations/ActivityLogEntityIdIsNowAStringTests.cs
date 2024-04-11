@@ -36,7 +36,7 @@ public class ActivityLogEntityIdIsNowAStringTests : IAsyncDisposable
         logEntriesInDb.Count.Should().Be(1);
     }
 
-    private static async Task InsertOldActivityLogEntry(TransferDbContext dbContext, Guid id)
+    private static async Task InsertOldActivityLogEntry(CertificateDbContext dbContext, Guid id)
     {
         var logEntryTable = dbContext.Model.FindEntityType(typeof(ActivityLogEntry))!.GetTableName();
 
@@ -80,13 +80,13 @@ public class ActivityLogEntityIdIsNowAStringTests : IAsyncDisposable
         await dbContext.Database.ExecuteSqlRawAsync(logEntryQuery, logEntryFields);
     }
 
-    private async Task<TransferDbContext> CreateNewCleanDatabase()
+    private async Task<CertificateDbContext> CreateNewCleanDatabase()
     {
         await container.InitializeAsync();
 
-        var contextOptions = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(container.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<CertificateDbContext>().UseNpgsql(container.ConnectionString)
             .Options;
-        var dbContext = new TransferDbContext(contextOptions);
+        var dbContext = new CertificateDbContext(contextOptions);
         return dbContext;
     }
 

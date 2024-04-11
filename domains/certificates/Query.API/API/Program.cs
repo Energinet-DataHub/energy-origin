@@ -29,10 +29,10 @@ builder.Services.AddControllersWithEnumsAsStrings();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddDbContext<DbContext, TransferDbContext>(
+builder.Services.AddDbContext<DbContext, CertificateDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
     optionsLifetime: ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<TransferDbContext>();
+builder.Services.AddDbContextFactory<CertificateDbContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddHealthChecks()

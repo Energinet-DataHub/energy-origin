@@ -14,12 +14,12 @@ namespace API.IntegrationTests.Repositories;
 
 public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContainer>, IDisposable
 {
-    private readonly DbContextOptions<TransferDbContext> options;
+    private readonly DbContextOptions<CertificateDbContext> options;
 
     public ConsumptionCertificateDatabaseTests(PostgresContainer dbContainer)
     {
-        options = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
-        using var dbContext = new TransferDbContext(options);
+        options = new DbContextOptionsBuilder<CertificateDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
+        using var dbContext = new CertificateDbContext(options);
         dbContext.Database.EnsureCreated();
     }
 
@@ -35,7 +35,7 @@ public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContain
             quantity: 42,
             blindingValue: new byte[] { 1, 2, 3 });
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             dbContext.Update(cert);
             dbContext.SaveChanges();
@@ -43,7 +43,7 @@ public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContain
 
         var id = cert.Id;
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             var fetched = dbContext.ConsumptionCertificates.Find(id)!;
 
@@ -55,7 +55,7 @@ public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContain
             dbContext.SaveChanges();
         }
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             var fetchedAfterIssued = dbContext.ConsumptionCertificates.Find(id)!;
             fetchedAfterIssued.IsIssued.Should().BeTrue();
@@ -84,20 +84,20 @@ public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContain
             quantity: 42,
             blindingValue: new byte[] { 1, 2, 3 });
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             dbContext.Update(cert1);
             dbContext.SaveChanges();
         }
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             dbContext.Update(cert2);
             Action act = () => dbContext.SaveChanges();
             act.Should().Throw<DbUpdateException>();
         }
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             var certificates = dbContext.ConsumptionCertificates.ToList();
             certificates.Should().BeEquivalentTo(new[] { cert1 });
@@ -127,19 +127,19 @@ public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContain
             quantity: 42,
             blindingValue: new byte[] { 1, 2, 3 });
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             dbContext.Update(cert1);
             dbContext.SaveChanges();
         }
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             dbContext.Update(cert2);
             dbContext.SaveChanges();
         }
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             var certificates = dbContext.ConsumptionCertificates.ToList();
             certificates.Should().BeEquivalentTo(new[] { cert1, cert2 });
@@ -169,19 +169,19 @@ public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContain
             quantity: 42,
             blindingValue: new byte[] { 1, 2, 3 });
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             dbContext.Update(cert1);
             dbContext.SaveChanges();
         }
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             dbContext.Update(cert2);
             dbContext.SaveChanges();
         }
 
-        using (var dbContext = new TransferDbContext(options))
+        using (var dbContext = new CertificateDbContext(options))
         {
             var certificates = dbContext.ConsumptionCertificates.ToList();
             certificates.Should().BeEquivalentTo(new[] { cert1, cert2 });
@@ -190,7 +190,7 @@ public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContain
 
     public void Dispose()
     {
-        using var dbContext = new TransferDbContext(options);
+        using var dbContext = new CertificateDbContext(options);
         dbContext.RemoveAll(d => d.ConsumptionCertificates);
 
         GC.SuppressFinalize(this);

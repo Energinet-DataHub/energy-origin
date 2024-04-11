@@ -24,7 +24,7 @@ public class MeasurementEventHandlerTests :
     IClassFixture<RegistryConnectorApplicationFactory>
 {
     private readonly RegistryConnectorApplicationFactory factory;
-    private readonly DbContextOptions<TransferDbContext> options;
+    private readonly DbContextOptions<CertificateDbContext> options;
 
     public MeasurementEventHandlerTests(
         PostgresContainer dbContainer,
@@ -36,8 +36,8 @@ public class MeasurementEventHandlerTests :
         factory.ConnectionString = dbContainer.ConnectionString;
         factory.Start();
 
-        options = new DbContextOptionsBuilder<TransferDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
-        using var dbContext = new TransferDbContext(options);
+        options = new DbContextOptionsBuilder<CertificateDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
+        using var dbContext = new CertificateDbContext(options);
         dbContext.Database.EnsureCreated();
     }
 
@@ -62,7 +62,7 @@ public class MeasurementEventHandlerTests :
 
         using (var scope = factory.ServiceScope())
         {
-            using (var dbContext = scope.ServiceProvider.GetRequiredService<TransferDbContext>())
+            using (var dbContext = scope.ServiceProvider.GetRequiredService<CertificateDbContext>())
             {
                 dbContext.Contracts.Add(new CertificateIssuingContract
                 {
@@ -102,7 +102,7 @@ public class MeasurementEventHandlerTests :
 
         do
         {
-            using (var dbContext = new TransferDbContext(options))
+            using (var dbContext = new CertificateDbContext(options))
             {
                 var consumptionCert = dbContext.ConsumptionCertificates.FirstOrDefault(x => x.Gsrn == gsrn);
 

@@ -11,9 +11,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DataContext.Migrations
 {
-    [DbContext(typeof(TransferDbContext))]
-    [Migration("20231017070514_AddedConsumptionCertificates")]
-    partial class AddedConsumptionCertificates
+    [DbContext(typeof(CertificateDbContext))]
+    [Migration("20230911185804_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,51 +72,6 @@ namespace DataContext.Migrations
                         .IsUnique();
 
                     b.ToTable("Contracts");
-                });
-
-            modelBuilder.Entity("API.Data.ConsumptionCertificate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("BlindingValue")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<long>("DateFrom")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("DateTo")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("GridArea")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Gsrn")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("IssuedState")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("MeteringPointOwner")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("Quantity")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("RejectionReason")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Gsrn", "DateFrom", "DateTo")
-                        .IsUnique();
-
-                    b.ToTable("ConsumptionCertificates");
                 });
 
             modelBuilder.Entity("API.Data.ProductionCertificate", b =>
