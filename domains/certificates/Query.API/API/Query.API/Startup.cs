@@ -8,7 +8,7 @@ namespace API.Query.API;
 
 public static class Startup
 {
-    public static void AddQueryApi(this IServiceCollection services)
+    public static void AddCertificatesApi(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
         services.AddSwagger("certificates");
