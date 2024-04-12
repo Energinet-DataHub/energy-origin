@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
@@ -8,6 +9,7 @@ using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
+using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog.API;
@@ -23,7 +25,6 @@ namespace API.IntegrationTests;
 public sealed class ContractTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<PostgresContainer>,
     IClassFixture<RabbitMqContainer>,
     IClassFixture<MeasurementsWireMock>,
     IClassFixture<ProjectOriginStack>
@@ -33,14 +34,12 @@ public sealed class ContractTests :
 
     public ContractTests(
         QueryApiWebApplicationFactory factory,
-        PostgresContainer postgres,
         RabbitMqContainer rabbitMqContainer,
         MeasurementsWireMock measurementsWireMock,
         ProjectOriginStack projectOriginStack)
     {
         this.measurementsWireMock = measurementsWireMock;
         this.factory = factory;
-        this.factory.ConnectionString = postgres.ConnectionString;
         this.factory.MeasurementsUrl = measurementsWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         this.factory.WalletUrl = projectOriginStack.WalletUrl;
@@ -471,6 +470,46 @@ public sealed class ContractTests :
         using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
         var contract = await client.GetFromJsonAsync<Contract>(createdContractUri);
+
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
+    }
+
+    [Fact]
+    public async Task MultipleEditEndDate_Updated()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject);
+
+        var startDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new { gsrn, startDate, endDate = endDate };
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+
+        var startDate1 = DateTimeOffset.Now.AddDays(4).ToUnixTimeSeconds();
+        var endDate1 = DateTimeOffset.Now.AddDays(6).ToUnixTimeSeconds();
+        var body1 = new { gsrn, startDate, endDate = endDate };
+        using var response1 = await client.PostAsJsonAsync("api/certificates/contracts", body1);
+
+        var id = response.Headers.Location.PathAndQuery.Split("/").Last();
+        var id1 = response1.Headers.Location.PathAndQuery.Split("/").Last();
+
+        var newEndDate = DateTimeOffset.Now.AddDays(5).ToUnixTimeSeconds();
+        var newEndDate1 = DateTimeOffset.Now.AddDays(7).ToUnixTimeSeconds();
+        var contracts = new List<EditContractEndDate>
+        {
+            new() { Id = Guid.Parse(id), EndDate = newEndDate },
+            new() { Id = Guid.Parse(id1), EndDate = newEndDate1 }
+        };
+
+        using var editResponse = await client.PutAsJsonAsync("api/certificates/contracts", new MultipleEditContract()
+        {
+            Contracts = contracts
+        });
+
+        var contract = await client.GetFromJsonAsync<Contract>("api/certificates/contracts" + id);
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }

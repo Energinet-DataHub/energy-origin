@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using API.UnitOfWork;
 using Asp.Versioning;
+using DataContext.ValueObjects;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -46,7 +48,9 @@ public class ContractsController : ControllerBase
         }
 
         var startDate = DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate);
-        DateTimeOffset? endDate = createContract.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate.Value) : null;
+        DateTimeOffset? endDate = createContract.EndDate.HasValue
+            ? DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate.Value)
+            : null;
 
         var result = await service.Create(
             createContract.GSRN,
@@ -59,7 +63,8 @@ public class ContractsController : ControllerBase
         {
             GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
             ContractAlreadyExists => ValidationProblem(statusCode: 409),
-            CreateContractResult.Success(var createdContract) => CreatedAtRoute("GetContract", new { id = createdContract.Id }, Contract.CreateFrom(createdContract)),
+            CreateContractResult.Success(var createdContract) => CreatedAtRoute("GetContract",
+                new { id = createdContract.Id }, Contract.CreateFrom(createdContract)),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }
@@ -130,12 +135,60 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        DateTimeOffset? newEndDate = editContractEndDate.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(editContractEndDate.EndDate.Value) : null;
+        var newEndDate = editContractEndDate.EndDate.HasValue
+            ? UnixTimestamp.Create(editContractEndDate.EndDate.Value)
+            : null;
+        var contracts = new List<(Guid id, UnixTimestamp? newEndDate)> { (id, newEndDate) };
+        var result = await service.SetEndDate(
+            contracts,
+            user,
+            cancellationToken);
+
+        return result switch
+        {
+            NonExistingContract => NotFound(),
+            MeteringPointOwnerNoMatch => Forbid(),
+            EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
+            SetEndDateResult.Success => Ok(),
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
+        };
+    }
+
+    /// <summary>
+    /// Edit the end date for multiple contracts
+    /// </summary>
+    [HttpPut]
+    [ProducesResponseType(typeof(void), 200)]
+    [ProducesResponseType(typeof(void), 404)]
+    [ProducesResponseType(typeof(void), 403)]
+    [Route("api/certificates/contracts")]
+    public async Task<ActionResult> UpdateEndDate(
+        [FromBody] MultipleEditContract multipleEditContract,
+        [FromServices] IValidator<EditContractEndDate> validator,
+        [FromServices] IContractService service,
+        CancellationToken cancellationToken)
+    {
+        var user = new UserDescriptor(User);
+        var updatedContracts = new List<(Guid id, UnixTimestamp? endDate)>();
+
+        foreach (var contract in multipleEditContract.Contracts)
+        {
+            var validationResult = await validator.ValidateAsync(contract, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                validationResult.AddToModelState(ModelState, null);
+                return ValidationProblem(ModelState);
+            }
+
+            var newEndDate = contract.EndDate.HasValue
+                ? UnixTimestamp.Create(contract.EndDate.Value)
+                : null;
+            updatedContracts.Add((contract.Id!.Value, newEndDate));
+        }
 
         var result = await service.SetEndDate(
-            id,
+            updatedContracts,
             user,
-            newEndDate,
             cancellationToken);
 
         return result switch

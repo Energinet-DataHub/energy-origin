@@ -115,41 +115,45 @@ internal class ContractServiceImpl : IContractService
         return null;
     }
 
-    public async Task<SetEndDateResult> SetEndDate(Guid id, UserDescriptor user, DateTimeOffset? newEndDate, CancellationToken cancellationToken)
+    public async Task<SetEndDateResult> SetEndDate(List<(Guid id, UnixTimestamp? newEndDate)> contracts, UserDescriptor user, CancellationToken cancellationToken)
     {
         var meteringPointOwner = user.Subject.ToString();
-        var contract = await unitOfWork.CertificateIssuingContractRepo.GetById(id, cancellationToken);
 
-        if (contract == null)
+        foreach (var (id, newEndDate) in contracts)
         {
-            return new NonExistingContract();
+            var contract = await unitOfWork.CertificateIssuingContractRepo.GetById(id, cancellationToken);
+
+            if (contract == null)
+            {
+                return new NonExistingContract();
+            }
+
+            if (contract.MeteringPointOwner != meteringPointOwner)
+            {
+                return new MeteringPointOwnerNoMatch();
+            }
+
+            if (newEndDate != null && newEndDate.ToDateTimeOffset() <= contract.StartDate)
+            {
+                return new EndDateBeforeStartDate(contract.StartDate, newEndDate.ToDateTimeOffset());
+            }
+
+            contract.EndDate = newEndDate.ToDateTimeOffset();
+            unitOfWork.CertificateIssuingContractRepo.Update(contract);
+            await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
+                actorType: ActivityLogEntry.ActorTypeEnum.User,
+                actorName: user.Name,
+                organizationTin: user.Organization!.Tin,
+                organizationName: user.Organization.Name,
+                otherOrganizationTin: string.Empty,
+                otherOrganizationName: string.Empty,
+                entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
+                actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
+                entityId: contract.GSRN)
+            );
         }
 
-        if (contract.MeteringPointOwner != meteringPointOwner)
-        {
-            return new MeteringPointOwnerNoMatch();
-        }
-
-        if (newEndDate.HasValue && newEndDate <= contract.StartDate)
-        {
-            return new EndDateBeforeStartDate(contract.StartDate, newEndDate.Value);
-        }
-
-        contract.EndDate = newEndDate;
-        unitOfWork.CertificateIssuingContractRepo.Update(contract);
-        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: user.Name,
-            organizationTin: user.Organization!.Tin,
-            organizationName: user.Organization.Name,
-            otherOrganizationTin: string.Empty,
-            otherOrganizationName: string.Empty,
-            entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-            entityId: contract.GSRN)
-        );
         await unitOfWork.SaveAsync();
-
         return new SetEndDateResult.Success();
     }
 

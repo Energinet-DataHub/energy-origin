@@ -37,7 +37,6 @@ namespace API.IntegrationTests.Factories;
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly List<GrpcChannel> disposableChannels = new();
-
     public string ConnectionString { get; set; } = "";
     public string MeasurementsUrl { get; set; } = "http://foo";
     public string WalletUrl { get; set; } = "bar";

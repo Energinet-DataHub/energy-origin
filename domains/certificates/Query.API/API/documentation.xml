@@ -69,6 +69,11 @@
             Edit the end date for contract
             </summary>
         </member>
+        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(API.Query.API.ApiModels.Requests.MultipleEditContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Edit the end date for multiple contracts
+            </summary>
+        </member>
         <member name="T:Measurements.V1.MeasurementsReflection">
             <summary>Holder for reflection information generated from measurements.proto</summary>
         </member>
