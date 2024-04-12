@@ -1,4 +1,4 @@
-﻿CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
     "MigrationId" character varying(150) NOT NULL,
     "ProductVersion" character varying(32) NOT NULL,
     CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
@@ -450,29 +450,6 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240409114113_AddWallets') THEN
-    CREATE TABLE "Wallets" (
-        "WalletId" uuid NOT NULL,
-        "OwnerSubject" uuid NOT NULL,
-        CONSTRAINT "PK_Wallets" PRIMARY KEY ("WalletId")
-    );
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240409114113_AddWallets') THEN
-    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240409114113_AddWallets', '8.0.4');
-    END IF;
-END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
-
-DO $EF$
-BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240408104920_AddSlidingWindow') THEN
     CREATE TABLE "MeteringPointTimeSeriesSlidingWindows" (
         "GSRN" text NOT NULL,
@@ -487,7 +464,30 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240408104920_AddSlidingWindow') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240408104920_AddSlidingWindow', '8.0.3');
+    VALUES ('20240408104920_AddSlidingWindow', '8.0.4');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240409114113_AddWallets') THEN
+    CREATE TABLE "Wallets" (
+        "WalletId" uuid NOT NULL,
+        "OwnerSubject" uuid NOT NULL,
+        CONSTRAINT "PK_Wallets" PRIMARY KEY ("WalletId")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240409114113_AddWallets') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20240409114113_AddWallets', '8.0.4');
     END IF;
 END $EF$;
 COMMIT;
