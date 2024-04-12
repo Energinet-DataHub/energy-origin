@@ -46,7 +46,7 @@ public class SlidingWindowService
 
     private static bool IsIncludedInMissingInterval(MeteringPointTimeSeriesSlidingWindow window, MeasurementInterval interval)
     {
-        return window.MissingMeasurements.Any(missingInterval => missingInterval.Contains(interval));
+        return window.MissingMeasurements.Intervals.Any(missingInterval => missingInterval.Contains(interval));
     }
 
     public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements,
@@ -55,7 +55,7 @@ public class SlidingWindowService
         if (NoMeasurementsFetched(measurements))
         {
             var interval = MeasurementInterval.Create(window.SynchronizationPoint, newSynchronizationPoint);
-            window.UpdateSlidingWindow(newSynchronizationPoint, new List<MeasurementInterval> { interval });
+            window.UpdateSlidingWindow(newSynchronizationPoint, [interval]);
             return;
         }
 
