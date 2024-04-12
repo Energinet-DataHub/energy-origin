@@ -12,6 +12,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="EnergyOrigin.TokenValidation" Version="3.1.2" />
 		<PackageReference Include="Google.Protobuf" Version="3.26.1" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.62.0" />
 		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.62.0" />
