@@ -22,6 +22,7 @@ public class AuthorizationController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(400)]
     [ProducesResponseType(typeof(void), 409)]
+    [Authorize]
     [Route("api/authorization/")]
     public async Task<ActionResult<AuthorizationResponse>> CreateContract([FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationRequest request)
     {
