@@ -73,5 +73,14 @@ namespace API.Measurements.Helpers
 
             throw new NotSupportedException($"QuantityQuality of type '{QuantityQuality}' not supported!");
         }
+
+        public static bool GetQuantityMissingFromMeterReading(string quantityMissingIndicator)
+        {
+            if (Boolean.TryParse(quantityMissingIndicator, out var result))
+            {
+                return result;
+            }
+            throw new NotSupportedException($"quantityMissingIndicator of value '{quantityMissingIndicator}' not supported!");
+        }
     }
 }
