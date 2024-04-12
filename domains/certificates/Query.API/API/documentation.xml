@@ -49,7 +49,7 @@
             Metering point type of the contract. Can be Production or Consumption
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,EnergyOrigin.ActivityLog.API.IActivityLogEntryRepository,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Create a contract that activates granular certificate generation for a metering point
             </summary>
@@ -64,7 +64,7 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,EnergyOrigin.ActivityLog.API.IActivityLogEntryRepository,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Edit the end date for contract
             </summary>
@@ -107,6 +107,9 @@
         </member>
         <member name="F:Measurements.V1.Measurement.QualityFieldNumber">
             <summary>Field number for the "quality" field.</summary>
+        </member>
+        <member name="F:Measurements.V1.Measurement.QuantityMissingFieldNumber">
+            <summary>Field number for the "quantityMissing" field.</summary>
         </member>
         <member name="P:Measurements.V1.Measurements.Descriptor">
             <summary>Service descriptor</summary>

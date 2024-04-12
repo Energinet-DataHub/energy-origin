@@ -116,6 +116,19 @@ namespace DataContext.Migrations
                     b.ToTable("ConsumptionCertificates");
                 });
 
+            modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
+                {
+                    b.Property<string>("GSRN")
+                        .HasColumnType("text");
+
+                    b.Property<long>("SynchronizationPoint")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("GSRN");
+
+                    b.ToTable("MeteringPointTimeSeriesSlidingWindows");
+                });
+
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
                 {
                     b.Property<Guid>("Id")
@@ -435,6 +448,30 @@ namespace DataContext.Migrations
                         });
 
                     b.Navigation("Technology");
+                });
+
+            modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
+                {
+                    b.OwnsOne("System.Collections.Generic.List<DataContext.Models.MeasurementInterval>", "MissingMeasurements", b1 =>
+                        {
+                            b1.Property<string>("MeteringPointTimeSeriesSlidingWindowGSRN")
+                                .HasColumnType("text");
+
+                            b1.Property<int>("Capacity")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("MeteringPointTimeSeriesSlidingWindowGSRN");
+
+                            b1.ToTable("MeteringPointTimeSeriesSlidingWindows");
+
+                            b1.ToJson("MissingMeasurements");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MeteringPointTimeSeriesSlidingWindowGSRN");
+                        });
+
+                    b.Navigation("MissingMeasurements")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
