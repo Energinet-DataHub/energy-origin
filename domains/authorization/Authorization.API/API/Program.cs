@@ -7,6 +7,7 @@ using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,14 @@ builder.Services.AddControllersWithEnumsAsStrings();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
+
+builder.Services.AddAuthentication()
+    .AddJwtBearer(options =>
+    {
+        options.Audience = "f00b9b4d-3c59-4c40-b209-2ef87e509f54";
+        options.MetadataAddress = "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration";
+    });
+
 
 // builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
 //     options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
@@ -42,8 +51,8 @@ var app = builder.Build();
 
 //app.UseHttpsRedirection();
 
-//app.UseAuthentication();
-//app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

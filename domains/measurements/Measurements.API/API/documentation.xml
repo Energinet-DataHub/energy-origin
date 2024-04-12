@@ -61,6 +61,9 @@
         <member name="F:Measurements.V1.Measurement.QualityFieldNumber">
             <summary>Field number for the "quality" field.</summary>
         </member>
+        <member name="F:Measurements.V1.Measurement.QuantityMissingFieldNumber">
+            <summary>Field number for the "quantityMissing" field.</summary>
+        </member>
         <member name="P:Measurements.V1.Measurements.Descriptor">
             <summary>Service descriptor</summary>
         </member>

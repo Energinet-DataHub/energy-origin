@@ -49,6 +49,7 @@ message EnergyQuantityValue {
     string energy_quantity = 2;
     string energy_time_series_measure_unit = 3;
     string quantity_quality = 4;
+    string quantity_missing_indicator = 5;
 }
 
 message GetMeterTimeSeriesRejection {
