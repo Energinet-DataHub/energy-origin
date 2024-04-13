@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanTransfer.Core", "CleanTransfer\src\CleanTransfer.Core\CleanTransfer.Core.csproj", "{27F58619-3FA0-4844-925A-64C5988F356F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanTransfer.Infrastructure", "CleanTransfer\src\CleanTransfer.Infrastructure\CleanTransfer.Infrastructure.csproj", "{CA24D6B0-8177-4AFB-B987-DDC3010D91FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanTransfer.UseCases", "CleanTransfer\src\CleanTransfer.UseCases\CleanTransfer.UseCases.csproj", "{FCD1303D-F03F-46FE-A8D2-ABE2DDAF00F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanTransfer.Web", "CleanTransfer\src\CleanTransfer.Web\CleanTransfer.Web.csproj", "{6060C8E1-2F45-4015-B3E8-000326AE9907}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanTransfer.FunctionalTests", "CleanTransfer\tests\CleanTransfer.FunctionalTests\CleanTransfer.FunctionalTests.csproj", "{D791FA44-198A-483E-B634-7AE28D90483E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanTransfer.IntegrationTests", "CleanTransfer\tests\CleanTransfer.IntegrationTests\CleanTransfer.IntegrationTests.csproj", "{E5BFC68A-9F95-43C4-A7BB-5636CD86C61A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanTransfer.UnitTests", "CleanTransfer\tests\CleanTransfer.UnitTests\CleanTransfer.UnitTests.csproj", "{64CF1292-162C-4EF1-AE85-223CB57A5012}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{27F58619-3FA0-4844-925A-64C5988F356F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27F58619-3FA0-4844-925A-64C5988F356F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27F58619-3FA0-4844-925A-64C5988F356F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27F58619-3FA0-4844-925A-64C5988F356F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA24D6B0-8177-4AFB-B987-DDC3010D91FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA24D6B0-8177-4AFB-B987-DDC3010D91FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA24D6B0-8177-4AFB-B987-DDC3010D91FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA24D6B0-8177-4AFB-B987-DDC3010D91FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCD1303D-F03F-46FE-A8D2-ABE2DDAF00F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCD1303D-F03F-46FE-A8D2-ABE2DDAF00F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCD1303D-F03F-46FE-A8D2-ABE2DDAF00F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCD1303D-F03F-46FE-A8D2-ABE2DDAF00F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6060C8E1-2F45-4015-B3E8-000326AE9907}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6060C8E1-2F45-4015-B3E8-000326AE9907}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6060C8E1-2F45-4015-B3E8-000326AE9907}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6060C8E1-2F45-4015-B3E8-000326AE9907}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D791FA44-198A-483E-B634-7AE28D90483E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D791FA44-198A-483E-B634-7AE28D90483E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D791FA44-198A-483E-B634-7AE28D90483E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D791FA44-198A-483E-B634-7AE28D90483E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5BFC68A-9F95-43C4-A7BB-5636CD86C61A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5BFC68A-9F95-43C4-A7BB-5636CD86C61A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5BFC68A-9F95-43C4-A7BB-5636CD86C61A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5BFC68A-9F95-43C4-A7BB-5636CD86C61A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64CF1292-162C-4EF1-AE85-223CB57A5012}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64CF1292-162C-4EF1-AE85-223CB57A5012}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64CF1292-162C-4EF1-AE85-223CB57A5012}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64CF1292-162C-4EF1-AE85-223CB57A5012}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
