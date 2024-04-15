@@ -69,11 +69,11 @@ public class MeasurementsSyncServiceTest
 
         await service.FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, CancellationToken.None);
         await fakeSyncState.Received(1)
-            .UpdateSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.Seconds == dateTo));
+            .UpdateSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.Seconds == dateTo), CancellationToken.None);
     }
 
     [Fact]
-    public async Task FetchMeasurements_NoMeasurementsReceived_SyncPositionNotUpdated()
+    public async Task FetchMeasurements_NoMeasurementsReceived_SlidingWindowIsNotUpdated()
     {
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(syncInfo.StartSyncDate));
 
@@ -84,6 +84,6 @@ public class MeasurementsSyncServiceTest
 
         await service.FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, CancellationToken.None);
         await fakeSyncState.Received(0)
-            .UpdateSlidingWindow(Arg.Any<MeteringPointTimeSeriesSlidingWindow>());
+            .UpdateSlidingWindow(Arg.Any<MeteringPointTimeSeriesSlidingWindow>(), Arg.Any<CancellationToken>());
     }
 }
