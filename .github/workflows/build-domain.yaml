@@ -175,12 +175,30 @@ jobs:
           image-tag: ${{ env.version }}
           upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
+      - name: Generate hashes
+        shell: bash
+        id: hash
+        run: |
+          # Generate sha256 hash for the Docker image and base64 encode it
+          echo "hashes=$(docker images --format '{{.Repository}}:{{.Tag}}' ${{ env.name }}:${{ env.version }} | sha256sum | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+  provenance:
+    needs: [build-projects]
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.10.0
+    with:
+      base64-subjects: "${{ needs.build-projects.outputs.hashes }}"
+
   update-environment:
     name: Update environment
     runs-on: ubuntu-latest
     needs:
       - setup
       - build-projects
+      - provenance
     concurrency: commits-base-environment
     strategy:
       max-parallel: 1
@@ -195,4 +213,4 @@ jobs:
         with:
           configuration: ${{ matrix.build.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ inputs.dry-run }}
+          dry-run: ${{ inputs.dry-run }}
