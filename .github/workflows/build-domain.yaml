@@ -159,9 +159,9 @@ jobs:
         with:
           dockerfile: Dockerfile
           image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
+          image-tag: ${{ github.head_ref || github.sha }}
           docker-context: .
-          dry-run: ${{ inputs.dry-run }}
+          dry-run: 'true'
           build-args: |
             SUBSYSTEM=${{ env.domain }}
             PROJECT=${{ env.service }}
@@ -172,15 +172,16 @@ jobs:
         uses: ./.github/actions/docker-scan
         with:
           image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
+          image-tag: ${{ github.head_ref || github.sha }}
           upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Generate hashes
         shell: bash
         id: hash
         run: |
-          # Generate sha256 hash for the Docker image and base64 encode it
-          echo "hashes=$(docker images --format '{{.Repository}}:{{.Tag}}' ${{ env.name }}:${{ env.version }} | sha256sum | base64 -w0)" >> "$GITHUB_OUTPUT"
+          tag=${{ github.head_ref || github.sha }}
+          hashes=$(docker images --format '{{.Repository}}:{{.Tag}}' ${{ env.name }}:$tag | sha256sum | base64 -w0)
+          echo "::set-output name=hashes::$hashes"
 
   provenance:
     needs: [build-projects]
