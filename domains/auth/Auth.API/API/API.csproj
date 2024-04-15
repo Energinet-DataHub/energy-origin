@@ -37,8 +37,8 @@
         <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="2.0.0-dev-00282" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.0" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.0" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.8.0" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.8.1" />
     </ItemGroup>
 
     <ItemGroup>
