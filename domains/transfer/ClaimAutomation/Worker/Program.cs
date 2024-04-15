@@ -19,7 +19,6 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ProjectOrigin.WalletSystem.V1;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,15 +52,15 @@ builder.Services.AddLogging();
 
 builder.Services.AddScoped<IClaimAutomationRepository, ClaimAutomationRepository>();
 builder.Services.AddScoped<IClaimService, ClaimService>();
-builder.Services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
 builder.Services.AddScoped<IShuffler, Shuffler>();
 builder.Services.AddHostedService<ClaimWorker>();
 builder.Services.AddSingleton<AutomationCache>();
 builder.Services.AddSingleton<IClaimAutomationMetrics, ClaimAutomationMetrics>();
-builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
+
+builder.Services.AddHttpClient<WalletClient>((sp, c) =>
 {
-    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-    o.Address = new Uri(options.WalletUrl);
+    var cvrOptions = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+    c.BaseAddress = new Uri(cvrOptions.WalletUrl);
 });
 
 builder.Services.AddVersioningToApi();

@@ -15,7 +15,7 @@ public record GranularCertificate()
     /// <summary>
     /// The quantity available on the certificate.
     /// </summary>
-    public required uint Quantity { get; init; }
+    public required uint Quantity { get; set; }
 
     /// <summary>
     /// The start of the certificate.
