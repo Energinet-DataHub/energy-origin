@@ -28,6 +28,14 @@ updates:
         patterns:
           - Microsoft.EntityFrameworkCore.*
   - package-ecosystem: nuget
+    directory: /domains/authorization
+    schedule:
+      interval: daily
+    groups:
+      Microsoft.EntityFrameworkCore:
+        patterns:
+          - Microsoft.EntityFrameworkCore.*
+  - package-ecosystem: nuget
     directory: /domains/certificates
     schedule:
       interval: daily
