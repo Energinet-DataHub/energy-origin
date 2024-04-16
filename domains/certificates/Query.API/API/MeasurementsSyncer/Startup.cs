@@ -13,9 +13,10 @@ public static class Startup
         services.MeasurementsSyncOptions();
         services.AddMeasurementsOptions();
 
-        services.AddSingleton<MeasurementsSyncService>();
-        services.AddSingleton<SlidingWindowService>();
-        services.AddSingleton<ISyncState, SyncState>();
+        services.AddScoped<MeasurementsSyncService>();
+        services.AddScoped<SlidingWindowService>();
+        services.AddScoped<ISyncState, SyncState>();
+        services.AddSingleton<IContractState, ContractState>();
 
         services.AddHostedService<MeasurementsSyncerWorker>();
 
