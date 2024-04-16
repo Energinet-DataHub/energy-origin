@@ -5,9 +5,9 @@ namespace API.Query.API.ApiModels.Requests;
 
 public class EditContractEndDate
 {
-    public Guid? Id { get; set; }
+    public Guid? Id { get; init; }
 
-    public string Gsrn { get; set; } = "";
+    public string Gsrn { get; init; } = "";
 
     /// <summary>
     /// End Date for generation of certificates in Unix time seconds. Set to null for no end date
@@ -17,5 +17,5 @@ public class EditContractEndDate
 
 public class MultipleEditContract
 {
-    public List<EditContractEndDate> Contracts { get; set; }
+    public List<EditContractEndDate> Contracts { get; set; } = [];
 }

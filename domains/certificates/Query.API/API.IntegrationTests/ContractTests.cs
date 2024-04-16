@@ -503,8 +503,8 @@ public sealed class ContractTests :
         var newEndDate1 = DateTimeOffset.Now.AddDays(9).ToUnixTimeSeconds();
         var contracts = new List<EditContractEndDate>
         {
-            new() { Id = Guid.Parse(id), Gsrn = gsrn, EndDate = newEndDate },
-            new() { Id = Guid.Parse(id1), Gsrn = gsrn, EndDate = newEndDate1 }
+            new() { Id = Guid.Parse(id!), Gsrn = gsrn, EndDate = newEndDate },
+            new() { Id = Guid.Parse(id1!), Gsrn = gsrn, EndDate = newEndDate1 }
         };
 
         var response = await client.PutAsJsonAsync("api/certificates/contracts", new MultipleEditContract()
