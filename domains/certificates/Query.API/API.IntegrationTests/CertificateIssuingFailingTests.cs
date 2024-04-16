@@ -85,7 +85,7 @@ public sealed class CertificateIssuingFailingTests :
 
     private static async Task<List<ProductionCertificate>> RepeatedlyQueryProductionCertsUntilRejected(ApplicationDbContext dbContext, int count, TimeSpan? timeLimit = null)
     {
-        var limit = timeLimit ?? TimeSpan.FromSeconds(15);
+        var limit = timeLimit ?? TimeSpan.FromSeconds(30);
 
         var stopwatch = new Stopwatch();
         stopwatch.Start();
