@@ -25,6 +25,7 @@ namespace API.IntegrationTests;
 public sealed class ContractTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
+    IClassFixture<PostgresContainer>,
     IClassFixture<RabbitMqContainer>,
     IClassFixture<MeasurementsWireMock>,
     IClassFixture<ProjectOriginStack>
@@ -34,12 +35,14 @@ public sealed class ContractTests :
 
     public ContractTests(
         QueryApiWebApplicationFactory factory,
+        PostgresContainer dbContainer,
         RabbitMqContainer rabbitMqContainer,
         MeasurementsWireMock measurementsWireMock,
         ProjectOriginStack projectOriginStack)
     {
         this.measurementsWireMock = measurementsWireMock;
         this.factory = factory;
+        this.factory.ConnectionString = dbContainer.ConnectionString;
         this.factory.MeasurementsUrl = measurementsWireMock.Url;
         this.factory.RabbitMqOptions = rabbitMqContainer.Options;
         this.factory.WalletUrl = projectOriginStack.WalletUrl;
@@ -493,8 +496,8 @@ public sealed class ContractTests :
         var body1 = new { gsrn, startDate1, endDate = endDate1 };
         using var response1 = await client.PostAsJsonAsync("api/certificates/contracts", body1);
 
-        var id = response.Headers.Location.PathAndQuery.Split("/").Last();
-        var id1 = response1.Headers.Location.PathAndQuery.Split("/").Last();
+        var id = response.Headers.Location?.PathAndQuery.Split("/").Last();
+        var id1 = response1.Headers.Location?.PathAndQuery.Split("/").Last();
 
         var newEndDate = DateTimeOffset.Now.AddDays(5).ToUnixTimeSeconds();
         var newEndDate1 = DateTimeOffset.Now.AddDays(7).ToUnixTimeSeconds();
@@ -575,7 +578,7 @@ public sealed class ContractTests :
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid().ToString();
-        using var client = factory.CreateAuthenticatedClient(subject);
+        var client = factory.CreateAuthenticatedClient(subject);
 
         var start = DateTimeOffset.Now.AddDays(3);
 

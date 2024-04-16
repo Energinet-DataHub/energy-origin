@@ -138,7 +138,7 @@ internal class ContractServiceImpl : IContractService
                 return new EndDateBeforeStartDate(contract.StartDate, newEndDate.ToDateTimeOffset());
             }
 
-            contract.EndDate = newEndDate.ToDateTimeOffset();
+            contract.EndDate = newEndDate?.ToDateTimeOffset() ?? null;
             unitOfWork.CertificateIssuingContractRepo.Update(contract);
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
