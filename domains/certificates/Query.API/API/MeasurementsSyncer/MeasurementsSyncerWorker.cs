@@ -53,7 +53,7 @@ public class MeasurementsSyncerWorker : BackgroundService
             var syncInfos = await syncState.GetSyncInfos(stoppingToken);
             foreach (var syncInfo in syncInfos)
             {
-                var scope = scopeFactory.CreateScope();
+                using var scope = scopeFactory.CreateScope();
                 var scopedSyncService = scope.ServiceProvider.GetService<MeasurementsSyncService>()!;
                 await scopedSyncService.HandleSingleSyncInfo(syncInfo, stoppingToken);
             }
