@@ -11,6 +11,7 @@ public static class Startup
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddScoped<IssuingContractCleanupService>();
         services.AddHostedService<IssuingContractCleanupWorker>();
     }
 }
