@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithOpenTelemetryWithoutOutboxLogs(otlpOptions.ReceiverEndpoint);
+builder.AddSerilog();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
@@ -80,13 +80,7 @@ builder.Services.AddMassTransit(o =>
     });
 });
 
-void ConfigureResource(ResourceBuilder r)
-{
-    r.AddService("RegistryConnector",
-        serviceInstanceId: Environment.MachineName);
-}
-
-builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit(ConfigureResource, otlpOptions.ReceiverEndpoint);
+builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit("RegistryConnector", otlpOptions.ReceiverEndpoint);
 
 var app = builder.Build();
 
