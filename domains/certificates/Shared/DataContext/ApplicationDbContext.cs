@@ -37,7 +37,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Wallet>().HasKey(w => w.WalletId);
 
         modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().HasKey(s => new { s.GSRN });
-        modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().OwnsOne(m => m.MissingMeasurements, d => d.ToJson());
+        modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().OwnsOne(m => m.MissingMeasurements, d =>
+        {
+            d.ToJson();
+            d.OwnsMany(x => x.Intervals);
+        });
 
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxMessageEntity();
