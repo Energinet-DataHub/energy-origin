@@ -97,9 +97,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
     {
-        using var scope = Services.CreateScope();
-        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
-        return provider;
+        return Services.GetRequiredService<IApiVersionDescriptionProvider>();
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

@@ -490,7 +490,7 @@ public sealed class ContractTests :
 
         var startDate1 = DateTimeOffset.Now.AddDays(4).ToUnixTimeSeconds();
         var endDate1 = DateTimeOffset.Now.AddDays(6).ToUnixTimeSeconds();
-        var body1 = new { gsrn, startDate, endDate = endDate };
+        var body1 = new { gsrn, startDate1, endDate = endDate1 };
         using var response1 = await client.PostAsJsonAsync("api/certificates/contracts", body1);
 
         var id = response.Headers.Location.PathAndQuery.Split("/").Last();
