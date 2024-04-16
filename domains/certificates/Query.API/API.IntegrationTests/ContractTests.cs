@@ -484,16 +484,16 @@ public sealed class ContractTests :
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid().ToString();
-        using var client = factory.CreateAuthenticatedClient(subject);
+        var client = factory.CreateAuthenticatedClient(subject);
 
         var startDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var body = new { gsrn, startDate, endDate = endDate };
+        var body = new { gsrn, startDate = startDate, endDate = endDate };
         using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
         var startDate1 = DateTimeOffset.Now.AddDays(4).ToUnixTimeSeconds();
         var endDate1 = DateTimeOffset.Now.AddDays(6).ToUnixTimeSeconds();
-        var body1 = new { gsrn, startDate1, endDate = endDate1 };
+        var body1 = new { gsrn, startDate = startDate1, endDate = endDate1 };
         using var response1 = await client.PostAsJsonAsync("api/certificates/contracts", body1);
 
         var id = response.Headers.Location?.PathAndQuery.Split("/").Last();
@@ -507,14 +507,14 @@ public sealed class ContractTests :
             new() { Id = Guid.Parse(id1), EndDate = newEndDate1 }
         };
 
-        using var editResponse = await client.PutAsJsonAsync("api/certificates/contracts", new MultipleEditContract()
+        await client.PutAsJsonAsync("api/certificates/contracts", new MultipleEditContract()
         {
             Contracts = contracts
         });
 
-        var contract = await client.GetFromJsonAsync<Contract>("api/certificates/contracts" + id);
+        var contract = await client.GetFromJsonAsync<Contract>("api/certificates/contracts/" + id);
 
-        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
+        contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = newEndDate });
     }
 
     [Fact]
