@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
 using DataContext.ValueObjects;
@@ -30,7 +31,8 @@ public class MeasurementsSyncServiceTest
 
     public MeasurementsSyncServiceTest()
     {
-        service = new MeasurementsSyncService(fakeLogger, fakeSyncState, fakeClient, fakeBus, new SlidingWindowService());
+        service = new MeasurementsSyncService(fakeLogger, fakeSyncState, fakeClient, fakeBus, new SlidingWindowService(),
+            new MeasurementSyncMetrics());
     }
 
     [Fact]
