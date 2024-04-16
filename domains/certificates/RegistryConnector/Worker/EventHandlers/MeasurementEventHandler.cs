@@ -237,5 +237,7 @@ public class MeasurementEventHandlerDefinition : ConsumerDefinition<MeasurementE
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3))
             .Handle(typeof(DbUpdateException), typeof(InvalidOperationException)));
+
+        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }
