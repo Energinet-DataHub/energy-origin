@@ -35,6 +35,9 @@ public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
         var res = await client.PostAsync(context.Arguments.WalletUrl, content);
         res.EnsureSuccessStatusCode();
 
+        logger.LogInformation("Slice sent to Wallet for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
+            context.Arguments.ReceiveRequest.CertificateId.StreamId, context.TrackingNumber);
+
         return context.Completed();
     }
 }
