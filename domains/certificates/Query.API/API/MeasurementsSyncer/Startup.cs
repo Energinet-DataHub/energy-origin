@@ -1,5 +1,6 @@
 using System;
 using API.Configurations;
+using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,7 @@ public static class Startup
         services.AddScoped<ISyncState, SyncState>();
         services.AddSingleton<IContractState, ContractState>();
 
+        services.AddSingleton<IMeasurementSyncMetrics, MeasurementSyncMetrics>();
         services.AddHostedService<MeasurementsSyncerWorker>();
 
         services.AddGrpcClient<Measurements.V1.Measurements.MeasurementsClient>((sp, o) =>
