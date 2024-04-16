@@ -9,20 +9,20 @@ public class MeteringPointTimeSeriesSlidingWindow
 {
     public string GSRN { get; private set; }
     public UnixTimestamp SynchronizationPoint { get; private set; }
-    public List<MeasurementInterval> MissingMeasurements { get; private set; }
+    public MissingMeasurements MissingMeasurements { get; private set; }
 
     private MeteringPointTimeSeriesSlidingWindow()
     {
         GSRN = String.Empty;
         SynchronizationPoint = UnixTimestamp.Empty();
-        MissingMeasurements = new List<MeasurementInterval>();
+        MissingMeasurements = new MissingMeasurements();
     }
 
     private MeteringPointTimeSeriesSlidingWindow(string gsrn, UnixTimestamp synchronizationPoint, List<MeasurementInterval> missingMeasurements)
     {
         GSRN = gsrn;
         SynchronizationPoint = synchronizationPoint;
-        MissingMeasurements = missingMeasurements;
+        MissingMeasurements = new MissingMeasurements(missingMeasurements);
     }
 
     public static MeteringPointTimeSeriesSlidingWindow Create(string gsrn, UnixTimestamp synchronizationPoint)
@@ -42,18 +42,34 @@ public class MeteringPointTimeSeriesSlidingWindow
 
     public UnixTimestamp GetFetchIntervalStart()
     {
-        if (!MissingMeasurements.Any())
+        if (!MissingMeasurements.Intervals.Any())
         {
             return SynchronizationPoint;
         }
 
-        var earliestMissingMeasurement = MissingMeasurements.MinBy(m => m.From.Seconds);
+        var earliestMissingMeasurement = MissingMeasurements.Intervals.MinBy(m => m.From.Seconds);
         return earliestMissingMeasurement!.From;
     }
 
     public void UpdateSlidingWindow(UnixTimestamp newSynchronizationPoint, List<MeasurementInterval> missingMeasurements)
     {
         SynchronizationPoint = newSynchronizationPoint;
-        MissingMeasurements = missingMeasurements;
+        MissingMeasurements = new MissingMeasurements(missingMeasurements);
+    }
+}
+
+public class MissingMeasurements
+{
+    //[NotMapped]
+    public List<MeasurementInterval> Intervals { get; private set; }
+
+    public MissingMeasurements()
+    {
+        Intervals = new List<MeasurementInterval>();
+    }
+
+    public MissingMeasurements(List<MeasurementInterval> intervals)
+    {
+        Intervals = intervals;
     }
 }

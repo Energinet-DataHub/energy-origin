@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Persistence;
@@ -32,9 +33,9 @@ public class SyncStateTests : IClassFixture<DbContextFactoryMock>
     {
         var info = CreateSyncInfo();
 
-        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SyncState(await factory.CreateDbContextAsync(), Substitute.For<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info, CancellationToken.None);
 
         actualPeriodStartTime.Should().Be(info.StartSyncDate.ToUnixTimeSeconds());
     }
@@ -52,9 +53,9 @@ public class SyncStateTests : IClassFixture<DbContextFactoryMock>
             await dbContext.SaveChangesAsync();
         }
 
-        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SyncState(await factory.CreateDbContextAsync(), Substitute.For<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info, CancellationToken.None);
 
         actualPeriodStartTime.Should().Be(position.SyncedTo);
     }
@@ -72,27 +73,11 @@ public class SyncStateTests : IClassFixture<DbContextFactoryMock>
             await dbContext.SaveChangesAsync();
         }
 
-        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SyncState(await factory.CreateDbContextAsync(), Substitute.For<ILogger<SyncState>>());
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info, CancellationToken.None);
 
         actualPeriodStartTime.Should().Be(info.StartSyncDate.ToUnixTimeSeconds());
-    }
-
-    [Fact]
-    public async Task GetPeriodStartTime_DatabaseCommunicationFailure_ReturnsNull()
-    {
-        var info = CreateSyncInfo();
-
-        var factoryMock = Substitute.For<IDbContextFactory<ApplicationDbContext>>();
-        factoryMock.CreateDbContextAsync().ThrowsForAnyArgs<Exception>();
-
-        var syncState = new SyncState(factoryMock, Substitute.For<ILogger<SyncState>>());
-
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info);
-
-        actualPeriodStartTime.Should().Be(null);
-        await factoryMock.Received(1).CreateDbContextAsync();
     }
 
     [Fact]
@@ -101,10 +86,10 @@ public class SyncStateTests : IClassFixture<DbContextFactoryMock>
         var gsrn = GsrnHelper.GenerateRandom();
         var syncedTo = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
-        await syncState.SetSyncPosition(gsrn, syncedTo);
+        var syncState = new SyncState(await factory.CreateDbContextAsync(), Substitute.For<ILogger<SyncState>>());
+        await syncState.SetSyncPosition(gsrn, syncedTo, CancellationToken.None);
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn));
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn), CancellationToken.None);
         actualPeriodStartTime.Should().Be(syncedTo);
     }
 
@@ -115,11 +100,11 @@ public class SyncStateTests : IClassFixture<DbContextFactoryMock>
         var syncedTo1 = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var syncedTo2 = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds();
 
-        var syncState = new SyncState(factory, Substitute.For<ILogger<SyncState>>());
-        await syncState.SetSyncPosition(gsrn, syncedTo1);
-        await syncState.SetSyncPosition(gsrn, syncedTo2);
+        var syncState = new SyncState(await factory.CreateDbContextAsync(), Substitute.For<ILogger<SyncState>>());
+        await syncState.SetSyncPosition(gsrn, syncedTo1, CancellationToken.None);
+        await syncState.SetSyncPosition(gsrn, syncedTo2, CancellationToken.None);
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn));
+        var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn), CancellationToken.None);
         actualPeriodStartTime.Should().Be(syncedTo2);
     }
 }
