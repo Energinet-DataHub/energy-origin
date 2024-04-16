@@ -138,7 +138,7 @@ public class ContractsController : ControllerBase
         var newEndDate = editContractEndDate.EndDate.HasValue
             ? UnixTimestamp.Create(editContractEndDate.EndDate.Value)
             : null;
-        var contracts = new List<(Guid id, UnixTimestamp? newEndDate)> { (id, newEndDate) };
+        var contracts = new List<(Guid id, string gsrn, UnixTimestamp? newEndDate)> { (id, editContractEndDate.Gsrn, newEndDate) };
         var result = await service.SetEndDate(
             contracts,
             user,
@@ -149,6 +149,7 @@ public class ContractsController : ControllerBase
             NonExistingContract => NotFound(),
             MeteringPointOwnerNoMatch => Forbid(),
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
+            OverlappingContract => ValidationProblem(statusCode: 409),
             SetEndDateResult.Success => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
@@ -169,7 +170,7 @@ public class ContractsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var updatedContracts = new List<(Guid id, UnixTimestamp? endDate)>();
+        var updatedContracts = new List<(Guid id, string gsrn, UnixTimestamp? endDate)>();
 
         foreach (var contract in multipleEditContract.Contracts)
         {
@@ -183,7 +184,7 @@ public class ContractsController : ControllerBase
             var newEndDate = contract.EndDate.HasValue
                 ? UnixTimestamp.Create(contract.EndDate.Value)
                 : null;
-            updatedContracts.Add((contract.Id!.Value, newEndDate));
+            updatedContracts.Add((contract.Id!.Value, contract.Gsrn, newEndDate));
         }
 
         var result = await service.SetEndDate(
@@ -196,6 +197,7 @@ public class ContractsController : ControllerBase
             NonExistingContract => NotFound(),
             MeteringPointOwnerNoMatch => Forbid(),
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
+            OverlappingContract => ValidationProblem(statusCode: 409),
             SetEndDateResult.Success => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };

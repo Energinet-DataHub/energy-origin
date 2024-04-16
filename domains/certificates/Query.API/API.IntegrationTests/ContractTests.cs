@@ -416,7 +416,7 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
 
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var putBody = new { endDate };
+        var putBody = new { gsrn, endDate };
 
         using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
@@ -442,7 +442,7 @@ public sealed class ContractTests :
 
         var createdContractUri = response.Headers.Location;
 
-        var putBody = new { endDate = (long?)null };
+        var putBody = new { gsrn, endDate = (long?)null };
 
         using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
@@ -468,7 +468,7 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
 
         var endDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
-        var putBody = new { endDate };
+        var putBody = new { gsrn, endDate };
 
         using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
@@ -489,32 +489,35 @@ public sealed class ContractTests :
         var startDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new { gsrn, startDate = startDate, endDate = endDate };
-        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        using var createResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
 
-        var startDate1 = DateTimeOffset.Now.AddDays(4).ToUnixTimeSeconds();
-        var endDate1 = DateTimeOffset.Now.AddDays(6).ToUnixTimeSeconds();
+        var startDate1 = DateTimeOffset.Now.AddDays(7).ToUnixTimeSeconds();
+        var endDate1 = DateTimeOffset.Now.AddDays(8).ToUnixTimeSeconds();
         var body1 = new { gsrn, startDate = startDate1, endDate = endDate1 };
-        using var response1 = await client.PostAsJsonAsync("api/certificates/contracts", body1);
+        using var createResponse1 = await client.PostAsJsonAsync("api/certificates/contracts", body1);
 
-        var id = response.Headers.Location?.PathAndQuery.Split("/").Last();
-        var id1 = response1.Headers.Location?.PathAndQuery.Split("/").Last();
+        var id = createResponse.Headers.Location?.PathAndQuery.Split("/").Last();
+        var id1 = createResponse1.Headers.Location?.PathAndQuery.Split("/").Last();
 
-        var newEndDate = DateTimeOffset.Now.AddDays(5).ToUnixTimeSeconds();
-        var newEndDate1 = DateTimeOffset.Now.AddDays(7).ToUnixTimeSeconds();
+        var newEndDate = DateTimeOffset.Now.AddDays(4).ToUnixTimeSeconds();
+        var newEndDate1 = DateTimeOffset.Now.AddDays(9).ToUnixTimeSeconds();
         var contracts = new List<EditContractEndDate>
         {
-            new() { Id = Guid.Parse(id), EndDate = newEndDate },
-            new() { Id = Guid.Parse(id1), EndDate = newEndDate1 }
+            new() { Id = Guid.Parse(id), Gsrn = gsrn, EndDate = newEndDate },
+            new() { Id = Guid.Parse(id1), Gsrn = gsrn, EndDate = newEndDate1 }
         };
 
-        await client.PutAsJsonAsync("api/certificates/contracts", new MultipleEditContract()
+        var response = await client.PutAsJsonAsync("api/certificates/contracts", new MultipleEditContract()
         {
             Contracts = contracts
         });
+        response.EnsureSuccessStatusCode();
 
         var contract = await client.GetFromJsonAsync<Contract>("api/certificates/contracts/" + id);
+        var contract1 = await client.GetFromJsonAsync<Contract>("api/certificates/contracts/" + id1);
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = newEndDate });
+        contract1.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate1, EndDate = newEndDate1 });
     }
 
     [Fact]
@@ -528,6 +531,7 @@ public sealed class ContractTests :
 
         var putBody = new
         {
+            gsrn,
             endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
@@ -563,6 +567,7 @@ public sealed class ContractTests :
         //measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
         var putBody = new
         {
+            gsrn,
             endDate = start.AddDays(-1).ToUnixTimeSeconds()
         };
 
@@ -598,6 +603,7 @@ public sealed class ContractTests :
         using var client2 = factory.CreateAuthenticatedClient(newSubject);
         var putBody = new
         {
+            gsrn,
             endDate = start.AddDays(-1).ToUnixTimeSeconds()
         };
 
@@ -644,7 +650,7 @@ public sealed class ContractTests :
         // Update end date
         var createdContractUri = contractResponse.Headers.Location;
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var putBody = new { endDate };
+        var putBody = new { gsrn, endDate };
         await client.PutAsJsonAsync(createdContractUri, putBody);
 
         // Assert activity log entries (created, updated)
