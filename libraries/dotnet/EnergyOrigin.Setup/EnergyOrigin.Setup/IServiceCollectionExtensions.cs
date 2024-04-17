@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -46,7 +47,7 @@ public static class IServiceCollectionExtensions
                 o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
     }
 
-    public static void AddOpenTelemetryMetricsAndTracing(this WebApplicationBuilder builder, string serviceName, Uri oltpReceiverEndpoint)
+    public static void AddOpenTelemetryMetricsAndTracing(this WebApplicationBuilder builder, string serviceName, Uri oltpReceiverEndpoint, Action<MeterProviderBuilder> meterProviderBuilderAction)
     {
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(resource => resource
@@ -58,6 +59,7 @@ public static class IServiceCollectionExtensions
                     .AddRuntimeInstrumentation()
                     .AddProcessInstrumentation()
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint))
+            .WithMetrics(meterProviderBuilderAction)
             .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
                     .AddHttpClientInstrumentation()
