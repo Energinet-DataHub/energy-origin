@@ -24,8 +24,8 @@ public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
 
     public async Task<ExecutionResult> Execute(ExecuteContext<SendToWalletArguments> context)
     {
-        logger.LogInformation("Sending slice to Wallet for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
-            context.Arguments.ReceiveRequest.CertificateId.StreamId, context.TrackingNumber);
+        logger.LogInformation("Sending slice to Wallet with url {WalletUrl} for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
+            context.Arguments.WalletUrl, context.Arguments.ReceiveRequest.CertificateId.StreamId, context.TrackingNumber);
 
         var client = new HttpClient();
         var requestStr = JsonSerializer.Serialize(context.Arguments.ReceiveRequest);
