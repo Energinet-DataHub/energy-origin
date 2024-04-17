@@ -45,7 +45,7 @@ public class WalletClient : IWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
-        var res = await client.PostAsync("v1/wallets", content);
+        var res = await client.PostAsync("/wallet-api/v1/wallets", content);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
@@ -60,7 +60,7 @@ public class WalletClient : IWalletClient
         SetAuthorizationHeader();
         ValidateOwnerAndSubjectMatch(ownerSubject);
 
-        var res = await client.PostAsync($"v1/wallets/{walletId}/endpoints", null);
+        var res = await client.PostAsync($"/wallet-api/v1/wallets/{walletId}/endpoints", null);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
