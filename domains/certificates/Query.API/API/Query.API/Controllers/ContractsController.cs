@@ -138,7 +138,7 @@ public class ContractsController : ControllerBase
         var newEndDate = editContractEndDate.EndDate.HasValue
             ? UnixTimestamp.Create(editContractEndDate.EndDate.Value)
             : null;
-        var contracts = new List<(Guid id, string gsrn, UnixTimestamp? newEndDate)> { (id, editContractEndDate.Gsrn, newEndDate) };
+        var contracts = new List<(Guid id, UnixTimestamp? newEndDate)> { (id, newEndDate) };
         var result = await service.SetEndDate(
             contracts,
             user,
@@ -170,7 +170,7 @@ public class ContractsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var updatedContracts = new List<(Guid id, string gsrn, UnixTimestamp? endDate)>();
+        var updatedContracts = new List<(Guid id, UnixTimestamp? endDate)>();
 
         foreach (var contract in multipleEditContract.Contracts)
         {
@@ -184,7 +184,7 @@ public class ContractsController : ControllerBase
             var newEndDate = contract.EndDate.HasValue
                 ? UnixTimestamp.Create(contract.EndDate.Value)
                 : null;
-            updatedContracts.Add((contract.Id!.Value, contract.Gsrn, newEndDate));
+            updatedContracts.Add((contract.Id!.Value, newEndDate));
         }
 
         var result = await service.SetEndDate(

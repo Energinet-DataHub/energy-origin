@@ -120,7 +120,7 @@ public class SwaggerTests(QueryApiWebApplicationFactory factory) : TestBase, ICl
     [Fact]
     public async Task SwaggerDoc_ContainsSecurityRequirementForBearer()
     {
-        using var client = factory.CreateClient();
+        var client = factory.CreateClient();
         var provider = factory.GetApiVersionDescriptionProvider();
 
         foreach (var description in provider.ApiVersionDescriptions.Select(v => v.GroupName))
@@ -145,7 +145,7 @@ public class SwaggerTests(QueryApiWebApplicationFactory factory) : TestBase, ICl
     [Fact]
     public async Task SwaggerDoc_VerifiesFullSecurityRequirementsStructure()
     {
-        using var client = factory.CreateClient();
+        var client = factory.CreateClient();
         var provider = factory.GetApiVersionDescriptionProvider();
 
         foreach (var description in provider.ApiVersionDescriptions.Select(v => v.GroupName))

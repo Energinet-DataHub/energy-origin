@@ -353,9 +353,6 @@
             "format": "uuid",
             "nullable": true
           },
-          "gsrn": {
-            "type": "string"
-          },
           "endDate": {
             "type": "integer",
             "description": "End Date for generation of certificates in Unix time seconds. Set to null for no end date",

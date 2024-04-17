@@ -416,7 +416,7 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
 
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var putBody = new { gsrn, endDate };
+        var putBody = new { endDate };
 
         using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
@@ -442,7 +442,7 @@ public sealed class ContractTests :
 
         var createdContractUri = response.Headers.Location;
 
-        var putBody = new { gsrn, endDate = (long?)null };
+        var putBody = new { endDate = (long?)null };
 
         using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
@@ -468,7 +468,7 @@ public sealed class ContractTests :
         var createdContractUri = response.Headers.Location;
 
         var endDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
-        var putBody = new { gsrn, endDate };
+        var putBody = new { endDate };
 
         using var editResponse = await client.PutAsJsonAsync(createdContractUri, putBody);
 
@@ -503,8 +503,8 @@ public sealed class ContractTests :
         var newEndDate1 = DateTimeOffset.Now.AddDays(9).ToUnixTimeSeconds();
         var contracts = new List<EditContractEndDate>
         {
-            new() { Id = Guid.Parse(id!), Gsrn = gsrn, EndDate = newEndDate },
-            new() { Id = Guid.Parse(id1!), Gsrn = gsrn, EndDate = newEndDate1 }
+            new() { Id = Guid.Parse(id!), EndDate = newEndDate },
+            new() { Id = Guid.Parse(id1!), EndDate = newEndDate1 }
         };
 
         var response = await client.PutAsJsonAsync("api/certificates/contracts", new MultipleEditContract()
@@ -531,7 +531,6 @@ public sealed class ContractTests :
 
         var putBody = new
         {
-            gsrn,
             endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
         };
 
@@ -567,7 +566,6 @@ public sealed class ContractTests :
         //measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
         var putBody = new
         {
-            gsrn,
             endDate = start.AddDays(-1).ToUnixTimeSeconds()
         };
 
@@ -603,7 +601,6 @@ public sealed class ContractTests :
         using var client2 = factory.CreateAuthenticatedClient(newSubject);
         var putBody = new
         {
-            gsrn,
             endDate = start.AddDays(-1).ToUnixTimeSeconds()
         };
 
@@ -650,7 +647,7 @@ public sealed class ContractTests :
         // Update end date
         var createdContractUri = contractResponse.Headers.Location;
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var putBody = new { gsrn, endDate };
+        var putBody = new { endDate };
         await client.PutAsJsonAsync(createdContractUri, putBody);
 
         // Assert activity log entries (created, updated)
@@ -668,10 +665,10 @@ public sealed class ContractTests :
         var gsrn = GsrnHelper.GenerateRandom();
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
         var subject = Guid.NewGuid().ToString();
-        using var client = factory.CreateAuthenticatedClient(subject);
+        var client = factory.CreateAuthenticatedClient(subject);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new { gsrn, startDate, endDate = (long?)null };
-        using var contractResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        var contractResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
         contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Update end date
@@ -685,7 +682,7 @@ public sealed class ContractTests :
 
         // Assert activity log entries (created, updated)
         var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-        using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
+        var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
         activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
         Assert.Empty(activityLog!.ActivityLogEntries);

@@ -115,15 +115,13 @@ internal class ContractServiceImpl : IContractService
         return null;
     }
 
-    public async Task<SetEndDateResult> SetEndDate(List<(Guid id, string gsrn, UnixTimestamp? newEndDate)> contracts, UserDescriptor user, CancellationToken cancellationToken)
+    public async Task<SetEndDateResult> SetEndDate(List<(Guid id, UnixTimestamp? newEndDate)> contracts, UserDescriptor user, CancellationToken cancellationToken)
     {
         var meteringPointOwner = user.Subject.ToString();
 
-        foreach (var (id, gsrn, newEndDate) in contracts)
+        foreach (var (id, newEndDate) in contracts)
         {
-            var issuingContracts = await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(gsrn, cancellationToken);
-
-            var contract = issuingContracts.FirstOrDefault(c => c.Id == id);
+            var contract = await unitOfWork.CertificateIssuingContractRepo.GetById(id, cancellationToken);
 
             if (contract == null)
             {
@@ -139,8 +137,9 @@ internal class ContractServiceImpl : IContractService
             {
                 return new EndDateBeforeStartDate(contract.StartDate, newEndDate.ToDateTimeOffset());
             }
-
+            var issuingContracts = await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(contract.GSRN, cancellationToken);
             var overlappingContract = issuingContracts.FirstOrDefault(c => c.Overlaps(contract.StartDate, newEndDate?.ToDateTimeOffset()) && c.Id != contract.Id);
+
             if (overlappingContract != null)
             {
                 return new OverlappingContract();

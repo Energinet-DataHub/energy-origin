@@ -7,8 +7,6 @@ public class EditContractEndDate
 {
     public Guid? Id { get; init; }
 
-    public string Gsrn { get; init; } = "";
-
     /// <summary>
     /// End Date for generation of certificates in Unix time seconds. Set to null for no end date
     /// </summary>

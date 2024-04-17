@@ -191,9 +191,9 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     {
         measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
 
-        using var client = CreateAuthenticatedClient(subject);
+        var client = CreateAuthenticatedClient(subject);
         var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };
-        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
