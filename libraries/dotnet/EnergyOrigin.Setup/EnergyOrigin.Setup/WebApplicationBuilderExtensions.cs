@@ -10,44 +10,34 @@ namespace EnergyOrigin.Setup;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static void AddSerilogWithOpenTelemetry(this WebApplicationBuilder builder, Uri oltpReceiverEndpoint)
+    public static void AddSerilog(
+        this WebApplicationBuilder builder)
     {
-        var log = new LoggerConfiguration()
+        LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
-            .Filter.ByExcluding("RequestPath like '/metrics%'")
-            .WriteTo.OpenTelemetry(options =>
-            {
-                options.Endpoint = oltpReceiverEndpoint.ToString();
-                options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
-                                       IncludedData.TraceIdField | IncludedData.SpanIdField;
-            });
+            .Filter.ByExcluding("RequestPath like '/metrics%'");
 
-        var console = builder.Environment.IsDevelopment()
-            ? log.WriteTo.Console()
-            : log.WriteTo.Console(new JsonFormatter());
+        loggerConfiguration = builder.Environment.IsDevelopment() ?
+            loggerConfiguration.WriteTo.Console() :
+            loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
         builder.Logging.ClearProviders();
-        builder.Logging.AddSerilog(console.CreateLogger());
+        builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
     }
 
-    public static void AddSerilogWithOpenTelemetryWithoutOutboxLogs(this WebApplicationBuilder builder, Uri oltpReceiverEndpoint)
+    public static void AddSerilogWithoutOutboxLogs(
+        this WebApplicationBuilder builder)
     {
-        var log = new LoggerConfiguration()
+        LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
             .Filter.ByExcluding("RequestPath like '/metrics%'")
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning)
-            .WriteTo.OpenTelemetry(options =>
-            {
-                options.Endpoint = oltpReceiverEndpoint.ToString();
-                options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
-                                       IncludedData.TraceIdField | IncludedData.SpanIdField;
-            });
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning);
 
-        var console = builder.Environment.IsDevelopment()
-            ? log.WriteTo.Console()
-            : log.WriteTo.Console(new JsonFormatter());
+        loggerConfiguration = builder.Environment.IsDevelopment() ?
+            loggerConfiguration.WriteTo.Console() :
+            loggerConfiguration.WriteTo.Console(new JsonFormatter());
 
         builder.Logging.ClearProviders();
-        builder.Logging.AddSerilog(console.CreateLogger());
+        builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
     }
 }
