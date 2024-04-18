@@ -14,7 +14,7 @@ public static class WebApplicationBuilderExtensions
     {
         var log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
-            .Filter.ByExcluding("RequestPath like '/metrics%'"));
+            .Filter.ByExcluding("RequestPath like '/metrics%'");
 
         var console = builder.Environment.IsDevelopment()
             ? log.WriteTo.Console()
@@ -29,7 +29,7 @@ public static class WebApplicationBuilderExtensions
         var log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
             .Filter.ByExcluding("RequestPath like '/metrics%'")
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning));
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning);
 
         var console = builder.Environment.IsDevelopment()
             ? log.WriteTo.Console()
