@@ -26,7 +26,7 @@ namespace API.Transfer.Api.Controllers;
 [ApiVersion(ApiVersions.Version20240103)]
 [Route("api/transfer/transfer-agreements")]
 public class TransferAgreementsController(
-    IProjectOriginWalletService projectOriginWalletService,
+    IWalletClient walletClient,
     IHttpContextAccessor httpContextAccessor,
     IUnitOfWork unitOfWork
 ) : ControllerBase

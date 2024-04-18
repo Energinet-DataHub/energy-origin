@@ -1,28 +1,23 @@
 using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.Tokens;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
-using ProjectOriginClients.Models;
 
-namespace ClaimAutomation.Worker.Automation.Services;
+namespace API.Transfer.Api.Services;
 
 public interface IWalletClient
 {
     Task<CreateWalletResponse> CreateWallet(string ownerSubject, CancellationToken cancellationToken);
     Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, string ownerSubject, CancellationToken cancellationToken);
+    Task<CreateExternalEndpointResponse> CreateExternalEndpoint(string ownerSubject, WalletEndpointReference walletEndpointReference, string textReference, CancellationToken cancellationToken);
 }
 
 public class WalletClient : IWalletClient
@@ -30,45 +25,10 @@ public class WalletClient : IWalletClient
     private readonly HttpClient client;
     private readonly IHttpContextAccessor httpContextAccessor;
 
-    private readonly JsonSerializerOptions jsonSerializerOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
-    };
-
     public WalletClient(HttpClient client, IHttpContextAccessor httpContextAccessor)
     {
         this.client = client;
         this.httpContextAccessor = httpContextAccessor;
-    }
-
-    public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken)
-    {
-        SetupDummyAuthorizationHeader(ownerSubject.ToString());
-
-        return await client.GetFromJsonAsync<ResultList<GranularCertificate>>("v1/certificates",
-            cancellationToken: cancellationToken, options: jsonSerializerOptions);
-    }
-
-    public async Task<ClaimResponse> ClaimCertificates(Guid ownerId, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity)
-    {
-        SetupDummyAuthorizationHeader(ownerId.ToString());
-        var request = new ClaimRequest
-        {
-            ConsumptionCertificateId = consumptionCertificate.FederatedStreamId,
-            ProductionCertificateId = productionCertificate.FederatedStreamId,
-            Quantity = quantity
-        };
-        var requestStr = JsonSerializer.Serialize(request);
-        var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
-
-        var res = await client.PostAsync("v1/claims", content);
-        res.EnsureSuccessStatusCode();
-
-        if (res == null || res.Content == null)
-            throw new HttpRequestException("Failed to create wallet.");
-
-        return (await res.Content.ReadFromJsonAsync<ClaimResponse>())!;
     }
 
     public async Task<CreateWalletResponse> CreateWallet(string ownerSubject, CancellationToken cancellationToken)
@@ -110,6 +70,29 @@ public class WalletClient : IWalletClient
         return new WalletEndpointReference(response.WalletReference.Version, response.WalletReference.Endpoint, hdPublicKey);
     }
 
+    public async Task<CreateExternalEndpointResponse> CreateExternalEndpoint(string ownerSubject, WalletEndpointReference walletEndpointReference, string textReference,
+        CancellationToken cancellationToken)
+    {
+        ValidateHttpContext();
+        SetAuthorizationHeader();
+        ValidateOwnerAndSubjectMatch(ownerSubject);
+
+        var request = new CreateExternalEndpointRequest
+        {
+            TextReference = textReference,
+            WalletReference = walletEndpointReference
+        };
+        var requestStr = JsonSerializer.Serialize(request);
+        var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
+        var res = await client.PostAsync($"v1/external-endpoints", content);
+        res.EnsureSuccessStatusCode();
+
+        if (res == null || res.Content == null)
+            throw new HttpRequestException("Failed to create wallet external endpoint.");
+
+        return (await res.Content.ReadFromJsonAsync<CreateExternalEndpointResponse>())!;
+    }
+
     private void ValidateHttpContext()
     {
         var httpContext = httpContextAccessor.HttpContext;
@@ -129,25 +112,8 @@ public class WalletClient : IWalletClient
         if (!ownerSubject.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
             throw new HttpRequestException("Owner must match subject");
     }
-
-    private void SetupDummyAuthorizationHeader(string ownerSubject)
-    {
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GenerateBearerToken(ownerSubject));
-    }
-
-    private string GenerateBearerToken(string owner)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new[] { new Claim("sub", owner) }),
-            Expires = DateTime.UtcNow.AddDays(7),
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-
-        return tokenHandler.WriteToken(token);
-    }
 }
+
 public record CreateWalletRequest()
 {
     /// <summary>
@@ -166,93 +132,28 @@ public record WalletEndpointReferenceDto(int Version, Uri Endpoint, byte[] Publi
 public record WalletEndpointReference(int Version, Uri Endpoint, IHDPublicKey PublicKey);
 
 /// <summary>
-/// Request to receive a certificate-slice from another wallet.
+/// Request to create a new external endpoint.
 /// </summary>
-public record ReceiveRequest()
+public record CreateExternalEndpointRequest()
 {
     /// <summary>
-    /// The public key of the receiving wallet.
+    /// The wallet reference to the wallet, one wants to create a link to.
     /// </summary>
-    public required byte[] PublicKey { get; init; }
+    public required WalletEndpointReference WalletReference { get; init; }
 
     /// <summary>
-    /// The sub-position of the publicKey used on the slice on the registry.
+    /// The text reference for the wallet, one wants to create a link to.
     /// </summary>
-    public required uint Position { get; init; }
-
-    /// <summary>
-    /// The id of the certificate.
-    /// </summary>
-    public required FederatedStreamId CertificateId { get; init; }
-
-    /// <summary>
-    /// The quantity of the slice.
-    /// </summary>
-    public required uint Quantity { get; init; }
-
-    /// <summary>
-    /// The random R used to generate the pedersen commitment with the quantity.
-    /// </summary>
-    public required byte[] RandomR { get; init; }
-
-    /// <summary>
-    /// List of hashed attributes, their values and salts so the receiver can access the data.
-    /// </summary>
-    public required IEnumerable<HashedAttribute> HashedAttributes { get; init; }
+    public required string TextReference { get; init; }
 }
 
 /// <summary>
-/// Hashed attribute with salt.
+/// Response to create a new external endpoint.
 /// </summary>
-public record HashedAttribute()
-{
-
-    /// <summary>
-    /// The key of the attribute.
-    /// </summary>
-    public required string Key { get; init; }
-
-    /// <summary>
-    /// The value of the attribute.
-    /// </summary>
-    public required string Value { get; init; }
-
-    /// <summary>
-    /// The salt used to hash the attribute.
-    /// </summary>
-    public required byte[] Salt { get; init; }
-}
-
-public record ReceiveResponse() { }
-
-/// <summary>
-/// A request to claim a production and consumption certificate.
-/// </summary>
-public record ClaimRequest()
+public record CreateExternalEndpointResponse()
 {
     /// <summary>
-    /// The id of the production certificate to claim.
+    /// The ID of the created external endpoint.
     /// </summary>
-    public required FederatedStreamId ProductionCertificateId { get; init; }
-
-    /// <summary>
-    /// The id of the consumption certificate to claim.
-    /// </summary>
-    public required FederatedStreamId ConsumptionCertificateId { get; init; }
-
-    /// <summary>
-    /// The quantity of the certificates to claim.
-    /// </summary>
-    public required uint Quantity { get; init; }
-}
-
-/// <summary>
-/// A response to a claim request.
-/// </summary>
-public record ClaimResponse()
-{
-    /// <summary>
-    /// The id of the claim request.
-    /// </summary>
-    public required Guid ClaimRequestId { get; init; }
+    public required Guid ReceiverId { get; init; }
 }
