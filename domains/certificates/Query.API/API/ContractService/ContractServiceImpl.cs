@@ -180,6 +180,4 @@ internal class ContractServiceImpl : IContractService
             ? null
             : contract;
     }
-
-    public Task<IReadOnlyList<CertificateIssuingContract>> GetByGSRN(string gsrn, CancellationToken cancellationToken) => unitOfWork.CertificateIssuingContractRepo.GetByGsrn(gsrn, cancellationToken);
 }
