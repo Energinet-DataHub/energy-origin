@@ -4,6 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.MeasurementsSyncer.Persistence;
+using DataContext.Models;
+using DataContext.ValueObjects;
+using MassTransit;
+using MeasurementEvents;
 using Measurements.V1;
 using Microsoft.Extensions.Logging;
 
@@ -13,39 +17,97 @@ public class MeasurementsSyncService
 {
     private readonly ISyncState syncState;
     private readonly Measurements.V1.Measurements.MeasurementsClient measurementsClient;
+    private readonly IBus bus;
+    private readonly SlidingWindowService slidingWindowService;
     private readonly ILogger<MeasurementsSyncService> logger;
 
-    public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISyncState syncState, Measurements.V1.Measurements.MeasurementsClient measurementsClient)
+    public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISyncState syncState,
+        Measurements.V1.Measurements.MeasurementsClient measurementsClient, IBus bus, SlidingWindowService slidingWindowService)
     {
         this.logger = logger;
         this.syncState = syncState;
         this.measurementsClient = measurementsClient;
+        this.bus = bus;
+        this.slidingWindowService = slidingWindowService;
     }
 
-    public async Task<List<Measurement>> FetchMeasurements(MeteringPointSyncInfo syncInfo,
-        CancellationToken cancellationToken)
+    public async Task FetchAndPublishMeasurements(string meteringPointOwner, MeteringPointTimeSeriesSlidingWindow slidingWindow,
+        CancellationToken stoppingToken)
     {
-        var dateFrom = await syncState.GetPeriodStartTime(syncInfo);
+        var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
+        var fetchedMeasurements = await FetchMeasurements(slidingWindow, meteringPointOwner, synchronizationPoint, stoppingToken);
 
-        if (dateFrom == null)
+        if (fetchedMeasurements.Count != 0)
         {
-            logger.LogInformation("Not possible to get start date from sync state for {@syncInfo}", syncInfo);
-            return new();
+            var measurementsToPublish = slidingWindowService.FilterMeasurements(slidingWindow, fetchedMeasurements);
+
+            if (measurementsToPublish.Any())
+            {
+                await PublishIntegrationEvents(measurementsToPublish, stoppingToken);
+            }
+
+            slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, synchronizationPoint);
+            await syncState.UpdateSlidingWindow(slidingWindow, stoppingToken);
+        }
+    }
+
+    private async Task PublishIntegrationEvents(List<Measurement> measurements, CancellationToken cancellationToken)
+    {
+        var integrationsEvents = MapToIntegrationEvents(measurements);
+        logger.LogInformation("Publishing {numberOfEnergyMeasuredIntegrationEvents} energyMeasuredIntegrationEvents to the Integration Bus",
+            integrationsEvents.Count);
+
+        foreach (var @event in integrationsEvents)
+        {
+            await bus.Publish(@event, cancellationToken);
         }
 
-        var now = DateTimeOffset.UtcNow;
-        var nearestHour = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
+        logger.LogInformation("Published {numberOfEnergyMeasuredIntegrationEvents} energyMeasuredIntegrationEvents to the Integration Bus",
+            integrationsEvents.Count);
+    }
 
-        if (dateFrom < nearestHour)
+    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<Measurement> measurements)
+    {
+        return measurements
+            .Select(it => new EnergyMeasuredIntegrationEvent(
+                    GSRN: it.Gsrn,
+                    DateFrom: it.DateFrom,
+                    DateTo: it.DateTo,
+                    Quantity: it.Quantity,
+                    Quality: MapQuality(it.Quality)
+                )
+            )
+            .ToList();
+    }
+
+
+    private static MeasurementQuality MapQuality(EnergyQuantityValueQuality q) =>
+        q switch
+        {
+            EnergyQuantityValueQuality.Measured => MeasurementQuality.Measured,
+            EnergyQuantityValueQuality.Estimated => MeasurementQuality.Estimated,
+            EnergyQuantityValueQuality.Calculated => MeasurementQuality.Calculated,
+            EnergyQuantityValueQuality.Revised => MeasurementQuality.Revised,
+            _ => throw new ArgumentOutOfRangeException(nameof(q), q, null)
+        };
+
+    public async Task<List<Measurement>> FetchMeasurements(MeteringPointTimeSeriesSlidingWindow slidingWindow, string meteringPointOwner,
+        UnixTimestamp synchronizationPoint,
+        CancellationToken cancellationToken)
+    {
+        var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
+        var synchronizationPointSeconds = synchronizationPoint.Seconds;
+
+        if (dateFrom < synchronizationPointSeconds)
         {
             try
             {
                 var request = new GetMeasurementsRequest
                 {
-                    DateFrom = dateFrom.Value,
-                    DateTo = nearestHour,
-                    Gsrn = syncInfo.GSRN,
-                    Subject = syncInfo.MeteringPointOwner,
+                    DateFrom = dateFrom,
+                    DateTo = synchronizationPointSeconds,
+                    Gsrn = slidingWindow.GSRN,
+                    Subject = meteringPointOwner,
                     Actor = Guid.NewGuid().ToString()
                 };
                 var res = await measurementsClient.GetMeasurementsAsync(request, cancellationToken: cancellationToken);
@@ -53,15 +115,9 @@ public class MeasurementsSyncService
                 logger.LogInformation(
                     "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
                     res.Measurements.Count,
-                    syncInfo.GSRN,
-                    DateTimeOffset.FromUnixTimeSeconds(dateFrom.Value).ToString("o"),
-                    DateTimeOffset.FromUnixTimeSeconds(nearestHour).ToString("o"));
-
-                if (res.Measurements.Any())
-                {
-                    var nextSyncPosition = res.Measurements.Max(m => m.DateTo);
-                    await syncState.SetSyncPosition(syncInfo.GSRN, nextSyncPosition);
-                }
+                    slidingWindow.GSRN,
+                    DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
+                    DateTimeOffset.FromUnixTimeSeconds(synchronizationPointSeconds).ToString("o"));
 
                 return res.Measurements.ToList();
             }
@@ -72,5 +128,35 @@ public class MeasurementsSyncService
         }
 
         return new();
+    }
+
+    public async Task HandleSingleSyncInfo(MeteringPointSyncInfo syncInfo, CancellationToken stoppingToken)
+    {
+        var slidingWindow = await GetSlidingWindow(syncInfo, stoppingToken);
+
+        if (slidingWindow is null)
+        {
+            logger.LogInformation("Not possible to get start date from sync state for {@syncInfo}", syncInfo);
+            return;
+        }
+
+        await FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, stoppingToken);
+    }
+
+    private async Task<MeteringPointTimeSeriesSlidingWindow?> GetSlidingWindow(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken)
+    {
+        var existingSlidingWindow = await syncState.GetMeteringPointSlidingWindow(syncInfo.GSRN, cancellationToken);
+        if (existingSlidingWindow is not null)
+        {
+            return existingSlidingWindow;
+        }
+
+        var existingSynchronizationPoint = await syncState.GetPeriodStartTime(syncInfo, cancellationToken);
+        if (existingSynchronizationPoint is not null)
+        {
+            return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(existingSynchronizationPoint.Value));
+        }
+
+        return null;
     }
 }

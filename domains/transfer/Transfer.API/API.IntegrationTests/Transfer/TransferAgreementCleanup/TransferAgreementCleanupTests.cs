@@ -89,9 +89,13 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
     [Fact]
     public async Task ShouldProduceActivityLogEntriesForReceiverAndSender()
     {
+
+        var customFactory = new TransferAgreementsApiWebApplicationFactory();
+        customFactory.WithCleanupWorker = false;
+        await customFactory.InitializeAsync();
         var receiverTin = "12345677";
-        using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using var scope = customFactory.Services.CreateScope();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
 
@@ -114,7 +118,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0, TimeSpan.FromSeconds(30));
         tas.Should().BeEmpty();
 
-        var senderClient = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
+        var senderClient = customFactory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
 
         var senderPost = await senderClient.PostAsJsonAsync("api/transfer/activity-log",
             new ActivityLogEntryFilterRequest(null, null, null));
@@ -123,7 +127,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         var senderLogs = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(senderLogResponseBody);
         senderLogs!.ActivityLogEntries.Should().ContainSingle();
 
-        var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = customFactory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
 
         var receiverPost = await receiverClient.PostAsJsonAsync("api/transfer/activity-log",
             new ActivityLogEntryFilterRequest(null, null, null));

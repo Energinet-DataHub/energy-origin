@@ -86,6 +86,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
             EnergyQuantity = quantity.ToString(CultureInfo.InvariantCulture),
             EnergyTimeSeriesMeasureUnit = "KWH",
             QuantityQuality = "E01",
+            QuantityMissingIndicator = "false"
         }).ToArray();
 
         var mockedResponse = GenerateMeterTimeSeriesResponse(quantities: quantities, dateOfReading: dateFrom.ToString("yyyy-MM-dd"));
@@ -150,6 +151,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
                 EnergyQuantity = hourlyValues[i].ToString(),
                 EnergyTimeSeriesMeasureUnit = "KWH",
                 QuantityQuality = "E01",
+                QuantityMissingIndicator = "false"
             });
         var mockedResponse = GenerateMeterTimeSeriesResponse(quantities: hourlyQuantities, dateOfReading: dateFrom.ToString("yyyy-MM-dd"), meterReadingOccurrence: occurenceOne);
 
@@ -171,6 +173,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
                 EnergyQuantity = quarterlyValues[i].ToString(),
                 EnergyTimeSeriesMeasureUnit = "KWH",
                 QuantityQuality = "E01",
+                QuantityMissingIndicator = "false"
             });
         eQuantity.EnergyQuantityValues.AddRange(quarterlyQuantities);
         quarterlyState.NonProfiledEnergyQuantities.Add(eQuantity);
@@ -365,7 +368,8 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
         int position = 1,
         string meterReadingOccurrence = "PT1H",
         string gsrn = "1234567890123456",
-        double quantity = 0.88)
+        double quantity = 0.88,
+        string quantityMissingIndicator = "false")
     {
         var mockedResponse = new MeterTimeSeriesResponse();
         mockedResponse.GetMeterTimeSeriesRejection = null;
@@ -394,7 +398,8 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
                 EnergyQuantity = quantity.ToString(CultureInfo.InvariantCulture),
                 EnergyTimeSeriesMeasureUnit = "KWH",
                 Position = position.ToString(), //Meaning timeposition. Meaning 01 hour with PT1H. Meaning 15 minutes with PT15M
-                QuantityQuality = "E01" //Measured
+                QuantityQuality = "E01", //Measured
+                QuantityMissingIndicator = quantityMissingIndicator
             };
             eQuantity.EnergyQuantityValues.Add(qValue);
         }

@@ -1,0 +1,29 @@
+﻿apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    access: proxy
+    type: prometheus
+    basicAuth: false
+    url: http://prometheus:9090
+    isDefault: true
+  - name: Jaeger
+    access: proxy
+    uid: jaeger
+    basicAuth: false
+    type: jaeger
+    url: http://jaeger:16686
+    isDefault: false
+  - name: Loki
+    type: loki
+    basicAuth: false
+    access: proxy
+    uid: P8E80F9AEF21F6940
+    url: http://loki:3100
+    isDefault: false
+    jsonData:
+      derivedFields:
+        - matcherRegex: '\"traceid\":\"([^"]+)\"'
+          name: TraceID
+          url: 'http://localhost:16686/trace/$${__value.raw}'
+          urlDisplayLabel: 'View Trace'
