@@ -34,8 +34,6 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<ConsumptionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
 
-        modelBuilder.Entity<Wallet>().HasKey(w => w.WalletId);
-
         modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().HasKey(s => new { s.GSRN });
         modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().OwnsOne(m => m.MissingMeasurements, d =>
         {
@@ -55,7 +53,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<SynchronizationPosition> SynchronizationPositions { get; set; }
     public DbSet<ConsumptionCertificate> ConsumptionCertificates { get; set; }
     public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
-    public DbSet<Wallet> Wallets { get; set; }
     public DbSet<MeteringPointTimeSeriesSlidingWindow> MeteringPointTimeSeriesSlidingWindows { get; set; }
 
 }

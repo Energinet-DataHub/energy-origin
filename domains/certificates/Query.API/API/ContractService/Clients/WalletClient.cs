@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -13,11 +14,12 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOriginClients.Models;
 
-namespace ProjectOriginClients;
+namespace API.ContractService.Clients;
 
 public interface IWalletClient
 {
     Task<CreateWalletResponse> CreateWallet(string ownerSubject, CancellationToken cancellationToken);
+    Task<ResultList<WalletRecord>> GetWallets(string ownerSubject, CancellationToken cancellationToken);
     Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, string ownerSubject, CancellationToken cancellationToken);
 }
 
@@ -52,6 +54,29 @@ public class WalletClient : IWalletClient
             throw new HttpRequestException("Failed to create wallet.");
 
         return (await res.Content.ReadFromJsonAsync<CreateWalletResponse>())!;
+    }
+
+    public async Task<ResultList<WalletRecord>> GetWallets(string ownerSubject, CancellationToken cancellationToken)
+    {
+        ValidateHttpContext();
+        SetAuthorizationHeader();
+        ValidateOwnerAndSubjectMatch(ownerSubject);
+
+        var response = await client.GetFromJsonAsync<ResultList<WalletRecordDto>>("/wallet-api/v1/wallets", cancellationToken);
+
+        if (response == null)
+            throw new HttpRequestException("Failed to get wallets.");
+
+        var result = new ResultList<WalletRecord>
+        {
+            Result = response.Result.Select(r => new WalletRecord
+            {
+                Id = r.Id,
+                PublicKey = new Secp256k1Algorithm().ImportHDPublicKey(r.PublicKey)
+            }).ToList(),
+            Metadata = response.Metadata
+        };
+        return result;
     }
 
     public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, string ownerSubject, CancellationToken cancellationToken)
@@ -91,6 +116,22 @@ public class WalletClient : IWalletClient
             throw new HttpRequestException("Owner must match subject");
     }
 }
+
+/// <summary>
+/// A wallet record
+/// </summary>
+public record WalletRecord()
+{
+    public required Guid Id { get; init; }
+    public required IHDPublicKey PublicKey { get; init; }
+}
+
+public record WalletRecordDto()
+{
+    public required Guid Id { get; init; }
+    public required byte[] PublicKey { get; init; }
+}
+
 public record CreateWalletRequest()
 {
     /// <summary>

@@ -9,7 +9,6 @@ namespace API.UnitOfWork;
 public interface IUnitOfWork : IAsyncDisposable
 {
     ICertificateIssuingContractRepository CertificateIssuingContractRepo { get; }
-    IWalletRepository WalletRepo { get; }
     IActivityLogEntryRepository ActivityLogEntryRepo { get; }
 
     Task SaveAsync();
@@ -20,7 +19,6 @@ public class UnitOfWork : IUnitOfWork
     private ApplicationDbContext context;
     private IActivityLogEntryRepository activityLogEntryRepo = null!;
     private ICertificateIssuingContractRepository certificateIssuingContractRepo = null!;
-    private IWalletRepository walletRepo = null!;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -32,14 +30,6 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return certificateIssuingContractRepo ??= new CertificateIssuingContractRepository(context);
-        }
-    }
-
-    public IWalletRepository WalletRepo
-    {
-        get
-        {
-            return walletRepo ??= new WalletRepository(context);
         }
     }
 

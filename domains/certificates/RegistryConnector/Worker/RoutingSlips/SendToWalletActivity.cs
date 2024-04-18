@@ -7,7 +7,7 @@ using DataContext;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ProjectOriginClients;
+using ProjectOriginClients.Models;
 
 namespace RegistryConnector.Worker.RoutingSlips;
 

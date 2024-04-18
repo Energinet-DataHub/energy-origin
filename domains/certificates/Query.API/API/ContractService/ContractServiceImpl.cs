@@ -52,24 +52,25 @@ internal class ContractServiceImpl : IContractService
             return new ContractAlreadyExists(overlappingContract);
         }
 
-        var wallet = await unitOfWork.WalletRepo.GetWalletByOwnerSubject(user.Subject, cancellationToken);
-        if (wallet == null)
+        var wallets = await walletClient.GetWallets(user.Subject.ToString(), cancellationToken);
+
+        var walletId = wallets.Result.FirstOrDefault()?.Id;
+        if (walletId == null)
         {
             var createWalletResponse = await walletClient.CreateWallet(user.Subject.ToString(), cancellationToken);
 
             if (createWalletResponse == null)
                 throw new ApplicationException("Failed to create wallet.");
 
-            wallet = new Wallet(user.Subject, createWalletResponse.WalletId);
-            await unitOfWork.WalletRepo.AddWallet(wallet);
-            await unitOfWork.SaveAsync();
+            walletId = createWalletResponse.WalletId;
         }
 
         var contractNumber = contracts.Any()
             ? contracts.Max(c => c.ContractNumber) + 1
             : 0;
 
-        var walletDepositEndpoint = await walletClient.CreateWalletEndpoint(wallet.WalletId, user.Subject.ToString(), cancellationToken);
+        var walletDepositEndpoint =
+            await walletClient.CreateWalletEndpoint(walletId.Value, user.Subject.ToString(), cancellationToken);
 
         var contract = CertificateIssuingContract.Create(
             contractNumber,
