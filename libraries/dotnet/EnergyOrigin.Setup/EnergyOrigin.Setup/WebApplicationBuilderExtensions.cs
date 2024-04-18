@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,9 +13,10 @@ public static class WebApplicationBuilderExtensions
 {
     public static void AddSerilog(this WebApplicationBuilder builder)
     {
-        var log = new LoggerConfiguration()
-            .Filter.ByExcluding("RequestPath like '/health%'")
-            .Filter.ByExcluding("RequestPath like '/metrics%'");
+        LoggerConfiguration log = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("TraceId", () => Activity.Current?.TraceId.ToString())
+            .Enrich.WithProperty("SpanId", () => Activity.Current?.SpanId.ToString());
 
         var console = builder.Environment.IsDevelopment()
             ? log.WriteTo.Console()
@@ -29,6 +31,8 @@ public static class WebApplicationBuilderExtensions
         var log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
             .Filter.ByExcluding("RequestPath like '/metrics%'")
+            .Enrich.WithProperty("TraceId", () => Activity.Current?.TraceId.ToString())
+            .Enrich.WithProperty("SpanId", () => Activity.Current?.SpanId.ToString())
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning);
 
         var console = builder.Environment.IsDevelopment()
