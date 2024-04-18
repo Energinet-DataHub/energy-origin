@@ -10,7 +10,7 @@ namespace EnergyOrigin.Setup;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static void AddSerilogWithOpenTelemetry(this WebApplicationBuilder builder)
+    public static void AddSerilog(this WebApplicationBuilder builder)
     {
         var log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
@@ -24,7 +24,7 @@ public static class WebApplicationBuilderExtensions
         builder.Logging.AddSerilog(console.CreateLogger());
     }
 
-    public static void AddSerilogWithOpenTelemetryWithoutOutboxLogs(this WebApplicationBuilder builder)
+    public static void AddSerilogWithoutOutboxLogs(this WebApplicationBuilder builder)
     {
         var log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
