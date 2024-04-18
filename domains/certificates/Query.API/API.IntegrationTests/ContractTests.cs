@@ -478,7 +478,41 @@ public sealed class ContractTests :
     }
 
     [Fact]
-    public async Task MultipleEditEndDate_Updated()
+    public async Task UpdateEndDate_OverlappingContract_ReturnsConflict()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var subject = Guid.NewGuid().ToString();
+        var client = factory.CreateAuthenticatedClient(subject);
+
+        var startDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new { gsrn, startDate = startDate, endDate = endDate };
+        using var createResponse = await client.PostAsJsonAsync("api/certificates/contracts", body);
+
+        var startDate1 = DateTimeOffset.Now.AddDays(7).ToUnixTimeSeconds();
+        var endDate1 = DateTimeOffset.Now.AddDays(9).ToUnixTimeSeconds();
+        var body1 = new { gsrn, startDate = startDate1, endDate = endDate1 };
+        using var createResponse1 = await client.PostAsJsonAsync("api/certificates/contracts", body1);
+
+        var id = createResponse.Headers.Location?.PathAndQuery.Split("/").Last();
+
+        var newEndDate = DateTimeOffset.Now.AddDays(8).ToUnixTimeSeconds();
+        var contracts = new List<EditContractEndDate>
+        {
+            new() { Id = Guid.Parse(id!), EndDate = newEndDate },
+        };
+
+        var response = await client.PutAsJsonAsync("api/certificates/contracts", new MultipleEditContract()
+        {
+            Contracts = contracts
+        });
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task UpdateEndDate_MultipleContracts_ReturnsOk()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
