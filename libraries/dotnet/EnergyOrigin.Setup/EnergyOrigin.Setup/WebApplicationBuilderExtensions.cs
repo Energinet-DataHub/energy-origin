@@ -10,34 +10,32 @@ namespace EnergyOrigin.Setup;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static void AddSerilog(
-        this WebApplicationBuilder builder)
+    public static void AddSerilogWithOpenTelemetry(this WebApplicationBuilder builder)
     {
-        LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
+        var log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
-            .Filter.ByExcluding("RequestPath like '/metrics%'");
+            .Filter.ByExcluding("RequestPath like '/metrics%'"));
 
-        loggerConfiguration = builder.Environment.IsDevelopment() ?
-            loggerConfiguration.WriteTo.Console() :
-            loggerConfiguration.WriteTo.Console(new JsonFormatter());
+        var console = builder.Environment.IsDevelopment()
+            ? log.WriteTo.Console()
+            : log.WriteTo.Console(new JsonFormatter());
 
         builder.Logging.ClearProviders();
-        builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+        builder.Logging.AddSerilog(console.CreateLogger());
     }
 
-    public static void AddSerilogWithoutOutboxLogs(
-        this WebApplicationBuilder builder)
+    public static void AddSerilogWithOpenTelemetryWithoutOutboxLogs(this WebApplicationBuilder builder)
     {
-        LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
+        var log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
             .Filter.ByExcluding("RequestPath like '/metrics%'")
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning);
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning));
 
-        loggerConfiguration = builder.Environment.IsDevelopment() ?
-            loggerConfiguration.WriteTo.Console() :
-            loggerConfiguration.WriteTo.Console(new JsonFormatter());
+        var console = builder.Environment.IsDevelopment()
+            ? log.WriteTo.Console()
+            : log.WriteTo.Console(new JsonFormatter());
 
         builder.Logging.ClearProviders();
-        builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
+        builder.Logging.AddSerilog(console.CreateLogger());
     }
 }
