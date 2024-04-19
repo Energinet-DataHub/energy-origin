@@ -1,8 +1,8 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Shared;
@@ -13,6 +13,7 @@ using API.Transfer.Api.Services;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NSubstitute;
+using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
@@ -155,12 +156,13 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         return createdProposal!.Id;
     }
 
-    private IProjectOriginWalletService SetupPoWalletServiceMock()
+    private IWalletClient SetupPoWalletServiceMock()
     {
-        var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
-        poWalletServiceMock.CreateWalletDepositEndpoint(Arg.Any<AuthenticationHeaderValue>()).Returns("SomeToken");
-        poWalletServiceMock.CreateReceiverDepositEndpoint(Arg.Any<AuthenticationHeaderValue>(), Arg.Any<string>(), Arg.Any<string>()).Returns(Guid.NewGuid());
+        var walletClientMock = Substitute.For<IWalletClient>();
+        walletClientMock.CreateWallet(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new WalletEndpointReference(1, new Uri("http://someUrl"), new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()));
+        walletClientMock.CreateExternalEndpoint(Arg.Any<string>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
 
-        return poWalletServiceMock;
+        return walletClientMock;
     }
 }

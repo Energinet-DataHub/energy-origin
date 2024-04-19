@@ -35,12 +35,25 @@ public class ClaimServiceTests
         using var cts = new CancellationTokenSource();
 
         claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
-        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new List<GranularCertificate>
+
+        ResultList<GranularCertificate> certs = new ResultList<GranularCertificate>()
         {
-            consumptionCertificate1,
-            consumptionCertificate2,
-            productionCertificate
-        }).AndDoes(_ => cts.Cancel());
+            Result = new List<GranularCertificate>
+            {
+                consumptionCertificate1,
+                consumptionCertificate2,
+                productionCertificate
+            },
+            Metadata = new PageInfo
+            {
+                Count = 3,
+                Offset = 0,
+                Total = 3,
+                Limit = 100
+            }
+        };
+
+        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(certs).AndDoes(_ => cts.Cancel());
 
         var claimService = new ClaimService(logger, claimRepository, walletClient, new Shuffler(1), metricsMock, cacheMock);
 
@@ -60,22 +73,35 @@ public class ClaimServiceTests
         var cacheMock = Substitute.For<AutomationCache>();
 
         var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
-        var start = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
-        var end = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow.AddHours(1));
+        var start = DateTimeOffset.UtcNow;
+        var end = DateTimeOffset.UtcNow.AddHours(1);
         uint consumptionQuantity = 40;
         uint productionQuantity = 70;
-        var consumptionCertificate1 = BuildCertificate(start, end, GranularCertificateType.Consumption, consumptionQuantity);
-        var consumptionCertificate2 = BuildCertificate(start, end, GranularCertificateType.Consumption, consumptionQuantity);
-        var productionCertificate = BuildCertificate(start, end, GranularCertificateType.Production, productionQuantity);
+        var consumptionCertificate1 = BuildCertificate(start, end, CertificateType.Consumption, consumptionQuantity);
+        var consumptionCertificate2 = BuildCertificate(start, end, CertificateType.Consumption, consumptionQuantity);
+        var productionCertificate = BuildCertificate(start, end, CertificateType.Production, productionQuantity);
         using var cts = new CancellationTokenSource();
 
-        claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
-        walletClient.GetGranularCertificates(Arg.Any<Guid>()).Returns(new List<GranularCertificate>
+        ResultList<GranularCertificate> certs = new ResultList<GranularCertificate>()
         {
-            consumptionCertificate1,
-            consumptionCertificate2,
-            productionCertificate
-        }).AndDoes(_ => cts.Cancel());
+            Result = new List<GranularCertificate>
+            {
+                consumptionCertificate1,
+                consumptionCertificate2,
+                productionCertificate
+            },
+            Metadata = new PageInfo
+            {
+                Count = 3,
+                Offset = 0,
+                Total = 3,
+                Limit = 100
+            }
+        };
+
+        claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
+
+        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(certs).AndDoes(_ => cts.Cancel());
 
         var claimService = new ClaimService(logger, claimRepository, walletClient, new Shuffler(1), metricsMock, cacheMock);
 

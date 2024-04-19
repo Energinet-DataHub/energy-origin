@@ -179,15 +179,15 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return client;
     }
 
-    public HttpClient CreateAuthenticatedClient(IProjectOriginWalletService poWalletServiceMock, string sub, string tin = "11223344", string name = "Peter Producent",
+    public HttpClient CreateAuthenticatedClient(IWalletClient walletClientMock, string sub, string tin = "11223344", string name = "Peter Producent",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Peter Producent A/S", string apiVersion = "20240103")
     {
         var client = WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
             {
-                services.Remove(services.First(s => s.ImplementationType == typeof(ProjectOriginWalletService)));
-                services.AddScoped(_ => poWalletServiceMock);
+                services.Remove(services.First(s => s.ServiceType == typeof(IWalletClient)));
+                services.AddScoped(_ => walletClientMock);
             });
         }).CreateClient();
         AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, cpn: cpn, apiVersion);

@@ -26,8 +26,8 @@ public class TransferAgreementsControllerTests
     private readonly TransferAgreementsController controller;
     private readonly ITransferAgreementRepository mockTransferAgreementRepository = Substitute.For<ITransferAgreementRepository>();
     private readonly ITransferAgreementProposalRepository mockTransferAgreementProposalRepository = Substitute.For<ITransferAgreementProposalRepository>();
-    private readonly IProjectOriginWalletService mockProjectOriginWalletDepositEndpointService = Substitute.For<IProjectOriginWalletService>();
     private readonly IActivityLogEntryRepository mockActivityLogRepository = Substitute.For<IActivityLogEntryRepository>();
+    private readonly IWalletClient mockWalletClient = Substitute.For<IWalletClient>();
     private readonly IUnitOfWork mockUnitOfWork = Substitute.For<IUnitOfWork>();
 
     private const string UserClaimNameScope = "userScope";
@@ -83,8 +83,7 @@ public class TransferAgreementsControllerTests
         mockHttpContextAccessor.HttpContext.Returns(mockContext);
 
         controller = new TransferAgreementsController(
-            mockProjectOriginWalletDepositEndpointService,
-            mockHttpContextAccessor,
+            mockWalletClient,
             mockUnitOfWork)
         {
             ControllerContext = new ControllerContext { HttpContext = mockHttpContextAccessor.HttpContext! }

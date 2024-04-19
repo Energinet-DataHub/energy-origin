@@ -11,7 +11,6 @@ using Audit.Core;
 using DataContext.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using ProjectOrigin.WalletSystem.V1;
 
 namespace API.Transfer;
 
@@ -63,11 +62,10 @@ public static class Startup
                     })
                 ));
 
-        services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
-        services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
+        services.AddHttpClient<IWalletClient>((sp, c) =>
         {
-            var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-            o.Address = new Uri(options.WalletUrl);
+            var cvrOptions = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+            c.BaseAddress = new Uri(cvrOptions.WalletUrl);
         });
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
