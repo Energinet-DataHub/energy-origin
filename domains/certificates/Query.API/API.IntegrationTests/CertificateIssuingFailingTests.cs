@@ -76,7 +76,7 @@ public sealed class CertificateIssuingFailingTests :
 
         var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(factory.ConnectionString)
             .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
+        await using var dbContext = new ApplicationDbContext(contextOptions);
 
         var cert = await RepeatedlyQueryProductionCertsUntilRejected(dbContext, 1);
 
