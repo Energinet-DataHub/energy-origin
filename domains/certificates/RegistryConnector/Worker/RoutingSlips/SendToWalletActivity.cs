@@ -26,8 +26,8 @@ public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
 
     public async Task<ExecutionResult> Execute(ExecuteContext<SendToWalletArguments> context)
     {
-        logger.LogInformation("Sending slice to Wallet with url {WalletUrl} for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
-            context.Arguments.WalletUrl, context.Arguments.ReceiveRequest.CertificateId.StreamId, context.TrackingNumber);
+        logger.LogInformation("Sending slice to Wallet with url {WalletUrl} for certificate id {certificateId}. TrackingNumber: {trackingNumber}. MessageId: {messageId}",
+            context.Arguments.WalletUrl, context.Arguments.ReceiveRequest.CertificateId.StreamId, context.TrackingNumber, context.MessageId);
 
         using var client = httpClientFactory.CreateClient();
         var requestStr = JsonSerializer.Serialize(context.Arguments.ReceiveRequest);
@@ -37,8 +37,8 @@ public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
         var res = await client.PostAsync(context.Arguments.WalletUrl, content);
         res.EnsureSuccessStatusCode();
 
-        logger.LogInformation("Slice sent to Wallet for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
-            context.Arguments.ReceiveRequest.CertificateId.StreamId, context.TrackingNumber);
+        logger.LogInformation("Slice sent to Wallet for certificate id {certificateId}. TrackingNumber: {trackingNumber}. MessageId: {messageId}",
+            context.Arguments.ReceiveRequest.CertificateId.StreamId, context.TrackingNumber, context.MessageId);
 
         return context.Completed();
     }

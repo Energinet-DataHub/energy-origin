@@ -96,7 +96,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
             BuildRoutingSlip(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
 
-            logger.LogInformation("Created production certificate for {Message}", message);
+            logger.LogInformation("Created production certificate with id {certificateId} for {Message}", productionCertificate.Id, message);
         }
         else if (matchingContract.MeteringPointType == MeteringPointType.Consumption)
         {
@@ -128,7 +128,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
             BuildRoutingSlip(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
 
-            logger.LogInformation("Created consumption certificate for {Message}", message);
+            logger.LogInformation("Created consumption certificate with id {certificateId} for {Message}", consumptionCertificate.Id, message);
         }
         else
             throw new CertificateDomainException(string.Format("Unsupported metering point type {0} for message {1}",
