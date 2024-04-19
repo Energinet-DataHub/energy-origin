@@ -1,9 +1,12 @@
 using API.Configurations;
 using API.ContractService.Clients;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using ProjectOrigin.WalletSystem.V1;
 using System;
-using ProjectOriginClients;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace API.ContractService;
 
@@ -23,10 +26,21 @@ public static class Startup
 
         services.AddWalletOptions();
 
-        services.AddHttpClient<IWalletClient, WalletClient>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<IOptions<WalletOptions>>().Value;
-            client.BaseAddress = new Uri(options.Url);
-        });
+        services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
+            {
+                var options = sp.GetRequiredService<IOptions<WalletOptions>>().Value;
+                o.Address = new Uri(options.Url);
+                o.ChannelOptionsActions.Add(channelOptions => channelOptions.UnsafeUseInsecureChannelCallCredentials = true);
+            })
+            .AddCallCredentials((context, metadata, sp) =>
+            {
+                var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+                if (AuthenticationHeaderValue.TryParse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"], out var authentication))
+                {
+                    metadata.Add("Authorization", $"{authentication.Scheme} {authentication.Parameter}");
+                }
+
+                return Task.CompletedTask;
+            });
     }
 }
