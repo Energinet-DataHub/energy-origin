@@ -1,6 +1,7 @@
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using Google.Protobuf;
 using MassTransit;
 using MassTransit.Courier.Contracts;
 using MeasurementEvents;
@@ -9,12 +10,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.PedersenCommitment;
 using ProjectOrigin.Registry.V1;
+using ProjectOrigin.WalletSystem.V1;
 using ProjectOriginClients;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ProjectOriginClients.Models;
 using RegistryConnector.Worker.Exceptions;
 using RegistryConnector.Worker.RoutingSlips;
 
@@ -181,16 +181,11 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
         var receiveRequest = new ReceiveRequest
         {
-            CertificateId = new FederatedStreamId
-            {
-                Registry = transaction.Header.FederatedStreamId.Registry,
-                StreamId = new Guid(transaction.Header.FederatedStreamId.StreamId.Value)
-            },
+            CertificateId = transaction.Header.FederatedStreamId,
             Quantity = commitment.Message,
-            RandomR = commitment.BlindingValue.ToArray(),
-            Position = walletDepositEndpointPosition,
-            PublicKey = matchingContract.WalletPublicKey,
-            HashedAttributes = new List<HashedAttribute>()
+            RandomR = ByteString.CopyFrom(commitment.BlindingValue),
+            WalletDepositEndpointPublicKey = ByteString.CopyFrom(matchingContract.WalletPublicKey),
+            WalletDepositEndpointPosition = walletDepositEndpointPosition
         };
         AddActivity<SendToWalletActivity, SendToWalletArguments>(builder,
             new SendToWalletArguments(matchingContract.WalletUrl, receiveRequest));

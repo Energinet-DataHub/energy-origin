@@ -68,7 +68,7 @@ namespace DataContext.Migrations
                     b.HasIndex("GSRN", "ContractNumber")
                         .IsUnique();
 
-                    b.ToTable("Contracts", (string)null);
+                    b.ToTable("Contracts");
                 });
 
             modelBuilder.Entity("DataContext.Models.ConsumptionCertificate", b =>
@@ -113,7 +113,7 @@ namespace DataContext.Migrations
                     b.HasIndex("Gsrn", "DateFrom", "DateTo")
                         .IsUnique();
 
-                    b.ToTable("ConsumptionCertificates", (string)null);
+                    b.ToTable("ConsumptionCertificates");
                 });
 
             modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
@@ -126,7 +126,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("GSRN");
 
-                    b.ToTable("MeteringPointTimeSeriesSlidingWindows", (string)null);
+                    b.ToTable("MeteringPointTimeSeriesSlidingWindows");
                 });
 
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
@@ -171,7 +171,7 @@ namespace DataContext.Migrations
                     b.HasIndex("Gsrn", "DateFrom", "DateTo")
                         .IsUnique();
 
-                    b.ToTable("ProductionCertificates", (string)null);
+                    b.ToTable("ProductionCertificates");
                 });
 
             modelBuilder.Entity("DataContext.Models.SynchronizationPosition", b =>
@@ -184,7 +184,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("GSRN");
 
-                    b.ToTable("SynchronizationPositions", (string)null);
+                    b.ToTable("SynchronizationPositions");
                 });
 
             modelBuilder.Entity("EnergyOrigin.ActivityLog.DataContext.ActivityLogEntry", b =>
@@ -237,7 +237,7 @@ namespace DataContext.Migrations
                     b.HasIndex("OrganizationTin")
                         .HasAnnotation("SqlServer:Clustered", false);
 
-                    b.ToTable("ActivityLogs", (string)null);
+                    b.ToTable("ActivityLogs");
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
@@ -286,7 +286,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("Delivered");
 
-                    b.ToTable("InboxState", (string)null);
+                    b.ToTable("InboxState");
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
@@ -377,7 +377,7 @@ namespace DataContext.Migrations
                     b.HasIndex("InboxMessageId", "InboxConsumerId", "SequenceNumber")
                         .IsUnique();
 
-                    b.ToTable("OutboxMessage", (string)null);
+                    b.ToTable("OutboxMessage");
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxState", b =>
@@ -407,12 +407,12 @@ namespace DataContext.Migrations
 
                     b.HasIndex("Created");
 
-                    b.ToTable("OutboxState", (string)null);
+                    b.ToTable("OutboxState");
                 });
 
             modelBuilder.Entity("DataContext.Models.CertificateIssuingContract", b =>
                 {
-                    b.OwnsOne("DataContext.Models.CertificateIssuingContract.Technology#DataContext.ValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("CertificateIssuingContractId")
                                 .HasColumnType("uuid");
@@ -427,7 +427,7 @@ namespace DataContext.Migrations
 
                             b1.HasKey("CertificateIssuingContractId");
 
-                            b1.ToTable("Contracts", (string)null);
+                            b1.ToTable("Contracts");
 
                             b1.WithOwner()
                                 .HasForeignKey("CertificateIssuingContractId");
@@ -438,7 +438,7 @@ namespace DataContext.Migrations
 
             modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
                 {
-                    b.OwnsOne("DataContext.Models.MeteringPointTimeSeriesSlidingWindow.MissingMeasurements#System.Collections.Generic.List<DataContext.Models.MeasurementInterval>", "MissingMeasurements", b1 =>
+                    b.OwnsOne("System.Collections.Generic.List<DataContext.Models.MeasurementInterval>", "MissingMeasurements", b1 =>
                         {
                             b1.Property<string>("MeteringPointTimeSeriesSlidingWindowGSRN")
                                 .HasColumnType("text");
@@ -448,7 +448,7 @@ namespace DataContext.Migrations
 
                             b1.HasKey("MeteringPointTimeSeriesSlidingWindowGSRN");
 
-                            b1.ToTable("MeteringPointTimeSeriesSlidingWindows", (string)null);
+                            b1.ToTable("MeteringPointTimeSeriesSlidingWindows");
 
                             b1.ToJson("MissingMeasurements");
 
@@ -462,7 +462,7 @@ namespace DataContext.Migrations
 
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
                 {
-                    b.OwnsOne("DataContext.Models.ProductionCertificate.Technology#DataContext.ValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("ProductionCertificateId")
                                 .HasColumnType("uuid");
@@ -477,7 +477,7 @@ namespace DataContext.Migrations
 
                             b1.HasKey("ProductionCertificateId");
 
-                            b1.ToTable("ProductionCertificates", (string)null);
+                            b1.ToTable("ProductionCertificates");
 
                             b1.WithOwner()
                                 .HasForeignKey("ProductionCertificateId");
