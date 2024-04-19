@@ -16,10 +16,12 @@ public record SendToWalletArguments(string WalletUrl, ReceiveRequest ReceiveRequ
 public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
 {
     private readonly ILogger<SendToWalletActivity> logger;
+    private readonly IHttpClientFactory httpClientFactory;
 
-    public SendToWalletActivity(ILogger<SendToWalletActivity> logger)
+    public SendToWalletActivity(ILogger<SendToWalletActivity> logger, IHttpClientFactory httpClientFactory)
     {
         this.logger = logger;
+        this.httpClientFactory = httpClientFactory;
     }
 
     public async Task<ExecutionResult> Execute(ExecuteContext<SendToWalletArguments> context)
@@ -27,7 +29,7 @@ public class SendToWalletActivity : IExecuteActivity<SendToWalletArguments>
         logger.LogInformation("Sending slice to Wallet with url {WalletUrl} for certificate id {certificateId}. TrackingNumber: {trackingNumber}",
             context.Arguments.WalletUrl, context.Arguments.ReceiveRequest.CertificateId.StreamId, context.TrackingNumber);
 
-        var client = new HttpClient();
+        using var client = httpClientFactory.CreateClient();
         var requestStr = JsonSerializer.Serialize(context.Arguments.ReceiveRequest);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
