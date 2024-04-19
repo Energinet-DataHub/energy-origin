@@ -3,8 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
 using API.MeasurementsSyncer.Persistence;
-using DataContext.Models;
 using DataContext.ValueObjects;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,20 +13,20 @@ namespace API.MeasurementsSyncer;
 
 public class MeasurementsSyncerWorker : BackgroundService
 {
-    private readonly ISyncState syncState;
+    private readonly IContractState syncState;
     private readonly ILogger<MeasurementsSyncerWorker> logger;
-    private readonly MeasurementsSyncService measurementsSyncService;
+    private readonly IServiceScopeFactory scopeFactory;
     private readonly MeasurementsSyncOptions options;
 
     public MeasurementsSyncerWorker(
         ILogger<MeasurementsSyncerWorker> logger,
-        ISyncState syncState,
-        MeasurementsSyncService measurementsSyncService,
-        IOptions<MeasurementsSyncOptions> options)
+        IContractState syncState,
+        IOptions<MeasurementsSyncOptions> options,
+        IServiceScopeFactory scopeFactory)
     {
         this.syncState = syncState;
         this.logger = logger;
-        this.measurementsSyncService = measurementsSyncService;
+        this.scopeFactory = scopeFactory;
         this.options = options.Value;
     }
 
@@ -53,38 +53,15 @@ public class MeasurementsSyncerWorker : BackgroundService
             var syncInfos = await syncState.GetSyncInfos(stoppingToken);
             foreach (var syncInfo in syncInfos)
             {
-                var slidingWindow = await GetSlidingWindow(syncInfo);
-
-                if (slidingWindow is null)
-                {
-                    logger.LogInformation("Not possible to get start date from sync state for {@syncInfo}", syncInfo);
-                    continue;
-                }
-
-                await measurementsSyncService.FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, stoppingToken);
+                using var scope = scopeFactory.CreateScope();
+                var scopedSyncService = scope.ServiceProvider.GetService<MeasurementsSyncService>()!;
+                await scopedSyncService.HandleSingleSyncInfo(syncInfo, stoppingToken);
             }
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error in MeasurementSyncer periodic task");
         }
-    }
-
-    private async Task<MeteringPointTimeSeriesSlidingWindow?> GetSlidingWindow(MeteringPointSyncInfo syncInfo)
-    {
-        var existingSlidingWindow = await syncState.GetMeteringPointSlidingWindow(syncInfo.GSRN);
-        if (existingSlidingWindow is not null)
-        {
-            return existingSlidingWindow;
-        }
-
-        var existingSynchronizationPoint = await syncState.GetPeriodStartTime(syncInfo);
-        if (existingSynchronizationPoint is not null)
-        {
-            return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(existingSynchronizationPoint.Value));
-        }
-
-        return null;
     }
 
     private async Task SleepToNearestHour(CancellationToken cancellationToken)

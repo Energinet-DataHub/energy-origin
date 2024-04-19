@@ -7,14 +7,14 @@ namespace API.MeasurementsSyncer.Persistence;
 
 public interface ISyncState
 {
-    Task<long?> GetPeriodStartTime(MeteringPointSyncInfo syncInfo);
+    Task<long?> GetPeriodStartTime(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken);
 
-    Task SetSyncPosition(string gsrn, long syncedTo);
+    Task SetSyncPosition(string gsrn, long syncedTo, CancellationToken cancellationToken);
 
-    Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn);
+    Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn, CancellationToken cancellationToken);
 
-    Task UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow slidingWindow);
+    Task UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow slidingWindow, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken);
+
 
 }

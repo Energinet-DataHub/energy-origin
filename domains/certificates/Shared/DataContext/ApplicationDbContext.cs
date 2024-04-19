@@ -35,7 +35,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ConsumptionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
 
         modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().HasKey(s => new { s.GSRN });
-        modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().OwnsOne(m => m.MissingMeasurements, d => d.ToJson());
+        modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().OwnsOne(m => m.MissingMeasurements, d =>
+        {
+            d.ToJson();
+            d.OwnsMany(x => x.Intervals);
+        });
 
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxMessageEntity();
@@ -50,6 +54,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ConsumptionCertificate> ConsumptionCertificates { get; set; }
     public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
     public DbSet<MeteringPointTimeSeriesSlidingWindow> MeteringPointTimeSeriesSlidingWindows { get; set; }
+
 }
 
 // Some of the EF Core Tools commands (for example, the Migrations commands) require a derived DbContext instance to be created at design time

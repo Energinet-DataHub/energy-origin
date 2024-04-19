@@ -12,22 +12,20 @@ namespace API.MeasurementsSyncer.Persistence;
 
 public class SyncState : ISyncState
 {
-    private readonly IDbContextFactory<ApplicationDbContext> factory;
+    private readonly ApplicationDbContext dbContext;
     private readonly ILogger<SyncState> logger;
 
-    public SyncState(IDbContextFactory<ApplicationDbContext> factory, ILogger<SyncState> logger)
+    public SyncState(ApplicationDbContext dbContext, ILogger<SyncState> logger)
     {
-        this.factory = factory;
+        this.dbContext = dbContext;
         this.logger = logger;
     }
 
-    public async Task<long?> GetPeriodStartTime(MeteringPointSyncInfo syncInfo)
+    public async Task<long?> GetPeriodStartTime(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken)
     {
         try
         {
-            var dbContext = await factory.CreateDbContextAsync();
-
-            var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(syncInfo.GSRN);
+            var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(syncInfo.GSRN, cancellationToken);
 
             return synchronizationPosition != null
                 ? Math.Max(synchronizationPosition.SyncedTo, syncInfo.StartSyncDate.ToUnixTimeSeconds())
@@ -40,11 +38,9 @@ public class SyncState : ISyncState
         }
     }
 
-    public async Task SetSyncPosition(string gsrn, long syncedTo)
+    public async Task SetSyncPosition(string gsrn, long syncedTo, CancellationToken cancellationToken)
     {
-        var dbContext = await factory.CreateDbContextAsync();
-
-        var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(gsrn);
+        var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(gsrn, cancellationToken);
         if (synchronizationPosition != null)
         {
             synchronizationPosition.SyncedTo = syncedTo;
@@ -55,24 +51,26 @@ public class SyncState : ISyncState
             synchronizationPosition = new SynchronizationPosition { GSRN = gsrn, SyncedTo = syncedTo };
             await dbContext.AddAsync(synchronizationPosition);
         }
-
         await dbContext.SaveChangesAsync();
     }
 
-    public async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn)
+    public async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn, CancellationToken cancellationToken)
     {
-        var dbContext = await factory.CreateDbContextAsync();
-
         var slidingWindow = await dbContext.MeteringPointTimeSeriesSlidingWindows.FindAsync(gsrn);
-
         return slidingWindow;
     }
 
-    public async Task UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow slidingWindow)
+    public async Task UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow slidingWindow, CancellationToken cancellationToken)
     {
-        var dbContext = await factory.CreateDbContextAsync();
-
-        dbContext.MeteringPointTimeSeriesSlidingWindows.Update(slidingWindow);
+        var existingWindow = await GetMeteringPointSlidingWindow(slidingWindow.GSRN, cancellationToken);
+        if (existingWindow is null)
+        {
+            dbContext.MeteringPointTimeSeriesSlidingWindows.Add(slidingWindow);
+        }
+        else
+        {
+            dbContext.MeteringPointTimeSeriesSlidingWindows.Update(slidingWindow);
+        }
 
         await dbContext.SaveChangesAsync();
     }
@@ -81,9 +79,7 @@ public class SyncState : ISyncState
     {
         try
         {
-            await using var context = await factory.CreateDbContextAsync(cancellationToken);
-
-            var allContracts = await context.Contracts.AsNoTracking().ToListAsync(cancellationToken);
+            var allContracts = await dbContext.Contracts.AsNoTracking().ToListAsync(cancellationToken);
 
             //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
             var syncInfos = allContracts.GroupBy(c => c.GSRN)

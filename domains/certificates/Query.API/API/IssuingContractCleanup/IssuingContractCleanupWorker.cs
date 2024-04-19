@@ -1,9 +1,7 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DataContext;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,7 +9,7 @@ using Microsoft.Extensions.Options;
 namespace API.IssuingContractCleanup;
 
 public class IssuingContractCleanupWorker(
-    IDbContextFactory<ApplicationDbContext> contextFactory,
+    IServiceScopeFactory scopeFactory,
     ILogger<IssuingContractCleanupWorker> logger,
     IOptions<IssuingContractCleanupOptions> options) : BackgroundService
 {
@@ -22,30 +20,24 @@ public class IssuingContractCleanupWorker(
         while (!stoppingToken.IsCancellationRequested)
         {
             logger.LogInformation("IssuingContractCleanupWorker running at: {Time}", DateTimeOffset.UtcNow);
-
-            try
-            {
-                await DeleteExpiredIssuingContracts(stoppingToken);
-            }
-            catch (Exception e)
-            {
-                logger.LogError("Something went wrong with the IssuingContractCleanupWorker: {Exception}", e);
-            }
-
+            await PerformPeriodicTask(stoppingToken);
             await Sleep(stoppingToken);
         }
     }
 
-    private async Task DeleteExpiredIssuingContracts(CancellationToken cancellationToken)
+    private async Task PerformPeriodicTask(CancellationToken stoppingToken)
     {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+        try
+        {
+            using var scope = scopeFactory.CreateScope();
+            var scopedCleanupService = scope.ServiceProvider.GetService<IssuingContractCleanupService>()!;
+            await scopedCleanupService.RunCleanupJob(stoppingToken);
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Something went wrong with the IssuingContractCleanupWorker: {Exception}", e);
+        }
 
-        var expiredIssuingContracts = context.Contracts
-            .Where(c => c.EndDate != null && c.EndDate < DateTimeOffset.UtcNow);
-
-        context.Contracts.RemoveRange(expiredIssuingContracts);
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     private async Task Sleep(CancellationToken cancellationToken)
