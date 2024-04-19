@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-using ProjectOriginClients;
 using registryConnector::RegistryConnector.Worker;
 using Testcontainers.PostgreSql;
 
@@ -17,10 +16,13 @@ public class ProjectOriginStack : RegistryFixture
     private readonly Lazy<IContainer> walletContainer;
     private readonly PostgreSqlContainer postgresContainer;
 
+    private const int WalletHttpPort = 5000;
+
     public ProjectOriginStack()
     {
         postgresContainer = new PostgreSqlBuilder()
             .WithImage("postgres:15.2")
+            .WithNetwork(Network)
             .WithDatabase("postgres")
             .WithUsername("postgres")
             .WithPassword("postgres")
@@ -36,14 +38,19 @@ public class ProjectOriginStack : RegistryFixture
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
             return new ContainerBuilder()
-                .WithImage($"ghcr.io/project-origin/wallet-server:0.4.0")
-                .WithPortBinding(hostPort, GrpcPort)
+                .WithImage("ghcr.io/project-origin/wallet-server:0.10.3")
+                .WithNetwork(Network)
+                .WithPortBinding(hostPort, WalletHttpPort)
                 .WithCommand("--serve", "--migrate")
-                .WithEnvironment("ConnectionStrings__Database", connectionString)
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{hostPort}/")
                 .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
+                .WithEnvironment("RestApiOptions__PathBase", "/wallet-api")
+                .WithEnvironment("Otlp__Endpoint", "http://foo")
+                .WithEnvironment("Otlp__Enabled", "false")
+                .WithEnvironment("ConnectionStrings__Database", connectionString)
                 .WithEnvironment("MessageBroker__Type", "InMemory")
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(GrpcPort))
+                .WithEnvironment("jwt__AllowAnyJwtToken", "true")
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(WalletHttpPort))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
         });
@@ -58,7 +65,7 @@ public class ProjectOriginStack : RegistryFixture
         WalletUrl = WalletUrl
     };
 
-    public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(GrpcPort)).Uri.ToString();
+    public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(WalletHttpPort)).Uri.ToString();
 
     public override async Task InitializeAsync()
     {
@@ -66,9 +73,12 @@ public class ProjectOriginStack : RegistryFixture
         await walletContainer.Value.StartAsync();
     }
 
-    public override async Task DisposeAsync() =>
+    public override async Task DisposeAsync()
+    {
+        await base.DisposeAsync();
+
         await Task.WhenAll(
-            base.DisposeAsync(),
             postgresContainer.DisposeAsync().AsTask(),
             walletContainer.Value.DisposeAsync().AsTask());
+    }
 }

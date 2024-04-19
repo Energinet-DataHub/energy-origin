@@ -4,17 +4,16 @@ using API.IntegrationTests.Mocks;
 using API.IntegrationTests.Testcontainers;
 using DataContext.ValueObjects;
 using FluentAssertions;
-using Google.Protobuf.WellKnownTypes;
 using MassTransit;
 using MeasurementEvents;
-using ProjectOrigin.WalletSystem.V1;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ProjectOriginClients.Models;
 using Testing.Helpers;
 using Testing.Testcontainers;
 using Xunit;
-using Attribute = ProjectOrigin.WalletSystem.V1.Attribute;
 
 namespace API.IntegrationTests;
 
@@ -55,11 +54,11 @@ public sealed class CertificateIssuingTests :
     {
         var subject = Guid.NewGuid().ToString();
 
-        var (client, metadata) = factory.CreateWalletClient(subject);
+        var client = factory.CreateWalletClient(subject);
 
-        var queryResponse = await client.QueryGranularCertificatesAsync(new QueryRequest(), metadata);
+        var queryResponse = await client.QueryCertificates();
 
-        queryResponse.GranularCertificates.Should().BeEmpty();
+        queryResponse.Should().BeEmpty();
     }
 
     [Fact]
@@ -82,35 +81,23 @@ public sealed class CertificateIssuingTests :
 
         await factory.GetMassTransitBus().Publish(measurement);
 
-        var (client, metadata) = factory.CreateWalletClient(subject);
+        var client = factory.CreateWalletClient(subject);
 
-        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Any());
 
-        queryResponse.GranularCertificates.Should().HaveCount(1);
-        var granularCertificate = queryResponse.GranularCertificates.Single();
+        queryResponse.Should().HaveCount(1);
+        var granularCertificate = queryResponse.Single();
 
-        granularCertificate.Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight));
-        granularCertificate.End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
+        granularCertificate.Start.Should().Be(utcMidnight.ToUnixTimeSeconds());
+        granularCertificate.End.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
         granularCertificate.GridArea.Should().Be("DK1");
         granularCertificate.Quantity.Should().Be(42);
-        granularCertificate.Type.Should().Be(GranularCertificateType.Production);
-        granularCertificate.Attributes.Should().BeEquivalentTo(new[]
+        granularCertificate.CertificateType.Should().Be(CertificateType.Production);
+        granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute
-            {
-                Key = "FuelCode",
-                Value = "F01040100"
-            },
-            new Attribute
-            {
-                Key = "TechCode",
-                Value = "T010000"
-            },
-            new Attribute
-            {
-                Key = "AssetId",
-                Value = gsrn
-            }
+            { "assetId", gsrn },
+            { "fuelCode", "F01040100" },
+            { "techCode", "T010000" }
         });
     }
 
@@ -134,25 +121,21 @@ public sealed class CertificateIssuingTests :
 
         await factory.GetMassTransitBus().Publish(measurement);
 
-        var (client, metadata) = factory.CreateWalletClient(subject);
+        var client = factory.CreateWalletClient(subject);
 
-        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Any());
 
-        queryResponse.GranularCertificates.Should().HaveCount(1);
-        var granularCertificate = queryResponse.GranularCertificates.Single();
+        queryResponse.Should().HaveCount(1);
+        var granularCertificate = queryResponse.Single();
 
-        granularCertificate.Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight));
-        granularCertificate.End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
+        granularCertificate.Start.Should().Be(utcMidnight.ToUnixTimeSeconds());
+        granularCertificate.End.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
         granularCertificate.GridArea.Should().Be("DK1");
         granularCertificate.Quantity.Should().Be(42);
-        granularCertificate.Type.Should().Be(GranularCertificateType.Consumption);
-        granularCertificate.Attributes.Should().BeEquivalentTo(new[]
+        granularCertificate.CertificateType.Should().Be(CertificateType.Consumption);
+        granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute
-            {
-                Key = "AssetId",
-                Value = gsrn
-            }
+            { "assetId", gsrn }
         });
     }
 
@@ -186,35 +169,23 @@ public sealed class CertificateIssuingTests :
 
         await factory.GetMassTransitBus().PublishBatch(new[] { measurement1, measurement2 });
 
-        var (client, metadata) = factory.CreateWalletClient(subject);
+        var client = factory.CreateWalletClient(subject);
 
-        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Any());
 
-        queryResponse.GranularCertificates.Should().HaveCount(1);
-        var granularCertificate = queryResponse.GranularCertificates.Single();
+        queryResponse.Should().HaveCount(1);
+        var granularCertificate = queryResponse.Single();
 
-        granularCertificate.Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight));
-        granularCertificate.End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
+        granularCertificate.Start.Should().Be(utcMidnight.ToUnixTimeSeconds());
+        granularCertificate.End.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
         granularCertificate.GridArea.Should().Be("DK1");
         granularCertificate.Quantity.Should().Be(42);
-        granularCertificate.Type.Should().Be(GranularCertificateType.Production);
-        granularCertificate.Attributes.Should().BeEquivalentTo(new[]
+        granularCertificate.CertificateType.Should().Be(CertificateType.Production);
+        granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute
-            {
-                Key = "FuelCode",
-                Value = "F01040100"
-            },
-            new Attribute
-            {
-                Key = "TechCode",
-                Value = "T010000"
-            },
-            new Attribute
-            {
-                Key = "AssetId",
-                Value = gsrn
-            }
+            { "assetId", gsrn },
+            { "fuelCode", "F01040100" },
+            { "techCode", "T010000" }
         });
     }
 
@@ -248,25 +219,21 @@ public sealed class CertificateIssuingTests :
 
         await factory.GetMassTransitBus().PublishBatch(new[] { measurement1, measurement2 });
 
-        var (client, metadata) = factory.CreateWalletClient(subject);
+        var client = factory.CreateWalletClient(subject);
 
-        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Any());
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Any());
 
-        queryResponse.GranularCertificates.Should().HaveCount(1);
-        var granularCertificate = queryResponse.GranularCertificates.Single();
+        queryResponse.Should().HaveCount(1);
+        var granularCertificate = queryResponse.Single();
 
-        granularCertificate.Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight));
-        granularCertificate.End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
+        granularCertificate.Start.Should().Be(utcMidnight.ToUnixTimeSeconds());
+        granularCertificate.End.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
         granularCertificate.GridArea.Should().Be("DK1");
         granularCertificate.Quantity.Should().Be(42);
-        granularCertificate.Type.Should().Be(GranularCertificateType.Consumption);
-        granularCertificate.Attributes.Should().BeEquivalentTo(new[]
+        granularCertificate.CertificateType.Should().Be(CertificateType.Consumption);
+        granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute
-            {
-                Key = "AssetId",
-                Value = gsrn
-            }
+            { "assetId", gsrn }
         });
     }
 
@@ -294,70 +261,70 @@ public sealed class CertificateIssuingTests :
 
         await factory.GetMassTransitBus().PublishBatch(measurements);
 
-        var (client, metadata) = factory.CreateWalletClient(subject);
+        var client = factory.CreateWalletClient(subject);
 
-        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Count == measurementCount);
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Count() == measurementCount);
 
-        var granularCertificates = queryResponse.GranularCertificates.OrderBy(gc => gc.Start).ToArray();
+        var granularCertificates = queryResponse.OrderBy(gc => gc.Start).ToArray();
 
-        granularCertificates[0].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(0)));
-        granularCertificates[0].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
+        granularCertificates[0].Start.Should().Be(utcMidnight.ToUnixTimeSeconds());
+        granularCertificates[0].End.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
         granularCertificates[0].GridArea.Should().Be("DK1");
         granularCertificates[0].Quantity.Should().Be(42);
-        granularCertificates[0].Type.Should().Be(GranularCertificateType.Production);
-        granularCertificates[0].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[0].CertificateType.Should().Be(CertificateType.Production);
+        granularCertificates[0].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "FuelCode", Value = "F01040100" },
-            new Attribute { Key = "TechCode", Value = "T010000" },
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn },
+            { "fuelCode", "F01040100" },
+            { "techCode", "T010000" }
         });
 
-        granularCertificates[1].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
-        granularCertificates[1].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(2)));
+        granularCertificates[1].Start.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
+        granularCertificates[1].End.Should().Be(utcMidnight.AddHours(2).ToUnixTimeSeconds());
         granularCertificates[1].GridArea.Should().Be("DK1");
         granularCertificates[1].Quantity.Should().Be(43);
-        granularCertificates[1].Type.Should().Be(GranularCertificateType.Production);
-        granularCertificates[1].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[1].CertificateType.Should().Be(CertificateType.Production);
+        granularCertificates[1].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "FuelCode", Value = "F01040100" },
-            new Attribute { Key = "TechCode", Value = "T010000" },
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn },
+            { "fuelCode", "F01040100" },
+            { "techCode", "T010000" }
         });
 
-        granularCertificates[2].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(2)));
-        granularCertificates[2].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(3)));
+        granularCertificates[2].Start.Should().Be(utcMidnight.AddHours(2).ToUnixTimeSeconds());
+        granularCertificates[2].End.Should().Be(utcMidnight.AddHours(3).ToUnixTimeSeconds());
         granularCertificates[2].GridArea.Should().Be("DK1");
         granularCertificates[2].Quantity.Should().Be(44);
-        granularCertificates[2].Type.Should().Be(GranularCertificateType.Production);
-        granularCertificates[2].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[2].CertificateType.Should().Be(CertificateType.Production);
+        granularCertificates[2].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "FuelCode", Value = "F01040100" },
-            new Attribute { Key = "TechCode", Value = "T010000" },
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn },
+            { "fuelCode", "F01040100" },
+            { "techCode", "T010000" }
         });
 
-        granularCertificates[3].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(3)));
-        granularCertificates[3].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(4)));
+        granularCertificates[3].Start.Should().Be(utcMidnight.AddHours(3).ToUnixTimeSeconds());
+        granularCertificates[3].End.Should().Be(utcMidnight.AddHours(4).ToUnixTimeSeconds());
         granularCertificates[3].GridArea.Should().Be("DK1");
         granularCertificates[3].Quantity.Should().Be(45);
-        granularCertificates[3].Type.Should().Be(GranularCertificateType.Production);
-        granularCertificates[3].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[3].CertificateType.Should().Be(CertificateType.Production);
+        granularCertificates[3].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "FuelCode", Value = "F01040100" },
-            new Attribute { Key = "TechCode", Value = "T010000" },
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn },
+            { "fuelCode", "F01040100" },
+            { "techCode", "T010000" }
         });
 
-        granularCertificates[4].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(4)));
-        granularCertificates[4].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(5)));
+        granularCertificates[4].Start.Should().Be(utcMidnight.AddHours(4).ToUnixTimeSeconds());
+        granularCertificates[4].End.Should().Be(utcMidnight.AddHours(5).ToUnixTimeSeconds());
         granularCertificates[4].GridArea.Should().Be("DK1");
         granularCertificates[4].Quantity.Should().Be(46);
-        granularCertificates[4].Type.Should().Be(GranularCertificateType.Production);
-        granularCertificates[4].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[4].CertificateType.Should().Be(CertificateType.Production);
+        granularCertificates[4].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "FuelCode", Value = "F01040100" },
-            new Attribute { Key = "TechCode", Value = "T010000" },
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn },
+            { "fuelCode", "F01040100" },
+            { "techCode", "T010000" }
         });
     }
 
@@ -386,60 +353,60 @@ public sealed class CertificateIssuingTests :
 
         await factory.GetMassTransitBus().PublishBatch(measurements);
 
-        var (client, metadata) = factory.CreateWalletClient(subject);
+        var client = factory.CreateWalletClient(subject);
 
-        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(metadata, res => res.GranularCertificates.Count == measurementCount);
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Count() == measurementCount);
 
-        var granularCertificates = queryResponse.GranularCertificates.OrderBy(gc => gc.Start).ToArray();
+        var granularCertificates = queryResponse.OrderBy(gc => gc.Start).ToArray();
 
-        granularCertificates[0].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(0)));
-        granularCertificates[0].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
+        granularCertificates[0].Start.Should().Be(utcMidnight.AddHours(0).ToUnixTimeSeconds());
+        granularCertificates[0].End.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
         granularCertificates[0].GridArea.Should().Be("DK1");
         granularCertificates[0].Quantity.Should().Be(42);
-        granularCertificates[0].Type.Should().Be(GranularCertificateType.Consumption);
-        granularCertificates[0].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[0].CertificateType.Should().Be(CertificateType.Consumption);
+        granularCertificates[0].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn }
         });
 
-        granularCertificates[1].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(1)));
-        granularCertificates[1].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(2)));
+        granularCertificates[1].Start.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
+        granularCertificates[1].End.Should().Be(utcMidnight.AddHours(2).ToUnixTimeSeconds());
         granularCertificates[1].GridArea.Should().Be("DK1");
         granularCertificates[1].Quantity.Should().Be(43);
-        granularCertificates[1].Type.Should().Be(GranularCertificateType.Consumption);
-        granularCertificates[1].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[1].CertificateType.Should().Be(CertificateType.Consumption);
+        granularCertificates[1].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn }
         });
 
-        granularCertificates[2].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(2)));
-        granularCertificates[2].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(3)));
+        granularCertificates[2].Start.Should().Be(utcMidnight.AddHours(2).ToUnixTimeSeconds());
+        granularCertificates[2].End.Should().Be(utcMidnight.AddHours(3).ToUnixTimeSeconds());
         granularCertificates[2].GridArea.Should().Be("DK1");
         granularCertificates[2].Quantity.Should().Be(44);
-        granularCertificates[2].Type.Should().Be(GranularCertificateType.Consumption);
-        granularCertificates[2].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[2].CertificateType.Should().Be(CertificateType.Consumption);
+        granularCertificates[2].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn }
         });
 
-        granularCertificates[3].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(3)));
-        granularCertificates[3].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(4)));
+        granularCertificates[3].Start.Should().Be(utcMidnight.AddHours(3).ToUnixTimeSeconds());
+        granularCertificates[3].End.Should().Be(utcMidnight.AddHours(4).ToUnixTimeSeconds());
         granularCertificates[3].GridArea.Should().Be("DK1");
         granularCertificates[3].Quantity.Should().Be(45);
-        granularCertificates[3].Type.Should().Be(GranularCertificateType.Consumption);
-        granularCertificates[3].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[3].CertificateType.Should().Be(CertificateType.Consumption);
+        granularCertificates[3].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn }
         });
 
-        granularCertificates[4].Start.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(4)));
-        granularCertificates[4].End.Should().Be(Timestamp.FromDateTimeOffset(utcMidnight.AddHours(5)));
+        granularCertificates[4].Start.Should().Be(utcMidnight.AddHours(4).ToUnixTimeSeconds());
+        granularCertificates[4].End.Should().Be(utcMidnight.AddHours(5).ToUnixTimeSeconds());
         granularCertificates[4].GridArea.Should().Be("DK1");
         granularCertificates[4].Quantity.Should().Be(46);
-        granularCertificates[4].Type.Should().Be(GranularCertificateType.Consumption);
-        granularCertificates[4].Attributes.Should().BeEquivalentTo(new[]
+        granularCertificates[4].CertificateType.Should().Be(CertificateType.Consumption);
+        granularCertificates[4].Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            new Attribute { Key = "AssetId", Value = gsrn }
+            { "assetId", gsrn }
         });
     }
 }

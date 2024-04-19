@@ -1,3 +1,4 @@
+using System;
 using API.ContractService.Repositories;
 using DataContext;
 using EnergyOrigin.ActivityLog.API;
@@ -5,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace API.UnitOfWork;
 
-public interface IUnitOfWork
+public interface IUnitOfWork : IAsyncDisposable
 {
     ICertificateIssuingContractRepository CertificateIssuingContractRepo { get; }
     IActivityLogEntryRepository ActivityLogEntryRepo { get; }
@@ -43,5 +44,10 @@ public class UnitOfWork : IUnitOfWork
     public Task SaveAsync()
     {
         return context.SaveChangesAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await context.DisposeAsync();
     }
 }
