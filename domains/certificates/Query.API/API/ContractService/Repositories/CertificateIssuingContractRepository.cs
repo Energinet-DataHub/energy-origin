@@ -28,9 +28,19 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
         dbContext.Update(certificateIssuingContract);
     }
 
+    public void UpdateRange(List<CertificateIssuingContract> certificateIssuingContracts)
+    {
+        dbContext.UpdateRange(certificateIssuingContracts);
+    }
+
     public async Task<IReadOnlyList<CertificateIssuingContract>> GetByGsrn(string gsrn, CancellationToken cancellationToken) =>
         await dbContext.Contracts
             .Where(c => c.GSRN == gsrn)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<CertificateIssuingContract>> GetByGsrn(List<string> gsrn, CancellationToken cancellationToken) =>
+        await dbContext.Contracts
+            .Where(c => gsrn.Contains(c.GSRN))
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<CertificateIssuingContract>> GetAllMeteringPointOwnerContracts(
@@ -41,4 +51,7 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
 
     public Task<CertificateIssuingContract?> GetById(Guid id, CancellationToken cancellationToken) =>
         dbContext.Contracts.FindAsync(new object?[] { id }, cancellationToken).AsTask();
+
+    public Task<List<CertificateIssuingContract>> GetAllByIds(List<Guid> ids, CancellationToken cancellationToken) =>
+        dbContext.Contracts.Where(x => ids.Contains(x.Id)).ToListAsync(cancellationToken);
 }

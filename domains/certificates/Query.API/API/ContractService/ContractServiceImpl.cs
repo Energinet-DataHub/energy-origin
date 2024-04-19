@@ -13,6 +13,7 @@ using static API.ContractService.SetEndDateResult;
 using Technology = DataContext.ValueObjects.Technology;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.ActivityLog.DataContext;
+using Microsoft.IdentityModel.Tokens;
 using ProjectOriginClients;
 
 namespace API.ContractService;
@@ -130,35 +131,37 @@ internal class ContractServiceImpl : IContractService
     public async Task<SetEndDateResult> SetEndDate(List<(Guid id, UnixTimestamp? newEndDate)> contracts, UserDescriptor user, CancellationToken cancellationToken)
     {
         var meteringPointOwner = user.Subject.ToString();
+        var issuingContracts = await unitOfWork.CertificateIssuingContractRepo.GetAllByIds(contracts.Select(c => c.id).ToList(), cancellationToken);
 
-        foreach (var (id, newEndDate) in contracts)
+        if (issuingContracts.IsNullOrEmpty())
         {
-            var contract = await unitOfWork.CertificateIssuingContractRepo.GetById(id, cancellationToken);
+            return new NonExistingContract();
+        }
 
-            if (contract == null)
-            {
-                return new NonExistingContract();
-            }
+        var contractsByGsrn = await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(issuingContracts.Select(c => c.GSRN).ToList(), cancellationToken);
 
-            if (contract.MeteringPointOwner != meteringPointOwner)
+        foreach (var issuingContract in issuingContracts)
+        {
+            var newContract = contracts.Find(c => c.id == issuingContract.Id);
+
+            if (issuingContract.MeteringPointOwner != meteringPointOwner)
             {
                 return new MeteringPointOwnerNoMatch();
             }
 
-            if (newEndDate != null && newEndDate.ToDateTimeOffset() <= contract.StartDate)
+            if (newContract.newEndDate != null && newContract.newEndDate.ToDateTimeOffset() <= issuingContract.StartDate)
             {
-                return new EndDateBeforeStartDate(contract.StartDate, newEndDate.ToDateTimeOffset());
+                return new EndDateBeforeStartDate(issuingContract.StartDate, newContract.newEndDate.ToDateTimeOffset());
             }
-            var issuingContracts = await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(contract.GSRN, cancellationToken);
-            var overlappingContract = issuingContracts.FirstOrDefault(c => c.Overlaps(contract.StartDate, newEndDate?.ToDateTimeOffset()) && c.Id != contract.Id);
+            var overlappingContract = contractsByGsrn.FirstOrDefault(c =>  c.Overlaps(issuingContract.StartDate, newContract.newEndDate?.ToDateTimeOffset()) && c.Id != newContract.id);
 
             if (overlappingContract != null)
             {
                 return new OverlappingContract();
             }
 
-            contract.EndDate = newEndDate?.ToDateTimeOffset() ?? null;
-            unitOfWork.CertificateIssuingContractRepo.Update(contract);
+            issuingContract.EndDate = newContract.newEndDate?.ToDateTimeOffset() ?? null;
+
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
                 actorName: user.Name,
@@ -168,10 +171,10 @@ internal class ContractServiceImpl : IContractService
                 otherOrganizationName: string.Empty,
                 entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
                 actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-                entityId: contract.GSRN)
+                entityId: issuingContract.GSRN)
             );
         }
-
+        unitOfWork.CertificateIssuingContractRepo.UpdateRange(issuingContracts);
         await unitOfWork.SaveAsync();
         return new SetEndDateResult.Success();
     }
