@@ -7,14 +7,14 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
-public class UnhealthTests :
+public class UnhealthyTests :
     TestBase,
     IClassFixture<QueryApiWebApplicationFactory>,
     IClassFixture<PostgresContainer>
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public UnhealthTests(QueryApiWebApplicationFactory factory, PostgresContainer dbContainer)
+    public UnhealthyTests(QueryApiWebApplicationFactory factory, PostgresContainer dbContainer)
     {
         this.factory = factory;
         this.factory.RabbitMqOptions = null;

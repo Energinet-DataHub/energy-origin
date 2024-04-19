@@ -12,6 +12,7 @@ using Testcontainers.PostgreSql;
 
 namespace API.IntegrationTests.Testcontainers;
 
+
 public class ProjectOriginStack : RegistryFixture
 {
     private readonly Lazy<IContainer> walletContainer;
