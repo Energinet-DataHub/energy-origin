@@ -55,7 +55,7 @@ public sealed class CertificateIssuingFailingTests :
     }
 
     [Fact]
-    public async Task MeasurementFromProductionMeteringPointAddedToBus_WhenRegistryIsDown_RejectCertificate()
+    public async Task MeasurementFromProductionMeteringPointAddedToBus_WhenRegistryIsDown_RejectedCertificate()
     {
         var subject = Guid.NewGuid().ToString();
         var gsrn = GsrnHelper.GenerateRandom();

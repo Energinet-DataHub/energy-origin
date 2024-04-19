@@ -20,6 +20,7 @@ using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using FluentAssertions;
+using Grpc.Core;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -28,6 +29,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ProjectOrigin.WalletSystem.V1;
 using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests.Factories;
@@ -128,14 +130,15 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return client;
     }
 
-    public HttpClient CreateWalletClient(string subject)
+    public (WalletService.WalletServiceClient, Metadata metadata) CreateWalletClient(string subject)
     {
-        var client = new HttpClient();
-        client.BaseAddress = new Uri(WalletUrl);
         var authentication = new AuthenticationHeaderValue("Bearer", GenerateToken(sub: subject));
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authentication.Scheme, authentication.Parameter);
+        var metadata = new Metadata { { "Authorization", $"{authentication.Scheme} {authentication.Parameter}" } };
 
-        return client;
+        var channel = GrpcChannel.ForAddress(WalletUrl);
+        disposableChannels.Add(channel);
+
+        return (new WalletService.WalletServiceClient(channel), metadata);
     }
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();

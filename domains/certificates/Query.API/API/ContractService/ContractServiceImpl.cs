@@ -2,6 +2,7 @@ using API.ContractService.Clients;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using ProjectOrigin.WalletSystem.V1;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,23 +14,23 @@ using static API.ContractService.SetEndDateResult;
 using Technology = DataContext.ValueObjects.Technology;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.ActivityLog.DataContext;
-using ProjectOriginClients;
+using EnergyOrigin.ActivityLog.API;
 
 namespace API.ContractService;
 
 internal class ContractServiceImpl : IContractService
 {
     private readonly IMeteringPointsClient meteringPointsClient;
-    private readonly IWalletClient walletClient;
+    private readonly WalletService.WalletServiceClient walletServiceClient;
     private readonly IUnitOfWork unitOfWork;
 
     public ContractServiceImpl(
         IMeteringPointsClient meteringPointsClient,
-        IWalletClient walletClient,
+        WalletService.WalletServiceClient walletServiceClient,
         IUnitOfWork unitOfWork)
     {
         this.meteringPointsClient = meteringPointsClient;
-        this.walletClient = walletClient;
+        this.walletServiceClient = walletServiceClient;
         this.unitOfWork = unitOfWork;
     }
 
@@ -52,25 +53,12 @@ internal class ContractServiceImpl : IContractService
             return new ContractAlreadyExists(overlappingContract);
         }
 
-        var wallets = await walletClient.GetWallets(user.Subject.ToString(), cancellationToken);
-
-        var walletId = wallets.Result.FirstOrDefault()?.Id;
-        if (walletId == null)
-        {
-            var createWalletResponse = await walletClient.CreateWallet(user.Subject.ToString(), cancellationToken);
-
-            if (createWalletResponse == null)
-                throw new ApplicationException("Failed to create wallet.");
-
-            walletId = createWalletResponse.WalletId;
-        }
-
         var contractNumber = contracts.Any()
             ? contracts.Max(c => c.ContractNumber) + 1
             : 0;
 
-        var walletDepositEndpoint =
-            await walletClient.CreateWalletEndpoint(walletId.Value, user.Subject.ToString(), cancellationToken);
+        var response = await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest(), cancellationToken: cancellationToken);
+        var walletDepositEndpoint = response.WalletDepositEndpoint;
 
         var contract = CertificateIssuingContract.Create(
             contractNumber,
@@ -80,8 +68,8 @@ internal class ContractServiceImpl : IContractService
             meteringPointOwner,
             startDate,
             endDate,
-            walletDepositEndpoint.Endpoint.ToString(),
-            walletDepositEndpoint.PublicKey.Export().ToArray(),
+            walletDepositEndpoint.Endpoint,
+            walletDepositEndpoint.PublicKey.ToByteArray(),
             Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
 
         try
