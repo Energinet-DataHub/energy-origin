@@ -1,10 +1,11 @@
-﻿namespace API.Models;
+﻿using System;
+
+namespace API.Models;
 
 public class Client
 {
     public Guid Id { get; set; }
-    public string IdpClientId { get; set; }
-    public string Name { get; set; }
-    public ClientRole Role { get; set; }
-    public ICollection<Consent> Consents { get; set; }
+    public string IdpClientId { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public Role Role { get; set; }
 }
