@@ -6,6 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="EnergyOrigin.TokenValidation" Version="3.1.1" />
 		<PackageReference Include="Google.Protobuf" Version="3.26.1" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.62.0" />
 		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.62.0" />
@@ -22,6 +23,5 @@
 		<Protobuf Include="Protos/common.proto" ProtoRoot="Protos" GrpcServices="None" />
 		<Protobuf Include="Protos/electricity.proto" ProtoRoot="Protos" GrpcServices="None" />
 		<Protobuf Include="Protos/registry.proto" ProtoRoot="Protos" GrpcServices="Client" />
-		<Protobuf Include="Protos/wallet.proto" ProtoRoot="Protos" GrpcServices="Client" />
 	</ItemGroup>
 </Project>
