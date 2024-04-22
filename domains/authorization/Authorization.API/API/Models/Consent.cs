@@ -9,5 +9,7 @@ public class Consent
     public Organization Organization { get; set; } = new();
     public Guid ClientId { get; set; }
     public Client Client { get; set; } = new();
-    public DateTime ConsentDate { get; set; }
+    public DateTimeOffset ConsentDate { get; set; }
+    public ConsentStatus Status { get; set; }
+    public DateTimeOffset ExpiryDate { get; set; }
 }
