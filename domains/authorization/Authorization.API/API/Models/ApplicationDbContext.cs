@@ -18,7 +18,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasMany(o => o.Affiliations)
             .WithOne(a => a.Organization)
             .HasForeignKey(a => a.OrganizationId);
-
         modelBuilder.Entity<Organization>()
             .HasMany(o => o.Consents)
             .WithOne(c => c.Organization)
@@ -33,6 +32,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(c => c.Client)
             .WithMany()
             .HasForeignKey(c => c.ClientId);
+
+        modelBuilder.Entity<User>().HasIndex(u => u.IdpUserId).IsUnique();
+        modelBuilder.Entity<Organization>().HasIndex(o => o.IdpOrganizationId).IsUnique();
+        modelBuilder.Entity<Client>().HasIndex(c => c.IdpClientId).IsUnique();
+
+        modelBuilder.Entity<Consent>().Property(c => c.Status).HasDefaultValue(ConsentStatus.Active);
     }
 }
-
