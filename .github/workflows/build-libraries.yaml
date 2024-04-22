@@ -148,6 +148,17 @@ jobs:
             echo "name=$name"
           } >> "$GITHUB_ENV"
 
+      - name: Build the Docker image
+        run: |
+          docker build ${{ env.context }} --file ${{ env.docker }} --tag localbuild/${{ env.name }}:${{ env.version }}
+
+      - name: Scan the image and upload dependency results
+        uses: anchore/sbom-action@bb716408e75840bbb01e839347cd213767269d4a
+        with:
+          image: "localbuild/${{ env.name }}:${{ env.version }}"
+          artifact-name: "${{ env.name }}-${{ env.version }}.spdx.json"
+          dependency-snapshot: true
+
       - name: Push image
         uses: ./.github/actions/docker-build-and-push
         with:
