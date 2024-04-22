@@ -21,3 +21,4 @@ public static class Startup
         services.AddValidatorsFromAssemblyContaining<CreateContractValidator>();
     }
 }
+//snip snip
