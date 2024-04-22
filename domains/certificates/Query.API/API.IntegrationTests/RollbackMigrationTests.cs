@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using DataContext;
 using FluentAssertions;
@@ -5,23 +6,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests;
 
-public class RollbackMigrationTests :
-    TestBase,
-    IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<PostgresContainer>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class RollbackMigrationTests : TestBase
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public RollbackMigrationTests(QueryApiWebApplicationFactory factory, PostgresContainer dbContainer)
+    public RollbackMigrationTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
-        this.factory.ConnectionString = dbContainer.ConnectionString;
+        factory = integrationTestFixture.WebApplicationFactory;
     }
 
     [Fact]
