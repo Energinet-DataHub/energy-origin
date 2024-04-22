@@ -21,7 +21,6 @@ public class ActivityLogEntityIdIsNowAStringTests
     public ActivityLogEntityIdIsNowAStringTests(IntegrationTestFixture integrationTestFixture)
     {
         postgresContainer = integrationTestFixture.PostgresContainer;
-
     }
 
     [Fact]
