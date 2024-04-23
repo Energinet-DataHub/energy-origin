@@ -36,7 +36,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<User>().HasIndex(u => u.IdpUserId).IsUnique();
         modelBuilder.Entity<Organization>().HasIndex(o => o.IdpOrganizationId).IsUnique();
         modelBuilder.Entity<Client>().HasIndex(c => c.IdpClientId).IsUnique();
-
-        modelBuilder.Entity<Consent>().Property(c => c.Status).HasDefaultValue(ConsentStatus.Active);
     }
 }

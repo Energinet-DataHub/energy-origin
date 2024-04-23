@@ -10,6 +10,4 @@ public class Consent
     public Guid ClientId { get; set; }
     public Client Client { get; set; } = new();
     public DateTime ConsentDate { get; set; }
-    public ConsentStatus Status { get; set; }
-    public DateTime? ExpiryDate { get; set; }
 }
