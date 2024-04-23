@@ -1,17 +1,13 @@
-on:
-  pull_request:
-    branches:
-    - main
+on: [pull_request]
 
 jobs:
   zap_scan:
     runs-on: ubuntu-latest
-    name: Scan the webapplication
+    name: Scan the web application
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          ref: master
+        # No need to specify ref, it will automatically check out the PR's head
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.10.0
         with:
