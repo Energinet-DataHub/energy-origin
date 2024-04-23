@@ -18,7 +18,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
 {
     public string ConnectionString { get; set; } = "";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
-    public string OtlpReceiverEndpoint { get; set; } = "http://foo";
+    public string OtlpReceiverEndpoint { get; private set; } = "http://foo";
     public ProjectOriginOptions? ProjectOriginOptions { get; set; } = new()
     {
         RegistryName = "foo",

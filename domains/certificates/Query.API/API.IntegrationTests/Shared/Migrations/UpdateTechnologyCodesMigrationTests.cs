@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
@@ -6,21 +8,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
-using System;
-using System.Threading.Tasks;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-public class UpdateNullTechnologyCodesMigrationTests : IAsyncDisposable
+[Collection(IntegrationTestCollection.CollectionName)]
+public class UpdateNullTechnologyCodesMigrationTests
 {
-    private readonly PostgresContainer container = new();
+    private readonly DbContextOptions<ApplicationDbContext> options;
+
+    public UpdateNullTechnologyCodesMigrationTests(IntegrationTestFixture integrationTestFixture)
+    {
+        var dbTask = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbTask.ConnectionString).Options;
+    }
 
     [Fact]
     public async Task ApplyMigration_WhenContractsHaveEmptyTechnologyCodes_UpdatesFieldsCorrectly()
     {
-        await using var dbContext = await CreateDbContext();
+        await using var dbContext = GetDbContext();
 
         var migrator = dbContext.GetService<IMigrator>();
         await migrator.MigrateAsync("20231107095405_AddTechnologyToCertificateIssuingContract");
@@ -41,7 +47,7 @@ public class UpdateNullTechnologyCodesMigrationTests : IAsyncDisposable
         var applyMigration = () => migrator.MigrateAsync("20231115155411_UpdateNullTechnologyCodes");
         await applyMigration.Should().NotThrowAsync();
 
-        await using var newDbContext = await CreateDbContext();
+        await using var newDbContext = GetDbContext();
 
         var productionContractAfterMigration = await newDbContext.Contracts.FindAsync(productionContractId);
         productionContractAfterMigration!.Technology!.FuelCode.Should().Be("F00000000");
@@ -102,19 +108,8 @@ public class UpdateNullTechnologyCodesMigrationTests : IAsyncDisposable
         await dbContext.Database.ExecuteSqlRawAsync(contractQuery, contractFields);
     }
 
-    private async Task<ApplicationDbContext> CreateDbContext()
+    private ApplicationDbContext GetDbContext()
     {
-        await container.InitializeAsync();
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
-                                .UseNpgsql(container.ConnectionString)
-                                .Options;
-
-        var dbContext = new ApplicationDbContext(contextOptions);
-        return dbContext;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await container.DisposeAsync();
+        return new ApplicationDbContext(options);
     }
 }

@@ -8,44 +8,27 @@ using API.IntegrationTests.Attributes;
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
-using API.IntegrationTests.Testcontainers;
-using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog.API;
 using FluentAssertions;
 using Testing.Helpers;
-using Testing.Testcontainers;
 using Xunit;
 using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests;
 
+[Collection(IntegrationTestCollection.CollectionName)]
 [TestCaseOrderer(PriorityOrderer.TypeName, "API.IntegrationTests")]
-public sealed class ContractTests :
-    TestBase,
-    IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<PostgresContainer>,
-    IClassFixture<RabbitMqContainer>,
-    IClassFixture<MeasurementsWireMock>,
-    IClassFixture<ProjectOriginStack>
+public sealed class ContractTests : TestBase
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly MeasurementsWireMock measurementsWireMock;
 
-    public ContractTests(
-        QueryApiWebApplicationFactory factory,
-        PostgresContainer dbContainer,
-        RabbitMqContainer rabbitMqContainer,
-        MeasurementsWireMock measurementsWireMock,
-        ProjectOriginStack projectOriginStack)
+    public ContractTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.measurementsWireMock = measurementsWireMock;
-        this.factory = factory;
-        this.factory.ConnectionString = dbContainer.ConnectionString;
-        this.factory.MeasurementsUrl = measurementsWireMock.Url;
-        this.factory.RabbitMqOptions = rabbitMqContainer.Options;
-        this.factory.WalletUrl = projectOriginStack.WalletUrl;
+        factory = integrationTestFixture.WebApplicationFactory;
+        measurementsWireMock = integrationTestFixture.MeasurementsMock;
     }
 
     [Fact]

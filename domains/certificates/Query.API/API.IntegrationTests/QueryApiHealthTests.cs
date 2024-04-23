@@ -1,24 +1,18 @@
-using API.IntegrationTests.Factories;
 using System.Net;
 using System.Threading.Tasks;
-using Testing.Testcontainers;
+using API.IntegrationTests.Factories;
 using Xunit;
 
 namespace API.IntegrationTests;
 
-public class QueryApiHealthTests :
-    TestBase,
-    IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<PostgresContainer>,
-    IClassFixture<RabbitMqContainer>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class QueryApiHealthTests : TestBase
 {
     private readonly QueryApiWebApplicationFactory factory;
 
-    public QueryApiHealthTests(QueryApiWebApplicationFactory factory, RabbitMqContainer rabbitMqContainer, PostgresContainer dbContainer)
+    public QueryApiHealthTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
-        this.factory.RabbitMqOptions = rabbitMqContainer.Options;
-        this.factory.ConnectionString = dbContainer.ConnectionString;
+        factory = integrationTestFixture.WebApplicationFactory;
     }
 
     [Fact]
