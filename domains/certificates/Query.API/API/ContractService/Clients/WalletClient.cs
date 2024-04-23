@@ -117,9 +117,6 @@ public class WalletClient : IWalletClient
     }
 }
 
-/// <summary>
-/// A wallet record
-/// </summary>
 public record WalletRecord()
 {
     public required Guid Id { get; init; }
@@ -185,9 +182,6 @@ public record ReceiveRequest()
     public required IEnumerable<HashedAttribute> HashedAttributes { get; init; }
 }
 
-/// <summary>
-/// Hashed attribute with salt.
-/// </summary>
 public record HashedAttribute()
 {
 
