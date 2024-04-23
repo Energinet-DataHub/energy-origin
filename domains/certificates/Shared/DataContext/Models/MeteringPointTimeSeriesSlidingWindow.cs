@@ -60,7 +60,6 @@ public class MeteringPointTimeSeriesSlidingWindow
 
 public class MissingMeasurements
 {
-    //[NotMapped]
     public List<MeasurementInterval> Intervals { get; private set; }
 
     public MissingMeasurements()
