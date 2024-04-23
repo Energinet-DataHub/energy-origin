@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using FluentAssertions;
@@ -5,22 +8,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-public class AddTechnologyToCertificateIssuingContractMigrationTests : IAsyncDisposable
+[Collection(IntegrationTestCollection.CollectionName)]
+public class AddTechnologyToCertificateIssuingContractMigrationTests
 {
-    private readonly PostgresContainer container = new();
+    private readonly PostgresContainer postgresContainer;
+
+    public AddTechnologyToCertificateIssuingContractMigrationTests(IntegrationTestFixture integrationTestFixture)
+    {
+        postgresContainer = integrationTestFixture.PostgresContainer;
+    }
 
     [Fact]
     public async Task ApplyMigration_WhenExistingDataInDatabase_AddsTechnologyColumnsSuccessfully()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        await using var dbContext = GetDbContext();
 
         var migrator = dbContext.GetService<IMigrator>();
 
@@ -81,18 +87,9 @@ public class AddTechnologyToCertificateIssuingContractMigrationTests : IAsyncDis
         await dbContext.Database.ExecuteSqlRawAsync(contractQuery, contractFields);
     }
 
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
+    private ApplicationDbContext GetDbContext()
     {
-        await container.InitializeAsync();
-
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
-            .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
-        return dbContext;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await container.DisposeAsync();
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(postgresContainer.ConnectionString).Options;
+        return new ApplicationDbContext(contextOptions);
     }
 }

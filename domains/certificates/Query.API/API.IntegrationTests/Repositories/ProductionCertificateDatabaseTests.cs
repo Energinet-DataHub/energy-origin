@@ -1,26 +1,27 @@
-using API.IntegrationTests.Extensions;
+using System;
+using System.Linq;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 using Testing.Helpers;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class ProductionCertificateDatabaseTests : IClassFixture<PostgresContainer>, IDisposable
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ProductionCertificateDatabaseTests
 {
     private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public ProductionCertificateDatabaseTests(PostgresContainer dbContainer)
+    public ProductionCertificateDatabaseTests(IntegrationTestFixture integrationTestFixture)
     {
-        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
+        var emptyDb = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
         using var dbContext = new ApplicationDbContext(options);
         dbContext.Database.EnsureCreated();
+        dbContext.Database.ExecuteSqlRaw("truncate table public.\"ProductionCertificates\"");
     }
 
     [Fact]
@@ -193,13 +194,5 @@ public class ProductionCertificateDatabaseTests : IClassFixture<PostgresContaine
             var certificates = dbContext.ProductionCertificates.ToList();
             certificates.Should().BeEquivalentTo(new[] { productionCertificate1, productionCertificate2 });
         }
-    }
-
-    public void Dispose()
-    {
-        using var dbContext = new ApplicationDbContext(options);
-        dbContext.RemoveAll(d => d.ProductionCertificates);
-
-        GC.SuppressFinalize(this);
     }
 }

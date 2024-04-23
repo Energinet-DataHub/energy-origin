@@ -96,11 +96,11 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         });
     }
 
-    public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
+    public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
     {
         using var scope = Services.CreateScope();
         var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
-        return provider;
+        await withAction(provider);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
