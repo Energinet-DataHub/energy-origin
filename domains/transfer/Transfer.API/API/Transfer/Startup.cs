@@ -62,7 +62,7 @@ public static class Startup
                     })
                 ));
 
-        services.AddHttpClient<IWalletClient>((sp, c) =>
+        services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
         {
             var cvrOptions = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
             c.BaseAddress = new Uri(cvrOptions.WalletUrl);
