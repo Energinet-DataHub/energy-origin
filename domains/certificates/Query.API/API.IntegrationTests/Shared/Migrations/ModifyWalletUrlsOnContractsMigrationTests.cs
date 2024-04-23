@@ -29,6 +29,7 @@ public class ModifyWalletUrlsOnContractsMigrationTests
     {
         await using (var dbContext = GetDbContext())
         {
+            await dbContext.Contracts.ExecuteDeleteAsync();
             var migrator = dbContext.GetService<IMigrator>();
 
             await migrator.MigrateAsync("20240408104920_AddSlidingWindow");
