@@ -7,12 +7,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        # No need to specify ref, it will automatically check out the PR's head
       - name: ZAP Scan
         uses: zaproxy/action-full-scan@v0.10.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
           target: 'https://demo.energioprindelse.dk'
-          rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a'
