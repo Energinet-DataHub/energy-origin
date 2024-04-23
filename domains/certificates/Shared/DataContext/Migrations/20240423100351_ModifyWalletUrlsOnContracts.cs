@@ -17,7 +17,8 @@ namespace DataContext.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
+            migrationBuilder.Sql(
+                "UPDATE public.\"Contracts\" SET \"WalletUrl\" = REPLACE(\"WalletUrl\", '/v1/slices', '/wallet-api');");
         }
     }
 }
