@@ -1,26 +1,32 @@
-using DataContext;
-using EnergyOrigin.ActivityLog.DataContext;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using DataContext;
+using EnergyOrigin.ActivityLog.DataContext;
+using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using Testing.Testcontainers;
 using Xunit;
-using FluentAssertions;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-public class ActivityLogEntityIdIsNowAStringTests : IAsyncDisposable
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ActivityLogEntityIdIsNowAStringTests
 {
-    private readonly PostgresContainer container = new();
+    private readonly PostgresContainer postgresContainer;
+
+    public ActivityLogEntityIdIsNowAStringTests(IntegrationTestFixture integrationTestFixture)
+    {
+        postgresContainer = integrationTestFixture.PostgresContainer;
+    }
 
     [Fact]
     public async Task ApplyMigration_WhenDataExistsInDatabase()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        await using var dbContext = GetDbContext();
 
         var migrator = dbContext.GetService<IMigrator>();
 
@@ -80,18 +86,9 @@ public class ActivityLogEntityIdIsNowAStringTests : IAsyncDisposable
         await dbContext.Database.ExecuteSqlRawAsync(logEntryQuery, logEntryFields);
     }
 
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
+    private ApplicationDbContext GetDbContext()
     {
-        await container.InitializeAsync();
-
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
-            .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
-        return dbContext;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await container.DisposeAsync();
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(postgresContainer.ConnectionString).Options;
+        return new ApplicationDbContext(contextOptions);
     }
 }

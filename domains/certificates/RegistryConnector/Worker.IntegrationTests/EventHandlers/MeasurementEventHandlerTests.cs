@@ -1,22 +1,22 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
-using DataContext;
-using Microsoft.EntityFrameworkCore;
-using RegistryConnector.Worker.UnitTests.Factories;
 using System.Threading.Tasks;
+using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using FluentAssertions;
-using Testing.Testcontainers;
-using Xunit;
-using Testing.Helpers;
+using MassTransit;
 using MeasurementEvents;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
-using MassTransit;
-using System.Diagnostics;
+using RegistryConnector.Worker.IntegrationTests.Factories;
+using Testing.Helpers;
+using Testing.Testcontainers;
+using Xunit;
 
-namespace RegistryConnector.Worker.UnitTests.EventHandlers;
+namespace RegistryConnector.Worker.IntegrationTests.EventHandlers;
 
 public class MeasurementEventHandlerTests :
     IClassFixture<PostgresContainer>,

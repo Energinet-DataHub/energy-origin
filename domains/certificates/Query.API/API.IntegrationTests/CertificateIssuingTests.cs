@@ -1,52 +1,30 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
-using API.IntegrationTests.Testcontainers;
 using DataContext.ValueObjects;
 using FluentAssertions;
 using MassTransit;
 using MeasurementEvents;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ProjectOriginClients.Models;
 using Testing.Helpers;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests;
 
-public sealed class CertificateIssuingTests :
-    TestBase,
-    IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<PostgresContainer>,
-    IClassFixture<RabbitMqContainer>,
-    IClassFixture<MeasurementsWireMock>,
-    IClassFixture<RegistryConnectorApplicationFactory>,
-    IClassFixture<ProjectOriginStack>
+[Collection(IntegrationTestCollection.CollectionName)]
+public sealed class CertificateIssuingTests : TestBase
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly MeasurementsWireMock measurementsWireMock;
 
-    public CertificateIssuingTests(
-        QueryApiWebApplicationFactory factory,
-        PostgresContainer dbContainer,
-        RabbitMqContainer rabbitMqContainer,
-        MeasurementsWireMock measurementsWireMock,
-        RegistryConnectorApplicationFactory registryConnectorFactory,
-        ProjectOriginStack projectOriginStack)
+    public CertificateIssuingTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.measurementsWireMock = measurementsWireMock;
-        this.factory = factory;
-        this.factory.ConnectionString = dbContainer.ConnectionString;
-        this.factory.MeasurementsUrl = measurementsWireMock.Url;
-        this.factory.WalletUrl = projectOriginStack.WalletUrl;
-        this.factory.RabbitMqOptions = rabbitMqContainer.Options;
-        registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
-        registryConnectorFactory.ProjectOriginOptions = projectOriginStack.Options;
-        registryConnectorFactory.ConnectionString = dbContainer.ConnectionString;
-        registryConnectorFactory.Start();
+        factory = integrationTestFixture.WebApplicationFactory;
+        measurementsWireMock = integrationTestFixture.MeasurementsMock;
     }
 
     [Fact]

@@ -2,33 +2,30 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.IntegrationTests.Extensions;
-using API.IntegrationTests.Factories;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.IssuingContractCleanup;
 
-public class IssuingContractCleanupTests : IClassFixture<QueryApiWebApplicationFactory>, IClassFixture<PostgresContainer>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class IssuingContractCleanupTests
 {
-    private readonly QueryApiWebApplicationFactory factory;
+    private readonly PostgresContainer postgresContainer;
 
-    public IssuingContractCleanupTests(QueryApiWebApplicationFactory factory,
-        PostgresContainer dbContainer)
+    public IssuingContractCleanupTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
-        this.factory.ConnectionString = dbContainer.ConnectionString;
+        postgresContainer = integrationTestFixture.PostgresContainer;
     }
 
     [Fact]
     public async Task ShouldOnlyDeleteExpiredIssuingContracts()
     {
-        using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = GetDbContext();
 
         dbContext.Contracts.RemoveRange(dbContext.Contracts);
         await dbContext.SaveChangesAsync();
@@ -87,5 +84,11 @@ public class IssuingContractCleanupTests : IClassFixture<QueryApiWebApplicationF
         contracts.Select(x => x.Id).Should().NotContain(expiredContract.Id);
         contracts.Select(x => x.Id).Should().Contain(nullEndDateContract.Id);
         contracts.Select(x => x.Id).Should().Contain(endDateContract.Id);
+    }
+
+    private ApplicationDbContext GetDbContext()
+    {
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(postgresContainer.ConnectionString).Options;
+        return new ApplicationDbContext(contextOptions);
     }
 }
