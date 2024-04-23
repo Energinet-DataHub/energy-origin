@@ -1,24 +1,18 @@
-using API.IntegrationTests.Factories;
 using System.Net;
 using System.Threading.Tasks;
-using Testing.Testcontainers;
+using API.IntegrationTests.Factories;
 using Xunit;
 
 namespace API.IntegrationTests;
 
-public class RegistryConnectorHealthTests :
-    TestBase,
-    IClassFixture<RegistryConnectorApplicationFactory>,
-    IClassFixture<RabbitMqContainer>,
-    IClassFixture<PostgresContainer>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class RegistryConnectorHealthTests : TestBase
 {
     private readonly RegistryConnectorApplicationFactory factory;
 
-    public RegistryConnectorHealthTests(RegistryConnectorApplicationFactory factory, RabbitMqContainer rabbitMqContainer, PostgresContainer dbContainer)
+    public RegistryConnectorHealthTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
-        this.factory.RabbitMqOptions = rabbitMqContainer.Options;
-        this.factory.ConnectionString = dbContainer.ConnectionString;
+        factory = integrationTestFixture.RegistryConnectorFactory;
     }
 
     [Fact]

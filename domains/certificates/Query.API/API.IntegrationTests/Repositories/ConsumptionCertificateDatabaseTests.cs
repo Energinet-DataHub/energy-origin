@@ -1,26 +1,27 @@
-using API.IntegrationTests.Extensions;
+using System;
+using System.Linq;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 using Testing.Helpers;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
-public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContainer>, IDisposable
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ConsumptionCertificateDatabaseTests
 {
     private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public ConsumptionCertificateDatabaseTests(PostgresContainer dbContainer)
+    public ConsumptionCertificateDatabaseTests(IntegrationTestFixture integrationTestFixture)
     {
-        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbContainer.ConnectionString).Options;
+        var dbTask = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbTask.ConnectionString).Options;
         using var dbContext = new ApplicationDbContext(options);
         dbContext.Database.EnsureCreated();
+        dbContext.Database.ExecuteSqlRaw("truncate table public.\"ConsumptionCertificates\"");
     }
 
     [Fact]
@@ -186,13 +187,5 @@ public class ConsumptionCertificateDatabaseTests : IClassFixture<PostgresContain
             var certificates = dbContext.ConsumptionCertificates.ToList();
             certificates.Should().BeEquivalentTo(new[] { cert1, cert2 });
         }
-    }
-
-    public void Dispose()
-    {
-        using var dbContext = new ApplicationDbContext(options);
-        dbContext.RemoveAll(d => d.ConsumptionCertificates);
-
-        GC.SuppressFinalize(this);
     }
 }

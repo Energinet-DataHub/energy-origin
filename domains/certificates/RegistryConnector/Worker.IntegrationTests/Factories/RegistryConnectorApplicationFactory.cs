@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.HierarchicalDeterministicKeys;
 
-namespace RegistryConnector.Worker.UnitTests.Factories;
+namespace RegistryConnector.Worker.IntegrationTests.Factories;
 
 public class RegistryConnectorApplicationFactory : WebApplicationFactory<Program>
 {
