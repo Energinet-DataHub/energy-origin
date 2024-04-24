@@ -1,15 +1,15 @@
 using System;
-using API.Models;
+using API.Repository;
 
-namespace API.Data;
-
-public interface IUnitOfWork : IDisposable
+namespace API.Data
 {
-    IRepository<User> Users { get; }
-    IRepository<Organization> Organizations { get; }
-    IRepository<Affiliation> Affiliations { get; }
-    IRepository<Client> Clients { get; }
-    IRepository<Consent> Consents { get; }
-    int Complete();
+    public interface IUnitOfWork : IDisposable
+    {
+        IUserRepository Users { get; }
+        IOrganizationRepository Organizations { get; }
+        IAffiliationRepository Affiliations { get; }
+        IClientRepository Clients { get; }
+        IConsentRepository Consents { get; }
+        int Complete();
+    }
 }
-

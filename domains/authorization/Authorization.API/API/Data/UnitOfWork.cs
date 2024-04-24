@@ -1,5 +1,6 @@
 using System;
 using API.Models;
+using API.Repository;
 
 namespace API.Data;
 
@@ -11,18 +12,18 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(ApplicationDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        Users = new Repository<User>(_context);
-        Organizations = new Repository<Organization>(_context);
-        Affiliations = new Repository<Affiliation>(_context);
-        Clients = new Repository<Client>(_context);
-        Consents = new Repository<Consent>(_context);
+        Users = new UserRepository(_context);
+        Organizations = new OrganizationRepository(_context);
+        Affiliations = new AffiliationRepository(_context);
+        Consents = new ConsentRepository(_context);
+        Clients = new ClientRepository(_context);
     }
 
-    public IRepository<User> Users { get; }
-    public IRepository<Organization> Organizations { get; }
-    public IRepository<Affiliation> Affiliations { get; }
-    public IRepository<Client> Clients { get; }
-    public IRepository<Consent> Consents { get; }
+    public IUserRepository Users { get; }
+    public IOrganizationRepository Organizations { get; }
+    public IAffiliationRepository Affiliations { get; }
+    public IConsentRepository Consents { get; }
+    public IClientRepository Clients { get; }
 
     public int Complete()
     {
@@ -31,14 +32,12 @@ public class UnitOfWork : IUnitOfWork
 
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (_disposed) return;
+        if (disposing)
         {
-            if (disposing)
-            {
-                _context.Dispose();
-            }
-            _disposed = true;
+            _context.Dispose();
         }
+        _disposed = true;
     }
 
     public void Dispose()
@@ -47,4 +46,3 @@ public class UnitOfWork : IUnitOfWork
         GC.SuppressFinalize(this);
     }
 }
-
