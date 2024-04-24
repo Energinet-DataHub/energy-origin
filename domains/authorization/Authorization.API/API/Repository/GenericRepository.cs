@@ -1,5 +1,6 @@
 using System;
 using API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Repository;
 
@@ -10,7 +11,7 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
 
     public T Get(Guid id)
     {
-        return Context.Set<T>().Find(id) ?? throw new EntityNotFoundException(id, nameof(T));
+        return Context.Set<T>().Find(id) ?? throw new EntityNotFoundException(id, typeof(T).Name);
     }
 
     public void Add(T entity)
@@ -28,6 +29,6 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     public void Update(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
-        Context.Set<T>().Update(entity);
+        Context.Entry(entity).State = EntityState.Modified;
     }
 }
