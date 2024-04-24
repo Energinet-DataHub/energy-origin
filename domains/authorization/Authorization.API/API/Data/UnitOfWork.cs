@@ -18,27 +18,27 @@ public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 
     public async Task CommitAsync()
     {
-        if (_transaction != null)
-            try
-            {
-                await _context.SaveChangesAsync();
-                await _transaction.CommitAsync();
-            }
-            catch
-            {
-                await RollbackAsync();
-                throw;
-            }
-            finally
-            {
-                if (_transaction != null)
-                {
-                    await _transaction.DisposeAsync();
-                    _transaction = null;
-                }
-            }
-        else
+        if (_transaction == null)
             throw new InvalidOperationException("No transaction started.");
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            await _transaction.CommitAsync();
+        }
+        catch
+        {
+            await RollbackAsync();
+            throw;
+        }
+        finally
+        {
+            if (_transaction != null)
+            {
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
+        }
     }
 
     public async Task RollbackAsync()
@@ -51,7 +51,7 @@ public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
         }
     }
 
-    public async ValueTask DisposeAsync()
+    async ValueTask IAsyncDisposable.DisposeAsync()
     {
         if (_disposed) return;
         if (_transaction != null)
