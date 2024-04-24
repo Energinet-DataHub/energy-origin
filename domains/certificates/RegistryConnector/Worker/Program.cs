@@ -69,7 +69,6 @@ builder.Services.AddMassTransit(o =>
         cfg.ConfigureJsonSerializerOptions(jsonSerializerOptions =>
         {
             jsonSerializerOptions.Converters.Add(new TransactionConverter());
-            jsonSerializerOptions.Converters.Add(new ReceiveRequestConverter());
             return jsonSerializerOptions;
         });
     });

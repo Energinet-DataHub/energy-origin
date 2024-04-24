@@ -4,7 +4,12 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="M:API.Authorization.Controllers.AuthorizationController.CreateContract(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationRequest)">
+        <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationClientRequest)">
+            <summary>
+            Retreives Authorization Model.
+            </summary>
+        </member>
+        <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForUser(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationUserRequest)">
             <summary>
             Retreives Authorization Model.
             </summary>
