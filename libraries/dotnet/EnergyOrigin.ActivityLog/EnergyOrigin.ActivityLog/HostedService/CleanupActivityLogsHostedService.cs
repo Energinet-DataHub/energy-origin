@@ -22,7 +22,18 @@ public class CleanupActivityLogsHostedService(
         {
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
-                await DeleteActivityLogs();
+                using (var scope = services.CreateScope())
+                {
+                    using var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+                    if (await IsWaitingForMigrations(dbContext, stoppingToken))
+                    {
+                        logger.LogInformation("Waiting for EF migrations");
+                    }
+                    else
+                    {
+                        await DeleteActivityLogs(dbContext);
+                    }
+                }
             }
         }
         catch (OperationCanceledException)
@@ -31,16 +42,19 @@ public class CleanupActivityLogsHostedService(
         }
     }
 
-    private async Task DeleteActivityLogs()
+    private async Task DeleteActivityLogs(DbContext dbContext)
     {
-        using var scope = services.CreateScope();
-
-        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
         var deleted = await dbContext.Set<ActivityLogEntry>()
             .Where(x => x.Timestamp < DateTimeOffset.UtcNow.AddDays(-1 * activityLogOptions.Value.CleanupActivityLogsOlderThanInDays))
             .ExecuteDeleteAsync();
 
         logger.LogInformation($"{nameof(CleanupActivityLogsHostedService)} cleaned up: {deleted} activity log entries",
             deleted);
+    }
+
+    private async Task<bool> IsWaitingForMigrations(DbContext dbContext, CancellationToken cancellationToken)
+    {
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
+        return pendingMigrations is null || pendingMigrations.Any();
     }
 }
