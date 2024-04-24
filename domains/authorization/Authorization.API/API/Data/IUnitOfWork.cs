@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace API.Data;
 
-public interface IUnitOfWork : IDisposable
+public interface IUnitOfWork : IAsyncDisposable
 {
     Task BeginTransactionAsync();
     Task CommitAsync();
