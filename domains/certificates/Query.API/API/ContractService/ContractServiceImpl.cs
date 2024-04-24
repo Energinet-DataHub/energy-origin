@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Query.API.ApiModels.Requests;
 using API.UnitOfWork;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
@@ -34,20 +35,24 @@ internal class ContractServiceImpl : IContractService
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<CreateContractResult> Create(
-        List<(string gsrn, UnixTimestamp startDate, UnixTimestamp? endDate)> contracts, UserDescriptor user,
+    public async Task<CreateContractResult> Create(CreateContracts contracts, UserDescriptor user,
         CancellationToken cancellationToken)
     {
         var meteringPointOwner = user.Subject.ToString();
         var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwner, cancellationToken);
         var contractsByGsrn =
-            await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(contracts.Select(c => c.gsrn).ToList(),
+            await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(contracts.Contracts.Select(c => c.GSRN).ToList(),
                 cancellationToken);
         var newContracts = new List<CertificateIssuingContract>();
         var number = 0;
-        foreach (var contract in contracts)
+        foreach (var contract in contracts.Contracts)
         {
-            var matchingMeteringPoint = meteringPoints?.Result.Find(mp => mp.Gsrn == contract.gsrn);
+            var startDate = UnixTimestamp.Create(contract.StartDate);
+            var endDate = contract.EndDate.HasValue
+                ? UnixTimestamp.Create(contract.EndDate.Value)
+                : null;
+
+            var matchingMeteringPoint = meteringPoints?.Result.Find(mp => mp.Gsrn == contract.GSRN);
 
             if (matchingMeteringPoint == null)
             {
@@ -55,7 +60,7 @@ internal class ContractServiceImpl : IContractService
             }
 
             var overlappingContract = contractsByGsrn.FirstOrDefault(c =>
-                c.Overlaps(contract.startDate.ToDateTimeOffset(), contract.endDate?.ToDateTimeOffset()));
+                c.Overlaps(startDate, endDate));
             if (overlappingContract != null)
             {
                 return new ContractAlreadyExists(overlappingContract);
@@ -63,20 +68,20 @@ internal class ContractServiceImpl : IContractService
 
             var wallets = await walletClient.GetWallets(user.Subject.ToString(), cancellationToken);
 
-        var walletId = wallets.Result.FirstOrDefault()?.Id;
-        if (walletId == null)
-        {
-            var createWalletResponse = await walletClient.CreateWallet(user.Subject.ToString(), cancellationToken);
+            var walletId = wallets.Result.FirstOrDefault()?.Id;
+            if (walletId == null)
+            {
+                var createWalletResponse = await walletClient.CreateWallet(user.Subject.ToString(), cancellationToken);
 
-            if (createWalletResponse == null)
-                throw new ApplicationException("Failed to create wallet.");
+                if (createWalletResponse == null)
+                    throw new ApplicationException("Failed to create wallet.");
 
-            walletId = createWalletResponse.WalletId;
-        }
+                walletId = createWalletResponse.WalletId;
+            }
 
-        var contractNumber = contractsByGsrn.Any()
-                ? contractsByGsrn.Max(c => c.ContractNumber) + number + 1
-                : number;
+            var contractNumber = contractsByGsrn.Any()
+                    ? contractsByGsrn.Max(c => c.ContractNumber) + number + 1
+                    : number;
 
             var walletDepositEndpoint =
                 await walletClient.CreateWalletEndpoint(walletId.Value, user.Subject.ToString(),
@@ -84,12 +89,12 @@ internal class ContractServiceImpl : IContractService
 
             var issuingContract = CertificateIssuingContract.Create(
                 contractNumber,
-                contract.gsrn,
+                contract.GSRN,
                 matchingMeteringPoint.GridArea,
                 Map(matchingMeteringPoint.Type),
                 meteringPointOwner,
-                contract.startDate.ToDateTimeOffset(),
-                contract.endDate?.ToDateTimeOffset(),
+                startDate.ToDateTimeOffset(),
+                endDate?.ToDateTimeOffset(),
                 walletDepositEndpoint.Endpoint.ToString(),
                 walletDepositEndpoint.PublicKey.Export().ToArray(),
                 Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
@@ -106,7 +111,7 @@ internal class ContractServiceImpl : IContractService
                 otherOrganizationName: string.Empty,
                 entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
                 actionType: ActivityLogEntry.ActionTypeEnum.Activated,
-                entityId: contract.gsrn)
+                entityId: contract.GSRN)
             );
             number++;
         }
@@ -143,48 +148,51 @@ internal class ContractServiceImpl : IContractService
         return null;
     }
 
-    public async Task<SetEndDateResult> SetEndDate(List<(Guid id, UnixTimestamp? newEndDate)> contracts,
+    public async Task<SetEndDateResult> SetEndDate(EditContracts contracts,
         UserDescriptor user, CancellationToken cancellationToken)
     {
+
         var meteringPointOwner = user.Subject.ToString();
         var issuingContracts =
-            await unitOfWork.CertificateIssuingContractRepo.GetAllByIds(contracts.Select(c => c.id).ToList(),
+            await unitOfWork.CertificateIssuingContractRepo.GetAllByIds(contracts.Contracts.Select(c => c.Id).ToList(),
                 cancellationToken);
-
-        if (issuingContracts.IsNullOrEmpty())
-        {
-            return new NonExistingContract();
-        }
 
         var contractsByGsrn =
             await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(issuingContracts.Select(c => c.GSRN).ToList(),
                 cancellationToken);
 
-        foreach (var issuingContract in issuingContracts)
+        foreach (var updatedContract in contracts.Contracts)
         {
-            var newContract = contracts.Find(c => c.id == issuingContract.Id);
+            var newEndDate = updatedContract.EndDate.HasValue
+                ? UnixTimestamp.Create(updatedContract.EndDate.Value)
+                : null;
+            var existingContract = issuingContracts.Find(c => c.Id == updatedContract.Id);
+            if (existingContract == null)
+            {
+                return new NonExistingContract();
+            }
 
-            if (issuingContract.MeteringPointOwner != meteringPointOwner)
+            if (existingContract?.MeteringPointOwner != meteringPointOwner)
             {
                 return new MeteringPointOwnerNoMatch();
             }
 
-            if (newContract.newEndDate != null &&
-                newContract.newEndDate.ToDateTimeOffset() <= issuingContract.StartDate)
+            if (newEndDate != null &&
+                newEndDate.ToDateTimeOffset() <= existingContract.StartDate)
             {
-                return new EndDateBeforeStartDate(issuingContract.StartDate, newContract.newEndDate.ToDateTimeOffset());
+                return new EndDateBeforeStartDate(existingContract.StartDate, newEndDate.ToDateTimeOffset());
             }
 
             var overlappingContract = contractsByGsrn.FirstOrDefault(c =>
-                c.Overlaps(issuingContract.StartDate, newContract.newEndDate?.ToDateTimeOffset()) &&
-                c.Id != newContract.id);
+                c.Overlaps(UnixTimestamp.Create(existingContract.StartDate), newEndDate) &&
+                c.Id != existingContract.Id);
 
             if (overlappingContract != null)
             {
                 return new OverlappingContract();
             }
 
-            issuingContract.EndDate = newContract.newEndDate?.ToDateTimeOffset() ?? null;
+            existingContract.EndDate = newEndDate?.ToDateTimeOffset();
 
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
@@ -195,7 +203,7 @@ internal class ContractServiceImpl : IContractService
                 otherOrganizationName: string.Empty,
                 entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
                 actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-                entityId: issuingContract.GSRN)
+                entityId: existingContract.GSRN)
             );
         }
 

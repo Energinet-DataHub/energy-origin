@@ -58,8 +58,8 @@ public class CertificateIssuingContract
     /// <param name="startDate"></param>
     /// <param name="endDate"></param>
     /// <returns>true if there is overlap</returns>
-    public bool Overlaps(DateTimeOffset startDate, DateTimeOffset? endDate)
-        => !(startDate >= EndDate || endDate <= StartDate);
+    public bool Overlaps(UnixTimestamp startDate, UnixTimestamp? endDate)
+        => !(startDate.ToDateTimeOffset() >= EndDate || endDate?.ToDateTimeOffset() <= StartDate);
 
     /// <summary>
     /// Tests if there is any overlap between he period from <paramref name="startDate"/> to <paramref name="endDate"/> and the period of the contract
@@ -68,7 +68,7 @@ public class CertificateIssuingContract
     /// <param name="endDate"></param>
     /// <returns>true if there is overlap</returns>
     public bool Overlaps(long startDate, long? endDate) =>
-        Overlaps(DateTimeOffset.FromUnixTimeSeconds(startDate), endDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(endDate.Value) : null);
+        Overlaps(UnixTimestamp.Create(startDate), endDate.HasValue ? UnixTimestamp.Create(endDate.Value) : null);
 
     /// <summary>
     /// Tests if the period from <paramref name="startDate"/> to <paramref name="endDate"/> is completely within the period of the contract

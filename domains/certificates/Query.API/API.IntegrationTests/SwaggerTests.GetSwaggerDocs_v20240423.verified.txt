@@ -133,17 +133,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MultipleEditContract"
+                "$ref": "#/components/schemas/EditContracts"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/MultipleEditContract"
+                "$ref": "#/components/schemas/EditContracts"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/MultipleEditContract"
+                "$ref": "#/components/schemas/EditContracts"
               }
             }
           }
@@ -212,63 +212,6 @@
           },
           "404": {
             "description": "Not Found"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Contracts"
-        ],
-        "summary": "Edit the end date for contract",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "EO_API_VERSION",
-            "in": "header",
-            "description": "The requested API version",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "default": "20240423"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EditContractEndDate"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EditContractEndDate"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/EditContractEndDate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "403": {
-            "description": "Forbidden"
           }
         }
       }
@@ -362,8 +305,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "endDate": {
             "type": "integer",
@@ -374,14 +316,7 @@
         },
         "additionalProperties": false
       },
-      "MeteringPointType": {
-        "enum": [
-          "Production",
-          "Consumption"
-        ],
-        "type": "string"
-      },
-      "MultipleEditContract": {
+      "EditContracts": {
         "type": "object",
         "properties": {
           "contracts": {
@@ -392,6 +327,13 @@
           }
         },
         "additionalProperties": false
+      },
+      "MeteringPointType": {
+        "enum": [
+          "Production",
+          "Consumption"
+        ],
+        "type": "string"
       },
       "Technology": {
         "type": "object",

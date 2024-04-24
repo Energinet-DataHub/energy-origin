@@ -48,13 +48,9 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var startDate = UnixTimestamp.Create(createContract.StartDate);
-        UnixTimestamp? endDate = createContract.EndDate.HasValue
-            ? UnixTimestamp.Create(createContract.EndDate.Value)
-            : null;
 
         var result = await service.Create(
-            [(createContract.GSRN, startDate, endDate)],
+            new CreateContracts([createContract]),
             user,
             cancellationToken);
 
@@ -84,7 +80,6 @@ public class ContractsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var certificateIssuingContracts = new List<(string gsrn, UnixTimestamp startDate, UnixTimestamp? endDate)>();
 
         foreach (var createContract in createContracts.Contracts)
         {
@@ -94,16 +89,10 @@ public class ContractsController : ControllerBase
                 validationResult.AddToModelState(ModelState, null);
                 return ValidationProblem(ModelState);
             }
-
-            var startDate = UnixTimestamp.Create(createContract.StartDate);
-            UnixTimestamp? endDate = createContract.EndDate.HasValue
-                ? UnixTimestamp.Create(createContract.EndDate.Value)
-                : null;
-            certificateIssuingContracts.Add((createContract.GSRN, startDate, endDate));
         }
 
         var result = await service.Create(
-            certificateIssuingContracts,
+            createContracts,
             user,
             cancellationToken);
 
@@ -111,7 +100,8 @@ public class ContractsController : ControllerBase
         {
             GsrnNotFound => ValidationProblem(),
             ContractAlreadyExists => ValidationProblem(statusCode: 409),
-            CreateContractResult.Success(var createdContracts) => Created("", new ContractList { Result = createdContracts.Select(Contract.CreateFrom).ToList() }),
+            CreateContractResult.Success(var createdContracts) => Created("",
+                new ContractList { Result = createdContracts.Select(Contract.CreateFrom).ToList() }),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }
@@ -165,11 +155,12 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
+    [ApiVersion(ApiVersions.Version20230101)]
     [Route("api/certificates/contracts/{id}")]
     public async Task<ActionResult> UpdateEndDate(
         [FromRoute] Guid id,
-        [FromBody] EditContractEndDate editContractEndDate,
-        [FromServices] IValidator<EditContractEndDate> validator,
+        [FromBody] EditContractEndDate20230101 editContractEndDate,
+        [FromServices] IValidator<EditContractEndDate20230101> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
@@ -182,12 +173,12 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var newEndDate = editContractEndDate.EndDate.HasValue
-            ? UnixTimestamp.Create(editContractEndDate.EndDate.Value)
-            : null;
-        var contracts = new List<(Guid id, UnixTimestamp? newEndDate)> { (id, newEndDate) };
         var result = await service.SetEndDate(
-            contracts,
+            new EditContracts([new EditContractEndDate
+            {
+                EndDate = editContractEndDate.EndDate,
+                Id = id
+            }]),
             user,
             cancellationToken);
 
@@ -209,17 +200,17 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
+    [ApiVersion(ApiVersions.Version20240423)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> UpdateEndDate(
-        [FromBody] MultipleEditContract multipleEditContract,
+        [FromBody] EditContracts editContracts,
         [FromServices] IValidator<EditContractEndDate> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var updatedContracts = new List<(Guid id, UnixTimestamp? endDate)>();
 
-        foreach (var contract in multipleEditContract.Contracts)
+        foreach (var contract in editContracts.Contracts)
         {
             var validationResult = await validator.ValidateAsync(contract, cancellationToken);
             if (!validationResult.IsValid)
@@ -227,15 +218,10 @@ public class ContractsController : ControllerBase
                 validationResult.AddToModelState(ModelState, null);
                 return ValidationProblem(ModelState);
             }
-
-            var newEndDate = contract.EndDate.HasValue
-                ? UnixTimestamp.Create(contract.EndDate.Value)
-                : null;
-            updatedContracts.Add((contract.Id!.Value, newEndDate));
         }
 
         var result = await service.SetEndDate(
-            updatedContracts,
+            editContracts,
             user,
             cancellationToken);
 

@@ -30,7 +30,7 @@ public class CertificateIssuingContractTests
     [InlineData("2023-01-01T12:59:59Z", "2023-01-01T14:00:00Z")]
     [InlineData("2023-01-01T12:59:59.999Z", "2023-01-01T14:00:00Z")]
     public void has_overlap(string start, string end) =>
-        contract.Overlaps(DateTimeOffset.Parse(start), DateTimeOffset.Parse(end))
+        contract.Overlaps(UnixTimestamp.Create(DateTimeOffset.Parse(start)), UnixTimestamp.Create(DateTimeOffset.Parse(end)))
             .Should().BeTrue();
 
     [Theory]
@@ -39,7 +39,7 @@ public class CertificateIssuingContractTests
     [InlineData("2023-01-01T11:00:00Z", "2023-01-01T12:00:00Z")]
     [InlineData("2023-01-01T13:00:00Z", "2023-01-01T14:00:00Z")]
     public void has_no_overlap(string start, string end) =>
-        contract.Overlaps(DateTimeOffset.Parse(start), DateTimeOffset.Parse(end))
+        contract.Overlaps(UnixTimestamp.Create(DateTimeOffset.Parse(start)), UnixTimestamp.Create(DateTimeOffset.Parse(end)))
             .Should().BeFalse();
 
     [Fact]

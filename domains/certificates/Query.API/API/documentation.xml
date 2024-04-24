@@ -4,16 +4,6 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="T:API.ContractService.Clients.WalletRecord">
-            <summary>
-            A wallet record
-            </summary>
-        </member>
-        <member name="M:API.ContractService.Clients.WalletRecord.#ctor">
-            <summary>
-            A wallet record
-            </summary>
-        </member>
         <member name="P:API.ContractService.Clients.CreateWalletRequest.PrivateKey">
             <summary>
             The private key to import. If not provided, a private key will be generated.
@@ -59,16 +49,6 @@
             List of hashed attributes, their values and salts so the receiver can access the data.
             </summary>
         </member>
-        <member name="T:API.ContractService.Clients.HashedAttribute">
-            <summary>
-            Hashed attribute with salt.
-            </summary>
-        </member>
-        <member name="M:API.ContractService.Clients.HashedAttribute.#ctor">
-            <summary>
-            Hashed attribute with salt.
-            </summary>
-        </member>
         <member name="P:API.ContractService.Clients.HashedAttribute.Key">
             <summary>
             The key of the attribute.
@@ -100,6 +80,11 @@
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Requests.EditContractEndDate.EndDate">
+            <summary>
+            End Date for generation of certificates in Unix time seconds. Set to null for no end date
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Requests.EditContractEndDate20230101.EndDate">
             <summary>
             End Date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
@@ -149,12 +134,12 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate20230101,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate20230101},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Edit the end date for contract
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(API.Query.API.ApiModels.Requests.MultipleEditContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Edit the end date for multiple contracts
             </summary>
