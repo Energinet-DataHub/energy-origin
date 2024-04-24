@@ -54,6 +54,11 @@
             Create a contract that activates granular certificate generation for a metering point
             </summary>
         </member>
+        <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Create contracts that activates granular certificate generation for a metering point
+            </summary>
+        </member>
         <member name="M:API.Query.API.Controllers.ContractsController.GetContract(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Returns contract based on the id

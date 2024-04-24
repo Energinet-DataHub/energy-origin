@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using API.ContractService;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
-using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.ValueObjects;
 using EnergyOrigin.TokenValidation.Utilities;
@@ -22,6 +21,7 @@ namespace API.Query.API.Controllers;
 [Authorize]
 [ApiController]
 [ApiVersion(ApiVersions.Version20230101)]
+[ApiVersion(ApiVersions.Version20240423)]
 public class ContractsController : ControllerBase
 {
     /// <summary>
@@ -31,6 +31,7 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(400)]
     [ProducesResponseType(typeof(void), 409)]
+    [ApiVersion(ApiVersions.Version20230101)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> CreateContract(
         [FromBody] CreateContract createContract,
@@ -47,24 +48,70 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var startDate = DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate);
-        DateTimeOffset? endDate = createContract.EndDate.HasValue
-            ? DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate.Value)
+        var startDate = UnixTimestamp.Create(createContract.StartDate);
+        UnixTimestamp? endDate = createContract.EndDate.HasValue
+            ? UnixTimestamp.Create(createContract.EndDate.Value)
             : null;
 
         var result = await service.Create(
-            createContract.GSRN,
+            [(createContract.GSRN, startDate, endDate)],
             user,
-            startDate,
-            endDate,
             cancellationToken);
 
         return result switch
         {
-            GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
+            GsrnNotFound => ValidationProblem(),
             ContractAlreadyExists => ValidationProblem(statusCode: 409),
             CreateContractResult.Success(var createdContract) => CreatedAtRoute("GetContract",
-                new { id = createdContract.Id }, Contract.CreateFrom(createdContract)),
+                new { id = createdContract[0].Id }, Contract.CreateFrom(createdContract[0])),
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
+        };
+    }
+
+    /// <summary>
+    /// Create contracts that activates granular certificate generation for a metering point
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(201)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(typeof(void), 409)]
+    [ApiVersion(ApiVersions.Version20240423)]
+    [Route("api/certificates/contracts")]
+    public async Task<ActionResult> CreateContract(
+        [FromBody] CreateContracts createContracts,
+        [FromServices] IValidator<CreateContract> validator,
+        [FromServices] IContractService service,
+        CancellationToken cancellationToken)
+    {
+        var user = new UserDescriptor(User);
+        var certificateIssuingContracts = new List<(string gsrn, UnixTimestamp startDate, UnixTimestamp? endDate)>();
+
+        foreach (var createContract in createContracts.Contracts)
+        {
+            var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                validationResult.AddToModelState(ModelState, null);
+                return ValidationProblem(ModelState);
+            }
+
+            var startDate = UnixTimestamp.Create(createContract.StartDate);
+            UnixTimestamp? endDate = createContract.EndDate.HasValue
+                ? UnixTimestamp.Create(createContract.EndDate.Value)
+                : null;
+            certificateIssuingContracts.Add((createContract.GSRN, startDate, endDate));
+        }
+
+        var result = await service.Create(
+            certificateIssuingContracts,
+            user,
+            cancellationToken);
+
+        return result switch
+        {
+            GsrnNotFound => ValidationProblem(),
+            ContractAlreadyExists => ValidationProblem(statusCode: 409),
+            CreateContractResult.Success(var createdContracts) => Created("", new ContractList { Result = createdContracts.Select(Contract.CreateFrom).ToList() }),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }

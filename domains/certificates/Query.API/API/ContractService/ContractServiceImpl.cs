@@ -35,47 +35,56 @@ internal class ContractServiceImpl : IContractService
         this.unitOfWork = unitOfWork;
     }
 
-    public async Task<CreateContractResult> Create(string gsrn, UserDescriptor user, DateTimeOffset startDate, DateTimeOffset? endDate, CancellationToken cancellationToken)
+    public async Task<CreateContractResult> Create(
+        List<(string gsrn, UnixTimestamp startDate, UnixTimestamp? endDate)> contracts, UserDescriptor user,
+        CancellationToken cancellationToken)
     {
         var meteringPointOwner = user.Subject.ToString();
         var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwner, cancellationToken);
-        var matchingMeteringPoint = meteringPoints?.Result.FirstOrDefault(mp => mp.Gsrn == gsrn);
-
-        if (matchingMeteringPoint == null)
+        var contractsByGsrn =
+            await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(contracts.Select(c => c.gsrn).ToList(),
+                cancellationToken);
+        var newContracts = new List<CertificateIssuingContract>();
+        var number = 0;
+        foreach (var contract in contracts)
         {
-            return new GsrnNotFound();
-        }
+            var matchingMeteringPoint = meteringPoints?.Result.Find(mp => mp.Gsrn == contract.gsrn);
 
-        var contracts = await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(gsrn, cancellationToken);
+            if (matchingMeteringPoint == null)
+            {
+                return new GsrnNotFound();
+            }
 
-        var overlappingContract = contracts.FirstOrDefault(c => c.Overlaps(startDate, endDate));
-        if (overlappingContract != null)
-        {
-            return new ContractAlreadyExists(overlappingContract);
-        }
+            var overlappingContract = contractsByGsrn.FirstOrDefault(c =>
+                c.Overlaps(contract.startDate.ToDateTimeOffset(), contract.endDate?.ToDateTimeOffset()));
+            if (overlappingContract != null)
+            {
+                return new ContractAlreadyExists(overlappingContract);
+            }
 
-        var contractNumber = contracts.Any()
-            ? contracts.Max(c => c.ContractNumber) + 1
-            : 0;
+            var contractNumber = contractsByGsrn.Any()
+                ? contractsByGsrn.Max(c => c.ContractNumber) + number + 1
+                : number;
 
-        var response = await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest(), cancellationToken: cancellationToken);
-        var walletDepositEndpoint = response.WalletDepositEndpoint;
+            var response =
+                await walletServiceClient.CreateWalletDepositEndpointAsync(new CreateWalletDepositEndpointRequest(),
+                    cancellationToken: cancellationToken);
+            var walletDepositEndpoint = response.WalletDepositEndpoint;
 
-        var contract = CertificateIssuingContract.Create(
-            contractNumber,
-            gsrn,
-            matchingMeteringPoint.GridArea,
-            Map(matchingMeteringPoint.Type),
-            meteringPointOwner,
-            startDate,
-            endDate,
-            walletDepositEndpoint.Endpoint,
-            walletDepositEndpoint.PublicKey.ToByteArray(),
-            Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
+            var issuingContract = CertificateIssuingContract.Create(
+                contractNumber,
+                contract.gsrn,
+                matchingMeteringPoint.GridArea,
+                Map(matchingMeteringPoint.Type),
+                meteringPointOwner,
+                contract.startDate.ToDateTimeOffset(),
+                contract.endDate?.ToDateTimeOffset(),
+                walletDepositEndpoint.Endpoint,
+                walletDepositEndpoint.PublicKey.ToByteArray(),
+                Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
 
-        try
-        {
-            await unitOfWork.CertificateIssuingContractRepo.Save(contract);
+            newContracts.Add(issuingContract);
+
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
                 actorId: user.Subject,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
@@ -86,11 +95,18 @@ internal class ContractServiceImpl : IContractService
                 otherOrganizationName: string.Empty,
                 entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
                 actionType: ActivityLogEntry.ActionTypeEnum.Activated,
-                entityId: gsrn)
+                entityId: contract.gsrn)
             );
+            number++;
+        }
+
+        try
+        {
+            await unitOfWork.CertificateIssuingContractRepo.SaveRange(newContracts);
+
             await unitOfWork.SaveAsync();
 
-            return new CreateContractResult.Success(contract);
+            return new CreateContractResult.Success(newContracts);
         }
         catch (DbUpdateException)
         {
@@ -116,17 +132,22 @@ internal class ContractServiceImpl : IContractService
         return null;
     }
 
-    public async Task<SetEndDateResult> SetEndDate(List<(Guid id, UnixTimestamp? newEndDate)> contracts, UserDescriptor user, CancellationToken cancellationToken)
+    public async Task<SetEndDateResult> SetEndDate(List<(Guid id, UnixTimestamp? newEndDate)> contracts,
+        UserDescriptor user, CancellationToken cancellationToken)
     {
         var meteringPointOwner = user.Subject.ToString();
-        var issuingContracts = await unitOfWork.CertificateIssuingContractRepo.GetAllByIds(contracts.Select(c => c.id).ToList(), cancellationToken);
+        var issuingContracts =
+            await unitOfWork.CertificateIssuingContractRepo.GetAllByIds(contracts.Select(c => c.id).ToList(),
+                cancellationToken);
 
         if (issuingContracts.IsNullOrEmpty())
         {
             return new NonExistingContract();
         }
 
-        var contractsByGsrn = await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(issuingContracts.Select(c => c.GSRN).ToList(), cancellationToken);
+        var contractsByGsrn =
+            await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(issuingContracts.Select(c => c.GSRN).ToList(),
+                cancellationToken);
 
         foreach (var issuingContract in issuingContracts)
         {
@@ -137,11 +158,15 @@ internal class ContractServiceImpl : IContractService
                 return new MeteringPointOwnerNoMatch();
             }
 
-            if (newContract.newEndDate != null && newContract.newEndDate.ToDateTimeOffset() <= issuingContract.StartDate)
+            if (newContract.newEndDate != null &&
+                newContract.newEndDate.ToDateTimeOffset() <= issuingContract.StartDate)
             {
                 return new EndDateBeforeStartDate(issuingContract.StartDate, newContract.newEndDate.ToDateTimeOffset());
             }
-            var overlappingContract = contractsByGsrn.FirstOrDefault(c =>  c.Overlaps(issuingContract.StartDate, newContract.newEndDate?.ToDateTimeOffset()) && c.Id != newContract.id);
+
+            var overlappingContract = contractsByGsrn.FirstOrDefault(c =>
+                c.Overlaps(issuingContract.StartDate, newContract.newEndDate?.ToDateTimeOffset()) &&
+                c.Id != newContract.id);
 
             if (overlappingContract != null)
             {
@@ -162,15 +187,19 @@ internal class ContractServiceImpl : IContractService
                 entityId: issuingContract.GSRN)
             );
         }
+
         unitOfWork.CertificateIssuingContractRepo.UpdateRange(issuingContracts);
         await unitOfWork.SaveAsync();
         return new SetEndDateResult.Success();
     }
 
-    public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken)
-        => unitOfWork.CertificateIssuingContractRepo.GetAllMeteringPointOwnerContracts(meteringPointOwner, cancellationToken);
+    public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner,
+        CancellationToken cancellationToken)
+        => unitOfWork.CertificateIssuingContractRepo.GetAllMeteringPointOwnerContracts(meteringPointOwner,
+            cancellationToken);
 
-    public async Task<CertificateIssuingContract?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken)
+    public async Task<CertificateIssuingContract?> GetById(Guid id, string meteringPointOwner,
+        CancellationToken cancellationToken)
     {
         var contract = await unitOfWork.CertificateIssuingContractRepo.GetById(id, cancellationToken);
 
