@@ -6,12 +6,12 @@ namespace API.Models;
 
 public class Organization
 {
-    public Guid Id { get; set; }
-    public string IdpId { get; set; } = string.Empty;
-    public string IdpOrganizationId { get; set; } = string.Empty;
-    public Tin Tin { get; set; }
-    public string OrganizationName { get; set; } = string.Empty;
+    public Guid Id { get; init; }
+    public Guid IdpId { get; init; }
+    public Guid IdpOrganizationId { get; init; }
+    public Tin Tin { get; init; }
+    public OrganizationName OrganizationName { get; init; }
 
-    public ICollection<Affiliation> Affiliations { get; set; } = new List<Affiliation>();
-    public ICollection<Consent> Consents { get; set; } = new List<Consent>();
+    public IReadOnlyCollection<Affiliation> Affiliations { get; init; } = Array.Empty<Affiliation>();
+    public IReadOnlyCollection<Consent> Consents { get; init; } = Array.Empty<Consent>();
 }

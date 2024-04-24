@@ -4,8 +4,8 @@ namespace API.Models;
 
 public class Client
 {
-    public Guid Id { get; set; }
-    public string IdpClientId { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public Role Role { get; set; }
+    public Guid Id { get; init; }
+    public string IdpClientId { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public Role Role { get; init; }
 }
