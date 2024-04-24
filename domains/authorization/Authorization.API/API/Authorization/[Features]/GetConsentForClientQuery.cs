@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,9 +12,9 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
     public async Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query, CancellationToken cancellationToken)
     {
         if (query.Sub.Equals("529a55d0-68c7-4129-ba3c-e06d4f1038c4"))
-            return new (query.Sub,"Granular System", "External", "Granular", new[] { "123456789", Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }, "dashboard production meters certificates wallet");
+            return new(query.Sub, "Granular System", "External", "Granular", new[] { "123456789", Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }, "dashboard production meters certificates wallet");
 
-        return new (default, default, default, default, default, default);
+        return new(default, default, default, default, default, default);
     }
 }
 
