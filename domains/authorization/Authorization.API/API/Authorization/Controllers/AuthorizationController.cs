@@ -41,9 +41,6 @@ public class AuthorizationController : ControllerBase
     /// Retreives Authorization Model.
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(201)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(typeof(void), 409)]
     [Authorize]
     [Route("api/authorization/user-consent/")]
     public async Task<ActionResult<AuthorizationResponse>> GetConsentForUser([FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationUserRequest request)
