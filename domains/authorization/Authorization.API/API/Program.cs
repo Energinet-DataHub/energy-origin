@@ -29,7 +29,7 @@ builder.Services.AddAuthentication()
         options.Audience = "f00b9b4d-3c59-4c40-b209-2ef87e509f54";
         options.MetadataAddress = "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration";
     });
-
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 // builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
 //     options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
