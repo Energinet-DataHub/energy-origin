@@ -10,7 +10,7 @@ public class Organization
     public string IdpId { get; set; } = string.Empty;
     public string IdpOrganizationId { get; set; } = string.Empty;
     public Tin Tin { get; set; }
-    public string Name { get; set; } = string.Empty;
+    public string OrganizationName { get; set; } = string.Empty;
 
     public ICollection<Affiliation> Affiliations { get; set; } = new List<Affiliation>();
     public ICollection<Consent> Consents { get; set; } = new List<Consent>();
