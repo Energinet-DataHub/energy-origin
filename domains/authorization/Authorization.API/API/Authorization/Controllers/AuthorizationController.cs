@@ -34,7 +34,7 @@ public class AuthorizationController : ControllerBase
     {
         var queryResult = await _mediator.Send(new GetConsentForClientQuery("Test"));
 
-        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.Name, queryResult.SubType, queryResult.OrgIds, queryResult.Scope));
+        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.Name, queryResult.SubType, queryResult.OrgName, queryResult.OrgIds, queryResult.Scope));
     }
 
     /// <summary>
@@ -48,9 +48,9 @@ public class AuthorizationController : ControllerBase
     [Route("api/authorization/user-consent/")]
     public async Task<ActionResult<AuthorizationResponse>> GetConsentForUser([FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationUserRequest request)
     {
-        var queryResult = await _mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgId));
+        var queryResult = await _mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgId, request.OrgName));
 
-        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.Name, queryResult.SubType, queryResult.OrgIds, queryResult.Scope));
+        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.Name, queryResult.SubType, queryResult.OrgName, queryResult.OrgIds, queryResult.Scope));
     }
 }
 
