@@ -17,7 +17,7 @@ namespace DataContext.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "8.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -68,7 +68,7 @@ namespace DataContext.Migrations
                     b.HasIndex("GSRN", "ContractNumber")
                         .IsUnique();
 
-                    b.ToTable("Contracts");
+                    b.ToTable("Contracts", (string)null);
                 });
 
             modelBuilder.Entity("DataContext.Models.ConsumptionCertificate", b =>
@@ -113,7 +113,7 @@ namespace DataContext.Migrations
                     b.HasIndex("Gsrn", "DateFrom", "DateTo")
                         .IsUnique();
 
-                    b.ToTable("ConsumptionCertificates");
+                    b.ToTable("ConsumptionCertificates", (string)null);
                 });
 
             modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
@@ -126,7 +126,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("GSRN");
 
-                    b.ToTable("MeteringPointTimeSeriesSlidingWindows");
+                    b.ToTable("MeteringPointTimeSeriesSlidingWindows", (string)null);
                 });
 
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
@@ -171,7 +171,7 @@ namespace DataContext.Migrations
                     b.HasIndex("Gsrn", "DateFrom", "DateTo")
                         .IsUnique();
 
-                    b.ToTable("ProductionCertificates");
+                    b.ToTable("ProductionCertificates", (string)null);
                 });
 
             modelBuilder.Entity("DataContext.Models.SynchronizationPosition", b =>
@@ -184,7 +184,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("GSRN");
 
-                    b.ToTable("SynchronizationPositions");
+                    b.ToTable("SynchronizationPositions", (string)null);
                 });
 
             modelBuilder.Entity("EnergyOrigin.ActivityLog.DataContext.ActivityLogEntry", b =>
@@ -237,7 +237,7 @@ namespace DataContext.Migrations
                     b.HasIndex("OrganizationTin")
                         .HasAnnotation("SqlServer:Clustered", false);
 
-                    b.ToTable("ActivityLogs");
+                    b.ToTable("ActivityLogs", (string)null);
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
@@ -286,7 +286,7 @@ namespace DataContext.Migrations
 
                     b.HasIndex("Delivered");
 
-                    b.ToTable("InboxState");
+                    b.ToTable("InboxState", (string)null);
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
@@ -377,7 +377,7 @@ namespace DataContext.Migrations
                     b.HasIndex("InboxMessageId", "InboxConsumerId", "SequenceNumber")
                         .IsUnique();
 
-                    b.ToTable("OutboxMessage");
+                    b.ToTable("OutboxMessage", (string)null);
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxState", b =>
@@ -407,12 +407,12 @@ namespace DataContext.Migrations
 
                     b.HasIndex("Created");
 
-                    b.ToTable("OutboxState");
+                    b.ToTable("OutboxState", (string)null);
                 });
 
             modelBuilder.Entity("DataContext.Models.CertificateIssuingContract", b =>
                 {
-                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("DataContext.Models.CertificateIssuingContract.Technology#DataContext.ValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("CertificateIssuingContractId")
                                 .HasColumnType("uuid");
@@ -427,7 +427,7 @@ namespace DataContext.Migrations
 
                             b1.HasKey("CertificateIssuingContractId");
 
-                            b1.ToTable("Contracts");
+                            b1.ToTable("Contracts", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("CertificateIssuingContractId");
@@ -438,44 +438,22 @@ namespace DataContext.Migrations
 
             modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
                 {
-                    b.OwnsOne("DataContext.Models.MissingMeasurements", "MissingMeasurements", b1 =>
+                    b.OwnsOne("DataContext.Models.MeteringPointTimeSeriesSlidingWindow.MissingMeasurements#System.Collections.Generic.List<DataContext.Models.MeasurementInterval>", "MissingMeasurements", b1 =>
                         {
                             b1.Property<string>("MeteringPointTimeSeriesSlidingWindowGSRN")
                                 .HasColumnType("text");
 
+                            b1.Property<int>("Capacity")
+                                .HasColumnType("integer");
+
                             b1.HasKey("MeteringPointTimeSeriesSlidingWindowGSRN");
 
-                            b1.ToTable("MeteringPointTimeSeriesSlidingWindows");
+                            b1.ToTable("MeteringPointTimeSeriesSlidingWindows", (string)null);
 
                             b1.ToJson("MissingMeasurements");
 
                             b1.WithOwner()
                                 .HasForeignKey("MeteringPointTimeSeriesSlidingWindowGSRN");
-
-                            b1.OwnsMany("DataContext.Models.MeasurementInterval", "Intervals", b2 =>
-                                {
-                                    b2.Property<string>("MissingMeasurementsMeteringPointTimeSeriesSlidingWindowGSRN")
-                                        .HasColumnType("text");
-
-                                    b2.Property<int>("Id")
-                                        .ValueGeneratedOnAdd()
-                                        .HasColumnType("integer");
-
-                                    b2.Property<long>("From")
-                                        .HasColumnType("bigint");
-
-                                    b2.Property<long>("To")
-                                        .HasColumnType("bigint");
-
-                                    b2.HasKey("MissingMeasurementsMeteringPointTimeSeriesSlidingWindowGSRN", "Id");
-
-                                    b2.ToTable("MeteringPointTimeSeriesSlidingWindows");
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("MissingMeasurementsMeteringPointTimeSeriesSlidingWindowGSRN");
-                                });
-
-                            b1.Navigation("Intervals");
                         });
 
                     b.Navigation("MissingMeasurements")
@@ -484,7 +462,7 @@ namespace DataContext.Migrations
 
             modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
                 {
-                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
+                    b.OwnsOne("DataContext.Models.ProductionCertificate.Technology#DataContext.ValueObjects.Technology", "Technology", b1 =>
                         {
                             b1.Property<Guid>("ProductionCertificateId")
                                 .HasColumnType("uuid");
@@ -499,7 +477,7 @@ namespace DataContext.Migrations
 
                             b1.HasKey("ProductionCertificateId");
 
-                            b1.ToTable("ProductionCertificates");
+                            b1.ToTable("ProductionCertificates", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ProductionCertificateId");

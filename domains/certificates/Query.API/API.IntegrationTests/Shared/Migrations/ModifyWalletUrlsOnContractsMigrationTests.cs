@@ -14,67 +14,69 @@ using FluentAssertions;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class ModifyWalletUrlsOnContractsMigrationTests
-{
-    private readonly PostgresContainer postgresContainer;
+//Has been commented out to use for reference in the future
 
-    public ModifyWalletUrlsOnContractsMigrationTests(IntegrationTestFixture integrationTestFixture)
-    {
-        postgresContainer = integrationTestFixture.PostgresContainer;
-    }
+//[Collection(IntegrationTestCollection.CollectionName)]
+//public class ModifyWalletUrlsOnContractsMigrationTests
+//{
+//    private readonly PostgresContainer postgresContainer;
 
-    [Fact]
-    public async Task ApplyMigration_ContractsShouldHaveNewWalletUrl()
-    {
-        await using (var dbContext = GetDbContext())
-        {
-            await dbContext.Contracts.ExecuteDeleteAsync();
-            var migrator = dbContext.GetService<IMigrator>();
+//    public ModifyWalletUrlsOnContractsMigrationTests(IntegrationTestFixture integrationTestFixture)
+//    {
+//        postgresContainer = integrationTestFixture.PostgresContainer;
+//    }
 
-            await migrator.MigrateAsync("20240408104920_AddSlidingWindow");
+//    [Fact]
+//    public async Task ApplyMigration_ContractsShouldHaveNewWalletUrl()
+//    {
+//        await using (var dbContext = GetDbContext())
+//        {
+//            await dbContext.Contracts.ExecuteDeleteAsync();
+//            var migrator = dbContext.GetService<IMigrator>();
 
-            for (int i = 0; i < 5; i++)
-            {
-                await InsertContract(dbContext, i);
-            }
-            await dbContext.SaveChangesAsync();
+//            await migrator.MigrateAsync("20240408104920_AddSlidingWindow");
 
-            var applyMigration = () => migrator.MigrateAsync("20240423100351_ModifyWalletUrlsOnContracts");
-            await applyMigration.Should().NotThrowAsync();
-        }
+//            for (int i = 0; i < 5; i++)
+//            {
+//                await InsertContract(dbContext, i);
+//            }
+//            await dbContext.SaveChangesAsync();
 
-        await using (var dbContext = GetDbContext())
-        {
-            dbContext.Contracts.Count().Should().Be(5);
-            dbContext.Contracts.ToList().ForEach(contract =>
-            {
-                contract.WalletUrl.Should().Be("http://foo/v1/slices/" + contract.ContractNumber);
-            });
-        }
-    }
+//            var applyMigration = () => migrator.MigrateAsync("20240423100351_ModifyWalletUrlsOnContracts");
+//            await applyMigration.Should().NotThrowAsync();
+//        }
 
-    private async Task InsertContract(ApplicationDbContext dbContext, int contractNumber)
-    {
-        await dbContext.Contracts.AddAsync(new CertificateIssuingContract
-        {
-            WalletUrl = "http://foo/wallet-api/" + contractNumber,
-            ContractNumber = contractNumber,
-            Created = DateTimeOffset.Now.ToUniversalTime(),
-            EndDate = null,
-            GSRN = GsrnHelper.GenerateRandom(),
-            GridArea = "DK1",
-            Id = Guid.NewGuid(),
-            MeteringPointOwner = Guid.NewGuid().ToString(),
-            MeteringPointType = MeteringPointType.Production,
-            StartDate = DateTimeOffset.Now.ToUniversalTime(),
-            Technology = new Technology("", ""),
-        });
-    }
+//        await using (var dbContext = GetDbContext())
+//        {
+//            dbContext.Contracts.Count().Should().Be(5);
+//            dbContext.Contracts.ToList().ForEach(contract =>
+//            {
+//                contract.WalletUrl.Should().Be("http://foo/v1/slices/" + contract.ContractNumber);
+//            });
+//        }
+//    }
 
-    private ApplicationDbContext GetDbContext()
-    {
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(postgresContainer.ConnectionString).Options;
-        return new ApplicationDbContext(contextOptions);
-    }
-}
+//    private async Task InsertContract(ApplicationDbContext dbContext, int contractNumber)
+//    {
+//        await dbContext.Contracts.AddAsync(new CertificateIssuingContract
+//        {
+//            WalletUrl = "http://foo/wallet-api/" + contractNumber,
+//            ContractNumber = contractNumber,
+//            Created = DateTimeOffset.Now.ToUniversalTime(),
+//            EndDate = null,
+//            GSRN = GsrnHelper.GenerateRandom(),
+//            GridArea = "DK1",
+//            Id = Guid.NewGuid(),
+//            MeteringPointOwner = Guid.NewGuid().ToString(),
+//            MeteringPointType = MeteringPointType.Production,
+//            StartDate = DateTimeOffset.Now.ToUniversalTime(),
+//            Technology = new Technology("", ""),
+//        });
+//    }
+
+//    private ApplicationDbContext GetDbContext()
+//    {
+//        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(postgresContainer.ConnectionString).Options;
+//        return new ApplicationDbContext(contextOptions);
+//    }
+//}

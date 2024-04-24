@@ -4,16 +4,6 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="T:API.ContractService.Clients.WalletRecord">
-            <summary>
-            A wallet record
-            </summary>
-        </member>
-        <member name="M:API.ContractService.Clients.WalletRecord.#ctor">
-            <summary>
-            A wallet record
-            </summary>
-        </member>
         <member name="P:API.ContractService.Clients.CreateWalletRequest.PrivateKey">
             <summary>
             The private key to import. If not provided, a private key will be generated.
@@ -57,16 +47,6 @@
         <member name="P:API.ContractService.Clients.ReceiveRequest.HashedAttributes">
             <summary>
             List of hashed attributes, their values and salts so the receiver can access the data.
-            </summary>
-        </member>
-        <member name="T:API.ContractService.Clients.HashedAttribute">
-            <summary>
-            Hashed attribute with salt.
-            </summary>
-        </member>
-        <member name="M:API.ContractService.Clients.HashedAttribute.#ctor">
-            <summary>
-            Hashed attribute with salt.
             </summary>
         </member>
         <member name="P:API.ContractService.Clients.HashedAttribute.Key">
