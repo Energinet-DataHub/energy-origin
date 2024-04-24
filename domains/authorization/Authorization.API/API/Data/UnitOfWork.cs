@@ -7,24 +7,23 @@ namespace API.Data;
 
 public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {
-    private readonly ApplicationDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
-    private bool _disposed;
-    private IDbContextTransaction? _transaction;
+    private readonly ApplicationDbContext context = context ?? throw new ArgumentNullException(nameof(context));
+    private IDbContextTransaction? transaction;
 
     public async Task BeginTransactionAsync()
     {
-        _transaction = await _context.Database.BeginTransactionAsync();
+        transaction = await context.Database.BeginTransactionAsync();
     }
 
     public async Task CommitAsync()
     {
-        if (_transaction == null)
+        if (transaction is null)
             throw new InvalidOperationException("No transaction started.");
 
         try
         {
-            await _context.SaveChangesAsync();
-            await _transaction.CommitAsync();
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
         }
         catch
         {
@@ -33,34 +32,32 @@ public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
         }
         finally
         {
-            if (_transaction != null)
-            {
-                await _transaction.DisposeAsync();
-                _transaction = null;
-            }
+            await DisposeTransactionAsync();
         }
     }
 
     public async Task RollbackAsync()
     {
-        if (_transaction != null)
+        if (transaction is not null)
         {
-            await _transaction.RollbackAsync();
-            await _transaction.DisposeAsync();
-            _transaction = null;
+            await transaction.RollbackAsync();
+            await DisposeTransactionAsync();
+        }
+    }
+
+    private async Task DisposeTransactionAsync()
+    {
+        if (transaction is not null)
+        {
+            await transaction.DisposeAsync();
+            transaction = null;
         }
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (_disposed) return;
-        if (_transaction != null)
-        {
-            await _transaction.DisposeAsync();
-            _transaction = null;
-        }
-        await _context.DisposeAsync();
-        _disposed = true;
+        await DisposeTransactionAsync();
+        await context.DisposeAsync();
         GC.SuppressFinalize(this);
     }
 }
