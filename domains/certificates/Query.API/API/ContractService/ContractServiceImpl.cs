@@ -61,7 +61,7 @@ internal class ContractServiceImpl : IContractService
             }
 
             var overlappingContract = contractsByGsrn.FirstOrDefault(c =>
-                c.Overlaps(startDate, endDate.Value));
+                c.Overlaps(startDate, endDate));
             if (overlappingContract != null)
             {
                 return new ContractAlreadyExists(overlappingContract);
