@@ -80,7 +80,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
             CertificateId = certificate.FederatedStreamId,
             Quantity = quantity,
             ReceiverId = receiverId,
-            HashedAttributes = new string[] {}
+            HashedAttributes = new string[] { }
         };
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");

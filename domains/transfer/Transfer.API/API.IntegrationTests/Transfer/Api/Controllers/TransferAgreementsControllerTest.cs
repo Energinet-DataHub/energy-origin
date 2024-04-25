@@ -558,7 +558,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                 }
             });
         walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new WalletEndpointReference(1, new Uri("http://someUrl"), new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()));
-        walletClientMock.CreateExternalEndpoint(Arg.Any<Guid>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid()});
+        walletClientMock.CreateExternalEndpoint(Arg.Any<Guid>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
 
         return walletClientMock;
     }

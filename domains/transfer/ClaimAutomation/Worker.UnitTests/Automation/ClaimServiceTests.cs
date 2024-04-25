@@ -135,7 +135,7 @@ public class ClaimServiceTests
 
         if (type == CertificateType.Production)
         {
-            certificate.Attributes.Add( "techCode", Some.TechCode);
+            certificate.Attributes.Add("techCode", Some.TechCode);
             certificate.Attributes.Add("fuelCode", Some.FuelCode);
         }
 
