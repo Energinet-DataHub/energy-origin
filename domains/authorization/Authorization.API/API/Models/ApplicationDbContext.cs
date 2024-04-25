@@ -49,6 +49,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany()
             .HasForeignKey(c => c.ClientId);
 
+        modelBuilder.Entity<Affiliation>()
+            .HasIndex(a => new { a.UserId, a.OrganizationId })
+            .IsUnique();
+
+        modelBuilder.Entity<Consent>()
+            .HasIndex(c => new { c.ClientId, c.OrganizationId })
+            .IsUnique();
+
         modelBuilder.Entity<User>().HasIndex(u => u.IdpUserId).IsUnique();
         modelBuilder.Entity<Organization>().HasIndex(o => o.IdpOrganizationId).IsUnique();
         modelBuilder.Entity<Client>().HasIndex(c => c.IdpClientId).IsUnique();

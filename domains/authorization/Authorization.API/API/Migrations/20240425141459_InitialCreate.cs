@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -111,9 +111,10 @@ namespace API.Migrations
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Affiliations_UserId",
+                name: "IX_Affiliations_UserId_OrganizationId",
                 table: "Affiliations",
-                column: "UserId");
+                columns: new[] { "UserId", "OrganizationId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Clients_IdpClientId",
@@ -122,9 +123,10 @@ namespace API.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Consents_ClientId",
+                name: "IX_Consents_ClientId_OrganizationId",
                 table: "Consents",
-                column: "ClientId");
+                columns: new[] { "ClientId", "OrganizationId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Consents_OrganizationId",

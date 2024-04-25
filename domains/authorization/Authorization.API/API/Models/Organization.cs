@@ -12,6 +12,6 @@ public class Organization
     public Tin Tin { get; init; }
     public OrganizationName OrganizationName { get; init; }
 
-    public IReadOnlyCollection<Affiliation> Affiliations { get; init; } = Array.Empty<Affiliation>();
-    public IReadOnlyCollection<Consent> Consents { get; init; } = Array.Empty<Consent>();
+    public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
+    public ICollection<Consent> Consents { get; init; } = new List<Consent>();
 }

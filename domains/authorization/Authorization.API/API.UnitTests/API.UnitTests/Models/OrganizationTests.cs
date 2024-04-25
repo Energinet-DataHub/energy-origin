@@ -34,14 +34,12 @@ public class OrganizationTests
     public void Organization_WithAffiliations_InitializesCorrectly()
     {
         var user = new User();
-        var organization = new Organization
-        {
-            Affiliations = new List<Affiliation>
-            {
-                new(user, new Organization()) { Id = Guid.NewGuid() }
-            }
-        };
+        var organization = new Organization();
+        var affiliation = Affiliation.Create(user, organization);
 
+        organization.Affiliations.Add(affiliation);
+
+        Assert.Single(organization.Affiliations);
         Assert.Equal(organization.Affiliations.First().User, user);
         Assert.Equal(organization.Affiliations.First().Organization, organization);
     }
@@ -50,14 +48,12 @@ public class OrganizationTests
     public void Organization_WithConsents_InitializesCorrectly()
     {
         var client = new Client();
-        var organization = new Organization
-        {
-            Consents = new List<Consent>
-            {
-                new(new Organization(), client) { Id = Guid.NewGuid() }
-            }
-        };
+        var organization = new Organization();
+        var consent = Consent.Create(organization, client, DateTime.Now);
 
+        organization.Consents.Add(consent);
+
+        Assert.Single(organization.Consents);
         Assert.Equal(organization.Consents.First().Client, client);
         Assert.Equal(organization.Consents.First().Organization, organization);
     }

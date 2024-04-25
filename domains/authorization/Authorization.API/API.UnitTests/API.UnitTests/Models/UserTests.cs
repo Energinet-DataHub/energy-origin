@@ -37,14 +37,12 @@ public class UserTests
     public void User_WithAffiliations_InitializesCorrectly()
     {
         var organization = new Organization();
-        var user = new User
-        {
-            Affiliations = new List<Affiliation>
-            {
-                new(new User(), organization) { Id = Guid.NewGuid() }
-            }
-        };
+        var user = new User();
+        var affiliation = Affiliation.Create(user, organization);
 
+        user.Affiliations.Add(affiliation);
+
+        Assert.Single(user.Affiliations);
         Assert.Equal(user.Affiliations.First().User, user);
         Assert.Equal(user.Affiliations.First().Organization, organization);
     }

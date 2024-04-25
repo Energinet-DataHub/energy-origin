@@ -10,5 +10,5 @@ public class User
     public string IdpUserId { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
 
-    public IReadOnlyCollection<Affiliation> Affiliations { get; init; } = Array.Empty<Affiliation>();
+    public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
 }

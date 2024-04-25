@@ -2,11 +2,30 @@ using System;
 
 namespace API.Models;
 
-public class Affiliation(User user, Organization organization)
+public class Affiliation
 {
-    public Guid Id { get; init; }
-    public Guid UserId { get; init; }
-    public User User { get; init; } = user ?? throw new ArgumentNullException(nameof(user));
-    public Guid OrganizationId { get; init; }
-    public Organization Organization { get; init; } = organization ?? throw new ArgumentNullException(nameof(organization));
+    private Affiliation(Guid id, Guid userId, Guid organizationId)
+    {
+        Id = id;
+        UserId = userId;
+        OrganizationId = organizationId;
+    }
+
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public Guid OrganizationId { get; set; }
+    public Organization Organization { get; set; } = null!;
+    public User User { get; set; } = null!;
+
+    public static Affiliation Create(User user, Organization organization)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(organization);
+
+        return new Affiliation(Guid.NewGuid(), user.Id, organization.Id)
+        {
+            User = user,
+            Organization = organization
+        };
+    }
 }

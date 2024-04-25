@@ -1,4 +1,5 @@
 using API.Models;
+using Xunit;
 
 namespace API.UnitTests.Models;
 
@@ -7,18 +8,12 @@ public class ConsentTests
     [Fact]
     public void Consent_WithValidData_CreatesSuccessfully()
     {
-        var id = Guid.NewGuid();
         var organization = new Organization();
         var client = new Client();
         var consentDate = DateTime.UtcNow;
 
-        var consent = new Consent(organization, client)
-        {
-            Id = id,
-            ConsentDate = consentDate
-        };
+        var consent = Consent.Create(organization, client, consentDate);
 
-        Assert.Equal(id, consent.Id);
         Assert.Equal(organization, consent.Organization);
         Assert.Equal(client, consent.Client);
         Assert.Equal(consentDate, consent.ConsentDate);
@@ -29,7 +24,7 @@ public class ConsentTests
     {
         var organization = new Organization();
         var client = new Client();
-        var consent = new Consent(organization, client);
+        var consent = Consent.Create(organization, client, DateTime.UtcNow);
 
         Assert.NotNull(consent.Organization);
     }
@@ -39,7 +34,7 @@ public class ConsentTests
     {
         var organization = new Organization();
         var client = new Client();
-        var consent = new Consent(organization, client);
+        var consent = Consent.Create(organization, client, DateTime.UtcNow);
 
         Assert.NotNull(consent.Client);
     }

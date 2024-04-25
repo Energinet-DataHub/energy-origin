@@ -38,7 +38,8 @@ namespace API.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "OrganizationId")
+                        .IsUnique();
 
                     b.ToTable("Affiliations");
                 });
@@ -85,9 +86,10 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
-
                     b.HasIndex("OrganizationId");
+
+                    b.HasIndex("ClientId", "OrganizationId")
+                        .IsUnique();
 
                     b.ToTable("Consents");
                 });
