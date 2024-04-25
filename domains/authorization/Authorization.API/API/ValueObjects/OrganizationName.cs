@@ -6,6 +6,7 @@ namespace API.ValueObjects;
 public readonly partial record struct OrganizationName : IComparable<OrganizationName>
 {
     public string Value { get; }
+    public int CompareTo(OrganizationName other) => string.Compare(Value, other.Value, StringComparison.Ordinal);
 
     public OrganizationName(string value)
     {
@@ -25,9 +26,4 @@ public readonly partial record struct OrganizationName : IComparable<Organizatio
 
     [GeneratedRegex(@"^[a-zA-Z0-9\s&.,'\-]+$")]
     private static partial Regex MyRegex();
-
-    public int CompareTo(OrganizationName other)
-    {
-        return string.Compare(Value, other.Value, StringComparison.Ordinal);
-    }
 }

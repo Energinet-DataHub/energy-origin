@@ -7,6 +7,8 @@ public readonly record struct Tin : IComparable<Tin>
 {
     public string Value { get; }
 
+    public int CompareTo(Tin other) => string.Compare(Value, other.Value, StringComparison.Ordinal);
+
     public Tin(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -19,9 +21,4 @@ public readonly record struct Tin : IComparable<Tin>
     }
 
     private static bool IsDigitsOnly(string str) => str.All(char.IsDigit);
-
-    public int CompareTo(Tin other)
-    {
-        return string.Compare(Value, other.Value, StringComparison.Ordinal);
-    }
 }
