@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using API.Transfer.Api.Options;
-using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementCleanup;
 using API.Transfer.TransferAgreementCleanup.Options;
 using API.Transfer.TransferAgreementProposalCleanup;
@@ -11,6 +10,7 @@ using Audit.Core;
 using DataContext.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using ProjectOriginClients;
 
 namespace API.Transfer;
 
@@ -62,7 +62,7 @@ public static class Startup
                     })
                 ));
 
-        services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
+        services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
         {
             var cvrOptions = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
             c.BaseAddress = new Uri(cvrOptions.WalletUrl);

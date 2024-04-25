@@ -9,12 +9,12 @@ using API.IntegrationTests.Factories;
 using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using API.Transfer.Api.Services;
 using DataContext.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NSubstitute;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using ProjectOriginClients;
 using ProjectOriginClients.Models;
 using VerifyTests;
 using VerifyXunit;
@@ -544,11 +544,11 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         return createdProposal!.Id;
     }
 
-    private IWalletClient SetupPoWalletServiceMock()
+    private IProjectOriginWalletClient SetupPoWalletServiceMock()
     {
-        var walletClientMock = Substitute.For<IWalletClient>();
-        walletClientMock.CreateWallet(Arg.Any<string>(), Arg.Any<CancellationToken>());
-        walletClientMock.GetWallets(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(
+        var walletClientMock = Substitute.For<IProjectOriginWalletClient>();
+        walletClientMock.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        walletClientMock.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
             new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo { Count = 1, Limit = 100, Total = 1, Offset = 0 },
@@ -557,8 +557,8 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
                     new WalletRecord { Id = Guid.NewGuid(), PublicKey = new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter() }
                 }
             });
-        walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new WalletEndpointReference(1, new Uri("http://someUrl"), new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()));
-        walletClientMock.CreateExternalEndpoint(Arg.Any<string>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid()});
+        walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new WalletEndpointReference(1, new Uri("http://someUrl"), new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()));
+        walletClientMock.CreateExternalEndpoint(Arg.Any<Guid>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid()});
 
         return walletClientMock;
     }

@@ -8,7 +8,6 @@ using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Repository;
-using API.Transfer.Api.Services;
 using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.API;
@@ -19,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using ProjectOriginClients;
 using ProjectOriginClients.Models;
 using Xunit;
 
@@ -30,7 +30,7 @@ public class TransferAgreementsControllerTests
     private readonly ITransferAgreementRepository mockTransferAgreementRepository = Substitute.For<ITransferAgreementRepository>();
     private readonly ITransferAgreementProposalRepository mockTransferAgreementProposalRepository = Substitute.For<ITransferAgreementProposalRepository>();
     private readonly IActivityLogEntryRepository mockActivityLogRepository = Substitute.For<IActivityLogEntryRepository>();
-    private readonly IWalletClient mockWalletClient = Substitute.For<IWalletClient>();
+    private readonly IProjectOriginWalletClient mockWalletClient = Substitute.For<IProjectOriginWalletClient>();
     private readonly IUnitOfWork mockUnitOfWork = Substitute.For<IUnitOfWork>();
 
     private const string UserClaimNameScope = "userScope";
@@ -108,7 +108,7 @@ public class TransferAgreementsControllerTests
             SenderCompanyTin = "32132132"
         };
 
-        mockWalletClient.GetWallets(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(
+        mockWalletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
             new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo() { Limit = 100, Total = 1, Count = 1, Offset = 0 },
@@ -122,7 +122,7 @@ public class TransferAgreementsControllerTests
                 }
             });
         mockWalletClient
-            .CreateExternalEndpoint(Arg.Any<string>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(),
+            .CreateExternalEndpoint(Arg.Any<Guid>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(),
                 Arg.Any<CancellationToken>())
             .Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
         mockTransferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(Arg.Any<Guid>())

@@ -9,7 +9,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Asp.Versioning.ApiExplorer;
-using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementProposalCleanup;
 using DataContext;
 using DataContext.Models;
@@ -26,6 +25,7 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using Testcontainers.PostgreSql;
 using Xunit;
+using ProjectOriginClients;
 
 namespace API.IntegrationTests.Factories;
 
@@ -179,14 +179,14 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return client;
     }
 
-    public HttpClient CreateAuthenticatedClient(IWalletClient walletClientMock, string sub, string tin = "11223344", string name = "Peter Producent",
+    public HttpClient CreateAuthenticatedClient(IProjectOriginWalletClient walletClientMock, string sub, string tin = "11223344", string name = "Peter Producent",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Peter Producent A/S", string apiVersion = "20240103")
     {
         var client = WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
             {
-                services.Remove(services.First(s => s.ServiceType == typeof(IWalletClient)));
+                services.Remove(services.First(s => s.ServiceType == typeof(IProjectOriginWalletClient)));
                 services.AddScoped(_ => walletClientMock);
             });
         }).CreateClient();

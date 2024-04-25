@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using API.Transfer.Api.Services;
 using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
@@ -17,6 +15,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ProjectOriginClients;
 
 namespace API.Transfer.Api.Controllers;
 
@@ -25,7 +24,7 @@ namespace API.Transfer.Api.Controllers;
 [ApiVersion(ApiVersions.Version20240103)]
 [Route("api/transfer/transfer-agreements")]
 public class TransferAgreementsController(
-    IWalletClient walletClient,
+    IProjectOriginWalletClient walletClient,
     IUnitOfWork unitOfWork
 ) : ControllerBase
 {
@@ -78,14 +77,14 @@ public class TransferAgreementsController(
                 statusCode: 409);
         }
 
-        var subject = user.Subject.ToString();
+        var subject = user.Subject;
         var cancellationToken = new CancellationToken();
         var wallets = await walletClient.GetWallets(subject, cancellationToken);
 
         var walletId = wallets.Result.FirstOrDefault()?.Id;
         if (walletId == null)
         {
-            var createWalletResponse = await walletClient.CreateWallet(user.Subject.ToString(), cancellationToken);
+            var createWalletResponse = await walletClient.CreateWallet(user.Subject, cancellationToken);
 
             if (createWalletResponse == null)
                 throw new ApplicationException("Failed to create wallet.");
@@ -93,9 +92,9 @@ public class TransferAgreementsController(
             walletId = createWalletResponse.WalletId;
         }
 
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(walletId.Value, subject, cancellationToken);
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(subject, walletId.Value, cancellationToken);
 
-        var externalEndpoint = await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.ToString(), walletEndpoint, proposal.ReceiverCompanyTin, cancellationToken);
+        var externalEndpoint = await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId, walletEndpoint, proposal.ReceiverCompanyTin, cancellationToken);
 
         var transferAgreement = new TransferAgreement
         {

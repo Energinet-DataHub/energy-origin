@@ -59,55 +59,5 @@
             <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
             <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
         </member>
-        <member name="T:API.Transfer.Api.Services.WalletRecord">
-            <summary>
-            A wallet record
-            </summary>
-        </member>
-        <member name="M:API.Transfer.Api.Services.WalletRecord.#ctor">
-            <summary>
-            A wallet record
-            </summary>
-        </member>
-        <member name="P:API.Transfer.Api.Services.CreateWalletRequest.PrivateKey">
-            <summary>
-            The private key to import. If not provided, a private key will be generated.
-            </summary>
-        </member>
-        <member name="T:API.Transfer.Api.Services.CreateExternalEndpointRequest">
-            <summary>
-            Request to create a new external endpoint.
-            </summary>
-        </member>
-        <member name="M:API.Transfer.Api.Services.CreateExternalEndpointRequest.#ctor">
-            <summary>
-            Request to create a new external endpoint.
-            </summary>
-        </member>
-        <member name="P:API.Transfer.Api.Services.CreateExternalEndpointRequest.WalletReference">
-            <summary>
-            The wallet reference to the wallet, one wants to create a link to.
-            </summary>
-        </member>
-        <member name="P:API.Transfer.Api.Services.CreateExternalEndpointRequest.TextReference">
-            <summary>
-            The text reference for the wallet, one wants to create a link to.
-            </summary>
-        </member>
-        <member name="T:API.Transfer.Api.Services.CreateExternalEndpointResponse">
-            <summary>
-            Response to create a new external endpoint.
-            </summary>
-        </member>
-        <member name="M:API.Transfer.Api.Services.CreateExternalEndpointResponse.#ctor">
-            <summary>
-            Response to create a new external endpoint.
-            </summary>
-        </member>
-        <member name="P:API.Transfer.Api.Services.CreateExternalEndpointResponse.ReceiverId">
-            <summary>
-            The ID of the created external endpoint.
-            </summary>
-        </member>
     </members>
 </doc>
