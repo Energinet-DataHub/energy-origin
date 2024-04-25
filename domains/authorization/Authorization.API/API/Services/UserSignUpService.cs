@@ -46,7 +46,7 @@ public class UserSignUpService(
                 Tin = new Tin(tin),
                 OrganizationName = new OrganizationName(organizationName)
             };
-            organizationRepository.Add(organization);
+            await organizationRepository.AddAsync(organization);
 
             // Create or update the user
             var user = new User
@@ -55,15 +55,11 @@ public class UserSignUpService(
                 IdpUserId = idpUserId,
                 Name = name
             };
-            userRepository.Add(user);
+            await userRepository.AddAsync(user);
 
             // Create the affiliation
-            var affiliation = new Affiliation
-            {
-                UserId = user.Id,
-                OrganizationId = organization.Id
-            };
-            affiliationRepository.Add(affiliation);
+            var affiliation = new Affiliation(user, organization);
+            await affiliationRepository.AddAsync(affiliation);
 
             // Commit the transaction
             await unitOfWork.CommitAsync();
