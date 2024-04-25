@@ -7,10 +7,7 @@ public class EditContractEndDateValidator : AbstractValidator<EditContractEndDat
 {
     public EditContractEndDateValidator()
     {
-        var now = DateTimeOffset.UtcNow;
-
         RuleFor(cs => cs.EndDate)
-            .GreaterThanOrEqualTo(_ => now.ToUnixTimeSeconds())
             .MustBeBeforeYear10000()
             .When(s => s.EndDate != default);
     }
@@ -20,10 +17,7 @@ public class EditContractEndDate20230101Validator : AbstractValidator<EditContra
 {
     public EditContractEndDate20230101Validator()
     {
-        var now = DateTimeOffset.UtcNow;
-
         RuleFor(cs => cs.EndDate)
-            .GreaterThanOrEqualTo(_ => now.ToUnixTimeSeconds())
             .MustBeBeforeYear10000()
             .When(s => s.EndDate != default);
     }
