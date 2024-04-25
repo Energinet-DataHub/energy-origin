@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Dto.Requests;
@@ -17,6 +18,8 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
+using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using ProjectOriginClients.Models;
 using Xunit;
 
 namespace API.UnitTests.Transfer.Api.Controllers;
@@ -105,6 +108,23 @@ public class TransferAgreementsControllerTests
             SenderCompanyTin = "32132132"
         };
 
+        mockWalletClient.GetWallets(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(
+            new ResultList<WalletRecord>
+            {
+                Metadata = new PageInfo() { Limit = 100, Total = 1, Count = 1, Offset = 0 },
+                Result = new List<WalletRecord>
+                {
+                    new WalletRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        PublicKey = new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()
+                    }
+                }
+            });
+        mockWalletClient
+            .CreateExternalEndpoint(Arg.Any<string>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
         mockTransferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(Arg.Any<Guid>())
             .Returns(taProposal);
         mockTransferAgreementRepository.AddTransferAgreementAndDeleteProposal(Arg.Any<TransferAgreement>(), taProposal.Id)

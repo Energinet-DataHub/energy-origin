@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -13,6 +14,7 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using NSubstitute;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using ProjectOriginClients.Models;
 using Xunit.Abstractions;
 
 namespace API.IntegrationTests.Transfer.Api;
@@ -95,7 +97,16 @@ public class Api
     {
         var walletClientMock = Substitute.For<IWalletClient>();
         walletClientMock.CreateWallet(Arg.Any<string>(), Arg.Any<CancellationToken>());
-        walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new WalletEndpointReference(1, new Uri("http://someUrl"), new Secp256k1Algorithm().ImportHDPublicKey(new ReadOnlySpan<byte>())));
+        walletClientMock.GetWallets(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(
+            new ResultList<WalletRecord>
+            {
+                Metadata = new PageInfo { Count = 1, Limit = 100, Total = 1, Offset = 0 },
+                Result = new List<WalletRecord>
+                {
+                    new WalletRecord { Id = Guid.NewGuid(), PublicKey = new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter() }
+                }
+            });
+        walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new WalletEndpointReference(1, new Uri("http://someUrl"), new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()));
         walletClientMock.CreateExternalEndpoint(Arg.Any<string>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
 
         return walletClientMock;
