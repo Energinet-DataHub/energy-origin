@@ -1,4 +1,4 @@
-﻿using API.ValueObjects;
+using API.ValueObjects;
 
 namespace API.UnitTests.ValueObjects;
 
