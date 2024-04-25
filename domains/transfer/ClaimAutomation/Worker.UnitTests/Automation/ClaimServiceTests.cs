@@ -1,12 +1,12 @@
 using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Automation;
-using ClaimAutomation.Worker.Automation.Services;
 using ClaimAutomation.Worker.Metrics;
 using DataContext.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using ProjectOriginClients;
 using ProjectOriginClients.Models;
 using Testing;
 using Xunit;
@@ -21,7 +21,7 @@ public class ClaimServiceTests
     {
         var logger = Substitute.For<ILogger<ClaimService>>();
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
-        var walletClient = Substitute.For<IWalletClient>();
+        var walletClient = Substitute.For<IProjectOriginWalletClient>();
         var metricsMock = Substitute.For<IClaimAutomationMetrics>();
         var cacheMock = Substitute.For<AutomationCache>();
 
@@ -68,7 +68,7 @@ public class ClaimServiceTests
     {
         var logger = Substitute.For<ILogger<ClaimService>>();
         var claimRepository = Substitute.For<IClaimAutomationRepository>();
-        var walletClient = Substitute.For<IWalletClient>();
+        var walletClient = Substitute.For<IProjectOriginWalletClient>();
         var metricsMock = Substitute.For<IClaimAutomationMetrics>();
         var cacheMock = Substitute.For<AutomationCache>();
 

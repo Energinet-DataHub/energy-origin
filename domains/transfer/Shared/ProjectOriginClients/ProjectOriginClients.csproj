@@ -22,7 +22,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Protos/common.proto" GrpcServices="None" />
-		<Protobuf Include="Protos/wallet.proto" GrpcServices="Client" />
+	  <ProjectReference Include="..\DataContext\DataContext.csproj" />
 	</ItemGroup>
 </Project>

@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Automation;
-using ClaimAutomation.Worker.Automation.Services;
 using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using DataContext;
@@ -19,6 +18,7 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using ProjectOriginClients;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,7 +56,7 @@ builder.Services.AddScoped<IShuffler, Shuffler>();
 builder.Services.AddHostedService<ClaimWorker>();
 builder.Services.AddSingleton<AutomationCache>();
 builder.Services.AddSingleton<IClaimAutomationMetrics, ClaimAutomationMetrics>();
-builder.Services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
+builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
 {
     var cvrOptions = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     c.BaseAddress = new Uri(cvrOptions.WalletUrl);

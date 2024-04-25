@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ClaimAutomation.Worker.Api.Repositories;
-using ClaimAutomation.Worker.Automation.Services;
 using ClaimAutomation.Worker.Metrics;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using ProjectOriginClients;
 using ProjectOriginClients.Models;
 
 namespace ClaimAutomation.Worker.Automation;
@@ -15,7 +15,7 @@ namespace ClaimAutomation.Worker.Automation;
 public class ClaimService(
     ILogger<ClaimService> logger,
     IClaimAutomationRepository claimAutomationRepository,
-    IWalletClient walletClient,
+    IProjectOriginWalletClient walletClient,
     IShuffler shuffle,
     IClaimAutomationMetrics metrics,
     AutomationCache cache)

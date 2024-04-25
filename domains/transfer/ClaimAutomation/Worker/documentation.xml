@@ -4,45 +4,5 @@
         <name>ClaimAutomation.Worker</name>
     </assembly>
     <members>
-        <member name="T:ClaimAutomation.Worker.Automation.Services.ClaimRequest">
-            <summary>
-            A request to claim a production and consumption certificate.
-            </summary>
-        </member>
-        <member name="M:ClaimAutomation.Worker.Automation.Services.ClaimRequest.#ctor">
-            <summary>
-            A request to claim a production and consumption certificate.
-            </summary>
-        </member>
-        <member name="P:ClaimAutomation.Worker.Automation.Services.ClaimRequest.ProductionCertificateId">
-            <summary>
-            The id of the production certificate to claim.
-            </summary>
-        </member>
-        <member name="P:ClaimAutomation.Worker.Automation.Services.ClaimRequest.ConsumptionCertificateId">
-            <summary>
-            The id of the consumption certificate to claim.
-            </summary>
-        </member>
-        <member name="P:ClaimAutomation.Worker.Automation.Services.ClaimRequest.Quantity">
-            <summary>
-            The quantity of the certificates to claim.
-            </summary>
-        </member>
-        <member name="T:ClaimAutomation.Worker.Automation.Services.ClaimResponse">
-            <summary>
-            A response to a claim request.
-            </summary>
-        </member>
-        <member name="M:ClaimAutomation.Worker.Automation.Services.ClaimResponse.#ctor">
-            <summary>
-            A response to a claim request.
-            </summary>
-        </member>
-        <member name="P:ClaimAutomation.Worker.Automation.Services.ClaimResponse.ClaimRequestId">
-            <summary>
-            The id of the claim request.
-            </summary>
-        </member>
     </members>
 </doc>
