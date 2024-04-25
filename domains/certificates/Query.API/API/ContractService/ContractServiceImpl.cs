@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Query.API.ApiModels.Requests;
+using API.Query.API.ApiModels.Responses;
 using API.UnitOfWork;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
@@ -47,9 +48,9 @@ internal class ContractServiceImpl : IContractService
         var number = 0;
         foreach (var contract in contracts.Contracts)
         {
-            var startDate = UnixTimestamp.Create(contract.StartDate);
-            var endDate = contract.EndDate.HasValue
-                ? UnixTimestamp.Create(contract.EndDate.Value)
+            var startDate = DateTimeOffset.FromUnixTimeSeconds(contract.StartDate);
+            DateTimeOffset? endDate = contract.EndDate.HasValue
+                ? DateTimeOffset.FromUnixTimeSeconds(contract.EndDate.Value)
                 : null;
 
             var matchingMeteringPoint = meteringPoints?.Result.Find(mp => mp.Gsrn == contract.GSRN);
@@ -60,7 +61,7 @@ internal class ContractServiceImpl : IContractService
             }
 
             var overlappingContract = contractsByGsrn.FirstOrDefault(c =>
-                c.Overlaps(startDate, endDate));
+                c.Overlaps(startDate, endDate.Value));
             if (overlappingContract != null)
             {
                 return new ContractAlreadyExists(overlappingContract);
@@ -93,8 +94,8 @@ internal class ContractServiceImpl : IContractService
                 matchingMeteringPoint.GridArea,
                 Map(matchingMeteringPoint.Type),
                 meteringPointOwner,
-                startDate.ToDateTimeOffset(),
-                endDate?.ToDateTimeOffset(),
+                startDate,
+                endDate,
                 walletDepositEndpoint.Endpoint.ToString(),
                 walletDepositEndpoint.PublicKey.Export().ToArray(),
                 Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
@@ -163,8 +164,8 @@ internal class ContractServiceImpl : IContractService
 
         foreach (var updatedContract in contracts.Contracts)
         {
-            var newEndDate = updatedContract.EndDate.HasValue
-                ? UnixTimestamp.Create(updatedContract.EndDate.Value)
+            DateTimeOffset? newEndDate = updatedContract.EndDate.HasValue
+                ? DateTimeOffset.FromUnixTimeSeconds(updatedContract.EndDate.Value)
                 : null;
             var existingContract = issuingContracts.Find(c => c.Id == updatedContract.Id);
             if (existingContract == null)
@@ -178,13 +179,13 @@ internal class ContractServiceImpl : IContractService
             }
 
             if (newEndDate != null &&
-                newEndDate.ToDateTimeOffset() <= existingContract.StartDate)
+                newEndDate <= existingContract.StartDate)
             {
-                return new EndDateBeforeStartDate(existingContract.StartDate, newEndDate.ToDateTimeOffset());
+                return new EndDateBeforeStartDate(existingContract.StartDate, newEndDate.Value);
             }
 
             var overlappingContract = contractsByGsrn.FirstOrDefault(c =>
-                c.Overlaps(UnixTimestamp.Create(existingContract.StartDate), newEndDate) &&
+                c.Overlaps(existingContract.StartDate, newEndDate) &&
                 c.Id != existingContract.Id);
 
             if (overlappingContract != null)
@@ -192,7 +193,7 @@ internal class ContractServiceImpl : IContractService
                 return new OverlappingContract();
             }
 
-            existingContract.EndDate = newEndDate?.ToDateTimeOffset();
+            existingContract.EndDate = newEndDate;
 
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,

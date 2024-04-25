@@ -581,7 +581,7 @@ public sealed class ContractTests : TestBase
         var createContent = await createResponse.Content.ReadJson<ContractList>();
 
         var id = createContent!.Result.ToList().Find(c => c.StartDate == startDate)!.Id;
-        var id1 =  createContent!.Result.ToList().Find(c => c.StartDate == startDate1)!.Id;
+        var id1 = createContent!.Result.ToList().Find(c => c.StartDate == startDate1)!.Id;
 
         var newEndDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(4).ToUnixTimeSeconds();
         var newEndDate1 = UnixTimestamp.Now().ToDateTimeOffset().AddDays(9).ToUnixTimeSeconds();
