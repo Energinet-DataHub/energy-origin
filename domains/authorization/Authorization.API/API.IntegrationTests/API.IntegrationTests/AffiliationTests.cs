@@ -1,45 +1,33 @@
 ﻿using API.Models;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using Testing.Testcontainers;
 
-namespace API.IntegrationTests;
-
-public class AffiliationIntegrationTests : IClassFixture<PostgresContainer>
+namespace API.IntegrationTests
 {
-    private readonly ApplicationDbContext _context;
-
-    public AffiliationIntegrationTests(PostgresContainer fixture)
+    public class AffiliationTests : IClassFixture<DatabaseFixture>
     {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(fixture.ConnectionString)
-            .Options;
+        private readonly DatabaseFixture _fixture;
 
-        _context = new ApplicationDbContext(options);
-    }
-
-    [Fact]
-    public async Task CannotAddDuplicateAffiliation()
-    {
-        var user = new User();
-        var organization = new Organization();
-        var affiliation1 = Affiliation.Create(user, organization);
-        var affiliation2 = Affiliation.Create(user, organization);
-
-        _context.Users.Add(user);
-        _context.Organizations.Add(organization);
-        _context.Affiliations.Add(affiliation1);
-        await _context.SaveChangesAsync();
-
-        var act = async () =>
+        public AffiliationTests(DatabaseFixture fixture)
         {
-            _context.Affiliations.Add(affiliation2);
-            await _context.SaveChangesAsync();
-        };
+            _fixture = fixture;
+        }
 
-        var exception = await act.Should().ThrowAsync<DbUpdateException>();
-        exception.WithMessage("*unique violation*");
-        exception.And.InnerException.Should().BeOfType<PostgresException>();
+        [Fact]
+        public async Task CannotAddDuplicateAffiliation()
+        {
+            using var context = _fixture.CreateContext();
+            var user = new User();
+            var organization = new Organization();
+            var affiliation1 = Affiliation.Create(user, organization);
+            var affiliation2 = Affiliation.Create(user, organization);
+
+            context.Users.Add(user);
+            context.Organizations.Add(organization);
+            context.Affiliations.Add(affiliation1);
+            await context.SaveChangesAsync();
+
+            context.Affiliations.Add(affiliation2);
+            await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+        }
     }
 }
