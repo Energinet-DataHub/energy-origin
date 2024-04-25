@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
@@ -16,17 +15,18 @@ namespace API.IntegrationTests.Shared.Migrations;
 [Collection(IntegrationTestCollection.CollectionName)]
 public class ActivityLogEntityIdIsNowAStringTests
 {
-    private readonly PostgresContainer postgresContainer;
+    private readonly DbContextOptions<ApplicationDbContext> options;
 
     public ActivityLogEntityIdIsNowAStringTests(IntegrationTestFixture integrationTestFixture)
     {
-        postgresContainer = integrationTestFixture.PostgresContainer;
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
     }
 
     [Fact]
     public async Task ApplyMigration_WhenDataExistsInDatabase()
     {
-        await using var dbContext = GetDbContext();
+        await using var dbContext = new ApplicationDbContext(options);
 
         var migrator = dbContext.GetService<IMigrator>();
 
@@ -84,11 +84,5 @@ public class ActivityLogEntityIdIsNowAStringTests
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(logEntryQuery, logEntryFields);
-    }
-
-    private ApplicationDbContext GetDbContext()
-    {
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(postgresContainer.ConnectionString).Options;
-        return new ApplicationDbContext(contextOptions);
     }
 }
