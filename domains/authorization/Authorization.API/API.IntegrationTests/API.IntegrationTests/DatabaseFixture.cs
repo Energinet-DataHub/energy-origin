@@ -8,10 +8,10 @@ namespace API.IntegrationTests;
 public class DatabaseFixture : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _testContainer = new PostgreSqlBuilder()
-        .WithImage("postgres:15.2") // Specify the PostgreSQL version you want to use
-        .WithDatabase("testdb") // Set the database name
-        .WithUsername("postgres") // Default username
-        .WithPassword("password") // Password for the database
+        .WithImage("postgres:15.2")
+        .WithDatabase("testdb")
+        .WithUsername("postgres")
+        .WithPassword("password")
         .Build();
     public ApplicationDbContext? Context { get; private set; }
     public IUnitOfWork? UnitOfWork { get; private set; }
