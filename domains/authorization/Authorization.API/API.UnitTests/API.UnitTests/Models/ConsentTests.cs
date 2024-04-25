@@ -8,35 +8,39 @@ public class ConsentTests
     public void Consent_WithValidData_CreatesSuccessfully()
     {
         var id = Guid.NewGuid();
-        var organizationId = Guid.NewGuid();
-        var clientId = Guid.NewGuid();
+        var organization = new Organization();
+        var client = new Client();
         var consentDate = DateTime.UtcNow;
 
-        var consent = new Consent
+        var consent = new Consent(organization, client)
         {
             Id = id,
-            OrganizationId = organizationId,
-            ClientId = clientId,
             ConsentDate = consentDate
         };
 
         Assert.Equal(id, consent.Id);
-        Assert.Equal(organizationId, consent.OrganizationId);
-        Assert.Equal(clientId, consent.ClientId);
+        Assert.Equal(organization, consent.Organization);
+        Assert.Equal(client, consent.Client);
         Assert.Equal(consentDate, consent.ConsentDate);
     }
 
     [Fact]
     public void Consent_WithDefaultOrganization_InitializesNewInstance()
     {
-        var consent = new Consent();
+        var organization = new Organization();
+        var client = new Client();
+        var consent = new Consent(organization, client);
+
         Assert.NotNull(consent.Organization);
     }
 
     [Fact]
     public void Consent_WithDefaultClient_InitializesNewInstance()
     {
-        var consent = new Consent();
+        var organization = new Organization();
+        var client = new Client();
+        var consent = new Consent(organization, client);
+
         Assert.NotNull(consent.Client);
     }
 }

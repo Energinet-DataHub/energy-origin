@@ -49,15 +49,17 @@ public class OrganizationTests
     [Fact]
     public void Organization_WithConsents_InitializesCorrectly()
     {
-        var consents = new List<Consent>
+        var client = new Client();
+        var organization = new Organization
         {
-            new() { Id = Guid.NewGuid() },
-            new() { Id = Guid.NewGuid() }
+            Consents = new List<Consent>
+            {
+                new(new Organization(), client) { Id = Guid.NewGuid() }
+            }
         };
 
-        var organization = new Organization { Consents = consents };
-
-        Assert.Equal(consents, organization.Consents);
+        Assert.Equal(organization.Consents.First().Client, client);
+        Assert.Equal(organization.Consents.First().Organization, organization);
     }
 
     [Fact]
