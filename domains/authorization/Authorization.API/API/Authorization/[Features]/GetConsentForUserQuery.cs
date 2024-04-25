@@ -10,11 +10,13 @@ public class GetConsentForUserQueryHandler : IRequestHandler<GetConsentForUserQu
 {
     public async Task<GetConsentForUserQueryResult> Handle(GetConsentForUserQuery query, CancellationToken cancellationToken)
     {
+
         return new(query.Sub, query.Name, "User", query.OrgName, new[] { Guid.NewGuid().ToString() }, "dashboard production meters certificates wallet");
     }
 }
 
 public record GetConsentForUserQuery(string Sub, string Name, string OrgName, string OrgCvr) : IRequest<GetConsentForUserQueryResult>;
+
 public record GetConsentForUserQueryResult(string Sub, string Name, string SubType, string OrgName, IEnumerable<string> OrgIds, string Scope);
 
 

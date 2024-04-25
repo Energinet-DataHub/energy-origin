@@ -19,4 +19,5 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
 }
 
 public record GetConsentForClientQuery(string ClientId) : IRequest<GetConsentForClientQueryResult>;
+
 public record GetConsentForClientQueryResult(string Sub, string Name, string SubType, string OrgName, IEnumerable<string> OrgIds, string Scope);
