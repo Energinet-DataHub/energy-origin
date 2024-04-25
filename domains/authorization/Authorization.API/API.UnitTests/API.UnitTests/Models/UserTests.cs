@@ -36,13 +36,16 @@ public class UserTests
     [Fact]
     public void User_WithAffiliations_InitializesCorrectly()
     {
-        var affiliations = new List<Affiliation>
+        var organization = new Organization();
+        var user = new User
         {
-            new() { Id = Guid.NewGuid() },
-            new() { Id = Guid.NewGuid() }
+            Affiliations = new List<Affiliation>
+            {
+                new(new User(), organization) { Id = Guid.NewGuid() }
+            }
         };
 
-        var user = new User { Affiliations = affiliations };
-        Assert.Equal(affiliations, user.Affiliations);
+        Assert.Equal(user.Affiliations.First().User, user);
+        Assert.Equal(user.Affiliations.First().Organization, organization);
     }
 }

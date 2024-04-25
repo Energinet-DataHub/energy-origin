@@ -8,32 +8,36 @@ public class AffiliationTests
     public void Affiliation_WithValidData_CreatesSuccessfully()
     {
         var id = Guid.NewGuid();
-        var userId = Guid.NewGuid();
-        var organizationId = Guid.NewGuid();
+        var user = new User();
+        var organization = new Organization();
 
-        var affiliation = new Affiliation
+        var affiliation = new Affiliation(user, organization)
         {
             Id = id,
-            UserId = userId,
-            OrganizationId = organizationId
+            UserId = user.Id,
+            OrganizationId = organization.Id
         };
 
         Assert.Equal(id, affiliation.Id);
-        Assert.Equal(userId, affiliation.UserId);
-        Assert.Equal(organizationId, affiliation.OrganizationId);
+        Assert.Equal(user.Id, affiliation.UserId);
+        Assert.Equal(organization.Id, affiliation.OrganizationId);
+        Assert.Same(user, affiliation.User);
+        Assert.Same(organization, affiliation.Organization);
     }
 
     [Fact]
-    public void Affiliation_WithDefaultUser_InitializesNewInstance()
+    public void Affiliation_WithNoUser_ThrowsException()
     {
-        var affiliation = new Affiliation();
-        Assert.NotNull(affiliation.User);
+        var organization = new Organization();
+
+        Assert.Throws<ArgumentNullException>(() => new Affiliation(null!, organization));
     }
 
     [Fact]
-    public void Affiliation_WithDefaultOrganization_InitializesNewInstance()
+    public void Affiliation_WithNoOrganization_ThrowsException()
     {
-        var affiliation = new Affiliation();
-        Assert.NotNull(affiliation.Organization);
+        var user = new User();
+
+        Assert.Throws<ArgumentNullException>(() => new Affiliation(user, null!));
     }
 }

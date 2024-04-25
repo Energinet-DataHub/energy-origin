@@ -33,14 +33,17 @@ public class OrganizationTests
     [Fact]
     public void Organization_WithAffiliations_InitializesCorrectly()
     {
-        var affiliations = new List<Affiliation>
+        var user = new User();
+        var organization = new Organization
         {
-            new() { Id = Guid.NewGuid() }
+            Affiliations = new List<Affiliation>
+            {
+                new(user, new Organization()) { Id = Guid.NewGuid() }
+            }
         };
 
-        var organization = new Organization { Affiliations = affiliations };
-
-        Assert.Equal(affiliations, organization.Affiliations);
+        Assert.Equal(organization.Affiliations.First().User, user);
+        Assert.Equal(organization.Affiliations.First().Organization, organization);
     }
 
     [Fact]
