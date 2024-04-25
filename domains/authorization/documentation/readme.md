@@ -14,7 +14,7 @@ This section describes the first version of consent functionality in Energy Orig
 
 ### Conceptual overview
 
-``` Mermaid
+```mermaid
 erDiagram
     USER ||--o{ AFFILIATIONS : "employed under"
     ORGANIZATION ||--o{ AFFILIATIONS : "has"
@@ -65,7 +65,7 @@ Our use of the Client Credentials flow is described by Microsoft in the followin
 
 ## System context
 
-``` Mermaid
+```mermaid
 C4Context
   Person(user, "MitID Erhverv user")
   Enterprise_Boundary(eoBoundary, "Energy Origin") {
@@ -96,24 +96,22 @@ UpdateElementStyle(Authorization, $fontColor="lightgrey", $bgColor="transparent"
   UpdateRelStyle(user, WEB, $textColor="lightgrey", $lineColor="lightgrey")
   UpdateRelStyle(B2C, authorizationAPI, $textColor="lightgrey", $lineColor="lightgrey")
   UpdateRelStyle(WEB, authorizationAPI, $textColor="lightgrey", $lineColor="lightgrey")
-
 ```
 
 ## Sign-up flow
 
 Fist time a MitID user logs into the Energy Origin Web application, the user will have to go through some steps. After agreeing to terms and conditions, a 'shadow' user will be creater in B2C.
 
-``` Mermaid
+```mermaid
 sequenceDiagram
     actor User
-
 ```
 
 ## Grant consent to 3rd party
 
 Grant consent for 3rd party client to access and manage data in Energy Origin.
 
-``` Mermaid
+```mermaid
 sequenceDiagram
     actor User
     participant ClientApp as Client Application
@@ -146,7 +144,7 @@ sequenceDiagram
 
 Call Energy Origin API as 3rd party client on behalf of organization.
 
-``` Mermaid
+```mermaid
 sequenceDiagram
     participant ClientApp as Client Backend
     participant B2C as B2C
