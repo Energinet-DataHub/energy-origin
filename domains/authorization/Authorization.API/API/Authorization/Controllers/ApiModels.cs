@@ -21,12 +21,3 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("org_name")] string OrgName,
     [property: JsonPropertyName("org_ids")] IEnumerable<string> OrgIds,
     [property: JsonPropertyName("scope")] string Scope);
-    [property: JsonPropertyName("orgId")] string OrgId,
-    [property: JsonPropertyName("orgName")] string OrgName
-);
-
-public record AuthorizationClientRequest(
-    [property: JsonPropertyName("sub")] string Sub
-);
-
-public record AuthorizationResponse(string Sub, string Name, string SubType, string OrgName, IEnumerable<string> OrgIds, string Scope);
