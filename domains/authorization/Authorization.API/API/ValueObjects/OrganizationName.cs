@@ -3,9 +3,10 @@ using System.Text.RegularExpressions;
 
 namespace API.ValueObjects;
 
-public readonly partial record struct OrganizationName
+public readonly partial record struct OrganizationName : IComparable<OrganizationName>
 {
     public string Value { get; }
+    public int CompareTo(OrganizationName other) => string.Compare(Value, other.Value, StringComparison.Ordinal);
 
     public OrganizationName(string value)
     {

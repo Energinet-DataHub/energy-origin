@@ -189,7 +189,7 @@ Make sure to copy the secret value and store it somewhere safe. Use client id an
 
 ## Links
 
- [MitID test user tool](https://pp.mitid.dk/test-tool/frontend/#/view-identity)
+[MitID test user tool](https://pp.mitid.dk/test-tool/frontend/#/view-identity)
 
 [MitID admin tool](https://pp.netseidbroker.dk/admin#/clients/e9d55f7d-03b6-4ec8-be83-f2804f32f9d0)
 

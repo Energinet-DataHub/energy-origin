@@ -3,7 +3,6 @@ using API.Configuration;
 using API.Data;
 using API.Models;
 using API.Repository;
-using API.Services;
 using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -31,10 +30,12 @@ builder.Services.AddAuthentication()
         options.MetadataAddress = "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration";
     });
 
+
 // Register DbContext and related services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 // Register specific repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -43,16 +44,7 @@ builder.Services.AddScoped<IAffiliationRepository, AffiliationRepository>();
 builder.Services.AddScoped<IConsentRepository, ConsentRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 
-// Register services
-builder.Services.AddScoped<IUserSignUpService, UserSignUpService>();
-
 builder.Services.AddAuthorizationApi();
-builder.Services.AddVersioningToApi();
-//app.MapHealthChecks("/health");
-
-
-
-//app.UseHttpsRedirection();
 
 var app = builder.Build();
 
@@ -60,7 +52,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.AddSwagger("authorization");
 
 app.Run();
 
