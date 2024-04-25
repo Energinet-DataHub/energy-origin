@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace API.ValueObjects;
 
-public readonly record struct Tin
+public readonly record struct Tin : IComparable<Tin>
 {
     public string Value { get; }
 
@@ -19,4 +19,9 @@ public readonly record struct Tin
     }
 
     private static bool IsDigitsOnly(string str) => str.All(char.IsDigit);
+
+    public int CompareTo(Tin other)
+    {
+        return string.Compare(Value, other.Value, StringComparison.Ordinal);
+    }
 }
