@@ -29,7 +29,6 @@
   <ItemGroup>
     <Folder Include="Authorization\ApiModels\Requests\" />
     <Folder Include="Authorization\ApiModels\Responses\" />
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
   <ItemGroup>

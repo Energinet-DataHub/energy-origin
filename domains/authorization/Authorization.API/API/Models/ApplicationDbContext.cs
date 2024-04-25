@@ -1,4 +1,6 @@
+using API.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API.Models;
 
@@ -13,6 +15,20 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Organization>()
+            .Property(o => o.OrganizationName)
+            .HasConversion(new ValueConverter<OrganizationName, string>(
+                v => v.Value,
+                v => new OrganizationName(v)))
+            .HasColumnName("OrganizationName");
+
+        modelBuilder.Entity<Organization>()
+            .Property(o => o.Tin)
+            .HasConversion(new ValueConverter<Tin, string>(
+                v => v.Value,
+                v => new Tin(v)))
+            .HasColumnName("Tin");
 
         modelBuilder.Entity<Organization>()
             .HasMany(o => o.Affiliations)
