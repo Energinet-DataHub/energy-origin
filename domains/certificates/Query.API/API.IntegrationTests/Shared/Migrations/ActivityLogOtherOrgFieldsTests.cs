@@ -19,14 +19,14 @@ public class ActivityLogEntryOtherOrgFieldsTests
 
     public ActivityLogEntryOtherOrgFieldsTests(IntegrationTestFixture integrationTestFixture)
     {
-        var dbTask = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
-        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbTask.ConnectionString).Options;
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
     }
 
     [Fact]
     public async Task GivenMigrationApplied_IfNewActivityLogEntryIsCreated_OtherOrganizationFieldsExist()
     {
-        await using var dbContext = GetDbContext();
+        await using var dbContext = new ApplicationDbContext(options);
         var migrator = dbContext.GetService<IMigrator>();
         var applyMigration = () => migrator.MigrateAsync();
 
@@ -43,7 +43,7 @@ public class ActivityLogEntryOtherOrgFieldsTests
     [Fact]
     public async Task GivenActivityLogExists_IfMigrationApplied_OldActivityLogsOtherOrganizationFieldsEqualStringEmpty()
     {
-        await using var dbContext = GetDbContext();
+        await using var dbContext = new ApplicationDbContext(options);
         var migrator = dbContext.GetService<IMigrator>();
         await migrator.MigrateAsync("20240216110232_ActivityLogEntityIdIsNowAString");
         await InsertOldActivityLogEntry(dbContext, Guid.NewGuid());
@@ -150,11 +150,6 @@ public class ActivityLogEntryOtherOrgFieldsTests
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(logEntryQuery, logEntryFields);
-    }
-
-    private ApplicationDbContext GetDbContext()
-    {
-        return new ApplicationDbContext(options);
     }
 }
 

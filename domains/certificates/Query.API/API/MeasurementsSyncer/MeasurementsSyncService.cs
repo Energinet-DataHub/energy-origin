@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
 using DataContext.ValueObjects;
@@ -19,16 +20,19 @@ public class MeasurementsSyncService
     private readonly Measurements.V1.Measurements.MeasurementsClient measurementsClient;
     private readonly IBus bus;
     private readonly SlidingWindowService slidingWindowService;
+    private readonly IMeasurementSyncMetrics measurementSyncMetrics;
     private readonly ILogger<MeasurementsSyncService> logger;
 
     public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISyncState syncState,
-        Measurements.V1.Measurements.MeasurementsClient measurementsClient, IBus bus, SlidingWindowService slidingWindowService)
+        Measurements.V1.Measurements.MeasurementsClient measurementsClient, IBus bus, SlidingWindowService slidingWindowService,
+        IMeasurementSyncMetrics measurementSyncMetrics)
     {
         this.logger = logger;
         this.syncState = syncState;
         this.measurementsClient = measurementsClient;
         this.bus = bus;
         this.slidingWindowService = slidingWindowService;
+        this.measurementSyncMetrics = measurementSyncMetrics;
     }
 
     public async Task FetchAndPublishMeasurements(string meteringPointOwner, MeteringPointTimeSeriesSlidingWindow slidingWindow,
@@ -36,6 +40,8 @@ public class MeasurementsSyncService
     {
         var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
         var fetchedMeasurements = await FetchMeasurements(slidingWindow, meteringPointOwner, synchronizationPoint, stoppingToken);
+
+        measurementSyncMetrics.MeasurementsFetched(fetchedMeasurements.Count);
 
         if (fetchedMeasurements.Count != 0)
         {
