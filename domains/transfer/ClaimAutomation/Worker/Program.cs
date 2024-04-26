@@ -58,8 +58,8 @@ builder.Services.AddSingleton<AutomationCache>();
 builder.Services.AddSingleton<IClaimAutomationMetrics, ClaimAutomationMetrics>();
 builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
 {
-    var cvrOptions = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-    c.BaseAddress = new Uri(cvrOptions.WalletUrl);
+    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+    c.BaseAddress = new Uri(options.WalletUrl);
 });
 
 builder.Services.AddVersioningToApi();

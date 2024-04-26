@@ -64,8 +64,8 @@ public static class Startup
 
         services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
         {
-            var cvrOptions = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-            c.BaseAddress = new Uri(cvrOptions.WalletUrl);
+            var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+            c.BaseAddress = new Uri(options.WalletUrl);
         });
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();

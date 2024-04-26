@@ -71,8 +71,8 @@ builder.Services.AddSingleton<IProjectOriginWalletService, ProjectOriginWalletSe
 builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>();
 builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
 {
-    var cvrOptions = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-    c.BaseAddress = new Uri(cvrOptions.WalletUrl);
+    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+    c.BaseAddress = new Uri(options.WalletUrl);
 });
 
 var app = builder.Build();
