@@ -197,17 +197,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/EditContractEndDate"
+                "$ref": "#/components/schemas/EditContractEndDate20230101"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/EditContractEndDate"
+                "$ref": "#/components/schemas/EditContractEndDate20230101"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/EditContractEndDate"
+                "$ref": "#/components/schemas/EditContractEndDate20230101"
               }
             }
           }
@@ -297,7 +297,7 @@
         },
         "additionalProperties": false
       },
-      "EditContractEndDate": {
+      "EditContractEndDate20230101": {
         "type": "object",
         "properties": {
           "endDate": {
