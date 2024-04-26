@@ -14,6 +14,7 @@ using System.Text;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using System.Linq;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using System.Collections.Generic;
 
 namespace ProjectOriginClients;
 
@@ -137,8 +138,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
     public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid ownerSubject, Guid walletId, CancellationToken cancellationToken)
     {
         SetDummyAuthorizationHeader(ownerSubject.ToString());
-        var content = new StringContent("", Encoding.UTF8, "application/json");
-        var res = await client.PostAsync($"v1/wallets/{walletId}/endpoints", content);
+        var res = await client.PostAsync($"v1/wallets/{walletId}/endpoints", null);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
@@ -155,11 +155,12 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         var request = new CreateExternalEndpointRequest
         {
             TextReference = textReference,
-            WalletReference = walletEndpointReference
+            WalletReference = new WalletEndpointReferenceDto(walletEndpointReference.Version, walletEndpointReference.Endpoint, walletEndpointReference.PublicKey.Export().ToArray())
         };
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
-        var res = await client.PostAsync($"v1/external-endpoints", content);
+
+        var res = await client.PostAsync("v1/external-endpoints", content);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
@@ -281,7 +282,7 @@ public record CreateExternalEndpointRequest()
     /// <summary>
     /// The wallet reference to the wallet, one wants to create a link to.
     /// </summary>
-    public required WalletEndpointReference WalletReference { get; init; }
+    public required WalletEndpointReferenceDto WalletReference { get; init; }
 
     /// <summary>
     /// The text reference for the wallet, one wants to create a link to.
@@ -299,3 +300,51 @@ public record CreateExternalEndpointResponse()
     /// </summary>
     public required Guid ReceiverId { get; init; }
 }
+
+/// <summary>
+/// Request to receive a certificate-slice from another wallet.
+/// </summary>
+public record ReceiveRequest()
+{
+    /// <summary>
+    /// The public key of the receiving wallet.
+    /// </summary>
+    public required byte[] PublicKey { get; init; }
+
+    /// <summary>
+    /// The sub-position of the publicKey used on the slice on the registry.
+    /// </summary>
+    public required uint Position { get; init; }
+
+    /// <summary>
+    /// The id of the certificate.
+    /// </summary>
+    public required FederatedStreamId CertificateId { get; init; }
+
+    /// <summary>
+    /// The quantity of the slice.
+    /// </summary>
+    public required uint Quantity { get; init; }
+
+    /// <summary>
+    /// The random R used to generate the pedersen commitment with the quantitiy.
+    /// </summary>
+    public required byte[] RandomR { get; init; }
+
+    /// <summary>
+    /// List of hashed attributes, their values and salts so the receiver can access the data.
+    /// </summary>
+    public required IEnumerable<HashedAttribute> HashedAttributes { get; init; }
+}
+public record HashedAttribute()
+{
+    public required string Key { get; init; }
+    public required string Value { get; init; }
+
+    /// <summary>
+    /// The salt used to hash the attribute.
+    /// </summary>
+    public required byte[] Salt { get; init; }
+}
+
+public record ReceiveResponse() { }
