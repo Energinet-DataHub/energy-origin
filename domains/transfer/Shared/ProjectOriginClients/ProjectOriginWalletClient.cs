@@ -117,7 +117,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
     {
         SetDummyAuthorizationHeader(ownerSubject.ToString());
 
-        var response = await client.GetFromJsonAsync<ResultList<WalletRecordDto>>("/wallet-api/v1/wallets", cancellationToken);
+        var response = await client.GetFromJsonAsync<ResultList<WalletRecordDto>>("/v1/wallets", cancellationToken);
 
         if (response == null)
             throw new HttpRequestException("Failed to get wallets.");
