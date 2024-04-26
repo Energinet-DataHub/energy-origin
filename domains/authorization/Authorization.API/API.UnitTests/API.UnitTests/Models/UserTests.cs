@@ -1,4 +1,6 @@
 using API.Models;
+using API.ValueObjects;
+using FluentAssertions;
 
 namespace API.UnitTests.Models;
 
@@ -7,43 +9,48 @@ public class UserTests
     [Fact]
     public void User_WithValidData_CreatesSuccessfully()
     {
-        var id = Guid.NewGuid();
-        var idpId = "idpId";
-        var idpUserId = "idpUserId";
-        var name = "Test User";
+        var idpId = new IdpId(Guid.NewGuid());
+        var idpUserId = new IdpUserId(Guid.NewGuid());
+        var name = new Name("Test User");
 
-        var user = new User
-        {
-            Id = id,
-            IdpId = idpId,
-            IdpUserId = idpUserId,
-            Name = name
-        };
+        var user = User.Create(idpId, idpUserId, name);
 
-        Assert.Equal(id, user.Id);
-        Assert.Equal(idpId, user.IdpId);
-        Assert.Equal(idpUserId, user.IdpUserId);
-        Assert.Equal(name, user.Name);
+        user.Should().NotBeNull();
+        user.Id.Should().NotBeEmpty();
+        user.IdpId.Should().Be(idpId);
+        user.IdpUserId.Should().Be(idpUserId);
+        user.Name.Should().Be(name);
     }
 
     [Fact]
-    public void User_WithEmptyAffiliations_InitializesEmptyList()
+    public void User_CanExist_WithoutAffiliations()
     {
-        var user = new User();
-        Assert.Empty(user.Affiliations);
+        var idpId = new IdpId(Guid.NewGuid());
+        var idpUserId = new IdpUserId(Guid.NewGuid());
+        var name = new Name("Test User");
+
+        var user = User.Create(idpId, idpUserId, name);
+
+        user.Affiliations.Should().NotBeNull().And.BeEmpty();
     }
 
     [Fact]
-    public void User_WithAffiliations_InitializesCorrectly()
+    public void User_CanHave_Affiliations()
     {
-        var organization = new Organization();
-        var user = new User();
+        var idpId = new IdpId(Guid.NewGuid());
+        var idpUserId = new IdpUserId(Guid.NewGuid());
+        var name = new Name("Test User");
+
+        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
+        var organizationTin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
+
+        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+
+        var user = User.Create(idpId, idpUserId, name);
         var affiliation = Affiliation.Create(user, organization);
 
-        user.Affiliations.Add(affiliation);
-
-        Assert.Single(user.Affiliations);
-        Assert.Equal(user.Affiliations.First().User, user);
-        Assert.Equal(user.Affiliations.First().Organization, organization);
+        user.Affiliations.Should().Contain(affiliation);
     }
 }

@@ -1,5 +1,6 @@
 using API.Models;
-using Xunit;
+using API.ValueObjects;
+using FluentAssertions;
 
 namespace API.UnitTests.Models;
 
@@ -8,31 +9,71 @@ public class AffiliationTests
     [Fact]
     public void Affiliation_WithValidData_CreatesSuccessfully()
     {
-        var user = new User();
-        var organization = new Organization();
+        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
+        var organizationTin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
+        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+
+        var idpUserId = new IdpUserId(Guid.NewGuid());
+        var idpIdForUser = new IdpId(Guid.NewGuid());
+        var userName = new Name("Test User");
+        var user = User.Create(idpIdForUser, idpUserId, userName);
 
         var affiliation = Affiliation.Create(user, organization);
 
-        Assert.NotNull(affiliation);
-        Assert.Equal(user.Id, affiliation.UserId);
-        Assert.Equal(organization.Id, affiliation.OrganizationId);
-        Assert.Same(user, affiliation.User);
-        Assert.Same(organization, affiliation.Organization);
+        affiliation.Should().NotBeNull();
+        affiliation.Id.Should().NotBeEmpty();
+        affiliation.User.Should().Be(user);
+        affiliation.Organization.Should().Be(organization);
+        affiliation.UserId.Should().Be(user.Id);
+        affiliation.OrganizationId.Should().Be(organization.Id);
     }
 
     [Fact]
-    public void Affiliation_CreateWithNoUser_ThrowsException()
+    public void Affiliation_Create_AddsAffiliationToUserAndOrganization()
     {
-        var organization = new Organization();
+        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
+        var organizationTin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
+        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
-        Assert.Throws<ArgumentNullException>(() => Affiliation.Create(null!, organization));
+        var idpIdForUser = new IdpId(Guid.NewGuid());
+        var idpUserId = new IdpUserId(Guid.NewGuid());
+        var userName = new Name("Test User");
+        var user = User.Create(idpIdForUser, idpUserId, userName);
+
+        var affiliation = Affiliation.Create(user, organization);
+
+        user.Affiliations.Should().Contain(affiliation);
+        organization.Affiliations.Should().Contain(affiliation);
     }
 
     [Fact]
-    public void Affiliation_CreateWithNoOrganization_ThrowsException()
+    public void Affiliation_Create_ThrowsArgumentNullException_WhenUserIsNull()
     {
-        var user = new User();
+        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
+        var organizationTin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
+        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
-        Assert.Throws<ArgumentNullException>(() => Affiliation.Create(user, null!));
+        Action act = () => Affiliation.Create(null!, organization);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void Affiliation_Create_ThrowsArgumentNullException_WhenOrganizationIsNull()
+    {
+        var idpUserId = new IdpUserId(Guid.NewGuid());
+        var idpIdForUser = new IdpId(Guid.NewGuid());
+        var userName = new Name("Test User");
+        var user = User.Create(idpIdForUser, idpUserId, userName);
+
+        Action act = () => Affiliation.Create(user, null!);
+
+        act.Should().Throw<ArgumentNullException>();
     }
 }

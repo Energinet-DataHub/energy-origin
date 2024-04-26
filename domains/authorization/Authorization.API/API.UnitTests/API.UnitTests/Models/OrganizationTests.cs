@@ -1,5 +1,6 @@
 using API.Models;
 using API.ValueObjects;
+using FluentAssertions;
 
 namespace API.UnitTests.Models;
 
@@ -8,69 +9,85 @@ public class OrganizationTests
     [Fact]
     public void Organization_WithValidData_CreatesSuccessfully()
     {
-        var id = Guid.NewGuid();
-        var idpId = Guid.NewGuid();
-        var idpOrganizationId = Guid.NewGuid();
-        var tin = new Tin("00000000");
+        var idpId = new IdpId(Guid.NewGuid());
+        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
+        var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = new Organization
-        {
-            Id = id,
-            IdpId = idpId,
-            IdpOrganizationId = idpOrganizationId,
-            Tin = tin,
-            OrganizationName = organizationName
-        };
+        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
 
-        Assert.Equal(id, organization.Id);
-        Assert.Equal(idpId, organization.IdpId);
-        Assert.Equal(idpOrganizationId, organization.IdpOrganizationId);
-        Assert.Equal(tin, organization.Tin);
-        Assert.Equal(organizationName, organization.OrganizationName);
+        organization.Should().NotBeNull();
+        organization.Id.Should().NotBeEmpty();
+        organization.IdpId.Should().Be(idpId);
+        organization.IdpOrganizationId.Should().Be(idpOrganizationId);
+        organization.Tin.Should().Be(tin);
+        organization.OrganizationName.Should().Be(organizationName);
     }
 
     [Fact]
-    public void Organization_WithAffiliations_InitializesCorrectly()
+    public void Organization_CanExist_WithoutAffiliations()
     {
-        var user = new User();
-        var organization = new Organization();
+        var idpId = new IdpId(Guid.NewGuid());
+        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
+        var tin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
+
+        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+
+        organization.Affiliations.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Fact]
+    public void Organization_CanExist_WithoutConsents()
+    {
+        var idpId = new IdpId(Guid.NewGuid());
+        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
+        var tin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
+
+        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+
+        organization.Consents.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Fact]
+    public void Organization_CanHave_Affiliations()
+    {
+        var idpId = new IdpId(Guid.NewGuid());
+        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
+        var tin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
+
+        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+
+        var idpIdForUser = new IdpId(Guid.NewGuid());
+        var idpUserId = new IdpUserId(Guid.NewGuid());
+        var userName = new Name("Test User");
+        var user = User.Create(idpIdForUser,idpUserId, userName);
+
         var affiliation = Affiliation.Create(user, organization);
 
-        organization.Affiliations.Add(affiliation);
-
-        Assert.Single(organization.Affiliations);
-        Assert.Equal(organization.Affiliations.First().User, user);
-        Assert.Equal(organization.Affiliations.First().Organization, organization);
+        organization.Affiliations.Should().Contain(affiliation);
     }
 
     [Fact]
-    public void Organization_WithConsents_InitializesCorrectly()
+    public void Organization_CanHave_Consents()
     {
-        var client = new Client();
-        var organization = new Organization();
-        var consent = Consent.Create(organization, client, DateTime.Now);
+        var idpId = new IdpId(Guid.NewGuid());
+        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
+        var tin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
 
-        organization.Consents.Add(consent);
+        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
 
-        Assert.Single(organization.Consents);
-        Assert.Equal(organization.Consents.First().Client, client);
-        Assert.Equal(organization.Consents.First().Organization, organization);
-    }
+        var idpClientId = new IdpClientId(Guid.NewGuid());
+        var clientName = new Name("Test Client");
+        var role = Role.External;
+        var client = Client.Create(idpClientId, clientName, role);
 
-    [Fact]
-    public void Organization_WithEmptyAffiliations_InitializesEmptyList()
-    {
-        var organization = new Organization();
+        var consentDate = DateTime.UtcNow;
+        var consent = Consent.Create(organization, client, consentDate);
 
-        Assert.Empty(organization.Affiliations);
-    }
-
-    [Fact]
-    public void Organization_WithEmptyConsents_InitializesEmptyList()
-    {
-        var organization = new Organization();
-
-        Assert.Empty(organization.Consents);
+        organization.Consents.Should().Contain(consent);
     }
 }
