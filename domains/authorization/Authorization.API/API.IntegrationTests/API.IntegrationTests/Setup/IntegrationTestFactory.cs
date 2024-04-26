@@ -19,7 +19,7 @@ public class DatabaseTestCollection : ICollectionFixture<IntegrationTestFactory>
 public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
-        .WithImage("postgres:latest") // You may want to change this to be the version your production db is on
+        .WithImage("postgres:15.2")
         .WithDatabase("db")
         .WithUsername("postgres")
         .WithPassword("postgres")
