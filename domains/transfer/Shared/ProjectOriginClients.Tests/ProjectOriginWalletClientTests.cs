@@ -1,11 +1,15 @@
-using ProjectOriginClientsTests.Testcontainers;
-using Xunit;
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using ProjectOriginClients;
 using NSubstitute;
+using ProjectOriginClientsTests.Testcontainers;
+using Xunit;
 
-namespace ProjectOriginClientsTests;
+namespace ProjectOriginClients.Tests;
 
 public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
 {
