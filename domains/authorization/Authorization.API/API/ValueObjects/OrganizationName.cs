@@ -7,10 +7,6 @@ public class OrganizationName : ValueObject
 {
     public string Value { get; }
 
-    // public static OrganizationName Create(string value) => new OrganizationName(value);
-    // public static OrganizationName Empty() => new OrganizationName();
-    // private OrganizationName() => Value = string.Empty;
-
     public OrganizationName(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
