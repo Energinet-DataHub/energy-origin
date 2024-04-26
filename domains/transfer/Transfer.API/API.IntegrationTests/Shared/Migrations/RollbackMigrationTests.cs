@@ -1,6 +1,4 @@
-using System;
 using System.Threading.Tasks;
-using API.IntegrationTests.Testcontainers;
 using DataContext;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -10,32 +8,28 @@ using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-public class RollbackMigrationTests : IAsyncDisposable
+[Collection(IntegrationTestCollection.CollectionName)]
+public class RollbackMigrationTests
 {
-    private PostgresContainer container;
-    public RollbackMigrationTests()
+    private readonly DbContextOptions<ApplicationDbContext> options;
+
+    public RollbackMigrationTests(IntegrationTestFixture integrationTestFixture)
     {
-        container = new PostgresContainer();
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(options);
+        dbContext.Database.Migrate();
     }
 
     [Fact]
     public async Task can_rollback_all_migrations()
     {
-        await container.InitializeAsync();
-
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
-            .Options;
-        await using var dbContext = new ApplicationDbContext(contextOptions);
+        await using var dbContext = new ApplicationDbContext(options);
         await dbContext.Database.MigrateAsync();
 
         var migrator = dbContext.Database.GetService<IMigrator>();
 
         var rollbackAllMigrations = () => migrator.Migrate("0");
         rollbackAllMigrations.Should().NotThrow();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await container.DisposeAsync();
     }
 }

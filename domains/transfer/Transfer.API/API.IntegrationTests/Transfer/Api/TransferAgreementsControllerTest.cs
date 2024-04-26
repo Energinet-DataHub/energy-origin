@@ -3,24 +3,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Dto.Requests;
+using DataContext;
 using EnergyOrigin.ActivityLog.API;
+using EnergyOrigin.ActivityLog.DataContext;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace API.IntegrationTests.Transfer.Api;
 
-public class TransferAgreementsControllerTest(ITestOutputHelper output)
-    : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class TransferAgreementsControllerTest
 {
+    private readonly ITestOutputHelper output;
+    private readonly TransferAgreementsApiWebApplicationFactory factory;
+
+    public TransferAgreementsControllerTest(IntegrationTestFixture integrationTestFixture, ITestOutputHelper output)
+    {
+        factory = integrationTestFixture.Factory;
+        this.output = output;
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        dbContext.TruncateTableAsync<ActivityLogEntry>().Wait();
+    }
+
     [Fact]
     public async Task GivenProposal_WhenAcceptingProposal_ActivityLogEntryIsAdded()
     {
         var receiverTin = "39293595";
         var receiverName = "Company Inc.";
 
-        var factory = new TransferAgreementsApiWebApplicationFactory();
-        factory.WithCleanupWorker = false;
-        await factory.InitializeAsync();
         var api = new Api(factory, output);
 
         // Create transfer agreement proposal
@@ -40,12 +52,9 @@ public class TransferAgreementsControllerTest(ITestOutputHelper output)
     [Fact]
     public async Task GivenProposal_WhenAcceptedAndLoggedInAsReceiver_ActivityLogIncludesOrganizationDetailsForBothCompanies()
     {
-        var receiverTin = "39293595";
+        var receiverTin = "39293596";
         var receiverName = "Company Inc.";
 
-        var factory = new TransferAgreementsApiWebApplicationFactory();
-        factory.WithCleanupWorker = false;
-        await factory.InitializeAsync();
         var api = new Api(factory, output);
         var receiverClient = api.MockWalletServiceAndCreateAuthenticatedClient(receiverTin, receiverName);
 
@@ -73,12 +82,9 @@ public class TransferAgreementsControllerTest(ITestOutputHelper output)
         var senderCompanyTin = "11223344";
         var senderCompanyName = "Producent A/S";
 
-        var receiverTin = "39293595";
+        var receiverTin = "39293597";
         var receiverName = "Company Inc.";
 
-        var factory = new TransferAgreementsApiWebApplicationFactory();
-        factory.WithCleanupWorker = false;
-        await factory.InitializeAsync();
         var api = new Api(factory, output);
         var senderClient = api.MockWalletServiceAndCreateAuthenticatedClient(senderCompanyTin, senderCompanyName);
 
@@ -101,12 +107,9 @@ public class TransferAgreementsControllerTest(ITestOutputHelper output)
     [Fact]
     public async Task GivenProposalByPeter_WhenAcceptedByNrgi_ActivityLogReflectsCorrectDetails()
     {
-        var receiverTin = "39293595";
+        var receiverTin = "39293598";
         var receiverName = "Company Inc.";
 
-        var factory = new TransferAgreementsApiWebApplicationFactory();
-        factory.WithCleanupWorker = false;
-        await factory.InitializeAsync();
         var api = new Api(factory, output);
 
         // Create transfer agreement proposal
@@ -126,12 +129,9 @@ public class TransferAgreementsControllerTest(ITestOutputHelper output)
     [Fact]
     public async Task GivenAgreement_WhenChangingEndDate_ActivityLogEntryIsAdded()
     {
-        var receiverTin = "39293595";
+        var receiverTin = "39293599";
         var receiverName = "Company Inc.";
 
-        var factory = new TransferAgreementsApiWebApplicationFactory();
-        factory.WithCleanupWorker = false;
-        await factory.InitializeAsync();
         var api = new Api(factory, output);
 
         // Create transfer agreement proposal
@@ -153,12 +153,9 @@ public class TransferAgreementsControllerTest(ITestOutputHelper output)
     [Fact]
     public async Task GivenProposal_WhenAcceptingProposal_ActivityLogEntryIsCleanedUp()
     {
-        var receiverTin = "39293595";
+        var receiverTin = "39293580";
         var receiverName = "Company Inc.";
 
-        var factory = new TransferAgreementsApiWebApplicationFactory();
-        factory.WithCleanupWorker = true;
-        await factory.InitializeAsync();
         var api = new Api(factory, output);
 
         // Create transfer agreement proposal

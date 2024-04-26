@@ -14,5 +14,5 @@ public class PostgresContainer : IAsyncLifetime
 
     public async Task InitializeAsync() => await testContainer.StartAsync();
 
-    public Task DisposeAsync() => testContainer.DisposeAsync().AsTask();
+    public async Task DisposeAsync() => await testContainer.DisposeAsync();
 }
