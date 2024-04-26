@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
+using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.ValueObjects;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,8 +53,18 @@ public class MeasurementsSyncerWorker : BackgroundService
         try
         {
             var syncInfos = await syncState.GetSyncInfos(stoppingToken);
+
+            using var outerScope = scopeFactory.CreateScope();
+            var measurementSyncMetrics = outerScope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
+            measurementSyncMetrics.TimeSinceLastMeasurementSyncerRunDone(UnixTimestamp.Now().Seconds);
+
+            var oldestSyncDate = syncInfos.Min(x => x.StartSyncDate);
+
+            measurementSyncMetrics.TimePeriodForSearchingForAGSRNAssign(UnixTimestamp.Create(oldestSyncDate).Seconds);
+
             foreach (var syncInfo in syncInfos)
             {
+
                 using var scope = scopeFactory.CreateScope();
                 var scopedSyncService = scope.ServiceProvider.GetService<MeasurementsSyncService>()!;
                 await scopedSyncService.HandleSingleSyncInfo(syncInfo, stoppingToken);
