@@ -37,6 +37,8 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
         var certificatesCount = certificates!.Result.Count();
 
+        logger.LogInformation("Found {certificatesCount} certificates to transfer for transfer agreement with id {id}", certificatesCount, transferAgreement.Id);
+
         foreach (var certificate in certificates.Result)
         {
             if (!IsPeriodMatching(transferAgreement, certificate))
