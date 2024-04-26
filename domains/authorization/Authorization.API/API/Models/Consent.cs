@@ -6,6 +6,8 @@ public class Consent
 {
     private Consent(
         Guid id,
+        Guid organizationId,
+        Guid clientId,
         Organization organization,
         Client client,
         DateTime consentDate
@@ -14,8 +16,8 @@ public class Consent
         Id = id;
         Organization = organization;
         Client = client;
-        OrganizationId = organization.Id;
-        ClientId = client.Id;
+        OrganizationId = organizationId;
+        ClientId = clientId;
         ConsentDate = consentDate;
     }
 
@@ -31,7 +33,14 @@ public class Consent
         ArgumentNullException.ThrowIfNull(organization);
         ArgumentNullException.ThrowIfNull(client);
 
-        var consent = new Consent(Guid.NewGuid(), organization, client, consentDate);
+        var consent = new Consent(
+            Guid.NewGuid(),
+            organization.Id,
+            client.Id,
+            organization,
+            client,
+            consentDate
+        );
 
         organization.Consents.Add(consent);
         client.Consents.Add(consent);
