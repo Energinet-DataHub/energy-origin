@@ -25,12 +25,16 @@ builder.AddSerilog();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Postgres"),
+        providerOptions => providerOptions.EnableRetryOnFailure()
+    ),
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations()
+    .ValidateOnStart();
 builder.Services.AddProjectOriginOptions();
 
 builder.Services.AddScoped<IKeyGenerator, KeyGenerator>();
@@ -80,7 +84,8 @@ builder.Services.AddMassTransit(o =>
     });
 });
 
-builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit("RegistryConnector", otlpOptions.ReceiverEndpoint);
+builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit("RegistryConnector",
+    otlpOptions.ReceiverEndpoint);
 
 var app = builder.Build();
 
