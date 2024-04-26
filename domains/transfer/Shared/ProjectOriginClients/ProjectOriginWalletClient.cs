@@ -33,7 +33,6 @@ public interface IProjectOriginWalletClient
 public class ProjectOriginWalletClient : IProjectOriginWalletClient
 {
     private readonly HttpClient client;
-    private readonly ILogger<ProjectOriginWalletClient> logger;
 
     private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
@@ -41,10 +40,9 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
     };
 
-    public ProjectOriginWalletClient(HttpClient client, ILogger<ProjectOriginWalletClient> logger)
+    public ProjectOriginWalletClient(HttpClient client)
     {
         this.client = client;
-        this.logger = logger;
     }
 
     public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken)
@@ -120,8 +118,6 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
     public async Task<ResultList<WalletRecord>> GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetDummyAuthorizationHeader(ownerSubject.ToString());
-
-        logger.LogInformation("URL: " + client.BaseAddress + "v1/wallets");
 
         var response = await client.GetFromJsonAsync<ResultList<WalletRecordDto>>("v1/wallets", cancellationToken);
 

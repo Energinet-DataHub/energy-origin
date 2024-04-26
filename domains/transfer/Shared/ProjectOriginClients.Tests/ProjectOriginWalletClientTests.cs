@@ -4,8 +4,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
 using ProjectOriginClients.Tests.Testcontainers;
 using Xunit;
 
@@ -14,12 +12,10 @@ namespace ProjectOriginClients.Tests;
 public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
 {
     private readonly ProjectOriginStack poStack;
-    private readonly ILogger<ProjectOriginWalletClient> logger;
 
     public ProjectOriginWalletClientTests(ProjectOriginStack poStack)
     {
         this.poStack = poStack;
-        this.logger = Substitute.For<ILogger<ProjectOriginWalletClient>>();
     }
 
     [Fact]
@@ -27,7 +23,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, logger);
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -44,7 +40,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, logger);
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         var wallets = await walletClient.GetWallets(ownerSubject, new CancellationToken());
 
@@ -57,7 +53,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, logger);
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -73,7 +69,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, logger);
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
