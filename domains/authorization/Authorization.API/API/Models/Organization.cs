@@ -21,11 +21,15 @@ public class Organization
         OrganizationName = organizationName;
     }
 
-    public Guid Id { get; }
-    public IdpId IdpId { get; }
-    public IdpOrganizationId IdpOrganizationId { get; }
-    public Tin Tin { get; }
-    public OrganizationName OrganizationName { get; }
+    private Organization()
+    {
+    }
+
+    public Guid Id { get; set; }
+    public IdpId IdpId { get; set; } = null!;
+    public IdpOrganizationId IdpOrganizationId { get; set; } = null!;
+    public Tin Tin { get; set; } = null!;
+    public OrganizationName OrganizationName { get; set; } = null!;
 
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();

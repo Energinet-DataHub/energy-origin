@@ -19,10 +19,14 @@ public class User
         Name = name;
     }
 
-    public Guid Id { get; }
-    public IdpId IdpId { get; }
-    public IdpUserId IdpUserId { get; }
-    public Name Name { get; }
+    private User()
+    {
+    }
+
+    public Guid Id { get; set; }
+    public IdpId IdpId { get; set; } = null!;
+    public IdpUserId IdpUserId { get; set; } = null!;
+    public Name Name { get; set; } = null!;
 
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
 
