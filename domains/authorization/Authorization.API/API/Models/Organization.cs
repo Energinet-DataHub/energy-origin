@@ -6,12 +6,43 @@ namespace API.Models;
 
 public class Organization
 {
-    public Guid Id { get; init; }
-    public Guid IdpId { get; init; }
-    public Guid IdpOrganizationId { get; init; }
-    public Tin Tin { get; init; }
-    public OrganizationName OrganizationName { get; init; }
+    private Organization(
+        Guid id,
+        IdpId idpId,
+        IdpOrganizationId idpOrganizationId,
+        Tin tin,
+        OrganizationName organizationName
+    )
+    {
+        Id = id;
+        IdpId = idpId;
+        IdpOrganizationId = idpOrganizationId;
+        Tin = tin;
+        OrganizationName = organizationName;
+    }
+
+    public Guid Id { get; }
+    public IdpId IdpId { get; }
+    public IdpOrganizationId IdpOrganizationId { get; }
+    public Tin Tin { get; }
+    public OrganizationName OrganizationName { get; }
 
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();
+
+    public static Organization Create(
+        IdpId idpId,
+        IdpOrganizationId idpOrganizationId,
+        Tin tin,
+        OrganizationName organizationName
+    )
+    {
+        return new Organization(
+            Guid.NewGuid(),
+            idpId,
+            idpOrganizationId,
+            tin,
+            organizationName
+        );
+    }
 }

@@ -3,10 +3,13 @@ using System.Text.RegularExpressions;
 
 namespace API.ValueObjects;
 
-public readonly record struct OrganizationName : IComparable<OrganizationName>
+public class OrganizationName : ValueObject
 {
     public string Value { get; }
-    public int CompareTo(OrganizationName other) => string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+    // public static OrganizationName Create(string value) => new OrganizationName(value);
+    // public static OrganizationName Empty() => new OrganizationName();
+    // private OrganizationName() => Value = string.Empty;
 
     public OrganizationName(string value)
     {
@@ -14,7 +17,7 @@ public readonly record struct OrganizationName : IComparable<OrganizationName>
             throw new ArgumentException("Value cannot be null, empty, or whitespace.", nameof(value));
 
         if (value.Length > 100)
-            throw new ArgumentException("Value cannot exceed 100 characters.", nameof(value));
+            throw new ArgumentException("OrganizationName cannot exceed 100 characters.", nameof(value));
 
         if (!IsValidOrganizationName(value))
             throw new ArgumentException("Value contains invalid characters.", nameof(value));
@@ -25,4 +28,5 @@ public readonly record struct OrganizationName : IComparable<OrganizationName>
     private static bool IsValidOrganizationName(string value) => MyRegex().IsMatch(value);
 
     private static Regex MyRegex() => new Regex(@"^[a-zA-Z0-9\s&.,'\-]+$");
+
 }

@@ -1,14 +1,42 @@
 using System;
 using System.Collections.Generic;
+using API.ValueObjects;
 
 namespace API.Models;
 
 public class User
 {
-    public Guid Id { get; init; }
-    public string IdpId { get; init; } = string.Empty;
-    public string IdpUserId { get; init; } = string.Empty;
-    public string Name { get; init; } = string.Empty;
+    private User(
+        Guid id,
+        IdpId idpId,
+        IdpUserId idpUserId,
+        Name name
+    )
+    {
+        Id = id;
+        IdpId = idpId;
+        IdpUserId = idpUserId;
+        Name = name;
+    }
+
+    public Guid Id { get; }
+    public IdpId IdpId { get; }
+    public IdpUserId IdpUserId { get; }
+    public Name Name { get; }
 
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
+
+    public static User Create(
+        IdpId idpId,
+        IdpUserId idpUserId,
+        Name name
+    )
+    {
+        return new User(
+            Guid.NewGuid(),
+            idpId,
+            idpUserId,
+            name
+        );
+    }
 }

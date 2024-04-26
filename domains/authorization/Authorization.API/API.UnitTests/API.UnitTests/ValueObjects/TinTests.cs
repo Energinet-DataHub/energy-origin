@@ -40,12 +40,4 @@ public class TinTests
     {
         Assert.Throws<ArgumentException>(() => new Tin(" "));
     }
-
-    [Fact]
-    public void Tin_CompareTo_ReturnsCorrectOrder()
-    {
-        var tin1 = new Tin("12345678");
-        var tin2 = new Tin("12345679");
-        Assert.True(tin1.CompareTo(tin2) < 0);
-    }
 }

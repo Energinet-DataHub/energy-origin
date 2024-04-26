@@ -4,7 +4,11 @@ namespace API.Models;
 
 public class Consent
 {
-    private Consent(Guid id, Guid organizationId, Guid clientId, DateTime consentDate)
+    private Consent(
+        Guid id,
+        Guid organizationId,
+        Guid clientId,
+        DateTime consentDate)
     {
         Id = id;
         OrganizationId = organizationId;
