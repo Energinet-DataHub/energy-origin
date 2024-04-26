@@ -60,7 +60,10 @@ builder.Services.AddHealthChecks();
 builder.Services.AddLogging();
 
 builder.Services.AddDbContext<ApplicationDbContext>(
-    (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
+    (sp, options) => options.UseNpgsql(
+        sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString(),
+        providerOptions => providerOptions.EnableRetryOnFailure()
+    ),
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 

@@ -32,7 +32,10 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddDbContext<ApplicationDbContext>(
-            options => options.UseNpgsql(_configuration.GetConnectionString("Postgres")),
+            options => options.UseNpgsql(
+                _configuration.GetConnectionString("Postgres"),
+                providerOptions => providerOptions.EnableRetryOnFailure()
+            ),
             optionsLifetime: ServiceLifetime.Singleton);
         services.AddDbContextFactory<ApplicationDbContext>();
 
@@ -75,7 +78,8 @@ public class Startup
             .BindConfiguration(RabbitMqOptions.RabbitMq)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations().ValidateOnStart();
+        services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations()
+            .ValidateOnStart();
 
 
         services.AddMassTransit(o =>
