@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using ProjectOriginClientsTests.Testcontainers;
+using ProjectOriginClients.Tests.Testcontainers;
 using Xunit;
 
 namespace ProjectOriginClients.Tests;

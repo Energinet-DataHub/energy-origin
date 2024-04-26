@@ -1,4 +1,6 @@
+using System;
 using System.Text;
+using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Images;
@@ -8,7 +10,7 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using Testcontainers.RabbitMq;
 using Xunit;
 
-namespace ProjectOriginClientsTests.Testcontainers;
+namespace ProjectOriginClients.Tests.Testcontainers;
 
 public class RegistryFixture : IAsyncLifetime
 {

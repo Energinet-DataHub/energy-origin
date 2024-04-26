@@ -1,10 +1,12 @@
+using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Testcontainers.PostgreSql;
 
-namespace ProjectOriginClientsTests.Testcontainers;
+namespace ProjectOriginClients.Tests.Testcontainers;
 
 
 public class ProjectOriginStack : RegistryFixture
