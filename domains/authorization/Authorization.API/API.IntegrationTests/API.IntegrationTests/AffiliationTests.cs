@@ -1,21 +1,22 @@
-﻿using API.Models;
+﻿using API.IntegrationTests.Setup;
+using API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests
 {
-    public class AffiliationTests : IClassFixture<DatabaseFixture>
+    public class AffiliationTests : IClassFixture<DatabaseTest>
     {
-        private readonly DatabaseFixture _fixture;
+        private readonly DatabaseTest _test;
 
-        public AffiliationTests(DatabaseFixture fixture)
+        public AffiliationTests(DatabaseTest test)
         {
-            _fixture = fixture;
+            _test = test;
         }
 
         [Fact]
         public async Task CannotAddDuplicateAffiliation()
         {
-            using var context = _fixture.CreateContext();
+            using var context = _test.CreateContext();
             var user = new User();
             var organization = new Organization();
             var affiliation1 = Affiliation.Create(user, organization);
