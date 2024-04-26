@@ -137,7 +137,8 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
     public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid ownerSubject, Guid walletId, CancellationToken cancellationToken)
     {
         SetDummyAuthorizationHeader(ownerSubject.ToString());
-        var res = await client.PostAsync($"v1/wallets/{walletId}/endpoints", null);
+        var content = new StringContent("", Encoding.UTF8, "application/json");
+        var res = await client.PostAsync($"v1/wallets/{walletId}/endpoints", content);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
