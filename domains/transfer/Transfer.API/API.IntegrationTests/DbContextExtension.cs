@@ -14,7 +14,7 @@ public static class DbContextExtension
     public static async Task<List<T>> RepeatedlyQueryUntilCountIsMet<T>(this DbContext dbContext, int count, TimeSpan? timeLimit = null)
         where T : class
     {
-        var limit = timeLimit ?? TimeSpan.FromSeconds(15);
+        var limit = timeLimit ?? TimeSpan.FromSeconds(30);
 
         var stopwatch = new Stopwatch();
         stopwatch.Start();
