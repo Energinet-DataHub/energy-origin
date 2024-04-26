@@ -32,6 +32,19 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     }
 
     [Fact]
+    public async Task GetWallets_WhenNoWallets_ExpectEmptyResult()
+    {
+        var ownerSubject = Guid.NewGuid();
+        var httpClient = GetWalletHttpClient();
+        var walletClient = new ProjectOriginWalletClient(httpClient);
+
+        var wallets = await walletClient.GetWallets(ownerSubject, new CancellationToken());
+
+        wallets.Should().NotBeNull();
+        wallets.Result.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task CreateWalletEndpoint()
     {
         var ownerSubject = Guid.NewGuid();
