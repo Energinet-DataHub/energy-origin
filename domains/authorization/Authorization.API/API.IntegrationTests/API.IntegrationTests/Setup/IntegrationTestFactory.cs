@@ -1,4 +1,4 @@
-﻿using System.Data.Common;
+using System.Data.Common;
 using API.Models;
 using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Hosting;

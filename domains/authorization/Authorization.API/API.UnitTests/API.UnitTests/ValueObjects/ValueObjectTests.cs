@@ -1,4 +1,4 @@
-﻿using API.ValueObjects;
+using API.ValueObjects;
 using FluentAssertions;
 
 namespace API.UnitTests.ValueObjects;
