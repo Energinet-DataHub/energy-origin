@@ -2,12 +2,49 @@ using System;
 
 namespace API.Models;
 
-public class Consent(Organization organization, Client client)
+public class Consent
 {
-    public Guid Id { get; init; }
-    public Guid OrganizationId { get; init; }
-    public Organization Organization { get; init; } = organization ?? throw new ArgumentNullException(nameof(organization));
-    public Guid ClientId { get; init; }
-    public Client Client { get; init; } = client ?? throw new ArgumentNullException(nameof(client));
-    public DateTime ConsentDate { get; init; }
+    private Consent(
+        Guid id,
+        Guid organizationId,
+        Guid clientId,
+        Organization organization,
+        Client client,
+        DateTime consentDate
+    )
+    {
+        Id = id;
+        Organization = organization;
+        Client = client;
+        OrganizationId = organizationId;
+        ClientId = clientId;
+        ConsentDate = consentDate;
+    }
+
+    public Guid Id { get; private set; }
+    public Guid OrganizationId { get; private set; }
+    public Organization Organization { get; private set; }
+    public Guid ClientId { get; private set; }
+    public Client Client { get; private set; }
+    public DateTime ConsentDate { get; private set; }
+
+    public static Consent Create(Organization organization, Client client, DateTime consentDate)
+    {
+        ArgumentNullException.ThrowIfNull(organization);
+        ArgumentNullException.ThrowIfNull(client);
+
+        var consent = new Consent(
+            Guid.NewGuid(),
+            organization.Id,
+            client.Id,
+            organization,
+            client,
+            consentDate
+        );
+
+        organization.Consents.Add(consent);
+        client.Consents.Add(consent);
+
+        return consent;
+    }
 }

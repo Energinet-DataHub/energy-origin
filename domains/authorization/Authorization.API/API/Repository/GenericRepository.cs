@@ -19,20 +19,20 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     {
         ArgumentNullException.ThrowIfNull(entity);
         await Context.Set<T>().AddAsync(entity);
-        await Context.SaveChangesAsync();
     }
 
-    public async Task RemoveAsync(T entity)
+    public Task RemoveAsync(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Set<T>().Remove(entity);
-        await Context.SaveChangesAsync();
+        return Task.CompletedTask;
+
     }
 
-    public async Task UpdateAsync(T entity)
+    public Task UpdateAsync(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Entry(entity).State = EntityState.Modified;
-        await Context.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 }

@@ -11,8 +11,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoFixture" Version="4.18.1" />
         <PackageReference Include="coverlet.collector" Version="6.0.0"/>
+        <PackageReference Include="FluentAssertions" Version="6.12.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.4" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.4" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
+        <PackageReference Include="Respawn" Version="6.2.1" />
+        <PackageReference Include="Testcontainers.PostgreSql" Version="3.8.0" />
         <PackageReference Include="xunit" Version="2.7.1" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.8">
           <PrivateAssets>all</PrivateAssets>
@@ -22,6 +29,14 @@
 
     <ItemGroup>
         <Using Include="Xunit"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\API\API.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Repository\" />
     </ItemGroup>
 
 </Project>
