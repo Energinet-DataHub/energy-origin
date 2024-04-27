@@ -41,12 +41,13 @@ public class UserTests
         var idpUserId = new IdpUserId(Guid.NewGuid());
         var name = new Name("Test User");
 
+        var orgId = Guid.NewGuid();
         var organizationIdpId = new IdpId(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+        var organization = new Organization(orgId,organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
         var user = User.Create(idpId, idpUserId, name);
         var affiliation = Affiliation.Create(user, organization);

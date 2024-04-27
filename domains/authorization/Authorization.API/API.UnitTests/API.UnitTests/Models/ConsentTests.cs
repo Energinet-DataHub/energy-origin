@@ -9,11 +9,12 @@ public class ConsentTests
     [Fact]
     public void Consent_WithValidData_CreatesSuccessfully()
     {
+        var orgId = Guid.NewGuid();
         var organizationIdpId = new IdpId(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+        var organization = new Organization(orgId, organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
         var clientName = new Name("Test Client");
@@ -35,11 +36,12 @@ public class ConsentTests
     [Fact]
     public void Consent_Create_AddsConsentToOrganizationAndClient()
     {
+        var orgId = Guid.NewGuid();
         var organizationIdpId = new IdpId(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+        var organization = new Organization(orgId, organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
         var clientName = new Name("Test Client");
@@ -70,11 +72,12 @@ public class ConsentTests
     [Fact]
     public void Consent_Create_ThrowsArgumentNullException_WhenClientIsNull()
     {
+        var orgId = Guid.NewGuid();
         var organizationIdpId = new IdpId(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+        var organization = new Organization(orgId,organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
         var consentDate = DateTime.UtcNow;
         Action act = () => Consent.Create(organization, null!, consentDate);

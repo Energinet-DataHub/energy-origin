@@ -9,12 +9,13 @@ public class OrganizationTests
     [Fact]
     public void Organization_WithValidData_CreatesSuccessfully()
     {
+        var id = Guid.NewGuid();
         var idpId = new IdpId(Guid.NewGuid());
         var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = new Organization(id, idpId, idpOrganizationId, tin, organizationName);
 
         organization.Should().NotBeNull();
         organization.Id.Should().NotBeEmpty();
@@ -27,12 +28,13 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanExist_WithoutAffiliations()
     {
+        var id = Guid.NewGuid();
         var idpId = new IdpId(Guid.NewGuid());
         var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = new Organization(id, idpId, idpOrganizationId, tin, organizationName);
 
         organization.Affiliations.Should().NotBeNull().And.BeEmpty();
     }
@@ -40,12 +42,13 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanExist_WithoutConsents()
     {
+        var id = Guid.NewGuid();
         var idpId = new IdpId(Guid.NewGuid());
         var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = new Organization(id, idpId, idpOrganizationId, tin, organizationName);
 
         organization.Consents.Should().NotBeNull().And.BeEmpty();
     }
@@ -53,12 +56,13 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanHave_Affiliations()
     {
+        var id = Guid.NewGuid();
         var idpId = new IdpId(Guid.NewGuid());
         var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = new Organization(id, idpId, idpOrganizationId, tin, organizationName);
 
         var idpIdForUser = new IdpId(Guid.NewGuid());
         var idpUserId = new IdpUserId(Guid.NewGuid());
@@ -73,12 +77,13 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanHave_Consents()
     {
+        var id = Guid.NewGuid();
         var idpId = new IdpId(Guid.NewGuid());
         var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = new Organization(id, idpId, idpOrganizationId, tin, organizationName);
 
         var idpClientId = new IdpClientId(Guid.NewGuid());
         var clientName = new Name("Test Client");
