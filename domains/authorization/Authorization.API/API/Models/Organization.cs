@@ -9,7 +9,8 @@ public class Organization(
     IdpId idpId,
     IdpOrganizationId idpOrganizationId,
     Tin tin,
-    OrganizationName organizationName)
+    OrganizationName organizationName
+    )
 {
     public Guid Id { get; private set; } = id;
     public IdpId IdpId { get; private set; } = idpId;
@@ -19,7 +20,4 @@ public class Organization(
 
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();
-
-
-
 }

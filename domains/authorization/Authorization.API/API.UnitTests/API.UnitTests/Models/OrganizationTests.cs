@@ -64,10 +64,11 @@ public class OrganizationTests
 
         var organization = new Organization(id, idpId, idpOrganizationId, tin, organizationName);
 
+        var userId = Guid.NewGuid();
         var idpIdForUser = new IdpId(Guid.NewGuid());
         var idpUserId = new IdpUserId(Guid.NewGuid());
         var userName = new Name("Test User");
-        var user = User.Create(idpIdForUser, idpUserId, userName);
+        var user = new User(userId, idpIdForUser, idpUserId, userName);
 
         var affiliation = Affiliation.Create(user, organization);
 

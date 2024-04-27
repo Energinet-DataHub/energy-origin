@@ -16,10 +16,11 @@ public class AffiliationTests
         var organizationName = new OrganizationName("Test Organization");
         var organization = new Organization(orgId, organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
+        var userId = Guid.NewGuid();
         var idpUserId = new IdpUserId(Guid.NewGuid());
         var idpIdForUser = new IdpId(Guid.NewGuid());
         var userName = new Name("Test User");
-        var user = User.Create(idpIdForUser, idpUserId, userName);
+        var user = new User(userId, idpIdForUser, idpUserId, userName);
 
         var affiliation = Affiliation.Create(user, organization);
 
@@ -40,10 +41,11 @@ public class AffiliationTests
         var organizationName = new OrganizationName("Test Organization");
         var organization = new Organization(orgId, organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
+        var userId = Guid.NewGuid();
         var idpIdForUser = new IdpId(Guid.NewGuid());
         var idpUserId = new IdpUserId(Guid.NewGuid());
         var userName = new Name("Test User");
-        var user = User.Create(idpIdForUser, idpUserId, userName);
+        var user = new User(userId, idpIdForUser, idpUserId, userName);
 
         var affiliation = Affiliation.Create(user, organization);
 
@@ -69,10 +71,11 @@ public class AffiliationTests
     [Fact]
     public void Affiliation_Create_ThrowsArgumentNullException_WhenOrganizationIsNull()
     {
+        var userId = Guid.NewGuid();
         var idpUserId = new IdpUserId(Guid.NewGuid());
         var idpIdForUser = new IdpId(Guid.NewGuid());
         var userName = new Name("Test User");
-        var user = User.Create(idpIdForUser, idpUserId, userName);
+        var user = new User(userId, idpIdForUser, idpUserId, userName);
 
         Action act = () => Affiliation.Create(user, null!);
 

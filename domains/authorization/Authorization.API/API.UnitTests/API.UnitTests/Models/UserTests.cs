@@ -9,11 +9,12 @@ public class UserTests
     [Fact]
     public void User_WithValidData_CreatesSuccessfully()
     {
+        var userId = Guid.NewGuid();
         var idpId = new IdpId(Guid.NewGuid());
         var idpUserId = new IdpUserId(Guid.NewGuid());
         var name = new Name("Test User");
 
-        var user = User.Create(idpId, idpUserId, name);
+        var user = new User(userId, idpId, idpUserId, name);
 
         user.Should().NotBeNull();
         user.Id.Should().NotBeEmpty();
@@ -25,11 +26,12 @@ public class UserTests
     [Fact]
     public void User_CanExist_WithoutAffiliations()
     {
+        var userId = Guid.NewGuid();
         var idpId = new IdpId(Guid.NewGuid());
         var idpUserId = new IdpUserId(Guid.NewGuid());
         var name = new Name("Test User");
 
-        var user = User.Create(idpId, idpUserId, name);
+        var user = new User(userId, idpId, idpUserId, name);
 
         user.Affiliations.Should().NotBeNull().And.BeEmpty();
     }
@@ -49,7 +51,8 @@ public class UserTests
 
         var organization = new Organization(orgId,organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
-        var user = User.Create(idpId, idpUserId, name);
+        var userId = Guid.NewGuid();
+        var user = new User(userId, idpId, idpUserId, name);
         var affiliation = Affiliation.Create(user, organization);
 
         user.Affiliations.Should().Contain(affiliation);

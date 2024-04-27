@@ -14,28 +14,5 @@
             Retreives Authorization Model.
             </summary>
         </member>
-        <member name="M:API.Controllers.UserSignUpController.SignUp(System.String)">
-            <summary>
-            Processes user sign-up.
-            </summary>
-            <param name="authorizationHeader">The Authorization header containing the JWT token.</param>
-            <returns>A response indicating the outcome of the sign-up process.</returns>
-            <response code="201">User sign-up processed successfully.</response>
-            <response code="400">Bad request. The Authorization header is missing or invalid.</response>
-            <response code="401">Unauthorized. The provided token is invalid or expired.</response>
-            <response code="500">Internal server error. An error occurred while processing the sign-up.</response>
-        </member>
-        <member name="T:API.Migrations.InitialCreate">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
     </members>
 </doc>
