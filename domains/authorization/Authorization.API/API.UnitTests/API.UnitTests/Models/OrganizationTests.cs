@@ -86,10 +86,11 @@ public class OrganizationTests
 
         var organization = new Organization(id, idpId, idpOrganizationId, tin, organizationName);
 
+        var clientId = Guid.NewGuid();
         var idpClientId = new IdpClientId(Guid.NewGuid());
         var clientName = new Name("Test Client");
         var role = Role.External;
-        var client = Client.Create(idpClientId, clientName, role);
+        var client = new Client(clientId, idpClientId, clientName, role);
 
         var consentDate = DateTime.UtcNow;
         var consent = Consent.Create(organization, client, consentDate);

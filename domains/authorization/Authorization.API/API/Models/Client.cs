@@ -6,7 +6,7 @@ namespace API.Models;
 
 public class Client
 {
-    private Client(
+    public Client(
         Guid id,
         IdpClientId idpClientId,
         Name name,
@@ -25,18 +25,4 @@ public class Client
     public Role Role { get; private set; }
 
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();
-
-    public static Client Create(
-        IdpClientId idpClientId,
-        Name name,
-        Role role
-    )
-    {
-        return new Client(
-            Guid.NewGuid(),
-            idpClientId,
-            name,
-            role
-        );
-    }
 }

@@ -16,10 +16,11 @@ public class ConsentTests
         var organizationName = new OrganizationName("Test Organization");
         var organization = new Organization(orgId, organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
+        var clientId = Guid.NewGuid();
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
         var clientName = new Name("Test Client");
         var role = Role.External;
-        var client = Client.Create(clientIdpClientId, clientName, role);
+        var client = new Client(clientId, clientIdpClientId, clientName, role);
 
         var consentDate = DateTime.UtcNow;
         var consent = Consent.Create(organization, client, consentDate);
@@ -46,7 +47,8 @@ public class ConsentTests
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
         var clientName = new Name("Test Client");
         var role = Role.External;
-        var client = Client.Create(clientIdpClientId, clientName, role);
+        var clientId = Guid.NewGuid();
+        var client = new Client(clientId, clientIdpClientId, clientName, role);
 
         var consentDate = DateTime.UtcNow;
         var consent = Consent.Create(organization, client, consentDate);
@@ -61,7 +63,8 @@ public class ConsentTests
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
         var clientName = new Name("Test Client");
         var role = Role.External;
-        var client = Client.Create(clientIdpClientId, clientName, role);
+        var clientId = Guid.NewGuid();
+        var client = new Client(clientId, clientIdpClientId, clientName, role);
 
         var consentDate = DateTime.UtcNow;
         Action act = () => Consent.Create(null!, client, consentDate);

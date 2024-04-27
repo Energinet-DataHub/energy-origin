@@ -9,11 +9,12 @@ public class ClientTests
     [Fact]
     public void Client_WithValidData_CreatesSuccessfully()
     {
+        var clientId = Guid.NewGuid();
         var idpClientId = new IdpClientId(Guid.NewGuid());
         var name = new Name("Test Client");
         var role = Role.External;
 
-        var client = Client.Create(idpClientId, name, role);
+        var client = new Client(clientId, idpClientId, name, role);
 
         client.Should().NotBeNull();
         client.Id.Should().NotBeEmpty();
@@ -25,11 +26,12 @@ public class ClientTests
     [Fact]
     public void Client_CanExist_WithoutConsents()
     {
+        var clientId = Guid.NewGuid();
         var idpClientId = new IdpClientId(Guid.NewGuid());
         var name = new Name("Test Client");
         var role = Role.External;
 
-        var client = Client.Create(idpClientId, name, role);
+        var client = new Client(clientId, idpClientId, name, role);
 
         client.Consents.Should().NotBeNull().And.BeEmpty();
     }
@@ -49,7 +51,8 @@ public class ClientTests
 
         var organization = new Organization(orgId, organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
-        var client = Client.Create(idpClientId, name, role);
+        var clientId = Guid.NewGuid();
+        var client = new Client(clientId, idpClientId, name, role);
         var consentDate = DateTime.UtcNow;
         var consent = Consent.Create(organization, client, consentDate);
 
