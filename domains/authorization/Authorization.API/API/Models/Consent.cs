@@ -21,12 +21,16 @@ public class Consent
         ConsentDate = consentDate;
     }
 
-    public Guid Id { get; private set; }
-    public Guid OrganizationId { get; private set; }
-    public Organization Organization { get; private set; }
-    public Guid ClientId { get; private set; }
-    public Client Client { get; private set; }
-    public DateTime ConsentDate { get; private set; }
+    private Consent()
+    {
+    }
+
+    public Guid Id { get; set; }
+    public Guid OrganizationId { get; set; }
+    public Organization Organization { get; set; } = null!;
+    public Guid ClientId { get; set; }
+    public Client Client { get; set; } = null!;
+    public DateTime ConsentDate { get; set; }
 
     public static Consent Create(Organization organization, Client client, DateTime consentDate)
     {

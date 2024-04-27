@@ -19,10 +19,14 @@ public class Client
         Role = role;
     }
 
-    public Guid Id { get; private set; }
-    public IdpClientId IdpClientId { get; private set; }
-    public Name Name { get; private set; }
-    public Role Role { get; private set; }
+    private Client()
+    {
+    }
+
+    public Guid Id { get; set; }
+    public IdpClientId IdpClientId { get; set; } = null!;
+    public Name Name { get; set; } = null!;
+    public Role Role { get; set; }
 
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();
 

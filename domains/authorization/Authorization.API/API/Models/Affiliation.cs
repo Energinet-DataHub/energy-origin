@@ -19,11 +19,15 @@ public class Affiliation
         OrganizationId = organizationId;
     }
 
-    public Guid Id { get; private set; }
-    public Guid UserId { get; private set; }
-    public Guid OrganizationId { get; private set; }
-    public Organization Organization { get; private set; }
-    public User User { get; private set; }
+    private Affiliation()
+    {
+    }
+
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public Guid OrganizationId { get; set; }
+    public Organization Organization { get; set; } = null!;
+    public User User { get; set; } = null!;
 
     public static Affiliation Create(User user, Organization organization)
     {
