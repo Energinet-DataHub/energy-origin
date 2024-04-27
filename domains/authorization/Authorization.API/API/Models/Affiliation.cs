@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Models;
 
@@ -24,7 +25,9 @@ public class Affiliation
     }
 
     public Guid Id { get; set; }
+    [Required]
     public Guid UserId { get; set; }
+    [Required]
     public Guid OrganizationId { get; set; }
     public Organization Organization { get; set; } = null!;
     public User User { get; set; } = null!;
