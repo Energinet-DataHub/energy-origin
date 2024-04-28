@@ -1,5 +1,7 @@
 using System.Data.Common;
+using API.Data;
 using API.Models;
+using API.Repository;
 using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -66,7 +68,13 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
             {
                 options.UseNpgsql(_container.GetConnectionString());
             });
-            services.EnsureDbCreated<ApplicationDbContext>();
+
+            services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+            services.AddScoped<IClientRepository, ClientRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IAffiliationRepository, AffiliationRepository>();
+            services.AddScoped<IConsentRepository, ConsentRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         });
     }
 }

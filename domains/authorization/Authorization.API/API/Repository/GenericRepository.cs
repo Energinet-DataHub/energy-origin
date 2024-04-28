@@ -26,7 +26,6 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
         ArgumentNullException.ThrowIfNull(entity);
         Context.Set<T>().Remove(entity);
         return Task.CompletedTask;
-
     }
 
     public Task UpdateAsync(T entity)
