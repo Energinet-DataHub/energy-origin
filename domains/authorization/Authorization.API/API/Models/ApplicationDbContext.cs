@@ -17,99 +17,79 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Organization>()
-            .Property(o => o.OrganizationName)
-            .HasConversion(new ValueConverter<OrganizationName, string>(
-                v => v.Value,
-                v => new OrganizationName(v)))
-            .HasColumnName("OrganizationName");
+        ConfigureOrganizationTable(modelBuilder);
+        ConfigureAffiliationTable(modelBuilder);
+        ConfigureConsentTable(modelBuilder);
+        ConfigureClientTable(modelBuilder);
+        ConfigureUserTable(modelBuilder);
+    }
 
-        modelBuilder.Entity<Organization>()
-            .Property(o => o.Tin)
-            .HasConversion(new ValueConverter<Tin, string>(
-                v => v.Value,
-                v => new Tin(v)))
-            .HasColumnName("Tin");
+    private static void ConfigureOrganizationTable(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Organization>().Property(o => o.OrganizationName)
+            .HasConversion(new ValueConverter<OrganizationName, string>(v => v.Value, v => new OrganizationName(v)))
+            .HasColumnName("OrganizationName")
+            .IsRequired();
 
-        modelBuilder.Entity<Client>()
-            .Property(e => e.IdpClientId)
-            .HasConversion(new ValueConverter<IdpClientId, Guid>(
-                v => v.Value,
-                v => new IdpClientId(v)))
+        modelBuilder.Entity<Organization>().Property(o => o.Tin)
+            .HasConversion(new ValueConverter<Tin, string>(v => v.Value, v => new Tin(v)))
+            .HasColumnName("Tin")
+            .IsRequired();
+
+        modelBuilder.Entity<Organization>().Property(o => o.IdpId)
+            .HasConversion(new ValueConverter<IdpId, Guid>(v => v.Value, v => new IdpId(v)))
+            .HasColumnName("IdpId")
+            .IsRequired();
+
+        modelBuilder.Entity<Organization>().Property(o => o.IdpOrganizationId)
+            .HasConversion(new ValueConverter<IdpOrganizationId, Guid>(v => v.Value, v => new IdpOrganizationId(v)))
+            .HasColumnName("IdpOrganizationId")
+            .IsRequired();
+
+        modelBuilder.Entity<Organization>().HasIndex(o => o.IdpOrganizationId).IsUnique();
+    }
+
+    private static void ConfigureClientTable(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Client>().Property(e => e.IdpClientId)
+            .HasConversion(new ValueConverter<IdpClientId, Guid>(v => v.Value, v => new IdpClientId(v)))
             .HasColumnName("IdpClientId");
 
-        modelBuilder.Entity<User>()
-            .Property(u => u.IdpId)
-            .HasConversion(new ValueConverter<IdpId, Guid>(
-                v => v.Value,
-                v => new IdpId(v)))
-            .HasColumnName("IdpId");
-
-        modelBuilder.Entity<Organization>()
-            .Property(o => o.IdpId)
-            .HasConversion(new ValueConverter<IdpId, Guid>(
-                v => v.Value,
-                v => new IdpId(v)))
-            .HasColumnName("IdpId");
-
-        modelBuilder.Entity<Client>()
-            .Property(c => c.Name)
-            .HasConversion(new ValueConverter<Name, string>(
-                v => v.Value,
-                v => new Name(v)))
+        modelBuilder.Entity<Client>().Property(c => c.Name)
+            .HasConversion(new ValueConverter<Name, string>(v => v.Value, v => new Name(v)))
             .HasColumnName("Name");
 
-        modelBuilder.Entity<User>()
-            .Property(u => u.Name)
-            .HasConversion(new ValueConverter<Name, string>(
-                v => v.Value,
-                v => new Name(v)))
+        modelBuilder.Entity<Client>().HasIndex(c => c.IdpClientId).IsUnique();
+    }
+
+    private static void ConfigureUserTable(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<User>().Property(u => u.IdpId)
+            .HasConversion(new ValueConverter<IdpId, Guid>(v => v.Value, v => new IdpId(v)))
+            .HasColumnName("IdpId");
+
+        modelBuilder.Entity<User>().Property(u => u.Name)
+            .HasConversion(new ValueConverter<Name, string>(v => v.Value, v => new Name(v)))
             .HasColumnName("Name");
 
-        modelBuilder.Entity<User>()
-            .Property(u => u.IdpUserId)
-            .HasConversion(new ValueConverter<IdpUserId, Guid>(
-                v => v.Value,
-                v => new IdpUserId(v)))
+        modelBuilder.Entity<User>().Property(u => u.IdpUserId)
+            .HasConversion(new ValueConverter<IdpUserId, Guid>(v => v.Value, v => new IdpUserId(v)))
             .HasColumnName("IdpUserId");
 
-        modelBuilder.Entity<Organization>()
-            .Property(o => o.IdpOrganizationId)
-            .HasConversion(new ValueConverter<IdpOrganizationId, Guid>(
-                v => v.Value,
-                v => new IdpOrganizationId(v)))
-            .HasColumnName("IdpOrganizationId");
+        modelBuilder.Entity<User>().HasIndex(u => u.IdpUserId).IsUnique();
+    }
 
-        modelBuilder.Entity<Organization>()
-            .HasMany(o => o.Affiliations)
-            .WithOne(a => a.Organization)
-            .HasForeignKey(a => a.OrganizationId);
-
-        modelBuilder.Entity<Organization>()
-            .HasMany(o => o.Consents)
-            .WithOne(c => c.Organization)
-            .HasForeignKey(c => c.OrganizationId);
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.Affiliations)
-            .WithOne(a => a.User)
-            .HasForeignKey(a => a.UserId);
-
-        modelBuilder.Entity<Consent>()
-            .HasOne(c => c.Client)
-            .WithMany(cl => cl.Consents)
-            .HasForeignKey(c => c.ClientId);
-
+    private static void ConfigureAffiliationTable(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<Affiliation>()
             .HasIndex(a => new { a.UserId, a.OrganizationId })
             .IsUnique();
+    }
 
+    private static void ConfigureConsentTable(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<Consent>()
             .HasIndex(c => new { c.ClientId, c.OrganizationId })
             .IsUnique();
-
-        modelBuilder.Entity<User>().HasIndex(u => u.IdpUserId).IsUnique();
-        modelBuilder.Entity<Organization>().HasIndex(o => o.IdpOrganizationId).IsUnique();
-        modelBuilder.Entity<Client>().HasIndex(c => c.IdpClientId).IsUnique();
     }
 }

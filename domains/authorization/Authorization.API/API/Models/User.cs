@@ -23,10 +23,10 @@ public class User
     {
     }
 
-    public Guid Id { get; set; }
-    public IdpId IdpId { get; set; } = null!;
-    public IdpUserId IdpUserId { get; set; } = null!;
-    public Name Name { get; set; } = null!;
+    public Guid Id { get; private set; }
+    public IdpId IdpId { get; private set; } = null!;
+    public IdpUserId IdpUserId { get; private set; } = null!;
+    public Name Name { get; private set; } = null!;
 
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
 
