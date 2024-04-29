@@ -42,9 +42,9 @@ internal class ContractServiceImpl : IContractService
     {
         var meteringPointOwner = user.Subject.ToString();
         var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwner, cancellationToken);
-        var contractsByAllGsrn =
-            await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(contracts.Contracts.Select(c => c.GSRN).ToList(),
-                cancellationToken);
+        var contractsByGsrn =
+            await GetAllContractsByGsrn(contracts.Contracts.Select(c => c.GSRN).ToList(), cancellationToken);
+
         var newContracts = new List<CertificateIssuingContract>();
         var number = 0;
         foreach (var contract in contracts.Contracts)
@@ -61,7 +61,7 @@ internal class ContractServiceImpl : IContractService
                 return new GsrnNotFound();
             }
 
-            var contractsGsrn = contractsByAllGsrn.Where(c => c.GSRN == contract.GSRN).ToList();
+            var contractsGsrn = contractsByGsrn.Where(c => c.GSRN == contract.GSRN).ToList();
 
             var overlappingContract = contractsGsrn.Find(c =>
                 c.Overlaps(startDate, endDate));
@@ -105,6 +105,7 @@ internal class ContractServiceImpl : IContractService
                 Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
 
             newContracts.Add(issuingContract);
+            contractsByGsrn.Add(issuingContract);
 
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
                 actorId: user.Subject,
@@ -135,6 +136,15 @@ internal class ContractServiceImpl : IContractService
         }
     }
 
+    private async Task<List<CertificateIssuingContract>> GetAllContractsByGsrn(List<string> gsrn,
+        CancellationToken cancellationToken)
+    {
+        var contracts =
+            await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(gsrn,
+                cancellationToken);
+        return contracts.ToList();
+    }
+
     private static MeteringPointType Map(MeterType type)
     {
         if (type == MeterType.Production) return MeteringPointType.Production;
@@ -162,8 +172,8 @@ internal class ContractServiceImpl : IContractService
                 cancellationToken);
 
         var contractsByGsrn =
-            await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(issuingContracts.Select(c => c.GSRN).ToList(),
-                cancellationToken);
+            await GetAllContractsByGsrn(issuingContracts.Select(c => c.GSRN).ToList(), cancellationToken);
+
         foreach (var updatedContract in contracts.Contracts)
         {
             DateTimeOffset? newEndDate = updatedContract.EndDate.HasValue
@@ -204,6 +214,7 @@ internal class ContractServiceImpl : IContractService
             }
 
             existingContract.EndDate = newEndDate;
+            contractsByGsrn.Find(c => c.Id == existingContract.Id)!.EndDate = newEndDate;
 
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
