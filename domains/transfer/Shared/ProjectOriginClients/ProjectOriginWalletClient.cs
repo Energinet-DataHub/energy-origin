@@ -87,7 +87,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
-        var res = await client.PostAsync("v1/claims", content);
+        var res = await client.PostAsync("v1/transfers", content);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
