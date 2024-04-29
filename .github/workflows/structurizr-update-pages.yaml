@@ -6,7 +6,6 @@ on:
 
 jobs:
   setup:
-    if: ${{ github.ref_name == 'main' }}
     runs-on: ubuntu-latest
     outputs:
       run: ${{ env.matched }}
@@ -120,6 +119,7 @@ jobs:
           path: ${{ env.output }}
 
   deploy:
+    if: ${{ github.ref_name == 'main' }}
     needs: build
     runs-on: ubuntu-latest
     permissions:
