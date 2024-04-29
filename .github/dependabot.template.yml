@@ -25,16 +25,18 @@ updates:
     directory: /domains/*/*.sln
     schedule:
       interval: daily
-    groups:
-      "Microsoft.EntityFrameworkCore":
-        patterns:
-          - "Microsoft.EntityFrameworkCore.*"
-
+    ignore:
+      - dependency-type: "all"
+        update-types: 
+        - "minor"
+        - "patch"
+    
   - package-ecosystem: nuget
     directory: /libraries/dotnet/*/*.sln
     schedule:
       interval: daily
-    groups:
-      "Microsoft.EntityFrameworkCore":
-        patterns:
-          - "Microsoft.EntityFrameworkCore.*"
+    ignore:
+      - dependency-type: "all"
+        update-types: 
+        - "minor"
+        - "patch"
