@@ -5,15 +5,20 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
+[Collection(IntegrationTestCollection.CollectionName)]
 public class HealthControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
-    public HealthControllerTests(TransferAgreementsApiWebApplicationFactory factory) => this.factory = factory;
+    public HealthControllerTests(IntegrationTestFixture integrationTestFixture)
+    {
+        factory = integrationTestFixture.Factory;
+    }
 
     [Fact]
     public async Task Health_ShouldReturnOk_WhenStarted()
     {
-        var response = await factory.CreateUnauthenticatedClient().GetAsync("/health");
+        using var client = factory.CreateUnauthenticatedClient();
+        using var response = await client.GetAsync("/health");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

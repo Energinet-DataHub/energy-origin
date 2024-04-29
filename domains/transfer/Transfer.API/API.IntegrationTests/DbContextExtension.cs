@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DataContext;
-using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests;
@@ -31,15 +30,10 @@ public static class DbContextExtension
         throw new Exception($"Entity not found within the time limit ({limit.TotalSeconds} seconds)");
     }
 
-    public static async Task TruncateTransferAgreementsTables(this ApplicationDbContext dbContext)
+    public static async Task TruncateTableAsync<TEntity>(this ApplicationDbContext dbContext)
     {
-        var transfersTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
-        var historyEntriesTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
-
-        var transfersSql = $"TRUNCATE TABLE \"{transfersTable}\" CASCADE";
-        var historyEntriesSql = $"TRUNCATE TABLE \"{historyEntriesTable}\"";
-
-        await dbContext.Database.ExecuteSqlRawAsync(transfersSql);
-        await dbContext.Database.ExecuteSqlRawAsync(historyEntriesSql);
+        var entityType = dbContext.Model.FindEntityType(typeof(TEntity))!;
+        var tableName = entityType.GetTableName();
+        await dbContext.Database.ExecuteSqlRawAsync("TRUNCATE TABLE public.\"" + tableName + "\" CASCADE");
     }
 }

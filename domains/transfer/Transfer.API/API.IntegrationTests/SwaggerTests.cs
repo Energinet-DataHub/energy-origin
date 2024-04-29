@@ -10,13 +10,14 @@ using Xunit;
 
 namespace API.IntegrationTests;
 
-public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class SwaggerTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
-    public SwaggerTests(TransferAgreementsApiWebApplicationFactory factory)
+    public SwaggerTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
+        factory = integrationTestFixture.Factory;
     }
 
     [Fact]
@@ -52,151 +53,162 @@ public class SwaggerTests : IClassFixture<TransferAgreementsApiWebApplicationFac
     [Fact]
     public async Task GetSwaggerDocs_AllVersions_ReturnsOk()
     {
-        using var client = factory.CreateUnauthenticatedClient();
-        var provider = factory.GetApiVersionDescriptionProvider();
-
-        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        await factory.WithApiVersionDescriptionProvider(async apiDesc =>
         {
-            var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
-            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK,
-                $"Swagger documentation for version {version} should be accessible.");
-        }
+            using var client = factory.CreateUnauthenticatedClient();
+            foreach (var version in apiDesc.ApiVersionDescriptions.Select(v => v.GroupName))
+            {
+                using var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
+                swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK,
+                    $"Swagger documentation for version {version} should be accessible.");
+            }
+        });
     }
 
     [Fact]
     public async Task GetSwaggerDocs_ForAllVersions_Production_ReturnsOk()
     {
-        using var client = factory
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
-            .CreateClient();
-
-        var provider = factory.GetApiVersionDescriptionProvider();
-
-        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        await factory.WithApiVersionDescriptionProvider(async apiDesc =>
         {
-            var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
-            swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK,
-                $"Swagger documentation for version {version} should be accessible in production.");
-        }
+            using var client = factory
+                .WithWebHostBuilder(builder => builder.UseEnvironment("Production"))
+                .CreateClient();
+
+            foreach (var version in apiDesc.ApiVersionDescriptions.Select(v => v.GroupName))
+            {
+                using var swaggerDocResponse = await client.GetAsync($"api-docs/transfer/{version}/swagger.json");
+                swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK,
+                    $"Swagger documentation for version {version} should be accessible in production.");
+            }
+        });
     }
 
     [Fact]
     public async Task SwaggerDocs_AllVersions_MatchSnapshots()
     {
-        using var client = factory.CreateClient();
-        var provider = factory.GetApiVersionDescriptionProvider();
-
-        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        await factory.WithApiVersionDescriptionProvider(async apiDesc =>
         {
-            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
-            var response = await client.GetAsync(swaggerDocUrl);
+            using var client = factory.CreateClient();
+            foreach (var version in apiDesc.ApiVersionDescriptions.Select(v => v.GroupName))
+            {
+                var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
+                using var response = await client.GetAsync(swaggerDocUrl);
 
-            response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
 
-            var json = await response.Content.ReadAsStringAsync();
-            await Verifier.Verify(json)
-                .UseParameters(version)
-                .UseMethodName($"GetSwaggerDocs_v{version}");
-        }
+                var json = await response.Content.ReadAsStringAsync();
+                await Verifier.Verify(json)
+                    .UseParameters(version)
+                    .UseMethodName($"GetSwaggerDocs_v{version}");
+            }
+        });
     }
 
     [Fact]
     public async Task SwaggerDoc_ContainsBearerSecurityDefinition()
     {
-        using var client = factory.CreateClient();
-        var provider = factory.GetApiVersionDescriptionProvider();
-
-        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        await factory.WithApiVersionDescriptionProvider(async apiDesc =>
         {
-            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
-            var response = await client.GetAsync(swaggerDocUrl);
+            using var client = factory.CreateClient();
 
-            response.EnsureSuccessStatusCode();
+            foreach (var version in apiDesc.ApiVersionDescriptions.Select(v => v.GroupName))
+            {
+                var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
+                using var response = await client.GetAsync(swaggerDocUrl);
 
-            var json = await response.Content.ReadAsStringAsync();
+                response.EnsureSuccessStatusCode();
 
-            using var doc = JsonDocument.Parse(json);
-            var components = doc.RootElement.GetProperty("components");
-            var securitySchemes = components.GetProperty("securitySchemes");
+                var json = await response.Content.ReadAsStringAsync();
 
-            securitySchemes.TryGetProperty("Bearer", out _).Should().BeTrue(
-                $"Swagger JSON for API version {version} should contain a Bearer security scheme.");
-        }
+                using var doc = JsonDocument.Parse(json);
+                var components = doc.RootElement.GetProperty("components");
+                var securitySchemes = components.GetProperty("securitySchemes");
+
+                securitySchemes.TryGetProperty("Bearer", out _).Should().BeTrue(
+                    $"Swagger JSON for API version {version} should contain a Bearer security scheme.");
+            }
+        });
     }
 
     [Fact]
     public async Task SwaggerDoc_VerifiesFullBearerSecuritySchemeStructure()
     {
-        using var client = factory.CreateClient();
-        var provider = factory.GetApiVersionDescriptionProvider();
-
-        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        await factory.WithApiVersionDescriptionProvider(async apiDesc =>
         {
-            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
-            var response = await client.GetAsync(swaggerDocUrl);
+            using var client = factory.CreateClient();
 
-            response.EnsureSuccessStatusCode();
+            foreach (var version in apiDesc.ApiVersionDescriptions.Select(v => v.GroupName))
+            {
+                var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
+                using var response = await client.GetAsync(swaggerDocUrl);
 
-            var json = await response.Content.ReadAsStringAsync();
+                response.EnsureSuccessStatusCode();
 
-            using var doc = JsonDocument.Parse(json);
-            var components = doc.RootElement.GetProperty("components");
-            var securitySchemes = components.GetProperty("securitySchemes");
+                var json = await response.Content.ReadAsStringAsync();
 
-            var securitySchemesJson = securitySchemes.GetRawText();
+                using var doc = JsonDocument.Parse(json);
+                var components = doc.RootElement.GetProperty("components");
+                var securitySchemes = components.GetProperty("securitySchemes");
 
-            await Verifier.Verify(securitySchemesJson)
-                .UseParameters(version)
-                .UseMethodName($"SwaggerDoc_{version}_VerifiesFullBearerSecuritySchemeStructure");
-        }
+                var securitySchemesJson = securitySchemes.GetRawText();
+
+                await Verifier.Verify(securitySchemesJson)
+                    .UseParameters(version)
+                    .UseMethodName($"SwaggerDoc_{version}_VerifiesFullBearerSecuritySchemeStructure");
+            }
+        });
     }
 
     [Fact]
     public async Task SwaggerDoc_ContainsSecurityRequirementForBearer()
     {
-        using var client = factory.CreateClient();
-        var provider = factory.GetApiVersionDescriptionProvider();
-
-        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        await factory.WithApiVersionDescriptionProvider(async apiDesc =>
         {
-            var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
-            var response = await client.GetAsync(swaggerDocUrl);
+            using var client = factory.CreateClient();
 
-            response.EnsureSuccessStatusCode();
+            foreach (var version in apiDesc.ApiVersionDescriptions.Select(v => v.GroupName))
+            {
+                var swaggerDocUrl = $"api-docs/transfer/{version}/swagger.json";
+                using var response = await client.GetAsync(swaggerDocUrl);
 
-            var json = await response.Content.ReadAsStringAsync();
+                response.EnsureSuccessStatusCode();
 
-            using var doc = JsonDocument.Parse(json);
-            var securityRequirements = doc.RootElement.GetProperty("security").EnumerateArray().ToList();
+                var json = await response.Content.ReadAsStringAsync();
 
-            var containsBearer = securityRequirements.Any(securityRequirement =>
-                securityRequirement.EnumerateObject().Any(securityScheme =>
-                    securityScheme.Name.Equals("Bearer")));
+                using var doc = JsonDocument.Parse(json);
+                var securityRequirements = doc.RootElement.GetProperty("security").EnumerateArray().ToList();
 
-            containsBearer.Should().BeTrue(
-                $"Swagger JSON for API version {version} should contain a security requirement for Bearer.");
-        }
+                var containsBearer = securityRequirements.Any(securityRequirement =>
+                    securityRequirement.EnumerateObject().Any(securityScheme =>
+                        securityScheme.Name.Equals("Bearer")));
+
+                containsBearer.Should().BeTrue(
+                    $"Swagger JSON for API version {version} should contain a security requirement for Bearer.");
+            }
+        });
     }
 
     [Fact]
     public async Task SwaggerDoc_VerifiesFullSecurityRequirementsStructure()
     {
-        using var client = factory.CreateClient();
-        var provider = factory.GetApiVersionDescriptionProvider();
-
-        foreach (var version in provider.ApiVersionDescriptions.Select(v => v.GroupName))
+        await factory.WithApiVersionDescriptionProvider(async apiDesc =>
         {
-            var swaggerJsonUrl = $"api-docs/transfer/{version}/swagger.json";
-            var swaggerResponse = await client.GetAsync(swaggerJsonUrl);
-            swaggerResponse.EnsureSuccessStatusCode();
-            var swaggerJson = await swaggerResponse.Content.ReadAsStringAsync();
+            using var client = factory.CreateClient();
 
-            using var doc = JsonDocument.Parse(swaggerJson);
-            var security = doc.RootElement.TryGetProperty("security", out var securityElement) ? securityElement.GetRawText() : null;
+            foreach (var version in apiDesc.ApiVersionDescriptions.Select(v => v.GroupName))
+            {
+                var swaggerJsonUrl = $"api-docs/transfer/{version}/swagger.json";
+                using var swaggerResponse = await client.GetAsync(swaggerJsonUrl);
+                swaggerResponse.EnsureSuccessStatusCode();
+                var swaggerJson = await swaggerResponse.Content.ReadAsStringAsync();
 
-            await Verifier.Verify(security)
-                .UseParameters(version)
-                .UseMethodName($"SwaggerDoc_{version}_VerifiesFullSecurityRequirementsStructure");
-        }
+                using var doc = JsonDocument.Parse(swaggerJson);
+                var security = doc.RootElement.TryGetProperty("security", out var securityElement) ? securityElement.GetRawText() : null;
+
+                await Verifier.Verify(security)
+                    .UseParameters(version)
+                    .UseMethodName($"SwaggerDoc_{version}_VerifiesFullSecurityRequirementsStructure");
+            }
+        });
     }
 }

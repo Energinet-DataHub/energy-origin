@@ -7,6 +7,7 @@ using API.IntegrationTests.Factories;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.API;
+using EnergyOrigin.ActivityLog.DataContext;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -14,15 +15,16 @@ using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Services;
 
-public class TransferAgreementProposalCleanupServiceTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class TransferAgreementProposalCleanupServiceTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly Guid sub;
     private readonly string tin;
 
-    public TransferAgreementProposalCleanupServiceTests(TransferAgreementsApiWebApplicationFactory factory)
+    public TransferAgreementProposalCleanupServiceTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
+        factory = integrationTestFixture.Factory;
         sub = Guid.NewGuid();
         tin = "11223344";
         factory.CreateClient();
@@ -32,10 +34,8 @@ public class TransferAgreementProposalCleanupServiceTests : IClassFixture<Transf
     public async Task Run_ShouldDeleteOldInvitations_WhenInvoked()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        dbContext.TransferAgreementProposals.RemoveRange(dbContext.TransferAgreementProposals);
-        await dbContext.SaveChangesAsync();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await dbContext.TruncateTableAsync<TransferAgreementProposal>();
 
         var newInvitation = new TransferAgreementProposal
         {
@@ -74,10 +74,9 @@ public class TransferAgreementProposalCleanupServiceTests : IClassFixture<Transf
     public async Task ShouldCreateActivityLogEntry_WhenDeleting()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        dbContext.TransferAgreementProposals.RemoveRange(dbContext.TransferAgreementProposals);
-        await dbContext.SaveChangesAsync();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await dbContext.TruncateTableAsync<ActivityLogEntry>();
+        await dbContext.TruncateTableAsync<TransferAgreementProposal>();
 
         var oldInvitation = new TransferAgreementProposal
         {
