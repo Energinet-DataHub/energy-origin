@@ -33,7 +33,13 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
     .ValidateOnStart();
 
 builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
-    options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+    options =>
+    {
+        options.UseNpgsql(
+            builder.Configuration.GetConnectionString("Postgres"),
+            providerOptions => providerOptions.EnableRetryOnFailure()
+        );
+    },
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -50,8 +56,10 @@ builder.Services.AddDataSyncSyncer();
 builder.Services.AddIssuingContractCleanup();
 builder.Services.AddVersioningToApi();
 
-var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+var tokenValidationOptions =
+    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
+    .ValidateDataAnnotations().ValidateOnStart();
 
 builder.AddTokenValidation(tokenValidationOptions);
 
