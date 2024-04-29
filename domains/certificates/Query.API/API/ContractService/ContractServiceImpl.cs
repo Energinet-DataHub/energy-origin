@@ -160,12 +160,10 @@ internal class ContractServiceImpl : IContractService
         var issuingContracts =
             await unitOfWork.CertificateIssuingContractRepo.GetAllByIds(contracts.Contracts.Select(c => c.Id).ToList(),
                 cancellationToken);
-        logger.LogInformation("Found {count} contracts for {owner}", issuingContracts.Count, meteringPointOwner);
 
         var contractsByGsrn =
             await unitOfWork.CertificateIssuingContractRepo.GetByGsrn(issuingContracts.Select(c => c.GSRN).ToList(),
                 cancellationToken);
-        logger.LogInformation("updating {count} contracts for {owner}", contracts.Contracts.Count, meteringPointOwner);
         foreach (var updatedContract in contracts.Contracts)
         {
             DateTimeOffset? newEndDate = updatedContract.EndDate.HasValue
@@ -206,8 +204,7 @@ internal class ContractServiceImpl : IContractService
             }
 
             existingContract.EndDate = newEndDate;
-            logger.LogInformation("End date changed from {oldEnddate} to {newEndate} for {owner} contractId: {id}",
-                existingContract.EndDate, newEndDate, meteringPointOwner, updatedContract.Id);
+
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
                 actorName: user.Name,
