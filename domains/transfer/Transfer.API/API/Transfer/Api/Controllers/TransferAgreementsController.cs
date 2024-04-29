@@ -78,13 +78,12 @@ public class TransferAgreementsController(
         }
 
         var subject = user.Subject;
-        var cancellationToken = new CancellationToken();
-        var wallets = await walletClient.GetWallets(subject, cancellationToken);
+        var wallets = await walletClient.GetWallets(subject, CancellationToken.None);
 
         var walletId = wallets.Result.FirstOrDefault()?.Id;
         if (walletId == null)
         {
-            var createWalletResponse = await walletClient.CreateWallet(user.Subject, cancellationToken);
+            var createWalletResponse = await walletClient.CreateWallet(user.Subject, CancellationToken.None);
 
             if (createWalletResponse == null)
                 throw new ApplicationException("Failed to create wallet.");
@@ -92,9 +91,9 @@ public class TransferAgreementsController(
             walletId = createWalletResponse.WalletId;
         }
 
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(subject, walletId.Value, cancellationToken);
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(subject, walletId.Value, CancellationToken.None);
 
-        var externalEndpoint = await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId, walletEndpoint, proposal.ReceiverCompanyTin, cancellationToken);
+        var externalEndpoint = await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId, walletEndpoint, proposal.ReceiverCompanyTin, CancellationToken.None);
 
         var transferAgreement = new TransferAgreement
         {
