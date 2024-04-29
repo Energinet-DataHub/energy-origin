@@ -2,28 +2,34 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using API.IntegrationTests.Testcontainers;
+using DataContext;
 using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Repository;
 
-public class TransferAgreementRepositoryTest : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class TransferAgreementRepositoryTest
 {
-    private readonly TransferAgreementsApiWebApplicationFactory factory;
+    private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public TransferAgreementRepositoryTest(TransferAgreementsApiWebApplicationFactory factory)
+    public TransferAgreementRepositoryTest(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(options);
+        dbContext.Database.Migrate();
     }
 
     [Fact]
     public async Task AddTransferAgreementToDb_SameSenderIdAndTransferAgreementNumber_ShouldThrowException()
     {
+        await using var dbContext = new ApplicationDbContext(options);
         var senderId = Guid.NewGuid();
         var agreements = SetupTransferAgreements(senderId);
-        await factory.SeedTransferAgreements(agreements);
-
+        await TestData.SeedTransferAgreements(dbContext, agreements);
 
         var transferAgreement = new TransferAgreement()
         {
@@ -38,7 +44,7 @@ public class TransferAgreementRepositoryTest : IClassFixture<TransferAgreementsA
             TransferAgreementNumber = agreements[0].TransferAgreementNumber
         };
 
-        await Assert.ThrowsAsync<DbUpdateException>(() => factory.SeedTransferAgreementsSaveChangesAsync(transferAgreement));
+        await Assert.ThrowsAsync<DbUpdateException>(() => TestData.SeedTransferAgreementsSaveChangesAsync(dbContext, transferAgreement));
     }
 
     private static List<TransferAgreement> SetupTransferAgreements(Guid senderId)

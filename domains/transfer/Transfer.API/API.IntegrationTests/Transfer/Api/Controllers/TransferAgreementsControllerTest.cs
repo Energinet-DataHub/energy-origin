@@ -3,19 +3,16 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
+using DataContext;
 using DataContext.Models;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using NSubstitute;
-using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
@@ -25,16 +22,17 @@ using TransferAgreementsResponse = API.Transfer.Api.Dto.Responses.TransferAgreem
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
-public class TransferAgreementsControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class TransferAgreementsControllerTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly ITestOutputHelper output;
     private readonly HttpClient authenticatedClient;
     private readonly string sub;
 
-    public TransferAgreementsControllerTests(TransferAgreementsApiWebApplicationFactory factory, ITestOutputHelper output)
+    public TransferAgreementsControllerTests(IntegrationTestFixture integrationTestFixture, ITestOutputHelper output)
     {
-        this.factory = factory;
+        factory = integrationTestFixture.Factory;
         this.output = output;
 
         sub = Guid.NewGuid().ToString();
@@ -49,8 +47,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
         var createdProposalId = await CreateTransferAgreementProposal(request);
 
-        var poWalletServiceMock = SetupPoWalletServiceMock();
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
 
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
 
@@ -66,8 +63,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, null);
         var createdProposalId = await CreateTransferAgreementProposal(request);
 
-        var poWalletServiceMock = SetupPoWalletServiceMock();
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: subjectTin);
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: subjectTin);
 
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
 
@@ -122,7 +118,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             SenderCompanyTin = "12345678"
         };
 
-        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
         var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
 
@@ -150,7 +146,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             TransferAgreementNumber = 1
         };
 
-        await factory.SeedTransferAgreements(new List<TransferAgreement> { ta });
+        await SeedTransferAgreements(new List<TransferAgreement> { ta });
 
         var secondTaProposal = new TransferAgreementProposal
         {
@@ -164,10 +160,9 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             SenderCompanyTin = "11223344"
         };
 
-        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { secondTaProposal });
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { secondTaProposal });
 
-        var poWalletServiceMock = SetupPoWalletServiceMock();
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
 
         var createSecondConnectionResponse = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", new CreateTransferAgreement(secondTaProposal.Id));
 
@@ -182,8 +177,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var proposalRequest = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
         var createdProposalId = await CreateTransferAgreementProposal(proposalRequest);
 
-        var poWalletServiceMock = SetupPoWalletServiceMock();
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, sub: Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
         await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", new CreateTransferAgreement(createdProposalId));
 
         var getProposalResponse = await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{createdProposalId}");
@@ -216,7 +210,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
             ReceiverReference = Guid.NewGuid()
         };
 
-        await factory.SeedTransferAgreements(new List<TransferAgreement>()
+        await SeedTransferAgreements(new List<TransferAgreement>()
         {
             fakeTransferAgreement
         });
@@ -253,7 +247,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         };
         var newAuthenticatedClient = factory.CreateAuthenticatedClient(sub: subject.ToString(), tin: receiverTin);
 
-        await factory.SeedTransferAgreements(new List<TransferAgreement>()
+        await SeedTransferAgreements(new List<TransferAgreement>()
         {
             fakeTransferAgreement
         });
@@ -278,7 +272,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     public async Task Get_ShouldReturnNotFound_WhenYourNotTheOwnerOrReceiver()
     {
         var id = Guid.NewGuid();
-        await factory.SeedTransferAgreements(new List<TransferAgreement>()
+        await SeedTransferAgreements(new List<TransferAgreement>()
         {
             new()
             {
@@ -318,7 +312,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     [Fact]
     public async Task GetBySubjectId_ShouldReturnTransferAgreements_WhenUserHasTransferAgreements()
     {
-        await factory.SeedTransferAgreements(
+        await SeedTransferAgreements(
             new List<TransferAgreement>()
             {
                 new()
@@ -363,7 +357,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         var receiverTin = "11223344";
         var transferAgreementId = Guid.NewGuid();
 
-        await factory.SeedTransferAgreements(new List<TransferAgreement>()
+        await SeedTransferAgreements(new List<TransferAgreement>()
         {
             new()
             {
@@ -405,7 +399,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var transferAgreementId = Guid.NewGuid();
 
-        await factory.SeedTransferAgreements(
+        await SeedTransferAgreements(
             new List<TransferAgreement>()
             {
                 new()
@@ -450,7 +444,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var transferAgreementId = Guid.NewGuid();
 
-        await factory.SeedTransferAgreements(
+        await SeedTransferAgreements(
             new List<TransferAgreement>()
             {
                 new()
@@ -504,7 +498,7 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
     {
         var agreementId = Guid.NewGuid();
 
-        await factory.SeedTransferAgreements(
+        await SeedTransferAgreements(
             new List<TransferAgreement>()
             {
                 new()
@@ -544,22 +538,17 @@ public class TransferAgreementsControllerTests : IClassFixture<TransferAgreement
         return createdProposal!.Id;
     }
 
-    private IProjectOriginWalletClient SetupPoWalletServiceMock()
+    private async Task SeedTransferAgreements(List<TransferAgreement> transferAgreements)
     {
-        var walletClientMock = Substitute.For<IProjectOriginWalletClient>();
-        walletClientMock.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
-        walletClientMock.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
-            new ResultList<WalletRecord>
-            {
-                Metadata = new PageInfo { Count = 1, Limit = 100, Total = 1, Offset = 0 },
-                Result = new List<WalletRecord>
-                {
-                    new WalletRecord { Id = Guid.NewGuid(), PublicKey = new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter() }
-                }
-            });
-        walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new WalletEndpointReference(1, new Uri("http://someUrl"), new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()));
-        walletClientMock.CreateExternalEndpoint(Arg.Any<Guid>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        await TestData.SeedTransferAgreements(dbContext, transferAgreements);
+    }
 
-        return walletClientMock;
+    private async Task SeedTransferAgreementProposals(List<TransferAgreementProposal> transferAgreementProposals)
+    {
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        await TestData.SeedTransferAgreementProposals(dbContext, transferAgreementProposals);
     }
 }
