@@ -7,7 +7,7 @@ namespace API.Data;
 
 public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {
-    private readonly ApplicationDbContext context = context?? throw new ArgumentNullException(nameof(context));
+    private readonly ApplicationDbContext context = context ?? throw new ArgumentNullException(nameof(context));
     private IDbContextTransaction? transaction;
 
     public async Task BeginTransactionAsync()

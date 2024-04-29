@@ -8,11 +8,11 @@ namespace API.Repository;
 public class GenericRepository<T>(ApplicationDbContext context) : IGenericRepository<T>
     where T : class
 {
-    protected readonly ApplicationDbContext Context = context?? throw new ArgumentNullException(nameof(context));
+    protected readonly ApplicationDbContext Context = context ?? throw new ArgumentNullException(nameof(context));
 
     public async Task<T> GetAsync(Guid id)
     {
-        return await Context.Set<T>().FindAsync(id)?? throw new EntityNotFoundException(id, typeof(T).Name);
+        return await Context.Set<T>().FindAsync(id) ?? throw new EntityNotFoundException(id, typeof(T).Name);
     }
 
     public async Task AddAsync(T entity)

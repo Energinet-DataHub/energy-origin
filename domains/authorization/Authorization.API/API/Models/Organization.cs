@@ -26,10 +26,10 @@ public class Organization
     }
 
     public Guid Id { get; private set; }
-    public IdpId IdpId { get;  private set; } = null!;
+    public IdpId IdpId { get; private set; } = null!;
     public IdpOrganizationId IdpOrganizationId { get; private set; } = null!;
-    public Tin Tin { get;  private set; } = null!;
-    public OrganizationName OrganizationName { get;  private set; } = null!;
+    public Tin Tin { get; private set; } = null!;
+    public OrganizationName OrganizationName { get; private set; } = null!;
 
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();
