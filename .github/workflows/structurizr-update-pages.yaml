@@ -6,7 +6,6 @@ on:
 
 jobs:
   setup:
-    if: ${{ github.ref_name == 'main' }}
     runs-on: ubuntu-latest
     outputs:
       run: ${{ env.matched }}
@@ -69,6 +68,11 @@ jobs:
           npm i puppeteer
           curl https://raw.githubusercontent.com/structurizr/puppeteer/master/export-diagrams.js --output export-diagrams.js
 
+      - name: Wait for structurizr lite
+        run: |
+          docker ps
+          timeout 60s sh -c 'until docker ps | grep structurizr | grep -q healthy; do echo "Waiting for container to be healthy..."; sleep 2; done'
+
       - name: Render diagrams png images
         run: |
           set -e
@@ -120,6 +124,7 @@ jobs:
           path: ${{ env.output }}
 
   deploy:
+    if: ${{ github.ref_name == 'main' }}
     needs: build
     runs-on: ubuntu-latest
     permissions:
