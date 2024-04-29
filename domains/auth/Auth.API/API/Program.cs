@@ -132,7 +132,7 @@ var dataSource = DataContext.GenerateNpgsqlDataSource(databaseOptions.Connection
 
 builder.Services.AddSingleton(dataSource);
 builder.Services.AddDbContext<DataContext>(options =>
-    options.UseNpgsql(dataSource)
+    options.UseNpgsql(dataSource, providerOptions => providerOptions.EnableRetryOnFailure())
         .ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)));
 
 var healthCheckConnectionStringBuilder = new NpgsqlConnectionStringBuilder(databaseOptions.ConnectionString)

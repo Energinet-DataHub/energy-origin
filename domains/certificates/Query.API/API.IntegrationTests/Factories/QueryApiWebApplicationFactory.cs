@@ -35,7 +35,7 @@ namespace API.IntegrationTests.Factories;
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly List<GrpcChannel> disposableChannels = new();
-
+    private HttpClient? client;
     public string ConnectionString { get; set; } = "";
     public string MeasurementsUrl { get; set; } = "http://foo";
     public string WalletUrl { get; set; } = "bar";
@@ -115,12 +115,10 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return host;
     }
 
-    public HttpClient CreateUnauthenticatedClient() => CreateClient();
-
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20230101)
     {
-        var client = CreateClient();
+        client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name));
         client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
@@ -192,9 +190,9 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     {
         measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
 
-        using var client = CreateAuthenticatedClient(subject);
+        var client = CreateAuthenticatedClient(subject);
         var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };
-        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
@@ -202,10 +200,15 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void Dispose(bool disposing)
     {
-        foreach (var disposableChannel in disposableChannels)
+        if (disposing)
         {
-            disposableChannel.Dispose();
+            client?.Dispose();
+            foreach (var disposableChannel in disposableChannels)
+            {
+                disposableChannel.Dispose();
+            }
         }
+
 
         base.Dispose(disposing);
     }
