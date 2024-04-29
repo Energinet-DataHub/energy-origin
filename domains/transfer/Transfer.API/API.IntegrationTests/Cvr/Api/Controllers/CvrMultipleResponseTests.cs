@@ -18,34 +18,34 @@ using Xunit;
 namespace API.IntegrationTests.Cvr.Api.Controllers;
 //WireMock has issues running parallel tests, where different response bodies from different json files have to be used.
 //In order to circumvent this, and make sure WireMock is not using resources from other tests,it has been put in a separate Class.
-public class CvrMultipleResponseTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class CvrMultipleResponseTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
-    private readonly WireMockServer server;
+    private readonly WireMockServer cvrWireMock;
 
-    public CvrMultipleResponseTests(TransferAgreementsApiWebApplicationFactory factory)
+    public CvrMultipleResponseTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
-        server = WireMockServer.Start();
-        factory.CvrBaseUrl = server.Url!;
+        factory = integrationTestFixture.Factory;
+        cvrWireMock = integrationTestFixture.CvrWireMockServer;
+        cvrWireMock.ResetMappings();
     }
 
     [Fact]
     public async Task GetCvrCompany_CorrectAndIncorrectCvr_ShouldReturnCorrectOnly()
     {
         var wrongPlusRightCvr = new CvrRequestDto(new List<string> { "123", "28980671", "39315041" });
-        server.ResetMappings();
-        server
+        cvrWireMock
             .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithBodyFromFile("Cvr/Api/Controllers/CvrControllerTests.cvr_multiple_companies_response.json")
             );
 
-        var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(),
+        using var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(),
             apiVersion: ApiVersions.Version20240103);
 
-        var response = await client.PostAsJsonAsync("api/transfer/cvr", wrongPlusRightCvr);
+        using var response = await client.PostAsJsonAsync("api/transfer/cvr", wrongPlusRightCvr);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 

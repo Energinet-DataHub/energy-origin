@@ -29,7 +29,7 @@ public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>,
 
     public Task InitializeAsync() => testContainer.StartAsync();
 
-    Task IAsyncLifetime.DisposeAsync() => testContainer.DisposeAsync().AsTask();
+    async Task IAsyncLifetime.DisposeAsync() => await testContainer.DisposeAsync();
 
     private readonly byte[] privateKey = RsaKeyGenerator.GenerateTestKey();
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
