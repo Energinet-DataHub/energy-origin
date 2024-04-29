@@ -1,32 +1,27 @@
-using API.IntegrationTests.Testcontainers;
-using Microsoft.EntityFrameworkCore;
-using System;
 using System.Threading.Tasks;
+using API.IntegrationTests.Testcontainers;
 using DataContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Shared.Migrations
 {
-    public class MigrationsTestBase : IAsyncDisposable
+    public class MigrationsTestBase
     {
         protected PostgresContainer container;
-        public MigrationsTestBase()
+
+        public MigrationsTestBase(IntegrationTestFixture integrationTestFixture)
         {
-            container = new PostgresContainer();
+            container = integrationTestFixture.PostgresContainer;
         }
 
         protected async Task<ApplicationDbContext> CreateNewCleanDatabase()
         {
-            await container.InitializeAsync();
+            var databaseInfo = await container.CreateNewDatabase();
 
-            var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
+            var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(databaseInfo.ConnectionString)
                 .Options;
             var dbContext = new ApplicationDbContext(contextOptions);
             return dbContext;
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await container.DisposeAsync();
         }
     }
 }
