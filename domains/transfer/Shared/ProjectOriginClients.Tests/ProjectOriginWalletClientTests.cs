@@ -172,7 +172,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
         var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken());
 
         certsResponse.Should().NotBeNull();
-        certsResponse.Result.Should().BeEmpty();
+        certsResponse!.Result.Should().BeEmpty();
     }
 
     private HttpClient GetWalletHttpClient()
