@@ -8,16 +8,20 @@ namespace API.IntegrationTests.Setup;
 [Collection(nameof(DatabaseTestCollection))]
 public abstract class DatabaseTest : IAsyncLifetime
 {
-    private Func<Task> _resetDatabase;
+    protected Func<Task> _resetDatabase;
     protected readonly ApplicationDbContext Db;
     protected readonly IUnitOfWork UnitOfWork;
     protected readonly Fixture Fixture;
+    protected readonly IServiceScope _scope;
 
     public DatabaseTest(IntegrationTestFactory factory)
     {
         _resetDatabase = factory.ResetDatabase;
         Db = factory.Db;
-        UnitOfWork = factory.Services.GetRequiredService<IUnitOfWork>();
+
+        _scope = factory.Services.CreateScope();
+        UnitOfWork = _scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
         Fixture = new Fixture();
         Fixture.Customize(new NoCircularReferencesCustomization());
         Fixture.Customize(new IgnoreVirtualMembersCustomization());
@@ -44,5 +48,16 @@ public abstract class DatabaseTest : IAsyncLifetime
 
     public Task InitializeAsync() => Task.CompletedTask;
 
-    public Task DisposeAsync() => _resetDatabase();
+    public async Task DisposeAsync()
+    {
+        await _resetDatabase();
+        if (_scope is IAsyncDisposable asyncDisposable)
+        {
+            await asyncDisposable.DisposeAsync();
+        }
+        else
+        {
+            _scope.Dispose();
+        }
+    }
 }

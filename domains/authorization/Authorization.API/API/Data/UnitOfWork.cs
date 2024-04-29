@@ -7,7 +7,7 @@ namespace API.Data;
 
 public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {
-    private readonly ApplicationDbContext context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly ApplicationDbContext context = context?? throw new ArgumentNullException(nameof(context));
     private IDbContextTransaction? transaction;
 
     public async Task BeginTransactionAsync()
@@ -22,8 +22,8 @@ public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 
         try
         {
-            await context.SaveChangesAsync();
             await transaction.CommitAsync();
+            await context.SaveChangesAsync();
         }
         catch
         {

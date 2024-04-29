@@ -1,5 +1,4 @@
 using System.Data.Common;
-using API.Data;
 using API.Models;
 using API.Repository;
 using DotNet.Testcontainers.Builders;
@@ -21,7 +20,7 @@ public class DatabaseTestCollection : ICollectionFixture<IntegrationTestFactory>
 public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
-        .WithImage("postgres:15.2")
+        .WithImage("postgres:latest")
         .WithDatabase("db")
         .WithUsername("postgres")
         .WithPassword("postgres")
@@ -74,7 +73,8 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IAffiliationRepository, AffiliationRepository>();
             services.AddScoped<IConsentRepository, ConsentRepository>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.EnsureDbCreated<ApplicationDbContext>();
         });
     }
 }
