@@ -1,3 +1,5 @@
+using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -14,5 +16,24 @@ public class PostgresContainer : IAsyncLifetime
 
     public async Task InitializeAsync() => await testContainer.StartAsync();
 
-    public Task DisposeAsync() => testContainer.DisposeAsync().AsTask();
+    public async Task DisposeAsync() => await testContainer.DisposeAsync();
+
+    public async Task<DatabaseInfo> CreateNewDatabase()
+    {
+        var randomName = Guid.NewGuid().ToString().Substring(0, 8);
+        await testContainer.ExecScriptAsync("CREATE DATABASE " + randomName);
+        var regex = new Regex("Database=[^;]+;");
+        var match = regex.Match(ConnectionString);
+        return new DatabaseInfo(ConnectionString.Replace(match.Value, "Database=" + randomName + ";"));
+    }
+}
+
+public class DatabaseInfo
+{
+    public string ConnectionString { get; private set; }
+
+    public DatabaseInfo(string connectionString)
+    {
+        ConnectionString = connectionString;
+    }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
@@ -9,25 +8,24 @@ using API.IntegrationTests.Shared;
 using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using API.Transfer.Api.Services;
 using FluentAssertions;
 using Newtonsoft.Json;
-using NSubstitute;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
-public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class TransferAgreementHistoryEntriesControllerTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly string sub;
     private readonly HttpClient senderClient;
 
-    public TransferAgreementHistoryEntriesControllerTests(TransferAgreementsApiWebApplicationFactory factory)
+    public TransferAgreementHistoryEntriesControllerTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
+        factory = integrationTestFixture.Factory;
         sub = Guid.NewGuid().ToString();
         senderClient = factory.CreateAuthenticatedClient(sub, apiVersion: ApiVersions.Version20240103);
     }
@@ -38,9 +36,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var receiverTin = "12334455";
         var createdProposalId = await CreateTransferAgreementProposal(receiverTin);
 
-        var poWalletServiceMock = SetupPoWalletServiceMock();
-
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
         var createRequest = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         createRequest.StatusCode.Should().Be(HttpStatusCode.Created);
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
@@ -61,9 +57,7 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
 
         var createdProposalId = await CreateTransferAgreementProposal(receiverTin);
 
-        var poWalletServiceMock = SetupPoWalletServiceMock();
-
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
         var createResponse = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         var createdTransferAgreement = await createResponse.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
@@ -85,9 +79,8 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     {
         var receiverTin = "12334455";
         var createdProposalId = await CreateTransferAgreementProposal(receiverTin);
-        var poWalletServiceMock = SetupPoWalletServiceMock();
 
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
         var createRequest = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
@@ -102,9 +95,8 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     {
         var receiverTin = "12334455";
         var createdProposalId = await CreateTransferAgreementProposal(receiverTin);
-        var poWalletServiceMock = SetupPoWalletServiceMock();
 
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
         var createRequest = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
@@ -125,9 +117,8 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
     {
         var receiverTin = "12334455";
         var createdProposalId = await CreateTransferAgreementProposal(receiverTin);
-        var poWalletServiceMock = SetupPoWalletServiceMock();
 
-        var receiverClient = factory.CreateAuthenticatedClient(poWalletServiceMock, Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
         var createRequest = await receiverClient.PostAsJsonAsync("api/transfer/transfer-agreements", new CreateTransferAgreement(createdProposalId));
         var createdTransferAgreement = await createRequest.Content.ReadFromJsonAsync<TransferAgreementDto>();
 
@@ -153,14 +144,5 @@ public class TransferAgreementHistoryEntriesControllerTests : IClassFixture<Tran
         var createdProposal = JsonConvert.DeserializeObject<TransferAgreementProposalResponse>(createResponseBody);
 
         return createdProposal!.Id;
-    }
-
-    private IProjectOriginWalletService SetupPoWalletServiceMock()
-    {
-        var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
-        poWalletServiceMock.CreateWalletDepositEndpoint(Arg.Any<AuthenticationHeaderValue>()).Returns("SomeToken");
-        poWalletServiceMock.CreateReceiverDepositEndpoint(Arg.Any<AuthenticationHeaderValue>(), Arg.Any<string>(), Arg.Any<string>()).Returns(Guid.NewGuid());
-
-        return poWalletServiceMock;
     }
 }

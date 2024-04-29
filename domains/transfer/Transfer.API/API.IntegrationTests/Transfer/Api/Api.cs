@@ -1,17 +1,14 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using API.Transfer.Api.Services;
 using EnergyOrigin.ActivityLog.API;
 using FluentAssertions;
 using Newtonsoft.Json;
-using NSubstitute;
 using Xunit.Abstractions;
 
 namespace API.IntegrationTests.Transfer.Api;
@@ -87,14 +84,6 @@ public class Api
 
     public HttpClient MockWalletServiceAndCreateAuthenticatedClient(string receiverTin, string receiverName)
     {
-        return factory.CreateAuthenticatedClient(SetupPoWalletServiceMock(), sub: Guid.NewGuid().ToString(), tin: receiverTin, cpn: receiverName, apiVersion: apiVersion);
-    }
-
-    private IProjectOriginWalletService SetupPoWalletServiceMock()
-    {
-        var poWalletServiceMock = Substitute.For<IProjectOriginWalletService>();
-        poWalletServiceMock.CreateWalletDepositEndpoint(Arg.Any<AuthenticationHeaderValue>()).Returns("SomeToken");
-        poWalletServiceMock.CreateReceiverDepositEndpoint(Arg.Any<AuthenticationHeaderValue>(), Arg.Any<string>(), Arg.Any<string>()).Returns(Guid.NewGuid());
-        return poWalletServiceMock;
+        return factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin, cpn: receiverName, apiVersion: apiVersion);
     }
 }

@@ -14,7 +14,7 @@ find domains -type f -name '*.sln' | while read -r slnFile; do
 
  echo "Running dotnet outdated..."
  # Update using dotnet outdated and capture the output
- outdatedOutput=$(dotnet outdated -u)
+ outdatedOutput=$(dotnet outdated -u --exclude "MassTransit")
 
  # Check if no dependencies were updated
  if echo "$outdatedOutput" | grep -q "No outdated dependencies were detected"; then
