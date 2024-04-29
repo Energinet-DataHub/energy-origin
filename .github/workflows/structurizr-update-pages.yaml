@@ -68,14 +68,6 @@ jobs:
           npm i puppeteer
           curl https://raw.githubusercontent.com/structurizr/puppeteer/master/export-diagrams.js --output export-diagrams.js
 
-      # - name: Wait for structurizr lite
-      #   run: |
-      #     docker ps
-      #     curl "http://localhost:8080/health"
-      #     timeout 60s sh -c 'until curl --fail "http://localhost:8080/health" > /dev/null 2> /dev/null; do echo "Waiting for container to be healthy..."; sleep 2; done'
-      #     curl "http://localhost:8080/health"
-      #     docker ps
-
       - name: Render diagrams png images
         run: |
           set -e
