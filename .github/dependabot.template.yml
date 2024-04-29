@@ -26,17 +26,17 @@ updates:
     schedule:
       interval: daily
     ignore:
-      - dependency-type: "all"
+      - dependency-name: "*"
         update-types: 
-        - "minor"
-        - "patch"
+        - "version-update:semver-patch"
+        - "version-update:semver-minor"
     
   - package-ecosystem: nuget
     directory: /libraries/dotnet/*/*.sln
     schedule:
       interval: daily
     ignore:
-      - dependency-type: "all"
+      - dependency-name: "*"
         update-types: 
-        - "minor"
-        - "patch"
+        - "version-update:semver-patch"
+        - "version-update:semver-minor"
