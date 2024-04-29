@@ -20,9 +20,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="MassTransit" Version="8.2.0" />
+        <PackageReference Include="MassTransit" Version="8.2.2" />
         <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.0" />
-        <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.0" />
+        <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.4" />
         <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="3.2.0" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
