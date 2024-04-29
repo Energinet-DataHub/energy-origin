@@ -24,88 +24,88 @@ updates:
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
   - package-ecosystem: nuget
     directory: /domains/authorization
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
   - package-ecosystem: nuget
     directory: /domains/certificates
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
   - package-ecosystem: nuget
     directory: /domains/measurements
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
   - package-ecosystem: nuget
     directory: /domains/oidc-mock
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
   - package-ecosystem: nuget
     directory: /domains/transfer
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
   - package-ecosystem: nuget
     directory: /libraries/dotnet/EnergyOrigin.ActivityLog
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
   - package-ecosystem: nuget
     directory: /libraries/dotnet/EnergyOrigin.IntegrationEvents
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
   - package-ecosystem: nuget
     directory: /libraries/dotnet/EnergyOrigin.Setup
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
   - package-ecosystem: nuget
     directory: /libraries/dotnet/EnergyOrigin.TokenValidation
     schedule:
       interval: daily
     ignore:
-      - dependency-type: all
+      - dependency-name: '*'
         update-types:
-          - minor
-          - patch
+          - version-update:semver-patch
+          - version-update:semver-minor
