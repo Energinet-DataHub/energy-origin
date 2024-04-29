@@ -34,10 +34,14 @@ builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOri
     .ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
+    .ValidateDataAnnotations().ValidateOnStart();
 
 builder.Services.AddDbContext<ApplicationDbContext>(
-    (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
+    (sp, options) => options.UseNpgsql(
+        sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString(),
+        providerOptions => providerOptions.EnableRetryOnFailure()
+    ),
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
@@ -69,7 +73,8 @@ builder.Services.AddVersioningToApi();
 builder.Services.AddSwagger("Claim Automation");
 builder.Services.AddSwaggerGen();
 
-var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+var tokenValidationOptions =
+    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.AddTokenValidation(tokenValidationOptions);
 
 builder.Services.AddOpenTelemetry()
