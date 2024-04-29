@@ -2,7 +2,7 @@ using System;
 
 namespace API.ValueObjects;
 
-public class Name
+public class Name : ValueObject
 {
     public string Value { get; }
 
