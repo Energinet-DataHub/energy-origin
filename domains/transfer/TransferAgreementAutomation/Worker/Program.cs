@@ -21,7 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
+builder.AddSerilog();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();

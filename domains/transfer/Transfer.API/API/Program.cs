@@ -21,9 +21,9 @@ var builder = WebApplication.CreateBuilder(args);
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
+builder.AddSerilog();
 
-builder.AddOpenTelemetryMetricsAndTracing("Transfer.API", otlpOptions.ReceiverEndpoint);
+builder.Services.AddOpenTelemetryMetricsAndTracing("Transfer.API", otlpOptions.ReceiverEndpoint);
 
 builder.Services.Configure<JsonOptions>(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
