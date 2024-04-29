@@ -72,6 +72,7 @@ jobs:
         run: |
           docker ps
           timeout 60s sh -c 'until docker ps | grep structurizr | grep -q healthy; do echo "Waiting for container to be healthy..."; sleep 2; done'
+          docker ps
 
       - name: Render diagrams png images
         run: |
