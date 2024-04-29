@@ -14,6 +14,8 @@ public static class WebApplicationBuilderExtensions
     public static void AddSerilog(this WebApplicationBuilder builder)
     {
         LoggerConfiguration log = new LoggerConfiguration()
+            .Filter
+            .ByExcluding("RequestPath like '/health%'").Filter.ByExcluding("RequestPath like '/metrics%'")
             .Enrich.FromLogContext()
             .Enrich.WithProperty("TraceId", () => Activity.Current?.TraceId.ToString())
             .Enrich.WithProperty("SpanId", () => Activity.Current?.SpanId.ToString());
