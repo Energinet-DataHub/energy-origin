@@ -552,27 +552,28 @@ public sealed class ContractTests : TestBase
     public async Task UpdateEndDate_MultipleContracts_ReturnsOk()
     {
         var gsrn = GsrnHelper.GenerateRandom();
-        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        var gsrn1 = GsrnHelper.GenerateRandom();
+        measurementsWireMock.SetupMeteringPointsResponse(new List<(string gsrn, MeteringPointType type, Technology? technology)>
+        {
+            (gsrn, MeteringPointType.Production, null),
+            (gsrn1, MeteringPointType.Production, null)
+        });
 
         var subject = Guid.NewGuid().ToString();
         var client = factory.CreateAuthenticatedClient(subject, apiVersion: ApiVersions.Version20240423);
 
         var startDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(1).ToUnixTimeSeconds();
-        var endDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(3).ToUnixTimeSeconds();
-        var startDate1 = UnixTimestamp.Now().ToDateTimeOffset().AddDays(7).ToUnixTimeSeconds();
-        var endDate1 = UnixTimestamp.Now().ToDateTimeOffset().AddDays(8).ToUnixTimeSeconds();
+        var startDate1 = UnixTimestamp.Now().ToDateTimeOffset().AddDays(2).ToUnixTimeSeconds();
 
         var body = new CreateContracts([
             new CreateContract
             {
-                EndDate = endDate1,
-                GSRN = gsrn,
+                GSRN = gsrn1,
                 StartDate = startDate1
             },
 
             new CreateContract
             {
-                EndDate = endDate,
                 GSRN = gsrn,
                 StartDate = startDate
             }
@@ -594,11 +595,12 @@ public sealed class ContractTests : TestBase
         var response = await client.PutAsJsonAsync("api/certificates/contracts", new EditContracts(contracts));
         response.EnsureSuccessStatusCode();
 
+
         var contract = await client.GetFromJsonAsync<Contract>("api/certificates/contracts/" + id);
         var contract1 = await client.GetFromJsonAsync<Contract>("api/certificates/contracts/" + id1);
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = newEndDate });
-        contract1.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate1, EndDate = newEndDate1 });
+        contract1.Should().BeEquivalentTo(new { GSRN = gsrn1, StartDate = startDate1, EndDate = newEndDate1 });
     }
 
     [Fact]
