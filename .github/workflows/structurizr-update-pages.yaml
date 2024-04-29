@@ -71,7 +71,9 @@ jobs:
       - name: Wait for structurizr lite
         run: |
           docker ps
-          timeout 60s sh -c 'until docker ps | grep structurizr | grep -q healthy; do echo "Waiting for container to be healthy..."; sleep 2; done'
+          curl "http://localhost:8080/health"
+          timeout 60s sh -c 'until curl --fail "http://localhost:8080/health"; do echo "Waiting for container to be healthy..."; sleep 2; done'
+          curl "http://localhost:8080/health"
           docker ps
 
       - name: Render diagrams png images
