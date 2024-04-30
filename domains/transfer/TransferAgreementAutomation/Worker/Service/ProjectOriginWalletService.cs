@@ -28,6 +28,8 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
     public async Task TransferCertificates(TransferAgreement transferAgreement)
     {
+        logger.LogInformation("Getting certificates for {senderId}", transferAgreement.SenderId);
+
         var certificates = await walletClient.GetGranularCertificates(transferAgreement.SenderId, new CancellationToken());
 
         if (certificates == null || !certificates.Result.Any())
