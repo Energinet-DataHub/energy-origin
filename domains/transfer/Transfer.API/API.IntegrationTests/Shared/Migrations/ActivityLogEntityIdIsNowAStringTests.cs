@@ -1,20 +1,19 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using DataContext;
 using EnergyOrigin.ActivityLog.DataContext;
-using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-public class ActivityLogEntityIdIsNowAStringTests : MigrationsTestBase
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ActivityLogEntityIdIsNowAStringTests(IntegrationTestFixture integrationTestFixture) : MigrationsTestBase(integrationTestFixture)
 {
     [Fact]
     public async Task ApplyMigration_WhenDataExistsInDatabase()

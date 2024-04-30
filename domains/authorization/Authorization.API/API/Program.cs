@@ -1,22 +1,22 @@
 using API.Authorization;
 using API.Configuration;
-using API.RabbitMq;
+using API.Data;
+using API.Models;
+using API.Repository;
 using EnergyOrigin.Setup;
-using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
+builder.AddSerilog();
 
-builder.AddOpenTelemetryMetricsAndTracing("Authorization.API", otlpOptions.ReceiverEndpoint);
+builder.Services.AddOpenTelemetryMetricsAndTracing("Authorization.API", otlpOptions.ReceiverEndpoint);
 
 builder.Services.AddControllersWithEnumsAsStrings();
 
@@ -31,25 +31,22 @@ builder.Services.AddAuthentication()
     });
 
 
-// builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
-//     options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
-//     optionsLifetime: ServiceLifetime.Singleton);
-// builder.Services.AddDbContextFactory<ApplicationDbContext>();
-// builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+// Register DbContext and related services
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
-//builder.Services.AddHealthChecks().AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+// Register specific repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+builder.Services.AddScoped<IAffiliationRepository, AffiliationRepository>();
+builder.Services.AddScoped<IConsentRepository, ConsentRepository>();
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
 
-//builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddAuthorizationApi();
-//builder.Services.AddVersioningToApi();
 
 var app = builder.Build();
-
-//app.MapHealthChecks("/health");
-
-//app.AddSwagger("authorization");
-
-//app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

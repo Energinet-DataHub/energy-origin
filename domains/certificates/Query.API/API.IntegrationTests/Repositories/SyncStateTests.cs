@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Persistence;
 using DataContext;
 using DataContext.Models;
+using DataContext.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -116,5 +119,26 @@ public class SyncStateTests
 
         var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn), CancellationToken.None);
         actualPeriodStartTime.Should().Be(syncedTo2);
+    }
+
+    [Fact]
+    public async Task GivenSlidingWindow_WhenStoringInDatabase_MissingIntervalsCanBeRetrievedLater()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        var missingIntervalStart = UnixTimestamp.Now().Add(TimeSpan.FromHours(-2));
+        var missingIntervalEnd = UnixTimestamp.Now().Add(TimeSpan.FromHours(-1));
+        var missingInterval = new List<MeasurementInterval>(new[] { MeasurementInterval.Create(missingIntervalStart, missingIntervalEnd) });
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(gsrn, UnixTimestamp.Now(), missingInterval);
+
+        await using var dbContext = new ApplicationDbContext(options);
+        dbContext.MeteringPointTimeSeriesSlidingWindows.Add(slidingWindow);
+        await dbContext.SaveChangesAsync();
+
+        await using var newDbContext = new ApplicationDbContext(options);
+        var fetchedSlidingWindow = await newDbContext.MeteringPointTimeSeriesSlidingWindows.FirstAsync();
+
+        Assert.Single(fetchedSlidingWindow.MissingMeasurements.Intervals);
+        Assert.Equal(missingInterval.First().From, fetchedSlidingWindow.MissingMeasurements.Intervals[0].From);
+        Assert.Equal(missingInterval.First().To, fetchedSlidingWindow.MissingMeasurements.Intervals[0].To);
     }
 }

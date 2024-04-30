@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using OpenTelemetry.Resources;
 using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Converters;
@@ -20,17 +19,21 @@ var builder = WebApplication.CreateBuilder(args);
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithOpenTelemetryWithoutOutboxLogs(otlpOptions.ReceiverEndpoint);
+builder.AddSerilog();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Postgres"),
+        providerOptions => providerOptions.EnableRetryOnFailure()
+    ),
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations()
+    .ValidateOnStart();
 builder.Services.AddProjectOriginOptions();
 
 builder.Services.AddScoped<IKeyGenerator, KeyGenerator>();
@@ -69,7 +72,6 @@ builder.Services.AddMassTransit(o =>
         cfg.ConfigureJsonSerializerOptions(jsonSerializerOptions =>
         {
             jsonSerializerOptions.Converters.Add(new TransactionConverter());
-            jsonSerializerOptions.Converters.Add(new ReceiveRequestConverter());
             return jsonSerializerOptions;
         });
     });
@@ -81,13 +83,8 @@ builder.Services.AddMassTransit(o =>
     });
 });
 
-void ConfigureResource(ResourceBuilder r)
-{
-    r.AddService("RegistryConnector",
-        serviceInstanceId: Environment.MachineName);
-}
-
-builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit(ConfigureResource, otlpOptions.ReceiverEndpoint);
+builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit("RegistryConnector",
+    otlpOptions.ReceiverEndpoint);
 
 var app = builder.Build();
 

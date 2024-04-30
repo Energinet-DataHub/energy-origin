@@ -4,10 +4,27 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="M:API.Authorization.Controllers.AuthorizationController.CreateContract(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationRequest)">
+        <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationClientRequest)">
             <summary>
             Retreives Authorization Model.
             </summary>
+        </member>
+        <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForUser(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationUserRequest)">
+            <summary>
+            Retreives Authorization Model.
+            </summary>
+        </member>
+        <member name="T:API.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
         </member>
     </members>
 </doc>

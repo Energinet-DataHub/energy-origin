@@ -17,7 +17,7 @@ namespace DataContext.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.3")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -438,13 +438,10 @@ namespace DataContext.Migrations
 
             modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
                 {
-                    b.OwnsOne("System.Collections.Generic.List<DataContext.Models.MeasurementInterval>", "MissingMeasurements", b1 =>
+                    b.OwnsOne("DataContext.Models.MissingMeasurements", "MissingMeasurements", b1 =>
                         {
                             b1.Property<string>("MeteringPointTimeSeriesSlidingWindowGSRN")
                                 .HasColumnType("text");
-
-                            b1.Property<int>("Capacity")
-                                .HasColumnType("integer");
 
                             b1.HasKey("MeteringPointTimeSeriesSlidingWindowGSRN");
 
@@ -454,6 +451,31 @@ namespace DataContext.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("MeteringPointTimeSeriesSlidingWindowGSRN");
+
+                            b1.OwnsMany("DataContext.Models.MeasurementInterval", "Intervals", b2 =>
+                                {
+                                    b2.Property<string>("MissingMeasurementsMeteringPointTimeSeriesSlidingWindowGSRN")
+                                        .HasColumnType("text");
+
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("integer");
+
+                                    b2.Property<long>("From")
+                                        .HasColumnType("bigint");
+
+                                    b2.Property<long>("To")
+                                        .HasColumnType("bigint");
+
+                                    b2.HasKey("MissingMeasurementsMeteringPointTimeSeriesSlidingWindowGSRN", "Id");
+
+                                    b2.ToTable("MeteringPointTimeSeriesSlidingWindows");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("MissingMeasurementsMeteringPointTimeSeriesSlidingWindowGSRN");
+                                });
+
+                            b1.Navigation("Intervals");
                         });
 
                     b.Navigation("MissingMeasurements")

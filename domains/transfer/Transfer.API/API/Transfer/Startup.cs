@@ -1,14 +1,13 @@
 using System;
 using System.Text.Json.Serialization;
 using API.Transfer.Api.Options;
-using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementCleanup;
 using API.Transfer.TransferAgreementCleanup.Options;
 using API.Transfer.TransferAgreementProposalCleanup;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using ProjectOrigin.WalletSystem.V1;
+using ProjectOriginClients;
 
 namespace API.Transfer;
 
@@ -27,11 +26,10 @@ public static class Startup
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-        services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
-        services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
+        services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
         {
             var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-            o.Address = new Uri(options.WalletUrl);
+            c.BaseAddress = new Uri(options.WalletUrl);
         });
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();

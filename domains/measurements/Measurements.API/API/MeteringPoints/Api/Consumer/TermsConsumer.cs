@@ -18,42 +18,46 @@ public class TermsConsumer(
 {
     public async Task Consume(ConsumeContext<OrgAcceptedTerms> context)
     {
-        var relation = new RelationDto
+        var relationDto =
+            await dbContext.Relations.SingleOrDefaultAsync(it => it.SubjectId == context.Message.SubjectId);
+        if (relationDto == null)
         {
-            Status = RelationStatus.Pending,
-            SubjectId = context.Message.SubjectId,
-            Actor = context.Message.Actor,
-            Tin = context.Message.Tin
-        };
+            relationDto = new RelationDto
+            {
+                Status = RelationStatus.Pending,
+                SubjectId = context.Message.SubjectId,
+                Actor = context.Message.Actor,
+                Tin = context.Message.Tin
+            };
 
-        dbContext.Relations.Add(relation);
-        await dbContext.SaveChangesAsync();
+            dbContext.Relations.Add(relationDto);
+            await dbContext.SaveChangesAsync();
+        }
 
-
-        await CreateRelation(context.Message);
+        await CreateRelation(relationDto);
     }
 
-    private async Task CreateRelation(OrgAcceptedTerms acceptedTerms)
+    private async Task CreateRelation(RelationDto relation)
     {
         var request = new CreateRelationRequest
         {
-            Subject = acceptedTerms.SubjectId.ToString(),
-            Actor = acceptedTerms.Actor.ToString(),
+            Subject = relation.SubjectId.ToString(),
+            Actor = relation.Actor.ToString(),
             Ssn = "",
-            Tin = acceptedTerms.Tin
+            Tin = relation.Tin
         };
 
         var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
-        if (res.Success)
+        if (res.Success && relation.Status == RelationStatus.Pending)
         {
-            var relation =
-                await dbContext.Relations.SingleOrDefaultAsync(it => it.SubjectId == acceptedTerms.SubjectId);
-            if (relation != null)
-            {
-                relation.Status = RelationStatus.Created;
-                await dbContext.SaveChangesAsync();
-            }
+            await UpdateRelation(relation);
         }
+    }
+
+    private async Task UpdateRelation(RelationDto relation)
+    {
+        relation.Status = RelationStatus.Created;
+        await dbContext.SaveChangesAsync();
     }
 }
 

@@ -12,17 +12,20 @@ using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using API.IssuingContractCleanup;
+using API.MeasurementsSyncer.Metrics;
 using API.UnitOfWork;
 using EnergyOrigin.Setup;
+using OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
+builder.AddSerilog();
 
-builder.AddOpenTelemetryMetricsAndTracing("Certificates.API", otlpOptions.ReceiverEndpoint);
+builder.Services.AddOpenTelemetryMetricsAndTracing("Certificates.API", otlpOptions.ReceiverEndpoint)
+    .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(MeasurementSyncMetrics.MetricName));
 
 builder.Services.AddControllersWithEnumsAsStrings();
 
@@ -30,7 +33,13 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
     .ValidateOnStart();
 
 builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
-    options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+    options =>
+    {
+        options.UseNpgsql(
+            builder.Configuration.GetConnectionString("Postgres"),
+            providerOptions => providerOptions.EnableRetryOnFailure()
+        );
+    },
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -47,8 +56,10 @@ builder.Services.AddDataSyncSyncer();
 builder.Services.AddIssuingContractCleanup();
 builder.Services.AddVersioningToApi();
 
-var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+var tokenValidationOptions =
+    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
+    .ValidateDataAnnotations().ValidateOnStart();
 
 builder.AddTokenValidation(tokenValidationOptions);
 

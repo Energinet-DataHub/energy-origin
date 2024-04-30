@@ -22,11 +22,11 @@
         <PackageReference Include="Testcontainers" Version="3.8.0" />
         <PackageReference Include="Testcontainers.PostgreSql" Version="3.8.0" />
         <PackageReference Include="Testcontainers.RabbitMq" Version="3.8.0" />
-        <PackageReference Include="Verify.Xunit" Version="23.7.2" />
+        <PackageReference Include="Verify.Xunit" Version="24.1.0" />
         <PackageReference Include="WireMock.Net" Version="1.5.52" />
-        <PackageReference Include="xunit" Version="2.7.0" />
-        <PackageReference Include="xunit.analyzers" Version="1.11.0" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
+        <PackageReference Include="xunit" Version="2.8.0" />
+        <PackageReference Include="xunit.analyzers" Version="1.13.0" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

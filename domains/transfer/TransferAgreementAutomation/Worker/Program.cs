@@ -10,7 +10,7 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ProjectOrigin.WalletSystem.V1;
+using ProjectOriginClients;
 using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Options;
@@ -21,7 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
+builder.AddSerilog();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
@@ -60,7 +60,10 @@ builder.Services.AddHealthChecks();
 builder.Services.AddLogging();
 
 builder.Services.AddDbContext<ApplicationDbContext>(
-    (sp, options) => options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString()),
+    (sp, options) => options.UseNpgsql(
+        sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString(),
+        providerOptions => providerOptions.EnableRetryOnFailure()
+    ),
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
@@ -69,10 +72,10 @@ builder.Services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgree
 builder.Services.AddSingleton<IProjectOriginWalletService, ProjectOriginWalletService>();
 
 builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>();
-builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
+builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-    o.Address = new Uri(options.WalletUrl);
+    c.BaseAddress = new Uri(options.WalletUrl);
 });
 
 var app = builder.Build();

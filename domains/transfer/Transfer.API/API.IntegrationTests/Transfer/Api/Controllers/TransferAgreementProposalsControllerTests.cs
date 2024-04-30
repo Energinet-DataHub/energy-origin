@@ -7,19 +7,26 @@ using API.IntegrationTests.Factories;
 using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using Asp.Versioning;
+using DataContext;
 using DataContext.Models;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
-public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
-    : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class TransferAgreementProposalsControllerTests
 {
     private readonly string sub = Guid.NewGuid().ToString();
     private readonly string tin = "12345678";
+    private readonly TransferAgreementsApiWebApplicationFactory factory;
+
+    public TransferAgreementProposalsControllerTests(IntegrationTestFixture integrationTestFixture)
+    {
+        factory = integrationTestFixture.Factory;
+    }
 
     [Fact]
     public async Task Create()
@@ -98,7 +105,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
         var receiverTin = "12345678";
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var id = Guid.NewGuid();
-        await factory.SeedTransferAgreements(new List<TransferAgreement>()
+        await SeedTransferAgreements(new List<TransferAgreement>()
         {
             new()
             {
@@ -129,7 +136,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var id = Guid.NewGuid();
-        await factory.SeedTransferAgreements(new List<TransferAgreement>()
+        await SeedTransferAgreements(new List<TransferAgreement>()
         {
             new()
             {
@@ -282,7 +289,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
             SenderCompanyTin = "11223344"
         };
 
-        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
         var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
 
@@ -319,7 +326,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
             SenderCompanyTin = "11223344"
         };
 
-        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
@@ -346,7 +353,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
             ReceiverCompanyTin = tin
         };
 
-        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { proposal });
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { proposal });
 
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
@@ -381,5 +388,19 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
         var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{randomGuid}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    private async Task SeedTransferAgreements(List<TransferAgreement> transferAgreements)
+    {
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        await TestData.SeedTransferAgreements(dbContext, transferAgreements);
+    }
+
+    private async Task SeedTransferAgreementProposals(List<TransferAgreementProposal> transferAgreementProposals)
+    {
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        await TestData.SeedTransferAgreementProposals(dbContext, transferAgreementProposals);
     }
 }

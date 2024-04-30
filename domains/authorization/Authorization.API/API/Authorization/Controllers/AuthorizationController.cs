@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using API.Authorization._Features_;
 using Asp.Versioning;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,32 +17,39 @@ namespace API.Authorization.Controllers;
 [ApiVersion(ApiVersions.Version20230101)]
 public class AuthorizationController : ControllerBase
 {
+    private readonly IMediator _mediator;
+
+    public AuthorizationController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
     /// <summary>
     /// Retreives Authorization Model.
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(201)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(typeof(void), 409)]
     [Authorize]
-    [Route("api/authorization/")]
-    public async Task<ActionResult<AuthorizationResponse>> CreateContract([FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationRequest request)
+    [Route("api/authorization/client-consent/")]
+    public async Task<ActionResult<AuthorizationResponse>> GetConsentForClient([FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationClientRequest request)
     {
-        var headers = string.Join("; ", Request.Headers.Select(h => $"{h.Key}: {h.Value}"));
-        using var reader = new StreamReader(Request.Body);
-        var body = await reader.ReadToEndAsync();
-        logger.LogWarning("Headers: {headers}, Body: {body}", headers, body);
+        var queryResult = await _mediator.Send(new GetConsentForClientQuery(request.ClientId));
 
-        if (request.ClientId.Equals("529a55d0-68c7-4129-ba3c-e06d4f1038c4"))
-            return new AuthorizationResponse(new[] { "123456789", Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() });
-        else return new AuthorizationResponse(Array.Empty<string>());
+        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.Name, queryResult.SubType, queryResult.OrgName, queryResult.OrgIds, queryResult.Scope));
+    }
+
+    /// <summary>
+    /// Retreives Authorization Model.
+    /// </summary>
+    [HttpPost]
+    [Authorize]
+    [Route("api/authorization/user-consent/")]
+    public async Task<ActionResult<AuthorizationResponse>> GetConsentForUser([FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationUserRequest request)
+    {
+        var queryResult = await _mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName, request.OrgCvr));
+
+        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.Name, queryResult.SubType, queryResult.OrgName, queryResult.OrgIds, queryResult.Scope));
     }
 }
-public record AuthorizationRequest(
-    [property: JsonPropertyName("client_id")] string ClientId
-);
-
-public record AuthorizationResponse(IEnumerable<string> CVRNumbers);
 
 public static class ApiVersions
 {

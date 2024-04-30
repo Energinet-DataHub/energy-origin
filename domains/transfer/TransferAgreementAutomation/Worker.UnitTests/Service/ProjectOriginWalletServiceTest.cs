@@ -1,10 +1,8 @@
 using DataContext.Models;
-using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using ProjectOrigin.Common.V1;
-using ProjectOrigin.WalletSystem.V1;
+using ProjectOriginClients;
+using ProjectOriginClients.Models;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Service;
 using Xunit;
@@ -14,15 +12,15 @@ namespace Worker.UnitTests.Service;
 public class ProjectOriginWalletServiceTest
 {
     private readonly ProjectOriginWalletService service;
-    private readonly WalletService.WalletServiceClient fakeWalletServiceClient;
+    private readonly IProjectOriginWalletClient mockWalletClient;
 
     public ProjectOriginWalletServiceTest()
     {
         var fakeLogger = Substitute.For<ILogger<ProjectOriginWalletService>>();
-        fakeWalletServiceClient = Substitute.For<WalletService.WalletServiceClient>();
+        mockWalletClient = Substitute.For<IProjectOriginWalletClient>();
         var fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
 
-        service = new ProjectOriginWalletService(fakeLogger, fakeWalletServiceClient, fakeMetrics);
+        service = new ProjectOriginWalletService(fakeLogger, mockWalletClient, fakeMetrics);
     }
 
     [Fact]
@@ -30,56 +28,44 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(3));
 
-        var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse
-            {
-                GranularCertificates =
-                    { CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2)) }
-            }
-        );
-
-
-        var fakeTransferResponse = CreateAsyncUnaryCall(
-            new TransferResponse() { }
-        );
-
-        SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
+        var cert = CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2));
+        SetupWalletServiceClient(
+            [cert],
+            new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
         await service.TransferCertificates(transferAgreement);
 
-        _ = fakeWalletServiceClient
+        _ = mockWalletClient
                .Received(1)
-               .TransferCertificateAsync(
-                   Arg.Any<TransferRequest>(),
-                   Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+               .TransferCertificates(
+                   Arg.Any<Guid>(),
+                   cert,
+                   cert.Quantity,
+                   transferAgreement.ReceiverReference
                );
     }
 
     [Fact]
-    public async Task
-        TransferCertificates_CertificateStartDateBeforeTAStartDateAndTANoEndDate_ShouldNotCallWalletTransferCertificate()
+    public async Task TransferCertificates_CertificateStartDateBeforeTAStartDateAndTANoEndDate_ShouldNotCallWalletTransferCertificate()
     {
         var now = DateTimeOffset.UtcNow;
         var transferAgreement = CreateTransferAgreement(now, now.AddHours(3));
 
-        var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-            new QueryResponse
-            { GranularCertificates = { CreateGranularCertificate(now.AddHours(-2), now.AddHours(-1)) } }
-        );
+        var cert = CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(-2), DateTimeOffset.UtcNow.AddHours(-1));
 
-        var fakeTransferResponse = CreateAsyncUnaryCall(
-            new TransferResponse() { }
-        );
-
-        SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
+        SetupWalletServiceClient(
+            [cert],
+            new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
         await service.TransferCertificates(transferAgreement);
 
-        _ = fakeWalletServiceClient
+        _ = mockWalletClient
               .DidNotReceive()
-              .TransferCertificateAsync(
-                  Arg.Any<TransferRequest>(),
-                  Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+              .TransferCertificates(
+                  Arg.Any<Guid>(),
+                  Arg.Any<GranularCertificate>(),
+                  Arg.Any<uint>(),
+                  Arg.Any<Guid>()
               );
     }
 
@@ -90,24 +76,21 @@ public class ProjectOriginWalletServiceTest
         var now = DateTimeOffset.UtcNow;
         var transferAgreement = CreateTransferAgreement(now, now.AddHours(3));
 
-        var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-                new QueryResponse
-                { GranularCertificates = { CreateGranularCertificate(now.AddHours(-1), now.AddHours(1)) } }
-            );
+        var cert = CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(-1), DateTimeOffset.UtcNow.AddHours(1));
 
-        var fakeTransferResponse = CreateAsyncUnaryCall(
-            new TransferResponse() { }
-        );
-
-        SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
+        SetupWalletServiceClient(
+            [cert],
+            new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
         await service.TransferCertificates(transferAgreement);
 
-        _ = fakeWalletServiceClient
+        _ = mockWalletClient
              .DidNotReceive()
-             .TransferCertificateAsync(
-                 Arg.Any<TransferRequest>(),
-                 Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+             .TransferCertificates(
+                 Arg.Any<Guid>(),
+                 Arg.Any<GranularCertificate>(),
+                 Arg.Any<uint>(),
+                 Arg.Any<Guid>()
              );
     }
 
@@ -116,27 +99,21 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(3));
 
-        var fakeGranularCertificatesResponse = CreateAsyncUnaryCall(
-                new QueryResponse
-                {
-                    GranularCertificates =
-                        { CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2)) }
-                }
-            );
+        var cert = CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2));
 
-        var fakeTransferResponse = CreateAsyncUnaryCall(
-            new TransferResponse() { }
-        );
-        SetupWalletServiceClient(fakeGranularCertificatesResponse, fakeTransferResponse);
-
+        SetupWalletServiceClient(
+            [cert],
+            new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
         await service.TransferCertificates(transferAgreement);
 
-        _ = fakeWalletServiceClient
+        _ = mockWalletClient
              .Received(1)
-             .TransferCertificateAsync(
-                 Arg.Any<TransferRequest>(),
-                 Arg.Is<Metadata>(x => x.Get("Authorization")!.Value.StartsWith("Bearer "))
+             .TransferCertificates(
+                 Arg.Any<Guid>(),
+                 cert,
+                 cert.Quantity,
+                 transferAgreement.ReceiverReference
              );
     }
 
@@ -157,37 +134,32 @@ public class ProjectOriginWalletServiceTest
         return transferAgreement;
     }
 
-    private void SetupWalletServiceClient(AsyncUnaryCall<QueryResponse> fakeGranularCertificatesResponse,
-        AsyncUnaryCall<TransferResponse> fakeTransferResponse)
+    private void SetupWalletServiceClient(List<GranularCertificate> mockedGranularCertificatesResponse,
+        TransferResponse mockedTransferResponse)
     {
-        fakeWalletServiceClient.QueryGranularCertificatesAsync(
-                Arg.Any<QueryRequest>(),
-                Arg.Any<Metadata>())
-            .Returns(fakeGranularCertificatesResponse);
+        mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+            new ResultList<GranularCertificate>()
+            {
+                Metadata = new PageInfo() { Offset = 0, Count = 1, Limit = 100, Total = 1 },
+                Result = mockedGranularCertificatesResponse
+            });
 
-        fakeWalletServiceClient.TransferCertificateAsync(
-                Arg.Any<TransferRequest>(), Arg.Any<Metadata>())
-            .Returns(fakeTransferResponse);
+        mockWalletClient
+            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
+            .Returns(mockedTransferResponse);
     }
 
     private static GranularCertificate CreateGranularCertificate(DateTimeOffset start, DateTimeOffset end)
     {
         return new GranularCertificate
         {
-            Type = GranularCertificateType.Production,
-            Start = Timestamp.FromDateTimeOffset(start),
-            End = Timestamp.FromDateTimeOffset(end),
-            FederatedId = new FederatedStreamId() { StreamId = new Uuid() { Value = Guid.NewGuid().ToString() } }
+            CertificateType = CertificateType.Production,
+            Start = start.ToUnixTimeSeconds(),
+            End = end.ToUnixTimeSeconds(),
+            FederatedStreamId = new FederatedStreamId() { Registry = "DK1", StreamId = Guid.NewGuid() },
+            GridArea = "DK1",
+            Quantity = 123,
+            Attributes = new Dictionary<string, string>()
         };
-    }
-
-    private static AsyncUnaryCall<TResponse> CreateAsyncUnaryCall<TResponse>(TResponse response)
-    {
-        return new AsyncUnaryCall<TResponse>(
-            Task.FromResult(response),
-            Task.FromResult(new Metadata()),
-            () => Status.DefaultSuccess,
-            () => new Metadata(),
-            () => { });
     }
 }

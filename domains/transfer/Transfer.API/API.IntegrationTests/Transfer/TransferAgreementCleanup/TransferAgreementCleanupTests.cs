@@ -15,15 +15,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Transfer.TransferAgreementCleanup;
 
-public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class TransferAgreementCleanupTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly Guid sub;
     private readonly string tin;
 
-    public TransferAgreementCleanupTests(TransferAgreementsApiWebApplicationFactory factory)
+    public TransferAgreementCleanupTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
+        factory = integrationTestFixture.Factory;
         sub = Guid.NewGuid();
         tin = "11223344";
     }
@@ -32,7 +33,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
     public async Task ShouldOnlyDeleteExpiredTransferAgreements()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
 
@@ -90,11 +91,8 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
     public async Task ShouldProduceActivityLogEntriesForReceiverAndSender()
     {
 
-        var customFactory = new TransferAgreementsApiWebApplicationFactory();
-        customFactory.WithCleanupWorker = false;
-        await customFactory.InitializeAsync();
         var receiverTin = "12345677";
-        using var scope = customFactory.Services.CreateScope();
+        using var scope = factory.Services.CreateScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
@@ -118,7 +116,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0, TimeSpan.FromSeconds(30));
         tas.Should().BeEmpty();
 
-        var senderClient = customFactory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
+        var senderClient = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
 
         var senderPost = await senderClient.PostAsJsonAsync("api/transfer/activity-log",
             new ActivityLogEntryFilterRequest(null, null, null));
@@ -127,7 +125,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
         var senderLogs = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(senderLogResponseBody);
         senderLogs!.ActivityLogEntries.Should().ContainSingle();
 
-        var receiverClient = customFactory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
+        var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
 
         var receiverPost = await receiverClient.PostAsJsonAsync("api/transfer/activity-log",
             new ActivityLogEntryFilterRequest(null, null, null));
@@ -144,7 +142,7 @@ public class TransferAgreementCleanupTests : IClassFixture<TransferAgreementsApi
     public async Task ShouldDeleteTaHistoryEntries()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await dbContext.TransferAgreements.ExecuteDeleteAsync();
 

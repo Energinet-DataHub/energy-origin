@@ -1,11 +1,9 @@
 using System.Threading.Tasks;
-using API.IntegrationTests.Factories;
 using DataContext;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace API.IntegrationTests;
@@ -13,23 +11,26 @@ namespace API.IntegrationTests;
 [Collection(IntegrationTestCollection.CollectionName)]
 public class RollbackMigrationTests : TestBase
 {
-    private readonly QueryApiWebApplicationFactory factory;
+
+    private readonly DbContextOptions<ApplicationDbContext> options;
 
     public RollbackMigrationTests(IntegrationTestFixture integrationTestFixture)
     {
-        factory = integrationTestFixture.WebApplicationFactory;
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
     }
 
     [Fact]
     public async Task can_rollback_all_migrations()
     {
-        factory.Start();
-        var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-
+        await using var dbContext = new ApplicationDbContext(options);
         var migrator = dbContext.Database.GetService<IMigrator>();
 
+        await migrator.MigrateAsync();
         var rollbackAllMigrations = () => migrator.Migrate("0");
+
         rollbackAllMigrations.Should().NotThrow();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+        pendingMigrations.Should().NotBeEmpty();
     }
 }

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Repository;
-using API.Transfer.Api.Services;
 using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.API;
@@ -17,6 +17,9 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
+using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using ProjectOriginClients;
+using ProjectOriginClients.Models;
 using Xunit;
 
 namespace API.UnitTests.Transfer.Api.Controllers;
@@ -26,8 +29,8 @@ public class TransferAgreementsControllerTests
     private readonly TransferAgreementsController controller;
     private readonly ITransferAgreementRepository mockTransferAgreementRepository = Substitute.For<ITransferAgreementRepository>();
     private readonly ITransferAgreementProposalRepository mockTransferAgreementProposalRepository = Substitute.For<ITransferAgreementProposalRepository>();
-    private readonly IProjectOriginWalletService mockProjectOriginWalletDepositEndpointService = Substitute.For<IProjectOriginWalletService>();
     private readonly IActivityLogEntryRepository mockActivityLogRepository = Substitute.For<IActivityLogEntryRepository>();
+    private readonly IProjectOriginWalletClient mockWalletClient = Substitute.For<IProjectOriginWalletClient>();
     private readonly IUnitOfWork mockUnitOfWork = Substitute.For<IUnitOfWork>();
 
     private const string UserClaimNameScope = "userScope";
@@ -83,8 +86,7 @@ public class TransferAgreementsControllerTests
         mockHttpContextAccessor.HttpContext.Returns(mockContext);
 
         controller = new TransferAgreementsController(
-            mockProjectOriginWalletDepositEndpointService,
-            mockHttpContextAccessor,
+            mockWalletClient,
             mockUnitOfWork)
         {
             ControllerContext = new ControllerContext { HttpContext = mockHttpContextAccessor.HttpContext! }
@@ -106,6 +108,23 @@ public class TransferAgreementsControllerTests
             SenderCompanyTin = "32132132"
         };
 
+        mockWalletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+            new ResultList<WalletRecord>
+            {
+                Metadata = new PageInfo() { Limit = 100, Total = 1, Count = 1, Offset = 0 },
+                Result = new List<WalletRecord>
+                {
+                    new WalletRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        PublicKey = new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()
+                    }
+                }
+            });
+        mockWalletClient
+            .CreateExternalEndpoint(Arg.Any<Guid>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
         mockTransferAgreementProposalRepository.GetNonExpiredTransferAgreementProposalAsNoTracking(Arg.Any<Guid>())
             .Returns(taProposal);
         mockTransferAgreementRepository.AddTransferAgreementAndDeleteProposal(Arg.Any<TransferAgreement>(), taProposal.Id)
