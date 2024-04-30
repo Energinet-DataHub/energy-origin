@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Automation;
-using ClaimAutomation.Worker.Automation.Services;
 using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using DataContext;
@@ -19,14 +18,14 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ProjectOrigin.WalletSystem.V1;
+using ProjectOriginClients;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithOpenTelemetry(otlpOptions.ReceiverEndpoint);
+builder.AddSerilog();
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
@@ -57,15 +56,14 @@ builder.Services.AddLogging();
 
 builder.Services.AddScoped<IClaimAutomationRepository, ClaimAutomationRepository>();
 builder.Services.AddScoped<IClaimService, ClaimService>();
-builder.Services.AddScoped<IProjectOriginWalletService, ProjectOriginWalletService>();
 builder.Services.AddScoped<IShuffler, Shuffler>();
 builder.Services.AddHostedService<ClaimWorker>();
 builder.Services.AddSingleton<AutomationCache>();
 builder.Services.AddSingleton<IClaimAutomationMetrics, ClaimAutomationMetrics>();
-builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
+builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-    o.Address = new Uri(options.WalletUrl);
+    c.BaseAddress = new Uri(options.WalletUrl);
 });
 
 builder.Services.AddVersioningToApi();
