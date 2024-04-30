@@ -8,9 +8,8 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using API.Transfer.Api.Services;
-using API.Transfer.TransferAgreementProposalCleanup;
 using Asp.Versioning.ApiExplorer;
+using API.Transfer.TransferAgreementProposalCleanup;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.HostedService;
@@ -23,10 +22,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ProjectOriginClients;
 using NSubstitute;
-using Testcontainers.PostgreSql;
-using WireMock.Server;
-using Xunit;
 
 namespace API.IntegrationTests.Factories;
 
@@ -44,8 +41,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
     public bool WithCleanupWorker { get; set; } = true;
-
-    public IProjectOriginWalletService WalletServiceMock { get; private set; } = Substitute.For<IProjectOriginWalletService>();
+    public IProjectOriginWalletClient WalletClientMock { get; private set; } = Substitute.For<IProjectOriginWalletClient>();
 
     public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
     {
@@ -100,8 +96,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.Password = (string)connectionStringBuilder["Password"];
             });
 
-            s.Remove(s.First(sd => sd.ImplementationType == typeof(ProjectOriginWalletService)));
-            s.AddScoped(_ => WalletServiceMock);
+            s.Remove(s.First(sd => sd.ServiceType == typeof(IProjectOriginWalletClient)));
+            s.AddScoped(_ => WalletClientMock);
 
             if (!WithCleanupWorker)
             {

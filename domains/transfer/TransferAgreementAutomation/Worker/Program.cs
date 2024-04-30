@@ -10,7 +10,7 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ProjectOrigin.WalletSystem.V1;
+using ProjectOriginClients;
 using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Options;
@@ -72,10 +72,10 @@ builder.Services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgree
 builder.Services.AddSingleton<IProjectOriginWalletService, ProjectOriginWalletService>();
 
 builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>();
-builder.Services.AddGrpcClient<WalletService.WalletServiceClient>((sp, o) =>
+builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
-    o.Address = new Uri(options.WalletUrl);
+    c.BaseAddress = new Uri(options.WalletUrl);
 });
 
 var app = builder.Build();

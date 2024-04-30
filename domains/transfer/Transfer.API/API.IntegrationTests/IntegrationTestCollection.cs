@@ -1,11 +1,13 @@
 using System;
-using System.Net.Http.Headers;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Testcontainers;
-using API.Transfer.Api.Services;
 using NSubstitute;
-using NSubstitute.ClearExtensions;
+using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using ProjectOriginClients.Models;
+using ProjectOriginClients;
 using WireMock.Server;
 using Xunit;
 
@@ -34,19 +36,36 @@ public class IntegrationTestFixture : IAsyncLifetime
     {
         await PostgresContainer.InitializeAsync();
 
-        SetupWalletServiceMock();
+        SetupPoWalletClientMock();
 
         Factory.ConnectionString = PostgresContainer.ConnectionString;
         Factory.CvrBaseUrl = CvrWireMockServer.Url!;
         Factory.Start();
     }
 
-    private void SetupWalletServiceMock()
+    private IProjectOriginWalletClient SetupPoWalletClientMock()
     {
-        var poWalletServiceMock = Factory.WalletServiceMock;
-        poWalletServiceMock.ClearSubstitute();
-        poWalletServiceMock.CreateWalletDepositEndpoint(Arg.Any<AuthenticationHeaderValue>()).Returns("SomeToken");
-        poWalletServiceMock.CreateReceiverDepositEndpoint(Arg.Any<AuthenticationHeaderValue>(), Arg.Any<string>(), Arg.Any<string>()).Returns(Guid.NewGuid());
+        var walletClientMock = Factory.WalletClientMock;
+        walletClientMock.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        walletClientMock.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+            new ResultList<WalletRecord>
+            {
+                Metadata = new PageInfo { Count = 1, Limit = 100, Total = 1, Offset = 0 },
+                Result = new List<WalletRecord>
+                {
+                    new WalletRecord
+                        { Id = Guid.NewGuid(), PublicKey = new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter() }
+                }
+            });
+        walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+            new WalletEndpointReference(1, new Uri("http://someUrl"),
+                new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()));
+        walletClientMock
+            .CreateExternalEndpoint(Arg.Any<Guid>(), Arg.Any<WalletEndpointReference>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
+
+        return walletClientMock;
     }
 
     public async Task DisposeAsync()
