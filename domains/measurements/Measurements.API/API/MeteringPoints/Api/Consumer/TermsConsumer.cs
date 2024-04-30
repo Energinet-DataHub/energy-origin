@@ -56,9 +56,8 @@ public class TermsConsumer(
 
     private async Task UpdateRelation(RelationDto relation)
     {
-
-            relation.Status = RelationStatus.Created;
-            await dbContext.SaveChangesAsync();
+        relation.Status = RelationStatus.Created;
+        await dbContext.SaveChangesAsync();
     }
 }
 
