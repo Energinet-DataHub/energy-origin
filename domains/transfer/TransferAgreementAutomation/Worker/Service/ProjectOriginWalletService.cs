@@ -11,7 +11,7 @@ namespace TransferAgreementAutomation.Worker.Service;
 
 public class ProjectOriginWalletService : IProjectOriginWalletService
 {
-    private const uint BatchSize = 5000;
+    private const int BatchSize = 5000;
 
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly IProjectOriginWalletClient walletClient;
@@ -33,7 +33,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         logger.LogInformation("Getting certificates for {senderId}", transferAgreement.SenderId);
 
         var hasMoreCertificates = true;
-        uint numberOfFetchedCertificates = 0;
+        var numberOfFetchedCertificates = 0;
 
         while (hasMoreCertificates)
         {

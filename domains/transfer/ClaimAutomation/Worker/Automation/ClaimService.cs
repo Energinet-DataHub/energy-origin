@@ -22,7 +22,7 @@ public class ClaimService(
     AutomationCache cache)
     : IClaimService
 {
-    private const uint BatchSize = 5000;
+    private const int BatchSize = 5000;
 
     public async Task Run(CancellationToken stoppingToken)
     {
@@ -39,7 +39,7 @@ public class ClaimService(
                 foreach (var subjectId in claimAutomationArguments.Select(x => x.SubjectId).Distinct())
                 {
                     var hasMoreCertificates = true;
-                    uint numberOfFetchedCertificates = 0;
+                    var numberOfFetchedCertificates = 0;
 
                     while (hasMoreCertificates)
                     {

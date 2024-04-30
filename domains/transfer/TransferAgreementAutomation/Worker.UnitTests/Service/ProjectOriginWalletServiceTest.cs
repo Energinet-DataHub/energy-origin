@@ -137,7 +137,7 @@ public class ProjectOriginWalletServiceTest
     private void SetupWalletServiceClient(List<GranularCertificate> mockedGranularCertificatesResponse,
         TransferResponse mockedTransferResponse)
     {
-        mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<uint?>()).Returns(
+        mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>()).Returns(
             new ResultList<GranularCertificate>()
             {
                 Metadata = new PageInfo() { Offset = 0, Count = 1, Limit = 100, Total = 1 },
