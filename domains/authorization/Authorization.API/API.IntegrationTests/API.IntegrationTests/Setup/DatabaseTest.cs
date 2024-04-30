@@ -1,6 +1,6 @@
 using API.Data;
 using API.Models;
-using AutoFixture;
+using API.Repository;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace API.IntegrationTests.Setup;
@@ -11,8 +11,8 @@ public abstract class DatabaseTest : IAsyncLifetime
     protected Func<Task> _resetDatabase;
     protected readonly ApplicationDbContext Db;
     protected readonly IUnitOfWork UnitOfWork;
-    protected readonly Fixture Fixture;
     protected readonly IServiceScope _scope;
+    protected readonly IOrganizationRepository OrganizationRepository;
 
     public DatabaseTest(IntegrationTestFactory factory)
     {
@@ -21,29 +21,7 @@ public abstract class DatabaseTest : IAsyncLifetime
 
         _scope = factory.Services.CreateScope();
         UnitOfWork = _scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-        Fixture = new Fixture();
-        Fixture.Customize(new NoCircularReferencesCustomization());
-        Fixture.Customize(new IgnoreVirtualMembersCustomization());
-    }
-
-    public async Task Insert<T>(T entity) where T : class
-    {
-        await UnitOfWork.BeginTransactionAsync();
-
-        try
-        {
-            var repository = Db.Set<T>();
-
-            await repository.AddAsync(entity);
-
-            await UnitOfWork.CommitAsync();
-        }
-        catch
-        {
-            await UnitOfWork.RollbackAsync();
-            throw;
-        }
+        OrganizationRepository = _scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();
     }
 
     public Task InitializeAsync() => Task.CompletedTask;
