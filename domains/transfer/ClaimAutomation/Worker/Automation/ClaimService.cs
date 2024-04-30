@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Metrics;
+using DataContext.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using ProjectOriginClients;
@@ -21,6 +22,8 @@ public class ClaimService(
     AutomationCache cache)
     : IClaimService
 {
+    private const uint BatchSize = 5000;
+
     public async Task Run(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -35,25 +38,37 @@ public class ClaimService(
                 logger.LogInformation("Number of ClaimAutomationArguments for current run: {claimAutomationArguments}", claimAutomationArguments.Count);
                 foreach (var subjectId in claimAutomationArguments.Select(x => x.SubjectId).Distinct())
                 {
-                    var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken);
+                    var hasMoreCertificates = true;
+                    uint numberOfFetchedCertificates = 0;
 
-                    if (response == null || !response.Result.Any())
+                    while (hasMoreCertificates)
                     {
-                        logger.LogInformation("No certificates found for {subjectId}", subjectId);
-                        continue;
-                    }
+                        var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken, limit: BatchSize, skip: numberOfFetchedCertificates);
 
-                    logger.LogInformation("Trying to claim {certificates} certificates for {subjectId}", response.Result.Count(), subjectId);
-                    var certificates = response.Result.OrderBy<GranularCertificate, int>(x => shuffle.Next()).ToList();
+                        if (response == null || !response.Result.Any())
+                        {
+                            logger.LogInformation("No certificates found for {subjectId}", subjectId);
+                            continue;
+                        }
 
-                    var certificatesGrouped = certificates.GroupBy(x => new { x.GridArea, x.Start, x.End });
+                        if (response.Result.Count() < BatchSize)
+                            hasMoreCertificates = false;
 
-                    foreach (var cert in certificatesGrouped)
-                    {
-                        var productionCerts = cert.Where(x => x.CertificateType == CertificateType.Production).ToList();
-                        var consumptionCerts = cert.Where(x => x.CertificateType == CertificateType.Consumption).ToList();
-                        logger.LogInformation("Claiming {productionCerts} production certs and {consumptionCerts} consumption certs for {subjectId}", productionCerts.Count, consumptionCerts.Count, subjectId);
-                        await Claim(subjectId, consumptionCerts, productionCerts);
+                        logger.LogInformation("Trying to claim {certificates} certificates for {subjectId}", response.Result.Count(), subjectId);
+
+                        var certificates = response.Result.OrderBy<GranularCertificate, int>(x => shuffle.Next()).ToList();
+
+                        var certificatesGrouped = certificates.GroupBy(x => new { x.GridArea, x.Start, x.End });
+
+                        foreach (var cert in certificatesGrouped)
+                        {
+                            var productionCerts = cert.Where(x => x.CertificateType == CertificateType.Production).ToList();
+                            var consumptionCerts = cert.Where(x => x.CertificateType == CertificateType.Consumption).ToList();
+                            logger.LogInformation(
+                                "Claiming {productionCerts} production certs and {consumptionCerts} consumption certs for {subjectId}",
+                                productionCerts.Count, consumptionCerts.Count, subjectId);
+                            await Claim(subjectId, consumptionCerts, productionCerts);
+                        }
                     }
                 }
             }

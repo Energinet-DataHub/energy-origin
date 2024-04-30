@@ -53,7 +53,7 @@ public class ClaimServiceTests
             }
         };
 
-        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(certs).AndDoes(_ => cts.Cancel());
+        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<uint?>()).Returns(certs).AndDoes(_ => cts.Cancel());
 
         var claimService = new ClaimService(logger, claimRepository, walletClient, new Shuffler(1), metricsMock, cacheMock);
 
@@ -101,7 +101,7 @@ public class ClaimServiceTests
 
         claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
 
-        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(certs).AndDoes(_ => cts.Cancel());
+        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<uint?>()).Returns(certs).AndDoes(_ => cts.Cancel());
 
         var claimService = new ClaimService(logger, claimRepository, walletClient, new Shuffler(1), metricsMock, cacheMock);
 

@@ -15,13 +15,12 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using System.Linq;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 
 namespace ProjectOriginClients;
 
 public interface IProjectOriginWalletClient
 {
-    Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken);
+    Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0);
     Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity);
     Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId);
     Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken);
@@ -45,12 +44,11 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         this.client = client;
     }
 
-    public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken)
+    public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0)
     {
         SetDummyAuthorizationHeader(ownerSubject.ToString());
 
-
-        return await client.GetFromJsonAsync<ResultList<GranularCertificate>>("v1/certificates",
+        return await client.GetFromJsonAsync<ResultList<GranularCertificate>>($"v1/certificates?skip={skip}&limit={limit}",
             cancellationToken: cancellationToken, options: jsonSerializerOptions);
     }
 

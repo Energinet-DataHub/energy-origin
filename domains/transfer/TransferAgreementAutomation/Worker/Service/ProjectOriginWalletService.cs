@@ -11,6 +11,8 @@ namespace TransferAgreementAutomation.Worker.Service;
 
 public class ProjectOriginWalletService : IProjectOriginWalletService
 {
+    private const uint BatchSize = 5000;
+
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly IProjectOriginWalletClient walletClient;
     private readonly ITransferAgreementAutomationMetrics metrics;
@@ -30,32 +32,45 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
     {
         logger.LogInformation("Getting certificates for {senderId}", transferAgreement.SenderId);
 
-        var certificates = await walletClient.GetGranularCertificates(transferAgreement.SenderId, new CancellationToken());
+        var hasMoreCertificates = true;
+        uint numberOfFetchedCertificates = 0;
 
-        if (certificates == null || !certificates.Result.Any())
+        while (hasMoreCertificates)
         {
-            logger.LogInformation("No certificates found for {senderId}", transferAgreement.SenderId);
-        }
+            var certificates = await walletClient.GetGranularCertificates(transferAgreement.SenderId, new CancellationToken(), limit: BatchSize, skip: numberOfFetchedCertificates);
 
-        var certificatesCount = certificates!.Result.Count();
-
-        logger.LogInformation("Found {certificatesCount} certificates to transfer for transfer agreement with id {id}", certificatesCount, transferAgreement.Id);
-
-        foreach (var certificate in certificates.Result)
-        {
-            if (!IsPeriodMatching(transferAgreement, certificate))
+            if (certificates == null)
             {
-                certificatesCount--;
+                logger.LogError("Something went wrong when getting certificates from the wallet for {senderId}. Response is null.", transferAgreement.SenderId);
                 continue;
             }
 
-            logger.LogInformation("Transferring certificate {certificateId} to {receiver}",
-                certificate.FederatedStreamId, transferAgreement.ReceiverTin);
+            if (!certificates!.Result.Any())
+                logger.LogInformation("No certificates found for {senderId}", transferAgreement.SenderId);
 
-            await walletClient.TransferCertificates(transferAgreement.SenderId, certificate, certificate.Quantity, transferAgreement.ReceiverReference);
+            if (certificates.Result.Count() < BatchSize)
+                hasMoreCertificates = false;
+
+            var certificatesCount = certificates.Result.Count();
+
+            logger.LogInformation("Found {certificatesCount} certificates to transfer for transfer agreement with id {id}", certificatesCount, transferAgreement.Id);
+
+            foreach (var certificate in certificates.Result)
+            {
+                if (!IsPeriodMatching(transferAgreement, certificate))
+                {
+                    certificatesCount--;
+                    continue;
+                }
+
+                logger.LogInformation("Transferring certificate {certificateId} to {receiver}",
+                    certificate.FederatedStreamId, transferAgreement.ReceiverTin);
+
+                await walletClient.TransferCertificates(transferAgreement.SenderId, certificate, certificate.Quantity, transferAgreement.ReceiverReference);
+            }
+
+            metrics.SetNumberOfCertificates(certificatesCount);
         }
-
-        metrics.SetNumberOfCertificates(certificatesCount);
     }
 
     private static bool IsPeriodMatching(TransferAgreement transferAgreement, GranularCertificate certificate)
