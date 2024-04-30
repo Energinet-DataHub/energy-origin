@@ -52,7 +52,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
                 hasMoreCertificates = false;
 
             var certificatesCount = certificates.Result.Count();
-
+            numberOfFetchedCertificates += certificatesCount;
             logger.LogInformation("Found {certificatesCount} certificates to transfer for transfer agreement with id {id}", certificatesCount, transferAgreement.Id);
 
             foreach (var certificate in certificates.Result)

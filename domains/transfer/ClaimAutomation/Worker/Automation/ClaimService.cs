@@ -55,6 +55,7 @@ public class ClaimService(
                             hasMoreCertificates = false;
 
                         logger.LogInformation("Trying to claim {certificates} certificates for {subjectId}", response.Result.Count(), subjectId);
+                        numberOfFetchedCertificates += response.Result.Count();
 
                         var certificates = response.Result.OrderBy<GranularCertificate, int>(x => shuffle.Next()).ToList();
 
