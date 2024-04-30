@@ -49,6 +49,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
     {
         SetDummyAuthorizationHeader(ownerSubject.ToString());
 
+
         return await client.GetFromJsonAsync<ResultList<GranularCertificate>>("v1/certificates",
             cancellationToken: cancellationToken, options: jsonSerializerOptions);
     }
