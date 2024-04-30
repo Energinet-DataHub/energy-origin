@@ -76,6 +76,45 @@ public sealed class ContractTests : TestBase
     }
 
     [Fact]
+    public async Task CreateMulitpleContract_Overlapping_Conflict()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+
+        measurementsWireMock.SetupMeteringPointsResponse(
+            new List<(string gsrn, MeteringPointType type, Technology? technology)>
+            {
+                (gsrn, MeteringPointType.Production, null),
+                (gsrn, MeteringPointType.Production, null)
+            });
+
+        var subject = Guid.NewGuid().ToString();
+        using var client = factory.CreateAuthenticatedClient(subject, apiVersion: ApiVersions.Version20240423);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var overlappingEnddate = DateTimeOffset.Now.AddDays(2).ToUnixTimeSeconds();
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrn,
+                EndDate = endDate,
+                StartDate = startDate
+            },
+
+            new CreateContract
+            {
+                GSRN = gsrn,
+                EndDate = overlappingEnddate,
+                StartDate = startDate
+            }
+        ]);
+
+        using var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+
+    [Fact]
     public async Task CreateContract_ActivateWithEndDate_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
@@ -553,11 +592,12 @@ public sealed class ContractTests : TestBase
     {
         var gsrn = GsrnHelper.GenerateRandom();
         var gsrn1 = GsrnHelper.GenerateRandom();
-        measurementsWireMock.SetupMeteringPointsResponse(new List<(string gsrn, MeteringPointType type, Technology? technology)>
-        {
-            (gsrn, MeteringPointType.Production, null),
-            (gsrn1, MeteringPointType.Production, null)
-        });
+        measurementsWireMock.SetupMeteringPointsResponse(
+            new List<(string gsrn, MeteringPointType type, Technology? technology)>
+            {
+                (gsrn, MeteringPointType.Production, null),
+                (gsrn1, MeteringPointType.Production, null)
+            });
 
         var subject = Guid.NewGuid().ToString();
         var client = factory.CreateAuthenticatedClient(subject, apiVersion: ApiVersions.Version20240423);

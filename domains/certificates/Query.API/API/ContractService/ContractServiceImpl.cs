@@ -214,7 +214,6 @@ internal class ContractServiceImpl : IContractService
             }
 
             existingContract.EndDate = newEndDate;
-            contractsByGsrn.Find(c => c.Id == existingContract.Id)!.EndDate = newEndDate;
 
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
