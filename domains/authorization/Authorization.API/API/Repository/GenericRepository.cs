@@ -21,18 +21,15 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
         await Context.Set<T>().AddAsync(entity);
     }
 
-    public Task RemoveAsync(T entity)
+    public void Remove(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Set<T>().Remove(entity);
-        return Task.CompletedTask;
-
     }
 
-    public Task UpdateAsync(T entity)
+    public void Update(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Entry(entity).State = EntityState.Modified;
-        return Task.CompletedTask;
     }
 }
