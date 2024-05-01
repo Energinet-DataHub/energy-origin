@@ -169,7 +169,21 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
         var walletClient = new ProjectOriginWalletClient(httpClient);
 
         //I cannot send any certificates to the wallet since I can't send to the registry first
-        var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken());
+        var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: int.MaxValue, skip: 0);
+
+        certsResponse.Should().NotBeNull();
+        certsResponse!.Result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetGranularCertificates_WhenNullLimit_ExpectNoErrors()
+    {
+        var ownerSubject = Guid.NewGuid();
+        var httpClient = GetWalletHttpClient();
+        var walletClient = new ProjectOriginWalletClient(httpClient);
+
+        //I cannot send any certificates to the wallet since I can't send to the registry first
+        var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: null);
 
         certsResponse.Should().NotBeNull();
         certsResponse!.Result.Should().BeEmpty();
