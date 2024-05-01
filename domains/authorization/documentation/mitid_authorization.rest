@@ -1,0 +1,41 @@
+@grantType = client_credentials
+@clientId = f00b9b4d-3c59-4c40-b209-2ef87e509f54
+@clientSecret = brC...
+@scope = https://datahubeouenerginet.onmicrosoft.com/energy-origin/.default
+###
+
+# @name tokenResponse
+POST https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/oauth2/v2.0/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type={{grantType}}
+&client_id={{clientId}}
+&client_secret={{clientSecret}}
+&scope={{scope}}
+
+###
+
+@accessToken = {{tokenResponse.response.body.access_token}}
+
+POST http://localhost:5043/api/authorization/client-consent
+Authorization: bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "client_id": "529a55d0-68c7-4129-ba3c-e06d4f1038c4"
+}
+
+###
+
+@accessToken = {{tokenResponse.response.body.access_token}}
+
+POST http://localhost:5043/api/authorization/user-consent
+Authorization: bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "sub":"586...",
+    "name":"Sylvester Christensen",
+    "org_cvr":"39315041",
+    "org_name":"Energinet DataHub A/S - TEST"
+}
