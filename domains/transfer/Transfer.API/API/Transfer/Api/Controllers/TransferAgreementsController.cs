@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
-using API.Shared.Helpers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using API.Transfer.Api.Services;
 using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
@@ -15,9 +13,9 @@ using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ProjectOriginClients;
 
 namespace API.Transfer.Api.Controllers;
 
@@ -26,8 +24,7 @@ namespace API.Transfer.Api.Controllers;
 [ApiVersion(ApiVersions.Version20240103)]
 [Route("api/transfer/transfer-agreements")]
 public class TransferAgreementsController(
-    IProjectOriginWalletService projectOriginWalletService,
-    IHttpContextAccessor httpContextAccessor,
+    IProjectOriginWalletClient walletClient,
     IUnitOfWork unitOfWork
 ) : ControllerBase
 {
@@ -80,15 +77,23 @@ public class TransferAgreementsController(
                 statusCode: 409);
         }
 
-        var receiverBearerToken = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext?.Request.Headers["Authorization"]!);
-        var receiverWdeBase64String = await projectOriginWalletService.CreateWalletDepositEndpoint(receiverBearerToken);
+        var subject = user.Subject;
+        var wallets = await walletClient.GetWallets(subject, CancellationToken.None);
 
-        var senderBearerToken = ProjectOriginWalletHelper.GenerateBearerToken(proposal.SenderCompanyId.ToString());
+        var walletId = wallets.Result.FirstOrDefault()?.Id;
+        if (walletId == null)
+        {
+            var createWalletResponse = await walletClient.CreateWallet(user.Subject, CancellationToken.None);
 
-        var receiverReference = await projectOriginWalletService.CreateReceiverDepositEndpoint(
-            new AuthenticationHeaderValue("Bearer", senderBearerToken),
-            receiverWdeBase64String,
-            proposal.ReceiverCompanyTin);
+            if (createWalletResponse == null)
+                throw new ApplicationException("Failed to create wallet.");
+
+            walletId = createWalletResponse.WalletId;
+        }
+
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(subject, walletId.Value, CancellationToken.None);
+
+        var externalEndpoint = await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId, walletEndpoint, proposal.ReceiverCompanyTin, CancellationToken.None);
 
         var transferAgreement = new TransferAgreement
         {
@@ -99,7 +104,7 @@ public class TransferAgreementsController(
             SenderTin = proposal.SenderCompanyTin,
             ReceiverName = user.Organization!.Name,
             ReceiverTin = proposal.ReceiverCompanyTin,
-            ReceiverReference = receiverReference
+            ReceiverReference = externalEndpoint.ReceiverId
         };
 
         try

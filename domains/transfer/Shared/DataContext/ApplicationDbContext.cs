@@ -1,13 +1,11 @@
-using Audit.EntityFramework;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.DataContext;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 
 namespace DataContext;
 
-public class ApplicationDbContext : AuditDbContext
+public class ApplicationDbContext : DbContext
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
@@ -16,7 +14,6 @@ public class ApplicationDbContext : AuditDbContext
     }
 
     public DbSet<TransferAgreement> TransferAgreements { get; set; }
-    public DbSet<TransferAgreementHistoryEntry> TransferAgreementHistoryEntries { get; set; }
     public DbSet<ClaimAutomationArgument> ClaimAutomationArguments { get; set; }
     public DbSet<TransferAgreementProposal> TransferAgreementProposals { get; set; }
     public DbSet<ActivityLogEntry> ActivityLogs { get; set; }

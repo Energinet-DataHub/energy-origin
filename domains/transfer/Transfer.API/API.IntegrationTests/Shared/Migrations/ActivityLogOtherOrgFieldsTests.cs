@@ -12,9 +12,9 @@ using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-public class ActivityLogEntryOtherOrgFieldsTests : MigrationsTestBase
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ActivityLogEntryOtherOrgFieldsTests(IntegrationTestFixture integrationTestFixture) : MigrationsTestBase(integrationTestFixture)
 {
-
     [Fact]
     public async Task GivenMigrationApplied_IfNewActivityLogEntryIsCreated_OtherOrganizationFieldsExist()
     {

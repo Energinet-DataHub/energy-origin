@@ -17,34 +17,34 @@ using Xunit;
 
 namespace API.IntegrationTests.Cvr.Api.Controllers;
 
-public class CvrEmptyTests : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class CvrEmptyTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
-    private readonly WireMockServer server;
+    private readonly WireMockServer cvrWireMock;
 
-    public CvrEmptyTests(TransferAgreementsApiWebApplicationFactory factory)
+    public CvrEmptyTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
-        server = WireMockServer.Start();
-        factory.CvrBaseUrl = server.Url!;
+        factory = integrationTestFixture.Factory;
+        cvrWireMock = integrationTestFixture.CvrWireMockServer;
+        cvrWireMock.ResetMappings();
     }
 
     [Fact]
     public async Task GetCvrCompany_WhenWrongCvrNumber_ShouldReturnEmptyOkResponse()
     {
         var cvrNumbers = new CvrRequestDto(new List<string> { "123" });
-        server.ResetMappings();
-        server
+        cvrWireMock
             .Given(Request.Create().WithPath("/cvr-permanent/virksomhed/_search").UsingPost())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithBodyFromFile("Cvr/Api/Controllers/CvrControllerTests.empty_cvr_response.json")
             );
 
-        var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(),
+        using var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(),
             apiVersion: ApiVersions.Version20240103);
 
-        var response = await client.PostAsJsonAsync("api/transfer/cvr", cvrNumbers);
+        using var response = await client.PostAsJsonAsync("api/transfer/cvr", cvrNumbers);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 

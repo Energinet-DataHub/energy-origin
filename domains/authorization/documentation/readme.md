@@ -1,4 +1,4 @@
-# Authentication & authorization 
+# Authentication & authorization
 
 ## Consent
 
@@ -10,39 +10,51 @@ This section describes the first version of consent functionality in Energy Orig
 - User: A user authenticated with MitID erhverv and acting as employee in a company. A user may be employeed in multiple companies, but is forced to select a specific company as part of MitID authenticattion.
 - TIN: Tax Identification Number, in Denmark the CVR number.
 - Terms: Terms a user must agree to, before using Energy Origin Web application or APIs.
-- Consent: A user grants consent to a 3rd party. The 3rd party may after being granted consent, use Energy Origin APIs on behalf of the user. 
+- Consent: A user grants consent to a 3rd party. The 3rd party may after being granted consent, use Energy Origin APIs on behalf of the user.
 
 ### Conceptual overview
 
-``` Mermaid 
+```mermaid
 erDiagram
-  User }o--o{ Organization : employed
-  User {
-    uuid Id
-    string Name
-  }
-  Organization ||--o{ MeteringPoint : owns
-  Organization ||--o{ Wallet : owns
-  Organization {
-    string Tin
-    string Name
-  }
-  Consent {
-    timestamp Start
-    timestamp Expiration
-  }
-  MeteringPoint {
-    string GSRN
-  }
-  Wallet {
-    uuid Id
-  }
-  User ||--o{ Consent : "Granted by"
-  Client ||--o{ Consent : "Granted to"
-  Organization ||--o{ Consent : "Consent to"
-  Client {
-    string Name
-  }
+    USER ||--o{ AFFILIATIONS : "employed under"
+    ORGANIZATION ||--o{ AFFILIATIONS : "has"
+    ORGANIZATION ||--o{ CONSENT : "grants"
+    CONSENT ||--|| CLIENT : "to"
+
+
+    ORGANIZATION {
+        guid Id "Primary key in EO Database"
+        string IdpId "Identifier from IDP"
+        string IdpOrganizationId "Unique Identifier of Organization"
+        string TIN "Tax Identification Number"
+        string name "Organization's name"
+    }
+
+    USER {
+        guid Id "Primary key"
+        string IdpId "Identifer from IDP"
+        string IdpUserId "Unique Identifier of User"
+        string name "User's name"
+    }
+
+    AFFILIATIONS {
+        guid UserId "Foreign key mapping to the user entity"
+        guid OrganizationId "Foreign key mapping to the Organization entity"
+    }
+
+    CLIENT {
+        guid Id "Primary key"
+        string IdpClientId "Unique identifier"
+        string name "Client's name"
+        enum role "0 = EXTERNAL, 1 = INTERNAL"
+    }
+
+    CONSENT {
+        guid Id "Primary key"
+        guid OrganizationId "Foreign key to ORGANIZATION"
+        guid ClientId "Foreign key to CLIENT"
+        date consent_date "Date of consent"
+    }
 ```
 
 A user authenticating using MitID will work in the context of  asingle organization and TIN. To work in the context of another organization, the user will need to authenticate again and select a different organization.
@@ -53,12 +65,12 @@ Our use of the Client Credentials flow is described by Microsoft in the followin
 
 ## System context
 
-``` Mermaid 
+```mermaid
 C4Context
   Person(user, "MitID Erhverv user")
   Enterprise_Boundary(eoBoundary, "Energy Origin") {
     System(WEB, "Energy Origin", "Web app")
-    System(API, "Energy Origin API", "HTTP API") 
+    System(API, "Energy Origin API", "HTTP API")
     System_Boundary(Authorization, "Authentication") {
       System(B2C, "Azure AD B2C", "Energy Origin Identity Provider")
       System(authorizationAPI, "Authorization API", "Energy Origin authorization")
@@ -84,24 +96,22 @@ UpdateElementStyle(Authorization, $fontColor="lightgrey", $bgColor="transparent"
   UpdateRelStyle(user, WEB, $textColor="lightgrey", $lineColor="lightgrey")
   UpdateRelStyle(B2C, authorizationAPI, $textColor="lightgrey", $lineColor="lightgrey")
   UpdateRelStyle(WEB, authorizationAPI, $textColor="lightgrey", $lineColor="lightgrey")
-  
 ```
 
 ## Sign-up flow
 
-Fist time a MitID user logs into the Energy Origin Web application, the user will have to go through some steps. After agreeing to terms and conditions, a 'shadow' user will be creater in B2C. 
+Fist time a MitID user logs into the Energy Origin Web application, the user will have to go through some steps. After agreeing to terms and conditions, a 'shadow' user will be creater in B2C.
 
-``` Mermaid 
+```mermaid
 sequenceDiagram
     actor User
-    
 ```
 
 ## Grant consent to 3rd party
 
 Grant consent for 3rd party client to access and manage data in Energy Origin.
 
-``` Mermaid 
+```mermaid
 sequenceDiagram
     actor User
     participant ClientApp as Client Application
@@ -111,7 +121,7 @@ sequenceDiagram
     participant Auth as Authorization
 
     User->>ClientApp: Grant consent
-    ClientApp->>EO: Redirect to EO    
+    ClientApp->>EO: Redirect to EO
 
     rect rgb(50, 50, 50)
         note over EO, MitID: Authorization Code Flow
@@ -119,7 +129,7 @@ sequenceDiagram
         B2C->>MitID: Redirect to MitID
         User->>MitID: Login
         MitID->>B2C: Successfull login (tokens)
-        B2C->>EO: Successfull login (tokens)    
+        B2C->>EO: Successfull login (tokens)
     end
 
     activate EO
@@ -134,7 +144,7 @@ sequenceDiagram
 
 Call Energy Origin API as 3rd party client on behalf of organization.
 
-``` Mermaid 
+```mermaid
 sequenceDiagram
     participant ClientApp as Client Backend
     participant B2C as B2C
@@ -163,9 +173,9 @@ sequenceDiagram
 
 ### Register B2C as client
 
-Azure B2C itself will have to be registered as a client. This allows B2C to obtain a token for itself and call the EO authorization API. 
+Azure B2C itself will have to be registered as a client. This allows B2C to obtain a token for itself and call the EO authorization API.
 
-![New App Registration](/images/new_app_registration.png)
+![New App Registration](images/new_app_registration.png)
 
 Provide the name `self` for the app, and register by clicking `Register`.
 
@@ -173,13 +183,13 @@ Afterwards change settings in the manifest file. Make sure the following two set
 
 Add a new client secret to the app registration.
 
-![New Client Secret](/images/new_client_secret.png)
+![New Client Secret](images/new_client_secret.png)
 
 Make sure to copy the secret value and store it somewhere safe. Use client id and client secret to configure client_credentials custom policy.
 
 ## Links
 
- [MitID test user tool](https://pp.mitid.dk/test-tool/frontend/#/view-identity)
+[MitID test user tool](https://pp.mitid.dk/test-tool/frontend/#/view-identity)
 
 [MitID admin tool](https://pp.netseidbroker.dk/admin#/clients/e9d55f7d-03b6-4ec8-be83-f2804f32f9d0)
 

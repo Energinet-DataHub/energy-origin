@@ -70,75 +70,6 @@
         }
       }
     },
-    "/api/transfer/transfer-agreements/{transferAgreementId}/history": {
-      "get": {
-        "tags": [
-          "TransferAgreementHistoryEntries"
-        ],
-        "parameters": [
-          {
-            "name": "transferAgreementId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "EO_API_VERSION",
-            "in": "header",
-            "description": "The requested API version",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "default": "20240103"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementHistoryEntriesResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementHistoryEntriesResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransferAgreementHistoryEntriesResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
     "/api/transfer/transfer-agreement-proposals": {
       "post": {
         "tags": [
@@ -672,14 +603,6 @@
         },
         "additionalProperties": false
       },
-      "ChangeAction": {
-        "enum": [
-          "Created",
-          "Updated",
-          "Deleted"
-        ],
-        "type": "string"
-      },
       "CreateTransferAgreement": {
         "type": "object",
         "properties": {
@@ -844,42 +767,6 @@
           },
           "receiverTin": {
             "type": "string"
-          }
-        },
-        "additionalProperties": false
-      },
-      "TransferAgreementHistoryEntriesResponse": {
-        "type": "object",
-        "properties": {
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TransferAgreementHistoryEntryDto"
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "TransferAgreementHistoryEntryDto": {
-        "type": "object",
-        "properties": {
-          "transferAgreement": {
-            "$ref": "#/components/schemas/TransferAgreementDto"
-          },
-          "createdAt": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "action": {
-            "$ref": "#/components/schemas/ChangeAction"
-          },
-          "actorName": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

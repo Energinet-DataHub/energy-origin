@@ -4,7 +4,7 @@
 
 ### Container diagram
 
-![Container diagram](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/Certificate.png)
+![Container diagram](https://energinet-datahub.github.io/energy-origin/doc/diagrams/c4-model/views/CertificateContainers.png)
 
 ### Component diagram: Certificate API
 

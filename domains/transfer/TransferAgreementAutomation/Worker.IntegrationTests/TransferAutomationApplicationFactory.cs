@@ -44,5 +44,5 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
 
     public Task InitializeAsync() => postgresContainer.InitializeAsync();
 
-    Task IAsyncLifetime.DisposeAsync() => postgresContainer.DisposeAsync();
+    async Task IAsyncLifetime.DisposeAsync() => await postgresContainer.DisposeAsync();
 }

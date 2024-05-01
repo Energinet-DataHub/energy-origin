@@ -56,6 +56,30 @@ public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Start
     }
 
     [Fact]
+    public async Task when_datahub_relation_is_already_excisting_no_exception()
+    {
+        var relationMock = new CreateRelationResponse() { ErrorMessage = "", Success = true };
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "22222222", Guid.NewGuid());
+        var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
+        contextMock.Message.Returns(@event);
+
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
+            .Options;
+        var dbContext = new ApplicationDbContext(contextOptions);
+        dbContext.Database.EnsureCreated();
+
+        var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
+        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
+
+        var consumer = new TermsConsumer(dbContext, clientMock);
+        await consumer.Consume(contextMock);
+        await consumer.Consume(contextMock);
+
+        var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId);
+        relation!.Status.Should().Be(RelationStatus.Created);
+    }
+
+    [Fact]
     public async Task when_datahub_relation_is_not_created_relationstatus_is_pending()
     {
         var relationMock = new CreateRelationResponse() { ErrorMessage = "Error", Success = false };
