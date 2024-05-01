@@ -34,7 +34,10 @@ public class TermsConsumer(
             await dbContext.SaveChangesAsync();
         }
 
-        await CreateRelation(relationDto);
+        if (relationDto.Status == RelationStatus.Pending)
+        {
+            await CreateRelation(relationDto);
+        }
     }
 
     private async Task CreateRelation(RelationDto relation)
@@ -48,16 +51,11 @@ public class TermsConsumer(
         };
 
         var res = await relationClient.CreateRelationAsync(request, cancellationToken: CancellationToken.None);
-        if (res.Success && relation.Status == RelationStatus.Pending)
+        if (res.Success)
         {
-            await UpdateRelation(relation);
+            relation.Status = RelationStatus.Created;
+            await dbContext.SaveChangesAsync();
         }
-    }
-
-    private async Task UpdateRelation(RelationDto relation)
-    {
-        relation.Status = RelationStatus.Created;
-        await dbContext.SaveChangesAsync();
     }
 }
 
