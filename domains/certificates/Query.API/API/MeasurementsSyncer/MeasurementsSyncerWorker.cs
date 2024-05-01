@@ -56,12 +56,12 @@ public class MeasurementsSyncerWorker : BackgroundService
 
             using var outerScope = scopeFactory.CreateScope();
             var measurementSyncMetrics = outerScope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
-            measurementSyncMetrics.TimeSinceLastMeasurementSyncerRunDone(UnixTimestamp.Now().Seconds);
+            measurementSyncMetrics.UpdateTimeSinceLastMeasurementSyncerRun(UnixTimestamp.Now().Seconds);
 
             var oldestSyncDate = syncInfos.Min(x => x.StartSyncDate);
 
-            measurementSyncMetrics.TimePeriodForSearchingForAGSRNAssign(UnixTimestamp.Create(oldestSyncDate).Seconds);
-
+            measurementSyncMetrics.UpdateTimePeriodForSearchingForGSRN(UnixTimestamp.Create(oldestSyncDate).Seconds);
+            measurementSyncMetrics.AddNumberOfRecordsBeingSynced(syncInfos.Count);
             foreach (var syncInfo in syncInfos)
             {
 
