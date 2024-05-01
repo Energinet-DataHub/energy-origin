@@ -34,12 +34,10 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         logger.LogInformation("Getting certificates for {senderId}", transferAgreement.SenderId);
 
         var hasMoreCertificates = true;
-        var numberOfFetchedCertificates = 0;
-
         var certificates = new List<GranularCertificate>();
         while (hasMoreCertificates)
         {
-            var response = await walletClient.GetGranularCertificates(transferAgreement.SenderId, new CancellationToken(), limit: BatchSize, skip: numberOfFetchedCertificates);
+            var response = await walletClient.GetGranularCertificates(transferAgreement.SenderId, new CancellationToken(), limit: BatchSize, skip: certificates.Count);
 
             if (response == null)
                 throw new TransferCertificatesException($"Something went wrong when getting certificates from the wallet for {transferAgreement.SenderId}. Response is null.");
