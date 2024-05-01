@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240429074141_InitialCreate")]
+    [Migration("20240430182715_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -54,13 +54,11 @@ namespace API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("IdpClientId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpClientId");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Name");
+                        .HasColumnType("text");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
@@ -105,22 +103,18 @@ namespace API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("IdpId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpId");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("IdpOrganizationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpOrganizationId");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("OrganizationName")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("OrganizationName");
+                        .HasColumnType("text");
 
                     b.Property<string>("Tin")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Tin");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -137,17 +131,14 @@ namespace API.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("IdpId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpId");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("IdpUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpUserId");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Name");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
