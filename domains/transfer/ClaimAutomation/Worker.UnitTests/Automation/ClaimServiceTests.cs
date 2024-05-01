@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Worker.UnitTests.Automation;
 
-public class ClaimServiceTsts
+public class ClaimServiceTests
 {
     private readonly ILogger<ClaimService> logger = Substitute.For<ILogger<ClaimService>>();
     private readonly IClaimAutomationRepository claimRepository = Substitute.For<IClaimAutomationRepository>();
@@ -24,7 +24,7 @@ public class ClaimServiceTsts
     private readonly int batchSize = 2;
 
     private readonly ClaimService claimService;
-    public ClaimServiceTsts()
+    public ClaimServiceTests()
     {
         claimService = new ClaimService(logger, claimRepository, walletClient, new Shuffler(1), metricsMock, cacheMock)
         { BatchSize = batchSize };
