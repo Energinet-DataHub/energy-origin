@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Metrics;
-using DataContext.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using ProjectOriginClients;
@@ -22,7 +21,7 @@ public class ClaimService(
     AutomationCache cache)
     : IClaimService
 {
-    private const int BatchSize = 5000;
+    public int BatchSize { get; init; } = 5000;
 
     public async Task Run(CancellationToken stoppingToken)
     {
@@ -45,17 +44,21 @@ public class ClaimService(
                     {
                         var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken, limit: BatchSize, skip: numberOfFetchedCertificates);
 
-                        if (response == null || !response.Result.Any())
+                        if (response == null)
+                            throw new ClaimCertificatesException($"Something went wrong when getting certificates from the wallet for {subjectId}. Response is null.");
+
+                        if (!response.Result.Any())
                         {
                             logger.LogInformation("No certificates found for {subjectId}", subjectId);
-                            continue;
                         }
 
-                        if (response.Result.Count() < BatchSize)
+                        numberOfFetchedCertificates += response.Result.Count();
+                        if (numberOfFetchedCertificates >= response.Metadata.Total)
+                        {
                             hasMoreCertificates = false;
+                        }
 
                         logger.LogInformation("Trying to claim {certificates} certificates for {subjectId}", response.Result.Count(), subjectId);
-                        numberOfFetchedCertificates += response.Result.Count();
 
                         var certificates = response.Result.OrderBy<GranularCertificate, int>(x => shuffle.Next()).ToList();
 
@@ -65,9 +68,7 @@ public class ClaimService(
                         {
                             var productionCerts = cert.Where(x => x.CertificateType == CertificateType.Production).ToList();
                             var consumptionCerts = cert.Where(x => x.CertificateType == CertificateType.Consumption).ToList();
-                            logger.LogInformation(
-                                "Claiming {productionCerts} production certs and {consumptionCerts} consumption certs for {subjectId}",
-                                productionCerts.Count, consumptionCerts.Count, subjectId);
+                            logger.LogInformation("Claiming {productionCerts} production certs and {consumptionCerts} consumption certs for {subjectId}", productionCerts.Count, consumptionCerts.Count, subjectId);
                             await Claim(subjectId, consumptionCerts, productionCerts);
                         }
                     }

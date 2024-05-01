@@ -14,13 +14,15 @@ public class ProjectOriginWalletServiceTest
     private readonly ProjectOriginWalletService service;
     private readonly IProjectOriginWalletClient mockWalletClient;
 
+    private readonly int batchSize = 2;
+
     public ProjectOriginWalletServiceTest()
     {
         var fakeLogger = Substitute.For<ILogger<ProjectOriginWalletService>>();
         mockWalletClient = Substitute.For<IProjectOriginWalletClient>();
         var fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
 
-        service = new ProjectOriginWalletService(fakeLogger, mockWalletClient, fakeMetrics);
+        service = new ProjectOriginWalletService(fakeLogger, mockWalletClient, fakeMetrics) { BatchSize = batchSize };
     }
 
     [Fact]
@@ -117,7 +119,133 @@ public class ProjectOriginWalletServiceTest
              );
     }
 
-    private static TransferAgreement CreateTransferAgreement(DateTimeOffset startDate, DateTimeOffset endDate)
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(6)]
+    public async Task TransferCertificates_WhenHittingBatchSize_TransferAll(int numberOfCerts)
+    {
+        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, null);
+
+        var certs = CreateGranularCertificates(numberOfCerts);
+
+        var results = new List<ResultList<GranularCertificate>>();
+        if (!certs.Any())
+        {
+            results.Add(new ResultList<GranularCertificate>()
+            {
+                Metadata = new PageInfo() { Offset = 0, Count = 0, Limit = batchSize, Total = 0 },
+                Result = []
+            });
+        }
+        else
+        {
+            decimal nn2 = Decimal.Divide(numberOfCerts, batchSize);
+            var nn3 = (int)Math.Ceiling(nn2);
+            for (int i = 0; i < nn3; i++)
+            {
+                results.Add(new ResultList<GranularCertificate>()
+                {
+                    Metadata = new PageInfo() { Offset = 0, Count = certs.Skip(i * batchSize).Take(batchSize).Count(), Limit = batchSize, Total = certs.Count },
+                    Result = certs.Skip(i * batchSize).Take(batchSize)
+                });
+            }
+        }
+
+        mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), skip: Arg.Any<int>()).Returns(results[0], results.Skip(1).ToArray());
+
+        mockWalletClient
+            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
+            .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
+        
+        await service.TransferCertificates(transferAgreement);
+
+        _ = mockWalletClient
+            .Received(numberOfCerts)
+            .TransferCertificates(
+                Arg.Any<Guid>(),
+                Arg.Any<GranularCertificate>(),
+                Arg.Any<uint>(),
+                transferAgreement.ReceiverReference
+            );
+    }
+
+    [Fact]
+    public async Task TransferCertificates_WhenTotalDecreasesOnNextCall_TransferAll()
+    {
+        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, null);
+
+        var certs = CreateGranularCertificates(4);
+
+        mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), skip: Arg.Any<int>())
+            .Returns(new ResultList<GranularCertificate>()
+            {
+                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4 },
+                Result = certs.Take(2)
+            },
+            new ResultList<GranularCertificate>()
+            {
+                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 3 },
+                Result = [ certs[2] ]
+            });
+
+        mockWalletClient
+            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
+            .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
+
+        await service.TransferCertificates(transferAgreement);
+
+        _ = mockWalletClient
+            .Received(3)
+            .TransferCertificates(
+                Arg.Any<Guid>(),
+                Arg.Any<GranularCertificate>(),
+                Arg.Any<uint>(),
+                transferAgreement.ReceiverReference
+            );
+    }
+
+    [Fact]
+    public async Task TransferCertificates_WhenTotalIncreasesOnNextCall_TransferAll()
+    {
+        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, null);
+
+        var certs = CreateGranularCertificates(5);
+
+        mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), skip: Arg.Any<int>())
+            .Returns(new ResultList<GranularCertificate>()
+                {
+                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4 },
+                    Result = certs.Take(2)
+                },
+                new ResultList<GranularCertificate>()
+                {
+                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 5 },
+                    Result = certs.Skip(2).Take(2)
+                },
+                new ResultList<GranularCertificate>()
+                {
+                    Metadata = new PageInfo() { Offset = 0, Count = 1, Limit = batchSize, Total = 5 },
+                    Result = certs.Skip(4).Take(1)
+                });
+
+        mockWalletClient
+            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
+            .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
+
+        await service.TransferCertificates(transferAgreement);
+
+        _ = mockWalletClient
+            .Received(5)
+            .TransferCertificates(
+                Arg.Any<Guid>(),
+                Arg.Any<GranularCertificate>(),
+                Arg.Any<uint>(),
+                transferAgreement.ReceiverReference
+            );
+    }
+    private static TransferAgreement CreateTransferAgreement(DateTimeOffset startDate, DateTimeOffset? endDate)
     {
         var transferAgreement = new TransferAgreement
         {
@@ -161,5 +289,16 @@ public class ProjectOriginWalletServiceTest
             Quantity = 123,
             Attributes = new Dictionary<string, string>()
         };
+    }
+
+    private List<GranularCertificate> CreateGranularCertificates(int count)
+    {
+        var certs = new List<GranularCertificate>();
+        for (var i = 0; i < count; i++)
+        {
+            certs.Add(CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(i), DateTimeOffset.UtcNow.AddHours(i + 1)));
+        }
+
+        return certs;
     }
 }

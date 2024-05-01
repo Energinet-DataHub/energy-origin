@@ -11,7 +11,7 @@ namespace TransferAgreementAutomation.Worker.Service;
 
 public class ProjectOriginWalletService : IProjectOriginWalletService
 {
-    private const int BatchSize = 5000;
+    public int BatchSize { get; init; } = 5000;
 
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly IProjectOriginWalletClient walletClient;
@@ -40,19 +40,17 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
             var certificates = await walletClient.GetGranularCertificates(transferAgreement.SenderId, new CancellationToken(), limit: BatchSize, skip: numberOfFetchedCertificates);
 
             if (certificates == null)
-            {
-                logger.LogError("Something went wrong when getting certificates from the wallet for {senderId}. Response is null.", transferAgreement.SenderId);
-                continue;
-            }
+                throw new TransferCertificatesException($"Something went wrong when getting certificates from the wallet for {transferAgreement.SenderId}. Response is null.");
 
-            if (!certificates!.Result.Any())
+            if (!certificates.Result.Any())
                 logger.LogInformation("No certificates found for {senderId}", transferAgreement.SenderId);
-
-            if (certificates.Result.Count() < BatchSize)
-                hasMoreCertificates = false;
 
             var certificatesCount = certificates.Result.Count();
             numberOfFetchedCertificates += certificatesCount;
+
+            if (numberOfFetchedCertificates >= certificates.Metadata.Total)
+                hasMoreCertificates = false;
+
             logger.LogInformation("Found {certificatesCount} certificates to transfer for transfer agreement with id {id}", certificatesCount, transferAgreement.Id);
 
             foreach (var certificate in certificates.Result)
