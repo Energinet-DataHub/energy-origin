@@ -9,9 +9,9 @@ namespace API.MeasurementsSyncer;
 
 public class SlidingWindowService
 {
-    private readonly MeasurementSyncMetrics measurementSyncMetrics;
+    private readonly IMeasurementSyncMetrics measurementSyncMetrics;
 
-    public SlidingWindowService(MeasurementSyncMetrics measurementSyncMetrics)
+    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics)
     {
         this.measurementSyncMetrics = measurementSyncMetrics;
     }
