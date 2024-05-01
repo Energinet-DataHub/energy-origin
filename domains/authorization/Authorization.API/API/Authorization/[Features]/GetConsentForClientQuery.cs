@@ -1,27 +1,39 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Authorization.Controllers;
+using API.Data;
+using API.Models;
+using API.Repository;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
 public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClientQuery, GetConsentForClientQueryResult>
 {
-    public Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query, CancellationToken cancellationToken)
+    private readonly IClientRepository _clientRepository;
+
+    public GetConsentForClientQueryHandler(IClientRepository clientRepository)
     {
-        GetConsentForClientQueryResult result;
-        if (query.ClientId.Equals("529a55d0-68c7-4129-ba3c-e06d4f1038c4"))
+        _clientRepository = clientRepository;
+    }
+
+    public async Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query, CancellationToken cancellationToken)
+    {
+        var result = await _clientRepository.Query()
+            .Where(x => x.IdpClientId.Value == new Guid(query.ClientId))
+            .Select(x => new GetConsentForClientQueryResult(query.ClientId, x.Name.Value, x.Role.ToString(), x.Name.Value, new[] { "123456789", Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }, "dashboard production meters certificates wallet"))
+            .FirstAsync(cancellationToken);
+
+        if (result.OrgName == "Energinet")
         {
-            result = new GetConsentForClientQueryResult(query.ClientId, "Granular System", "External", "Granular", new[] { "123456789", Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }, "dashboard production meters certificates wallet");
-        }
-        else
-        {
-            result = new GetConsentForClientQueryResult(default!, default!, default!, default!, default!, default!);
+            throw new Exception("Nooooooh!");
         }
 
-        return Task.FromResult(result);
+        return result;
     }
 }
 

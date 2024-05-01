@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -31,5 +32,10 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Entry(entity).State = EntityState.Modified;
+    }
+
+    public IQueryable<T> Query()
+    {
+        return Context.Set<T>().AsQueryable();
     }
 }
