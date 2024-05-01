@@ -30,6 +30,9 @@ builder.Services.AddAuthentication()
         options.MetadataAddress = "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration";
     });
 
+builder.Services.AddHealthChecks()
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+    .AddRabbitMQ();
 
 // Register DbContext and related services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -50,6 +53,7 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 
