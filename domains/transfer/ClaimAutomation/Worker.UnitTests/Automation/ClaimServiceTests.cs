@@ -27,7 +27,7 @@ public class ClaimServiceTsts
     public ClaimServiceTsts()
     {
         claimService = new ClaimService(logger, claimRepository, walletClient, new Shuffler(1), metricsMock, cacheMock)
-            { BatchSize = batchSize };
+        { BatchSize = batchSize };
     }
 
     [Fact]
@@ -198,10 +198,10 @@ public class ClaimServiceTsts
 
         walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
-                {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4},
-                    Result = certs.Take(2)
-                },
+            {
+                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4 },
+                Result = certs.Take(2)
+            },
                 new ResultList<GranularCertificate>()
                 {
                     Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 5 },

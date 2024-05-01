@@ -158,7 +158,7 @@ public class ProjectOriginWalletServiceTest
         mockWalletClient
             .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
             .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
-        
+
         await service.TransferCertificates(transferAgreement);
 
         _ = mockWalletClient
@@ -187,7 +187,7 @@ public class ProjectOriginWalletServiceTest
             new ResultList<GranularCertificate>()
             {
                 Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 3 },
-                Result = [ certs[2] ]
+                Result = [certs[2]]
             });
 
         mockWalletClient
@@ -215,10 +215,10 @@ public class ProjectOriginWalletServiceTest
 
         mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), skip: Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
-                {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4 },
-                    Result = certs.Take(2)
-                },
+            {
+                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4 },
+                Result = certs.Take(2)
+            },
                 new ResultList<GranularCertificate>()
                 {
                     Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 5 },
