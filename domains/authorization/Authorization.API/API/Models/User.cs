@@ -4,7 +4,7 @@ using API.ValueObjects;
 
 namespace API.Models;
 
-public class User
+public class User : IEntity<Guid>
 {
     private User(
         Guid id,

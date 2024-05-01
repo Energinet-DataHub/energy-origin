@@ -1,7 +1,7 @@
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.Repository;
-using API.ValueObjects;
+using API.UnitTests;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -9,66 +9,51 @@ using NpgsqlTypes;
 
 namespace API.IntegrationTests.Models;
 
-[Collection(nameof(DatabaseTestCollection))]
-public class OrganizationTests(IntegrationTestFactory factory) : DatabaseTest(factory)
+[Collection(nameof(IntegrationTestCollection))]
+public class OrganizationTests(IntegrationTestFixture fixture) : DatabaseTest(fixture)
 {
     [Fact]
     public async Task AddOrganization_Success()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
-        var tin = new Tin("12345678");
-        var organizationName = new OrganizationName("testOrganizationName");
-
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = Any.Organization();
 
         await UnitOfWork.BeginTransactionAsync();
-        await OrganizationRepository.AddAsync(organization);
+        await OrganizationRepository.AddAsync(organization, CancellationToken.None);
         await UnitOfWork.CommitAsync();
 
-        var addedOrganization = await OrganizationRepository.GetAsync(organization.Id);
+        var addedOrganization = await OrganizationRepository.GetAsync(organization.Id, CancellationToken.None);
         addedOrganization.Should().BeEquivalentTo(organization);
     }
 
     [Fact]
     public async Task RemoveOrganization_Success()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
-        var tin = new Tin("12345678");
-        var organizationName = new OrganizationName("testOrganizationName");
-
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = Any.Organization();
 
         await UnitOfWork.BeginTransactionAsync();
-        await OrganizationRepository.AddAsync(organization);
+        await OrganizationRepository.AddAsync(organization, CancellationToken.None);
         await UnitOfWork.CommitAsync();
 
         await UnitOfWork.BeginTransactionAsync();
         OrganizationRepository.Remove(organization);
         await UnitOfWork.CommitAsync();
 
-        var act = async () => await OrganizationRepository.GetAsync(organization.Id);
+        var act = async () => await OrganizationRepository.GetAsync(organization.Id, CancellationToken.None);
         await act.Should().ThrowAsync<EntityNotFoundException>();
     }
 
     [Fact]
     public async Task InsertDuplicateOrganization_ThrowsException()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
-        var tin = new Tin("12345678");
-        var organizationName = new OrganizationName("testOrganizationName");
-
-        var organization1 = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
-        var organization2 = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization1 = Any.Organization();
+        var organization2 = Organization.Create(organization1.IdpId, organization1.IdpOrganizationId, organization1.Tin, organization1.OrganizationName);
 
         await UnitOfWork.BeginTransactionAsync();
-        await OrganizationRepository.AddAsync(organization1);
+        await OrganizationRepository.AddAsync(organization1, CancellationToken.None);
         await UnitOfWork.CommitAsync();
 
         await UnitOfWork.BeginTransactionAsync();
-        await OrganizationRepository.AddAsync(organization2);
+        await OrganizationRepository.AddAsync(organization2, CancellationToken.None);
         var act = async () => await UnitOfWork.CommitAsync();
 
         await act.Should().ThrowAsync<DbUpdateException>()

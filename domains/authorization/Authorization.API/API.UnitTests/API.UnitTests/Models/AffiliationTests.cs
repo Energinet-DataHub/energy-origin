@@ -9,15 +9,15 @@ public class AffiliationTests
     [Fact]
     public void Affiliation_WithValidData_CreatesSuccessfully()
     {
-        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpId = IdpId.Create(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
-        var idpUserId = new IdpUserId(Guid.NewGuid());
-        var idpIdForUser = new IdpId(Guid.NewGuid());
-        var userName = new Name("Test User");
+        var idpUserId = IdpUserId.Create(Guid.NewGuid());
+        var idpIdForUser = IdpId.Create(Guid.NewGuid());
+        var userName = Name.Create("Test User");
         var user = User.Create(idpIdForUser, idpUserId, userName);
 
         var affiliation = Affiliation.Create(user, organization);
@@ -33,15 +33,15 @@ public class AffiliationTests
     [Fact]
     public void Affiliation_Create_AddsAffiliationToUserAndOrganization()
     {
-        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpId = IdpId.Create(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
-        var idpIdForUser = new IdpId(Guid.NewGuid());
-        var idpUserId = new IdpUserId(Guid.NewGuid());
-        var userName = new Name("Test User");
+        var idpIdForUser = IdpId.Create(Guid.NewGuid());
+        var idpUserId = IdpUserId.Create(Guid.NewGuid());
+        var userName = Name.Create("Test User");
         var user = User.Create(idpIdForUser, idpUserId, userName);
 
         var affiliation = Affiliation.Create(user, organization);
@@ -53,7 +53,7 @@ public class AffiliationTests
     [Fact]
     public void Affiliation_Create_ThrowsArgumentNullException_WhenUserIsNull()
     {
-        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpId = IdpId.Create(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
@@ -67,9 +67,9 @@ public class AffiliationTests
     [Fact]
     public void Affiliation_Create_ThrowsArgumentNullException_WhenOrganizationIsNull()
     {
-        var idpUserId = new IdpUserId(Guid.NewGuid());
-        var idpIdForUser = new IdpId(Guid.NewGuid());
-        var userName = new Name("Test User");
+        var idpUserId = IdpUserId.Create(Guid.NewGuid());
+        var idpIdForUser = IdpId.Create(Guid.NewGuid());
+        var userName = Name.Create("Test User");
         var user = User.Create(idpIdForUser, idpUserId, userName);
 
         Action act = () => Affiliation.Create(user, null!);

@@ -1,4 +1,5 @@
 using API.Authorization;
+using API.Authorization.Exceptions;
 using API.Configuration;
 using API.Data;
 using API.Models;
@@ -56,6 +57,8 @@ app.UseAuthorization();
 app.MapHealthChecks("/health");
 
 app.MapControllers();
+
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.Run();
 

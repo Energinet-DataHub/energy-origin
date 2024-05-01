@@ -10,7 +10,7 @@ public class ClientTests
     public void Client_WithValidData_CreatesSuccessfully()
     {
         var idpClientId = new IdpClientId(Guid.NewGuid());
-        var name = new Name("Test Client");
+        var name = OrganizationName.Create("Test Client");
         var role = Role.External;
 
         var client = Client.Create(idpClientId, name, role);
@@ -18,7 +18,7 @@ public class ClientTests
         client.Should().NotBeNull();
         client.Id.Should().NotBeEmpty();
         client.IdpClientId.Should().Be(idpClientId);
-        client.Name.Should().Be(name);
+        client.OrganizationName.Should().Be(name);
         client.Role.Should().Be(role);
     }
 
@@ -26,7 +26,7 @@ public class ClientTests
     public void Client_CanExist_WithoutConsents()
     {
         var idpClientId = new IdpClientId(Guid.NewGuid());
-        var name = new Name("Test Client");
+        var name = OrganizationName.Create("Test Client");
         var role = Role.External;
 
         var client = Client.Create(idpClientId, name, role);
@@ -38,10 +38,10 @@ public class ClientTests
     public void Client_CanHave_Consents()
     {
         var idpClientId = new IdpClientId(Guid.NewGuid());
-        var name = new Name("Test Client");
+        var name = OrganizationName.Create("Test Client");
         var role = Role.External;
 
-        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpId = IdpId.Create(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");

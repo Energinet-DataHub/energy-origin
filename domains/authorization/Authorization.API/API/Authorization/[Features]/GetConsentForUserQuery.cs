@@ -15,6 +15,6 @@ public class GetConsentForUserQueryHandler : IRequestHandler<GetConsentForUserQu
     }
 }
 
-public record GetConsentForUserQuery(string Sub, string Name, string OrgName, string OrgCvr) : IRequest<GetConsentForUserQueryResult>;
+public record GetConsentForUserQuery(Guid Sub, string Name, string OrgName, string OrgCvr) : IRequest<GetConsentForUserQueryResult>;
 
-public record GetConsentForUserQueryResult(string Sub, string Name, string SubType, string OrgName, IEnumerable<string> OrgIds, string Scope);
+public record GetConsentForUserQueryResult(Guid Sub, string Name, string SubType, string OrgName, IEnumerable<string> OrgIds, string Scope);

@@ -2,7 +2,7 @@ using System;
 
 namespace API.Models;
 
-public class Consent
+public class Consent : IEntity<Guid>
 {
     private Consent(
         Guid id,

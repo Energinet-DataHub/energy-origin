@@ -9,14 +9,14 @@ public class ConsentTests
     [Fact]
     public void Consent_WithValidData_CreatesSuccessfully()
     {
-        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpId = IdpId.Create(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var clientName = new Name("Test Client");
+        var clientName = OrganizationName.Create("Test Client");
         var role = Role.External;
         var client = Client.Create(clientIdpClientId, clientName, role);
 
@@ -35,14 +35,14 @@ public class ConsentTests
     [Fact]
     public void Consent_Create_AddsConsentToOrganizationAndClient()
     {
-        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpId = IdpId.Create(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var clientName = new Name("Test Client");
+        var clientName = OrganizationName.Create("Test Client");
         var role = Role.External;
         var client = Client.Create(clientIdpClientId, clientName, role);
 
@@ -57,7 +57,7 @@ public class ConsentTests
     public void Consent_Create_ThrowsArgumentNullException_WhenOrganizationIsNull()
     {
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var clientName = new Name("Test Client");
+        var clientName = OrganizationName.Create("Test Client");
         var role = Role.External;
         var client = Client.Create(clientIdpClientId, clientName, role);
 
@@ -70,7 +70,7 @@ public class ConsentTests
     [Fact]
     public void Consent_Create_ThrowsArgumentNullException_WhenClientIsNull()
     {
-        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpId = IdpId.Create(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");

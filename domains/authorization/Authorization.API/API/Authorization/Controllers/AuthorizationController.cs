@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using Asp.Versioning;
@@ -34,7 +29,7 @@ public class AuthorizationController : ControllerBase
     {
         var queryResult = await _mediator.Send(new GetConsentForClientQuery(request.ClientId));
 
-        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.Name, queryResult.SubType, queryResult.OrgName, queryResult.OrgIds, queryResult.Scope));
+        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName, queryResult.OrgIds, queryResult.Scope));
     }
 
     /// <summary>
@@ -47,7 +42,7 @@ public class AuthorizationController : ControllerBase
     {
         var queryResult = await _mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName, request.OrgCvr));
 
-        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.Name, queryResult.SubType, queryResult.OrgName, queryResult.OrgIds, queryResult.Scope));
+        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName, queryResult.OrgIds, queryResult.Scope));
     }
 }
 

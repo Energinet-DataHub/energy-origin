@@ -8,7 +8,7 @@ public class NameTests
     [Fact]
     public void Name_Constructor_Throws_ArgumentException_When_Value_Is_Null()
     {
-        Action act = () => new Name(null!);
+        Action act = () => Name.Create(null!);
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Value cannot be null, empty, or whitespace. (Parameter 'value')");
@@ -17,7 +17,7 @@ public class NameTests
     [Fact]
     public void Name_Constructor_Throws_ArgumentException_When_Value_Is_Empty()
     {
-        Action act = () => new Name(string.Empty);
+        Action act = () => Name.Create(string.Empty);
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Value cannot be null, empty, or whitespace. (Parameter 'value')");
@@ -26,7 +26,7 @@ public class NameTests
     [Fact]
     public void Name_Constructor_Throws_ArgumentException_When_Value_Is_Whitespace()
     {
-        Action act = () => new Name("   ");
+        Action act = () => Name.Create("   ");
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Value cannot be null, empty, or whitespace. (Parameter 'value')");
@@ -35,7 +35,7 @@ public class NameTests
     [Fact]
     public void Name_Constructor_Succeeds_When_Value_Is_Valid()
     {
-        var name = new Name("Valid Name");
+        var name = Name.Create("Valid Name");
 
         name.Value.Should().Be("Valid Name");
     }

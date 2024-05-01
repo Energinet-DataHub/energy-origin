@@ -9,9 +9,9 @@ public class UserTests
     [Fact]
     public void User_WithValidData_CreatesSuccessfully()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpUserId = new IdpUserId(Guid.NewGuid());
-        var name = new Name("Test User");
+        var idpId = IdpId.Create(Guid.NewGuid());
+        var idpUserId = IdpUserId.Create(Guid.NewGuid());
+        var name = Name.Create("Test User");
 
         var user = User.Create(idpId, idpUserId, name);
 
@@ -25,9 +25,9 @@ public class UserTests
     [Fact]
     public void User_CanExist_WithoutAffiliations()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpUserId = new IdpUserId(Guid.NewGuid());
-        var name = new Name("Test User");
+        var idpId = IdpId.Create(Guid.NewGuid());
+        var idpUserId = IdpUserId.Create(Guid.NewGuid());
+        var name = Name.Create("Test User");
 
         var user = User.Create(idpId, idpUserId, name);
 
@@ -37,11 +37,11 @@ public class UserTests
     [Fact]
     public void User_CanHave_Affiliations()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpUserId = new IdpUserId(Guid.NewGuid());
-        var name = new Name("Test User");
+        var idpId = IdpId.Create(Guid.NewGuid());
+        var idpUserId = IdpUserId.Create(Guid.NewGuid());
+        var name = Name.Create("Test User");
 
-        var organizationIdpId = new IdpId(Guid.NewGuid());
+        var organizationIdpId = IdpId.Create(Guid.NewGuid());
         var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");

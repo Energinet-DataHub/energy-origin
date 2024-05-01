@@ -13,4 +13,9 @@ public class IdpOrganizationId : ValueObject
 
         Value = value;
     }
+
+    public static IdpOrganizationId Create(Guid value)
+    {
+        return new IdpOrganizationId(value);
+    }
 }

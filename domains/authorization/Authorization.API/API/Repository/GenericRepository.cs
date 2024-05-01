@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -10,15 +12,15 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
 {
     protected readonly ApplicationDbContext Context = context ?? throw new ArgumentNullException(nameof(context));
 
-    public async Task<T> GetAsync(Guid id)
+    public async Task<T> GetAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await Context.Set<T>().FindAsync(id) ?? throw new EntityNotFoundException(id, typeof(T).Name);
+        return await Context.Set<T>().FindAsync(id, cancellationToken) ?? throw new EntityNotFoundException(id, typeof(T).Name);
     }
 
-    public async Task AddAsync(T entity)
+    public async Task AddAsync(T entity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(entity);
-        await Context.Set<T>().AddAsync(entity);
+        await Context.Set<T>().AddAsync(entity, cancellationToken);
     }
 
     public void Remove(T entity)
@@ -31,5 +33,10 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Entry(entity).State = EntityState.Modified;
+    }
+
+    public IQueryable<T> Query()
+    {
+        return Context.Set<T>().AsQueryable();
     }
 }

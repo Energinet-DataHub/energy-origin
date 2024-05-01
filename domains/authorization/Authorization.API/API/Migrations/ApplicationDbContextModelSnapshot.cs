@@ -53,7 +53,7 @@ namespace API.Migrations
                     b.Property<Guid>("IdpClientId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("OrganizationName")
                         .IsRequired()
                         .HasColumnType("text");
 

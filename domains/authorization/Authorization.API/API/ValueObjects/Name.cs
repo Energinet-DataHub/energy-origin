@@ -6,11 +6,16 @@ public class Name : ValueObject
 {
     public string Value { get; }
 
-    public Name(string value)
+    private Name(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("Value cannot be null, empty, or whitespace.", nameof(value));
 
         Value = value;
+    }
+
+    public static Name Create(string value)
+    {
+        return new Name(value);
     }
 }
