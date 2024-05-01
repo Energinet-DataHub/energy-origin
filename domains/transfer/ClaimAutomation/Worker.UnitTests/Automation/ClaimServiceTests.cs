@@ -123,38 +123,12 @@ public class ClaimServiceTsts
 
         var certs = BuildGranularCertificates(numberOfCertificates);
         using var cts = new CancellationTokenSource();
-
-        var results = new List<ResultList<GranularCertificate>>();
-        if (!certs.Any())
-        {
-            results.Add(new ResultList<GranularCertificate>()
-            {
-                Metadata = new PageInfo() { Offset = 0, Count = 0, Limit = batchSize, Total = 0 },
-                Result = []
-            });
-        }
-        else
-        {
-            decimal nn2 = Decimal.Divide(numberOfCertificates, batchSize);
-            var nn3 = (int)Math.Ceiling(nn2);
-            for (int i = 0; i < nn3; i++)
-            {
-                results.Add(new ResultList<GranularCertificate>()
-                {
-                    Metadata = new PageInfo() { Offset = 0, Count = certs.Skip(i * batchSize).Take(batchSize).Count(), Limit = batchSize, Total = certs.Count },
-                    Result = certs.Skip(i * batchSize).Take(batchSize)
-                });
-            }
-        }
-
-        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
-            .Returns(results[0], results.Skip(1).ToArray())
-            .AndDoes(_ => cts.Cancel());
+        SetupWalletMock(certs, cts);
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await walletClient.Received(numberOfCertificates / 2).ClaimCertificates(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>());
+        await walletClient.Received(numberOfCertificates / batchSize).ClaimCertificates(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>());
     }
 
     [Fact]
@@ -164,21 +138,8 @@ public class ClaimServiceTsts
         claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
 
         var certs = BuildGranularCertificates(4);
-
         using var cts = new CancellationTokenSource();
-
-        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
-            .Returns(new ResultList<GranularCertificate>()
-            {
-                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = certs.Count },
-                Result = certs.Take(2)
-            },
-            new ResultList<GranularCertificate>()
-            {
-                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 3 },
-                Result = certs.Skip(2).Take(1)
-            })
-            .AndDoes(_ => cts.Cancel());
+        SetupWalletMock(certs, cts);
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
@@ -193,26 +154,8 @@ public class ClaimServiceTsts
         claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
 
         var certs = BuildGranularCertificates(5);
-
         using var cts = new CancellationTokenSource();
-
-        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
-            .Returns(new ResultList<GranularCertificate>()
-            {
-                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4 },
-                Result = certs.Take(2)
-            },
-                new ResultList<GranularCertificate>()
-                {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 5 },
-                    Result = certs.Skip(2).Take(2)
-                },
-                new ResultList<GranularCertificate>()
-                {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 5 },
-                    Result = certs.Skip(4).Take(1)
-                })
-            .AndDoes(_ => cts.Cancel());
+        SetupWalletMock(certs, cts);
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
@@ -259,5 +202,24 @@ public class ClaimServiceTsts
         }
 
         return certificate;
+    }
+
+    private void SetupWalletMock(List<GranularCertificate> certs, CancellationTokenSource cts)
+    {
+        var remainingCerts = certs;
+        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
+            .Returns(info =>
+            {
+                var limit = (int)info[2];
+                var result = remainingCerts.Take(limit).ToList();
+                var totalCertCount = remainingCerts.Count;
+                remainingCerts = remainingCerts.Skip(limit).ToList();
+                return Task.FromResult(new ResultList<GranularCertificate>()
+                {
+                    Metadata = new PageInfo() { Offset = 0, Count = result.Count, Limit = batchSize, Total = totalCertCount },
+                    Result = result
+                });
+            })
+            .AndDoes(_ => cts.Cancel());
     }
 }
