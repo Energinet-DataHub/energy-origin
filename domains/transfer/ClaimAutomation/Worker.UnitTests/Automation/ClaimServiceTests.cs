@@ -170,10 +170,10 @@ public class ClaimServiceTests
 
         walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
-                {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = certs.Count },
-                    Result = certs.Take(2)
-                },
+            {
+                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = certs.Count },
+                Result = certs.Take(2)
+            },
                 new ResultList<GranularCertificate>()
                 {
                     Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 3 },
@@ -199,10 +199,10 @@ public class ClaimServiceTests
 
         walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
-                {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4 },
-                    Result = certs.Take(2)
-                },
+            {
+                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4 },
+                Result = certs.Take(2)
+            },
                 new ResultList<GranularCertificate>()
                 {
                     Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 5 },
