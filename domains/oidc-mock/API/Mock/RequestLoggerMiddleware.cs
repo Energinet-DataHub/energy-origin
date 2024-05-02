@@ -1,3 +1,5 @@
+using System.Web;
+
 namespace Oidc.Mock;
 
 public class RequestLoggerMiddleware
@@ -15,8 +17,17 @@ public class RequestLoggerMiddleware
             return;
         }
 
-        logger.LogDebug("Request - (Scheme: {Scheme} Host: {Host}) {Method} (PathBase: {PathBase}) {Location}", req.Scheme, req.Host, req.Method, req.PathBase, $"{req.Path}{req.QueryString}");
+        var scheme = HttpUtility.HtmlEncode(req.Scheme);
+        var host = HttpUtility.HtmlEncode(req.Host.ToString());
+        var method = HttpUtility.HtmlEncode(req.Method);
+        var pathBase = HttpUtility.HtmlEncode(req.PathBase.ToString());
+        var location = HttpUtility.HtmlEncode($"{req.Path}{req.QueryString}".Replace(Environment.NewLine, string.Empty));
+
+        logger.LogDebug("Request - (Scheme: {Scheme} Host: {Host}) {Method} (PathBase: {PathBase}) {Location}", scheme, host, method, pathBase, location);
+
         await next(httpContext);
-        logger.LogDebug("Response - {StatusCode}", httpContext.Response.StatusCode);
+
+        var statusCode = httpContext.Response.StatusCode;
+        logger.LogDebug("Response - {StatusCode}", statusCode);
     }
 }
