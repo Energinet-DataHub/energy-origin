@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Web;
 using API.Mock.Models;
 using Microsoft.AspNetCore.Mvc;
 using Oidc.Mock.Extensions;
@@ -52,12 +53,15 @@ public class AuthController : Controller
     public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
         var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]!);
-        logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}", $"{authorizationHeader.Scheme} {authorizationHeader.Parameter}");
-        logger.LogDebug("connect/token: form data: {Data}", string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")));
+        logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}", $"{authorizationHeader.Scheme} {HttpUtility.HtmlEncode(authorizationHeader.Parameter)}");
+
+        var formData = string.Join("; ", Request.Form.Select(kvp => $"{HttpUtility.HtmlEncode(kvp.Key)}={HttpUtility.HtmlEncode(kvp.Value)}"));
+        formData = formData.Replace(Environment.NewLine, string.Empty);
+        logger.LogDebug("connect/token: form data: {Data}", formData);
 
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
-            return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
+            return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{HttpUtility.HtmlEncode(grant_type)}'");
         }
 
         var auth = (authorizationHeader.Parameter ?? ":").DecodeBase64();
