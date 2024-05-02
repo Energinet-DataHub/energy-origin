@@ -1,5 +1,3 @@
-using System.Web;
-
 namespace Oidc.Mock;
 
 public class RequestLoggerMiddleware(RequestDelegate next)
