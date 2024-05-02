@@ -35,12 +35,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing", "Testing\Testing.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectOriginClients.Tests", "Shared\ProjectOriginClients.Tests\ProjectOriginClients.Tests.csproj", "{2825F796-E2BF-4FD9-850F-208ABA33E2D2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "..\..\build\_build.csproj", "{FB0159B1-1B40-4EEF-9A8B-82E35E2F2D44}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FB0159B1-1B40-4EEF-9A8B-82E35E2F2D44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB0159B1-1B40-4EEF-9A8B-82E35E2F2D44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{015D884A-DFDD-40B8-A162-A7C5E0C2BF8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{015D884A-DFDD-40B8-A162-A7C5E0C2BF8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{015D884A-DFDD-40B8-A162-A7C5E0C2BF8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
