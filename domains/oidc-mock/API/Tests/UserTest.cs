@@ -1,4 +1,3 @@
-using Oidc.Mock.Extensions;
 using Oidc.Mock.Models;
 using Xunit;
 
