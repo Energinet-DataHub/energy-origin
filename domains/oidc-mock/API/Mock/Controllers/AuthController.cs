@@ -115,23 +115,7 @@ public class AuthController : Controller
 
     [HttpGet]
     [Route("connect/endsession")]
-    public IActionResult Logout(string post_logout_redirect_uri)
-    {
-        var currentHost = Request.Scheme + "://" + Request.Host.Value;
-
-        if (string.IsNullOrWhiteSpace(post_logout_redirect_uri))
-            return BadRequest("Invalid post_logout_redirect_uri parameter.");
-
-        if (!Uri.TryCreate(post_logout_redirect_uri, UriKind.Absolute, out var redirectUri))
-            return BadRequest("Invalid post_logout_redirect_uri parameter.");
-
-        if (!redirectUri.GetLeftPart(UriPartial.Authority).Equals(currentHost, StringComparison.OrdinalIgnoreCase))
-            return BadRequest("Invalid post_logout_redirect_uri parameter.");
-
-        return RedirectPreserveMethod(post_logout_redirect_uri);
-    }
-
-
+    public IActionResult logout(string post_logout_redirect_uri) => RedirectPreserveMethod(post_logout_redirect_uri);
 
     [HttpGet]
     [Route(".well-known/openid-configuration")]
