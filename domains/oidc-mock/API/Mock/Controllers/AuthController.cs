@@ -115,7 +115,11 @@ public class AuthController : Controller
 
     [HttpGet]
     [Route("connect/endsession")]
-    public IActionResult logout(string post_logout_redirect_uri) => RedirectPreserveMethod(post_logout_redirect_uri);
+    public IActionResult logout(string post_logout_redirect_uri)
+    {
+        post_logout_redirect_uri = HttpUtility.HtmlEncode(post_logout_redirect_uri.Replace(Environment.NewLine, string.Empty));
+        return RedirectPreserveMethod(post_logout_redirect_uri);
+    }
 
     [HttpGet]
     [Route(".well-known/openid-configuration")]
