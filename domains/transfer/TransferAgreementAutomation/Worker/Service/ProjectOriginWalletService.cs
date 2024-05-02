@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ namespace TransferAgreementAutomation.Worker.Service;
 
 public class ProjectOriginWalletService : IProjectOriginWalletService
 {
+    public int BatchSize { get; init; } = 5000;
+
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly IProjectOriginWalletClient walletClient;
     private readonly ITransferAgreementAutomationMetrics metrics;
@@ -28,18 +31,28 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
 
     public async Task TransferCertificates(TransferAgreement transferAgreement)
     {
-        var certificates = await walletClient.GetGranularCertificates(transferAgreement.SenderId, new CancellationToken());
+        logger.LogInformation("Getting certificates for {senderId}", transferAgreement.SenderId);
 
-        if (certificates == null || !certificates.Result.Any())
+        var hasMoreCertificates = true;
+        var certificates = new List<GranularCertificate>();
+        while (hasMoreCertificates)
         {
-            logger.LogInformation("No certificates found for {senderId}", transferAgreement.SenderId);
+            var response = await walletClient.GetGranularCertificates(transferAgreement.SenderId, new CancellationToken(), limit: BatchSize, skip: certificates.Count);
+
+            if (response == null)
+                throw new TransferCertificatesException($"Something went wrong when getting certificates from the wallet for {transferAgreement.SenderId}. Response is null.");
+
+            certificates.AddRange(response.Result);
+            if (certificates.Count >= response.Metadata.Total)
+            {
+                hasMoreCertificates = false;
+            }
         }
 
-        var certificatesCount = certificates!.Result.Count();
+        logger.LogInformation("Found {certificatesCount} certificates to transfer for transfer agreement with id {id}", certificates.Count, transferAgreement.Id);
 
-        logger.LogInformation("Found {certificatesCount} certificates to transfer for transfer agreement with id {id}", certificatesCount, transferAgreement.Id);
-
-        foreach (var certificate in certificates.Result)
+        var certificatesCount = certificates.Count();
+        foreach (var certificate in certificates)
         {
             if (!IsPeriodMatching(transferAgreement, certificate))
             {
