@@ -8,7 +8,6 @@ using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
-using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.Docker;
 using Nuke.Common.Tools.DotNet;
@@ -113,8 +112,6 @@ class Build : NukeBuild
         .DependsOn(Publish)
         .Executes(() =>
         {
-            var projects = GetChangedProjects();
-
             var globalJsonPath = RootDirectory / "global.json";
             var globalJsonContent = File.ReadAllText(globalJsonPath);
             var globalJson = JsonDocument.Parse(globalJsonContent);
@@ -124,9 +121,10 @@ class Build : NukeBuild
 
             if (string.IsNullOrEmpty(sdkVersion) || string.IsNullOrEmpty(runtimeVersion))
             {
-                throw new Exception("SDK or runtime version not found in global.json.");
+                throw new Exception("SDK or runtime version not found in global.json");
             }
 
+            var projects = GetChangedProjects();
             foreach (var project in projects)
             {
                 var imageName = $"{project.Name.ToLower()}-{GitRepository.Commit?[..7]}";
@@ -137,22 +135,18 @@ class Build : NukeBuild
                     .SetFile(dockerFilePath)
                     .SetTag(imageName)
                     .SetPath(buildContext)
-                    .SetBuildArg("SDK_VERSION", sdkVersion)
-                    .SetBuildArg("RUNTIME_VERSION", runtimeVersion)
-                    .SetBuildArg("SUBSYSTEM", project.Directory.Parent?.Name)
-                    .SetBuildArg("PROJECT", project.Name)
-                    .SetProcessArgumentConfigurator(args => args
-                        .Add("--sbom=true")
-                        .Add("--provenance=true")));
+                    .SetBuildArg("SDK_VERSION", "8.0.204")
+                    .SetBuildArg("RUNTIME_VERSION", "8.0.4")
+                    .SetBuildArg("SUBSYSTEM", project.Directory.Parent?.Name ?? string.Empty)
+                    .SetBuildArg("PROJECT", project.Name));
 
-                if (GitHubActions.Instance?.IsPullRequest ?? false)
+                if (((IBuildServer)GitHubActions.Instance)?.Branch == "main" && !(GitHubActions.Instance?.IsPullRequest ?? false))
                 {
-                    DockerTasks.DockerPush(s => s
-                        .SetName(imageName));
+                    DockerTasks.DockerPush(s => s.SetName(imageName));
                 }
                 else
                 {
-                    Log.Information("Skipping Docker push for pull requests");
+                    Log.Information("Skipping Docker push for non-main branches or pull requests");
                 }
             }
         });
