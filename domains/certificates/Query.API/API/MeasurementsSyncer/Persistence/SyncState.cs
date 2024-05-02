@@ -81,7 +81,6 @@ public class SyncState : ISyncState
         {
             var allContracts = await dbContext.Contracts.AsNoTracking().ToListAsync(cancellationToken);
 
-            //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
             var syncInfos = allContracts.GroupBy(c => c.GSRN)
                 .Where(g => GetNumberOfOwners(g) == 1)
                 .Select(g =>
