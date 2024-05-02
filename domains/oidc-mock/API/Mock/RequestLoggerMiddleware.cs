@@ -17,10 +17,10 @@ public class RequestLoggerMiddleware
             return;
         }
 
-        var scheme = HttpUtility.HtmlEncode(req.Scheme);
-        var host = HttpUtility.HtmlEncode(req.Host.ToString());
-        var method = HttpUtility.HtmlEncode(req.Method);
-        var pathBase = HttpUtility.HtmlEncode(req.PathBase.ToString());
+        var scheme = HttpUtility.HtmlEncode(req.Scheme.Replace(Environment.NewLine, string.Empty));
+        var host = HttpUtility.HtmlEncode(req.Host.ToString().Replace(Environment.NewLine, string.Empty));
+        var method = HttpUtility.HtmlEncode(req.Method.Replace(Environment.NewLine, string.Empty));
+        var pathBase = HttpUtility.HtmlEncode(req.PathBase.ToString().Replace(Environment.NewLine, string.Empty));
         var location = HttpUtility.HtmlEncode($"{req.Path}{req.QueryString}".Replace(Environment.NewLine, string.Empty));
 
         logger.LogDebug("Request - (Scheme: {Scheme} Host: {Host}) {Method} (PathBase: {PathBase}) {Location}", scheme, host, method, pathBase, location);
