@@ -1,5 +1,5 @@
+using System.Net;
 using System.Net.Http.Headers;
-using System.Web;
 using API.Mock.Models;
 using Microsoft.AspNetCore.Mvc;
 using Oidc.Mock.Extensions;
@@ -53,15 +53,15 @@ public class AuthController : Controller
     public IActionResult Token(string grant_type, string code, string redirect_uri)
     {
         var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]!);
-        logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}", $"{authorizationHeader.Scheme} {HttpUtility.HtmlEncode(authorizationHeader.Parameter)}");
+        logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}", $"{authorizationHeader.Scheme} {WebUtility.UrlEncode(authorizationHeader.Parameter)}");
 
-        var formData = string.Join("; ", Request.Form.Select(kvp => $"{HttpUtility.HtmlEncode(kvp.Key)}={HttpUtility.HtmlEncode(kvp.Value)}"));
+        var formData = string.Join("; ", Request.Form.Select(kvp => $"{WebUtility.UrlEncode(kvp.Key)}={WebUtility.UrlEncode(kvp.Value)}"));
         formData = formData.Replace(Environment.NewLine, string.Empty);
         logger.LogDebug("connect/token: form data: {Data}", formData);
 
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
-            return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{HttpUtility.HtmlEncode(grant_type)}'");
+            return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{WebUtility.UrlEncode(grant_type)}'");
         }
 
         var auth = (authorizationHeader.Parameter ?? ":").DecodeBase64();
@@ -117,8 +117,14 @@ public class AuthController : Controller
     [Route("connect/endsession")]
     public IActionResult logout(string post_logout_redirect_uri)
     {
-        post_logout_redirect_uri = HttpUtility.HtmlEncode(post_logout_redirect_uri.Replace(Environment.NewLine, string.Empty));
-        return RedirectPreserveMethod(post_logout_redirect_uri);
+        var result = Uri.TryCreate(post_logout_redirect_uri, UriKind.Absolute, out var uriResult)
+                     && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+        if (!result)
+            return BadRequest("Invalid URI");
+
+        var sanitizedUri = WebUtility.UrlEncode(uriResult!.AbsoluteUri);
+        return RedirectPreserveMethod(sanitizedUri);
     }
 
     [HttpGet]
