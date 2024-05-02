@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Testcontainers.PostgreSql;
+using Xunit;
 
 namespace ProjectOriginClients.Tests.Testcontainers;
 

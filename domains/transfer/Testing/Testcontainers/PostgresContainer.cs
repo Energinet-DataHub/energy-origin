@@ -1,10 +1,9 @@
 using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
-using Xunit;
 
 namespace Testing.Testcontainers;
 
-public class PostgresContainer : IAsyncLifetime
+public class PostgresContainer
 {
     private readonly PostgreSqlContainer testContainer;
 

@@ -1,11 +1,10 @@
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Testcontainers.RabbitMq;
-using Xunit;
 
 namespace Testing.Testcontainers;
 
-public partial class RabbitMqContainer : IAsyncLifetime
+public partial class RabbitMqContainer
 {
     private readonly global::Testcontainers.RabbitMq.RabbitMqContainer testContainer;
 
