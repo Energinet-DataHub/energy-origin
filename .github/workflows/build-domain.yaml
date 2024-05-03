@@ -2,10 +2,6 @@ name: Build domain
 
 on:
   workflow_call:
-    permissions:
-      id-token: write
-      attestations: write
-      contents: read
     inputs:
       dry-run:
         description: "An indication of whether to commit/publish results"
@@ -92,6 +88,10 @@ jobs:
           printf '${{ env.matrix }}' | jq -r '.'
 
   build-projects:
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
     name: Build projects
     runs-on: ubuntu-latest
     needs: setup
