@@ -5,9 +5,9 @@ namespace DataContext.ValueObjects;
 
 public class UnixTimestamp : ValueObject
 {
-    private const long SecondsPerDay = 86400;
-    private const long SecondsPerHour = 3600;
-    private const long SecondsPerMinute = 60;
+    public const long SecondsPerDay = 86400;
+    public const long SecondsPerHour = 3600;
+    public const long SecondsPerMinute = 60;
     public long Seconds { get; private set; }
 
     private UnixTimestamp()
