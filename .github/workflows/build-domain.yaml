@@ -173,10 +173,12 @@ jobs:
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
-      - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
+      - name: Generate Build Provenance
+        uses: actions/attest-build-provenance@v1
         with:
-          subject-ref: ${{ env.LOWERCASED }}:${{ env.version }}
+          subject-digest: ${{ steps.build_image.outputs.digest }}
+          subject-name: ghcr.io/${{ github.repository_owner }}/${{ env.name }}:${{ env.version }}
+          push-to-registry: true
 
   update-environment:
     name: Update environment
