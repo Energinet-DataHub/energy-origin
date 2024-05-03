@@ -90,6 +90,7 @@ jobs:
   build-projects:
     permissions:
       id-token: write
+      attestations: write
       contents: read
     name: Build projects
     runs-on: ubuntu-latest
