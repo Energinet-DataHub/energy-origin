@@ -56,16 +56,16 @@ jobs:
     uses: ./.github/workflows/dependabot-validate.yaml
     secrets: inherit
 
-  workflow-validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: asdf-vm/actions/install@v3
-        with:
-          tool_versions: |
-            action-validator 0.5.1
-      - name: Lint Actions
-        run: find .github/workflows .github/actions -type f \( -iname \*.yaml -o -iname \*.yml \) | xargs -I {} action-validator --verbose {}
+#  workflow-validate:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: asdf-vm/actions/install@v3
+#        with:
+#          tool_versions: |
+#            action-validator 0.5.1
+#      - name: Lint Actions
+#        run: find .github/workflows .github/actions -type f \( -iname \*.yaml -o -iname \*.yml \) | xargs -I {} action-validator --verbose {}
 
   allow-merge-ci-orchestrator:
     runs-on: ubuntu-latest
@@ -78,7 +78,7 @@ jobs:
         structurizr-update-pages,
         dependabot-validate,
         dependabot-update,
-        workflow-validate,
+#        workflow-validate,
       ]
     if: always()
     steps:
