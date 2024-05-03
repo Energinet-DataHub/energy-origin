@@ -173,6 +173,17 @@ jobs:
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
+      - name: Pull and save Docker image
+        shell: bash
+        run: |
+         docker pull ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+         docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o /tmp/image.tar
+
+      - name: Attest Build Provenance
+        uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
+        with:
+          subject-path: /tmp/image.tar
+
       - name: Scan image
         uses: ./.github/actions/docker-scan
         with:

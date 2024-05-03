@@ -52,8 +52,3 @@ runs:
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
-
-    - name: Attest Build Provenance
-      uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
-      with:
-        subject-path: "${{ env.LOWERCASED }}:${{ inputs.image-tag }}"
