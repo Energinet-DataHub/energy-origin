@@ -52,9 +52,8 @@ runs:
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
-        outputs: type=docker,dest=/tmp/image.tar
 
     - name: Attest Build Provenance
-      uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940 # v1.0.0
+      uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
       with:
-        subject-path: /tmp/image.tar
+        subject-path: "${{ env.LOWERCASED }}:${{ inputs.image-tag }}"
