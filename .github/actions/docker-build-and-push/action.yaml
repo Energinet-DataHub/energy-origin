@@ -52,3 +52,12 @@ runs:
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
+        outputs: |
+          digest=${{ steps.build-and-push.outputs.digest }}
+
+    - name: Generate Build Provenance
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-digest: ${{ steps.build_image.outputs.digest }}
+        subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        push-to-registry: true
