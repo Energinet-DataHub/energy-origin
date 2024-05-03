@@ -173,26 +173,10 @@ jobs:
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
-      - name: Pull and save Docker image
-        shell: bash
-        run: |
-          lowercase() {
-            echo "$1" | tr '[:upper:]' '[:lower:]'
-          }
-
-          repo_owner=$(lowercase "${{ github.repository_owner }}")
-          image_name=$(lowercase "${{ env.name }}")
-          image_version=$(lowercase "${{ env.version }}")
-
-          image_ref="ghcr.io/${repo_owner}/${image_name}:${image_version}"
-
-          docker pull "${image_ref}"
-          docker save "${image_ref}" -o /tmp/image.tar
-
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
         with:
-          subject-path: /tmp/image.tar
+          subject-ref: ${{ env.LOWERCASED }}:${{ env.version }}
 
   update-environment:
     name: Update environment
