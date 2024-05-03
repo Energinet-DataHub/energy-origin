@@ -160,6 +160,7 @@ jobs:
           fi
 
       - name: Build image
+        id: build_image
         uses: ./.github/actions/docker-build-and-push
         with:
           dockerfile: Dockerfile
