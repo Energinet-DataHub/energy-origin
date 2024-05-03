@@ -15,7 +15,6 @@ on:
 jobs:
   setup:
     permissions:
-      id-token: write
       attestations: write
       packages: write
       contents: read
