@@ -60,13 +60,12 @@ public class ProjectOriginStack : RegistryFixture
         });
     }
 
-    public ProjectOriginOptions Options => new()
+    public PoRegistryOptions Options => new()
     {
         RegistryName = RegistryName,
         Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText()),
         Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Dk2IssuerKey.ExportPkixText()),
-        RegistryUrl = RegistryUrl,
-        WalletUrl = WalletUrl
+        RegistryUrl = RegistryUrl
     };
 
     public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(WalletHttpPort), PathBase).Uri.ToString();
