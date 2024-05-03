@@ -185,8 +185,8 @@ jobs:
       - name: Pull and save Docker image
         shell: bash
         run: |
-         docker pull ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-         docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o /tmp/image.tar
+          docker pull ghcr.io/${{ github.repository_owner }}/${{ env.name }}:${{ env.version }}
+          docker save ghcr.io/${{ github.repository_owner }}/${{ env.name }}:${{ env.version }} -o /tmp/image.tar
 
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
