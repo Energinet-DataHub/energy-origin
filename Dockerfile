@@ -9,15 +9,18 @@ WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
-RUN dotnet tool restore || true
+RUN dotnet tool restore
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
-RUN sbom-tool generate -b /src/${PROJECT} -bc Release -o /app/publish/sbom.spdx.json -f spdx-json
+
+RUN dotnet cyclonedx /app/publish -o /app/publish/sbom.xml -f xml
+
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
 COPY --from=build /app/publish .
+COPY --from=build /app/publish/sbom.xml /app/sbom.xml
 COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
