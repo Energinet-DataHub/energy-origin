@@ -17,10 +17,12 @@ RUN dotnet dotnet-CycloneDX /src/${PROJECT} -o /app/publish/sbom.xml
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
+
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
 RUN ls -la /app
+RUN dotnet dotnet-CycloneDX . -o /app/publish/sbom.xml
 COPY --from=build /app/publish .
 COPY --from=build /app/publish/sbom.xml /app/sbom.xml
 COPY ${SUBSYSTEM}/migrations/* /migrations/
