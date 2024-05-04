@@ -28,9 +28,15 @@ runs:
   using: composite
   steps:
     - uses: actions/download-artifact@v3
-      name: Download available artifacts # this supports use of artifacts (currently only frontends)
+      name: Download available artifacts
       with:
         path: artifacts/
+
+    - name: Copy SBOM to Docker build context
+      shell: bash
+      run: |
+        mkdir -p ${{ inputs.docker-context }}/sbom
+        cp artifacts/sbom-*/*.xml ${{ inputs.docker-context }}/sbom/
 
     - name: Resolve container image name
       shell: bash
@@ -45,10 +51,11 @@ runs:
         ecr: false
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@2a7db1d68aab1a514ba647f39bcde60888a1753f
+      uses: docker/build-push-action@v5
       with:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
+        sbom: true
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
