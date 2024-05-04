@@ -154,27 +154,6 @@ jobs:
             sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
           fi
 
-      - name: Generate SBOM with CycloneDX
-        run: |
-          dotnet tool restore
-          dotnet cyclonedx ${{ matrix.build.path }} -o ${{ matrix.build.path }}/bom-${{ matrix.build.name }}.xml
-
-          echo "Generated SBOM file:"
-          cat ${{ matrix.build.path }}/bom-${{ matrix.build.name }}.xml
-
-          echo "Checking NuGet packages and dependencies..."
-          dotnet restore ${{ matrix.build.path }}
-          dotnet list ${{ matrix.build.path }} package
-
-          echo "Checking project file for package references..."
-          cat ${{ env.path }}
-
-      - name: Upload SBOM Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: sbom-${{ matrix.build.name }}
-          path: ${{ matrix.build.path }}/bom-${{ matrix.build.name }}.xml
-
       - name: Build image
         id: build_image
         uses: ./.github/actions/docker-build-and-push

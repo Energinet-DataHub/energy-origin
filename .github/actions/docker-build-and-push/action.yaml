@@ -32,12 +32,6 @@ runs:
       with:
         path: artifacts/
 
-    - name: Copy SBOM to Docker build context
-      shell: bash
-      run: |
-        mkdir -p ${{ inputs.docker-context }}/sbom
-        cp artifacts/sbom-*/*.xml ${{ inputs.docker-context }}/sbom/
-
     - name: Resolve container image name
       shell: bash
       run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -61,7 +55,6 @@ runs:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
-        sbom: true
-        provenance: mode=max
+        provenance: type=sbom,file=/app/publish/sbom.xml
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
