@@ -11,10 +11,10 @@ WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore || true
 RUN dotnet restore
-RUN dotnet build -c Release -o /app/publish --no-restore
-RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
+RUN dotnet build -c Release --no-restore
+RUN dotnet publish -c Release -o /app/publish --no-restore
 
-RUN dotnet sbom-tool generate -b /app/publish -ps "Datahub" -pn "authorization" -m /app/publish
+RUN dotnet sbom-tool generate -b /app/publish -ps "Datahub" -pn "${PROJECT}" -m /app/publish
 
 FROM base AS final
 ARG SUBSYSTEM
