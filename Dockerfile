@@ -11,8 +11,8 @@ WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore
 RUN dotnet restore
-RUN dotnet build -c Release
-RUN dotnet dotnet-CycloneDX . -o /app/publish/sbom.xml -f xml
+RUN dotnet dotnet-CycloneDX ${SUBSYSTEM}.sln -o /app/publish/sbom.xml -f xml
+RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
 
