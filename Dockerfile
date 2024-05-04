@@ -9,9 +9,10 @@ WORKDIR /src/
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
+RUN dotnet nuget locals all --clear
 RUN dotnet tool restore
-RUN dotnet restore
-RUN dotnet cyclonedx /src/${PROJECT} -o /app/publish/sbom.xml
+RUN dotnet restore -v -d /root/.nuget/packages
+RUN dotnet dotnet-CycloneDX /src/${PROJECT} -o /app/publish/sbom.xml
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
