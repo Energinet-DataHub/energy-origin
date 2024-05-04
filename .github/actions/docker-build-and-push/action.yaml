@@ -55,6 +55,8 @@ runs:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
-        provenance: type=sbom,file=/app/publish/sbom.spdx.json
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
+        outputs: type=image,oci-mediatypes=true
+        provenance: type=sbom,file=/app/sbom.xml
+
