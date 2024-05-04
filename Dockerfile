@@ -12,8 +12,8 @@ RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
-RUN sbom-tool generate -b /src/${PROJECT} -bc Release -o /app/publish/sbom.spdx.json -f spdx-json
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
+RUN sbom-tool generate -b /src/${PROJECT} -bc Release -o /app/publish/sbom.spdx.json -f spdx-json
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
