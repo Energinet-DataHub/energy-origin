@@ -11,10 +11,9 @@ WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore
 RUN dotnet restore
-RUN dotnet dotnet-CycloneDX . -rs -o /app/publish/sbom.xml -f xml
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
-
+RUN dotnet dotnet-CycloneDX /app/publish -o /app/publish/sbom.xml -f xml
 
 FROM base AS final
 ARG SUBSYSTEM
