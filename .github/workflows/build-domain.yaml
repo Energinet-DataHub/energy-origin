@@ -157,7 +157,14 @@ jobs:
       - name: Generate SBOM with CycloneDX
         run: |
           docker pull cyclonedx/cyclonedx-dotnet
-          docker run --rm -v $(pwd):/data cyclonedx/cyclonedx-dotnet /data/${{ matrix.build.path }} -o /data/${{ matrix.build.path }} -fn bom-${{ matrix.build.name }}.xml
+          docker run --rm -v ${{ github.workspace }}:/workspace cyclonedx/cyclonedx-dotnet /workspace/${{ matrix.build.path }} -o /workspace/${{ matrix.build.path }} -fn bom-${{ matrix.build.name }}.xml
+
+          echo "Generated SBOM file:"
+          cat ${{ matrix.build.path }}/bom-${{ matrix.build.name }}.xml
+
+          echo "Checking NuGet packages and dependencies..."
+          dotnet restore ${{ matrix.build.path }}
+          dotnet list ${{ matrix.build.path }} package
 
       - name: Upload SBOM Artifact
         uses: actions/upload-artifact@v3
