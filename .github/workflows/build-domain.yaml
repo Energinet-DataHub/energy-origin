@@ -153,21 +153,15 @@ jobs:
           else
             sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
           fi
-
-      - name: Build image
-        id: build_image
-        uses: ./.github/actions/docker-build-and-push
+      - name: Generate SBOM with CycloneDX
+        run: |
+          docker pull cyclonedx/cyclonedx-dotnet
+          docker run --rm -v $(pwd)/${{ matrix.build.path }}:/data cyclonedx/cyclonedx-dotnet -o /data -fn bom-${{ matrix.build.name }}.xml
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v2
         with:
-          dockerfile: Dockerfile
-          image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
-          docker-context: .
-          dry-run: ${{ inputs.dry-run }}
-          build-args: |
-            SUBSYSTEM=${{ env.domain }}
-            PROJECT=${{ env.service }}
-            SDK_VERSION=${{ matrix.build.sdkVersion }}
-            RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
+          name: sbom-${{ matrix.build.name }}
+          path: ${{ matrix.build.path }}/bom-${{ matrix.build.name }}.xml
 
   update-environment:
     name: Update environment
