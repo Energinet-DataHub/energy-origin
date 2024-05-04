@@ -6,23 +6,25 @@ FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 ARG SUBSYSTEM
 ARG PROJECT
 WORKDIR /src/
-RUN ls -la /src
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
-RUN ls -la /src/${PROJECT}
-RUN dotnet tool restore
+RUN dotnet tool restore || true
 RUN dotnet restore
-RUN dotnet dotnet-CycloneDX /src/${PROJECT} -o /app/publish/sbom.xml
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
+# Install Microsoft's SBOM Tool
+# Note: Replace <VERSION> with the actual version number of the SBOM tool you intend to use.
+RUN dotnet tool install --global Microsoft.SBOM.Tool --version <VERSION>
+
+# Generate SBOM
+# Note: Adjust the command according to the actual usage instructions for the SBOM tool.
+RUN Microsoft.SBOM.Tool /src/${PROJECT} -o /app/publish/sbom.xml
 
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
-RUN ls -la /app
-RUN dotnet dotnet-CycloneDX . -o /app/publish/sbom.xml
 COPY --from=build /app/publish .
 COPY --from=build /app/publish/sbom.xml /app/sbom.xml
 COPY ${SUBSYSTEM}/migrations/* /migrations/
