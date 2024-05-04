@@ -17,7 +17,7 @@
         "sbom-tool": {
             "version": "2.2.5",
             "commands": [
-                "dotnet-sbom-tool"
+                "sbom-tool"
             ]
         }
     }
