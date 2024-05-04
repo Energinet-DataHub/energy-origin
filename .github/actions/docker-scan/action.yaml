@@ -28,13 +28,6 @@ runs:
         password: ${{ github.token }}
         ecr: false
 
-    - name: Generate SBOM
-      uses: anchore/sbom-action@v0
-      id: sbom
-      with:
-        image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        artifact-name: sbom.spdx
-
     - name: Scan image
       uses: anchore/scan-action@v3
       id: scan
@@ -58,8 +51,3 @@ runs:
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
         category: grype
-
-    - name: Publish SBOM
-      uses: anchore/sbom-action/publish-sbom@v0
-      with:
-        sbom-artifact-match: sbom.spdx
