@@ -166,6 +166,10 @@ jobs:
           dotnet restore ${{ matrix.build.path }}
           dotnet list ${{ matrix.build.path }} package
 
+          echo "Checking project file for package references..."
+          cat ${{ env.path }}
+
+
       - name: Upload SBOM Artifact
         uses: actions/upload-artifact@v3
         with:
