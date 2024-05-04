@@ -50,6 +50,11 @@ runs:
         password: ${{ github.token }}
         ecr: false
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        driver: docker-container
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
@@ -57,5 +62,6 @@ runs:
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
         sbom: true
+        provenance: mode=max
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
