@@ -14,13 +14,7 @@ RUN dotnet restore
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
-# Install Microsoft's SBOM Tool
-# Note: Replace <VERSION> with the actual version number of the SBOM tool you intend to use.
-RUN dotnet tool install --global Microsoft.SBOM.Tool --version <VERSION>
-
-# Generate SBOM
-# Note: Adjust the command according to the actual usage instructions for the SBOM tool.
-RUN Microsoft.SBOM.Tool /src/${PROJECT} -o /app/publish/sbom.xml
+RUN dotnet dotnet-sbom-tool /src/${PROJECT} -o /app/publish/sbom.xml
 
 FROM base AS final
 ARG SUBSYSTEM
