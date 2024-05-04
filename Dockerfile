@@ -13,12 +13,12 @@ RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
+RUN dotnet cyclonedx /src/${PROJECT} -o /app/publish/sbom.xml
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY ${SUBSYSTEM}/migrations/* /migrations/
-COPY ${SUBSYSTEM}/${PROJECT}/bom-*.xml /app/sbom/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
