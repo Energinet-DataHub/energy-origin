@@ -6,10 +6,11 @@ FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 ARG SUBSYSTEM
 ARG PROJECT
 WORKDIR /src/
+RUN ls -la /src
 COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
-RUN dotnet nuget locals all --clear
+RUN ls -la /src/${PROJECT}
 RUN dotnet tool restore
 RUN dotnet restore
 RUN dotnet dotnet-CycloneDX /src/${PROJECT} -o /app/publish/sbom.xml
@@ -19,6 +20,7 @@ RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
+RUN ls -la /app
 COPY --from=build /app/publish .
 COPY --from=build /app/publish/sbom.xml /app/sbom.xml
 COPY ${SUBSYSTEM}/migrations/* /migrations/
