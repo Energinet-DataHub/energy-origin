@@ -14,7 +14,7 @@ RUN dotnet restore
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
-RUN dotnet sbom-tool generate -b /src/${PROJECT} -o /app/publish/sbom.xml
+RUN dotnet sbom-tool generate -b /app/publish
 
 FROM base AS final
 ARG SUBSYSTEM
