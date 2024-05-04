@@ -14,13 +14,13 @@ RUN dotnet restore
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 
-RUN dotnet dotnet-CycloneDX /src/${PROJECT} -o /app/publish/sbom.xml -f xml
+RUN dotnet dotnet-CycloneDX /src/${SUBSYSTEM} -o /app/publish/sbom.xml -f xml
 
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
 COPY --from=build /app/publish .
-COPY --from=build /app/publish/sbom.xml /app/sbom.xml
+COPY --from=build /src/${SUBSYSTEM}/sbom.xml /app/sbom.xml
 COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
