@@ -14,7 +14,7 @@
                 "dotnet-ef"
             ]
         },
-        "sbom-tool": {
+        "Microsoft.Sbom.DotNetTool": {
             "version": "2.2.5",
             "commands": [
                 "sbom-tool"
