@@ -88,11 +88,6 @@ jobs:
           printf '${{ env.matrix }}' | jq -r '.'
 
   build-projects:
-    permissions:
-      id-token: write
-      attestations: write
-      packages: write
-      contents: read
     name: Build projects
     runs-on: ubuntu-latest
     needs: setup
