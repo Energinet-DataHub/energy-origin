@@ -59,4 +59,7 @@ runs:
         build-args: ${{ inputs.build-args }}
         outputs: type=image,oci-mediatypes=true
         provenance: type=sbom,file=/app/sbom.xml
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
 
