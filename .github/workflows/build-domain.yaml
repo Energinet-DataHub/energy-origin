@@ -165,7 +165,20 @@ jobs:
           name: sbom-${{ matrix.build.name }}
           path: ${{ matrix.build.path }}/bom-${{ matrix.build.name }}.xml
 
-
+      - name: Build image
+        id: build_image
+        uses: ./.github/actions/docker-build-and-push
+        with:
+          dockerfile: Dockerfile
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          docker-context: .
+          dry-run: ${{ inputs.dry-run }}
+          build-args: |
+            SUBSYSTEM=${{ env.domain }}
+            PROJECT=${{ env.service }}
+            SDK_VERSION=${{ matrix.build.sdkVersion }}
+            RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
   update-environment:
     name: Update environment
