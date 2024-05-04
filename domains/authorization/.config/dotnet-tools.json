@@ -17,7 +17,7 @@
         "cyclonedx": {
             "version": "3.0.6",
             "commands": [
-                "cyclonedx"
+                "dotnet-CycloneDX"
             ]
         }
     }
