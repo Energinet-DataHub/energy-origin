@@ -28,7 +28,7 @@ runs:
   using: composite
   steps:
     - uses: actions/download-artifact@v3
-      name: Download available artifacts
+      name: Download available artifacts # this supports use of artifacts (currently only frontends)
       with:
         path: artifacts/
 
@@ -43,11 +43,6 @@ runs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
         ecr: false
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      with:
-        driver: docker-container
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
