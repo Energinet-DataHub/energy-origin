@@ -56,7 +56,7 @@ runs:
     - name: Save the built image
       shell: bash
       run: |
-        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o "${{ inputs.image-tag }}.tar"
+        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o image.tar
 
     - name: Install Syft
       if: ${{ inputs.dry-run != 'true' }}
@@ -79,11 +79,22 @@ runs:
     - uses: actions/attest-sbom@v1
       if: ${{ inputs.dry-run != 'true' }}
       with:
-        subject-path: "${{ inputs.image-tag }}.tar"
+        subject-path: image.tar
+        subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-SBOM
         sbom-path: sbom.spdx.json
 
     - name: Attest Build Provenance
       uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
       if: ${{ inputs.dry-run != 'true' }}
       with:
-        subject-path: "${{ inputs.image-tag }}.tar"
+        subject-path: image.tar
+        subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE
+
+    - name: Verify SBOM Attestation
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: bash
+      run: |
+        gh attestation verify image.tar -o ${{ github.repository_owner }}
+
+
