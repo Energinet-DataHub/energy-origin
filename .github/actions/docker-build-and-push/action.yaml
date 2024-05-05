@@ -1,10 +1,7 @@
 name: Build and push docker containers to ghcr.io
 description: |
   This action will ensure the image name is lowercased and that any artifacts are available.
-permissions:
-  id-token: write
-  attestations: write
-  contents: read
+
 inputs:
   dockerfile:
     description: The path of the Dockerfile to build
