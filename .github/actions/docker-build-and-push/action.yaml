@@ -56,7 +56,7 @@ runs:
     - name: Save the built image
       shell: bash
       run: |
-        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o ${{ env.LOWERCASED }}_${{ inputs.image-tag }}.tar
+        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o "${{ env.LOWERCASED }}_${{ inputs.image-tag }}.tar"
 
     - name: Install Syft
       if: ${{ inputs.dry-run != 'true' }}
