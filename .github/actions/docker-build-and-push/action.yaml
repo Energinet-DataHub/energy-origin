@@ -49,6 +49,14 @@ runs:
       with:
         driver: docker-container
 
+    - name: Set build arguments as environment variables
+      shell: bash
+      run: |
+        echo "SUBSYSTEM=${{ fromJson(inputs.build-args).SUBSYSTEM }}" >> $GITHUB_ENV
+        echo "PROJECT=${{ fromJson(inputs.build-args).PROJECT }}" >> $GITHUB_ENV
+        echo "SDK_VERSION=${{ fromJson(inputs.build-args).SDK_VERSION }}" >> $GITHUB_ENV
+        echo "RUNTIME_VERSION=${{ fromJson(inputs.build-args).RUNTIME_VERSION }}" >> $GITHUB_ENV
+
     - name: Build Docker image
       shell: bash
       run: |
@@ -56,10 +64,10 @@ runs:
           --tag ${{ env.LOWERCASED }}:${{ inputs.image-tag }} \
           --file ${{ inputs.dockerfile }} \
           --output type=docker \
-          --build-arg SUBSYSTEM="${{ fromJson(inputs.build-args).SUBSYSTEM }}" \
-          --build-arg PROJECT="${{ fromJson(inputs.build-args).PROJECT }}" \
-          --build-arg SDK_VERSION="${{ fromJson(inputs.build-args).SDK_VERSION }}" \
-          --build-arg RUNTIME_VERSION="${{ fromJson(inputs.build-args).RUNTIME_VERSION }}"
+          --build-arg SUBSYSTEM="${{ env.SUBSYSTEM }}" \
+          --build-arg PROJECT="${{ env.PROJECT }}" \
+          --build-arg SDK_VERSION="${{ env.SDK_VERSION }}" \
+          --build-arg RUNTIME_VERSION="${{ env.RUNTIME_VERSION }}"
 
     - name: Install Syft
       shell: bash
