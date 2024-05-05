@@ -55,23 +55,28 @@ runs:
         docker buildx build \
           --tag ${{ env.LOWERCASED }}:${{ inputs.image-tag }} \
           --file ${{ inputs.dockerfile }} \
-          --output type=image \
+          --output type=docker \
           ${{ inputs.docker-context }}
+
+    - name: Install Syft
+      shell: bash
+      run: |
+        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+    - name: Scan Docker image with Syft
+      shell: bash
+      run: |
+        syft ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o spdx-json=sbom.spdx.json
 
     - name: Attach SBOM to Docker image
       shell: bash
       run: |
-        docker run --name temp ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        docker cp temp:/app/bom.xml ./bom.xml
-        docker rm temp
         docker buildx imagetools create \
           ${{ env.LOWERCASED }}:${{ inputs.image-tag }} \
-          --sbom ./bom.xml \
+          --sbom ./sbom.spdx.json \
           --tag ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-sbom
 
     - name: Push Docker image with SBOM
       shell: bash
       run: |
         docker push ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-sbom
-
-
