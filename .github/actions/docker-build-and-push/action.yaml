@@ -44,43 +44,7 @@ runs:
         password: ${{ github.token }}
         ecr: false
 
-    - name: Build Docker image
-      uses: docker/build-push-action@2a7db1d68aab1a514ba647f39bcde60888a1753f
-      with:
-        context: ${{ inputs.docker-context }}
-        file: ${{ inputs.dockerfile }}
-        push: false
-        load: true
-        tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        build-args: ${{ inputs.build-args }}
-
-    - name: Get image digest
-      shell: bash
-      run: |
-        echo "IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.LOWERCASED }}:${{ inputs.image-tag }} | cut -d'@' -f2)" >> $GITHUB_ENV
-
-    - name: Install Syft
-      shell: bash
-      run: |
-        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-
-    - name: Generate SBOM
-      shell: bash
-      run: |
-        syft --scope all-layers ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o spdx-json=sbom.spdx.json
-
-    - uses: actions/upload-artifact@v3
-      with:
-        name: sbom
-        path: sbom.spdx.json
-
-    - uses: actions/attest-sbom@v1
-      with:
-        subject-name: ${{ env.LOWERCASED }}
-        subject-digest: ${{ env.IMAGE_DIGEST }}
-        sbom-path: sbom.spdx.json
-
-    - name: Push Docker image
+    - name: Build and push Docker image
       uses: docker/build-push-action@2a7db1d68aab1a514ba647f39bcde60888a1753f
       with:
         context: ${{ inputs.docker-context }}
@@ -88,3 +52,47 @@ runs:
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
+
+    - name: Pull the pushed image
+      if: ${{ inputs.dry-run != 'true' }}
+      run: |
+        docker pull ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+
+    - name: Install Syft
+      if: ${{ inputs.dry-run != 'true' }}
+      shell: bash
+      run: |
+        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+    - name: Generate SBOM
+      if: ${{ inputs.dry-run != 'true' }}
+      shell: bash
+      run: |
+        syft --scope all-layers ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o spdx-json=sbom.spdx.json
+
+    - name: Display SBOM contents
+      if: ${{ inputs.dry-run != 'true' }}
+      shell: bash
+      run: |
+        echo "SBOM contents:"
+        cat sbom.spdx.json
+
+    - name: Get image digest
+      if: ${{ inputs.dry-run != 'true' }}
+      shell: bash
+      run: |
+        echo "IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.LOWERCASED }}:${{ inputs.image-tag }} | cut -d'@' -f2)" >> $GITHUB_ENV
+
+    - uses: actions/upload-artifact@v3
+      if: ${{ inputs.dry-run != 'true' }}
+      with:
+        name: sbom
+        path: sbom.spdx.json
+
+    - uses: actions/attest-sbom@v1
+      if: ${{ inputs.dry-run != 'true' }}
+      with:
+        subject-name: ${{ env.LOWERCASED }}
+        subject-digest: ${{ env.IMAGE_DIGEST }}
+        sbom-path: sbom.spdx.json
+
