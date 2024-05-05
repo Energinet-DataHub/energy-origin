@@ -15,12 +15,10 @@ RUN dotnet build -c Release --no-restore
 
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
-# Install Syft CLI
-RUN apt-get update && apt-get install -y wget
-RUN wget -O syft.tar.gz https://github.com/anchore/syft/releases/download/v0.82.0/syft_0.82.0_linux_amd64.tar.gz && \
-    tar -xzf syft.tar.gz && \
-    mv syft /usr/local/bin/
+RUN apt-get update && apt-get install -y curl
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
+# Generate SBOM using Syft
 RUN syft /app/publish -o spdx-json=sbom.spdx.json
 
 FROM base AS final
