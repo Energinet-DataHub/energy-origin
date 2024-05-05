@@ -29,7 +29,4 @@ COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
 EXPOSE 8080
 EXPOSE 8081
-RUN SBOM_CONTENTS=$(cat /app/bom.xml) && \
-    echo "LABEL org.opencontainers.image.description=\"$SBOM_CONTENTS\"" >> /tmp/sbom_label.txt && \
-    . /tmp/sbom_label.txt
 ENTRYPOINT ["/app/main"]
