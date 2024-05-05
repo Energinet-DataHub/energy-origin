@@ -58,6 +58,8 @@ runs:
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
         outputs: type=image,oci-mediatypes=true
+        labels: |
+          org.opencontainers.image.description=$(cat /app/bom.xml)
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
