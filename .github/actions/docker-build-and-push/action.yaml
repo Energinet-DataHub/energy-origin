@@ -54,6 +54,11 @@ runs:
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
 
+    - name: Get image digest
+      shell: bash
+      run: |
+        echo "IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.LOWERCASED }}:${{ inputs.image-tag }} | cut -d'@' -f2)" >> $GITHUB_ENV
+
     - name: Install Syft
       shell: bash
       run: |
@@ -71,7 +76,8 @@ runs:
 
     - uses: actions/attest-sbom@v1
       with:
-        subject-path: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        subject-name: ${{ env.LOWERCASED }}
+        subject-digest: ${{ env.IMAGE_DIGEST }}
         sbom-path: sbom.spdx.json
 
     - name: Push Docker image
