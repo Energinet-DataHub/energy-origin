@@ -14,10 +14,10 @@
                 "dotnet-ef"
             ]
         },
-        "Microsoft.Sbom.DotNetTool": {
-            "version": "2.2.5",
+        "cyclonedx": {
+            "version": "3.0.6",
             "commands": [
-                "sbom-tool"
+                "dotnet-CycloneDX"
             ]
         }
     }
