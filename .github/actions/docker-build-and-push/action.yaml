@@ -52,12 +52,8 @@ runs:
     - name: Build Docker image
       shell: bash
       run: |
-        docker buildx build \
-          --tag ${{ env.LOWERCASED }}:${{ inputs.image-tag }} \
-          --file ${{ inputs.dockerfile }} \
-          --output type=docker \
-          --build-arg ${{ inputs.build-args }} \
-          ${{ inputs.docker-context }}
+        docker buildx build --tag ${{ env.LOWERCASED }}:${{ inputs.image-tag }} --file ${{ inputs.dockerfile }} --output type=docker --build-arg ${{ inputs.build-args }} ${{ inputs.docker-context }}
+
 
     - name: Install Syft
       shell: bash
