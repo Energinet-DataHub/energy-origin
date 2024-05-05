@@ -13,11 +13,7 @@ RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
 
-RUN dotnet dotnet-CycloneDX src -o /src/sbom_output_src -f xml
-RUN dotnet dotnet-CycloneDX /src -o /src/sbom_output_src -f xml
-RUN dotnet dotnet-CycloneDX . -o /src/sbom_output_src -f xml
-RUN dotnet dotnet-CycloneDX /src/${SUBSYSTEM} -o /src/sbom_output_src -f xml
-RUN dotnet dotnet-CycloneDX bin/Release -o /src/sbom_output_bin -f xml
+RUN for proj in $(find . -name '*.csproj'); do dotnet dotnet-CycloneDX "$proj" -o /app/publish -f xml; done
 
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
@@ -25,7 +21,7 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
-COPY --from=build /src/sbom_output/sbom.xml /app/sbom.xml
+COPY --from=build /app/publish/sbom.xml /app/sbom.xml
 COPY --from=build /app/publish .
 COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
