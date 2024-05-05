@@ -55,6 +55,7 @@ runs:
 
     - name: Pull the pushed image
       if: ${{ inputs.dry-run != 'true' }}
+      shell: bash
       run: |
         docker pull ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
 
