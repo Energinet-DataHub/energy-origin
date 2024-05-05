@@ -28,7 +28,7 @@ runs:
   using: composite
   steps:
     - uses: actions/download-artifact@v3
-      name: Download available artifacts
+      name: Download available artifacts # this supports use of artifacts (currently only frontends)
       with:
         path: artifacts/
 
@@ -44,21 +44,11 @@ runs:
         password: ${{ github.token }}
         ecr: false
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      with:
-        driver: docker-container
-
     - name: Build and push Docker image
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@2a7db1d68aab1a514ba647f39bcde60888a1753f
       with:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
-        outputs: type=image,oci-mediatypes=true
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-
