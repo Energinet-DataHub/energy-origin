@@ -56,7 +56,7 @@ runs:
           --tag ${{ env.LOWERCASED }}:${{ inputs.image-tag }} \
           --file ${{ inputs.dockerfile }} \
           --output type=docker \
-          --build-args ${{ inputs.build-args }} \
+          --build-arg ${{ inputs.build-args }} \
           ${{ inputs.docker-context }}
 
     - name: Install Syft
