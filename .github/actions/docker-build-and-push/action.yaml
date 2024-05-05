@@ -91,4 +91,4 @@ runs:
       uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
       if: ${{ inputs.dry-run != 'true' }}
       with:
-        subject-path: ${{ env.LOWERCASED }}_${{ inputs.image-tag }}.tar
+        subject-path: "${{ env.LOWERCASED }}_${{ inputs.image-tag }}.tar"
