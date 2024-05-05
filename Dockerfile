@@ -1,10 +1,10 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled-extra AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
 ARG SUBSYSTEM
 ARG PROJECT
 WORKDIR /src/
@@ -21,7 +21,6 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 
 
 FROM base AS final
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
 ARG SUBSYSTEM
 WORKDIR /app
 COPY --from=build /app/publish/sbom/bom.xml /app/bom.xml
