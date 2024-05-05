@@ -56,7 +56,12 @@ runs:
     - name: Save the built image
       shell: bash
       run: |
-        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o "${{ env.LOWERCASED }}_${{ inputs.image-tag }}.tar"
+        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o image.tar
+
+    - name: Rename the saved image
+      shell: bash
+      run: |
+        mv image.tar "${{ env.LOWERCASED }}_${{ inputs.image-tag }}.tar"
 
     - name: Install Syft
       if: ${{ inputs.dry-run != 'true' }}
@@ -79,7 +84,7 @@ runs:
     - uses: actions/attest-sbom@v1
       if: ${{ inputs.dry-run != 'true' }}
       with:
-        subject-path: ${{ env.LOWERCASED }}_${{ inputs.image-tag }}.tar
+        subject-path: "${{ env.LOWERCASED }}_${{ inputs.image-tag }}.tar"
         sbom-path: sbom.spdx.json
 
     - name: Attest Build Provenance
