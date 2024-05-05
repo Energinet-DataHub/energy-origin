@@ -11,10 +11,12 @@ on:
         description: "An indication of a dependabot pull request"
         required: true
         type: string
+
 permissions:
   id-token: write
   attestations: write
   contents: read
+
 jobs:
   setup:
     name: Setup
