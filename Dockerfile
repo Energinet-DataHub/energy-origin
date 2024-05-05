@@ -11,15 +11,21 @@ WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore || true
 RUN dotnet restore
-RUN dotnet dotnet-CycloneDX /app/obj -o /app/src/sbom_output -f xml
 RUN dotnet build -c Release --no-restore
+
+RUN dotnet dotnet-CycloneDX src -o /src/sbom_output_src -f xml
+RUN dotnet dotnet-CycloneDX /src -o /src/sbom_output_src -f xml
+RUN dotnet dotnet-CycloneDX . -o /src/sbom_output_src -f xml
+RUN dotnet dotnet-CycloneDX /src/${SUBSYSTEM} -o /src/sbom_output_src -f xml
+RUN dotnet dotnet-CycloneDX bin/Release -o /src/sbom_output_bin -f xml
+
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
 
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
-COPY --from=build /app/src/sbom_output/* /app/
+COPY --from=build /src/sbom_output/sbom.xml /app/sbom.xml
 COPY --from=build /app/publish .
 COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
