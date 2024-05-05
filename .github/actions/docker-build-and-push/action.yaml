@@ -57,8 +57,8 @@ runs:
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
-        outputs: type=image,oci-mediatypes=true
-        provenance: type=sbom,file=/app/bom.xml
+        sbom: true
+        provenance: type=sbom,file=/app/publish/sbom.xml
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
