@@ -79,4 +79,4 @@ runs:
       with:
         subject-name: ${{ env.LOWERCASED }}
         sbom-path: sbom.spdx.json
-
+        push-to-registry: true
