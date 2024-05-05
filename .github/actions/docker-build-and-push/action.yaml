@@ -57,8 +57,7 @@ runs:
     - name: Get image digest
       shell: bash
       run: |
-        echo "IMAGE_DIGEST=sha256:$(docker images --digests --format '{{.Digest}}' ${{ env.LOWERCASED }}:${{ inputs.image-tag }} | cut -d':' -f2)" >> $GITHUB_ENV
-
+        echo "IMAGE_DIGEST=$(docker images --digests --format '{{.Digest}}' ${{ env.LOWERCASED }}:${{ inputs.image-tag }})" >> $GITHUB_ENV
     - name: Install Syft
       shell: bash
       run: |
