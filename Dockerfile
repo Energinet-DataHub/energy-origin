@@ -30,6 +30,7 @@ COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
+LABEL org.opencontainers.image.description=${SBOM_CONTENTS}
 EXPOSE 8080
 EXPOSE 8081
 ENTRYPOINT ["/app/main"]
