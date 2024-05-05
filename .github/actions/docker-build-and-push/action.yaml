@@ -95,7 +95,7 @@ runs:
         GH_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        gh attestation verify sbom.spdx.json -o ${{ github.repository_owner }}
+        gh attestation verify ${{ env.LOWERCASED }}:${{ inputs.image-tag }}  --repo ${{ github.repository }} --cert-identity 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
 
 
 
