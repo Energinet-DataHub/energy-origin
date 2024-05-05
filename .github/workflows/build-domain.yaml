@@ -150,12 +150,10 @@ jobs:
           docker-context: .
           dry-run: ${{ inputs.dry-run }}
           build-args: |
-            {
-              "SUBSYSTEM": "${{ env.domain }}",
-              "PROJECT": "${{ env.service }}",
-              "SDK_VERSION": "${{ matrix.build.sdkVersion }}",
-              "RUNTIME_VERSION": "${{ matrix.build.runtimeVersion }}"
-            }
+            SUBSYSTEM=${{ env.domain }}
+            PROJECT=${{ env.service }}
+            SDK_VERSION=${{ matrix.build.sdkVersion }}
+            RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
   update-environment:
     name: Update environment
