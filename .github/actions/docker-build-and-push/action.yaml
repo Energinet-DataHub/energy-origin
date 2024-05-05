@@ -92,7 +92,7 @@ runs:
 
     - name: Verify SBOM Attestation
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ github.token }}
       shell: bash
       run: |
         gh attestation verify image.tar -o ${{ github.repository_owner }}
