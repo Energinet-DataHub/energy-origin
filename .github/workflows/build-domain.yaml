@@ -130,6 +130,19 @@ jobs:
             echo "path=${path}"
           } >> $GITHUB_ENV
 
+      - name: Validate project
+        if: ${{ (github.event_name == 'push' && github.ref_name == 'main') }} == false
+        uses: ./.github/actions/dotnet-validate
+        with:
+          dotnet-version: ${{ matrix.build.sdkVersion }}
+          pin-version: true
+          paths: ${{ env.paths }}
+          sql-file: ${{ env.migration }}
+
+      - name: Ensure files and folders exists
+        shell: bash
+        run: mkdir "${{ env.domain }}/migrations" || true
+
       - name: Enforce assembly name
         shell: bash
         run: |
@@ -154,6 +167,13 @@ jobs:
             PROJECT=${{ env.service }}
             SDK_VERSION=${{ matrix.build.sdkVersion }}
             RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
+
+      - name: Scan image
+        uses: ./.github/actions/docker-scan
+        with:
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
   update-environment:
     name: Update environment
