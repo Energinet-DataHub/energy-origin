@@ -1,6 +1,6 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-LABEL org.opencontainers.image.source="Hello World
+LABEL org.opencontainers.image.description Your description here
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled-extra AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
