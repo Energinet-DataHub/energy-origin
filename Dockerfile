@@ -11,14 +11,15 @@ WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore || true
 RUN dotnet restore
+RUN dotnet dotnet-CycloneDX /app/obj -o /app/src/sbom_output -f xml
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
-RUN dotnet sbom-tool generate -b /app/publish -ps "Datahub" -pn "${PROJECT}" -m /app/publish
 
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
+COPY --from=build /app/src/sbom_output/* /app/
 COPY --from=build /app/publish .
 COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
