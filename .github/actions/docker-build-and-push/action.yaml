@@ -49,15 +49,29 @@ runs:
       with:
         driver: docker-container
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ${{ inputs.docker-context }}
-        file: ${{ inputs.dockerfile }}
-        push: ${{ inputs.dry-run != 'true' }}
-        tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        build-args: ${{ inputs.build-args }}
-        outputs: type=image,oci-mediatypes=true
-        sbom: true
+    - name: Build Docker image
+      shell: bash
+      run: |
+        docker buildx build \
+          --tag ${{ env.LOWERCASED }}:${{ inputs.image-tag }} \
+          --file ${{ inputs.dockerfile }} \
+          --output type=image \
+          ${{ inputs.docker-context }}
+
+    - name: Attach SBOM to Docker image
+      shell: bash
+      run: |
+        docker run --name temp ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        docker cp temp:/app/bom.xml ./bom.xml
+        docker rm temp
+        docker buildx imagetools create \
+          ${{ env.LOWERCASED }}:${{ inputs.image-tag }} \
+          --sbom ./bom.xml \
+          --tag ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-sbom
+
+    - name: Push Docker image with SBOM
+      shell: bash
+      run: |
+        docker push ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-sbom
 
 
