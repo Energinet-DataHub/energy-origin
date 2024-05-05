@@ -19,7 +19,7 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 
 FROM busybox AS sbom-stage
 COPY --from=build /app/publish/sbom/bom.xml /app/bom.xml
-RUN SBOM_CONTENTS=$(cat /app/bom.xml) && \
+RUN SBOM_CONTENTS=$(base64 -w0 /app/bom.xml) && \
     echo "LABEL org.opencontainers.image.description=\"$SBOM_CONTENTS\"" > /sbom_label.txt
 
 FROM base AS final
@@ -30,7 +30,6 @@ COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
-COPY --from=busybox:uclibc /bin/sh /bin/sh
 COPY --from=sbom-stage /sbom_label.txt /sbom_label.txt
 RUN . /sbom_label.txt
 EXPOSE 8080
