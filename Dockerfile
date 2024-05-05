@@ -13,12 +13,15 @@ RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
 
+RUN for proj in $(find . -name '*.csproj'); do dotnet dotnet-CycloneDX "$proj" -o /app/publish/sbom; done
+
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
 
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
+COPY --from=build /app/publish/sbom/bom.xml /app/bom.xml
 COPY --from=build /app/publish .
 COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
@@ -26,4 +29,5 @@ COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
 EXPOSE 8080
 EXPOSE 8081
+LABEL ${SUBSYSTEM}.sbom="/app/bom.xml"
 ENTRYPOINT ["/app/main"]
