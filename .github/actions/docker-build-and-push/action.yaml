@@ -53,8 +53,6 @@ runs:
         load: true
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Install Syft
       shell: bash
