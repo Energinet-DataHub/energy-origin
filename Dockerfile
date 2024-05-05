@@ -18,14 +18,12 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 RUN apt-get update && apt-get install -y curl
 RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
 
-# Generate SBOM using Syft
-RUN syft /app/publish -o spdx-json=sbom.spdx.json
+RUN syft /app/publish -o /app/publish/sbom.spdx.json
 
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
 COPY --from=build /app/publish .
-COPY --from=build /sbom.spdx.json /app/sbom.spdx.json
 COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
