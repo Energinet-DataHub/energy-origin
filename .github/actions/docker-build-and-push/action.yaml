@@ -56,6 +56,10 @@ runs:
           --tag ${{ env.LOWERCASED }}:${{ inputs.image-tag }} \
           --file ${{ inputs.dockerfile }} \
           --output type=docker \
+          --build-arg SUBSYSTEM=${{ inputs.build-args.SUBSYSTEM }} \
+          --build-arg PROJECT=${{ inputs.build-args.PROJECT }} \
+          --build-arg SDK_VERSION=${{ inputs.build-args.SDK_VERSION }} \
+          --build-arg RUNTIME_VERSION=${{ inputs.build-args.RUNTIME_VERSION }} \
           ${{ inputs.docker-context }}
 
     - name: Install Syft
