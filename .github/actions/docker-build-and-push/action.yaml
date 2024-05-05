@@ -58,7 +58,7 @@ runs:
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
         sbom: true
-        provenance: type=sbom,file=/app/publish/sbom.xml
+        provenance: type=sbom,file=/app/bom.xml
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
