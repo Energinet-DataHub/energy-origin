@@ -49,26 +49,7 @@ runs:
       with:
         driver: docker-container
 
-    - name: Build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ${{ inputs.docker-context }}
-        file: ${{ inputs.dockerfile }}
-        push: false
-        tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        build-args: ${{ inputs.build-args }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Attach SBOM using Docker Scout
-      shell: bash
-      run: |
-        docker create --name temp ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        docker cp temp:/app/bom.xml /tmp/bom.xml
-        docker rm temp
-        docker scout attest ${{ env.LOWERCASED }}:${{ inputs.image-tag }} --provenance /tmp/bom.xml --output-file /tmp/attestation.json
-
-    - name: Push Docker image with SBOM
+    - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: ${{ inputs.docker-context }}
@@ -76,6 +57,7 @@ runs:
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        provenance: /tmp/attestation.json
+        outputs: type=image,oci-mediatypes=true
+        sbom: true
+
+
