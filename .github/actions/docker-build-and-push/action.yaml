@@ -63,7 +63,9 @@ runs:
     - name: Attach SBOM using Docker Scout
       shell: bash
       run: |
-        docker scout cves ${{ env.LOWERCASED }}:${{ inputs.image-tag }} --format cyclonedx --output /tmp/bom.xml
+        docker create --name temp ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        docker cp temp:/app/bom.xml /tmp/bom.xml
+        docker rm temp
         docker scout attest ${{ env.LOWERCASED }}:${{ inputs.image-tag }} --provenance /tmp/bom.xml --output-file /tmp/attestation.json
 
     - name: Push Docker image with SBOM
@@ -77,6 +79,7 @@ runs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         provenance: /tmp/attestation.json
+
 
 
 
