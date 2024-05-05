@@ -17,14 +17,12 @@ RUN for proj in $(find . -name '*.csproj'); do dotnet dotnet-CycloneDX "$proj" -
 
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
-FROM busybox AS sbom-stage
-COPY --from=build /app/publish/sbom/bom.xml /app/bom.xml
-RUN SBOM_CONTENTS=$(base64 -w0 /app/bom.xml) && \
-    echo "LABEL org.opencontainers.image.description=\"$SBOM_CONTENTS\"" > /sbom_label.txt
-
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
+COPY --from=build /app/publish/sbom/bom.xml /app/bom.xml
+RUN SBOM_CONTENTS=$(base64 -w0 /app/bom.xml)
+LABEL org.opencontainers.image.description=$SBOM_CONTENTS
 COPY --from=build /app/publish .
 COPY ${SUBSYSTEM}/migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
