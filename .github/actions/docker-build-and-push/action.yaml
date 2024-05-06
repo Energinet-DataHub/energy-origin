@@ -58,7 +58,7 @@ runs:
       with:
         command: sbom
         image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        output: sbom.json
+        to: sbom.json
 
     - name: Display SBOM contents
       shell: bash
