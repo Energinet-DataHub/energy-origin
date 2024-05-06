@@ -11,7 +11,7 @@ namespace API.Authorization.Controllers;
 
 [ApiController]
 [ApiVersion(ApiVersions.Version20230101)]
-public class ConsentController  : ControllerBase
+public class ConsentController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly EntityDescriptor _entityDescriptor;
@@ -28,10 +28,24 @@ public class ConsentController  : ControllerBase
     [HttpPost]
     [Authorize]
     [Route("api/consent/grant/")]
-    public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentRequest request)
+    public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger,
+        [FromBody] GrantConsentRequest request)
     {
         // TODO: Only allow sub-type 'user' and get organizationId from request
         await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, Guid.NewGuid(), request.ClientId));
         return Ok();
+    }
+
+    /// <summary>
+    /// Get consent from a specific Client.
+    /// </summary>
+    [HttpGet]
+    [Authorize]
+    [Route("api/consent/grant/{clientId}")]
+    public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger,
+        [FromRoute] Guid clientId)
+    {
+        var result = await _mediator.Send(new GetConsentQuery(clientId));
+        return Ok(result);
     }
 }

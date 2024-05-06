@@ -1,4 +1,6 @@
-﻿using API.IntegrationTests.Setup;
+﻿using System.Net.Http.Json;
+using API.Authorization._Features_;
+using API.IntegrationTests.Setup;
 using FluentAssertions;
 
 namespace API.IntegrationTests.API;
@@ -19,5 +21,15 @@ public class GrantConsentTest
         var unknownClientId = Guid.NewGuid();
         var response = await _api.GrantConsent(unknownClientId);
         response.Should().Be404NotFound();
+    }
+
+    [Fact]
+    public async Task GivenClientId_WhenGettingConsent_HttpOkConsentReturned()
+    {
+        var clientId = Guid.NewGuid();
+        var response = await _api.GetConsent(clientId);
+        response.Should().Be200Ok();
+        var result =  await response.Content.ReadFromJsonAsync<GetConsentQueryResult>();
+        result!.ClientId.Should().Be(clientId);
     }
 }

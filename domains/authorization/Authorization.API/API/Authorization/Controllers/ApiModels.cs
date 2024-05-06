@@ -25,3 +25,5 @@ public record AuthorizationResponse(
 public record GrantConsentRequest(
     [property: JsonPropertyName("sub")] Guid ClientId
 );
+
+

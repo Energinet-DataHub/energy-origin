@@ -56,6 +56,10 @@ public class Any
         return new IdpClientId(Guid());
     }
 
+    public static Consent Consent()
+    {
+        return API.Models.Consent.Create(Organization(), Client(), DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+    }
     public static Client Client()
     {
         return API.Models.Client.Create(IdpClientId(), OrganizationName(), Role.External);

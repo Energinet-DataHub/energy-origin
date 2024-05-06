@@ -22,6 +22,8 @@ public class Client : IEntity<Guid>
     public OrganizationName OrganizationName { get; private set; } = null!;
     public Role Role { get; private set; }
 
+    public string RedirectUrl { get; set; } = null!;
+
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();
 
     public static Client Create(IdpClientId idpClientId, OrganizationName organizationName, Role role)

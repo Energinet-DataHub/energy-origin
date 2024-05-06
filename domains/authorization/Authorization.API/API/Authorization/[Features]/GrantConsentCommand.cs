@@ -9,7 +9,6 @@ using API.Data;
 using API.Models;
 using API.Repository;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
@@ -46,7 +45,7 @@ public class GrantConsentCommandHandler : IRequestHandler<GrantConsentCommand>
 
         var client = await _clientRepository.GetAsync(command.clientId, cancellationToken);
 
-        var consent = Consent.Create(organization, client, DateTime.Now);
+        var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
         await _consentRepository.AddAsync(consent, cancellationToken);
 
         await _unitOfWork.CommitAsync();
@@ -56,23 +55,3 @@ public class GrantConsentCommandHandler : IRequestHandler<GrantConsentCommand>
 public record GrantConsentCommand(Guid userId, Guid organizationId, Guid clientId) : IRequest;
 
 public class UserNotAffiliatedWithOrganizationCommandException() : ForbiddenException("Not authorized to perform action");
-
-public class EntityDescriptor
-{
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ClaimsPrincipal _user;
-
-    public EntityDescriptor(IHttpContextAccessor httpContextAccessor)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _user = _httpContextAccessor.HttpContext!.User;
-    }
-
-    public Guid Sub
-    {
-        get
-        {
-            return Guid.Parse(_user.FindFirstValue("sub")!);
-        }
-    }
-}

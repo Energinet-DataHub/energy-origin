@@ -20,7 +20,7 @@ public class ConsentTests
         var role = Role.External;
         var client = Client.Create(clientIdpClientId, clientName, role);
 
-        var consentDate = DateTime.UtcNow;
+        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var consent = Consent.Create(organization, client, consentDate);
 
         consent.Should().NotBeNull();
@@ -46,7 +46,7 @@ public class ConsentTests
         var role = Role.External;
         var client = Client.Create(clientIdpClientId, clientName, role);
 
-        var consentDate = DateTime.UtcNow;
+        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var consent = Consent.Create(organization, client, consentDate);
 
         organization.Consents.Should().Contain(consent);
@@ -61,7 +61,7 @@ public class ConsentTests
         var role = Role.External;
         var client = Client.Create(clientIdpClientId, clientName, role);
 
-        var consentDate = DateTime.UtcNow;
+        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Action act = () => Consent.Create(null!, client, consentDate);
 
         act.Should().Throw<ArgumentNullException>();
@@ -76,7 +76,7 @@ public class ConsentTests
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
-        var consentDate = DateTime.UtcNow;
+        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Action act = () => Consent.Create(organization, null!, consentDate);
 
         act.Should().Throw<ArgumentNullException>();

@@ -49,7 +49,7 @@ public class ClientTests
         var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
 
         var client = Client.Create(idpClientId, name, role);
-        var consentDate = DateTime.UtcNow;
+        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var consent = Consent.Create(organization, client, consentDate);
 
         client.Consents.Should().Contain(consent);

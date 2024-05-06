@@ -1,4 +1,6 @@
-﻿using API.Authorization.Controllers;
+﻿using System.Net.Http.Json;
+using API.Authorization._Features_;
+using API.Authorization.Controllers;
 
 namespace API.IntegrationTests.Setup;
 
@@ -15,6 +17,11 @@ public class Api : IAsyncLifetime
     {
         var request = new GrantConsentRequest(clientId);
         return await _client.PostAsJsonAsync("/api/consent/grant", request);
+    }
+
+    public async Task<HttpResponseMessage> GetConsent(Guid clientId)
+    {
+        return await _client.GetAsync("/api/consent/grant/" + clientId);
     }
 
     public Task InitializeAsync()

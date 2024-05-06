@@ -85,7 +85,7 @@ public class OrganizationTests
         var role = Role.External;
         var client = Client.Create(idpClientId, clientName, role);
 
-        var consentDate = DateTime.UtcNow;
+        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var consent = Consent.Create(organization, client, consentDate);
 
         organization.Consents.Should().Contain(consent);

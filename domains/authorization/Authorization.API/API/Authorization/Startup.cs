@@ -1,4 +1,5 @@
 using API.Authorization._Features_;
+using API.Authorization.Controllers;
 using EnergyOrigin.Setup;
 using Microsoft.Extensions.DependencyInjection;
 
