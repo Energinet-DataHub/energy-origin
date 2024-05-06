@@ -12,14 +12,7 @@ RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
-
-RUN dotnet publish -c Release -o /app/publish --no-restore
-
-#RUN apt-get update && apt-get install -y curl
-#RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-
-#RUN syft /app/publish -o spdx-json=/app/publish/sbom.spdx.json
-
+RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
