@@ -47,7 +47,7 @@ public class IntegrationTestFixture : IAsyncLifetime
 
         RegistryConnectorFactory = new RegistryConnectorApplicationFactory();
         RegistryConnectorFactory.RabbitMqOptions = RabbitMqContainer.Options;
-        RegistryConnectorFactory.ProjectOriginOptions = ProjectOriginStack.Options;
+        RegistryConnectorFactory.PoRegistryOptions = ProjectOriginStack.Options;
         RegistryConnectorFactory.ConnectionString = PostgresContainer.ConnectionString;
         RegistryConnectorFactory.Start();
 
