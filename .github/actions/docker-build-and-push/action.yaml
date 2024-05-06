@@ -75,8 +75,8 @@ runs:
         command: sbom
         image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         to: sbom.json
-        dockerhub-user: ${{ github.actor }}
-        dockerhub-password: ${{ github.token }}
+        registry-user: ${{ github.actor }}
+        registry-password: ${{ github.token }}
 
     - name: Display SBOM contents
       shell: bash
