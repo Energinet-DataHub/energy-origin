@@ -9,7 +9,7 @@ namespace API.MeasurementsSyncer;
 
 public static class Startup
 {
-    public static void AddDataSyncSyncer(this IServiceCollection services)
+    public static void AddMeasurementsSyncer(this IServiceCollection services)
     {
         services.MeasurementsSyncOptions();
         services.AddMeasurementsOptions();
