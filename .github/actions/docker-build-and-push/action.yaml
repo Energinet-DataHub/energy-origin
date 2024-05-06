@@ -53,16 +53,21 @@ runs:
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
 
-    - name: Save and gzip the Docker image
+    - name: Install Docker Scout
       shell: bash
       run: |
-        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} | gzip > image.tar.gz
+        docker plugin install docker/scout
 
     - name: Generate and display SBOM
       shell: bash
       run: |
         docker scout sbom ${{ env.LOWERCASED }}:${{ inputs.image-tag }} > sbom.txt
         cat sbom.txt
+
+    - name: Save and gzip the Docker image
+      shell: bash
+      run: |
+        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} | gzip > image.tar.gz
 
     - name: Install Syft
       if: ${{ inputs.dry-run != 'true' }}
