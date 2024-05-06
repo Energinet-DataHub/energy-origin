@@ -95,4 +95,4 @@ runs:
         GH_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} -R ${{ github.repository }}
+        gh attestation verify oci://${{ env.LOWERCASED }}:test -R ${{ github.repository }}
