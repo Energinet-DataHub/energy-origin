@@ -95,4 +95,5 @@ runs:
         GH_TOKEN: ${{ github.token }}
       shell: bash
       run: |
+        echo "${{ github.token }}" | docker login gh.crio -u ${{ github.actor }} --password-stdin
         gh attestation verify oci://${{ env.LOWERCASED }}:test -R ${{ github.repository }}
