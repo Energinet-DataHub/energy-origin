@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using Measurements.V1;
@@ -8,6 +9,13 @@ namespace API.MeasurementsSyncer;
 
 public class SlidingWindowService
 {
+    private readonly IMeasurementSyncMetrics measurementSyncMetrics;
+
+    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics)
+    {
+        this.measurementSyncMetrics = measurementSyncMetrics;
+    }
+
     public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(string gsrn, UnixTimestamp synchronizationPoint)
     {
         return MeteringPointTimeSeriesSlidingWindow.Create(gsrn, synchronizationPoint);
@@ -34,8 +42,12 @@ public class SlidingWindowService
                 {
                     return true;
                 }
-
-                return IsIncludedInMissingInterval(window, interval);
+                var isIncludedInMissingInterval = IsIncludedInMissingInterval(window, interval);
+                if (isIncludedInMissingInterval)
+                {
+                    measurementSyncMetrics.AddRecoveredMeasurements(1);
+                }
+                return isIncludedInMissingInterval;
             }).ToList();
     }
 
@@ -55,12 +67,29 @@ public class SlidingWindowService
         if (NoMeasurementsFetched(measurements))
         {
             var interval = MeasurementInterval.Create(window.SynchronizationPoint, newSynchronizationPoint);
+
+            UpdateMissingMeasurementMetric([interval]);
+
             window.UpdateSlidingWindow(newSynchronizationPoint, [interval]);
             return;
         }
 
         var missingIntervals = FindMissingIntervals(window, measurements, newSynchronizationPoint);
+
+        UpdateMissingMeasurementMetric(missingIntervals);
+
         window.UpdateSlidingWindow(newSynchronizationPoint, missingIntervals);
+    }
+
+    private void UpdateMissingMeasurementMetric(List<MeasurementInterval> missingIntervals)
+    {
+        foreach (var missingInterval in missingIntervals)
+        {
+            var secondsOfMissingInterval = missingInterval.To.Seconds - missingInterval.From.Seconds;
+            var numberOfMissingIntervals = secondsOfMissingInterval / UnixTimestamp.SecondsPerHour;
+
+            measurementSyncMetrics.AddMissingMeasurement(numberOfMissingIntervals);
+        }
     }
 
     private static List<MeasurementInterval> FindMissingIntervals(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements,

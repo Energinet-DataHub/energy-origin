@@ -31,7 +31,8 @@ public class MeasurementsSyncServiceTest
 
     public MeasurementsSyncServiceTest()
     {
-        service = new MeasurementsSyncService(fakeLogger, fakeSyncState, fakeClient, fakeBus, new SlidingWindowService(),
+        var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
+        service = new MeasurementsSyncService(fakeLogger, fakeSyncState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
             new MeasurementSyncMetrics());
     }
 
