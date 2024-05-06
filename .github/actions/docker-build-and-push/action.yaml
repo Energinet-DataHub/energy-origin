@@ -51,14 +51,14 @@ runs:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
-        tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        tags: ${{ env.LOWERCASED }}
         build-args: ${{ inputs.build-args }}
 
     - name: Attest
       uses: actions/attest@v1
       id: attest
       with:
-        subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        subject-name: ${{ env.LOWERCASED }}
         subject-digest: ${{ steps.build-and-push.outputs.digest }}
         predicate-type: 'https://in-toto.io/attestation/release/v0.1'
         predicate: '{"purl":"pkg:oci/..."}'
