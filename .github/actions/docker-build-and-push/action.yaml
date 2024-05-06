@@ -53,10 +53,10 @@ runs:
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
 
-    - name: Save the built image
+    - name: Save and gzip the Docker image
       shell: bash
       run: |
-        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o image.tar
+        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} | gzip > image.tar.gz
 
     - name: Install Syft
       if: ${{ inputs.dry-run != 'true' }}
@@ -79,7 +79,7 @@ runs:
     - uses: actions/attest-sbom@v1
       if: ${{ inputs.dry-run != 'true' }}
       with:
-        subject-path: image.tar
+        subject-path: image.tar.gz
         subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-SBOM
         sbom-path: sbom.spdx.json
 
@@ -87,14 +87,21 @@ runs:
       uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
       if: ${{ inputs.dry-run != 'true' }}
       with:
-        subject-path: image.tar
+        subject-path: image.tar.gz
         subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE
 
-    - name: Verify Attestations
-      env:
-        GH_TOKEN: ${{ github.token }}
+    - name: Install GitHub CLI
       shell: bash
       run: |
-        echo "::add-mask::${{ github.actor }}"
-        echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        gh attestation verify oci://ghcr.io/energinet-datahub/eo-authorization-api:5f90a9bf0b3c9a7a23a198dd9e86bec63be7bebf -R ${{ github.repository }}
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt update
+        sudo apt install gh
+
+    - name: Verify Attestation
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh auth login --with-token <<< "${{ github.token }}"
+        gh attestation verify oci://${{ env.LOWERCASED }} --repo ${{ github.repository }}
