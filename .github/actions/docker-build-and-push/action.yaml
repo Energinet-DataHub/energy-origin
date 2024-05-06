@@ -97,4 +97,4 @@ runs:
       run: |
         echo "::add-mask::${{ github.actor }}"
         echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} -R ${{ github.repository }}
+        gh attestation verify oci://ghcr.io/energinet-datahub/eo-authorization-api:5f90a9bf0b3c9a7a23a198dd9e86bec63be7bebf -R ${{ github.repository }}
