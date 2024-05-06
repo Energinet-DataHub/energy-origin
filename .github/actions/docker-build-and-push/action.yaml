@@ -91,8 +91,8 @@ runs:
         subject-path: image.tar
         subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE
 
-    - name: Upgrade GitHub CLI
-      uses: actions/upgrade-gh-cli@v1
+    - name: Upgrade gh cli to the latest version
+      uses: philip-gai/upgrade-gh-cli@v1
 
     - name: Verify Attestation
       shell: bash
