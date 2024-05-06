@@ -53,16 +53,16 @@ runs:
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
 
-    - name: Install Docker Scout
-      shell: bash
-      run: |
-        docker plugin install docker/scout
+    - name: Generate SBOM using Docker Scout
+      uses: docker/scout-action@dd36f5b0295baffa006aa6623371f226cc03e506
+      with:
+        command: sbom
+        image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        output: sbom.json
 
-    - name: Generate and display SBOM
+    - name: Display SBOM contents
       shell: bash
-      run: |
-        docker scout sbom ${{ env.LOWERCASED }}:${{ inputs.image-tag }} > sbom.txt
-        cat sbom.txt
+      run: cat sbom.json
 
     - name: Save and gzip the Docker image
       shell: bash
@@ -100,14 +100,6 @@ runs:
       with:
         subject-path: image.tar.gz
         subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE
-
-    - name: Install GitHub CLI
-      shell: bash
-      run: |
-        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-        sudo apt update
-        sudo apt install gh
 
     - name: Verify Attestation
       shell: bash
