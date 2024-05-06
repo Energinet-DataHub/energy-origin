@@ -110,8 +110,8 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle ${{ steps.extract-sbom-url.outputs.url }}
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle ${{ steps.extract-provenance-url.outputs.url }}
+        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ steps.extract-sbom-url.outputs.url }}"
+        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ steps.extract-provenance-url.outputs.url }}"
 
 #    - name: Verify SBOM Attestation
 #      shell: bash
