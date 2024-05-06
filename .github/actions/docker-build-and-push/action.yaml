@@ -96,36 +96,19 @@ runs:
       id: extract-sbom-url
       shell: bash
       run: |
-        echo "::set-output name=url::$(echo '${{ steps.attest-sbom.outputs.attestation-url }}')"
-        echo "Extracted SBOM Attestation URL: ${{ steps.attest-sbom.outputs.attestation-url }}"
+        echo "SBOM_ATTESTATION_URL=$(grep -o 'https://github.com/Energinet-DataHub/energy-origin/attestations/[0-9]*' <<< '${{ steps.attest-sbom.outputs.attestation-url }}')" >> $GITHUB_ENV
 
     - name: Extract Build Provenance Attestation URL
       if: ${{ inputs.dry-run != 'true' }}
       id: extract-provenance-url
       shell: bash
       run: |
-        echo "::set-output name=url::$(echo '${{ steps.attest-provenance.outputs.attestation-url }}')"
-        echo "Extracted Build Provenance Attestation URL: ${{ steps.attest-provenance.outputs.attestation-url }}"
-
+        echo "PROVENANCE_ATTESTATION_URL=$(grep -o 'https://github.com/Energinet-DataHub/energy-origin/attestations/[0-9]*' <<< '${{ steps.attest-provenance.outputs.attestation-url }}')" >> $GITHUB_ENV
 
     - name: Verify Attestations
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ steps.extract-sbom-url.outputs.url }}"
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ steps.extract-provenance-url.outputs.url }}"
-
-#    - name: Verify SBOM Attestation
-#      shell: bash
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#      run: |
-#        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }}-SBOM --owner ${{ github.repository_owner }} --bundle ./sbom-attestation.json
-#
-#    - name: Verify Build Provenance Attestation
-#      shell: bash
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#      run: |
-#        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE --owner ${{ github.repository_owner }} --bundle ./build-provenance-attestation.json
+        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ env.SBOM_ATTESTATION_URL }}"
+        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ env.PROVENANCE_ATTESTATION_URL }}"
