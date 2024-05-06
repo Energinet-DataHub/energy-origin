@@ -60,10 +60,6 @@ runs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Display SBOM contents
-      shell: bash
-      run: cat sbom.json
-
     - name: Save and gzip the Docker image
       shell: bash
       run: |
