@@ -7,7 +7,7 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace RegistryConnector.Worker;
 
-public class ProjectOriginOptions
+public class ProjectOriginRegistryOptions
 {
     public const string ProjectOrigin = nameof(ProjectOrigin);
 
@@ -17,9 +17,6 @@ public class ProjectOriginOptions
     public string RegistryName { get; set; } = "";
     public byte[] Dk1IssuerPrivateKeyPem { get; set; } = Array.Empty<byte>();
     public byte[] Dk2IssuerPrivateKeyPem { get; set; } = Array.Empty<byte>();
-
-    [Required]
-    public string WalletUrl { get; set; } = "";
 
     public bool TryGetIssuerKey(string gridArea, out IPrivateKey? issuerKey)
     {
@@ -53,10 +50,10 @@ public class ProjectOriginOptions
 public static class OptionsExtensions
 {
     public static void AddProjectOriginOptions(this IServiceCollection services) =>
-        services.AddOptions<ProjectOriginOptions>()
-            .BindConfiguration(ProjectOriginOptions.ProjectOrigin)
+        services.AddOptions<ProjectOriginRegistryOptions>()
+            .BindConfiguration(ProjectOriginRegistryOptions.ProjectOrigin)
             .ValidateDataAnnotations()
-            .Validate(o => o.TryGetIssuerKey("DK1", out _), $"Validation failed for '{nameof(ProjectOriginOptions)}' member '{nameof(ProjectOriginOptions.Dk1IssuerPrivateKeyPem)}': Invalid issuer key for DK1")
-            .Validate(o => o.TryGetIssuerKey("DK2", out _), $"Validation failed for '{nameof(ProjectOriginOptions)}' member '{nameof(ProjectOriginOptions.Dk2IssuerPrivateKeyPem)}': Invalid issuer key for DK2")
+            .Validate(o => o.TryGetIssuerKey("DK1", out _), $"Validation failed for '{nameof(ProjectOriginRegistryOptions)}' member '{nameof(ProjectOriginRegistryOptions.Dk1IssuerPrivateKeyPem)}': Invalid issuer key for DK1")
+            .Validate(o => o.TryGetIssuerKey("DK2", out _), $"Validation failed for '{nameof(ProjectOriginRegistryOptions)}' member '{nameof(ProjectOriginRegistryOptions.Dk2IssuerPrivateKeyPem)}': Invalid issuer key for DK2")
             .ValidateOnStart();
 }

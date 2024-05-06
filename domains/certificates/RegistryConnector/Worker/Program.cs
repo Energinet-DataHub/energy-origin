@@ -43,7 +43,7 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddGrpcClient<RegistryService.RegistryServiceClient>((sp, o) =>
 {
-    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+    var options = sp.GetRequiredService<IOptions<ProjectOriginRegistryOptions>>().Value;
     o.Address = new Uri(options.RegistryUrl);
 });
 
