@@ -53,62 +53,66 @@ runs:
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
 
-    - name: Save the built image
-      shell: bash
-      run: |
-        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o image.tar
-
-
-    - name: Install Syft
-      if: ${{ inputs.dry-run != 'true' }}
-      shell: bash
-      run: |
-        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-
-    - name: Generate SBOM
-      if: ${{ inputs.dry-run != 'true' }}
-      shell: bash
-      run: |
-        syft --scope all-layers ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o spdx-json=sbom.spdx.json
-
-    - uses: actions/upload-artifact@v3
-      if: ${{ inputs.dry-run != 'true' }}
+    - name: Attest
+      uses: actions/attest@v1
+      id: attest
       with:
-        name: sbom
-        path: sbom.spdx.json
+        subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        subject-digest: ${{ steps.push.outputs.digest }}
+        predicate-type: 'https://in-toto.io/attestation/release/v0.1'
+        predicate: '{"purl":"pkg:oci/..."}'
+        push-to-registry: true
 
-    - uses: actions/attest-sbom@v1
-      if: ${{ inputs.dry-run != 'true' }}
-      with:
-        subject-path: image.tar
-        subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-SBOM
-        sbom-path: sbom.spdx.json
+#    - name: Install Syft
+#      if: ${{ inputs.dry-run != 'true' }}
+#      shell: bash
+#      run: |
+#        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+#
+#    - name: Generate SBOM
+#      if: ${{ inputs.dry-run != 'true' }}
+#      shell: bash
+#      run: |
+#        syft --scope all-layers ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o spdx-json=sbom.spdx.json
+#
+#    - uses: actions/upload-artifact@v3
+#      if: ${{ inputs.dry-run != 'true' }}
+#      with:
+#        name: sbom
+#        path: sbom.spdx.json
+#
+#    - uses: actions/attest-sbom@v1
+#      if: ${{ inputs.dry-run != 'true' }}
+#      with:
+#        subject-path: image.tar
+#        subject-name: ${{ env.LOWERCASED }}-SBOM
+#        sbom-path: sbom.spdx.json
+#
+#    - name: Attest Build Provenance
+#      uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
+#      if: ${{ inputs.dry-run != 'true' }}
+#      with:
+#        subject-path: image.tar
+#        subject-name: ${{ env.LOWERCASED }}-PROVENANCE
 
-    - name: Attest Build Provenance
-      uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940
-      if: ${{ inputs.dry-run != 'true' }}
-      with:
-        subject-path: image.tar
-        subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE
-
-    - name: Extract SBOM Attestation URL
-      if: ${{ inputs.dry-run != 'true' }}
-      id: extract-sbom-url
-      shell: bash
-      run: |
-        echo "SBOM_ATTESTATION_URL=$(grep -o 'https://github.com/Energinet-DataHub/energy-origin/attestations/[0-9]*' <<< '${{ steps.attest-sbom.outputs.attestation-url }}')" >> $GITHUB_ENV
-
-    - name: Extract Build Provenance Attestation URL
-      if: ${{ inputs.dry-run != 'true' }}
-      id: extract-provenance-url
-      shell: bash
-      run: |
-        echo "PROVENANCE_ATTESTATION_URL=$(grep -o 'https://github.com/Energinet-DataHub/energy-origin/attestations/[0-9]*' <<< '${{ steps.attest-provenance.outputs.attestation-url }}')" >> $GITHUB_ENV
-
-    - name: Verify Attestations
-      shell: bash
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ env.SBOM_ATTESTATION_URL }}"
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ env.PROVENANCE_ATTESTATION_URL }}"
+#    - name: Extract SBOM Attestation URL
+#      if: ${{ inputs.dry-run != 'true' }}
+#      id: extract-sbom-url
+#      shell: bash
+#      run: |
+#        echo "SBOM_ATTESTATION_URL=$(grep -o 'https://github.com/Energinet-DataHub/energy-origin/attestations/[0-9]*' <<< '${{ steps.attest-sbom.outputs.attestation-url }}')" >> $GITHUB_ENV
+#
+#    - name: Extract Build Provenance Attestation URL
+#      if: ${{ inputs.dry-run != 'true' }}
+#      id: extract-provenance-url
+#      shell: bash
+#      run: |
+#        echo "PROVENANCE_ATTESTATION_URL=$(grep -o 'https://github.com/Energinet-DataHub/energy-origin/attestations/[0-9]*' <<< '${{ steps.attest-provenance.outputs.attestation-url }}')" >> $GITHUB_ENV
+#
+#    - name: Verify Attestations
+#      shell: bash
+#      env:
+#        GH_TOKEN: ${{ github.token }}
+#      run: |
+#        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ env.SBOM_ATTESTATION_URL }}"
+#        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle "${{ env.PROVENANCE_ATTESTATION_URL }}"
