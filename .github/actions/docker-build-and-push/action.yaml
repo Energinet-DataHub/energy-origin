@@ -60,24 +60,6 @@ runs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Docker Scout
-      id: docker-scout
-      if: ${{ github.event_name == 'pull_request' }}
-      uses: docker/scout-action@dd36f5b0295baffa006aa6623371f226cc03e506
-      with:
-        command: sbom
-        image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        exit-code: true
-
-    - name: Generate SBOM using Docker Scout
-      uses: docker/scout-action@dd36f5b0295baffa006aa6623371f226cc03e506
-      with:
-        command: sbom
-        image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        to: sbom.json
-        registry-user: ${{ github.actor }}
-        registry-password: ${{ github.token }}
-
     - name: Display SBOM contents
       shell: bash
       run: cat sbom.json
