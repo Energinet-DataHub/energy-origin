@@ -76,6 +76,7 @@ runs:
       if: ${{ inputs.dry-run != 'true' }}
       with:
         subject-digest: ${{ steps.push.outputs.digest }}
+        subject-name: ${{ env.LOWERCASED }}-SBOM
         sbom-path: sbom.spdx.json
         push-to-registry: true
 
@@ -84,6 +85,7 @@ runs:
       if: ${{ inputs.dry-run != 'true' }}
       with:
         subject-digest: ${{ steps.push.outputs.digest }}
+        subject-name: ${{ env.LOWERCASED }}-PROVENANCE
         push-to-registry: true
 
     - name: Verify Attestations
