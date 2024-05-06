@@ -58,6 +58,12 @@ runs:
       run: |
         docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} | gzip > image.tar.gz
 
+    - name: Generate and display SBOM
+      shell: bash
+      run: |
+        docker scout sbom ${{ env.LOWERCASED }}:${{ inputs.image-tag }} > sbom.txt
+        cat sbom.txt
+
     - name: Install Syft
       if: ${{ inputs.dry-run != 'true' }}
       shell: bash
