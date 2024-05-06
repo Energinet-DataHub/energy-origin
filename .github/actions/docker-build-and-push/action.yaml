@@ -53,10 +53,10 @@ runs:
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
 
-    - name: Save and gzip the Docker image
+    - name: Save the built image
       shell: bash
       run: |
-        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} | gzip > image.tar
+        docker save ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o image.tar
 
 
     - name: Install Syft
@@ -91,38 +91,37 @@ runs:
         subject-path: image.tar
         subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE
 
-    - name: Download SBOM Attestation
-      uses: actions/download-artifact@v3
-      with:
-        name: sbom-attestation
-        path: ./sbom-attestation.json
+    - name: Extract SBOM Attestation URL
+      if: ${{ inputs.dry-run != 'true' }}
+      id: extract-sbom-url
+      shell: bash
+      run: |
+        echo "::set-output name=url::$(echo '${{ steps.attest-sbom.outputs.attestation-url }}')"
 
-    - name: Download Build Provenance Attestation
-      uses: actions/download-artifact@v3
-      with:
-        name: build-provenance-attestation
-        path: ./build-provenance-attestation.json
+    - name: Extract Build Provenance Attestation URL
+      if: ${{ inputs.dry-run != 'true' }}
+      id: extract-provenance-url
+      shell: bash
+      run: |
+        echo "::set-output name=url::$(echo '${{ steps.attest-provenance.outputs.attestation-url }}')"
 
-    - name: Upgrade gh cli to the latest version
-      uses: philip-gai/upgrade-gh-cli@v1
+    - name: Verify Attestation
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }} --bundle
 
-#    - name: Verify Attestation
+#    - name: Verify SBOM Attestation
 #      shell: bash
 #      env:
-#        GH_TOKEN: ${{ github.token }}
+#        GITHUB_TOKEN: ${{ github.token }}
 #      run: |
-#        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }}
-
-    - name: Verify SBOM Attestation
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: |
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }}-SBOM --owner ${{ github.repository_owner }} --bundle ./sbom-attestation.json
-
-    - name: Verify Build Provenance Attestation
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: |
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE --owner ${{ github.repository_owner }} --bundle ./build-provenance-attestation.json
+#        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }}-SBOM --owner ${{ github.repository_owner }} --bundle ./sbom-attestation.json
+#
+#    - name: Verify Build Provenance Attestation
+#      shell: bash
+#      env:
+#        GITHUB_TOKEN: ${{ github.token }}
+#      run: |
+#        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE --owner ${{ github.repository_owner }} --bundle ./build-provenance-attestation.json
