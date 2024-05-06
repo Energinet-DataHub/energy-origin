@@ -7,7 +7,7 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace RegistryConnector.Worker;
 
-public class PoRegistryOptions
+public class ProjectOriginRegistryOptions
 {
     public const string ProjectOrigin = nameof(ProjectOrigin);
 
@@ -50,10 +50,10 @@ public class PoRegistryOptions
 public static class OptionsExtensions
 {
     public static void AddProjectOriginOptions(this IServiceCollection services) =>
-        services.AddOptions<PoRegistryOptions>()
-            .BindConfiguration(PoRegistryOptions.ProjectOrigin)
+        services.AddOptions<ProjectOriginRegistryOptions>()
+            .BindConfiguration(ProjectOriginRegistryOptions.ProjectOrigin)
             .ValidateDataAnnotations()
-            .Validate(o => o.TryGetIssuerKey("DK1", out _), $"Validation failed for '{nameof(PoRegistryOptions)}' member '{nameof(PoRegistryOptions.Dk1IssuerPrivateKeyPem)}': Invalid issuer key for DK1")
-            .Validate(o => o.TryGetIssuerKey("DK2", out _), $"Validation failed for '{nameof(PoRegistryOptions)}' member '{nameof(PoRegistryOptions.Dk2IssuerPrivateKeyPem)}': Invalid issuer key for DK2")
+            .Validate(o => o.TryGetIssuerKey("DK1", out _), $"Validation failed for '{nameof(ProjectOriginRegistryOptions)}' member '{nameof(ProjectOriginRegistryOptions.Dk1IssuerPrivateKeyPem)}': Invalid issuer key for DK1")
+            .Validate(o => o.TryGetIssuerKey("DK2", out _), $"Validation failed for '{nameof(ProjectOriginRegistryOptions)}' member '{nameof(ProjectOriginRegistryOptions.Dk2IssuerPrivateKeyPem)}': Invalid issuer key for DK2")
             .ValidateOnStart();
 }

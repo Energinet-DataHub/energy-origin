@@ -60,7 +60,7 @@ public class ProjectOriginStack : RegistryFixture
         });
     }
 
-    public PoRegistryOptions Options => new()
+    public ProjectOriginRegistryOptions Options => new()
     {
         RegistryName = RegistryName,
         Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText()),

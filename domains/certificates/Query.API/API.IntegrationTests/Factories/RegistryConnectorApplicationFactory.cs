@@ -19,7 +19,7 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
     public string ConnectionString { get; set; } = "";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     public string OtlpReceiverEndpoint { get; private set; } = "http://foo";
-    public PoRegistryOptions? PoRegistryOptions { get; set; } = new()
+    public ProjectOriginRegistryOptions? PoRegistryOptions { get; set; } = new()
     {
         RegistryName = "foo",
         RegistryUrl = "bar",

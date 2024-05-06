@@ -23,17 +23,17 @@ namespace RegistryConnector.Worker.EventHandlers;
 public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 {
     private readonly IEndpointNameFormatter endpointNameFormatter;
-    private readonly PoRegistryOptions poRegistryOptions;
+    private readonly ProjectOriginRegistryOptions projectOriginRegistryOptions;
     private readonly ApplicationDbContext dbContext;
     private readonly ILogger<MeasurementEventHandler> logger;
     private readonly IKeyGenerator keyGenerator;
 
     public MeasurementEventHandler(IEndpointNameFormatter endpointNameFormatter,
-        IOptions<PoRegistryOptions> projectOriginOptions, ApplicationDbContext dbContext,
+        IOptions<ProjectOriginRegistryOptions> projectOriginOptions, ApplicationDbContext dbContext,
         ILogger<MeasurementEventHandler> logger, IKeyGenerator keyGenerator)
     {
         this.endpointNameFormatter = endpointNameFormatter;
-        this.poRegistryOptions = projectOriginOptions.Value;
+        this.projectOriginRegistryOptions = projectOriginOptions.Value;
         this.dbContext = dbContext;
         this.logger = logger;
         this.keyGenerator = keyGenerator;
@@ -82,7 +82,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
 
             var issuedEvent = Registry.CreateIssuedEventForProduction(
-                poRegistryOptions.RegistryName,
+                projectOriginRegistryOptions.RegistryName,
                 productionCertificate.Id,
                 period.ToDateInterval(),
                 matchingContract.GridArea,
@@ -116,7 +116,7 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
 
             var issuedEvent = Registry.CreateIssuedEventForConsumption(
-                poRegistryOptions.RegistryName,
+                projectOriginRegistryOptions.RegistryName,
                 consumptionCertificate.Id,
                 period.ToDateInterval(),
                 matchingContract.GridArea,
