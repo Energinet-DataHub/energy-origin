@@ -51,7 +51,7 @@ runs:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
-        tags: ${{ env.LOWERCASED }}
+        tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
 
     - name: Install Syft
@@ -64,7 +64,7 @@ runs:
       if: ${{ inputs.dry-run != 'true' }}
       shell: bash
       run: |
-        syft --scope all-layers ${{ env.LOWERCASED }} -o spdx-json=sbom.spdx.json
+        syft --scope all-layers ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o spdx-json=sbom.spdx.json
 
     - uses: actions/upload-artifact@v3
       if: ${{ inputs.dry-run != 'true' }}
@@ -76,7 +76,7 @@ runs:
       if: ${{ inputs.dry-run != 'true' }}
       with:
         subject-digest: ${{ steps.push.outputs.digest }}
-        subject-name: ${{ env.LOWERCASED }}
+        subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         sbom-path: sbom.spdx.json
         push-to-registry: true
 
@@ -85,7 +85,7 @@ runs:
       if: ${{ inputs.dry-run != 'true' }}
       with:
         subject-digest: ${{ steps.push.outputs.digest }}
-        subject-name: ${{ env.LOWERCASED }}
+        subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         push-to-registry: true
 
     - name: Verify Attestations
@@ -93,4 +93,4 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }}"
+        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} --owner ${{ github.repository_owner }}
