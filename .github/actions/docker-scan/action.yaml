@@ -32,7 +32,7 @@ runs:
       uses: anchore/scan-action@v3
       id: scan
       with:
-        image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        image: ${{ env.LOWERCASED }}
         fail-build: false
 
     - name: Print scanning summary
