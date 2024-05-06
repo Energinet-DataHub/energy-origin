@@ -13,12 +13,6 @@
             "commands": [
                 "dotnet-ef"
             ]
-        },
-        "cyclonedx": {
-            "version": "3.0.6",
-            "commands": [
-                "dotnet-CycloneDX"
-            ]
         }
     }
 }
