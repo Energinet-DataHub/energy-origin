@@ -97,6 +97,7 @@ runs:
       shell: bash
       run: |
         echo "::set-output name=url::$(echo '${{ steps.attest-sbom.outputs.attestation-url }}')"
+        echo "Extracted SBOM Attestation URL: ${{ steps.attest-sbom.outputs.attestation-url }}"
 
     - name: Extract Build Provenance Attestation URL
       if: ${{ inputs.dry-run != 'true' }}
@@ -104,6 +105,8 @@ runs:
       shell: bash
       run: |
         echo "::set-output name=url::$(echo '${{ steps.attest-provenance.outputs.attestation-url }}')"
+        echo "Extracted Build Provenance Attestation URL: ${{ steps.attest-provenance.outputs.attestation-url }}"
+
 
     - name: Verify Attestations
       shell: bash
