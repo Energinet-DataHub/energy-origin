@@ -45,7 +45,7 @@ runs:
         ecr: false
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@5.0.0
+      uses: docker/build-push-action@5
       with:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
