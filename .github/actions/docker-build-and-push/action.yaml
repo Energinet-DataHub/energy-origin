@@ -51,7 +51,7 @@ runs:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
-        tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        tags: ${{ env.LOWERCASED }}
         build-args: ${{ inputs.build-args }}
 
     - name: Install Syft
@@ -64,7 +64,7 @@ runs:
       if: ${{ inputs.dry-run != 'true' }}
       shell: bash
       run: |
-        syft --scope all-layers ${{ env.LOWERCASED }}:${{ inputs.image-tag }} -o spdx-json=sbom.spdx.json
+        syft --scope all-layers ${{ env.LOWERCASED }} -o spdx-json=sbom.spdx.json
 
     - uses: actions/upload-artifact@v3
       if: ${{ inputs.dry-run != 'true' }}
