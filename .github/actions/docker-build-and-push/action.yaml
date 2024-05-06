@@ -90,12 +90,9 @@ runs:
         subject-path: image.tar
         subject-name: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}-PROVENANCE
 
-    - name: Verify SBOM Attestation
+    - name: Verify Attestations
       env:
         GH_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        gh attestation verify ${{ env.LOWERCASED }}:${{ inputs.image-tag }}  --repo ${{ github.repository }} --cert-identity 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-
-
-
+        gh attestation verify oci://${{ env.LOWERCASED }}:${{ inputs.image-tag }} -R ${{ github.repository }}
