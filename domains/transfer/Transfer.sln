@@ -23,11 +23,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.IntegrationTests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ClaimAutomation", "ClaimAutomation", "{EC080CA8-86BE-4D75-B986-384DA87B4342}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker", "ClaimAutomation\Worker\Worker.csproj", "{6494FB7D-C2CF-44F3-9066-7324AFA8CBD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClaimAutomationWorker", "ClaimAutomation\ClaimAutomationWorker\ClaimAutomationWorker.csproj", "{6494FB7D-C2CF-44F3-9066-7324AFA8CBD2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.IntegrationTests", "ClaimAutomation\Worker.IntegrationTests\Worker.IntegrationTests.csproj", "{35763C9E-14C1-4B96-8248-830EE415235B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClaimAutomationWorker.IntegrationTests", "ClaimAutomation\ClaimAutomationWorker.IntegrationTests\ClaimAutomationWorker.IntegrationTests.csproj", "{35763C9E-14C1-4B96-8248-830EE415235B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.UnitTests", "ClaimAutomation\Worker.UnitTests\Worker.UnitTests.csproj", "{0B2EB2DF-19E2-43CE-B13E-A9DDE286309A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClaimAutomationWorker.UnitTests", "ClaimAutomation\ClaimAutomationWorker.UnitTests\ClaimAutomationWorker.UnitTests.csproj", "{0B2EB2DF-19E2-43CE-B13E-A9DDE286309A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataContext", "Shared\DataContext\DataContext.csproj", "{EE0D601E-22DA-4F17-B912-C5E0E0EDA078}"
 EndProject

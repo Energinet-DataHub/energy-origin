@@ -21,7 +21,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace Worker.IntegrationTests;
+namespace ClaimAutomationWorker.IntegrationTests;
 
 public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {

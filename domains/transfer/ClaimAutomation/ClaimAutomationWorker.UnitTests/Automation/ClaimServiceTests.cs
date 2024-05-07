@@ -11,7 +11,7 @@ using ProjectOriginClients.Models;
 using Testing;
 using Xunit;
 
-namespace Worker.UnitTests.Automation;
+namespace ClaimAutomationWorker.UnitTests.Automation;
 
 public class ClaimServiceTests
 {

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using VerifyXunit;
 using Xunit;
 
-namespace Worker.IntegrationTests;
+namespace ClaimAutomationWorker.IntegrationTests;
 
 public class SwaggerTests : IClassFixture<ClaimAutomationApplicationFactory>
 {
