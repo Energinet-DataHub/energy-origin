@@ -37,6 +37,6 @@ jobs:
           docker-context: domains/transfer
           dry-run: true
           build-args: |
-            ASSEMBLY_NAME=Transfer.API
+            ASSEMBLY_NAME=TransferAgreementAutomation.Worker
             SDK_VERSION=8.0.204
             RUNTIME_VERSION=8.0.4
