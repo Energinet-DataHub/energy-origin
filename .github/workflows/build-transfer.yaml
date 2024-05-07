@@ -24,15 +24,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: "Energinet-DataHub/acorn-actions"
-          sparse-checkout: Dockerfile
+          sparse-checkout: Dockerfile-solution
           path: domains/transfer
+          ref: solution-validation
 
       - name: Build docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
-          dockerfile: domains/transfer/Dockerfile
+          dockerfile: domains/transfer/Dockerfile-solution
           image-name: eo-transfer-api
           image-tag: TEST
-          docker-context: keyboard
-          dry-run: smah
-          build-args: sh
+          docker-context: domains/transfer
+          dry-run: true
+          build-args: |
+            ASSEMBLY_NAME=API
+            RUNTIME_VERSION=8.0.4
+            SDK_VERSION=8.0.204
