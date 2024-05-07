@@ -11,11 +11,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: energy-origin
 
       - name: Dotnet validate
         uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@solution-validation
         with:
-          path: domains/transfer
+          path: energy-origin/domains/transfer
           dotnet-version: 8.0.204
           pin-version: true
 
@@ -25,16 +27,16 @@ jobs:
         with:
           repository: "Energinet-DataHub/acorn-actions"
           sparse-checkout: Dockerfile-solution
-          path: domains/transfer
+          path: acorn-actions
           ref: solution-validation
 
       - name: Build docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
-          dockerfile: domains/transfer/Dockerfile-solution
+          dockerfile: acorn-actions/Dockerfile-solution
           image-name: eo-transfer-api
           image-tag: TEST
-          docker-context: domains/transfer
+          docker-context: energy-origin/domains/transfer
           dry-run: true
           build-args: |
             ASSEMBLY_NAME=API
