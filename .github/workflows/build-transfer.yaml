@@ -1,4 +1,20 @@
-name: build-transfer.yaml
+name: Build Transfer
+
 on:
+   push:
+     branches:
+       - transfer-workflow
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dotnet validate
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@solution-validation
+        with:
+          path: domains/transfer
+          dotnet-version: 8.0.204
+          pin-version: true
