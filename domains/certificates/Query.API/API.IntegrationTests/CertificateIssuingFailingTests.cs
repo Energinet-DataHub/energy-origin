@@ -48,8 +48,8 @@ public sealed class CertificateIssuingFailingTests :
         registryConnectorFactory.RetryOptions.DefaultFirstLevelRetryCount = 1;
         registryConnectorFactory.RetryOptions.DefaultSecondLevelRetryCount = 1;
         registryConnectorFactory.RabbitMqOptions = rabbitMqContainer.Options;
-        registryConnectorFactory.ProjectOriginOptions = projectOriginStack.Options;
-        registryConnectorFactory.ProjectOriginOptions.RegistryUrl = "https://someurl.com";
+        registryConnectorFactory.PoRegistryOptions = projectOriginStack.Options;
+        registryConnectorFactory.PoRegistryOptions.RegistryUrl = "https://someurl.com";
         registryConnectorFactory.ConnectionString = dbContainer.ConnectionString;
         registryConnectorFactory.Start();
     }
