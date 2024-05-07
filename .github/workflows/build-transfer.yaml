@@ -19,19 +19,20 @@ jobs:
           dotnet-version: 8.0.204
           pin-version: true
 
+#TODO: Migration file
+
       - uses: actions/checkout@v4
         with:
           repository: "Energinet-DataHub/acorn-actions"
           sparse-checkout: Dockerfile
-          path: acorn-actions
-
+          path: domains/transfer
 
       - name: Build docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
-          dockerfile: random
-          image-name: randoom
-          image-tag: true
+          dockerfile: domains/transfer/Dockerfile
+          image-name: eo-transfer-api
+          image-tag: TEST
           docker-context: keyboard
           dry-run: smah
           build-args: sh
