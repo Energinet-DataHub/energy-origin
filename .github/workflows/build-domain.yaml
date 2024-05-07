@@ -154,6 +154,15 @@ jobs:
             sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
           fi
 
+      - uses: actions/checkout@v4
+        with:
+          repository: "Energinet-DataHub/acorn-actions"
+          sparse-checkout: Dockerfile
+          path: acorn-actions         
+
+      - name: Copy dockerfile to root path
+        run: cp acorn-actions/Dockerfile .
+
       - name: Build image
         uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v1
         with:
