@@ -65,7 +65,7 @@ jobs:
         run: echo "version="${{ github.sha }}-test"" >> $GITHUB_ENV
 
       - name: Resolve image name
-        run: echo "name=$(yq '.name' "${{ matrix.item.configuration }})" >> $GITHUB_ENV # could be duplicated in matrix to avoid bash?
+        run: echo "name=$(yq '.name' '${{ matrix.item.configuration }}')" >> $GITHUB_ENV # could be duplicated in matrix to avoid bash?
 
       - name: Build image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
