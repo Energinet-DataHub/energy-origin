@@ -57,8 +57,12 @@ jobs:
             sed -i "energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
           fi
 
+      # FIXME: needs to be passed during testing
+      # - name: Resolve image version
+      #   uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
+
       - name: Resolve image version
-        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
+        run: echo "version="${{ github.sha }}-test"" >> $GITHUB_ENV
 
       - name: Resolve image name
         run: echo "name=$(yq '.name' "${{ matrix.item.configuration }})" >> $GITHUB_ENV # could be duplicated in matrix to avoid bash?
