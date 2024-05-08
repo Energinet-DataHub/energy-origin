@@ -7,6 +7,7 @@ on:
 
 jobs:
   define:
+    name: Define matrix
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ env.matrix }}
@@ -18,6 +19,7 @@ jobs:
         run: printf "matrix=%s\n" "$(jq -rc . traels.json)" >> $GITHUB_ENV
 
   build:
+    name: Build
     needs: define
     strategy:
       matrix:
