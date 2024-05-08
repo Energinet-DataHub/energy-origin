@@ -11,6 +11,8 @@ jobs:
     outputs:
       matrix: ${{ env.matrix }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Define matrix (file tbd)
         shell: bash
         run: printf "matrix=%s\n" "$(jq -rc . traels.json)" >> $GITHUB_ENV
