@@ -43,10 +43,20 @@ env:
     ]
 
 jobs:
+  define:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ env.matrix }}
+    steps:
+      - name: Define matrix (not simple way way)
+        shell: bash
+        run: printf 'matrix=%s' '${{ env.matrixJson }}' >> $GITHUB_ENV
+
   build:
+    needs: define
     strategy:
       matrix:
-        items: ${{ fromJson(env.matrixJson) }}
+        items: ${{ fromJson(needs.define.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
