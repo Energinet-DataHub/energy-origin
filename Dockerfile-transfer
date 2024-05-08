@@ -10,7 +10,7 @@ RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
-RUN dotnet publish -p ${PROJECT} -c Release -o /app/publish --no-restore --no-build
+RUN dotnet publish ${PROJECT} -c Release -o /app/publish --no-restore --no-build
 
 FROM base AS final
 WORKDIR /app
