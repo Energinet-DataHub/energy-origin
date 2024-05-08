@@ -21,7 +21,7 @@ jobs:
     needs: define
     strategy:
       matrix:
-        items: ${{ fromJson(needs.define.outputs.matrix) }}
+        matrix: ${{ fromJson(needs.define.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -85,7 +85,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        items: ${{ fromJson(needs.define.outputs.matrix) }}
+        matrix: ${{ fromJson(needs.define.outputs.matrix) }}
     runs-on: ubuntu-latest
     name: Update environment
     needs:
