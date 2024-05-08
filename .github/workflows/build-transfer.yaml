@@ -62,10 +62,12 @@ jobs:
       #   uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
 
       - name: Resolve image version
+        shell: bash
         run: echo "version="${{ github.sha }}-test"" >> $GITHUB_ENV
 
       - name: Resolve image name
-        run: echo "name=$(yq '.name' '${{ matrix.item.configuration }}')" >> $GITHUB_ENV # could be duplicated in matrix to avoid bash?
+        shell: bash
+        run: echo "name=$(yq '.name' 'energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.configuration }}')" >> $GITHUB_ENV # could be duplicated in matrix to avoid bash?
 
       - name: Build image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
