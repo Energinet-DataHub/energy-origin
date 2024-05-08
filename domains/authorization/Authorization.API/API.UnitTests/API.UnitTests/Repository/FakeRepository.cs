@@ -8,12 +8,17 @@ public class FakeGenericRepository<TEntity> : IGenericRepository<TEntity> where 
 {
     private readonly List<TEntity> _entities = new List<TEntity>();
 
+    public Task<TEntity> GetAsync(object[] keys, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<TEntity> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         var entity = _entities.FirstOrDefault(e => e.Id == id);
         if (entity is null)
         {
-            throw new EntityNotFoundException(id, typeof(TEntity).Name);
+            throw new EntityNotFoundException(id.ToString(), typeof(TEntity).Name);
         }
         return Task.FromResult(entity);
     }
@@ -42,7 +47,7 @@ public class FakeGenericRepository<TEntity> : IGenericRepository<TEntity> where 
         var existingEntity = _entities.FirstOrDefault(e => e.Id == entity.Id);
         if (existingEntity is null)
         {
-            throw new EntityNotFoundException(entity.Id, typeof(TEntity).Name);
+            throw new EntityNotFoundException(entity.Id.ToString(), typeof(TEntity).Name);
         }
         _entities.Remove(existingEntity);
         _entities.Add(entity);
@@ -62,4 +67,4 @@ public class FakeUserRepository : FakeGenericRepository<User>, IUserRepository;
 
 public class FakeConsentRepository : FakeGenericRepository<Consent>, IConsentRepository;
 
-public class FakeAffiliationRepository : FakeGenericRepository<Affiliation>, IAffiliationRepository;
+

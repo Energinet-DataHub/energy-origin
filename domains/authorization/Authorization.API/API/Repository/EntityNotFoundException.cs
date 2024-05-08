@@ -3,4 +3,4 @@ using API.Authorization.Exceptions;
 
 namespace API.Repository;
 
-public class EntityNotFoundException(Guid id, string s) : NotFoundException($"Entity of type {s} with id {id} not found.");
+public class EntityNotFoundException(string key, string s) : NotFoundException($"Entity of type {s} with id(s) {key} not found.");

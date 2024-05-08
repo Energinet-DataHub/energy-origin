@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using Asp.Versioning;
@@ -26,13 +27,13 @@ public class ConsentController : ControllerBase
     /// Grants consent.
     /// </summary>
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "SubTypeUser")]
     [Route("api/consent/grant/")]
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger,
         [FromBody] GrantConsentRequest request)
     {
-        // TODO: Only allow sub-type 'user' and get organizationId from request
-        await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, Guid.NewGuid(), request.ClientId));
+
+        await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, _entityDescriptor.OrgIds.First(), request.ClientId));
         return Ok();
     }
 
@@ -40,7 +41,7 @@ public class ConsentController : ControllerBase
     /// Get consent from a specific Client.
     /// </summary>
     [HttpGet]
-    [Authorize]
+    [Authorize(Policy = "SubTypeUser")]
     [Route("api/consent/grant/{clientId}")]
     public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger,
         [FromRoute] Guid clientId)

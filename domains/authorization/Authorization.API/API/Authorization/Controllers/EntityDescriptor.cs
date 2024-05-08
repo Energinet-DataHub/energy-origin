@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
@@ -16,11 +19,10 @@ public class EntityDescriptor
         _user = _httpContextAccessor.HttpContext!.User;
     }
 
-    public Guid Sub
-    {
-        get
-        {
-            return Guid.Parse(_user.FindFirstValue("sub")!);
-        }
-    }
+    public IEnumerable<Guid> OrgIds => _user
+        .FindFirstValue("org_ids")!
+        .Split(' ')
+        .Select(Guid.Parse);
+
+    public Guid Sub => Guid.Parse(_user.FindFirstValue("sub")!);
 }

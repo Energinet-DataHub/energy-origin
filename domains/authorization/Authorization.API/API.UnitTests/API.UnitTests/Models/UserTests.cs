@@ -11,15 +11,14 @@ public class UserTests
     {
         var idpId = IdpId.Create(Guid.NewGuid());
         var idpUserId = IdpUserId.Create(Guid.NewGuid());
-        var name = Name.Create("Test User");
+        var name = Username.Create("Test User");
 
         var user = User.Create(idpId, idpUserId, name);
 
         user.Should().NotBeNull();
         user.Id.Should().NotBeEmpty();
-        user.IdpId.Should().Be(idpId);
         user.IdpUserId.Should().Be(idpUserId);
-        user.Name.Should().Be(name);
+        user.Username.Should().Be(name);
     }
 
     [Fact]
@@ -27,7 +26,7 @@ public class UserTests
     {
         var idpId = IdpId.Create(Guid.NewGuid());
         var idpUserId = IdpUserId.Create(Guid.NewGuid());
-        var name = Name.Create("Test User");
+        var name = Username.Create("Test User");
 
         var user = User.Create(idpId, idpUserId, name);
 
@@ -39,14 +38,12 @@ public class UserTests
     {
         var idpId = IdpId.Create(Guid.NewGuid());
         var idpUserId = IdpUserId.Create(Guid.NewGuid());
-        var name = Name.Create("Test User");
+        var name = Username.Create("Test User");
 
-        var organizationIdpId = IdpId.Create(Guid.NewGuid());
-        var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+        var organization = Organization.Create(organizationTin, organizationName);
 
         var user = User.Create(idpId, idpUserId, name);
         var affiliation = Affiliation.Create(user, organization);

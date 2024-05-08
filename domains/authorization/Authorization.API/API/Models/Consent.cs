@@ -1,11 +1,11 @@
 using System;
+using API.ValueObjects;
 
 namespace API.Models;
 
 public class Consent : IEntity<Guid>
 {
     private Consent(
-        Guid id,
         Guid organizationId,
         Guid clientId,
         Organization organization,
@@ -13,7 +13,6 @@ public class Consent : IEntity<Guid>
         long consentDate
     )
     {
-        Id = id;
         Organization = organization;
         Client = client;
         OrganizationId = organizationId;
@@ -38,7 +37,6 @@ public class Consent : IEntity<Guid>
         ArgumentNullException.ThrowIfNull(client);
 
         var consent = new Consent(
-            Guid.NewGuid(),
             organization.Id,
             client.Id,
             organization,

@@ -23,7 +23,4 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("scope")] string Scope);
 
 public record GrantConsentRequest(
-    [property: JsonPropertyName("sub")] Guid ClientId
-);
-
-
+    [property: JsonPropertyName("sub")] Guid ClientId);

@@ -28,12 +28,7 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 
 public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private string _sub = Guid.NewGuid().ToString();
-    private string _orgIds = "["+Guid.NewGuid()+"]";
-    private string _name = "Test Testesen";
-
     public PostgresContainer PostgresContainer { get; } = new();
-    public Api Api { get; private set; } = null!;
 
     public async Task InitializeAsync()
     {
@@ -43,25 +38,35 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
         await using var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await using var connection = db.Database.GetDbConnection();
         await connection.OpenAsync();
-
-        Api = new Api(CreateAuthenticatedClient(_sub, _name, _orgIds));
     }
 
-    private HttpClient CreateAuthenticatedClient(string sub, string name, string orgIds)
+    public Api CreateApi(string sub = "", string name = "", string orgIds = "", string subType = "")
+    {
+        sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
+        name = string.IsNullOrEmpty(name) ? "Test Testesen" : name;
+        orgIds = string.IsNullOrEmpty(orgIds) ? Guid.NewGuid().ToString() : orgIds;
+        subType = string.IsNullOrEmpty(subType) ? "user" : subType;
+
+        return new Api(CreateAuthenticatedClient(sub, name, orgIds, subType));
+    }
+
+    private HttpClient CreateAuthenticatedClient(string sub, string name, string orgIds, string subType)
     {
         var httpClient = CreateClient();
-        var token = GenerateToken(sub, name, orgIds);
+        var token = GenerateToken(sub, name, orgIds, subType);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20230101);
         return httpClient;
     }
 
-    private string GenerateToken(string sub, string name, string orgIds)
+    private string GenerateToken(string sub, string name, string orgIds, string subType)
     {
         using RSA rsa = RSA.Create(2048 * 2);
-        var req = new CertificateRequest ("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        req.CertificateExtensions.Add (new X509KeyUsageExtension (System.Security.Cryptography.X509Certificates.X509KeyUsageFlags.DigitalSignature, true));
-        var cert = req.CreateSelfSigned (DateTimeOffset.Now, DateTimeOffset.Now.AddYears (5));
+        var req = new CertificateRequest("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        req.CertificateExtensions.Add(
+            new X509KeyUsageExtension(System.Security.Cryptography.X509Certificates.X509KeyUsageFlags.DigitalSignature,
+                true));
+        var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
 
         var signingCredentials = new SigningCredentials(new X509SecurityKey(cert), SecurityAlgorithms.RsaSha256);
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -70,6 +75,7 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
             new("sub", sub),
             new("name", name),
             new("org_ids", orgIds),
+            new("sub_type", subType),
         });
         var securityTokenDescriptor = new SecurityTokenDescriptor
         {
@@ -96,7 +102,10 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
         builder.ConfigureTestServices(services =>
         {
             services.RemoveDbContext<ApplicationDbContext>();
-            services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(PostgresContainer.ConnectionString); });
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseNpgsql(PostgresContainer.ConnectionString);
+            });
 
             services.EnsureDbCreated<ApplicationDbContext>();
 
@@ -128,9 +137,9 @@ public static class ServiceCollectionExtensions
 
 public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
+    public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
+        UrlEncoder encoder) : base(options, logger, encoder)
     {
-
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()

@@ -20,20 +20,15 @@ public class Any
         return API.ValueObjects.IdpUserId.Create(Guid());
     }
 
-    public static Name Name()
+    public static Username Name()
     {
 
-        return API.ValueObjects.Name.Create("Test Testesen");
+        return API.ValueObjects.Username.Create("Test Testesen");
     }
 
     public static Guid Guid()
     {
         return System.Guid.NewGuid();
-    }
-
-    public static IdpOrganizationId IdpOrganizationId()
-    {
-        return API.ValueObjects.IdpOrganizationId.Create(Guid());
     }
 
     public static Tin Tin()
@@ -48,7 +43,7 @@ public class Any
 
     public static Organization Organization()
     {
-        return API.Models.Organization.Create(IdpId(), IdpOrganizationId(), Tin(), OrganizationName());
+        return API.Models.Organization.Create( Tin(), OrganizationName());
     }
 
     public static IdpClientId IdpClientId()
@@ -62,6 +57,6 @@ public class Any
     }
     public static Client Client()
     {
-        return API.Models.Client.Create(IdpClientId(), OrganizationName(), Role.External);
+        return API.Models.Client.Create(IdpClientId(), Role.External, "https://redirect.url");
     }
 }

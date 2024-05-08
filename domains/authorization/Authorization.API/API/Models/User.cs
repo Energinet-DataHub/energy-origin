@@ -8,15 +8,13 @@ public class User : IEntity<Guid>
 {
     private User(
         Guid id,
-        IdpId idpId,
         IdpUserId idpUserId,
-        Name name
+        Username username
     )
     {
         Id = id;
-        IdpId = idpId;
         IdpUserId = idpUserId;
-        Name = name;
+        Username = username;
     }
 
     private User()
@@ -24,23 +22,21 @@ public class User : IEntity<Guid>
     }
 
     public Guid Id { get; private set; }
-    public IdpId IdpId { get; private set; } = null!;
     public IdpUserId IdpUserId { get; private set; } = null!;
-    public Name Name { get; private set; } = null!;
+    public Username Username { get; private set; } = null!;
 
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
 
     public static User Create(
         IdpId idpId,
         IdpUserId idpUserId,
-        Name name
+        Username username
     )
     {
         return new User(
             Guid.NewGuid(),
-            idpId,
             idpUserId,
-            name
+            username
         );
     }
 }

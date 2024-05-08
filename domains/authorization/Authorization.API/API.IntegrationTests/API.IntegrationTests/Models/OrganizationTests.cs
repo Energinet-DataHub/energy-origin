@@ -38,22 +38,22 @@ public class OrganizationTests(IntegrationTestFixture fixture) : DatabaseTest(fi
         OrganizationRepository.Remove(organization);
         await UnitOfWork.CommitAsync();
 
-        var act = async () => await OrganizationRepository.GetAsync(organization.Id, CancellationToken.None);
+        var act = async () =>
+            await OrganizationRepository.GetAsync(organization.Id, CancellationToken.None);
         await act.Should().ThrowAsync<EntityNotFoundException>();
     }
 
     [Fact]
     public async Task InsertDuplicateOrganization_ThrowsException()
     {
-        var organization1 = Any.Organization();
-        var organization2 = Organization.Create(organization1.IdpId, organization1.IdpOrganizationId, organization1.Tin, organization1.OrganizationName);
+        var organization = Any.Organization();
 
         await UnitOfWork.BeginTransactionAsync();
-        await OrganizationRepository.AddAsync(organization1, CancellationToken.None);
+        await OrganizationRepository.AddAsync(organization, CancellationToken.None);
         await UnitOfWork.CommitAsync();
 
         await UnitOfWork.BeginTransactionAsync();
-        await OrganizationRepository.AddAsync(organization2, CancellationToken.None);
+        await OrganizationRepository.AddAsync(organization, CancellationToken.None);
         var act = async () => await UnitOfWork.CommitAsync();
 
         await act.Should().ThrowAsync<DbUpdateException>()
@@ -61,14 +61,13 @@ public class OrganizationTests(IntegrationTestFixture fixture) : DatabaseTest(fi
     }
 
     [Theory]
-    [InlineData("IdpId")]
-    [InlineData("IdpOrganizationId")]
     [InlineData("Tin")]
     [InlineData("OrganizationName")]
     public async Task InsertOrganizationWithNullField_ThrowsException(string fieldName)
     {
-        var sql = "INSERT INTO \"Organizations\" (\"Id\", \"IdpId\", \"IdpOrganizationId\", \"Tin\", \"OrganizationName\")" +
-                  " VALUES (@Id, @IdpId, @IdpOrganizationId, @Tin, @OrganizationName)";
+        var sql =
+            "INSERT INTO \"Organizations\" (\"Id\", \"IdpId\", \"IdpOrganizationId\", \"Tin\", \"OrganizationName\")" +
+            " VALUES (@Id, @IdpId, @IdpOrganizationId, @Tin, @OrganizationName)";
 
         await UnitOfWork.BeginTransactionAsync();
         var exception = await Record.ExceptionAsync(async () =>
@@ -76,17 +75,15 @@ public class OrganizationTests(IntegrationTestFixture fixture) : DatabaseTest(fi
             await using var command = Db.Database.GetDbConnection().CreateCommand();
             command.CommandText = sql;
 
-            var id = Guid.NewGuid();
-            var idpId = Guid.NewGuid();
-            var idpOrganizationId = Guid.NewGuid();
             var tin = "12345678";
             var organizationName = "testOrganizationName";
 
-            command.Parameters.Add(new NpgsqlParameter("Id", id) { NpgsqlDbType = NpgsqlDbType.Uuid });
-            command.Parameters.Add(new NpgsqlParameter("IdpId", fieldName == "IdpId" ? DBNull.Value : idpId) { NpgsqlDbType = NpgsqlDbType.Uuid });
-            command.Parameters.Add(new NpgsqlParameter("IdpOrganizationId", fieldName == "IdpOrganizationId" ? DBNull.Value : idpOrganizationId) { NpgsqlDbType = NpgsqlDbType.Uuid });
-            command.Parameters.Add(new NpgsqlParameter("Tin", fieldName == "Tin" ? DBNull.Value : tin) { NpgsqlDbType = NpgsqlDbType.Text });
-            command.Parameters.Add(new NpgsqlParameter("OrganizationName", fieldName == "OrganizationName" ? DBNull.Value : organizationName) { NpgsqlDbType = NpgsqlDbType.Text });
+            command.Parameters.Add(new NpgsqlParameter("Tin", fieldName == "Tin" ? DBNull.Value : tin)
+                { NpgsqlDbType = NpgsqlDbType.Text });
+            command.Parameters.Add(
+                new NpgsqlParameter("OrganizationName",
+                        fieldName == "OrganizationName" ? DBNull.Value : organizationName)
+                    { NpgsqlDbType = NpgsqlDbType.Text });
 
             await command.ExecuteNonQueryAsync();
         });
@@ -96,32 +93,28 @@ public class OrganizationTests(IntegrationTestFixture fixture) : DatabaseTest(fi
     }
 
     [Theory]
-    [InlineData("IdpId")]
-    [InlineData("IdpOrganizationId")]
     [InlineData("Tin")]
     [InlineData("OrganizationName")]
     public async Task UpdateOrganizationWithNullField_ThrowsException(string fieldName)
     {
         var id = Guid.NewGuid();
-        var idpId = Guid.NewGuid();
-        var idpOrganizationId = Guid.NewGuid();
         var tin = "12345678";
         var organizationName = "testOrganizationName";
 
-        var sql = "INSERT INTO \"Organizations\" (\"Id\", \"IdpId\", \"IdpOrganizationId\", \"Tin\", \"OrganizationName\")" +
-                        " VALUES (@Id, @IdpId, @IdpOrganizationId, @Tin, @OrganizationName)";
+        var sql =
+            "INSERT INTO \"Organizations\" (\"Id\", \"Tin\", \"Name\")" +
+            " VALUES (@Id, @Tin, @OrganizationName)";
 
         await UnitOfWork.BeginTransactionAsync();
         await using (var insertCommand = Db.Database.GetDbConnection().CreateCommand())
         {
             insertCommand.CommandText = sql;
-            insertCommand.Parameters.Add(new NpgsqlParameter("Id", id) { NpgsqlDbType = NpgsqlDbType.Uuid });
-            insertCommand.Parameters.Add(new NpgsqlParameter("IdpId", idpId) { NpgsqlDbType = NpgsqlDbType.Uuid });
-            insertCommand.Parameters.Add(new NpgsqlParameter("IdpOrganizationId", idpOrganizationId) { NpgsqlDbType = NpgsqlDbType.Uuid });
             insertCommand.Parameters.Add(new NpgsqlParameter("Tin", tin) { NpgsqlDbType = NpgsqlDbType.Text });
-            insertCommand.Parameters.Add(new NpgsqlParameter("OrganizationName", organizationName) { NpgsqlDbType = NpgsqlDbType.Text });
+            insertCommand.Parameters.Add(new NpgsqlParameter("Name", organizationName)
+                { NpgsqlDbType = NpgsqlDbType.Text });
             await insertCommand.ExecuteNonQueryAsync();
         }
+
         await UnitOfWork.CommitAsync();
 
         var updateSql = $"UPDATE \"Organizations\" SET \"{fieldName}\" = NULL WHERE \"Id\" = @Id";

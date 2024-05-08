@@ -9,22 +9,18 @@ public class ConsentTests
     [Fact]
     public void Consent_WithValidData_CreatesSuccessfully()
     {
-        var organizationIdpId = IdpId.Create(Guid.NewGuid());
-        var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+        var organization = Organization.Create(organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var clientName = OrganizationName.Create("Test Client");
         var role = Role.External;
-        var client = Client.Create(clientIdpClientId, clientName, role);
+        var client = Client.Create(clientIdpClientId, role, "https://redirect.url");
 
         var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var consent = Consent.Create(organization, client, consentDate);
 
         consent.Should().NotBeNull();
-        consent.Id.Should().NotBeEmpty();
         consent.Organization.Should().Be(organization);
         consent.Client.Should().Be(client);
         consent.ConsentDate.Should().Be(consentDate);
@@ -35,16 +31,13 @@ public class ConsentTests
     [Fact]
     public void Consent_Create_AddsConsentToOrganizationAndClient()
     {
-        var organizationIdpId = IdpId.Create(Guid.NewGuid());
-        var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+        var organization = Organization.Create(organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var clientName = OrganizationName.Create("Test Client");
         var role = Role.External;
-        var client = Client.Create(clientIdpClientId, clientName, role);
+        var client = Client.Create(clientIdpClientId, role, "https://redirect.url");
 
         var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var consent = Consent.Create(organization, client, consentDate);
@@ -57,9 +50,8 @@ public class ConsentTests
     public void Consent_Create_ThrowsArgumentNullException_WhenOrganizationIsNull()
     {
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var clientName = OrganizationName.Create("Test Client");
         var role = Role.External;
-        var client = Client.Create(clientIdpClientId, clientName, role);
+        var client = Client.Create(clientIdpClientId, role, "https://redirect.url");
 
         var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Action act = () => Consent.Create(null!, client, consentDate);
@@ -70,11 +62,9 @@ public class ConsentTests
     [Fact]
     public void Consent_Create_ThrowsArgumentNullException_WhenClientIsNull()
     {
-        var organizationIdpId = IdpId.Create(Guid.NewGuid());
-        var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+        var organization = Organization.Create(organizationTin, organizationName);
 
         var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Action act = () => Consent.Create(organization, null!, consentDate);

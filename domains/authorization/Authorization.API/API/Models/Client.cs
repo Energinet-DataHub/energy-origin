@@ -6,11 +6,11 @@ namespace API.Models;
 
 public class Client : IEntity<Guid>
 {
-    private Client(Guid id, IdpClientId idpClientId, OrganizationName organizationName, Role role) {
+    private Client(Guid id, IdpClientId idpClientId, Role role, string redirectUrl) {
         Id = id;
         IdpClientId = idpClientId;
-        OrganizationName = organizationName;
         Role = role;
+        RedirectUrl = redirectUrl;
     }
 
     private Client()
@@ -19,15 +19,15 @@ public class Client : IEntity<Guid>
 
     public Guid Id { get; private set; }
     public IdpClientId IdpClientId { get; private set; } = null!;
-    public OrganizationName OrganizationName { get; private set; } = null!;
+    public ClientName Name { get; private set; } = null!;
     public Role Role { get; private set; }
 
     public string RedirectUrl { get; set; } = null!;
 
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();
 
-    public static Client Create(IdpClientId idpClientId, OrganizationName organizationName, Role role)
+    public static Client Create(IdpClientId idpClientId, Role role, string redirectUrl)
     {
-        return new Client(Guid.NewGuid(), idpClientId, organizationName, role);
+        return new Client(Guid.NewGuid(), idpClientId, role, redirectUrl);
     }
 }

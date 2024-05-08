@@ -13,12 +13,11 @@ public class ClientTests
         var name = OrganizationName.Create("Test Client");
         var role = Role.External;
 
-        var client = Client.Create(idpClientId, name, role);
+        var client = Client.Create(idpClientId, role, "https://redirect.url");
 
         client.Should().NotBeNull();
         client.Id.Should().NotBeEmpty();
         client.IdpClientId.Should().Be(idpClientId);
-        client.OrganizationName.Should().Be(name);
         client.Role.Should().Be(role);
     }
 
@@ -29,7 +28,7 @@ public class ClientTests
         var name = OrganizationName.Create("Test Client");
         var role = Role.External;
 
-        var client = Client.Create(idpClientId, name, role);
+        var client = Client.Create(idpClientId, role, "https://redirect.url");
 
         client.Consents.Should().NotBeNull().And.BeEmpty();
     }
@@ -42,13 +41,12 @@ public class ClientTests
         var role = Role.External;
 
         var organizationIdpId = IdpId.Create(Guid.NewGuid());
-        var organizationIdpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(organizationIdpId, organizationIdpOrganizationId, organizationTin, organizationName);
+        var organization = Organization.Create(organizationTin, organizationName);
 
-        var client = Client.Create(idpClientId, name, role);
+        var client = Client.Create(idpClientId, role, "https://redirect.url");
         var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var consent = Consent.Create(organization, client, consentDate);
 

@@ -17,9 +17,9 @@ public class GetConsentQueryTests
 
         var result = await handler.Handle(new GetConsentQuery(consent.ClientId), CancellationToken.None);
 
-        result.ClientId.Should().Be(consent.ClientId);
-        result.Name.Should().Be(consent.Organization.OrganizationName);
-        result.RedirectUrl.Should().Be(consent.Client.RedirectUrl);
+        result.Result[0].ClientId.Should().Be(consent.ClientId);
+        result.Result[0].OrganizationName.Should().Be(consent.Organization.Name);
+        result.Result[0].RedirectUrl.Should().Be(consent.Client.RedirectUrl);
     }
 
     [Fact]

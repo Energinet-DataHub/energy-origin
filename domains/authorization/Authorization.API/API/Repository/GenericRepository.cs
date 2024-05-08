@@ -12,9 +12,18 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
 {
     protected readonly ApplicationDbContext Context = context ?? throw new ArgumentNullException(nameof(context));
 
+    public async Task<T> GetAsync(object[] keys, CancellationToken cancellationToken)
+    {
+        var key = string.Join(" ", keys.Select(k => k.ToString()));
+
+        return await Context.Set<T>().FindAsync(keys, cancellationToken) ??
+               throw new EntityNotFoundException(key, typeof(T).Name);
+    }
+
     public async Task<T> GetAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await Context.Set<T>().FindAsync(id, cancellationToken) ?? throw new EntityNotFoundException(id, typeof(T).Name);
+        return await Context.Set<T>().FindAsync(id, cancellationToken) ??
+               throw new EntityNotFoundException(id.ToString(), typeof(T).Name);
     }
 
     public async Task AddAsync(T entity, CancellationToken cancellationToken)

@@ -1,7 +1,10 @@
 ﻿using System.Net.Http.Json;
 using API.Authorization._Features_;
 using API.IntegrationTests.Setup;
+using API.Models;
+using API.UnitTests;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
@@ -9,10 +12,16 @@ namespace API.IntegrationTests.API;
 public class GrantConsentTest
 {
     private readonly Api _api;
+    private readonly IntegrationTestFixture _integrationTestFixture;
+    private readonly DbContextOptions<ApplicationDbContext> options;
 
     public GrantConsentTest(IntegrationTestFixture integrationTestFixture)
     {
-        _api = integrationTestFixture.Api;
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.ConnectionString;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
+
+        _integrationTestFixture = integrationTestFixture;
+        _api = integrationTestFixture.CreateApi();
     }
 
     [Fact]
@@ -26,10 +35,37 @@ public class GrantConsentTest
     [Fact]
     public async Task GivenClientId_WhenGettingConsent_HttpOkConsentReturned()
     {
-        var clientId = Guid.NewGuid();
-        var response = await _api.GetConsent(clientId);
+        var consent = Any.Consent();
+        await using var dbContext = new ApplicationDbContext(options);
+        await dbContext.Consents.AddAsync(consent);
+
+
+        await dbContext.SaveChangesAsync();
+        var response = await _api.GetConsent(consent.ClientId);
+
         response.Should().Be200Ok();
-        var result =  await response.Content.ReadFromJsonAsync<GetConsentQueryResult>();
-        result!.ClientId.Should().Be(clientId);
+
+        var result = await response.Content.ReadFromJsonAsync<GetConsentsQueryResult>();
+        result!.Result.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task GivenSubTypeNotUser_WhenGrantingConsent_HttpForbiddenIsReturned()
+    {
+        var api = _integrationTestFixture.CreateApi(subType: "external");
+
+        var response = await api.GrantConsent(Guid.NewGuid());
+
+        response.Should().Be403Forbidden();
+    }
+
+    [Fact]
+    public async Task GivenSubTypeNotUser_WhenGettingConsent_HttpForbiddenIsReturned()
+    {
+        var api = _integrationTestFixture.CreateApi(subType: "external");
+
+        var response = await api.GetConsent(Guid.NewGuid());
+
+        response.Should().Be403Forbidden();
     }
 }
