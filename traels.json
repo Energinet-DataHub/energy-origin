@@ -1,0 +1,34 @@
+[
+    {
+        "subsystem": "domain/transfer",
+        "sdk": "8.0.204",
+        "runtime": "8.0.4",
+        "project": "Transfer.API/API/API.csproj",
+        "configuration": "Transfer.API/configuration.yaml",
+        "migrations": "migrations/API.sql"
+    },
+    {
+        "subsystem": "domain/transfer",
+        "sdk": "8.0.204",
+        "runtime": "8.0.4",
+        "project": "TransferAgreementAutomation/Worker/Worker.csproj",
+        "configuration": "TransferAgreementAutomation/configuration.yaml",
+        "migrations": "migrations/API.sql"
+    },
+    {
+        "subsystem": "domain/transfer",
+        "sdk": "8.0.204",
+        "runtime": "8.0.4",
+        "project": "ClaimAutomation/Worker/Worker.csproj",
+        "configuration": "ClaimAutomation/configuration.yaml",
+        "migrations": "migrations/API.sql"
+    },
+    {
+        "subsystem": "domain/auth",
+        "sdk": "8.0.204",
+        "runtime": "8.0.4",
+        "project": "Auth.API/API/API.csproj",
+        "configuration": "Auth.API/configuration.yaml",
+        "migrations": "migrations/API.sql"
+    }
+]

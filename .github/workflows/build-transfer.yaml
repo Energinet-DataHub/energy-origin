@@ -5,52 +5,15 @@ on:
     branches:
       - transfer-workflow
 
-env:
-  matrixJson: |
-    [
-      {
-        "subsystem": "domain/transfer",
-        "sdk": "8.0.204",
-        "runtime": "8.0.4",
-        "project": "Transfer.API/API/API.csproj",
-        "configuration": "Transfer.API/configuration.yaml",
-        "migrations": "migrations/API.sql"
-      },
-      {
-        "subsystem": "domain/transfer",
-        "sdk": "8.0.204",
-        "runtime": "8.0.4",
-        "project": "TransferAgreementAutomation/Worker/Worker.csproj",
-        "configuration": "TransferAgreementAutomation/configuration.yaml",
-        "migrations": "migrations/API.sql"
-      },
-      {
-        "subsystem": "domain/transfer",
-        "sdk": "8.0.204",
-        "runtime": "8.0.4",
-        "project": "ClaimAutomation/Worker/Worker.csproj",
-        "configuration": "ClaimAutomation/configuration.yaml",
-        "migrations": "migrations/API.sql"
-      },
-      {
-        "subsystem": "domain/auth",
-        "sdk": "8.0.204",
-        "runtime": "8.0.4",
-        "project": "Auth.API/API/API.csproj",
-        "configuration": "Auth.API/configuration.yaml",
-        "migrations": "migrations/API.sql"
-      },
-    ]
-
 jobs:
   define:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ env.matrix }}
     steps:
-      - name: Define matrix (not simple way way)
+      - name: Define matrix (file tbd)
         shell: bash
-        run: printf 'matrix=%s' '${{ env.matrixJson }}' >> $GITHUB_ENV
+        run: printf "matrix=%s\n" "$(jq -rc . traels.json)" >> $GITHUB_ENV
 
   build:
     needs: define
