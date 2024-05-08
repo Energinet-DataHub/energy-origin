@@ -30,15 +30,26 @@ jobs:
           path: acorn-actions
           ref: solution-validation
 
+      - name: Enforce assembly name
+        shell: bash
+        run: |
+          set +e
+          grep -q "<AssemblyName>" "energy-origin/domains/transfer/Transfer.API/API/API.csproj"
+          if [ $? -eq 0 ]; then
+            sed -i "energy-origin/domains/transfer/Transfer.API/API/API.csproj" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+          else
+            sed -i "energy-origin/domains/transfer/Transfer.API/API/API.csproj" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+          fi
+
       - name: Build docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
-          dockerfile: acorn-actions/Dockerfile-solution
+          dockerfile: energy-origin/Dockerfile-transfer
           image-name: eo-transfer-api
           image-tag: TEST
           docker-context: energy-origin/domains/transfer
           dry-run: true
           build-args: |
-            ASSEMBLY_NAME=API
+            PROJECT=Transfer.API/API/API.csproj
             SDK_VERSION=8.0.204
             RUNTIME_VERSION=8.0.4
