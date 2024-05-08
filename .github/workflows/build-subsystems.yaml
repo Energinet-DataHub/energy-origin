@@ -21,9 +21,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Define matrix (file tbd) #FIXME: tbd
+      - uses: CodeReaper/find-diff-action@v3
+        id: diff
+        with:
+          paths: domains/*/
+
+      - name: Define matrix
         shell: bash
-        run: printf "matrix=%s\n" "$(jq -rc . subsystems.json)" >> $GITHUB_ENV
+        env:
+          LIST: ${{ steps.diff.outputs.list }}
+        run: |
+          changed=$(echo "$LIST" | jq --raw-input . | jq --slurp -cr .)
+          printf "matrix=%s\n" "$(jq -rc --argjson changed "$changed" '[.[] | select(.subsystem | IN($changed[]))]' < subsystems.json)" | tee -a $GITHUB_ENV
 
   build:
     name: Build
