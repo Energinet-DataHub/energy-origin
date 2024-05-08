@@ -120,10 +120,11 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        items: ${{ fromJson(env.matrixJson) }}
+        items: ${{ fromJson(needs.define.outputs.matrix) }}
     runs-on: ubuntu-latest
     name: Update environment
     needs:
+      - define
       - build
     concurrency: commits-base-environment
     steps:
