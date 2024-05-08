@@ -47,7 +47,7 @@ jobs:
           path: energy-origin
 
       - name: Dotnet validate
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@solution-validation #FIXME: these
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@v1
         with:
           path: energy-origin/${{ matrix.item.subsystem }}
           project: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}
@@ -60,7 +60,6 @@ jobs:
           repository: "Energinet-DataHub/acorn-actions"
           sparse-checkout: Dockerfile-simplified
           path: acorn-actions
-          ref: solution-validation
 
       - name: Resolve image version
         uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
