@@ -1,9 +1,16 @@
-name: Build Transfer
+name: Build Subsystems
 
 on:
-  push:
-    branches:
-      - transfer-workflow
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
 
 jobs:
   define:
@@ -14,9 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Define matrix (file tbd)
+      - name: Define matrix (file tbd) #FIXME: tbd
         shell: bash
-        run: printf "matrix=%s\n" "$(jq -rc . traels.json)" >> $GITHUB_ENV
+        run: printf "matrix=%s\n" "$(jq -rc . subsystems.json)" >> $GITHUB_ENV
 
   build:
     name: Build
@@ -31,7 +38,7 @@ jobs:
           path: energy-origin
 
       - name: Dotnet validate
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@solution-validation
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@solution-validation #FIXME: these
         with:
           path: energy-origin/${{ matrix.item.subsystem }}
           project: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}
@@ -46,28 +53,12 @@ jobs:
           path: acorn-actions
           ref: solution-validation
 
-      - name: Enforce assembly name
-        shell: bash
-        run: |
-          set +e
-          grep -q "<AssemblyName>" "energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}"
-          if [ $? -eq 0 ]; then
-            sed -i "energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
-          else
-            sed -i "energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
-          fi
-
-      # FIXME: needs to be passed during testing
-      # - name: Resolve image version
-      #   uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
-
       - name: Resolve image version
-        shell: bash
-        run: echo "version="${{ github.sha }}-test"" >> $GITHUB_ENV
+        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
 
       - name: Resolve image name
         shell: bash
-        run: echo "name=$(yq '.name' 'energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.configuration }}')" >> $GITHUB_ENV # could be duplicated in matrix to avoid bash?
+        run: echo "name=$(yq '.name' 'energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.configuration }}')" >> $GITHUB_ENV
 
       - name: Build image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
@@ -76,7 +67,7 @@ jobs:
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
           docker-context: energy-origin/${{ matrix.item.subsystem }}
-          dry-run: true
+          dry-run: ${{ inputs.dry-run }}
           build-args: |
             PROJECT=${{ matrix.item.project }}
             SDK_VERSION=${{ matrix.item.sdk }}
@@ -100,6 +91,7 @@ jobs:
       - define
       - build
     concurrency: commits-base-environment
+    if: ${{ inputs.is-dependabot == 'false' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -108,5 +100,4 @@ jobs:
         with:
           configuration: ${{ matrix.item.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: true
-# FIXME: all dry run arguments needs to be correctly set
+          dry_run: ${{ inputs.dry-run }}
