@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Worker\Worker.csproj" />
+    <ProjectReference Include="..\TransferAgreementAutomationWorker\TransferAgreementAutomationWorker.csproj" />
   </ItemGroup>
 
 </Project>

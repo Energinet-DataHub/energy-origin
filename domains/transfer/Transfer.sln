@@ -15,11 +15,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectOriginClients", "Sha
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TransferAgreementAutomation", "TransferAgreementAutomation", "{DFD9CF49-6921-4BAE-BDC0-C77537C842AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.UnitTests", "TransferAgreementAutomation\Worker.UnitTests\Worker.UnitTests.csproj", "{A96B4FA0-C018-41F0-8EC9-7E6A0E397FA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransferAgreementAutomationWorker.UnitTests", "TransferAgreementAutomation\TransferAgreementAutomationWorker.UnitTests\TransferAgreementAutomationWorker.UnitTests.csproj", "{A96B4FA0-C018-41F0-8EC9-7E6A0E397FA1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker", "TransferAgreementAutomation\Worker\Worker.csproj", "{B1E21F07-75F9-4333-8800-9ED52EAE4163}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransferAgreementAutomationWorker", "TransferAgreementAutomation\TransferAgreementAutomationWorker\TransferAgreementAutomationWorker.csproj", "{B1E21F07-75F9-4333-8800-9ED52EAE4163}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.IntegrationTests", "TransferAgreementAutomation\Worker.IntegrationTests\Worker.IntegrationTests.csproj", "{B4B84535-A114-4D5E-934B-BE66450A59DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransferAgreementAutomationWorker.IntegrationTests", "TransferAgreementAutomation\TransferAgreementAutomationWorker.IntegrationTests\TransferAgreementAutomationWorker.IntegrationTests.csproj", "{B4B84535-A114-4D5E-934B-BE66450A59DC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ClaimAutomation", "ClaimAutomation", "{EC080CA8-86BE-4D75-B986-384DA87B4342}"
 EndProject

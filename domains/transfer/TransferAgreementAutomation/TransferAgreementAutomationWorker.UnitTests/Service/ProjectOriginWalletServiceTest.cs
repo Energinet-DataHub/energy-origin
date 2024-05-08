@@ -7,7 +7,7 @@ using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Service;
 using Xunit;
 
-namespace Worker.UnitTests.Service;
+namespace TransferAgreementAutomationWorker.UnitTests.Service;
 
 public class ProjectOriginWalletServiceTest
 {
