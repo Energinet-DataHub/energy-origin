@@ -21,7 +21,7 @@ jobs:
     needs: define
     strategy:
       matrix:
-        matrix: ${{ fromJson(needs.define.outputs.matrix) }}
+        item: ${{ fromJson(needs.define.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,10 +31,10 @@ jobs:
       - name: Dotnet validate
         uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@solution-validation
         with:
-          path: energy-origin/${{ matrix.subsystem }}
-          project: energy-origin/${{ matrix.subsystem }}/${{ matrix.project }}
-          migrations: energy-origin/${{ matrix.subsystem }}/${{ matrix.migrations }}
-          dotnet-version: ${{ matrix.sdk }}
+          path: energy-origin/${{ matrix.item.subsystem }}
+          project: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}
+          migrations: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.migrations }}
+          dotnet-version: ${{ matrix.item.sdk }}
           pin-version: true
 
       - uses: actions/checkout@v4
@@ -48,18 +48,18 @@ jobs:
         shell: bash
         run: |
           set +e
-          grep -q "<AssemblyName>" "energy-origin/${{ matrix.subsystem }}/${{ matrix.project }}"
+          grep -q "<AssemblyName>" "energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}"
           if [ $? -eq 0 ]; then
-            sed -i "energy-origin/${{ matrix.subsystem }}/${{ matrix.project }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+            sed -i "energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
           else
-            sed -i "energy-origin/${{ matrix.subsystem }}/${{ matrix.project }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+            sed -i "energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
           fi
 
       - name: Resolve image version
         uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
 
       - name: Resolve image name
-        run: echo "name=$(yq '.name' "${{ matrix.configuration }})" >> $GITHUB_ENV # could be duplicated in matrix to avoid bash?
+        run: echo "name=$(yq '.name' "${{ matrix.item.configuration }})" >> $GITHUB_ENV # could be duplicated in matrix to avoid bash?
 
       - name: Build image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
@@ -67,12 +67,12 @@ jobs:
           dockerfile: acorn-actions/Dockerfile.simplified
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
-          docker-context: energy-origin/${{ matrix.subsystem }}
+          docker-context: energy-origin/${{ matrix.item.subsystem }}
           dry-run: true
           build-args: |
-            PROJECT=${{ matrix.project }}
-            SDK_VERSION=${{ matrix.sdk }}
-            RUNTIME_VERSION=${{ matrix.runtime }}
+            PROJECT=${{ matrix.item.project }}
+            SDK_VERSION=${{ matrix.item.sdk }}
+            RUNTIME_VERSION=${{ matrix.item.runtime }}
 
       - name: Scan image
         uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
@@ -85,7 +85,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        matrix: ${{ fromJson(needs.define.outputs.matrix) }}
+        item: ${{ fromJson(needs.define.outputs.matrix) }}
     runs-on: ubuntu-latest
     name: Update environment
     needs:
@@ -98,7 +98,7 @@ jobs:
       - name: Update environment
         uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
         with:
-          configuration: ${{ matrix.configuration }}
+          configuration: ${{ matrix.item.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: true
 # FIXME: all dry run arguments needs to be correctly set
