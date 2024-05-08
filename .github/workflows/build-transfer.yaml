@@ -1,14 +1,53 @@
 name: Build Transfer
 
 on:
-   push:
-     branches:
-       - transfer-workflow
+  push:
+    branches:
+      - transfer-workflow
+
+env:
+  matrixJson: |
+    [
+      {
+        "subsystem": "domain/transfer",
+        "sdk": "8.0.204",
+        "runtime": "8.0.4",
+        "project": "Transfer.API/API/API.csproj",
+        "configuration": "Transfer.API/configuration.yaml",
+        "migrations": "migrations/API.sql"
+      },
+      {
+        "subsystem": "domain/transfer",
+        "sdk": "8.0.204",
+        "runtime": "8.0.4",
+        "project": "TransferAgreementAutomation/Worker/Worker.csproj",
+        "configuration": "TransferAgreementAutomation/configuration.yaml",
+        "migrations": "migrations/API.sql"
+      },
+      {
+        "subsystem": "domain/transfer",
+        "sdk": "8.0.204",
+        "runtime": "8.0.4",
+        "project": "ClaimAutomation/Worker/Worker.csproj",
+        "configuration": "ClaimAutomation/configuration.yaml",
+        "migrations": "migrations/API.sql"
+      },
+      {
+        "subsystem": "domain/auth",
+        "sdk": "8.0.204",
+        "runtime": "8.0.4",
+        "project": "Auth.API/API/API.csproj",
+        "configuration": "Auth.API/configuration.yaml",
+        "migrations": "migrations/API.sql"
+      },
+    ]
 
 jobs:
-  setup:
+  build:
+    strategy:
+      matrix:
+        items: ${{ fromJson(env.matrixJson) }}
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -17,16 +56,16 @@ jobs:
       - name: Dotnet validate
         uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@solution-validation
         with:
-          path: energy-origin/domains/transfer
-          dotnet-version: 8.0.204
+          path: energy-origin/${{ matrix.subsystem }}
+          project: energy-origin/${{ matrix.subsystem }}/${{ matrix.project }}
+          migrations: energy-origin/${{ matrix.subsystem }}/${{ matrix.migrations }}
+          dotnet-version: ${{ matrix.sdk }}
           pin-version: true
-
-#TODO: Migration file
 
       - uses: actions/checkout@v4
         with:
           repository: "Energinet-DataHub/acorn-actions"
-          sparse-checkout: Dockerfile-solution
+          sparse-checkout: Dockerfile-simplified
           path: acorn-actions
           ref: solution-validation
 
@@ -34,22 +73,56 @@ jobs:
         shell: bash
         run: |
           set +e
-          grep -q "<AssemblyName>" "energy-origin/domains/transfer/Transfer.API/API/API.csproj"
+          grep -q "<AssemblyName>" "energy-origin/${{ matrix.subsystem }}/${{ matrix.project }}"
           if [ $? -eq 0 ]; then
-            sed -i "energy-origin/domains/transfer/Transfer.API/API/API.csproj" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+            sed -i "energy-origin/${{ matrix.subsystem }}/${{ matrix.project }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
           else
-            sed -i "energy-origin/domains/transfer/Transfer.API/API/API.csproj" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+            sed -i "energy-origin/${{ matrix.subsystem }}/${{ matrix.project }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
           fi
 
-      - name: Build docker image
+      - name: Resolve image version
+        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
+
+      - name: Resolve image name
+        run: echo "name=$(yq '.name' "${{ matrix.configuration }})" >> $GITHUB_ENV # could be duplicated in matrix to avoid bash?
+
+      - name: Build image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
-          dockerfile: energy-origin/Dockerfile-transfer
-          image-name: eo-transfer-api
-          image-tag: TEST
-          docker-context: energy-origin/domains/transfer
+          dockerfile: acorn-actions/Dockerfile.simplified
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          docker-context: energy-origin/${{ matrix.subsystem }}
           dry-run: true
           build-args: |
-            PROJECT=Transfer.API/API/API.csproj
-            SDK_VERSION=8.0.204
-            RUNTIME_VERSION=8.0.4
+            PROJECT=${{ matrix.project }}
+            SDK_VERSION=${{ matrix.sdk }}
+            RUNTIME_VERSION=${{ matrix.runtime }}
+
+      - name: Scan image
+        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
+        with:
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+  update:
+    strategy:
+      max-parallel: 1
+      matrix:
+        items: ${{ fromJson(env.matrixJson) }}
+    runs-on: ubuntu-latest
+    name: Update environment
+    needs:
+      - build
+    concurrency: commits-base-environment
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update environment
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+        with:
+          configuration: ${{ matrix.configuration }}
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: true
+# FIXME: all dry run arguments needs to be correctly set
