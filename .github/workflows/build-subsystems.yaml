@@ -24,7 +24,7 @@ jobs:
       - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
-          paths: domains/*/
+          paths: domains/*
 
       - name: Define matrix
         shell: bash
