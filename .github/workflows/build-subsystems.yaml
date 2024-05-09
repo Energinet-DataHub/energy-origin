@@ -82,11 +82,9 @@ jobs:
             RUNTIME_VERSION=${{ matrix.item.runtime }}
 
       - uses: actions/checkout@v4
-        with:
-          path: energy-origin
 
       - name: Scan image
-        uses: ./actions/docker-scout
+        uses: ./.github/actions/docker-scout
         with:
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
