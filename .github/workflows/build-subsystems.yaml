@@ -60,7 +60,6 @@ jobs:
           repository: "Energinet-DataHub/acorn-actions"
           sparse-checkout: Dockerfile-simplified
           path: acorn-actions
-          ref: solution-validation
 
       - name: Resolve image version
         uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
