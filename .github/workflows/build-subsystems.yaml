@@ -11,17 +11,35 @@ on:
         description: "An indication of a dependabot pull request"
         required: true
         type: string
-      projects:
-        description: "A JSON array of projects to build"
-        required: true
-        type: string
 
 jobs:
+  define:
+    name: Define matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ env.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: CodeReaper/find-diff-action@v3
+        id: diff
+        with:
+          paths: domains/*/
+
+      - name: Define matrix
+        shell: bash
+        env:
+          LIST: ${{ steps.diff.outputs.list }}
+        run: |
+          changed=$(echo "$LIST" | jq --raw-input . | jq --slurp -cr .)
+          printf "matrix=%s\n" "$(jq -rc --argjson changed "$changed" '[.[] | select(.subsystem | IN($changed[]))]' < subsystems.json)" | tee -a $GITHUB_ENV
+
   build:
     name: Build
+    needs: define
     strategy:
       matrix:
-        item: ${{ fromJson(inputs.projects) }}
+        item: ${{ fromJson(needs.define.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -74,10 +92,11 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        item: ${{ fromJson(inputs.projects) }}
+        item: ${{ fromJson(needs.define.outputs.matrix) }}
     runs-on: ubuntu-latest
     name: Update environment
     needs:
+      - define
       - build
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}

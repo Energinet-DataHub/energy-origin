@@ -18,9 +18,10 @@ jobs:
       - name: Setup variables
         run: exit 0
 
-  define-projects:
+  build-subsystems:
     needs: setup
-    uses: ./.github/workflows/define-projects.yml
+    uses: ./.github/workflows/build-subsystems.yaml
+    secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
@@ -70,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [
-        define-projects,
+        build-subsystems,
         build-libraries,
         check-licenses,
         check-versions,
