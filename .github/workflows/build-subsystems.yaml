@@ -81,10 +81,8 @@ jobs:
             SDK_VERSION=${{ matrix.item.sdk }}
             RUNTIME_VERSION=${{ matrix.item.runtime }}
 
-      - uses: actions/checkout@v4
-
       - name: Scan image
-        uses: ./.github/actions/docker-scout
+        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
         with:
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
