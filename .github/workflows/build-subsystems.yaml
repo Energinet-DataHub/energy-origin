@@ -1,0 +1,92 @@
+name: Build Subsystems
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
+      projects:
+        description: "A JSON array of projects to build"
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      matrix:
+        item: ${{ fromJson(inputs.projects) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: energy-origin
+
+      - name: Dotnet validate
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@v1
+        with:
+          path: energy-origin/${{ matrix.item.subsystem }}
+          project: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}
+          migrations: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.migrations }}
+          dotnet-version: ${{ matrix.item.sdk }}
+          pin-version: true
+
+      - uses: actions/checkout@v4
+        with:
+          repository: "Energinet-DataHub/acorn-actions"
+          sparse-checkout: Dockerfile-simplified
+          path: acorn-actions
+
+      - name: Resolve image version
+        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
+
+      - name: Resolve image name
+        shell: bash
+        run: echo "name=$(yq '.name' 'energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.configuration }}')" >> $GITHUB_ENV
+
+      - name: Build image
+        uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
+        with:
+          dockerfile: acorn-actions/Dockerfile.simplified
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          docker-context: energy-origin/${{ matrix.item.subsystem }}
+          dry-run: ${{ inputs.dry-run }}
+          build-args: |
+            PROJECT=${{ matrix.item.project }}
+            SDK_VERSION=${{ matrix.item.sdk }}
+            RUNTIME_VERSION=${{ matrix.item.runtime }}
+
+      - name: Scan image
+        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
+        with:
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+  update:
+    strategy:
+      max-parallel: 1
+      matrix:
+        item: ${{ fromJson(inputs.projects) }}
+    runs-on: ubuntu-latest
+    name: Update environment
+    needs:
+      - build
+    concurrency: commits-base-environment
+    if: ${{ inputs.is-dependabot == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update environment
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+        with:
+          configuration: ${{ matrix.item.configuration }}
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ inputs.dry-run }}
