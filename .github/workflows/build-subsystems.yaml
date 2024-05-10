@@ -13,99 +13,203 @@ on:
         type: string
 
 jobs:
-  define:
-    name: Define matrix
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ env.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: CodeReaper/find-diff-action@v3
-        id: diff
-        with:
-          paths: domains/*/
-
-      - name: Define matrix
-        shell: bash
-        env:
-          LIST: ${{ steps.diff.outputs.list }}
-        run: |
-          changed=$(echo "$LIST" | jq --raw-input . | jq --slurp -cr .)
-          printf "matrix=%s\n" "$(jq -rc --argjson changed "$changed" '[.[] | select(.subsystem | IN($changed[]))]' < subsystems.json)" | tee -a $GITHUB_ENV
-
-  build:
-    name: Build
-    needs: define
-    strategy:
-      matrix:
-        item: ${{ fromJson(needs.define.outputs.matrix) }}
+  item-a:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          path: energy-origin
-
-      - name: Dotnet validate
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@v1
-        with:
-          path: energy-origin/${{ matrix.item.subsystem }}
-          project: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}
-          migrations: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.migrations }}
-          dotnet-version: ${{ matrix.item.sdk }}
-          pin-version: true
-
-      - uses: actions/checkout@v4
-        with:
-          repository: "Energinet-DataHub/acorn-actions"
-          sparse-checkout: Dockerfile-simplified
-          path: acorn-actions
-
-      - name: Resolve image version
-        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
-
-      - name: Resolve image name
-        shell: bash
-        run: echo "name=$(yq '.name' 'energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.configuration }}')" >> $GITHUB_ENV
-
-      - name: Build image
-        uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
-        with:
-          dockerfile: acorn-actions/Dockerfile.simplified
-          image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
-          docker-context: energy-origin/${{ matrix.item.subsystem }}
-          dry-run: ${{ inputs.dry-run }}
-          build-args: |
-            PROJECT=${{ matrix.item.project }}
-            SDK_VERSION=${{ matrix.item.sdk }}
-            RUNTIME_VERSION=${{ matrix.item.runtime }}
-
-      - name: Scan image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
-        with:
-          image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
-          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+      - run: echo A
+  item-b:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sleep 10; echo B
+  item-c:
+    runs-on: ubuntu-latest
+    steps:
+      - run: sleep 10; echo C
 
   update:
-    strategy:
-      max-parallel: 1
-      matrix:
-        item: ${{ fromJson(needs.define.outputs.matrix) }}
     runs-on: ubuntu-latest
-    name: Update environment
     needs:
-      - define
-      - build
-    concurrency: commits-base-environment
-    if: ${{ inputs.is-dependabot == 'false' }}
+      - "*"
     steps:
-      - uses: actions/checkout@v4
+      - run: echo "I waited for them"
 
-      - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
-        with:
-          configuration: ${{ matrix.item.configuration }}
-          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ inputs.dry-run }}
+  # # ---- TRANSFER
+
+  # transfer:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/dims-solution
+  #       with:
+  #         solution: domain/transfer/Transfer.sln
+  #         #versions
+
+  # transfer-api:
+  #   needs:
+  #     - transfer
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/dims
+  #       with:
+  #         solution: domain/transfer/Transfer.sln
+  #         project: domains/transfer/Transfer.API/API/API.csproj
+  #         configuration: domains/transfer/Transfer.API/configuration.yaml
+  #         migrations: domains/transfer/migrations/API.sql
+  #         dry-run: true
+  #         #versions
+
+  # transfer-claim-automation:
+  #   needs:
+  #     - transfer
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/dims
+  #       with:
+  #         solution: domain/transfer/Transfer.sln
+  #         project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
+  #         configuration: domains/transfer/ClaimAutomation/configuration.yaml
+  #         migrations: domains/transfer/migrations/API.sql
+  #         dry-run: true
+  #         #versions
+
+  # transfer-agreement-automation:
+  #   needs:
+  #     - transfer
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/dims
+  #       with:
+  #         solution: domain/transfer/Transfer.sln
+  #         project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
+  #         configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
+  #         migrations: domains/transfer/migrations/API.sql
+  #         dry-run: true
+  #         #versions
+
+  # # ---- SUBSYSTEM X
+  # # TODO: the rest
+
+  # # ---- DELIVERY TO BASE
+
+  # # verification=$(echo '${{ toJSON(jobs) }}' | jq '.[] | select(.result != "success") | select(.result != "skipped")')
+
+  # update:
+  #   strategy:
+  #     max-parallel: 1
+  #     matrix:
+  #       item: []
+  #   runs-on: ubuntu-latest
+  #   name: Update environment
+  #   needs:
+  #     - "*"
+  #   concurrency: commits-base-environment
+  #   if: ${{ inputs.is-dependabot == 'false' }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Update environment
+  #       uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+  #       with:
+  #         configuration: ${{ matrix.item.configuration }}
+  #         deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+  #         dry_run: ${{ inputs.dry-run }}
+
+  # define:
+  #   name: Define matrix
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     matrix: ${{ env.matrix }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - uses: CodeReaper/find-diff-action@v3
+  #       id: diff
+  #       with:
+  #         paths: domains/*/
+
+  #     - name: Define matrix
+  #       shell: bash
+  #       env:
+  #         LIST: ${{ steps.diff.outputs.list }}
+  #       run: |
+  #         changed=$(echo "$LIST" | jq --raw-input . | jq --slurp -cr .)
+  #         printf "matrix=%s\n" "$(jq -rc --argjson changed "$changed" '[.[] | select(.subsystem | IN($changed[]))]' < subsystems.json)" | tee -a $GITHUB_ENV
+
+  # build:
+  #   name: Build
+  #   needs: define
+  #   strategy:
+  #     matrix:
+  #       item: ${{ fromJson(needs.define.outputs.matrix) }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         path: energy-origin
+
+  #     - name: Dotnet validate
+  #       uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@v1
+  #       with:
+  #         path: energy-origin/${{ matrix.item.subsystem }}
+  #         project: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.project }}
+  #         migrations: energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.migrations }}
+  #         dotnet-version: ${{ matrix.item.sdk }}
+  #         pin-version: true
+
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         repository: "Energinet-DataHub/acorn-actions"
+  #         sparse-checkout: Dockerfile-simplified
+  #         path: acorn-actions
+
+  #     - name: Resolve image version
+  #       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
+
+  #     - name: Resolve image name
+  #       shell: bash
+  #       run: echo "name=$(yq '.name' 'energy-origin/${{ matrix.item.subsystem }}/${{ matrix.item.configuration }}')" >> $GITHUB_ENV
+
+  #     - name: Build image
+  #       uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
+  #       with:
+  #         dockerfile: acorn-actions/Dockerfile.simplified
+  #         image-name: ${{ env.name }}
+  #         image-tag: ${{ env.version }}
+  #         docker-context: energy-origin/${{ matrix.item.subsystem }}
+  #         dry-run: ${{ inputs.dry-run }}
+  #         build-args: |
+  #           PROJECT=${{ matrix.item.project }}
+  #           SDK_VERSION=${{ matrix.item.sdk }}
+  #           RUNTIME_VERSION=${{ matrix.item.runtime }}
+
+  #     - name: Scan image
+  #       uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
+  #       with:
+  #         image-name: ${{ env.name }}
+  #         image-tag: ${{ env.version }}
+  #         upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+  # update:
+  #   strategy:
+  #     max-parallel: 1
+  #     matrix:
+  #       item: ${{ fromJson(needs.define.outputs.matrix) }}
+  #   runs-on: ubuntu-latest
+  #   name: Update environment
+  #   needs:
+  #     - define
+  #     - build
+  #   concurrency: commits-base-environment
+  #   if: ${{ inputs.is-dependabot == 'false' }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Update environment
+  #       uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+  #       with:
+  #         configuration: ${{ matrix.item.configuration }}
+  #         deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+  #         dry_run: ${{ inputs.dry-run }}
