@@ -28,8 +28,7 @@ jobs:
 
   update:
     runs-on: ubuntu-latest
-    needs:
-      - "*"
+    needs: ["*"]
     steps:
       - run: echo "I waited for them"
 
