@@ -93,6 +93,7 @@ runs:
         dry-run: ${{ inputs.dry-run }}
         build-args: |
           PROJECT=${{ inputs.project }}
+          MIGRATIONS=${{ inputs.migrations }}
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
