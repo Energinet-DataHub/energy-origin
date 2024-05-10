@@ -36,6 +36,8 @@ public class TransferAgreementProposalController(
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 409)]
     [HttpPost]
+    [Route("api/transfer/transfer-agreement-proposals")]
+    [Route("api/transfer/{organizationId}/transfer-agreement-proposals")]
     public async Task<ActionResult> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
     {
         var user = new UserDescriptor(User);

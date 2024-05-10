@@ -6,7 +6,7 @@ using API.ContractService;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using Asp.Versioning;
-using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -16,50 +16,11 @@ using static API.ContractService.SetEndDateResult;
 
 namespace API.Query.API.Controllers;
 
-[Authorize]
+[Authorize(Policy = Policy.B2CPolicy)]
 [ApiController]
-[ApiVersion(ApiVersions.Version20230101)]
-[ApiVersion(ApiVersions.Version20240423)]
-public class ContractsController : ControllerBase
+[ApiVersion(ApiVersions.Version20240515)]
+public class ContractsV20250515Controller : ControllerBase
 {
-    /// <summary>
-    /// Create a contract that activates granular certificate generation for a metering point
-    /// </summary>
-    [HttpPost]
-    [ProducesResponseType(201)]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(typeof(void), 409)]
-    [ApiVersion(ApiVersions.Version20230101)]
-    [Route("api/certificates/contracts")]
-    public async Task<ActionResult> CreateContract(
-        [FromBody] CreateContract createContract,
-        [FromServices] IValidator<CreateContract> validator,
-        [FromServices] IContractService service,
-        CancellationToken cancellationToken)
-    {
-        var user = new UserDescriptor(User);
-
-        var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            validationResult.AddToModelState(ModelState, null);
-            return ValidationProblem(ModelState);
-        }
-
-        var result = await service.Create(
-            new CreateContracts([createContract]),
-            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
-            cancellationToken);
-
-        return result switch
-        {
-            GsrnNotFound => ValidationProblem(),
-            ContractAlreadyExists => ValidationProblem(statusCode: 409),
-            CreateContractResult.Success(var createdContract) => CreatedAtRoute("GetContract",
-                new { id = createdContract[0].Id }, Contract.CreateFrom(createdContract[0])),
-            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
-        };
-    }
 
     /// <summary>
     /// Create contracts that activates granular certificate generation for a metering point
@@ -68,15 +29,15 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(400)]
     [ProducesResponseType(typeof(void), 409)]
-    [ApiVersion(ApiVersions.Version20240423)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> CreateContract(
         [FromBody] CreateContracts createContracts,
+        [FromQuery] Guid orgId,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var user = new UserDescriptor(User);
+        var identity = new IdentityDescriptor(HttpContext, orgId);
 
         foreach (var createContract in createContracts.Contracts)
         {
@@ -88,10 +49,8 @@ public class ContractsController : ControllerBase
             }
         }
 
-        var result = await service.Create(
-            createContracts,
-            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
-            cancellationToken);
+        var result = await service.Create(createContracts, identity.OrgId, identity.Sub, identity.Name, identity.OrgName,
+            identity.OrgCvr ?? string.Empty, cancellationToken);
 
         return result switch
         {
@@ -109,16 +68,16 @@ public class ContractsController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(Contract), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    [Route("api/certificates/contracts/{id}", Name = "GetContract")]
+    [Route("api/certificates/contracts/{id}")]
     public async Task<ActionResult<Contract>> GetContract(
         [FromRoute] Guid id,
+        [FromQuery] Guid orgId,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
+        var identity = new IdentityDescriptor(HttpContext, orgId);
 
-        var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
+        var contract = await service.GetById(id, identity.OrgId.ToString(), cancellationToken);
 
         return contract == null
             ? NotFound()
@@ -132,13 +91,13 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(ContractList), 200)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult<ContractList>> GetAllContracts(
+        [FromQuery] Guid orgId,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
+        var identity = new IdentityDescriptor(HttpContext, orgId);
 
-        var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
+        var contracts = await service.GetByOwner(identity.OrgId.ToString(), cancellationToken);
 
         return contracts.Any()
             ? Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) })
@@ -152,16 +111,16 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
-    [ApiVersion(ApiVersions.Version20230101)]
     [Route("api/certificates/contracts/{id}")]
     public async Task<ActionResult> UpdateEndDate(
         [FromRoute] Guid id,
+        [FromQuery] Guid orgId,
         [FromBody] EditContractEndDate20230101 editContractEndDate,
         [FromServices] IValidator<EditContractEndDate20230101> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var user = new UserDescriptor(User);
+        var identity = new IdentityDescriptor(HttpContext, orgId);
 
         var validationResult = await validator.ValidateAsync(editContractEndDate, cancellationToken);
         if (!validationResult.IsValid)
@@ -171,12 +130,18 @@ public class ContractsController : ControllerBase
         }
 
         var result = await service.SetEndDate(
-            new EditContracts([new EditContractEndDate
-            {
-                EndDate = editContractEndDate.EndDate,
-                Id = id
-            }]),
-            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
+            new EditContracts([
+                new EditContractEndDate
+                {
+                    EndDate = editContractEndDate.EndDate,
+                    Id = id
+                }
+            ]),
+            identity.OrgId,
+            identity.Sub,
+            identity.Name,
+            identity.OrgName,
+            identity.OrgCvr ?? string.Empty,
             cancellationToken);
 
         return result switch
@@ -197,15 +162,15 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
-    [ApiVersion(ApiVersions.Version20240423)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> UpdateEndDate(
         [FromBody] EditContracts editContracts,
+        [FromQuery] Guid orgId,
         [FromServices] IValidator<EditContractEndDate> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var user = new UserDescriptor(User);
+        var identity = new IdentityDescriptor(HttpContext, orgId);
 
         foreach (var contract in editContracts.Contracts)
         {
@@ -219,7 +184,11 @@ public class ContractsController : ControllerBase
 
         var result = await service.SetEndDate(
             editContracts,
-            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
+            identity.OrgId,
+            identity.Sub,
+            identity.Name,
+            identity.OrgName,
+            identity.OrgCvr ?? string.Empty,
             cancellationToken);
 
         return result switch

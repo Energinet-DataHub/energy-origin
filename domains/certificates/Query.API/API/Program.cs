@@ -10,7 +10,7 @@ using API.MeasurementsSyncer;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
+using EnergyOrigin.TokenValidation.b2c;
 using API.IssuingContractCleanup;
 using API.MeasurementsSyncer.Metrics;
 using API.UnitOfWork;
@@ -56,12 +56,11 @@ builder.Services.AddMeasurementsSyncer();
 builder.Services.AddIssuingContractCleanup();
 builder.Services.AddVersioningToApi();
 
-var tokenValidationOptions =
-    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
-    .ValidateDataAnnotations().ValidateOnStart();
-
-builder.AddTokenValidation(tokenValidationOptions);
+var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
+builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
 
 var app = builder.Build();
 

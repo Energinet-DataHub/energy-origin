@@ -144,6 +144,31 @@
             Edit the end date for multiple contracts
             </summary>
         </member>
+        <member name="M:API.Query.API.Controllers.ContractsV20250515Controller.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Create contracts that activates granular certificate generation for a metering point
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.ContractsV20250515Controller.GetContract(System.Guid,System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Returns contract based on the id
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.ContractsV20250515Controller.GetAllContracts(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Returns all the user's contracts for issuing granular certificates
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.ContractsV20250515Controller.UpdateEndDate(System.Guid,System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate20230101,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate20230101},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Edit the end date for contract
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.ContractsV20250515Controller.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Edit the end date for multiple contracts
+            </summary>
+        </member>
         <member name="T:Measurements.V1.MeasurementsReflection">
             <summary>Holder for reflection information generated from measurements.proto</summary>
         </member>
