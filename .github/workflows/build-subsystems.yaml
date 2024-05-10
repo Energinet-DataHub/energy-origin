@@ -35,7 +35,7 @@ jobs:
     steps:
       - name: Make
         run: |
-          echo '${{ toJSON(jobs) }}'
+          echo '${{ toJSON(needs) }}'
           # verification=$(echo "$JOBS" | jq '.[] | select(.result != "success") | select(.result != "skipped")')
 
   # ---- TRANSFER
