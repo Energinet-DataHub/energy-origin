@@ -20,19 +20,27 @@ jobs:
   item-b:
     runs-on: ubuntu-latest
     steps:
-      - run: sleep 10; echo B
+      - run: echo B
   item-c:
     runs-on: ubuntu-latest
     steps:
-      - run: sleep 10; echo C
+      - run: echo C
 
   update:
     runs-on: ubuntu-latest
-    needs: "*"
+    needs:
+      - item-a
+      - item-b
+      - item-c
     steps:
-      - run: echo "I waited for them"
+      - name: Make
+        env:
+          JOBS: ${{ toJSON(jobs) }}
+        run: |
+          echo "$JOBS"
+          # verification=$(echo "$JOBS" | jq '.[] | select(.result != "success") | select(.result != "skipped")')
 
-  # # ---- TRANSFER
+  # ---- TRANSFER
 
   # transfer:
   #   runs-on: ubuntu-latest
@@ -103,7 +111,9 @@ jobs:
   #   runs-on: ubuntu-latest
   #   name: Update environment
   #   needs:
-  #     - "*"
+  #     - transfer-api
+  #     - transfer-claim-automation
+  #     - transfer-agreement-automation
   #   concurrency: commits-base-environment
   #   if: ${{ inputs.is-dependabot == 'false' }}
   #   steps:
