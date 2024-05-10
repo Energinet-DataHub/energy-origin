@@ -19,18 +19,18 @@ runs:
       run: |
         DIRECTORY=$(dirname '${{ inputs.solution }}')
         test -f "$DIRECTORY/global.json" || exit 0
-        echo "DIRECTORY=$DIRECTORY" >> $GITHUB_ENV
-        echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" >> $GITHUB_ENV
+        echo "DIRECTORY=$DIRECTORY" | tee -a $GITHUB_ENV
+        echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
     - name: Overwrite - if given optional input
       shell: bash
       run: |
-        if [ -z "${{ inputs.sdk-version }}" ]; then
-          echo "SDK=${{ inputs.sdk-version }}" >> $GITHUB_ENV
+        if [ ! -z "${{ inputs.sdk-version }}" ]; then
+          echo "SDK=${{ inputs.sdk-version }}" | tee -a $GITHUB_ENV
         fi
     - name: Fail - if version are not present
       shell: bash
       run: |
-        test -z "$SDK" || exit 1
+        test -z "$SDK" && exit 1
     - name: Test
       uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@adjust-dotnet-validations # FIXME: this
       with:
