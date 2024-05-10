@@ -34,10 +34,8 @@ jobs:
       - item-c
     steps:
       - name: Make
-        env:
-          JOBS: ${{ toJSON(jobs) }}
         run: |
-          echo "$JOBS"
+          echo '${{ toJSON(jobs) }}'
           # verification=$(echo "$JOBS" | jq '.[] | select(.result != "success") | select(.result != "skipped")')
 
   # ---- TRANSFER
