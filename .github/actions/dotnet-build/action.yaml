@@ -57,6 +57,7 @@ runs:
     - name: Fail - if versions are not present
       shell: bash
       run: |
+        set +e
         test -z "${{ env.SDK }}" && exit 1
         test -z "${{ env.RUNTIME }}" && exit 2
 
