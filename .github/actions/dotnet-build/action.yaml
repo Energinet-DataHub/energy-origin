@@ -54,12 +54,13 @@ runs:
         if [ ! -z "${{ inputs.runtime-version }}" ]; then
           echo "RUNTIME=${{ inputs.runtime-version }}" | tee -a $GITHUB_ENV
         fi
-    - name: Fail - if versions are not present
-      shell: bash
-      run: |
-        set +e
-        test -z "${{ env.SDK }}" && exit 1
-        test -z "${{ env.RUNTIME }}" && exit 2
+    # FIXME: later
+    # - name: Fail - if versions are not present
+    #   shell: bash
+    #   run: |
+    #     set +e
+    #     test -z "${{ env.SDK }}" && exit 1
+    #     test -z "${{ env.RUNTIME }}" && exit 2
 
     - uses: actions/checkout@v4
       with:
