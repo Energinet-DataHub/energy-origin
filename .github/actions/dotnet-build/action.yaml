@@ -62,11 +62,9 @@ runs:
     #     test -z "${{ env.SDK }}" && exit 1
     #     test -z "${{ env.RUNTIME }}" && exit 2
 
-    - uses: actions/checkout@v4
-      with:
-        repository: "Energinet-DataHub/acorn-actions"
-        sparse-checkout: Dockerfile-simplified
-        path: acorn-actions
+    - name: Fetch Dockerfile
+      shell: bash
+      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/main/Dockerfile.simplified -o Dockerfile
 
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
@@ -88,7 +86,7 @@ runs:
     - name: Build image
       uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
       with:
-        dockerfile: acorn-actions/Dockerfile.simplified
+        dockerfile: Dockerfile
         image-name: ${{ env.name }}
         image-tag: ${{ env.version }}
         docker-context: .
