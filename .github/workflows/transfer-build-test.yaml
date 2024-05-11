@@ -24,7 +24,7 @@ jobs:
 
   test-solution:
     needs: setup
-    uses: ./.github/actions/test-transfer-solution/action.yaml
+    uses: ./.github/actions/test-solution/action.yaml
     with:
       base-path: ${{ needs.setup.outputs.base-path }}
       dotnet-version: '8.0.204'
