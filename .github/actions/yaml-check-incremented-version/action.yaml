@@ -1,0 +1,87 @@
+name: Yaml Check Incremented Version
+
+description: Verifies that versions (semver) are incremented (or missing) when compared to main branch
+
+inputs:
+  yaml-file:
+    description: The path of the yaml file in the head (feature) branch.
+    required: true
+  yaml-path:
+    description: The yaml path containing the version to compare between the head (feature) branch and the base (main) branch.
+    required: true
+  base-yaml-file:
+    description: "Optional: The path of the yaml version file in the base (main) branch."
+    required: false
+  base-yaml-path:
+    description: "Optional: The path of the yaml version file in the base (main) branch."
+    required: false
+
+runs:
+  using: composite
+
+  steps:
+    - name: Get previous tag
+      id: previous-tag
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh api repos/${{ github.repository }}/contents/${{ inputs.base-yaml-file || inputs.yaml-file }}?ref=main > main || exit 0
+        jq -r '.download_url' main > url || exit 0
+        cat url | xargs curl --silent > raw || exit 0
+        yq '.${{ inputs.base-yaml-path || inputs.yaml-path }}' raw > /dev/null || exit 0
+        version=$(yq '.${{ inputs.base-yaml-path || inputs.yaml-path }}' raw)
+        echo "result=$version" >> $GITHUB_OUTPUT
+
+    - name: Verify previous tag
+      if: ${{ steps.previous-tag.outputs.result != null }}
+      id: is-previous-tag-valid
+      shell: bash
+      run: |
+        echo '${{ steps.previous-tag.outputs.result }}' | grep -qEe '^[0-9]+\.[0-9]+\.[0-9]+(-[^-]+-[^-]+)?$'
+        [ $? -eq 0 ] || { echo '::notice::Invalid version on main - accepting old versions to be invalid since new versions are checked for validity'; }
+
+    - name: Get current tag
+      id: current-tag
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+
+        version=$(gh api repos/${{ github.repository }}/contents/${{ inputs.yaml-file }}?ref=${{ github.head_ref }} | \
+          jq -r '.download_url' | \
+          xargs curl --silent | \
+          yq '.${{ inputs.yaml-path }}')
+
+        echo "result=$version" >> $GITHUB_OUTPUT
+
+    - name: Verify current tag
+      shell: bash
+      run: |
+        echo '${{ steps.current-tag.outputs.result }}' | grep -qEe '^[0-9]+\.[0-9]+\.[0-9]+(-[^-]+-[^-]+)?$'
+        [ $? -eq 0 ] || { echo '::warning::Invalid version'; exit 1; }
+
+    - name: Verify incremented version
+      if: ${{ steps.is-previous-tag-valid.outcome == 'success' }}
+      shell: bash
+      env:
+        previous: ${{ steps.previous-tag.outputs.result }}
+        current: ${{ steps.current-tag.outputs.result }}
+      run: |
+        echo '::group::Resolved versions'
+        printf '%s - previous version\n%s - current version\n' "$previous" "$current"
+        echo '::endgroup::'
+
+        [ "$previous" = "$current" ] && {
+          echo '::error::Version must be different.'
+          exit 1
+        }
+
+        verify=$(printf '%s\n%s' "$previous" "$current" | sort -t '.' -k 1,1 -k 2,2 -k 3,3 -k 4,4 -k 5,5 -g | tail -n1)
+        [ "$previous" = "$verify" ] && {
+          echo '::error::The version ${current} must be an increment of the current version on main ${previous}.'
+          exit 1
+        }
+
+        exit 0

@@ -136,14 +136,22 @@ jobs:
             echo "path=${path}"
           } >> $GITHUB_ENV
 
-#      - name: Validate project
-#        if: ${{ (github.event_name == 'push' && github.ref_name == 'main') }} == false
-#        uses: ./.github/actions/dotnet-validate
-#        with:
-#          dotnet-version: ${{ matrix.build.sdkVersion }}
-#          pin-version: true
-#          paths: ${{ env.paths }}
-#          sql-file: ${{ env.migration }}
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Validate project
+        if: ${{ (github.event_name == 'push' && github.ref_name == 'main') }} == false
+        uses: ./.github/actions/dotnet-validate
+        with:
+          dotnet-version: ${{ matrix.build.sdkVersion }}
+          pin-version: true
+          paths: ${{ env.paths }}
+          sql-file: ${{ env.migration }}
 
       - name: Ensure files and folders exists
         shell: bash

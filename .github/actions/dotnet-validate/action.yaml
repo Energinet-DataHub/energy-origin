@@ -1,0 +1,123 @@
+name: Dotnet Validate
+
+description: Lints and tests a domain.
+
+inputs:
+  paths:
+    description: The paths of all projects and tests to validate. Note that the first path given is expected to be the project defining the database schema, if any is defined.
+    required: true
+
+  dotnet-version:
+    description: The version of dotnet to use
+    default: 7.0.x
+    required: true
+
+  pin-version:
+    description: Pin dotnet version
+    default: "false"
+    required: false
+
+  sql-file:
+    description: The path of a commited sql file, that needs must be validated against.
+    default: ""
+    required: false
+
+runs:
+  using: composite
+
+  steps:
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Create solution
+      shell: bash
+      env:
+        PATHS: ${{ inputs.paths }}
+      run: |
+        rm -f *.sln || true
+        dotnet new sln
+        echo "$PATHS" | while read item; do
+          [ -z "$item" ] && continue
+          dotnet sln add "$item"
+        done
+
+    - name: Apply .config
+      shell: bash
+      env:
+        PATHS: ${{ inputs.paths }}
+      run: |
+        WORKSPACE=$(pwd)
+        cd "$(dirname "$(echo "$PATHS" | head -n1)")"
+        while [ ! -d .config ] && [ ! "$(pwd)" = '/' ]; do
+          cd ..
+        done
+        if [ "$(pwd)" != "$WORKSPACE" ]; then
+          test -d .config && cp -rv .config "$WORKSPACE/.config"
+        fi
+
+    - name: Pin version
+      shell: bash
+      if: ${{ inputs.pin-version == 'true' }}
+      run: printf '{"sdk":{"rollForward":"disable","version":"%s"}}' "${{ inputs.dotnet-version }}" > global.json
+
+    - name: Print dotnet version
+      shell: bash
+      run: dotnet --version
+
+    - name: Print dotnet information
+      shell: bash
+      run: dotnet --info
+
+    - name: Restore
+      shell: bash
+      env:
+        version: ""
+      run: |
+        dotnet tool restore || true
+        dotnet restore
+
+    - name: Lint
+      shell: bash
+      env:
+        version: ""
+      run: dotnet format --verify-no-changes -v diag
+
+    - name: Test
+      shell: bash
+      env:
+        version: ""
+      run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal"
+
+    - name: Validate migration
+      shell: bash
+      env:
+        VERSION: ${{ inputs.dotnet-version }}
+        PATHS: ${{ inputs.paths }}
+        COMMITED_SQL_FILE: ${{ inputs.sql-file }}
+      if: ${{ '' != inputs.sql-file }}
+      run: |
+        PROJECT=$(echo "$PATHS" | head -n1)
+        GENERATED_SQL_FILE=/tmp/current.sql
+        version=$(echo $VERSION | cut -c 1)
+        if [ "$version" = "6" ]; then
+          argument="--version 6.0.25"
+        elif [ "$version" = "7" ]; then
+          argument="--version 7.0.14"
+        fi
+        dotnet list package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || exit 0
+        dotnet tool install --global $argument dotnet-ef >/dev/null
+        dotnet ef migrations script --project "$PROJECT" -i -o "$GENERATED_SQL_FILE"
+
+        cat < "$GENERATED_SQL_FILE" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/a
+        cat < "$COMMITED_SQL_FILE" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/b
+        diff -q /tmp/a /tmp/b >/dev/null || { echo "Unexpected difference:"; diff /tmp/a /tmp/b; exit 1; }

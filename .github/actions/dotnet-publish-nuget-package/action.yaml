@@ -1,0 +1,75 @@
+name: Dotnet Publish NuGet Package
+
+description: Lints, tests, builds a library. If working on main branch it will publish a NuGet Package.
+
+inputs:
+  solution-file-folder:
+    description: The folder of the project and tests to create a library from
+    required: true
+
+  project-name:
+    description: The folder name of the project to create a library from. This is not a path
+    required: true
+
+  package-version:
+    description: The version of the package
+    required: true
+
+  dotnet-version:
+    description: The version of dotnet to use
+    default: 7.0.x
+    required: true
+
+  nuget-api-key:
+    description: A valid api key to publish to the NuGet repository
+    required: true
+
+  upload:
+    description: Whether or not to upload the nuget
+    required: false
+    default: ${{ startsWith(github.ref, 'refs/heads/main') }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Print dotnet information
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet --info
+
+    - name: Print dotnet version
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet --version
+
+    - name: Restore
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet restore
+
+    - name: Lint
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet format --verify-no-changes -v diag
+
+    - name: Test
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet test --no-restore --verbosity normal *.Tests -warnaserror --logger:"console;verbosity=normal"
+
+    - name: Pack
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      run: dotnet pack --output build --configuration Release --no-restore -p:Version=${{ inputs.package-version }} ${{ inputs.project-name }}
+
+    - name: Publish
+      shell: bash
+      working-directory: ${{ inputs.solution-file-folder }}
+      if: ${{ inputs.upload == 'true' }}
+      run: dotnet nuget push build/*.nupkg --api-key ${{ inputs.nuget-api-key }} --source https://api.nuget.org/v3/index.json

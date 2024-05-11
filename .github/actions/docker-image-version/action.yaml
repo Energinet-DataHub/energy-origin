@@ -1,0 +1,40 @@
+name: Docker - Generate image version
+description: |
+  Release versions use short hashes. All other versions are generated using long hashes and have a pr number appended.
+
+inputs:
+  allow-dispatch:
+    description: Is workflow dispatch allowed to generate a docker image version
+    required: true
+    default: "false"
+
+outputs:
+  version:
+    description: The resulting version
+    value: ${{ steps.output.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Generate version
+      id: output
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" = 'push' ] && [ "${{ github.ref_name }}" = 'main' ]; then
+          version="$(git rev-parse --short ${{ github.sha }})"
+        elif [ "${{ github.event_name }}" = 'pull_request' ]; then
+          version="${{ github.sha }}-pr.${{ github.event.pull_request.number }}"
+        elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ ${{ inputs.allow-dispatch }} ]; then
+          if [ "${{ github.ref_name }}" = 'main' ]; then
+            version="$(git rev-parse --short ${{ github.sha }})"
+          else
+            sanitized_branch=$(printf '${{ github.ref_name }}' | sed 's/[^a-zA-Z0-9]//g')
+            version="${{ github.sha }}.${sanitized_branch}"
+          fi
+        else
+          >&2 echo "::error:: Unsupported invocation: ${{ github.event_name }}"
+          exit 1
+        fi
+        echo "version=${version}" >> $GITHUB_OUTPUT
+        echo "version=${version}" >> $GITHUB_ENV
+        echo "version: $version"

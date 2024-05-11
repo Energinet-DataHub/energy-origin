@@ -27,6 +27,10 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Deprecation warning
+      shell: bash
+      run: echo "::warning::Using deprecated action, use docker-build-and-push instead"
+
     - uses: actions/download-artifact@v3
       name: Download available artifacts # this supports use of artifacts (currently only frontends)
       with:
@@ -37,35 +41,18 @@ runs:
       run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
     - name: Log in to the Container registry
-      uses: docker/login-action@5139682d94efc37792e6b54386b5b470a68a4737
+      uses: docker/login-action@3da7dc6e2b31f99ef2cb9fb4c50fb0971e0d0139
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ github.token }}
         ecr: false
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      with:
-        driver: docker-container
-
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
-
     - name: Build and push Docker image
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@7944f9a25be0279b7713908f16090a214db107ef
       with:
         context: ${{ inputs.docker-context }}
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         build-args: ${{ inputs.build-args }}
-        cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-        provenance: true
-        sbom: true
