@@ -28,9 +28,13 @@ jobs:
       - name: Detect Modified Subsystems
         id: detect
         run: |
-          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s 'split("\n")[:-1]')
+          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s 'split("\n") | map(select(. != ""))')
           echo "subsystems=$subsystems" >> $GITHUB_ENV
-          echo "::set-output name=subsystems-json::$subsystems"
+          echo "subsystems=$subsystems" > $GITHUB_ENV
+          echo "subsystems_json=$subsystems" >> $GITHUB_ENV
+          echo "SUBSYSTEMS_JSON<<EOF" >> $GITHUB_ENV
+          echo "$subsystems" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
   build-and-test:
     needs: determine-subsystems
@@ -38,14 +42,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        subsystem: ${{ fromJson(needs.determine-subsystems.outputs.subsystems-json) }}
-
+        subsystem: ${{ fromJson(env.SUBSYSTEMS_JSON) }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Dynamically Invoke Subsystem Workflow
         uses: jenseng/dynamic-uses@v1
+
         with:
           uses: ./.github/workflows/${{ matrix.subsystem }}-build-test.yaml
           with: |
