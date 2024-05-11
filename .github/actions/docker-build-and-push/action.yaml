@@ -72,7 +72,12 @@ runs:
 
     - name: Export SBOM
       shell: bash
-      run: docker sbom ${{ env.LOWERCASED }}:${{ inputs.image-tag }} > sbom.spdx
+      run: |
+        docker sbom ${{ env.LOWERCASED }}:${{ inputs.image-tag }} > sbom.spdx || echo "Failed to generate SBOM"
+
+    - name: List current directory
+      shell: bash
+      run: ls -la
 
     - name: Upload SBOM as an artifact
       uses: actions/upload-artifact@v2
