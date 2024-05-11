@@ -53,7 +53,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile') }}
         restore-keys: |
           ${{ runner.os }}-buildx-
 
@@ -64,7 +64,7 @@ runs:
         file: ${{ inputs.dockerfile }}
         push: ${{ inputs.dry-run != 'true' }}
         tags: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
-        build-args: ${{ inputs.build-args }}
+        build-args: SDK_VERSION=${{ inputs.sdk-version }},RUNTIME_VERSION=${{ inputs.runtime-version }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
         provenance: true
