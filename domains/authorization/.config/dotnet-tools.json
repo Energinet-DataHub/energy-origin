@@ -13,6 +13,12 @@
             "commands": [
                 "dotnet-ef"
             ]
+        },
+        "dotnet-subset": {
+            "version": "0.3.2",
+            "commands": [
+                "dotnet-subset"
+            ]
         }
     }
 }

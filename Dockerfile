@@ -2,7 +2,8 @@ ARG SDK_VERSION
 ARG RUNTIME_VERSION
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled-extra AS base
 
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS prepare-restore-files
+
 ARG SUBSYSTEM
 ARG PROJECT
 WORKDIR /src/
@@ -10,9 +11,20 @@ COPY ${SUBSYSTEM}/ .
 WORKDIR /src/${PROJECT}
 RUN rm -f appsettings.json appsettings.*.json || true
 RUN dotnet tool restore || true
-RUN dotnet restore
+RUN dotnet dotnet-subset restore --root-directory /src/${PROJECT} --output-directory /src/${PROJECT}/restore-subset
+
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
+ARG SUBSYSTEM
+ARG PROJECT
+
+WORKDIR /src
+COPY --from=prepare-restore-files /src/${PROJECT}/restore_subset .
+RUN dotnet restore ${PROJECT}/restore_subset/${PROJECT}.csproj
+
 RUN dotnet build -c Release --no-restore
 RUN dotnet publish -c Release -o /app/publish --no-restore --no-build
+
+
 FROM base AS final
 ARG SUBSYSTEM
 WORKDIR /app
