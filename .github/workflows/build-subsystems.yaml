@@ -7,7 +7,6 @@ on:
         description: "An indication of whether to commit/publish results"
         required: true
         type: string
-
       is-dependabot:
         description: "An indication of a dependabot pull request"
         required: true
@@ -18,11 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       subsystems-json: ${{ steps.set-subsystems.outputs.subsystems-json }}
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
       - name: Detect Modified Subsystems
         id: detect
         run: |
@@ -37,20 +34,16 @@ jobs:
       fail-fast: false
       matrix:
         subsystem: ${{ fromJson(needs.determine-subsystems.outputs.subsystems-json) }}
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Invoke Subsystem Workflow
-        id: subsystem-workflow
-        uses: ./.github/workflows/${{ matrix.subsystem }}-build-test.yaml
+      - name: Dynamically Invoke Subsystem Workflow
+        uses: jenseng/dynamic-uses@v1
         with:
-          dry-run: ${{ github.event.inputs.dry-run }}
-          is-dependabot: ${{ github.event.inputs.is-dependabot }}
-
-      - name: Subsystem Build and Test
-        run: echo "Building and testing ${{ matrix.subsystem }} completed."
+          uses: ./.github/workflows/${{ matrix.subsystem }}-build-test.yaml
+          with: |
+            { "dry-run": "${{ github.event.inputs.dry-run }}", "is-dependabot": "${{ github.event.inputs.is-dependabot }}" }
 
       - name: Report Results
         if: ${{ always() }}
