@@ -69,3 +69,13 @@ runs:
         cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
         provenance: true
         sbom: true
+
+    - name: Export SBOM
+      shell: bash
+      run: docker sbom ${{ env.LOWERCASED }}:${{ inputs.image-tag }} > sbom.spdx
+
+    - name: Upload SBOM as an artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: SBOM
+        path: sbom.spdx
