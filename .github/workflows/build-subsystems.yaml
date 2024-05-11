@@ -17,24 +17,18 @@ jobs:
   determine-subsystems:
     runs-on: ubuntu-latest
     outputs:
-      subsystems-json: ${{ steps.set-subsystems.outputs.subsystems-json }}
-
+      subsystems-json: ${{ steps.detect.outputs.subsystems-json }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Detect Modified Subsystems
         id: detect
         run: |
-          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s 'split("\n") | map(select(. != ""))')
-          echo "subsystems=$subsystems" >> $GITHUB_ENV
-          echo "subsystems=$subsystems" > $GITHUB_ENV
-          echo "subsystems_json=$subsystems" >> $GITHUB_ENV
-          echo "SUBSYSTEMS_JSON<<EOF" >> $GITHUB_ENV
-          echo "$subsystems" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s 'split("\n") | map(select(. != "")) | join(",")')
+          echo "::set-output name=subsystems-json::[$subsystems]"
+
 
   build-and-test:
     needs: determine-subsystems
@@ -42,20 +36,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        subsystem: ${{ fromJson(env.SUBSYSTEMS_JSON) }}
+        subsystem: ${{ fromJson(needs.determine-subsystems.outputs.subsystems-json) }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
       - name: Dynamically Invoke Subsystem Workflow
         uses: jenseng/dynamic-uses@v1
-
         with:
           uses: ./.github/workflows/${{ matrix.subsystem }}-build-test.yaml
           with: |
             { "dry-run": "${{ github.event.inputs.dry-run }}", "is-dependabot": "${{ github.event.inputs.is-dependabot }}" }
-
       - name: Report Results
         if: ${{ always() }}
         run: |
           echo "Results from ${{ matrix.subsystem }}: ${{ steps.subsystem-workflow.outcome }}"
+
