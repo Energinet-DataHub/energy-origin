@@ -26,12 +26,9 @@ jobs:
       - name: Detect Modified Subsystems
         id: detect
         run: |
-          echo "subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split(\"\n\")[:-1]')" >> $GITHUB_ENV
-
-      - name: Set Subsystems for Job Matrix
-        id: set-subsystems
-        run: |
-          echo "::set-output name=subsystems-json::${{ env.subsystems }}"
+          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split(\"\n\")[:-1]')
+          echo "subsystems=$subsystems" >> $GITHUB_ENV
+          echo "::set-output name=subsystems-json::$subsystems"
 
   build-and-test:
     needs: determine-subsystems
