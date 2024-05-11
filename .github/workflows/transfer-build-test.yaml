@@ -1,0 +1,85 @@
+name: Build and Test Transfer System
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        required: true
+        type: string
+
+      is-dependabot:
+        required: true
+        type: string
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      base-path: ${{ steps.set-path.outputs.base-path }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Base Path
+        id: set-path
+        run: echo "::set-output name=base-path::domains/transfer"
+
+  test-solution:
+    needs: setup
+    uses: ./.github/actions/test-transfer-solution/action.yaml
+    with:
+      base-path: ${{ needs.setup.outputs.base-path }}
+      dotnet-version: '8.0.204'
+
+  transfer-api:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-docker-image/action.yaml
+        with:
+          base-path: ${{ needs.setup.outputs.base-path }}
+          project: 'Transfer.API'
+          dry-run: ${{ inputs.dry-run }}
+          sdk-version: '8.0.204'
+          runtime-version: '8.0.4'
+          dockerfile-path: './Dockerfile'
+
+  transfer-claim-automation:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-docker-image/action.yaml
+        with:
+          base-path: ${{ needs.setup.outputs.base-path }}
+          project: 'ClaimAutomation'
+          dry-run: ${{ inputs.dry-run }}
+          sdk-version: '8.0.204'
+          runtime-version: '8.0.4'
+          dockerfile-path: './Dockerfile'
+
+  transfer-agreement-automation:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-docker-image/action.yaml
+        with:
+          base-path: ${{ needs.setup.outputs.base-path }}
+          project: 'TransferAgreementAutomation'
+          dry-run: ${{ inputs.dry-run }}
+          sdk-version: '8.0.204'
+          runtime-version: '8.0.4'
+          dockerfile-path: './Dockerfile'
+
+  decide:
+    needs: [test-solution, transfer-api, transfer-claim-automation, transfer-agreement-automation]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Determine Workflow Success
+        run: |
+          if ${{ needs.test-solution.result != 'success' || needs.transfer-api.result != 'success' || needs.transfer-claim-automation.result != 'success' || needs.transfer-agreement-automation.result != 'success' }}; then
+            echo "One or more tasks failed."
+            exit 1
+          else
+            echo "All tasks completed successfully."

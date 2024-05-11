@@ -1,0 +1,60 @@
+name: Build Subsystems
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
+jobs:
+  determine-subsystems:
+    runs-on: ubuntu-latest
+    outputs:
+      subsystems-json: ${{ steps.set-subsystems.outputs.subsystems-json }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Detect Modified Subsystems
+        id: detect
+        run: |
+          echo "subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split(\"\n\")[:-1]')" >> $GITHUB_ENV
+
+      - name: Set Subsystems for Job Matrix
+        id: set-subsystems
+        run: |
+          echo "::set-output name=subsystems-json::${{ env.subsystems }}"
+
+  build-and-test:
+    needs: determine-subsystems
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        subsystem: ${{ fromJson(needs.determine-subsystems.outputs.subsystems-json) }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Invoke Subsystem Workflow
+        id: subsystem-workflow
+        uses: ./.github/workflows/${{ matrix.subsystem }}-build-test.yaml
+        with:
+          dry-run: ${{ github.event.inputs.dry-run }}
+          is-dependabot: ${{ github.event.inputs.is-dependabot }}
+
+      - name: Subsystem Build and Test
+        run: echo "Building and testing ${{ matrix.subsystem }} completed."
+
+      - name: Report Results
+        if: ${{ always() }}
+        run: |
+          echo "Results from ${{ matrix.subsystem }}: ${{ steps.subsystem-workflow.outcome }}"
