@@ -40,14 +40,17 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
       - name: Dynamically Invoke Subsystem Workflow
         uses: jenseng/dynamic-uses@v1
         with:
-          uses: ./.github/workflows/${{ matrix.subsystem }}-build-test.yaml
+          uses: ${{ format('./.github/workflows/{0}-build-test.yaml', matrix.subsystem) }}
           with: |
-            { "dry-run": "${{ github.event.inputs.dry-run }}", "is-dependabot": "${{ github.event.inputs.is-dependabot }}" }
+            {
+              "dry-run": "${{ github.event.inputs.dry-run }}",
+              "is-dependabot": "${{ github.event.inputs.is-dependabot }}"
+            }
       - name: Report Results
         if: ${{ always() }}
         run: |
           echo "Results from ${{ matrix.subsystem }}: ${{ steps.subsystem-workflow.outcome }}"
-
