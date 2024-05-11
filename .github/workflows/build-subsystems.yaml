@@ -12,6 +12,7 @@ on:
         description: "An indication of a dependabot pull request"
         required: true
         type: string
+
 jobs:
   determine-subsystems:
     runs-on: ubuntu-latest
