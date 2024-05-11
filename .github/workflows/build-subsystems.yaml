@@ -7,6 +7,7 @@ on:
         description: "An indication of whether to commit/publish results"
         required: true
         type: string
+
       is-dependabot:
         description: "An indication of a dependabot pull request"
         required: true
@@ -17,13 +18,17 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       subsystems-json: ${{ steps.set-subsystems.outputs.subsystems-json }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Detect Modified Subsystems
         id: detect
         run: |
-          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split(\"\n\")[:-1]')
+          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s 'split("\n")[:-1]')
           echo "subsystems=$subsystems" >> $GITHUB_ENV
           echo "::set-output name=subsystems-json::$subsystems"
 
@@ -34,6 +39,7 @@ jobs:
       fail-fast: false
       matrix:
         subsystem: ${{ fromJson(needs.determine-subsystems.outputs.subsystems-json) }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
