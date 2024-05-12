@@ -55,8 +55,9 @@ runs:
       shell: bash
       run: |
         repo_name="${GITHUB_REPOSITORY,,}"
-        project_name="${{ inputs.project }}" && project_name=$(echo "${project_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-        tag="${repo_name}-${project_name}:pr-${GITHUB_EVENT_PULL_REQUEST_NUMBER}"
+        project_name="${{ inputs.project }}" && project_name=$(echo "${project_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-'
+        pr_number=$(jq --raw-output .pull_request.number $GITHUB_EVENT_PATH)
+        tag="${repo_name}-${project_name}:pr-${pr_number}"
         echo "tag=${tag}" >> $GITHUB_OUTPUT
 
     - name: Build image

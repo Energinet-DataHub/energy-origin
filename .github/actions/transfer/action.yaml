@@ -63,6 +63,8 @@ runs:
         configuration: domains/transfer/ClaimAutomation/configuration.yaml
         migrations: domains/transfer/migrations/API.sql
         dry-run: true
+        sdk-version: '8.0.204'
+        runtime-version: '8.0.4'
 
     - name: Transfer Agreement Automation
       if: contains(steps.get-changed-files.outputs['changed-files'], 'TransferAgreementAutomation')
@@ -73,6 +75,8 @@ runs:
         configuration: domains/transfer/ClaimAutomation/configuration.yaml
         migrations: domains/transfer/migrations/API.sql
         dry-run: true
+        sdk-version: '8.0.204'
+        runtime-version: '8.0.4'
 
     - name: Determine Workflow Success
       shell: bash
