@@ -1,0 +1,46 @@
+name: 'Build and Test authorization'
+description: 'A reusable action to build and test the transfer system.'
+inputs:
+  dry-run:
+    description: 'Indicates whether to perform a dry run.'
+    required: true
+    default: 'false'
+  is-dependabot:
+    description: 'Indicates if the workflow is triggered by Dependabot.'
+    required: true
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Set Base Path
+      id: set-path
+      shell: bash
+      run: echo "::set-output name=base-path::domains/authorization"
+
+    - name: Test Solution
+      uses: ./.github/actions/test-solution/action.yaml
+      with:
+        base-path: ${{ steps.set-path.outputs.base-path }}
+        dotnet-version: '8.0.204'
+
+    - name: Transfer API
+      uses: ./.github/actions/build-docker-image/action.yaml
+      with:
+        base-path: ${{ steps.set-path.outputs.base-path }}
+        project: 'Authorization.API'
+        dry-run: ${{ inputs.dry-run }}
+        sdk-version: '8.0.204'
+        runtime-version: '8.0.4'
+        dockerfile-path: './Dockerfile'
+
+    - name: Determine Workflow Success
+      shell: bash
+      run: |
+        if ${{ needs.test-solution.result!= 'success' || needs.authorization-api.result!= 'success' }}; then
+          echo "One or more tasks failed."
+          exit 1
+        else
+          echo "All tasks completed successfully."
