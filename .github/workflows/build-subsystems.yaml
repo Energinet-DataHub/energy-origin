@@ -41,7 +41,6 @@ jobs:
           echo "Detected subsystems: $subsystems"
           echo "::set-output name=subsystems-json::$subsystems"
 
-
   build-and-test:
     needs: determine-subsystems
     runs-on: ubuntu-latest
