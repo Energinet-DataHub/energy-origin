@@ -1,5 +1,5 @@
 name: 'Test Solution'
-description: 'Tests a .NET solution using the specified SDK version'
+description: 'Tests a.NET solution using the specified SDK version'
 
 inputs:
   base-path:
@@ -17,13 +17,19 @@ runs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Setup .NET SDK
+    - name: Setup.NET SDK
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
     - name: Restore and Test Entire Solution
+      shell: bash
       run: |
         dotnet restore ${{ inputs.base-path }}
         dotnet test ${{ inputs.base-path }} --no-restore
-      shell: bash
+        # Check the exit code of the last command
+        if [ $? -eq 0 ]; then
+          echo "::set-output name=result::success"
+        else
+          echo "::set-output name=result::failure"
+        fi

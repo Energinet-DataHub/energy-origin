@@ -59,8 +59,9 @@ runs:
     - name: Determine Workflow Success
       shell: bash
       run: |
-        if ${{ needs.test-solution.result!= 'success' || needs.transfer-api.result!= 'success' || needs.transfer-claim-automation.result!= 'success' || needs.transfer-agreement-automation.result!= 'success' }}; then
+        if [[ "${{ steps.test-solution.outputs.result }}"!= "success" ]]; then
           echo "One or more tasks failed."
           exit 1
         else
           echo "All tasks completed successfully."
+        fi

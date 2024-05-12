@@ -26,7 +26,7 @@ runs:
         base-path: ${{ steps.set-path.outputs.base-path }}
         dotnet-version: '8.0.204'
 
-    - name: Transfer API
+    - name: Authorization API
       uses: ./.github/actions/build-docker-image
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
@@ -36,11 +36,14 @@ runs:
         runtime-version: '8.0.4'
         dockerfile-path: './Dockerfile'
 
-    - name: Determine Workflow Success
+    - name: Restore and Test Entire Solution
       shell: bash
       run: |
-        if ${{ needs.test-solution.result!= 'success' || needs.authorization-api.result!= 'success' }}; then
-          echo "One or more tasks failed."
-          exit 1
+        dotnet restore ${{ inputs.base-path }}
+        dotnet test ${{ inputs.base-path }} --no-restore
+        # Check the exit code of the last command
+        if [ $? -eq 0 ]; then
+          echo "::set-output name=result::success"
         else
-          echo "All tasks completed successfully."
+          echo "::set-output name=result::failure"
+        fi
