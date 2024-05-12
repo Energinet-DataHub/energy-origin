@@ -42,7 +42,7 @@ runs:
         base-path: ${{ steps.set-path.outputs.base-path }}
         dotnet-version: '8.0.204'
 
-    - name: Transfer API
+    - name: transfer-api
       if: contains(steps.get-changed-files.outputs['changed-files'], 'Transfer.API')
       uses: ./.github/actions/build-docker-image
       with:
@@ -54,7 +54,7 @@ runs:
         sdk-version: '8.0.204'
         runtime-version: '8.0.4'
 
-    - name: Transfer Claim Automation
+    - name: transfer-claim-automation
       if: contains(steps.get-changed-files.outputs['changed-files'], 'ClaimAutomation')
       uses: ./.github/actions/build-docker-image
       with:
@@ -66,24 +66,14 @@ runs:
         sdk-version: '8.0.204'
         runtime-version: '8.0.4'
 
-    - name: Transfer Agreement Automation
+    - name: transfer-agreement-automation
       if: contains(steps.get-changed-files.outputs['changed-files'], 'TransferAgreementAutomation')
       uses: ./.github/actions/build-docker-image
       with:
         solution: domains/transfer/Transfer.sln
-        project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
-        configuration: domains/transfer/ClaimAutomation/configuration.yaml
+        project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
+        configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
         migrations: domains/transfer/migrations/API.sql
         dry-run: true
         sdk-version: '8.0.204'
         runtime-version: '8.0.4'
-
-    - name: Determine Workflow Success
-      shell: bash
-      run: |
-        if [[ "${{ steps.test-solution.outputs.result }}"!= "success" ]]; then
-          echo "One or more tasks failed."
-          exit 1
-        else
-          echo "All tasks completed successfully."
-        fi

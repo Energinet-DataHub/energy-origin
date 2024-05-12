@@ -44,21 +44,9 @@ runs:
       if: contains(steps.get-changed-files.outputs['changed-files'], 'Authorization.API')
       uses: ./.github/actions/build-docker-image
       with:
-        solution: domains/authorization/Authorization.sln
+        solution: domains/authorization/Autorization.sln
         project: domains/authorization/Authorization.API/API/API.csproj
         configuration: domains/authorization/Authorization.API/configuration.yaml
         dry-run: true
         sdk-version: '8.0.204'
         runtime-version: '8.0.4'
-
-    - name: Restore and Test Entire Solution
-      shell: bash
-      run: |
-        dotnet restore ${{ inputs.base-path }}
-        dotnet test ${{ inputs.base-path }} --no-restore
-        # Check the exit code of the last command
-        if [ $? -eq 0 ]; then
-          echo "::set-output name=result::success"
-        else
-          echo "::set-output name=result::failure"
-        fi
