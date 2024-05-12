@@ -68,11 +68,12 @@ runs:
       uses: docker/build-push-action@v2
       with:
         context: .
-        file: ${{ inputs.dockerfile-path }}
+        file: ./Dockerfile
         push: ${{ inputs.dry-run == 'false' }}
         tags: ${{ env.DOCKER_TAG }}
         build-args: |
           SDK_VERSION=${{ inputs.sdk-version }}
           RUNTIME_VERSION=${{ inputs.runtime-version }}
           PROJECT=${{ inputs.project }}
+
 
