@@ -45,7 +45,6 @@ runs:
       id: docker_tag
       shell: bash
       run: |
-        # Combine all parts, convert to lowercase, and replace spaces with hyphens
         repo_name="${GITHUB_REPOSITORY,,}"
         project_name="${{ inputs.project }}" && project_name=$(echo "${project_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
         tag="${repo_name}-${project_name}:pr-${GITHUB_EVENT_PULL_REQUEST_NUMBER}"
@@ -62,4 +61,4 @@ runs:
           SDK_VERSION=${{ inputs.sdk-version }}
           RUNTIME_VERSION=${{ inputs.runtime-version }}
           SUBSYSTEM=${{ inputs.base-path }}
-          PROJECT=${{ inputs.project }}
+          PROJECT=${{ inputs.project }}/API
