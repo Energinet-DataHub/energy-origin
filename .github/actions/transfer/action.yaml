@@ -14,11 +14,25 @@ runs:
   using: 'composite'
   steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Fetch Main Branch
+      shell: bash
+      run: git fetch origin main
 
     - name: Set Base Path
       id: set-path
       shell: bash
       run: echo "::set-output name=base-path::domains/transfer"
+
+    - name: Determine Changed Files
+      id: get-changed-files
+      shell: bash
+      run: |
+        echo "Detecting changed files in the transfer solution..."
+        changed_files=$(git diff --name-only origin/main...HEAD -- 'domains/transfer/*')
+        echo "::set-output name=changed-files::$changed_files"
 
     - name: Test Solution
       uses: ./.github/actions/test-solution
@@ -27,6 +41,7 @@ runs:
         dotnet-version: '8.0.204'
 
     - name: Transfer API
+      if: contains(steps.get-changed-files.outputs['changed-files'], 'Transfer.API')
       uses: ./.github/actions/build-docker-image
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
@@ -37,6 +52,7 @@ runs:
         dockerfile-path: './Dockerfile'
 
     - name: Transfer Claim Automation
+      if: contains(steps.get-changed-files.outputs['changed-files'], 'ClaimAutomation')
       uses: ./.github/actions/build-docker-image
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
@@ -47,6 +63,7 @@ runs:
         dockerfile-path: './Dockerfile'
 
     - name: Transfer Agreement Automation
+      if: contains(steps.get-changed-files.outputs['changed-files'], 'TransferAgreementAutomation')
       uses: ./.github/actions/build-docker-image
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
