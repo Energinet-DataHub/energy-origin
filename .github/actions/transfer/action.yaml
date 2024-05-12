@@ -21,13 +21,13 @@ runs:
       run: echo "::set-output name=base-path::domains/transfer"
 
     - name: Test Solution
-      uses: ./.github/actions/test-solution/action.yaml
+      uses: ./.github/actions/test-solution
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
         dotnet-version: '8.0.204'
 
     - name: Transfer API
-      uses: ./.github/actions/build-docker-image/action.yaml
+      uses: ./.github/actions/build-docker-image
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
         project: 'Transfer.API'
@@ -37,7 +37,7 @@ runs:
         dockerfile-path: './Dockerfile'
 
     - name: Transfer Claim Automation
-      uses: ./.github/actions/build-docker-image/action.yaml
+      uses: ./.github/actions/build-docker-image
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
         project: 'ClaimAutomation'
@@ -47,7 +47,7 @@ runs:
         dockerfile-path: './Dockerfile'
 
     - name: Transfer Agreement Automation
-      uses: ./.github/actions/build-docker-image/action.yaml
+      uses: ./.github/actions/build-docker-image
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
         project: 'TransferAgreementAutomation'

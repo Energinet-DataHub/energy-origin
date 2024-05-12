@@ -21,13 +21,13 @@ runs:
       run: echo "::set-output name=base-path::domains/authorization"
 
     - name: Test Solution
-      uses: ./.github/actions/test-solution/action.yaml
+      uses: ./.github/actions/test-solution
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
         dotnet-version: '8.0.204'
 
     - name: Transfer API
-      uses: ./.github/actions/build-docker-image/action.yaml
+      uses: ./.github/actions/build-docker-image
       with:
         base-path: ${{ steps.set-path.outputs.base-path }}
         project: 'Authorization.API'
