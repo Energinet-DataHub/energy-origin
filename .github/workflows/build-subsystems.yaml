@@ -27,7 +27,14 @@ jobs:
       - name: Detect Modified Subsystems
         id: detect
         run: |
+          echo "Before commit: ${{ github.event.before }}"
+          echo "After commit: ${{ github.event.after }}"
+
+          git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
+
           subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split("\n") | map(select(. != ""))')
+
+          echo "Detected subsystems: $subsystems"
           echo "::set-output name=subsystems-json::$subsystems"
 
 
@@ -38,6 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         subsystem: ${{ fromJson(needs.determine-subsystems.outputs.subsystems-json) }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
