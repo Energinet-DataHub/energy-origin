@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Dynamically Invoke Subsystem Workflow
-        uses: jenseng/dynamic-uses@v1
+        uses: ./.github/actions/dynamic-uses/action.yaml
         with:
           uses: ./.github/actions/${{ matrix.subsystem }}/action.yaml
           with: |
@@ -62,5 +62,6 @@ jobs:
 
       - name: Report Results
         if: ${{ always() }}
+        shell: bash
         run: |
           echo "Results from ${{ matrix.subsystem }}: ${{ steps.subsystem-workflow.outcome }}"
