@@ -30,7 +30,11 @@ jobs:
           echo "Before commit: ${{ github.event.before }}"
           echo "After commit: ${{ github.event.after }}"
 
+          echo "Changed files:"
           git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
+
+          echo "Files in domains/:"
+          git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/'
 
           subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split("\n") | map(select(. != ""))')
 
