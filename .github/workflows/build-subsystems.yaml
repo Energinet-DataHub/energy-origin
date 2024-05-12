@@ -27,16 +27,19 @@ jobs:
       - name: Detect Modified Subsystems
         id: detect
         run: |
-          echo "Before commit: ${{ github.event.before }}"
-          echo "After commit: ${{ github.event.after }}"
+          # Checkout the base branch (e.g., main)
+          git checkout main
 
-          git diff --name-only ${{ github.event.before }} ${{ github.event.after }}
+          # Checkout the head of the pull request branch
+          git checkout ${{ github.head_ref }}
 
-          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split("\n") | map(select(. != ""))')
+          # Compare the base branch with the head of the pull request branch
+          git diff --name-only main ${{ github.head_ref }}
+
+          subsystems=$(git diff --name-only main ${{ github.head_ref }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split("\n") | map(select(.!= ""))')
 
           echo "Detected subsystems: $subsystems"
           echo "::set-output name=subsystems-json::$subsystems"
-
 
   build-and-test:
     needs: determine-subsystems
