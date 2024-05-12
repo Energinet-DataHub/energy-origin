@@ -51,9 +51,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Dynamically Invoke Subsystem Workflow
-        uses: ./.github/actions/dynamic-uses/action.yaml
+        uses: ./.github/actions/dynamic-uses
         with:
-          uses: ./.github/actions/${{ matrix.subsystem }}/action.yaml
+          uses: ./.github/actions/${{ matrix.subsystem }}
           with: |
             {
               "dry-run": "${{ inputs.dry-run }}",
