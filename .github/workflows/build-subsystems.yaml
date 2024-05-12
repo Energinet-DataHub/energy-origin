@@ -23,11 +23,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Detect Modified Subsystems
         id: detect
         run: |
-          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s 'split("\n") | map(select(. != "")) | join(",")')
-          echo "::set-output name=subsystems-json::[$subsystems]"
+          subsystems=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split("\n") | map(select(. != ""))')
+          echo "::set-output name=subsystems-json::$subsystems"
 
 
   build-and-test:
@@ -47,9 +48,10 @@ jobs:
           uses: ${{ format('./.github/workflows/{0}-build-test.yaml', matrix.subsystem) }}
           with: |
             {
-              "dry-run": "${{ github.event.inputs.dry-run }}",
-              "is-dependabot": "${{ github.event.inputs.is-dependabot }}"
+              "dry-run": "${{ inputs.dry-run }}",
+              "is-dependabot": "${{ inputs.is-dependabot }}"
             }
+
       - name: Report Results
         if: ${{ always() }}
         run: |
