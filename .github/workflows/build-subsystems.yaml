@@ -53,7 +53,7 @@ jobs:
       - name: Dynamically Invoke Subsystem Workflow
         uses: jenseng/dynamic-uses@v1
         with:
-          uses: ./.github/actions/${{ matrix.subsystem }}
+          uses: ".github/actions/${{ matrix.subsystem }}"
           with: |
             {
               "dry-run": "${{ inputs.dry-run }}",
