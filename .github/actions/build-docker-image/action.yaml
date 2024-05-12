@@ -55,20 +55,24 @@ runs:
       shell: bash
       run: |
         repo_name="${GITHUB_REPOSITORY,,}"
-        project_name="${{ inputs.project }}" && project_name=$(echo "${project_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-        tag="${repo_name}-${project_name}:pr-${GITHUB_EVENT_PULL_REQUEST_NUMBER}"
-        echo "tag=${tag}" >> $GITHUB_OUTPUT
+        project_name="${{ inputs.project }}"
+        # Replace spaces with hyphens and convert to lowercase
+        project_name="${project_name// /-}"
+        project_name="${project_name,,}"
+        pr_number=$(jq --raw-output .pull_request.number $GITHUB_EVENT_PATH)
+        tag="${repo_name}-${project_name}:pr-${pr_number}"
+        echo "tag=${tag}"
+        echo "DOCKER_TAG=${tag}" >> $GITHUB_ENV
 
-    - name: Build image
-      uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v2
       with:
-        dockerfile: './Dockerfile'
-        image-name: ${{ env.name }}
-        image-tag: ${{ env.version }}
-        docker-context: .
-        dry-run: ${{ inputs.dry-run }}
+        context: ${{ inputs.base-path }}/${{ inputs.project }}
+        file: ${{ inputs.dockerfile-path }}
+        push: ${{ inputs.dry-run == 'false' }}
+        tags: ${{ env.DOCKER_TAG }}
         build-args: |
+          SDK_VERSION=${{ inputs.sdk-version }}
+          RUNTIME_VERSION=${{ inputs.runtime-version }}
           PROJECT=${{ inputs.project }}
-          MIGRATIONS=${{ inputs.migrations }}
-          SDK_VERSION=${{ env.SDK }}
-          RUNTIME_VERSION=${{ env.RUNTIME }}
+
