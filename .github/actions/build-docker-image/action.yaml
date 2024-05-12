@@ -50,44 +50,14 @@ runs:
         password: ${{ github.token }}
         ecr: false
 
-    - name: Load - global.json
-      shell: bash
-      run: |
-        DIRECTORY=$(dirname '${{ inputs.solution }}')
-        test -f "$DIRECTORY/global.json" || exit 0
-        echo "DIRECTORY=$DIRECTORY" | tee -a $GITHUB_ENV
-        echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
-        echo "RUNTIME=$(jq -rc '.runtime.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
-        - name: Overwrite - if given optional input
-          shell: bash
-          run: |
-            if [ ! -z "${{ inputs.sdk-version }}" ]; then
-              echo "SDK=${{ inputs.sdk-version }}" | tee -a $GITHUB_ENV
-            fi
-            if [ ! -z "${{ inputs.runtime-version }}" ]; then
-              echo "RUNTIME=${{ inputs.runtime-version }}" | tee -a $GITHUB_ENV
-            fi
-
-    - name: Resolve image version
-      uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
-
-    - name: Resolve image name
-      shell: bash
-      run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
-
     - name: Set Docker Tag
       id: docker_tag
       shell: bash
       run: |
         repo_name="${GITHUB_REPOSITORY,,}"
-        project_name="${{ inputs.project }}"
-        # Replace spaces with hyphens and convert to lowercase
-        project_name="${project_name// /-}"
-        project_name="${project_name,,}"
-        pr_number=$(jq --raw-output .pull_request.number $GITHUB_EVENT_PATH)
-        tag="${repo_name}-${project_name}:pr-${pr_number}"
-        echo "tag=${tag}"
-        echo "DOCKER_TAG=${tag}" >> $GITHUB_ENV
+        project_name="${{ inputs.project }}" && project_name=$(echo "${project_name}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+        tag="${repo_name}-${project_name}:pr-${GITHUB_EVENT_PULL_REQUEST_NUMBER}"
+        echo "tag=${tag}" >> $GITHUB_OUTPUT
 
     - name: Build image
       uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
