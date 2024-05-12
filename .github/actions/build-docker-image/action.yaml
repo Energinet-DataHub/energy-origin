@@ -2,34 +2,61 @@ name: 'Build Docker Image'
 description: 'Builds and pushes Docker images for projects'
 
 inputs:
-  base-path:
-    description: 'Base path to the project'
+  solution:
+    description: Is the path to a solution file.
     required: true
 
   project:
-    description: 'Project directory name'
+    description: Is the path to a project file.
     required: true
+
+  configuration:
+    description: Is the path to a configuration file.
+    required: true
+
+  migrations:
+    description: Is the path to a migrations file, if this project uses them.
+    required: false
+    default: ""
 
   dry-run:
-    description: 'Flag to simulate builds'
-    required: true
+    description: Perform all actions but without pushing the image
+    required: false
+    default: "false"
 
   sdk-version:
-    description: 'SDK version for the .NET project'
-    required: true
+    description: Is a complete sdk version in format x.y.zzz
+    required: false
+    default: ""
 
   runtime-version:
-    description: 'Runtime version for the .NET project'
-    required: true
-
-  dockerfile-path:
-    description: 'Path to the Dockerfile'
-    required: true
+    description: Is a complete runtime version in format x.y.z
+    required: false
+    default: ""
 
 runs:
   using: 'composite'
 
   steps:
+
+    - name: Load - global.json
+      shell: bash
+      run: |
+        DIRECTORY=$(dirname '${{ inputs.solution }}')
+        test -f "$DIRECTORY/global.json" || exit 0
+        echo "DIRECTORY=$DIRECTORY" | tee -a $GITHUB_ENV
+        echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
+        echo "RUNTIME=$(jq -rc '.runtime.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
+        - name: Overwrite - if given optional input
+          shell: bash
+          run: |
+            if [ ! -z "${{ inputs.sdk-version }}" ]; then
+              echo "SDK=${{ inputs.sdk-version }}" | tee -a $GITHUB_ENV
+            fi
+            if [ ! -z "${{ inputs.runtime-version }}" ]; then
+              echo "RUNTIME=${{ inputs.runtime-version }}" | tee -a $GITHUB_ENV
+            fi
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
@@ -50,15 +77,44 @@ runs:
         tag="${repo_name}-${project_name}:pr-${GITHUB_EVENT_PULL_REQUEST_NUMBER}"
         echo "tag=${tag}" >> $GITHUB_OUTPUT
 
-    - name: Build and Push Docker Image
-      uses: docker/build-push-action@v2
+    - name: Fetch Dockerfile
+      shell: bash
+      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/adjust-dotnet-validations/Dockerfile.simplified -O Dockerfile
+
+    - name: Resolve image version
+      uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
+
+    - name: Resolve image name
+      shell: bash
+      run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
+
+    - name: Verify migrations if present
+      if: inputs.migrations != ''
+      uses: Energinet-Datahub/acorn-actions/actions/dotnet-verify-migrations@adjust-dotnet-validations # FIXME: this
       with:
-        context: .
-        file: ${{ inputs.dockerfile-path }}
-        push: ${{ inputs.dry-run == 'false' }}
-        tags: ${{ steps.docker_tag.outputs.tag }}
+        path: ${{ env.DIRECTORY }}
+        project: ${{ inputs.project }}
+        migrations: ${{ inputs.migrations }}
+        dotnet-version: ${{ inputs.sdk-version }}
+        pin-version: true
+
+    - name: Build image
+      uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
+      with:
+        dockerfile: Dockerfile
+        image-name: ${{ env.name }}
+        image-tag: ${{ env.version }}
+        docker-context: .
+        dry-run: ${{ inputs.dry-run }}
         build-args: |
-          SDK_VERSION=${{ inputs.sdk-version }}
-          RUNTIME_VERSION=${{ inputs.runtime-version }}
-          SUBSYSTEM=${{ inputs.base-path }}
-          PROJECT=${{ inputs.project }}/API
+          PROJECT=${{ inputs.project }}
+          MIGRATIONS=${{ inputs.migrations }}
+          SDK_VERSION=${{ env.SDK }}
+          RUNTIME_VERSION=${{ env.RUNTIME }}
+
+    - name: Scan image
+      uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
+      with:
+        image-name: ${{ env.name }}
+        image-tag: ${{ env.version }}
+        upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}

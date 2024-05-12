@@ -46,34 +46,33 @@ runs:
       if: contains(steps.get-changed-files.outputs['changed-files'], 'Transfer.API')
       uses: ./.github/actions/build-docker-image
       with:
-        base-path: ${{ steps.set-path.outputs.base-path }}
-        project: 'domains/transfer/Transfer.API/API/API.csproj'
-        dry-run: ${{ inputs.dry-run }}
+        solution: domains/transfer/Transfer.sln
+        project: domains/transfer/Transfer.API/API/API.csproj
+        configuration: domains/transfer/Transfer.API/configuration.yaml
+        migrations: domains/transfer/migrations/API.sql
+        dry-run: true
         sdk-version: '8.0.204'
         runtime-version: '8.0.4'
-        dockerfile-path: './Dockerfile'
 
     - name: Transfer Claim Automation
       if: contains(steps.get-changed-files.outputs['changed-files'], 'ClaimAutomation')
       uses: ./.github/actions/build-docker-image
       with:
-        base-path: ${{ steps.set-path.outputs.base-path }}
-        project: 'domains/transfer/ClaimAutomation/Worker/Worker.csproj'
-        dry-run: ${{ inputs.dry-run }}
-        sdk-version: '8.0.204'
-        runtime-version: '8.0.4'
-        dockerfile-path: './Dockerfile'
+        solution: domains/transfer/Transfer.sln
+        project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
+        configuration: domains/transfer/ClaimAutomation/configuration.yaml
+        migrations: domains/transfer/migrations/API.sql
+        dry-run: true
 
     - name: Transfer Agreement Automation
       if: contains(steps.get-changed-files.outputs['changed-files'], 'TransferAgreementAutomation')
       uses: ./.github/actions/build-docker-image
       with:
-        base-path: ${{ steps.set-path.outputs.base-path }}
-        project: 'domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj'
-        dry-run: ${{ inputs.dry-run }}
-        sdk-version: '8.0.204'
-        runtime-version: '8.0.4'
-        dockerfile-path: './Dockerfile'
+        solution: domains/transfer/Transfer.sln
+        project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
+        configuration: domains/transfer/ClaimAutomation/configuration.yaml
+        migrations: domains/transfer/migrations/API.sql
+        dry-run: true
 
     - name: Determine Workflow Success
       shell: bash
