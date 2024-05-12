@@ -47,9 +47,10 @@ runs:
         context: ${{ inputs.base-path }}/${{ inputs.project }}
         file: ${{ inputs.dockerfile-path }}
         push: ${{ inputs.dry-run == 'false' }}
-        tags: ${{ github.repository_owner }}/${{ github.repository }}-${{ inputs.project | replace(' ', '-') | lower }}:pr-${{ github.event.pull_request.number }}
+        tags: >
+          ${{ github.repository_owner }}/${{ github.repository }}-${{ inputs.project }}:pr-${{ github.event.pull_request.number }}
         build-args: |
           SDK_VERSION=${{ inputs.sdk-version }}
           RUNTIME_VERSION=${{ inputs.runtime-version }}
-          SUBSYSTEM=${{ inputs.base-path }}/${{ inputs.project }}
-          PROJECT=${{ inputs.project }}.csproj
+          SUBSYSTEM=${{ inputs.base-path }}
+          PROJECT=${{ inputs.project }}
