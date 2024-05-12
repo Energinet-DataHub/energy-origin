@@ -27,13 +27,10 @@ jobs:
       - name: Detect Modified Subsystems
         id: detect
         run: |
-          # Checkout the base branch (e.g., main)
           git checkout main
 
-          # Checkout the head of the pull request branch
           git checkout ${{ github.head_ref }}
 
-          # Compare the base branch with the head of the pull request branch
           git diff --name-only main ${{ github.head_ref }}
 
           subsystems=$(git diff --name-only main ${{ github.head_ref }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split("\n") | map(select(.!= ""))')
@@ -56,7 +53,7 @@ jobs:
       - name: Dynamically Invoke Subsystem Workflow
         uses: jenseng/dynamic-uses@v1
         with:
-          uses: ${{ format('./.github/actions/transfer/action.yaml', matrix.subsystem.replace('energy-origin/energy-origin', 'energy-origin')) }}
+          uses: ./.github/actions/${{ matrix.subsystem }}/action.yaml
           with: |
             {
               "dry-run": "${{ inputs.dry-run }}",
