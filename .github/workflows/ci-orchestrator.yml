@@ -20,7 +20,7 @@ jobs:
 
   build:
     needs: setup
-    uses: ./.github/workflows/build-subsystems.yaml
+    uses: ./.github/workflows/build.yaml
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [
-        build-subsystems,
+        build,
         dependabot-validate,
         dependabot-update
       ]
