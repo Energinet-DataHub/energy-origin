@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240513082531_InitialCreate")]
+    [Migration("20240513113604_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -46,6 +46,9 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("ClientType")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("IdpClientId")
                         .HasColumnType("uuid");
 
@@ -56,9 +59,6 @@ namespace API.Migrations
                     b.Property<string>("RedirectUrl")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -77,8 +77,8 @@ namespace API.Migrations
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 
-                    b.Property<long>("ConsentDate")
-                        .HasColumnType("bigint");
+                    b.Property<DateTimeOffset>("ConsentDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid");
