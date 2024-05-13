@@ -40,7 +40,7 @@ jobs:
           json_matrix=$(echo "$affected_projects" | jq -R -s -c 'split(" ") | map(select(test("^\\s*$") | not)) | map({"project": .})')
           echo "Affected projects: $affected_projects"
           echo "JSON matrix: $json_matrix"
-          echo "$json_matrix" > matrix.json
+          echo "::set-output name=matrix::$json_matrix"
 
       - name: Upload matrix file
         uses: actions/upload-artifact@v2

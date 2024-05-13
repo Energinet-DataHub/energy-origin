@@ -10,11 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - name: Download Matrix File
-        uses: actions/download-artifact@v2
-        with:
-          name: matrix
-
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.7.2
         with:
@@ -23,20 +18,26 @@ jobs:
       - name: Extract Matrix Data
         id: load-matrix
         run: |
-          matrix_json=$(cat matrix/matrix.json)
-          echo "::set-output name=matrix::$matrix_json"
+          echo "::set-output name=matrix::${{ github.event.workflow_run.outputs.prepare.matrix }}"
 
       - name: Restore dependencies
-        run: dotnet restore ${{ matrix.project }}
-        env:
-          MATRIX: ${{ fromJson(steps.load-matrix.outputs.matrix) }}
+        run: |
+          matrix=${{ fromJson(steps.load-matrix.outputs.matrix) }}
+          for project in ${{ matrix }}; do
+            dotnet restore $project
+          done
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore ${{ matrix.project }}
-        env:
-          MATRIX: ${{ fromJson(steps.load-matrix.outputs.matrix) }}
+        run: |
+          matrix=${{ fromJson(steps.load-matrix.outputs.matrix) }}
+          for project in ${{ matrix }}; do
+            dotnet build --configuration Release --no-restore $project
+          done
 
       - name: Test
-        run: dotnet test --no-restore --verbosity normal ${{ matrix.project }}
-        env:
-          MATRIX: ${{ fromJson(steps.load-matrix.outputs.matrix) }}
+        run: |
+          matrix=${{ fromJson(steps.load-matrix.outputs.matrix) }}
+          for project in ${{ matrix }}; do
+            dotnet test --no-restore --verbosity normal $project
+          done
+
