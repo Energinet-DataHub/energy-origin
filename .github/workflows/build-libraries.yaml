@@ -2,7 +2,7 @@ name: Build library
 
 on:
   workflow_run:
-    workflows: [Build]
+    workflows: [Build domain]
     types: [completed]
 
 jobs:
