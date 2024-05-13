@@ -18,7 +18,7 @@ jobs:
       - name: Setup variables
         run: exit 0
 
-  build-subsystems:
+  build:
     needs: setup
     uses: ./.github/workflows/build-subsystems.yaml
     secrets: inherit
