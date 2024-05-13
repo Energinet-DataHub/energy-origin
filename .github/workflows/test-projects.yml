@@ -1,0 +1,43 @@
+﻿name: Test Projects
+
+on:
+  workflow_run:
+    workflows: ["Build Subsystems"]
+    types:
+      - completed
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.load-matrix.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Download matrix file
+        uses: actions/download-artifact@v2
+        with:
+          name: matrix
+
+      - name: Read Matrix
+        id: load-matrix
+        run: |
+          matrix_json=$(cat matrix/matrix.json)
+          echo "::set-output name=matrix::$matrix_json"
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ matrix.project }}
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore ${{ matrix.project }}
+
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal ${{ matrix.project }}

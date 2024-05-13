@@ -37,30 +37,13 @@ jobs:
         id: set-matrix
         run: |
           affected_projects=$(grep '<ProjectReference' affected.proj | sed 's/.*Include="\([^"]*\)".*/\1/' | tr '\n' ' ')
-          echo "Affected projects: $affected_projects"
           json_matrix=$(echo "$affected_projects" | jq -R -s -c 'split(" ") | map(select(test("^\\s*$") | not)) | map({"project": .})')
-          echo "::set-output name=matrix::{\"include\":$json_matrix}"
+          echo "Affected projects: $affected_projects"
+          echo "JSON matrix: $json_matrix"
+          echo "$json_matrix" > matrix.json
 
-  test:
-    needs: prepare
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{fromJson(needs.prepare.outputs.matrix)}}
-    steps:
-      - uses: actions/checkout@v4
+      - name: Upload matrix file
+        uses: actions/upload-artifact@v2
         with:
-          fetch-depth: 0
-
-      - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v1.7.2
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Restore dependencies
-        run: dotnet restore ${{ matrix.project }}
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore ${{ matrix.project }}
-
-      - name: Test
-        run: dotnet test --no-restore --verbosity normal ${{ matrix.project }}
+          name: matrix
+          path: matrix.json
