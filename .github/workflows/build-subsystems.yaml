@@ -32,8 +32,8 @@ jobs:
       - uses: leonardochaia/dotnet-affected-action@v1
         id: dotnet_affected
         with:
-          from: ${{ github.event.pull_request.head.ref }}
-          to: ${{ github.event.pull_request.base.ref }}
+          from: ${{ github.event.pull_request.head.sha }}
+          to: ${{ github.event.pull_request.base.sha }}
 
       - name: Install dependencies
         if: success() && steps.dotnet_affected.outputs.affected != ''
