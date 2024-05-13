@@ -38,15 +38,13 @@ jobs:
         run: |
           affected_projects=$(grep '<ProjectReference' affected.proj | sed 's/.*Include="\([^"]*\)".*/\1/' | tr '\n' ' ')
           echo "Affected projects: $affected_projects"
-          # Ensure we're creating a valid JSON array for the matrix, even if it's empty
-          json_matrix=$(echo "$affected_projects" | jq -R -s 'split(" ") | map(select(. | length > 0)) | map({"project": .}) | {"include": .}')
-          echo "::set-output name=matrix::$json_matrix"
+          json_matrix=$(echo "$affected_projects" | jq -R -s -c 'split(" ") | map(select(test("^\\s*$") | not)) | map({"project": .})')
+          echo "::set-output name=matrix::{\"include\":$json_matrix}"
 
   test:
     needs: prepare
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix: ${{fromJson(needs.prepare.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +56,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install dependencies
+      - name: Restore dependencies
         run: dotnet restore ${{ matrix.project }}
 
       - name: Build
