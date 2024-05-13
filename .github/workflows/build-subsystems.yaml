@@ -38,8 +38,8 @@ jobs:
         run: |
           affected_projects=$(grep '<ProjectReference' affected.proj | sed 's/.*Include="\([^"]*\)".*/\1/' | tr '\n' ' ')
           echo "Affected projects: $affected_projects"
-          json_matrix=$(echo "$affected_projects" | jq -R -s -c 'split(" ") | map(select(. != "")) | map({"project": .})')
-          echo "::set-output name=matrix::{\"include\":$json_matrix}"
+          json_matrix=$(echo "$affected_projects" | jq -R -s 'split(" ") | map(select(. | length > 0)) | map({"project": .}) | {include: .}')
+          echo "::set-output name=matrix::$json_matrix"
 
   test:
     needs: prepare
@@ -56,7 +56,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies
+      - name: Install dependencies
         run: dotnet restore ${{ matrix.project }}
 
       - name: Build
