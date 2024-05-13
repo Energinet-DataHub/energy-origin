@@ -36,7 +36,6 @@ public class GrantConsentCommandHandler(
         }
 
         var client = clientRepository.Query()
-                         .AsEnumerable()
                          .FirstOrDefault(it => it.IdpClientId == command.idpClientId)
                      ?? throw new EntityNotFoundException(command.idpClientId.Value.ToString(), nameof(Client));
 

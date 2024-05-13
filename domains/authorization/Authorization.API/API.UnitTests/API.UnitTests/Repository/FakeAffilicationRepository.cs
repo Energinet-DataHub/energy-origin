@@ -9,19 +9,6 @@ public class FakeAffiliationRepository : IAffiliationRepository
 {
     private readonly List<Affiliation> _entities = [];
 
-    public Task<Affiliation> GetAsync(object[] keys, CancellationToken cancellationToken)
-    {
-        var organisationId = (Guid)keys[0];
-        var userId = (Guid)keys[1];
-
-        var entity = _entities.Find(e => e.OrganizationId == organisationId && e.UserId == userId);
-        if (entity is null)
-        {
-            throw new EntityNotFoundException(organisationId + userId.ToString(), nameof(Affiliation));
-        }
-        return Task.FromResult(entity);
-    }
-
     public Task<Affiliation> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();

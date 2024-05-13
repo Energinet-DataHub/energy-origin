@@ -134,25 +134,3 @@ public static class ServiceCollectionExtensions
         context.Database.EnsureCreated();
     }
 }
-
-public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
-{
-    public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
-        UrlEncoder encoder) : base(options, logger, encoder)
-    {
-    }
-
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
-    {
-        var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-        var authorizationHeader = Context.Request.Headers[HeaderNames.Authorization].ToString().Substring(7);
-        var securityToken = jwtSecurityTokenHandler.ReadToken(authorizationHeader) as JwtSecurityToken;
-
-        var identity = new ClaimsIdentity(securityToken!.Claims, "Test");
-        var principal = new ClaimsPrincipal(identity);
-        var ticket = new AuthenticationTicket(principal, "Test");
-
-        var result = AuthenticateResult.Success(ticket);
-        return Task.FromResult(result);
-    }
-}

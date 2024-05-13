@@ -9,11 +9,6 @@ public class FakeGenericRepository<TEntity> : IGenericRepository<TEntity> where 
 {
     private readonly List<TEntity> _entities = new List<TEntity>();
 
-    public Task<TEntity> GetAsync(object[] keys, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
-
     public Task<TEntity> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         var entity = _entities.FirstOrDefault(e => e.Id == id);
