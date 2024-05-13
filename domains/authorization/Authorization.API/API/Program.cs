@@ -32,10 +32,8 @@ builder.Services.AddAuthentication()
             "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration";
     });
 
-builder.Services.AddAuthorization(options =>
-    options.AddPolicy("SubTypeUser",
-        policy => policy.RequireClaim("sub_type", "user")
-    )
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("SubTypeUser", policy => policy.RequireClaim("sub_type", "user")
 );
 
 builder.Services.AddHealthChecks()

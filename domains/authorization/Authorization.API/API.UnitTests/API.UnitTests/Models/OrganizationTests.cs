@@ -33,7 +33,6 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanExist_WithoutConsents()
     {
-        var idpId = IdpId.Create(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
@@ -69,10 +68,10 @@ public class OrganizationTests
         var organization = Organization.Create(tin, organizationName);
 
         var idpClientId = new IdpClientId(Guid.NewGuid());
-        var role = Role.External;
-        var client = Client.Create(idpClientId, role, "https://redirect.url");
+        var role = ClientType.External;
+        var client = Client.Create(idpClientId, new ClientName("Client"), role, "https://redirect.url");
 
-        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var consentDate = DateTimeOffset.UtcNow;
         var consent = Consent.Create(organization, client, consentDate);
 
         organization.Consents.Should().Contain(consent);

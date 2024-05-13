@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240506131525_InitialCreate")]
+    [Migration("20240513082531_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -27,22 +27,15 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.Affiliation", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("UserId", "OrganizationId");
 
                     b.HasIndex("OrganizationId");
-
-                    b.HasIndex("UserId", "OrganizationId")
-                        .IsUnique();
 
                     b.ToTable("Affiliations");
                 });
@@ -56,7 +49,7 @@ namespace API.Migrations
                     b.Property<Guid>("IdpClientId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("OrganizationName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -106,13 +99,7 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("IdpId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IdpOrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OrganizationName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -121,9 +108,6 @@ namespace API.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IdpOrganizationId")
-                        .IsUnique();
 
                     b.ToTable("Organizations");
                 });
@@ -134,13 +118,10 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("IdpId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("IdpUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("text");
 

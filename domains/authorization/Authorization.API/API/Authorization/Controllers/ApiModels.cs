@@ -22,5 +22,4 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("org_ids")] IEnumerable<string> OrgIds,
     [property: JsonPropertyName("scope")] string Scope);
 
-public record GrantConsentRequest(
-    [property: JsonPropertyName("sub")] Guid ClientId);
+public record GrantConsentRequest(Guid ClientId);

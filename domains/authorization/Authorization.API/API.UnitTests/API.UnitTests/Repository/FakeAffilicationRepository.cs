@@ -1,3 +1,4 @@
+using API.Authorization.Exceptions;
 using API.Models;
 using API.Repository;
 using MockQueryable.NSubstitute;

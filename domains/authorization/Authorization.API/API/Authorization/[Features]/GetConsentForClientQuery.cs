@@ -22,7 +22,7 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
     {
         var result = await _clientRepository.Query()
             .Where(x => x.IdpClientId.Value == query.ClientId)
-            .Select(x => new GetConsentForClientQueryResult(query.ClientId, x.Role.ToString(), "someOrgName", new[] { "123456789", Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }, "dashboard production meters certificates wallet"))
+            .Select(x => new GetConsentForClientQueryResult(query.ClientId, x.ClientType.ToString(), "someOrgName", new[] { "123456789", Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }, "dashboard production meters certificates wallet"))
             .FirstAsync(cancellationToken);
 
         if (result.OrgName == "Energinet")

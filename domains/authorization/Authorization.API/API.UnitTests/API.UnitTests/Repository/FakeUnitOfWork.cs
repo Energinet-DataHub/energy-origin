@@ -1,4 +1,4 @@
-﻿using API.Data;
+using API.Data;
 
 namespace API.UnitTests.Repository;
 

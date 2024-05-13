@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Authorization.Exceptions;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
 

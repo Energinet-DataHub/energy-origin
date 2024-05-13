@@ -74,6 +74,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void ConfigureConsentTable(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Consent>().HasOne(it => it.Organization);
+        modelBuilder.Entity<Consent>().HasOne(it => it.Client);
+
         modelBuilder.Entity<Consent>()
             .HasIndex(c => new { c.ClientId, c.OrganizationId })
             .IsUnique();

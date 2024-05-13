@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -17,7 +17,7 @@ namespace API.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     IdpClientId = table.Column<Guid>(type: "uuid", nullable: false),
-                    OrganizationName = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
                     RedirectUrl = table.Column<string>(type: "text", nullable: false)
                 },
@@ -31,10 +31,8 @@ namespace API.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    IdpId = table.Column<Guid>(type: "uuid", nullable: false),
-                    IdpOrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Tin = table.Column<string>(type: "text", nullable: false),
-                    OrganizationName = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,9 +44,8 @@ namespace API.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    IdpId = table.Column<Guid>(type: "uuid", nullable: false),
                     IdpUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Username = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -85,13 +82,12 @@ namespace API.Migrations
                 name: "Affiliations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     OrganizationId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Affiliations", x => x.Id);
+                    table.PrimaryKey("PK_Affiliations", x => new { x.UserId, x.OrganizationId });
                     table.ForeignKey(
                         name: "FK_Affiliations_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
@@ -112,12 +108,6 @@ namespace API.Migrations
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Affiliations_UserId_OrganizationId",
-                table: "Affiliations",
-                columns: new[] { "UserId", "OrganizationId" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Clients_IdpClientId",
                 table: "Clients",
                 column: "IdpClientId",
@@ -133,12 +123,6 @@ namespace API.Migrations
                 name: "IX_Consents_OrganizationId",
                 table: "Consents",
                 column: "OrganizationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Organizations_IdpOrganizationId",
-                table: "Organizations",
-                column: "IdpOrganizationId",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_IdpUserId",

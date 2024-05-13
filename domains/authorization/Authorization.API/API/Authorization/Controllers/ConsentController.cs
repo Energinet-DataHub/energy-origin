@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
+using API.ValueObjects;
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -32,8 +33,8 @@ public class ConsentController : ControllerBase
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger,
         [FromBody] GrantConsentRequest request)
     {
-
-        await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, _entityDescriptor.OrgIds.First(), request.ClientId));
+        ;
+        await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, _entityDescriptor.OrgIds.First(), new IdpClientId(request.ClientId)));
         return Ok();
     }
 

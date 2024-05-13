@@ -1,6 +1,6 @@
 namespace API.Models;
 
-public enum Role
+public enum ClientType
 {
     External = 0,
     Internal = 1

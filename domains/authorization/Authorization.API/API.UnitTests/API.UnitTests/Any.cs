@@ -1,4 +1,4 @@
-﻿using API.Models;
+using API.Models;
 using API.ValueObjects;
 
 namespace API.UnitTests;
@@ -43,7 +43,7 @@ public class Any
 
     public static Organization Organization()
     {
-        return API.Models.Organization.Create( Tin(), OrganizationName());
+        return API.Models.Organization.Create(Tin(), OrganizationName());
     }
 
     public static IdpClientId IdpClientId()
@@ -53,10 +53,10 @@ public class Any
 
     public static Consent Consent()
     {
-        return API.Models.Consent.Create(Organization(), Client(), DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        return API.Models.Consent.Create(Organization(), Client(), DateTimeOffset.UtcNow);
     }
     public static Client Client()
     {
-        return API.Models.Client.Create(IdpClientId(), Role.External, "https://redirect.url");
+        return API.Models.Client.Create(IdpClientId(), new ClientName("ClientName"), ClientType.External, "https://redirect.url");
     }
 }

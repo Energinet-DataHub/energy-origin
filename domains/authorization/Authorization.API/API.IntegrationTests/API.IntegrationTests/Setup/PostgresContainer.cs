@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using DotNet.Testcontainers.Builders;
 using Testcontainers.PostgreSql;
 

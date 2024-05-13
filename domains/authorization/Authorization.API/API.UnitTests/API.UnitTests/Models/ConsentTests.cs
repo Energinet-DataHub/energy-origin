@@ -14,10 +14,10 @@ public class ConsentTests
         var organization = Organization.Create(organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var role = Role.External;
-        var client = Client.Create(clientIdpClientId, role, "https://redirect.url");
+        var role = ClientType.External;
+        var client = Client.Create(clientIdpClientId, new ClientName("Client"), role, "https://redirect.url");
 
-        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var consentDate = DateTimeOffset.UtcNow;
         var consent = Consent.Create(organization, client, consentDate);
 
         consent.Should().NotBeNull();
@@ -36,10 +36,10 @@ public class ConsentTests
         var organization = Organization.Create(organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var role = Role.External;
-        var client = Client.Create(clientIdpClientId, role, "https://redirect.url");
+        var role = ClientType.External;
+        var client = Client.Create(clientIdpClientId, new ClientName("Client"), role, "https://redirect.url");
 
-        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var consentDate = DateTimeOffset.UtcNow;
         var consent = Consent.Create(organization, client, consentDate);
 
         organization.Consents.Should().Contain(consent);
@@ -50,10 +50,10 @@ public class ConsentTests
     public void Consent_Create_ThrowsArgumentNullException_WhenOrganizationIsNull()
     {
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var role = Role.External;
-        var client = Client.Create(clientIdpClientId, role, "https://redirect.url");
+        var role = ClientType.External;
+        var client = Client.Create(clientIdpClientId, new ClientName("Client"), role, "https://redirect.url");
 
-        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var consentDate = DateTimeOffset.UtcNow;
         Action act = () => Consent.Create(null!, client, consentDate);
 
         act.Should().Throw<ArgumentNullException>();
@@ -66,7 +66,7 @@ public class ConsentTests
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(organizationTin, organizationName);
 
-        var consentDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var consentDate = DateTimeOffset.UtcNow;
         Action act = () => Consent.Create(organization, null!, consentDate);
 
         act.Should().Throw<ArgumentNullException>();

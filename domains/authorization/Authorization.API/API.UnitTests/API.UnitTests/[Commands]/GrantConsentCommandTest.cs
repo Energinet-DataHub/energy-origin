@@ -1,7 +1,9 @@
-﻿using API.Authorization._Features_;
+using API.Authorization._Features_;
+using API.Authorization.Exceptions;
 using API.Models;
 using API.Repository;
 using API.UnitTests.Repository;
+using API.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.UnitTests._Commands_;
@@ -25,7 +27,7 @@ public class GrantConsentCommandTest
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
         await _fakeClientRepository.AddAsync(client, CancellationToken.None);
 
-        var command = new GrantConsentCommand(user.Id, organization.Id, client.Id);
+        var command = new GrantConsentCommand(user.Id, organization.Id, new IdpClientId(client.IdpClientId.Value));
         var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository, _fakeConsentRepository,
             _fakeAffiliationRepository, _fakeUnitOfWork);
         await handler.Handle(command, CancellationToken.None);
@@ -42,7 +44,7 @@ public class GrantConsentCommandTest
         await _fakeAffiliationRepository.AddAsync(Affiliation.Create(user, organization), CancellationToken.None);
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
 
-        var command = new GrantConsentCommand(user.Id, organization.Id, Any.Guid());
+        var command = new GrantConsentCommand(user.Id, organization.Id, Any.IdpClientId());
         var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository, _fakeConsentRepository,
             _fakeAffiliationRepository, _fakeUnitOfWork);
 
@@ -55,7 +57,7 @@ public class GrantConsentCommandTest
         var client = Any.Client();
         await _fakeClientRepository.AddAsync(client, CancellationToken.None);
 
-        var command = new GrantConsentCommand(Any.Guid(), Any.Guid(), client.Id);
+        var command = new GrantConsentCommand(Any.Guid(), Any.Guid(), new IdpClientId(client.IdpClientId.Value));
         var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository, _fakeConsentRepository,
             _fakeAffiliationRepository, _fakeUnitOfWork);
 
@@ -73,7 +75,7 @@ public class GrantConsentCommandTest
         await _fakeUserRepository.AddAsync(user, CancellationToken.None);
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
 
-        var command = new GrantConsentCommand(user.Id, organization.Id, client.Id);
+        var command = new GrantConsentCommand(user.Id, organization.Id, new IdpClientId(client.IdpClientId.Value));
         var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository, _fakeConsentRepository,
             _fakeAffiliationRepository, _fakeUnitOfWork);
 

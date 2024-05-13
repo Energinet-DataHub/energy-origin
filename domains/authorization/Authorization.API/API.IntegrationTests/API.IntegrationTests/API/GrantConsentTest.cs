@@ -1,8 +1,9 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using API.Authorization._Features_;
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
+using API.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,20 +34,55 @@ public class GrantConsentTest
     }
 
     [Fact]
+    public async Task GivenKnownClientId_WhenGrantingConsent_200OkReturned()
+    {
+
+        var client = Any.Client();
+        var user = Any.User();
+        var organization = Any.Organization();
+        var affiliation = Affiliation.Create(user, organization);
+        await using var dbContext = new ApplicationDbContext(options);
+        await dbContext.Clients.AddAsync(client);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.SaveChangesAsync();
+
+        var api = _integrationTestFixture.CreateApi(sub: user.Id.ToString(), orgIds: organization.Id.ToString());
+        var response = await api.GrantConsent(client.IdpClientId.Value);
+        response.Should().Be200Ok();
+    }
+
+    [Fact]
     public async Task GivenClientId_WhenGettingConsent_HttpOkConsentReturned()
     {
-        var consent = Any.Consent();
-        await using var dbContext = new ApplicationDbContext(options);
-        await dbContext.Consents.AddAsync(consent);
+        var consent = await SeedConsent();
 
-
-        await dbContext.SaveChangesAsync();
         var response = await _api.GetConsent(consent.ClientId);
 
         response.Should().Be200Ok();
 
         var result = await response.Content.ReadFromJsonAsync<GetConsentsQueryResult>();
         result!.Result.Should().NotBeEmpty();
+    }
+
+    private async Task<Consent> SeedConsent()
+    {
+        var user = Any.User();
+        var organization = Any.Organization();
+        var affiliation = Affiliation.Create(user, organization);
+        var client = Any.Client();
+        var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow);
+
+        await using var dbContext = new ApplicationDbContext(options);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.Clients.AddAsync(client);
+        await dbContext.Consents.AddAsync(consent);
+
+        await dbContext.SaveChangesAsync();
+        return consent;
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-﻿using API.Authorization._Features_;
+using API.Authorization._Features_;
 using API.Repository;
 using API.UnitTests.Repository;
 using FluentAssertions;
@@ -23,12 +23,11 @@ public class GetConsentQueryTests
     }
 
     [Fact]
-    public async Task GivenUnknownClientId_WhenGettingConsent_ExceptionIsThrown()
+    public async Task GivenUnknownClientId_WhenGettingConsent_EmptyListReturned()
     {
         var consentRepository = new FakeConsentRepository();
         var handler = new GetConsentQueryHandler(consentRepository);
-
-        await Assert.ThrowsAsync<EntityNotFoundException>(async () =>
-            await handler.Handle(new GetConsentQuery(Any.IdpClientId().Value), CancellationToken.None));
+        var result = await handler.Handle(new GetConsentQuery(Any.IdpClientId().Value), CancellationToken.None);
+        result.Result.Should().BeEmpty();
     }
 }

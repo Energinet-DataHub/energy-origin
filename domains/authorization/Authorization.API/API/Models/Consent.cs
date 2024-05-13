@@ -10,7 +10,7 @@ public class Consent : IEntity<Guid>
         Guid clientId,
         Organization organization,
         Client client,
-        long consentDate
+        DateTimeOffset consentDate
     )
     {
         Organization = organization;
@@ -29,9 +29,9 @@ public class Consent : IEntity<Guid>
     public Organization Organization { get; private set; } = null!;
     public Guid ClientId { get; private set; }
     public Client Client { get; private set; } = null!;
-    public long ConsentDate { get; private set; }
+    public DateTimeOffset ConsentDate { get; private set; }
 
-    public static Consent Create(Organization organization, Client client, long consentDate)
+    public static Consent Create(Organization organization, Client client, DateTimeOffset consentDate)
     {
         ArgumentNullException.ThrowIfNull(organization);
         ArgumentNullException.ThrowIfNull(client);
