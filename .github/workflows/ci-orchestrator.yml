@@ -95,15 +95,7 @@ jobs:
     needs:
       [
         build-domain,
-        build-libraries,
-        check-licenses,
-        check-versions,
-        structurizr-update-pages,
-        sonar-analysis,
-        sonar-analysis-ignore,
-        dependabot-validate,
-        dependabot-update,
-        workflow-validate,
+        build-libraries
       ]
     if: always()
     steps:
