@@ -50,13 +50,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET Core SDK (if not already set up in this job)
-        if: steps.dotnet_sdk_setup.outputs.setup_done != 'true'
-        id: dotnet_sdk_setup
-        run: |
-          echo "Setting up .NET SDK..."
-          dotnet --list-sdks
-          echo "::set-output name=setup_done::true"
+      - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.7.2
         with:
           dotnet-version: '8.0.x'
