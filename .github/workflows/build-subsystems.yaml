@@ -14,54 +14,32 @@ on:
         type: string
 
 jobs:
-  determine-subsystems:
-    runs-on: ubuntu-latest
-    outputs:
-      subsystems-json: ${{ steps.detect.outputs.subsystems-json }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Detect Modified Subsystems
-        id: detect
-        run: |
-          git checkout main
-
-          git checkout ${{ github.head_ref }}
-
-          git diff --name-only main ${{ github.head_ref }}
-
-          subsystems=$(git diff --name-only main ${{ github.head_ref }} | grep '^domains/' | awk -F'/' '{print $2}' | sort -u | jq -R -s -c 'split("\n") | map(select(.!= ""))')
-
-          echo "Detected subsystems: $subsystems"
-          echo "::set-output name=subsystems-json::$subsystems"
-
-  build-and-test:
-    needs: determine-subsystems
+  build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        subsystem: ${{ fromJson(needs.determine-subsystems.outputs.subsystems-json) }}
-
+        dotnet-version: ['8.0.x']
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Dynamically Invoke Subsystem Workflow
-        uses: ./.github/actions/dynamic-uses
+      - uses: actions/checkout@v2
         with:
-          uses: ./.github/actions/${{ matrix.subsystem }}
-          with: |
-            {
-              "dry-run": "${{ inputs.dry-run }}",
-              "is-dependabot": "${{ inputs.is-dependabot }}"
-            }
+          fetch-depth: 0
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
 
-      - name: Report Results
-        if: ${{ always() }}
-        shell: bash
-        run: |
-          echo "Results from ${{ matrix.subsystem }}: ${{ steps.subsystem-workflow.outcome }}"
+      - uses: leonardochaia/dotnet-affected-action@v1
+        id: dotnet_affected
+        with:
+          from: ${{ github.head_ref }}
+          to: ${{ github.base_ref }}
+
+      - name: Install dependencies
+        if: success() && steps.dotnet_affected.outputs.affected != ''
+        run: dotnet restore affected.proj
+      - name: Build
+        if: success() && steps.dotnet_affected.outputs.affected != ''
+        run: dotnet build --configuration Release --no-restore affected.proj
+      - name: Test
+        if: success() && steps.dotnet_affected.outputs.affected != ''
+        run: dotnet test --no-restore --verbosity normal affected.proj
