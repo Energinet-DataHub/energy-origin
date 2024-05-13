@@ -7,27 +7,25 @@ on:
         description: "An indication of whether to commit/publish results"
         required: true
         type: string
-
       is-dependabot:
         description: "An indication of a dependabot pull request"
         required: true
         type: string
 
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: ['8.0.x']
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Important for ensuring the entire history is available for dotnet-affected to analyze
+          fetch-depth: 0
 
-      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+      - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.7.2
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          dotnet-version: '8.0.x'
 
       - uses: leonardochaia/dotnet-affected-action@v1
         id: dotnet_affected
@@ -35,14 +33,39 @@ jobs:
           from: ${{ github.event.pull_request.head.sha }}
           to: ${{ github.event.pull_request.base.sha }}
 
-      - name: Install dependencies
-        if: success() && steps.dotnet_affected.outputs.affected != ''
-        run: dotnet restore affected.proj
+      - name: Parse Affected Projects
+        id: set-matrix
+        run: |
+          affected_projects=$(grep '<ProjectReference' affected.proj | sed 's/.*Include="\([^"]*\)".*/\1/' | tr '\n' ' ')
+          echo "Affected projects: $affected_projects"
+          echo "::set-output name=matrix::{\"include\":$(echo $affected_projects | jq -R -s -c 'split(" ") | map(select(. != "")) | map({"project": .}))')}"
+
+  test:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.prepare.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET Core SDK (if not already set up in this job)
+        if: steps.dotnet_sdk_setup.outputs.setup_done != 'true'
+        id: dotnet_sdk_setup
+        run: |
+          echo "Setting up .NET SDK..."
+          dotnet --list-sdks
+          echo "::set-output name=setup_done::true"
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ matrix.project }}
 
       - name: Build
-        if: success() && steps.dotnet_affected.outputs.affected != ''
-        run: dotnet build --configuration Release --no-restore affected.proj
+        run: dotnet build --configuration Release --no-restore ${{ matrix.project }}
 
       - name: Test
-        if: success() && steps.dotnet_affected.outputs.affected != ''
-        run: dotnet test --no-restore --verbosity normal affected.proj
+        run: dotnet test --no-restore --verbosity normal ${{ matrix.project }}
