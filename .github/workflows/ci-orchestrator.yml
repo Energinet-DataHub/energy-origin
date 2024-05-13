@@ -20,7 +20,7 @@ jobs:
 
   build:
     needs: setup
-    uses: ./.github/workflows/build.yaml
+    uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
@@ -28,7 +28,7 @@ jobs:
 
   test-projects:
     needs: build
-    uses: ./.github/workflows/test-projects.yaml
+    uses: ./.github/workflows/test-projects.yml
 
   allow-merge-ci-orchestrator:
     runs-on: ubuntu-latest

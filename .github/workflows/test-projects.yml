@@ -1,10 +1,9 @@
 ﻿name: Test Projects
 
 on:
-  workflow_run:
-    workflows: [Build]
-    types:
-      - completed
+  push:
+    branches:
+      - vcluster/sigstore-and-gh
 
 jobs:
   on-success:
