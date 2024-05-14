@@ -32,7 +32,7 @@ runs:
       shell: bash
       run: |
         set +e
-        test -z "${{ env.SDK }}" || exit 1
+        test -z "${{ env.SDK }}" && exit 1
 
     - name: Test
       uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@adjust-dotnet-validations # FIXME: this
