@@ -48,7 +48,7 @@ public class WaitForCommittedTransactionActivity : IExecuteActivity<WaitForCommi
             }
 
             string message = $"Transaction {context.Arguments.ShaId} is still processing on registry for certificateId: {context.Arguments.CertificateId}.";
-            logger.LogDebug(message);
+            logger.LogInformation(message);
             return context.Faulted(new RegistryTransactionStillProcessingException(message));
         }
         catch (RpcException ex)
@@ -83,12 +83,12 @@ public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefi
         //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
 
         endpointConfigurator.UseMessageRetry(r => r
-            .Interval(retryOptions.RegistryTransactionStillProcessingRetryCount, TimeSpan.FromSeconds(1))
-            .Handle(typeof(TransientException), typeof(RegistryTransactionStillProcessingException)));
+            .Incremental(retryOptions.RegistryTransactionStillProcessingRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3))
+            .Handle(typeof(RegistryTransactionStillProcessingException)));
 
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3))
-            .Ignore(typeof(TransientException), typeof(RegistryTransactionStillProcessingException)));
+            .Ignore(typeof(RegistryTransactionStillProcessingException)));
 
         endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
