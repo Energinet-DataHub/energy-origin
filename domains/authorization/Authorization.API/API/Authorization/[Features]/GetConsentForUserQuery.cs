@@ -10,11 +10,11 @@ public class GetConsentForUserQueryHandler : IRequestHandler<GetConsentForUserQu
 {
     public Task<GetConsentForUserQueryResult> Handle(GetConsentForUserQuery query, CancellationToken cancellationToken)
     {
-        var result = new GetConsentForUserQueryResult(query.Sub, query.Name, "User", query.OrgName, new[] { Guid.NewGuid().ToString() }, "dashboard production meters certificates wallet");
+        var result = new GetConsentForUserQueryResult(query.Sub, query.Name, "User", query.OrgName, new[] { Guid.NewGuid() }, "dashboard production meters certificates wallet");
         return Task.FromResult(result);
     }
 }
 
 public record GetConsentForUserQuery(Guid Sub, string Name, string OrgName, string OrgCvr) : IRequest<GetConsentForUserQueryResult>;
 
-public record GetConsentForUserQueryResult(Guid Sub, string Name, string SubType, string OrgName, IEnumerable<string> OrgIds, string Scope);
+public record GetConsentForUserQueryResult(Guid Sub, string Name, string SubType, string OrgName, IEnumerable<Guid> OrgIds, string Scope);
