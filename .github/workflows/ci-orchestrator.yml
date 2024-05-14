@@ -18,9 +18,25 @@ jobs:
       - name: Setup variables
         run: exit 0
 
-  build-transfer:
+  build-auth:
     needs: setup
-    uses: ./.github/workflows/build-transfer.yaml
+    uses: ./.github/workflows/build-auth.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+
+  build-authorization:
+    needs: setup
+    uses: ./.github/workflows/build-authorization.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+
+  build-certificates:
+    needs: setup
+    uses: ./.github/workflows/build-certificates.yaml
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
@@ -29,6 +45,30 @@ jobs:
   build-libraries:
     needs: setup
     uses: ./.github/workflows/build-libraries.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+
+  build-measurements:
+    needs: setup
+    uses: ./.github/workflows/build-measurements.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+
+  build-oidc-mock:
+    needs: setup
+    uses: ./.github/workflows/build-oidc-mock.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+
+  build-transfer:
+    needs: setup
+    uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
@@ -44,16 +84,16 @@ jobs:
     uses: ./.github/workflows/check-versions.yml
     secrets: inherit
 
-  structurizr-update-pages:
-    uses: ./.github/workflows/structurizr-update-pages.yaml
-    secrets: inherit
-
   dependabot-update:
     uses: ./.github/workflows/dependabot-update.yaml
     secrets: inherit
 
   dependabot-validate:
     uses: ./.github/workflows/dependabot-validate.yaml
+    secrets: inherit
+
+  structurizr-update-pages:
+    uses: ./.github/workflows/structurizr-update-pages.yaml
     secrets: inherit
 
   workflow-validate:
@@ -71,13 +111,18 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [
-        build-transfer,
+        build-auth,
+        build-authorization,
+        build-certificates,
         build-libraries,
+        build-measurements,
+        build-oidc-mock,
+        build-transfer,
         check-licenses,
         check-versions,
-        structurizr-update-pages,
         dependabot-validate,
         dependabot-update,
+        structurizr-update-pages,
         workflow-validate,
       ]
     if: always()
