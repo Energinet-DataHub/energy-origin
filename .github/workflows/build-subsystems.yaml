@@ -13,18 +13,17 @@ on:
         type: string
 
 jobs:
-  transfer:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-test
         with:
           solution: domains/transfer/Transfer.sln
-          #versions
 
-  transfer-api:
+  build-api:
     needs:
-      - transfer
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,12 +33,11 @@ jobs:
           project: domains/transfer/Transfer.API/API/API.csproj
           configuration: domains/transfer/Transfer.API/configuration.yaml
           migrations: domains/transfer/migrations/API.sql
-          dry-run: true
-          #versions
+          dry-run: ${{ inputs.dry-run }}
 
-  transfer-claim-automation:
+  build-claim-automation:
     needs:
-      - transfer
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,12 +47,11 @@ jobs:
           project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
           configuration: domains/transfer/ClaimAutomation/configuration.yaml
           migrations: domains/transfer/migrations/API.sql
-          dry-run: true
-          #versions
+          dry-run: ${{ inputs.dry-run }}
 
-  transfer-agreement-automation:
+  build-transfer-automation:
     needs:
-      - transfer
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,16 +61,15 @@ jobs:
           project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
           configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
           migrations: domains/transfer/migrations/API.sql
-          dry-run: true
-          #versions
+          dry-run: ${{ inputs.dry-run }}
 
-  update:
+  update-transfer:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-      - transfer-api
-      - transfer-claim-automation
-      - transfer-agreement-automation
+      - build-api
+      - build-claim-automation
+      - build-transfer-automation
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
