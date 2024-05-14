@@ -83,7 +83,7 @@ public class WaitForCommittedTransactionActivityDefinition : ExecuteActivityDefi
         //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
 
         endpointConfigurator.UseMessageRetry(r => r
-            .Incremental(retryOptions.RegistryTransactionStillProcessingRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3))
+            .Interval(retryOptions.RegistryTransactionStillProcessingRetryCount, TimeSpan.FromSeconds(1))
             .Handle(typeof(RegistryTransactionStillProcessingException)));
 
         endpointConfigurator.UseMessageRetry(r => r
