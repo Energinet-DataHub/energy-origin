@@ -31,7 +31,8 @@ runs:
     - name: Fail - if sdk-version is not present
       shell: bash
       run: |
-        test -z "${{ env.SDK }}" && exit 1
+        set +e
+        ! test -z "${{ env.SDK }}"
 
     - name: Test
       uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@adjust-dotnet-validations # FIXME: this
