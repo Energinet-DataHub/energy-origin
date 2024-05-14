@@ -20,7 +20,7 @@ public class ClientName : ValueObject
 
     private static bool IsValidClientName(string value) => MyRegex().IsMatch(value);
 
-    private static Regex MyRegex() => new Regex(@"^[a-zA-Z0-9\s&.,'\-]+$");
+    private static Regex MyRegex() => new Regex(@"^[a-zA-Z0-9\s&.,'/\-]+$");
 
     public static ClientName Create(string value)
     {
