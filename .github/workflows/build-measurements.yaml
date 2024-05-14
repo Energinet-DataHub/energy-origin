@@ -1,4 +1,4 @@
-name: Build Auth
+name: Build Measurements
 
 on:
   workflow_call:
