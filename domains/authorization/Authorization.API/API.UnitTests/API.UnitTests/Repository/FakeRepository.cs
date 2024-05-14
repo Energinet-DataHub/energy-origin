@@ -61,6 +61,5 @@ public class FakeOrganizationRepository : FakeGenericRepository<Organization>, I
 
 public class FakeUserRepository : FakeGenericRepository<User>, IUserRepository;
 
-public class FakeConsentRepository : FakeGenericRepository<Consent>, IConsentRepository;
 
 

@@ -56,9 +56,9 @@ public class GrantConsentTest
     [Fact]
     public async Task GivenClientId_WhenGettingConsent_HttpOkConsentReturned()
     {
-        var consent = await SeedConsent();
+        var idpClientId = await SeedDataAndReturnIdpClientId();
 
-        var response = await _api.GetConsent(consent.ClientId);
+        var response = await _api.GetConsent(idpClientId.Value);
 
         response.Should().Be200Ok();
 
@@ -66,7 +66,7 @@ public class GrantConsentTest
         result!.Result.Should().NotBeEmpty();
     }
 
-    private async Task<Consent> SeedConsent()
+    private async Task<IdpClientId> SeedDataAndReturnIdpClientId()
     {
         var user = Any.User();
         var organization = Any.Organization();
@@ -82,7 +82,7 @@ public class GrantConsentTest
         await dbContext.Consents.AddAsync(consent);
 
         await dbContext.SaveChangesAsync();
-        return consent;
+        return client.IdpClientId;
     }
 
     [Fact]

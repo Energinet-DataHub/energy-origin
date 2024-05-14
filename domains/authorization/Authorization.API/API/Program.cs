@@ -57,8 +57,6 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Pr
 // Register specific repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
-builder.Services.AddScoped<IAffiliationRepository, AffiliationRepository>();
-builder.Services.AddScoped<IConsentRepository, ConsentRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 
 builder.Services.AddAuthorizationApi();
