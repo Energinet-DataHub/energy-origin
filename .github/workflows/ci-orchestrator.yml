@@ -14,12 +14,55 @@ jobs:
     outputs:
       dry-run: ${{ (github.event_name == 'push' && github.ref_name == 'main') == false && false == (github.event_name == 'pull_request' && (startsWith(github.event.pull_request.head.ref, 'preview/') || startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}
       is-dependabot: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
+      auth: ${{ steps.auth.outputs.matches }}
+      authorization: ${{ steps.authorization.outputs.matches }}
+      certificates: ${{ steps.certificates.outputs.matches }}
+      measurements: ${{ steps.measurements.outputs.matches }}
+      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
+      transfer: ${{ steps.transfer.outputs.matches }}
     steps:
       - name: Setup variables
         run: exit 0
 
+      - name: detect auth
+        id: auth
+        uses: CodeReaper/find-diff-action@v3
+        with:
+          paths: domains/auth/
+
+      - name: detect authorization
+        id: authorization
+        uses: CodeReaper/find-diff-action@v3
+        with:
+          paths: domains/authorization/
+
+      - name: detect certificates
+        id: certificates
+        uses: CodeReaper/find-diff-action@v3
+        with:
+          paths: domains/certificates/
+
+      - name: detect measurements
+        id: measurements
+        uses: CodeReaper/find-diff-action@v3
+        with:
+          paths: domains/measurements/
+
+      - name: detect oidc-mock
+        id: oidc-mock
+        uses: CodeReaper/find-diff-action@v3
+        with:
+          paths: domains/oidc-mock/
+
+      - name: detect transfer
+        id: transfer
+        uses: CodeReaper/find-diff-action@v3
+        with:
+          paths: domains/transfer/
+
   build-auth:
     needs: setup
+    if: needs.setup.outputs.auth == 'true'
     uses: ./.github/workflows/build-auth.yaml
     secrets: inherit
     with:
@@ -28,6 +71,7 @@ jobs:
 
   build-authorization:
     needs: setup
+    if: needs.setup.outputs.authorization == 'true'
     uses: ./.github/workflows/build-authorization.yaml
     secrets: inherit
     with:
@@ -36,6 +80,7 @@ jobs:
 
   build-certificates:
     needs: setup
+    if: needs.setup.outputs.certificates == 'true'
     uses: ./.github/workflows/build-certificates.yaml
     secrets: inherit
     with:
@@ -52,6 +97,7 @@ jobs:
 
   build-measurements:
     needs: setup
+    if: needs.setup.outputs.measurements == 'true'
     uses: ./.github/workflows/build-measurements.yaml
     secrets: inherit
     with:
@@ -60,6 +106,7 @@ jobs:
 
   build-oidc-mock:
     needs: setup
+    if: needs.setup.outputs.oidc-mock == 'true'
     uses: ./.github/workflows/build-oidc-mock.yaml
     secrets: inherit
     with:
@@ -68,6 +115,7 @@ jobs:
 
   build-transfer:
     needs: setup
+    if: needs.setup.outputs.transfer == 'true'
     uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
