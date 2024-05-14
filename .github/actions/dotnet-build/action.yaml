@@ -54,13 +54,13 @@ runs:
         if [ ! -z "${{ inputs.runtime-version }}" ]; then
           echo "RUNTIME=${{ inputs.runtime-version }}" | tee -a $GITHUB_ENV
         fi
-    # FIXME: later
-    # - name: Fail - if versions are not present
-    #   shell: bash
-    #   run: |
-    #     set +e
-    #     test -z "${{ env.SDK }}" && exit 1
-    #     test -z "${{ env.RUNTIME }}" && exit 2
+
+    - name: Fail - if versions are not present
+      shell: bash
+      run: |
+        set +e
+        test -z "${{ env.SDK }}" || exit 1
+        test -z "${{ env.RUNTIME }}" || exit 2
 
     - name: Fetch Dockerfile
       shell: bash
