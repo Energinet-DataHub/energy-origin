@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace API.Models;
 
-public class Affiliation : IEntity<Guid>
+public class Affiliation
 {
     private Affiliation(
         Guid userId,
@@ -21,8 +21,6 @@ public class Affiliation : IEntity<Guid>
     private Affiliation()
     {
     }
-    public Guid Id { get; private set; }
-
     public Guid UserId { get; private set; }
     public Guid OrganizationId { get; private set; }
     public Organization Organization { get; private set; } = null!;
