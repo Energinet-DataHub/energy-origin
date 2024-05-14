@@ -1,4 +1,4 @@
-name: Build Subsystems
+name: Build Transfer
 
 on:
   workflow_call:

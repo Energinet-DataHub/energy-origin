@@ -18,9 +18,9 @@ jobs:
       - name: Setup variables
         run: exit 0
 
-  build-subsystems:
+  build-transfer:
     needs: setup
-    uses: ./.github/workflows/build-subsystems.yaml
+    uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [
-        build-subsystems,
+        build-transfer,
         build-libraries,
         check-licenses,
         check-versions,
