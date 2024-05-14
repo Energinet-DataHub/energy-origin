@@ -31,7 +31,6 @@ runs:
     - name: Fail - if sdk-version is not present
       shell: bash
       run: |
-        set +e
         test -z "${{ env.SDK }}" && exit 1
 
     - name: Test
