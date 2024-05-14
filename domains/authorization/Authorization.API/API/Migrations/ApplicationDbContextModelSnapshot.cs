@@ -67,20 +67,16 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.Consent", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ClientId")
+                    b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("ConsentDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("ClientId", "OrganizationId");
 
                     b.HasIndex("OrganizationId");
 
@@ -118,7 +114,7 @@ namespace API.Migrations
                     b.Property<Guid>("IdpUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Username")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 

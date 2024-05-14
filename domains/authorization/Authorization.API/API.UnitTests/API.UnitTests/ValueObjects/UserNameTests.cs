@@ -3,12 +3,12 @@ using FluentAssertions;
 
 namespace API.UnitTests.ValueObjects;
 
-public class UsernameTests
+public class UserNameTests
 {
     [Fact]
     public void Name_Constructor_Throws_ArgumentException_When_Value_Is_Null()
     {
-        Action act = () => Username.Create(null!);
+        Action act = () => UserName.Create(null!);
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Value cannot be null, empty, or whitespace. (Parameter 'value')");
@@ -17,7 +17,7 @@ public class UsernameTests
     [Fact]
     public void Name_Constructor_Throws_ArgumentException_When_Value_Is_Empty()
     {
-        Action act = () => Username.Create(string.Empty);
+        Action act = () => UserName.Create(string.Empty);
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Value cannot be null, empty, or whitespace. (Parameter 'value')");
@@ -26,7 +26,7 @@ public class UsernameTests
     [Fact]
     public void Name_Constructor_Throws_ArgumentException_When_Value_Is_Whitespace()
     {
-        Action act = () => Username.Create("   ");
+        Action act = () => UserName.Create("   ");
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Value cannot be null, empty, or whitespace. (Parameter 'value')");
@@ -35,7 +35,7 @@ public class UsernameTests
     [Fact]
     public void Name_Constructor_Succeeds_When_Value_Is_Valid()
     {
-        var name = Username.Create("Valid Name");
+        var name = UserName.Create("Valid Name");
 
         name.Value.Should().Be("Valid Name");
     }

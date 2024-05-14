@@ -3,7 +3,7 @@ using API.ValueObjects;
 
 namespace API.Models;
 
-public class Consent : IEntity<Guid>
+public class Consent
 {
     private Consent(
         Guid organizationId,
@@ -24,7 +24,6 @@ public class Consent : IEntity<Guid>
     {
     }
 
-    public Guid Id { get; private set; }
     public Guid OrganizationId { get; private set; }
     public Organization Organization { get; private set; } = null!;
     public Guid ClientId { get; private set; }

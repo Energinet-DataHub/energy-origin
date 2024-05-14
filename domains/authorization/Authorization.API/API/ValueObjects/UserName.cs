@@ -2,11 +2,11 @@ using System;
 
 namespace API.ValueObjects;
 
-public class Username : ValueObject
+public class UserName : ValueObject
 {
     public string Value { get; }
 
-    private Username(string value)
+    private UserName(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("Value cannot be null, empty, or whitespace.", nameof(value));
@@ -14,8 +14,8 @@ public class Username : ValueObject
         Value = value;
     }
 
-    public static Username Create(string value)
+    public static UserName Create(string value)
     {
-        return new Username(value);
+        return new UserName(value);
     }
 }

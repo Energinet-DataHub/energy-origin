@@ -53,8 +53,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     private static void ConfigureUserTable(ModelBuilder modelBuilder)
     {
 
-        modelBuilder.Entity<User>().Property(u => u.Username)
-            .HasConversion(new ValueConverter<Username, string>(v => v.Value, v => Username.Create(v)))
+        modelBuilder.Entity<User>().Property(u => u.Name)
+            .HasConversion(new ValueConverter<UserName, string>(v => v.Value, v => UserName.Create(v)))
             .IsRequired();
 
         modelBuilder.Entity<User>().Property(u => u.IdpUserId)
@@ -74,8 +74,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void ConfigureConsentTable(ModelBuilder modelBuilder)
     {
+
         modelBuilder.Entity<Consent>().HasOne(it => it.Organization);
         modelBuilder.Entity<Consent>().HasOne(it => it.Client);
+
+        modelBuilder.Entity<Consent>().HasKey(c => new { c.ClientId, c.OrganizationId });
 
         modelBuilder.Entity<Consent>()
             .HasIndex(c => new { c.ClientId, c.OrganizationId })

@@ -7,7 +7,7 @@ public class Any
 {
     public static User User()
     {
-        return API.Models.User.Create(IdpId(), IdpUserId(), Name());
+        return API.Models.User.Create(IdpUserId(), Name());
     }
 
     public static IdpId IdpId()
@@ -20,10 +20,10 @@ public class Any
         return API.ValueObjects.IdpUserId.Create(Guid());
     }
 
-    public static Username Name()
+    public static UserName Name()
     {
 
-        return API.ValueObjects.Username.Create("Test Testesen");
+        return API.ValueObjects.UserName.Create("Test Testesen");
     }
 
     public static Guid Guid()

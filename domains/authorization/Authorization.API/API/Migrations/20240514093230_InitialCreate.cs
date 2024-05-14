@@ -45,7 +45,7 @@ namespace API.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     IdpUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Username = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -56,14 +56,13 @@ namespace API.Migrations
                 name: "Consents",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
                     ClientId = table.Column<Guid>(type: "uuid", nullable: false),
                     ConsentDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Consents", x => x.Id);
+                    table.PrimaryKey("PK_Consents", x => new { x.ClientId, x.OrganizationId });
                     table.ForeignKey(
                         name: "FK_Consents_Clients_ClientId",
                         column: x => x.ClientId,
