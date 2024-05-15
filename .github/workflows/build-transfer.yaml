@@ -80,7 +80,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@adjust-dotnet-validations # FIXME: this
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
         with:
           configurations: |
             domains/transfer/Transfer.API/configuration.yaml

@@ -64,7 +64,7 @@ runs:
 
     - name: Fetch Dockerfile
       shell: bash
-      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/adjust-dotnet-validations/Dockerfile.simplified -O Dockerfile # FIXME: this
+      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/main/Dockerfile.simplified -O Dockerfile
 
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
@@ -75,7 +75,7 @@ runs:
 
     - name: Verify migrations if present
       if: inputs.migrations != ''
-      uses: Energinet-Datahub/acorn-actions/actions/dotnet-verify-migrations@adjust-dotnet-validations # FIXME: this
+      uses: Energinet-Datahub/acorn-actions/actions/dotnet-verify-migrations@v1
       with:
         path: ${{ env.DIRECTORY }}
         project: ${{ inputs.project }}
