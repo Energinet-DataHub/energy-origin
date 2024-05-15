@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using API.Authorization._Features_;
 using API.ValueObjects;
 using Asp.Versioning;
+using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ public class ConsentController : ControllerBase
     /// Grants consent.
     /// </summary>
     [HttpPost]
-    [Authorize(Policy = "SubTypeUser")]
+    [Authorize(Policy = Policy.B2CSubTypeUserPolicy)]
     [Route("api/consent/grant/")]
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger,
         [FromBody] GrantConsentRequest request)
@@ -42,7 +43,7 @@ public class ConsentController : ControllerBase
     /// Get consent from a specific Client.
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "SubTypeUser")]
+    [Authorize(Policy = Policy.B2CSubTypeUserPolicy)]
     [Route("api/consent/grant/{clientId}")]
     public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger,
         [FromRoute] Guid clientId)
