@@ -23,6 +23,8 @@ jobs:
       oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
       transfer: ${{ steps.transfer.outputs.matches }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: detect auth
         id: auth
         uses: ./.github/actions/find-diff-action
