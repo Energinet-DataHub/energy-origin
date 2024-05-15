@@ -1,6 +1,4 @@
-using System.Text.Json;
 using API.Authorization.Controllers;
-using API.ValueObjects;
 
 namespace API.IntegrationTests.Setup;
 

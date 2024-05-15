@@ -49,7 +49,6 @@ public class GetClientQueryTest
     [Fact]
     public async Task GivenUnknownIdpClientId_WhenGettingClient_404NotFound()
     {
-
         var api = _integrationTestFixture.CreateApi();
         var response = await api.GetClient(Guid.NewGuid());
         response.Should().Be404NotFound();
