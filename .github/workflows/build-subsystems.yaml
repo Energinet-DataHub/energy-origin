@@ -65,8 +65,8 @@ jobs:
     uses: ./.github/workflows/build-auth.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dry-run }}
-      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
     needs: setup
@@ -74,8 +74,8 @@ jobs:
     uses: ./.github/workflows/build-authorization.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dry-run }}
-      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-certificates:
     needs: setup
@@ -83,8 +83,8 @@ jobs:
     uses: ./.github/workflows/build-certificates.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dry-run }}
-      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-measurements:
     needs: setup
@@ -92,8 +92,8 @@ jobs:
     uses: ./.github/workflows/build-measurements.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dry-run }}
-      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-oidc-mock:
     needs: setup
@@ -101,8 +101,8 @@ jobs:
     uses: ./.github/workflows/build-oidc-mock.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dry-run }}
-      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-transfer:
     needs: setup
@@ -110,5 +110,5 @@ jobs:
     uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
-      dry-run: ${{ needs.setup.outputs.dry-run }}
-      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
