@@ -1,7 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Diagnostics.CodeAnalysis;
-using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -9,7 +8,7 @@ using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationSche
 
 namespace EnergyOrigin.TokenValidation.Utilities;
 
-public class UserDescriptor : IIdentityDescriptor
+public class UserDescriptor
 {
     public required OrganizationDescriptor? Organization { get; set; }
     public required Guid Id { get; init; }
@@ -101,9 +100,4 @@ public class UserDescriptor : IIdentityDescriptor
     {
         return httpContext.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult?.Ticket?.AuthenticationScheme;
     }
-
-    public Guid Sub => Id;
-    public string OrgName => Organization?.Name ?? string.Empty;
-    public string? OrgCvr => Organization?.Tin ?? string.Empty;
-    public Guid OrgId => Organization!.Id;
 }
