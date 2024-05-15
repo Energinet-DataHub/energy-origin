@@ -33,11 +33,6 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
     public async Task InitializeAsync()
     {
         await PostgresContainer.InitializeAsync();
-
-        using var scope = Services.CreateScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await using var connection = db.Database.GetDbConnection();
-        await connection.OpenAsync();
     }
 
     public Api CreateApi(string sub = "", string name = "", string orgIds = "", string subType = "")
