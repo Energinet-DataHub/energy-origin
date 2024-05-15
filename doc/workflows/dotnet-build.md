@@ -18,7 +18,7 @@ The action runs through several steps to set up the environment, ensure the corr
 4. **Fetch Dockerfile**: Downloads the [Dockerfile](https://github.com/Energinet-DataHub/acorn-actions/Dockerfile.simplified) used for building the Docker image.
 5. **Resolve image version and name**: Uses the [docker-image-version@v1](https://github.com/Energinet-DataHub/acorn-actions/blob/main/actions/docker-image-version/action.yaml) action, from acorn, to extract the image version, and name, from the configuration file.
 6. **Verify migrations**: If migrations are provided, it verifies them.
-7. **Build and push Docker image**: Uses the [docker-build-pushn@v1](https://github.com/Energinet-DataHub/acorn-actions/blob/main/actions/docker-build-and-push/action.yaml) action, from acorn, to build the Docker image using the specified Dockerfile and pushes it to the container registry.
+7. **Build and push Docker image**: Uses the [docker-build-and-push@v1](https://github.com/Energinet-DataHub/acorn-actions/blob/main/actions/docker-build-and-push/action.yaml) action, from acorn, to build the Docker image using the specified Dockerfile and pushes it to the container registry.
 8. **Scan image**: uses the [docker-scan@v1](https://github.com/Energinet-DataHub/acorn-actions/blob/main/actions/docker-scan/action.yaml) action, from acorn, to scan the Docker image for vulnerabilities.
 9. **Upload Docker image tar**: Saves and uploads the Docker image as a tar file.
 

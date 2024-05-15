@@ -78,3 +78,19 @@ Our approach to testing new API versions involves:
 - Writing tests within that class specifically for the new API version, containing only the relevant tests.
 
 This selective testing strategy aligns with our API versioning approach, maintaining efficiency and focus in our testing framework.
+
+## CI / CD Documentation
+
+### Actions
+
+- [dotnet-test](./dotnet-test.md)
+- [dotnet-build](./dotnet-build.md)
+
+### Workflows
+
+- [Subsystem workflows](./specific-subsystem-workflows.md)
+- [build-subsystems workflow](./build-subsystems.md)
+
+### Acorn Actions
+
+- [acorn-actions repository](https://github.com/Energinet-DataHub/acorn-actions)
