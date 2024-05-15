@@ -1,4 +1,4 @@
-name: Find diff
+name: Find diff action
 description: |
   Finds and compares two commits and outputs lists with the differences.
 
