@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240501083925_InitialCreate")]
+    [Migration("20240514093230_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -27,22 +27,15 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.Affiliation", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("UserId", "OrganizationId");
 
                     b.HasIndex("OrganizationId");
-
-                    b.HasIndex("UserId", "OrganizationId")
-                        .IsUnique();
 
                     b.ToTable("Affiliations");
                 });
@@ -53,6 +46,9 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("ClientType")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("IdpClientId")
                         .HasColumnType("uuid");
 
@@ -60,8 +56,9 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.Property<string>("RedirectUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -73,20 +70,16 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.Consent", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ClientId")
+                    b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("ConsentDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("ClientId", "OrganizationId");
 
                     b.HasIndex("OrganizationId");
 
@@ -102,13 +95,7 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("IdpId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IdpOrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OrganizationName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -118,9 +105,6 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IdpOrganizationId")
-                        .IsUnique();
-
                     b.ToTable("Organizations");
                 });
 
@@ -128,9 +112,6 @@ namespace API.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("IdpId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("IdpUserId")

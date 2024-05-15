@@ -1,4 +1,5 @@
 using System.Data;
+using API.IntegrationTests.Setup;
 using API.Models;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +11,9 @@ public class ApplicationDbContextModelSnapshotTests
 {
     private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public ApplicationDbContextModelSnapshotTests(MigrationTestFixture migrationTestFixture)
+    public ApplicationDbContextModelSnapshotTests(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = migrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
         options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseNpgsql(newDatabaseInfo.ConnectionString)
             .Options;

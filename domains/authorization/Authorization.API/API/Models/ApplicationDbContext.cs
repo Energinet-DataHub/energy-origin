@@ -26,7 +26,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void ConfigureOrganizationTable(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Organization>().Property(o => o.OrganizationName)
+        modelBuilder.Entity<Organization>().Property(o => o.Name)
             .HasConversion(new ValueConverter<OrganizationName, string>(v => v.Value, v => new OrganizationName(v)))
             .IsRequired();
 
@@ -34,15 +34,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasConversion(new ValueConverter<Tin, string>(v => v.Value, v => new Tin(v)))
             .IsRequired();
 
-        modelBuilder.Entity<Organization>().Property(o => o.IdpId)
-            .HasConversion(new ValueConverter<IdpId, Guid>(v => v.Value, v => new IdpId(v)))
-            .IsRequired();
-
-        modelBuilder.Entity<Organization>().Property(o => o.IdpOrganizationId)
-            .HasConversion(new ValueConverter<IdpOrganizationId, Guid>(v => v.Value, v => new IdpOrganizationId(v)))
-            .IsRequired();
-
-        modelBuilder.Entity<Organization>().HasIndex(o => o.IdpOrganizationId).IsUnique();
+        modelBuilder.Entity<Organization>().HasMany(it => it.Affiliations);
     }
 
     private static void ConfigureClientTable(ModelBuilder modelBuilder)
@@ -52,7 +44,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .IsRequired();
 
         modelBuilder.Entity<Client>().Property(c => c.Name)
-            .HasConversion(new ValueConverter<Name, string>(v => v.Value, v => new Name(v)))
+            .HasConversion(new ValueConverter<ClientName, string>(v => v.Value, v => ClientName.Create(v)))
             .IsRequired();
 
         modelBuilder.Entity<Client>().HasIndex(c => c.IdpClientId).IsUnique();
@@ -60,17 +52,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void ConfigureUserTable(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>().Property(u => u.IdpId)
-            .HasConversion(new ValueConverter<IdpId, Guid>(v => v.Value, v => new IdpId(v)))
-            .IsRequired();
 
         modelBuilder.Entity<User>().Property(u => u.Name)
-            .HasConversion(new ValueConverter<Name, string>(v => v.Value, v => new Name(v)))
+            .HasConversion(new ValueConverter<UserName, string>(v => v.Value, v => UserName.Create(v)))
             .IsRequired();
 
         modelBuilder.Entity<User>().Property(u => u.IdpUserId)
-            .HasConversion(new ValueConverter<IdpUserId, Guid>(v => v.Value, v => new IdpUserId(v)))
+            .HasConversion(new ValueConverter<IdpUserId, Guid>(v => v.Value, v => IdpUserId.Create(v)))
             .IsRequired();
+
+        modelBuilder.Entity<User>().HasMany(it => it.Affiliations);
 
         modelBuilder.Entity<User>().HasIndex(u => u.IdpUserId).IsUnique();
     }
@@ -78,12 +69,17 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     private static void ConfigureAffiliationTable(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Affiliation>()
-            .HasIndex(a => new { a.UserId, a.OrganizationId })
-            .IsUnique();
+            .HasKey(a => new { a.UserId, a.OrganizationId });
     }
 
     private static void ConfigureConsentTable(ModelBuilder modelBuilder)
     {
+
+        modelBuilder.Entity<Consent>().HasOne(it => it.Organization);
+        modelBuilder.Entity<Consent>().HasOne(it => it.Client);
+
+        modelBuilder.Entity<Consent>().HasKey(c => new { c.ClientId, c.OrganizationId });
+
         modelBuilder.Entity<Consent>()
             .HasIndex(c => new { c.ClientId, c.OrganizationId })
             .IsUnique();

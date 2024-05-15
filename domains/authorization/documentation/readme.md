@@ -24,8 +24,6 @@ erDiagram
 
     ORGANIZATION {
         guid Id "Primary key in EO Database"
-        string IdpId "Identifier from IDP"
-        string IdpOrganizationId "Unique Identifier of Organization"
         string TIN "Tax Identification Number"
         string name "Organization's name"
     }
@@ -34,7 +32,7 @@ erDiagram
         guid Id "Primary key"
         string IdpId "Identifer from IDP"
         string IdpUserId "Unique Identifier of User"
-        string name "User's name"
+        string username "User's name"
     }
 
     AFFILIATIONS {
@@ -46,6 +44,7 @@ erDiagram
         guid Id "Primary key"
         string IdpClientId "Unique identifier"
         string name "Client's name"
+        string redirectUrl "Redirect Url"
         enum role "0 = EXTERNAL, 1 = INTERNAL"
     }
 
