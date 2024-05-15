@@ -1,29 +1,19 @@
-using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
 namespace EnergyOrigin.TokenValidation.b2c;
 
-public interface IIdentityDescriptor
-{
-    Guid Sub { get; }
-    string Name { get; }
-    string OrgName { get; }
-    string? OrgCvr { get; }
-    Guid OrgId { get; }
-}
-
-public class IdentityDescriptor : IIdentityDescriptor
+public class IdentityDescriptor
 {
     private readonly HttpContext _httpContext;
-    private readonly Guid orgId;
+    private readonly Guid _orgId;
     private readonly ClaimsPrincipal _user;
 
     public IdentityDescriptor(HttpContext httpContext, Guid orgId)
     {
         _httpContext = httpContext;
-        this.orgId = orgId;
+        _orgId = orgId;
         _user = httpContext.User;
         ThrowExceptionIfUnsupportedAuthenticationScheme();
 
@@ -43,7 +33,7 @@ public class IdentityDescriptor : IIdentityDescriptor
 
     public string? OrgCvr => GetClaimAsOptionalString(ClaimType.OrgCvr);
 
-    public Guid OrgId => orgId;
+    public Guid OrgId => _orgId;
 
     public IList<Guid> OrgIds => GetClaimAsGuidList(ClaimType.OrgIds);
 
