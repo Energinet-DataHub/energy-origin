@@ -1,5 +1,7 @@
+using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
+using API.ValueObjects;
 using Asp.Versioning;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -43,6 +45,19 @@ public class AuthorizationController : ControllerBase
         var queryResult = await _mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName, request.OrgCvr));
 
         return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName, queryResult.OrgIds, queryResult.Scope));
+    }
+
+    /// <summary>
+    /// Retreives Client.
+    /// </summary>
+    [HttpGet]
+    [Authorize]
+    [Route("api/authorization/client/{idpClientId}")]
+    public async Task<ActionResult<AuthorizationResponse>> GetClient([FromServices] ILogger<AuthorizationController> logger, [FromRoute] Guid idpClientId)
+    {
+        var queryResult = await _mediator.Send(new GetlientQuery(new IdpClientId(idpClientId)));
+
+        return Ok(new ClientResponse(queryResult.IdpClientId.Value, queryResult.Name.Value, queryResult.RedirectUrl));
     }
 }
 

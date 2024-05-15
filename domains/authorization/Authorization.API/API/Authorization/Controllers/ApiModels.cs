@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using API.ValueObjects;
 
 namespace API.Authorization.Controllers;
 
@@ -23,3 +24,5 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("scope")] string Scope);
 
 public record GrantConsentRequest(Guid ClientId);
+
+public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
