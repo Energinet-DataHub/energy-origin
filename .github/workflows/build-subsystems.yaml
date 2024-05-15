@@ -25,37 +25,37 @@ jobs:
     steps:
       - name: detect auth
         id: auth
-        uses: CodeReaper/find-diff-action@v3
+        uses: ./.github/actions/find-diff-action
         with:
           paths: domains/auth/
 
       - name: detect authorization
         id: authorization
-        uses: CodeReaper/find-diff-action@v3
+        uses: ./.github/actions/find-diff-action
         with:
           paths: domains/authorization/
 
       - name: detect certificates
         id: certificates
-        uses: CodeReaper/find-diff-action@v3
+        uses: ./.github/actions/find-diff-action
         with:
           paths: domains/certificates/
 
       - name: detect measurements
         id: measurements
-        uses: CodeReaper/find-diff-action@v3
+        uses: ./.github/actions/find-diff-action
         with:
           paths: domains/measurements/
 
       - name: detect oidc-mock
         id: oidc-mock
-        uses: CodeReaper/find-diff-action@v3
+        uses: ./.github/actions/find-diff-action
         with:
           paths: domains/oidc-mock/
 
       - name: detect transfer
         id: transfer
-        uses: CodeReaper/find-diff-action@v3
+        uses: ./.github/actions/find-diff-action
         with:
           paths: domains/transfer/
 

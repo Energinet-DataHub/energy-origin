@@ -83,13 +83,14 @@ This selective testing strategy aligns with our API versioning approach, maintai
 
 ### Actions
 
-- [dotnet-test](./dotnet-test.md)
-- [dotnet-build](./dotnet-build.md)
+- [dotnet-test](./doc/workflows/dotnet-test.md)
+- [dotnet-build](./doc/workflows/dotnet-build.md)
+- [find-diff-action](./doc/workflows/find-diff-action.md)
 
 ### Workflows
 
-- [Subsystem workflows](./specific-subsystem-workflows.md)
-- [build-subsystems workflow](./build-subsystems.md)
+- [Subsystem workflows](./doc/workflows/specific-subsystem-workflows.md)
+- [build-subsystems workflow](./doc/workflows/build-subsystems.md)
 
 ### Acorn Actions
 
