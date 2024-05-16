@@ -4,11 +4,11 @@ namespace Proxy.Controllers;
 
 public class ProxyBase : ControllerBase
 {
-    private readonly HttpClient _client;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public ProxyBase(HttpClient client)
+    public ProxyBase(IHttpClientFactory httpClientFactory)
     {
-        _client = client;
+        _httpClientFactory = httpClientFactory;
     }
 
     private async Task ProxyRequest(string path, string organizationId)
@@ -18,7 +18,7 @@ public class ProxyBase : ControllerBase
         var requestContent = new StreamContent(HttpContext.Request.Body);
 
         requestMessage.Method = new HttpMethod(requestMethod);
-        requestMessage.RequestUri = new Uri($"http://localhost:5182/{path}{HttpContext.Request.QueryString}");
+        requestMessage.RequestUri = new Uri($"{path}{HttpContext.Request.QueryString}", UriKind.Relative);
         requestMessage.Content = requestContent;
 
         // Forward headers
@@ -32,7 +32,7 @@ public class ProxyBase : ControllerBase
 
         requestMessage.Content?.Headers.TryAddWithoutValidation("X-ORG-ID", organizationId);
 
-        var client = new HttpClient(); // TODO Inject HttpClient
+        var client = _httpClientFactory.CreateClient("Proxy");
         var downstreamResponse = await client.SendAsync(requestMessage);
 
         foreach (var header in downstreamResponse.Headers.Where(x => !x.Key.Equals("Transfer-Encoding")))

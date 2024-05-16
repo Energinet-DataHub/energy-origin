@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Proxy.Services;
+﻿using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +9,7 @@ namespace Proxy.Controllers;
 [ApiVersion(ApiVersions.Version20250101)]
 public class CertificatesController : ProxyBase
 {
-    public CertificatesController(HttpClient client) : base(client)
+    public CertificatesController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
     {
     }
 

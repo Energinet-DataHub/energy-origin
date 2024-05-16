@@ -1,14 +1,8 @@
-using System.ComponentModel.DataAnnotations;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.Extensions.Options;
-using Proxy;
-using Proxy.Services;
-using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Utilities.Interfaces;
+using Proxy.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,10 +17,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddVersioningToApi();
 
-builder.Services.AddHttpClient<IWalletProxyService, WalletProxyService>(options =>
+builder.Services.AddHttpClient("Proxy", options =>
 {
-    options.BaseAddress =
-        new Uri("https://google.com"); //new Uri(builder.Configuration["WalletServiceUrl"]!); // Maybe validate WalletServiceUrl, and throw startup exception.
+    options.BaseAddress = new Uri("http://localhost:5182/", UriKind.Absolute); //new Uri(builder.Configuration["WalletServiceUrl"]!); // Maybe validate WalletServiceUrl, and throw startup exception.
 });
 
 builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations()
