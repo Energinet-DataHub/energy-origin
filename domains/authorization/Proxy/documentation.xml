@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Proxy</name>
+    </assembly>
+    <members>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Type">
+            <summary>
+            Filter the type of certificates to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Skip">
+            <summary>
+            The number of items to skip.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateCertificatesQueryParameters.TimeAggregate">
+            <summary>
+            The size of each bucket in the aggregation.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateCertificatesQueryParameters.TimeZone">
+            <summary>
+            The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateCertificatesQueryParameters.Start">
+             <summary>
+            The start of the time range in Unix time in seconds.
+             </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateCertificatesQueryParameters.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateCertificatesQueryParameters.Type">
+            <summary>
+            Filter the type of certificates to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateCertificatesQueryParameters.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateCertificatesQueryParameters.Skip">
+            <summary>
+            The number of items to skip.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.GranularCertificate">
+            <summary>
+            A certificate that is available to use in the wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.GranularCertificate.#ctor">
+            <summary>
+            A certificate that is available to use in the wallet.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GranularCertificate.FederatedStreamId">
+            <summary>
+            The id of the certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GranularCertificate.Quantity">
+            <summary>
+            The quantity available on the certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GranularCertificate.Start">
+            <summary>
+            The start of the certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GranularCertificate.End">
+            <summary>
+            The end of the certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GranularCertificate.GridArea">
+            <summary>
+            The Grid Area of the certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GranularCertificate.CertificateType">
+            <summary>
+            The type of certificate (production or consumption).
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GranularCertificate.Attributes">
+            <summary>
+            The attributes of the certificate.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.AggregatedCertificates">
+            <summary>
+            A result of aggregated certificates that is available to use in the wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.AggregatedCertificates.#ctor">
+            <summary>
+            A result of aggregated certificates that is available to use in the wallet.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedCertificates.Start">
+            <summary>
+            The start of the aggregated period.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedCertificates.End">
+            <summary>
+            The end of the aggregated period.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedCertificates.Quantity">
+            <summary>
+            The quantity of the aggregated certificates.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedCertificates.Type">
+            <summary>
+            The type of the aggregated certificates.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,6 @@
+@FakeWalletAPI_HostAddress = http://localhost:5182
+
+GET {{FakeWalletAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
