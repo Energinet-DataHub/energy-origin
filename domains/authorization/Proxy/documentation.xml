@@ -11,6 +11,37 @@
             <response code="200">Returns all the indiviual claims.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
+        <member name="M:Proxy.Controllers.ClaimsController.GetClaimsV2(Proxy.Controllers.GetClaimsQueryParameters,System.String)">
+            <summary>
+            Gets all claims in the wallet
+            </summary>
+            <response code="200">Returns all the indiviual claims.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.ClaimsController.AggregateClaimsV2(Proxy.Controllers.AggregateClaimsQueryParameters,System.String)">
+            <summary>
+            Returns a list of aggregates claims for the authenticated user based on the specified time zone and time range.
+            </summary>
+            <response code="200">Returns the aggregated claims.</response>
+            <response code="400">If the time zone is invalid.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.ClaimsController.ClaimCertificate(Proxy.Controllers.ClaimRequest)">
+            <summary>
+            Queues a request to claim two certificate for a given quantity.
+            </summary>
+            <param name="request">The claim request</param>
+            <response code="202">Claim request has been queued for processing.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.ClaimsController.ClaimCertificateV2(Proxy.Controllers.ClaimRequest,System.String)">
+            <summary>
+            Queues a request to claim two certificate for a given quantity.
+            </summary>
+            <param name="request">The claim request</param>
+            <response code="202">Claim request has been queued for processing.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
         <member name="P:Proxy.Controllers.GetClaimsQueryParameters.Start">
             <summary>
             The start of the time range in Unix time in seconds.

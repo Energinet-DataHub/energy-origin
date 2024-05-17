@@ -30,7 +30,7 @@ public class CertificatesController : ProxyBase
     [Route("v1/certificates")]
     [Produces("application/json")]
     [Authorize]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
@@ -57,7 +57,7 @@ public class CertificatesController : ProxyBase
     [Route("v1/aggregate-certificates")]
     [Produces("application/json")]
     [Authorize]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
@@ -67,5 +67,4 @@ public class CertificatesController : ProxyBase
     {
         await ProxyTokenValidationRequest("v1/aggregate-certificates");
     }
-
 }
