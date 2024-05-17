@@ -36,7 +36,7 @@ public class CertificateFailedInRegistryEventHandler : IConsumer<CertificateFail
 
     private async Task Reject(MeteringPointType meteringPointType, Guid certificateId, string rejectionReason)
     {
-        await using var  dbContext = await dbContextFactory.CreateDbContextAsync();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         if (meteringPointType == MeteringPointType.Production)
         {
