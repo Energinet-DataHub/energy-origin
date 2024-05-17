@@ -29,7 +29,6 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
     {
         var message = context.Message;
-        //TODO: Check for double spending with gsrn and period
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var contracts = await dbContext.Contracts.AsNoTracking().Where(c => c.GSRN == message.GSRN)
