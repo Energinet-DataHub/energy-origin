@@ -2,46 +2,35 @@ using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using MassTransit;
-using MassTransit.Courier.Contracts;
 using MeasurementEvents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ProjectOrigin.PedersenCommitment;
-using ProjectOrigin.Registry.V1;
-using ProjectOriginClients;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ProjectOriginClients.Models;
 using RegistryConnector.Worker.Exceptions;
-using RegistryConnector.Worker.RoutingSlips;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
 public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 {
-    private readonly IEndpointNameFormatter endpointNameFormatter;
-    private readonly ProjectOriginRegistryOptions projectOriginRegistryOptions;
-    private readonly ApplicationDbContext dbContext;
+    private readonly IDbContextFactory<ApplicationDbContext> dbContextFactory;
     private readonly ILogger<MeasurementEventHandler> logger;
-    private readonly IKeyGenerator keyGenerator;
 
-    public MeasurementEventHandler(IEndpointNameFormatter endpointNameFormatter,
-        IOptions<ProjectOriginRegistryOptions> projectOriginOptions, ApplicationDbContext dbContext,
-        ILogger<MeasurementEventHandler> logger, IKeyGenerator keyGenerator)
+    public MeasurementEventHandler(IDbContextFactory<ApplicationDbContext> dbContextFactory,
+        ILogger<MeasurementEventHandler> logger)
     {
-        this.endpointNameFormatter = endpointNameFormatter;
-        this.projectOriginRegistryOptions = projectOriginOptions.Value;
-        this.dbContext = dbContext;
+        this.dbContextFactory = dbContextFactory;
         this.logger = logger;
-        this.keyGenerator = keyGenerator;
     }
 
     public async Task Consume(ConsumeContext<EnergyMeasuredIntegrationEvent> context)
     {
         var message = context.Message;
+        //TODO: Check for double spending with gsrn and period
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var contracts = await dbContext.Contracts.AsNoTracking().Where(c => c.GSRN == message.GSRN)
             .ToListAsync(context.CancellationToken);
@@ -52,20 +41,23 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
             return;
         }
 
-        var commitment = new SecretCommitmentInfo((uint)message.Quantity);
+        if (message.Quantity > uint.MaxValue)
+            throw new ArgumentOutOfRangeException($"Cannot cast quantity {message.Quantity} to uint");
+
+        var quantity = (uint)message.Quantity;
+        var commitment = new SecretCommitmentInfo(quantity);
+        var gsrn = new Gsrn(matchingContract.GSRN);
 
         var period = new Period(message.DateFrom, message.DateTo);
         var walletDepositEndpointPosition = period.CalculateWalletDepositEndpointPosition();
         if (!walletDepositEndpointPosition.HasValue)
             throw new WalletException($"Cannot determine wallet position for period {period}");
 
-        var builder = new RoutingSlipBuilder(Guid.NewGuid());
-
+        Guid certificateId;
+        Technology? technology;
         if (matchingContract.MeteringPointType == MeteringPointType.Production)
         {
-            logger.LogInformation("Creating production certificate for {Message}", message);
-
-            var technology = matchingContract.Technology!;
+            technology = matchingContract.Technology!;
 
             var productionCertificate = new ProductionCertificate(
                 matchingContract.GridArea,
@@ -76,32 +68,16 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 message.Quantity,
                 commitment.BlindingValue.ToArray());
 
+            logger.LogInformation("Creating production certificate for {Message} with {certificateId}", message, productionCertificate.Id);
+
             dbContext.Add(productionCertificate);
 
-            var (ownerPublicKey, issuerKey) = keyGenerator.GenerateKeyInfo(message.Quantity,
-                matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
-
-            var issuedEvent = Registry.CreateIssuedEventForProduction(
-                projectOriginRegistryOptions.RegistryName,
-                productionCertificate.Id,
-                period.ToDateInterval(),
-                matchingContract.GridArea,
-                message.GSRN,
-                technology.TechCode,
-                technology.FuelCode,
-                commitment,
-                ownerPublicKey);
-
-            var transaction = issuedEvent.CreateTransaction(issuerKey);
-
-            BuildRoutingSlip(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
-
-            logger.LogInformation("Created production certificate for {Message}", message);
+            certificateId = productionCertificate.Id;
+            logger.LogInformation("Created production certificate for {certificateId}", productionCertificate.Id);
         }
         else if (matchingContract.MeteringPointType == MeteringPointType.Consumption)
         {
-            logger.LogInformation("Creating consumption certificate for {Message}", message);
-
+            technology = null;
             var consumptionCertificate = new ConsumptionCertificate(
                 matchingContract.GridArea,
                 period,
@@ -110,33 +86,30 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 message.Quantity,
                 commitment.BlindingValue.ToArray());
 
+            logger.LogInformation("Creating consumption certificate for {Message} with {certificateId}", message, consumptionCertificate.Id);
+
             dbContext.Add(consumptionCertificate);
 
-            var (ownerPublicKey, issuerKey) = keyGenerator.GenerateKeyInfo(message.Quantity,
-                matchingContract.WalletPublicKey, walletDepositEndpointPosition.Value, matchingContract.GridArea);
-
-            var issuedEvent = Registry.CreateIssuedEventForConsumption(
-                projectOriginRegistryOptions.RegistryName,
-                consumptionCertificate.Id,
-                period.ToDateInterval(),
-                matchingContract.GridArea,
-                message.GSRN,
-                commitment,
-                ownerPublicKey);
-
-            var transaction = issuedEvent.CreateTransaction(issuerKey);
-
-            BuildRoutingSlip(builder, transaction, commitment, matchingContract, walletDepositEndpointPosition.Value);
-
-            logger.LogInformation("Created consumption certificate for {Message}", message);
+            certificateId = consumptionCertificate.Id;
+            logger.LogInformation("Created consumption certificate for {certificateId}", message);
         }
         else
             throw new CertificateDomainException(string.Format("Unsupported metering point type {0} for message {1}",
                 matchingContract.MeteringPointType, message));
 
-        var routingSlip = builder.Build();
-
-        await context.Execute(routingSlip);
+        await context.Publish<CertificateCreatedEvent>(new CertificateCreatedEvent
+        {
+            MeteringPointType = matchingContract.MeteringPointType,
+            Period = period,
+            Quantity = quantity,
+            CertificateId = certificateId,
+            WalletPublicKey = matchingContract.WalletPublicKey,
+            WalletUrl = matchingContract.WalletUrl,
+            GridArea = matchingContract.GridArea,
+            Gsrn = gsrn,
+            WalletDepositEndpointPosition = walletDepositEndpointPosition.Value,
+            Technology = technology
+        });
         await dbContext.SaveChangesAsync(context.CancellationToken);
     }
 
@@ -161,57 +134,6 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
 
         return true;
     }
-
-    private void BuildRoutingSlip(RoutingSlipBuilder builder,
-        Transaction transaction,
-        SecretCommitmentInfo commitment,
-        CertificateIssuingContract matchingContract,
-        uint walletDepositEndpointPosition)
-    {
-        var certificateId = Guid.Parse(transaction.Header.FederatedStreamId.StreamId.Value);
-
-        AddActivity<IssueToRegistryActivity, IssueToRegistryArguments>(builder,
-            new IssueToRegistryArguments(transaction, certificateId));
-
-        AddActivity<WaitForCommittedTransactionActivity, WaitForCommittedTransactionArguments>(builder,
-            new WaitForCommittedTransactionArguments(transaction.ToShaId(), certificateId));
-
-        AddActivity<MarkAsIssuedActivity, MarkAsIssuedArguments>(builder,
-            new MarkAsIssuedArguments(certificateId, matchingContract.MeteringPointType));
-
-        var receiveRequest = new ReceiveRequest
-        {
-            CertificateId = new FederatedStreamId
-            {
-                Registry = transaction.Header.FederatedStreamId.Registry,
-                StreamId = new Guid(transaction.Header.FederatedStreamId.StreamId.Value)
-            },
-            Quantity = commitment.Message,
-            RandomR = commitment.BlindingValue.ToArray(),
-            Position = walletDepositEndpointPosition,
-            PublicKey = matchingContract.WalletPublicKey,
-            HashedAttributes = new List<HashedAttribute>()
-        };
-        AddActivity<SendToWalletActivity, SendToWalletArguments>(builder,
-            new SendToWalletArguments(matchingContract.WalletUrl, receiveRequest));
-
-        var issueCertificateFailedConsumerEndpoint =
-            new Uri($"exchange:{endpointNameFormatter.Consumer<IssueCertificateNotCompletedConsumer>()}");
-        builder.AddSubscription(issueCertificateFailedConsumerEndpoint, RoutingSlipEvents.Terminated,
-            x => x.Send(new IssueCertificateTerminated
-            {
-                CertificateId = certificateId,
-                MeteringPointType = matchingContract.MeteringPointType
-            }));
-    }
-
-    private void AddActivity<T, TArguments>(RoutingSlipBuilder routingSlipBuilder, TArguments arguments)
-        where T : class, IExecuteActivity<TArguments>
-        where TArguments : class
-    {
-        var uri = new Uri($"exchange:{endpointNameFormatter.ExecuteActivity<T, TArguments>()}");
-        routingSlipBuilder.AddActivity(typeof(T).Name, uri, arguments);
-    }
 }
 
 public class MeasurementEventHandlerDefinition : ConsumerDefinition<MeasurementEventHandler>
@@ -229,10 +151,6 @@ public class MeasurementEventHandlerDefinition : ConsumerDefinition<MeasurementE
         IRegistrationContext context
     )
     {
-        //endpointConfigurator.UseDelayedRedelivery(r => r
-        //    .Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1))
-        //    .Handle(typeof(DbUpdateException), typeof(InvalidOperationException)));
-
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3))
             .Handle(typeof(DbUpdateException), typeof(InvalidOperationException)));

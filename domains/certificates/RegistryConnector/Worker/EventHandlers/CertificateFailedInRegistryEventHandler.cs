@@ -1,49 +1,43 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.ValueObjects;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace RegistryConnector.Worker.RoutingSlips;
+namespace RegistryConnector.Worker.EventHandlers;
 
-public class IssueCertificateTerminated
+public record CertificateFailedInRegistryEvent
 {
-    public Guid CertificateId { get; set; }
-    public MeteringPointType MeteringPointType { get; set; }
-    /// <summary>
-    /// Populated by MassTransit.
-    /// The variables that were present once the routing slip completed, can be used
-    /// to capture the output of the slip - real events should likely be used for real
-    /// completion items but this is useful for some cases.
-    /// </summary>
-    public IDictionary<string, object> Variables { get; set; } = new Dictionary<string, object>();
+    public required string RejectReason { get; init; }
+    public required Guid CertificateId { get; init; }
+    public required MeteringPointType MeteringPointType { get; init; }
 }
 
-public class IssueCertificateNotCompletedConsumer :
-    IConsumer<IssueCertificateTerminated>
+public class CertificateFailedInRegistryEventHandler : IConsumer<CertificateFailedInRegistryEvent>
 {
-    private readonly ApplicationDbContext dbContext;
-    private readonly ILogger<IssueCertificateNotCompletedConsumer> logger;
+    private readonly IDbContextFactory<ApplicationDbContext> dbContextFactory;
+    private readonly ILogger<CertificateFailedInRegistryEventHandler> logger;
 
-    public IssueCertificateNotCompletedConsumer(ApplicationDbContext dbContext, ILogger<IssueCertificateNotCompletedConsumer> logger)
+    public CertificateFailedInRegistryEventHandler(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<CertificateFailedInRegistryEventHandler> logger)
     {
-        this.dbContext = dbContext;
+        this.dbContextFactory = dbContextFactory;
         this.logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<IssueCertificateTerminated> context)
+    public async Task Consume(ConsumeContext<CertificateFailedInRegistryEvent> context)
     {
         var message = context.Message;
-        var rejectionReason = $"Terminated: {message.Variables["Reason"]}";
 
-        await Reject(message.MeteringPointType, message.CertificateId, rejectionReason);
+        await Reject(message.MeteringPointType, message.CertificateId, message.RejectReason);
     }
 
     private async Task Reject(MeteringPointType meteringPointType, Guid certificateId, string rejectionReason)
     {
+        await using var  dbContext = await dbContextFactory.CreateDbContextAsync();
+
         if (meteringPointType == MeteringPointType.Production)
         {
             var productionCertificate = await dbContext.ProductionCertificates.FindAsync(certificateId);
@@ -51,6 +45,12 @@ public class IssueCertificateNotCompletedConsumer :
             if (productionCertificate == null)
             {
                 logger.LogWarning("Production certificate with certificateId {certificateId} not found.", certificateId);
+                return;
+            }
+
+            if (productionCertificate.IsRejected)
+            {
+                logger.LogWarning("Production certificate with certificateId {certificateId} already rejected.", certificateId);
                 return;
             }
 
@@ -65,6 +65,13 @@ public class IssueCertificateNotCompletedConsumer :
                 logger.LogWarning("Consumption certificate with certificateId {certificateId} not found.", certificateId);
                 return;
             }
+
+            if (consumptionCertificate.IsRejected)
+            {
+                logger.LogWarning("Consumption certificate with certificateId {certificateId} already rejected.", certificateId);
+                return;
+            }
+
             consumptionCertificate.Reject(rejectionReason);
         }
 
@@ -73,26 +80,22 @@ public class IssueCertificateNotCompletedConsumer :
     }
 }
 
-public class IssueCertificateNotCompletedConsumerDefinition : ConsumerDefinition<IssueCertificateNotCompletedConsumer>
+public class CertificateFailedInRegistryEventHandlerConsumerDefinition : ConsumerDefinition<CertificateFailedInRegistryEventHandler>
 {
     private readonly RetryOptions retryOptions;
 
-    public IssueCertificateNotCompletedConsumerDefinition(IOptions<RetryOptions> options)
+    public CertificateFailedInRegistryEventHandlerConsumerDefinition(IOptions<RetryOptions> options)
     {
         retryOptions = options.Value;
     }
 
     protected override void ConfigureConsumer(
         IReceiveEndpointConfigurator endpointConfigurator,
-        IConsumerConfigurator<IssueCertificateNotCompletedConsumer> consumerConfigurator,
+        IConsumerConfigurator<CertificateFailedInRegistryEventHandler> consumerConfigurator,
         IRegistrationContext context
-        )
+    )
     {
-        //endpointConfigurator.UseDelayedRedelivery(r => r.Interval(retryOptions.DefaultSecondLevelRetryCount, TimeSpan.FromDays(1)));
-
         endpointConfigurator.UseMessageRetry(r => r
             .Incremental(retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
-
-        endpointConfigurator.UseEntityFrameworkOutbox<ApplicationDbContext>(context);
     }
 }
