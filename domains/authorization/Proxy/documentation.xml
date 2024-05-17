@@ -4,6 +4,173 @@
         <name>Proxy</name>
     </assembly>
     <members>
+        <member name="M:Proxy.Controllers.ClaimsController.GetClaims(Proxy.Controllers.GetClaimsQueryParameters)">
+            <summary>
+            Gets all claims in the wallet
+            </summary>
+            <response code="200">Returns all the indiviual claims.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParameters.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParameters.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParameters.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParameters.Skip">
+            <summary>
+            The number of items to skip.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateClaimsQueryParameters.TimeAggregate">
+            <summary>
+            The size of each bucket in the aggregation
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateClaimsQueryParameters.TimeZone">
+            <summary>
+            The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateClaimsQueryParameters.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateClaimsQueryParameters.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateClaimsQueryParameters.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateClaimsQueryParameters.Skip">
+            <summary>
+            The number of items to skip.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.Claim">
+            <summary>
+            A claim record representing a claim of a production and consumption certificate.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.Claim.#ctor">
+            <summary>
+            A claim record representing a claim of a production and consumption certificate.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.ClaimedCertificate">
+            <summary>
+            Info record of a claimed certificate.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.ClaimedCertificate.#ctor">
+            <summary>
+            Info record of a claimed certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ClaimedCertificate.FederatedStreamId">
+            <summary>
+            The id of the claimed certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ClaimedCertificate.Start">
+            <summary>
+            The start period of the claimed certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ClaimedCertificate.End">
+            <summary>
+            The end period the claimed certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ClaimedCertificate.GridArea">
+            <summary>
+            The Grid Area of the claimed certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ClaimedCertificate.Attributes">
+            <summary>
+            The attributes of the claimed certificate.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.ClaimRequest">
+            <summary>
+            A request to claim a production and consumption certificate.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.ClaimRequest.#ctor">
+            <summary>
+            A request to claim a production and consumption certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ClaimRequest.ProductionCertificateId">
+            <summary>
+            The id of the production certificate to claim.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ClaimRequest.ConsumptionCertificateId">
+            <summary>
+            The id of the consumption certificate to claim.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ClaimRequest.Quantity">
+            <summary>
+            The quantity of the certificates to claim.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.ClaimResponse">
+            <summary>
+            A response to a claim request.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.ClaimResponse.#ctor">
+            <summary>
+            A response to a claim request.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ClaimResponse.ClaimRequestId">
+            <summary>
+            The id of the claim request.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.AggregatedClaims">
+            <summary>
+            A result of aggregated claims.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.AggregatedClaims.#ctor">
+            <summary>
+            A result of aggregated claims.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedClaims.Start">
+            <summary>
+            The start of the aggregated period.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedClaims.End">
+            <summary>
+            The end of the aggregated period.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedClaims.Quantity">
+            <summary>
+            The quantity of the aggregated claims.
+            </summary>
+        </member>
         <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Start">
             <summary>
             The start of the time range in Unix time in seconds.
@@ -137,6 +304,342 @@
         <member name="P:Proxy.Controllers.AggregatedCertificates.Type">
             <summary>
             The type of the aggregated certificates.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.SlicesController.ReceiveSlice(Proxy.Controllers.ReceiveRequest)">
+            <summary>
+            Receive a certificate-slice from another wallet.
+            </summary>
+            <remarks>
+            This request is used to receive a certificate-slice from another wallet, which is then stored in the local wallet.
+            The endpoint is verified to exists within the wallet system, otherwise a 404 will be returned.
+            The endpoint will return 202 Accepted was initial validation has succeeded.
+            The certificate-slice will further verified with data from the registry in a seperate thread.
+            </remarks>
+            <param name = "unitOfWork" ></param>
+            <param name = "hdAlgorithm" ></param>
+            <param name = "bus" ></param>
+            <param name = "request" >Contains the data </param>
+            <response code="202">The slice was accepted.</response>
+            <response code="400">Public key could not be decoded.</response>
+            <response code="404">Receiver endpoint not found.</response>
+        </member>
+        <member name="T:Proxy.Controllers.ReceiveRequest">
+            <summary>
+            Request to receive a certificate-slice from another wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.ReceiveRequest.#ctor">
+            <summary>
+            Request to receive a certificate-slice from another wallet.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ReceiveRequest.PublicKey">
+            <summary>
+            The public key of the receiving wallet.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ReceiveRequest.Position">
+            <summary>
+            The sub-position of the publicKey used on the slice on the registry.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ReceiveRequest.CertificateId">
+            <summary>
+            The id of the certificate.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ReceiveRequest.Quantity">
+            <summary>
+            The quantity of the slice.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ReceiveRequest.RandomR">
+            <summary>
+            The random R used to generate the pedersen commitment with the quantitiy.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.ReceiveRequest.HashedAttributes">
+            <summary>
+            List of hashed attributes, their values and salts so the receiver can access the data.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.HashedAttribute">
+            <summary>
+            Hashed attribute with salt.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.HashedAttribute.#ctor">
+            <summary>
+            Hashed attribute with salt.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.HashedAttribute.Key">
+            <summary>
+            The key of the attribute.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.HashedAttribute.Value">
+            <summary>
+            The value of the attribute.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.HashedAttribute.Salt">
+            <summary>
+            The salt used to hash the attribute.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.ReceiveResponse">
+            <summary>
+            Response to receive a certificate-slice from another wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.ReceiveResponse.#ctor">
+            <summary>
+            Response to receive a certificate-slice from another wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.TransfersController.GetTransfers(Proxy.Controllers.GetTransfersQueryParameters)">
+            <summary>
+            Gets detailed list of all of the transfers that have been made to other wallets.
+            </summary>
+            <response code="200">Returns the individual transferes within the filter.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParameters.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParameters.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParameters.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParameters.Skip">
+            <summary>
+            The number of items to skip.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateTransfersQueryParameters.TimeAggregate">
+            <summary>
+            The size of each bucket in the aggregation
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateTransfersQueryParameters.TimeZone">
+            <summary>
+            The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateTransfersQueryParameters.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateTransfersQueryParameters.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateTransfersQueryParameters.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregateTransfersQueryParameters.Skip">
+            <summary>
+            The number of items to skip.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.Transfer">
+            <summary>
+            A transfer record of a transfer of a part of a certificate to another wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.Transfer.#ctor">
+            <summary>
+            A transfer record of a transfer of a part of a certificate to another wallet.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.TransferRequest">
+            <summary>
+            A request to transfer a certificate to another wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.TransferRequest.#ctor">
+            <summary>
+            A request to transfer a certificate to another wallet.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.TransferRequest.CertificateId">
+            <summary>
+            The federated stream id of the certificate to transfer.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.TransferRequest.ReceiverId">
+            <summary>
+            The id of the wallet to transfer the certificate to.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.TransferRequest.Quantity">
+            <summary>
+            The quantity of the certificate to transfer.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.TransferRequest.HashedAttributes">
+            <summary>
+            List of hashed attributes to transfer with the certificate.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.TransferResponse">
+            <summary>
+            A response to a transfer request.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.TransferResponse.#ctor">
+            <summary>
+            A response to a transfer request.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.TransferResponse.TransferRequestId">
+            <summary>
+            The id of the transfer request.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.AggregatedTransfers">
+            <summary>
+            A result of aggregated transfers.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.AggregatedTransfers.#ctor">
+            <summary>
+            A result of aggregated transfers.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedTransfers.Start">
+            <summary>
+            The start of the aggregated period.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedTransfers.End">
+            <summary>
+            The end of the aggregated period.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.AggregatedTransfers.Quantity">
+            <summary>
+            The quantity of the aggregated transfers.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.WalletRecord">
+            <summary>
+            A wallet record
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.WalletRecord.#ctor">
+            <summary>
+            A wallet record
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.CreateWalletRequest">
+            <summary>
+            Request to create a new wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.CreateWalletRequest.#ctor">
+            <summary>
+            Request to create a new wallet.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.CreateWalletRequest.PrivateKey">
+            <summary>
+            The private key to import. If not provided, a private key will be generated.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.CreateWalletResponse">
+            <summary>
+            Response to create a new wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.CreateWalletResponse.#ctor">
+            <summary>
+            Response to create a new wallet.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.CreateWalletResponse.WalletId">
+            <summary>
+            The ID of the created wallet.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.CreateWalletEndpointResponse">
+            <summary>
+            Response to create a new wallet endpoint on the users wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.CreateWalletEndpointResponse.#ctor">
+            <summary>
+            Response to create a new wallet endpoint on the users wallet.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.CreateWalletEndpointResponse.WalletReference">
+            <summary>
+            Reference object to the wallet endpoint created.
+            Contains the necessary information to send to another wallet to create a link so certificates can be transferred.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.CreateExternalEndpointRequest">
+            <summary>
+            Request to create a new external endpoint.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.CreateExternalEndpointRequest.#ctor">
+            <summary>
+            Request to create a new external endpoint.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.CreateExternalEndpointRequest.WalletReference">
+            <summary>
+            The wallet reference to the wallet, one wants to create a link to.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.CreateExternalEndpointRequest.TextReference">
+            <summary>
+            The text reference for the wallet, one wants to create a link to.
+            </summary>
+        </member>
+        <member name="T:Proxy.Controllers.CreateExternalEndpointResponse">
+            <summary>
+            Response to create a new external endpoint.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.CreateExternalEndpointResponse.#ctor">
+            <summary>
+            Response to create a new external endpoint.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.CreateExternalEndpointResponse.ReceiverId">
+            <summary>
+            The ID of the created external endpoint.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.WalletEndpointReference.Version">
+            <summary>
+            The version of the ReceiveSlice API.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.WalletEndpointReference.Endpoint">
+            <summary>
+            The url endpoint of where the wallet is hosted.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.WalletEndpointReference.PublicKey">
+            <summary>
+            The public key used to generate sub-public-keys for each slice.
             </summary>
         </member>
     </members>

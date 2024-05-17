@@ -1,20 +1,19 @@
 ﻿using System.ComponentModel;
 using System.Security.Claims;
+using Asp.Versioning;
+using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
 namespace Proxy.Controllers;
-/*
-[Authorize]
-[ApiController]
-public class ClaimsController : ControllerBase
-{
-    private readonly IWalletProxyService _walletProxyService;
 
-    public ClaimsController(IWalletProxyService walletProxyService)
+[ApiController]
+public class ClaimsController : ProxyBase
+{
+
+    public ClaimsController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
     {
-        _walletProxyService = walletProxyService;
     }
 
     /// <summary>
@@ -36,9 +35,11 @@ public class ClaimsController : ControllerBase
     [HttpGet]
     [Route("v1/aggregate-claims")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ResultList<AggregatedClaims>>> AggregateClaims([FromQuery] AggregateClaimsQueryParameters param)
     {
         return Ok();
@@ -47,11 +48,27 @@ public class ClaimsController : ControllerBase
     [HttpPost]
     [Route("v1/claims")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status202Accepted)]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<ClaimResponse>> ClaimCertificate([FromBody] ClaimRequest request)
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status200OK)]
+    public async Task ClaimCertificate([FromBody] ClaimRequest request)
     {
-        return await _walletProxyService.PostAsync<ClaimResponse, ClaimRequest>("v1/claims", request, User.FindFirstValue(ClaimTypes.NameIdentifier));;
+        await ProxyTokenValidationRequest("v1/claims");
+    }
+
+    [HttpPost]
+    [Route("claims")]
+    [Produces("application/json")]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status200OK)]
+    public async Task ClaimCertificateV2([FromBody] ClaimRequest request, string? orgranizationId)
+    {
+        await ProxyClientCredentialsRequest("v1/claims", orgranizationId);
     }
 }
 
@@ -209,5 +226,3 @@ public record AggregatedClaims()
     /// </summary>
     public required long Quantity { get; init; }
 }
-
-*/

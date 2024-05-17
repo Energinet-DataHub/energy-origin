@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using EnergyOrigin.TokenValidation.b2c;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Proxy.Controllers;
-/*
+
 [AllowAnonymous]
 [ApiController]
 public class SlicesController : ControllerBase
@@ -26,8 +28,11 @@ public class SlicesController : ControllerBase
     [HttpPost]
     [Route("v1/slices")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReceiveResponse>> ReceiveSlice([FromBody] ReceiveRequest request)
     {
@@ -98,4 +103,4 @@ public record HashedAttribute()
 /// Response to receive a certificate-slice from another wallet.
 /// </summary>
 public record ReceiveResponse() { }
-*/
+

@@ -30,7 +30,7 @@ public class ProxyBase : ControllerBase
             }
         }
 
-        requestMessage.Content?.Headers.TryAddWithoutValidation("X-ORG-ID", organizationId);
+        requestMessage.Content?.Headers.TryAddWithoutValidation(WalletConstants.Header, organizationId);
 
         var client = _httpClientFactory.CreateClient("Proxy");
         var downstreamResponse = await client.SendAsync(requestMessage);
@@ -78,7 +78,7 @@ public class ProxyBase : ControllerBase
         Response.Body.Close();
     }
 
-    protected async Task ProxyCodeGrantRequest(string path)
+    protected async Task ProxyTokenValidationRequest(string path)
     {
         var organizationId = User.FindFirst("sub")?.Value;
 

@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel;
+using Asp.Versioning;
+using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Proxy.Controllers;
-/*
+
 [Authorize]
 [ApiController]
 public class TransfersController : ControllerBase
@@ -16,8 +18,11 @@ public class TransfersController : ControllerBase
     [HttpGet]
     [Route("v1/transfers")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
     public async Task<ActionResult<ResultList<Transfer>>> GetTransfers([FromQuery] GetTransfersQueryParameters param)
     {
         return Ok();
@@ -26,9 +31,12 @@ public class TransfersController : ControllerBase
     [HttpGet]
     [Route("v1/aggregate-transfers")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ResultList<AggregatedTransfers>>> AggregateTransfers([FromQuery] AggregateTransfersQueryParameters param)
     {
         return Ok();
@@ -174,4 +182,4 @@ public record AggregatedTransfers()
     /// </summary>
     public required long Quantity { get; init; }
 }
-*/
+
