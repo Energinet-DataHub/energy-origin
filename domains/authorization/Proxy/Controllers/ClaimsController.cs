@@ -24,12 +24,32 @@ public class ClaimsController : ProxyBase
     [HttpGet]
     [Route("v1/claims")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<ResultList<Claim>>> GetClaims(
-        [FromQuery] GetClaimsQueryParameters param)
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
+    public async Task GetClaims([FromQuery] GetClaimsQueryParameters param)
     {
-        return Ok();
+        await ProxyTokenValidationRequest("v1/claims");
+    }
+
+    /// <summary>
+    /// Gets all claims in the wallet
+    /// </summary>
+    /// <response code="200">Returns all the indiviual claims.</response>
+    /// <response code="401">If the user is not authenticated.</response>
+    [HttpGet]
+    [Route("claims")]
+    [Produces("application/json")]
+    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
+    public async Task GetClaimsV2([FromQuery] GetClaimsQueryParameters param, string organizationId)
+    {
+        await ProxyClientCredentialsRequest("v1/claims", organizationId);
     }
 
     [HttpGet]
@@ -39,10 +59,23 @@ public class ClaimsController : ProxyBase
     [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ResultList<AggregatedClaims>>> AggregateClaims([FromQuery] AggregateClaimsQueryParameters param)
+    [ProducesResponseType(typeof(ResultList<AggregatedClaims>), StatusCodes.Status200OK)]
+    public async Task AggregateClaims([FromQuery] AggregateClaimsQueryParameters param)
     {
-        return Ok();
+        await ProxyTokenValidationRequest("v1/aggregate-claims");
+    }
+
+    [HttpGet]
+    [Route("aggregate-claims")]
+    [Produces("application/json")]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<AggregatedClaims>), StatusCodes.Status200OK)]
+    public async Task AggregateClaimsV2([FromQuery] AggregateClaimsQueryParameters param, string organizationId)
+    {
+        await ProxyClientCredentialsRequest("v1/aggregate-claims", organizationId);
     }
 
     [HttpPost]
