@@ -134,7 +134,7 @@ public class UserDescriptorTests
     }
 
     [Fact]
-    public void Map_ShouldReturnNull_WhenMappingANullClaimPrincipal() => Assert.Throws<PropertyMissingException>(() => new UserDescriptor(null));
+    public void Map_ShouldReturnNull_WhenMappingANullClaimPrincipal() => Assert.Throws<PropertyMissingException>(() => new UserDescriptor((ClaimsPrincipal)null!));
 
     [Fact]
     public void Map_ShouldReturnNull_WhenMappingClaimPrincipalWithoutRequiredProperties()
