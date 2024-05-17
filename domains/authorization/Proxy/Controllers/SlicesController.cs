@@ -30,8 +30,8 @@ public class SlicesController : ProxyBase
     [HttpPost]
     [Route("v1/slices")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
+    [Authorize(policy: Policy.B2CSubTypeUserPolicy)] // Do we want this endpoint to be secured????
+    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)] // TODO: Would our custom headers cause problems here?
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status200OK)]
@@ -57,7 +57,7 @@ public class SlicesController : ProxyBase
     [HttpPost]
     [Route("slices")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CPolicy)]
+    [Authorize(policy: Policy.B2CPolicy)] // Do we want this endpoint to be secured????
     [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]

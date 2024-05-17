@@ -56,7 +56,7 @@ public class CertificatesController : ProxyBase
     [HttpGet]
     [Route("v1/aggregate-certificates")]
     [Produces("application/json")]
-    [Authorize]
+    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
     [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
