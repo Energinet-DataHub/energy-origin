@@ -65,6 +65,12 @@ public class ClaimsController : ProxyBase
         await ProxyTokenValidationRequest("v1/aggregate-claims");
     }
 
+    /// <summary>
+    /// Returns a list of aggregates claims for the authenticated user based on the specified time zone and time range.
+    /// </summary>
+    /// <response code="200">Returns the aggregated claims.</response>
+    /// <response code="400">If the time zone is invalid.</response>
+    /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
     [Route("aggregate-claims")]
     [Produces("application/json")]
@@ -78,6 +84,12 @@ public class ClaimsController : ProxyBase
         await ProxyClientCredentialsRequest("v1/aggregate-claims", organizationId);
     }
 
+    /// <summary>
+    /// Queues a request to claim two certificate for a given quantity.
+    /// </summary>
+    /// <param name="request">The claim request</param>
+    /// <response code="202">Claim request has been queued for processing.</response>
+    /// <response code="401">If the user is not authenticated.</response>
     [HttpPost]
     [Route("v1/claims")]
     [Produces("application/json")]
@@ -91,6 +103,12 @@ public class ClaimsController : ProxyBase
         await ProxyTokenValidationRequest("v1/claims");
     }
 
+    /// <summary>
+    /// Queues a request to claim two certificate for a given quantity.
+    /// </summary>
+    /// <param name="request">The claim request</param>
+    /// <response code="202">Claim request has been queued for processing.</response>
+    /// <response code="401">If the user is not authenticated.</response>
     [HttpPost]
     [Route("claims")]
     [Produces("application/json")]
