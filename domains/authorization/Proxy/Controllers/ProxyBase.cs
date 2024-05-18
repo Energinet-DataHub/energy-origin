@@ -4,24 +4,66 @@ namespace Proxy.Controllers;
 
 public class ProxyBase : ControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly HttpClient _httpClient;
 
     public ProxyBase(IHttpClientFactory httpClientFactory)
     {
-        _httpClientFactory = httpClientFactory;
+        _httpClient = httpClientFactory.CreateClient("Proxy");
     }
 
     private async Task ProxyRequest(string path, string organizationId)
     {
-        var requestMessage = new HttpRequestMessage();
-        var requestMethod = HttpContext.Request.Method;
-        var requestContent = new StreamContent(HttpContext.Request.Body);
+        var requestMessage = BuildProxyRequest(path);
 
-        requestMessage.Method = new HttpMethod(requestMethod);
-        requestMessage.RequestUri = new Uri($"{path}{HttpContext.Request.QueryString}", UriKind.Relative);
-        requestMessage.Content = requestContent;
+        BuildProxyForwardHeaders(organizationId, requestMessage);
 
-        // Forward headers
+        var proxyResponse = await RunProxyRequest(requestMessage);
+
+        BuildProxyResponseHeaders(proxyResponse);
+
+        await BuildProxyResponse(proxyResponse);
+
+        FlushRequest();
+    }
+
+    private void FlushRequest()
+    {
+        Response.Body.Close();
+    }
+
+    private async Task BuildProxyResponse(HttpResponseMessage proxyResponse)
+    {
+        Response.StatusCode = (int)proxyResponse.StatusCode;
+
+        await proxyResponse.Content.CopyToAsync(Response.Body, null, default);
+    }
+
+    private void BuildProxyResponseHeaders(HttpResponseMessage proxyResponse)
+    {
+        foreach (var header in proxyResponse.Headers.Where(x => !x.Key.Equals("Transfer-Encoding")))
+        {
+            foreach (var value in header.Value)
+            {
+                Response.Headers.Add(header.Key, value);
+            }
+        }
+
+        foreach (var header in proxyResponse.Content.Headers)
+        {
+            foreach (var value in header.Value)
+            {
+                Response.Headers.Add(header.Key, value);
+            }
+        }
+    }
+
+    private async Task<HttpResponseMessage> RunProxyRequest(HttpRequestMessage requestMessage)
+    {
+        return await _httpClient.SendAsync(requestMessage);
+    }
+
+    private void BuildProxyForwardHeaders(string organizationId, HttpRequestMessage requestMessage)
+    {
         foreach (var header in HttpContext.Request.Headers)
         {
             if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
@@ -31,36 +73,22 @@ public class ProxyBase : ControllerBase
         }
 
         requestMessage.Content?.Headers.TryAddWithoutValidation(WalletConstants.Header, organizationId);
+    }
 
-        var client = _httpClientFactory.CreateClient("Proxy");
-        var downstreamResponse = await client.SendAsync(requestMessage);
+    private HttpRequestMessage BuildProxyRequest(string path)
+    {
+        var requestMessage = new HttpRequestMessage();
+        var requestMethod = HttpContext.Request.Method;
+        var requestContent = new StreamContent(HttpContext.Request.Body);
 
-        foreach (var header in downstreamResponse.Headers.Where(x => !x.Key.Equals("Transfer-Encoding")))
-        {
-            foreach (var value in header.Value)
-            {
-                Response.Headers.Add(header.Key, value);
-            }
-        }
-
-        foreach (var header in downstreamResponse.Content.Headers)
-        {
-            foreach (var value in header.Value)
-            {
-                Response.Headers.Add(header.Key, value);
-            }
-        }
-
-        Response.StatusCode = (int)downstreamResponse.StatusCode;
-
-        await downstreamResponse.Content.CopyToAsync(Response.Body, null, default);
-
-        Response.Body.Close();
+        requestMessage.Method = new HttpMethod(requestMethod);
+        requestMessage.RequestUri = new Uri($"{path}{HttpContext.Request.QueryString}", UriKind.Relative);
+        requestMessage.Content = requestContent;
+        return requestMessage;
     }
 
     protected async Task ProxyClientCredentialsRequest(string path, string organizationId)
     {
-        // Security check first
         var orgIds = User.Claims.Where(x => x.Type == "org_ids").Select(x => x.Value).ToList();
 
         if (string.IsNullOrEmpty(organizationId) || !orgIds.Contains(organizationId))
