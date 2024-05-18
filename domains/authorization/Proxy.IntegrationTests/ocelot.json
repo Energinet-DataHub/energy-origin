@@ -1,0 +1,21 @@
+﻿{
+    "Routes": [
+        {
+            "DownstreamPathTemplate": "/wallet-api/v1/{everything}",
+            "DownstreamScheme": "http",
+            "ServiceName": "test-wallet-service",
+            "UpstreamPathTemplate": "/wallet-api/v1/{everything}",
+            "UpstreamHttpMethod": ["Get", "Post", "Put", "Delete"],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            }
+        }
+    ],
+    "GlobalConfiguration": {
+        "BaseUrl": "http://localhost:8080",
+        "ServiceDiscoveryProvider": {
+            "Namespace": "Test",
+            "Type": "Static"
+        }
+    }
+}

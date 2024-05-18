@@ -1,10 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "Authorization.API\API\API.csproj", "{0F01C91C-DE1F-4AC2-B4DB-6C3F4AE5F931}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API.UnitTests", "Authorization.API\API.UnitTests\API.UnitTests\API.UnitTests.csproj", "{75391DAD-4917-477C-BCEE-09F2F8FD70A5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API.IntegrationTests", "Authorization.API\API.IntegrationTests\API.IntegrationTests\API.IntegrationTests.csproj", "{72EDA1C4-26CD-4858-B195-4D0902D21522}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proxy", "Proxy\Proxy.csproj", "{22F1C036-801D-4042-A416-3530A50A0F42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proxy.IntegrationTests", "Proxy.IntegrationTests\Proxy.IntegrationTests.csproj", "{0B99C297-FBFD-48CC-B020-273BA726D0F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +29,13 @@ Global
 		{72EDA1C4-26CD-4858-B195-4D0902D21522}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72EDA1C4-26CD-4858-B195-4D0902D21522}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72EDA1C4-26CD-4858-B195-4D0902D21522}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22F1C036-801D-4042-A416-3530A50A0F42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22F1C036-801D-4042-A416-3530A50A0F42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22F1C036-801D-4042-A416-3530A50A0F42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22F1C036-801D-4042-A416-3530A50A0F42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B99C297-FBFD-48CC-B020-273BA726D0F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B99C297-FBFD-48CC-B020-273BA726D0F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B99C297-FBFD-48CC-B020-273BA726D0F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B99C297-FBFD-48CC-B020-273BA726D0F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

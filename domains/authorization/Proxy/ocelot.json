@@ -1,0 +1,21 @@
+﻿{
+    "Routes": [
+        {
+            "DownstreamPathTemplate": "/wallet-api/v1/{everything}",
+            "DownstreamScheme": "http",
+            "ServiceName": "wallet-service",
+            "UpstreamPathTemplate": "/wallet-api/v1/{everything}",
+            "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            }
+        }
+    ],
+    "GlobalConfiguration": {
+        "BaseUrl": "http://localhost:5000",
+        "ServiceDiscoveryProvider": {
+            "Namespace": "Dev",
+            "Type": "Kube"
+        }
+    }
+}
