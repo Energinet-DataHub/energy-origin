@@ -29,6 +29,7 @@ public class SlicesController : ProxyBase
     /// <response code="404">Receiver endpoint not found.</response>
     [HttpPost]
     [Route("v1/slices")]
+    [Route("slices")]
     [Produces("application/json")]
     [AllowAnonymous]
     [ApiVersion(ApiVersions.Version20250101, Deprecated = true)] // TODO: Would our custom headers cause problems here?
@@ -38,7 +39,7 @@ public class SlicesController : ProxyBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task ReceiveSlice([FromBody] ReceiveRequest request)
     {
-        await ProxyTokenValidationRequest("v1/slices");
+        await ProxyInsecureCall("v1/slices");
     }
 
     /// <summary>
@@ -54,7 +55,7 @@ public class SlicesController : ProxyBase
     /// <response code="202">The slice was accepted.</response>
     /// <response code="400">Public key could not be decoded.</response>
     /// <response code="404">Receiver endpoint not found.</response>
-    [HttpPost]
+    /*[HttpPost]
     [Route("slices")]
     [Produces("application/json")]
     [AllowAnonymous]
@@ -65,8 +66,8 @@ public class SlicesController : ProxyBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task ReceiveSliceV2([FromBody] ReceiveRequest request, string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/slices", organizationId);
-    }
+        await ProxyInsecureCall("v1/slices");
+    }*/
 }
 
 
