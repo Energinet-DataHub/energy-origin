@@ -119,4 +119,9 @@ public class ProxyBase : ControllerBase
         await ProxyRequest(path, organizationId);
     }
 
+    protected async Task ProxyInsecureCall(string path)
+    {
+        await ProxyRequest(path, "todo"); // TODO: This will most likely work, since we don't care about extra headers, but we shouldn't add it if not needed.
+    }
+
 }
