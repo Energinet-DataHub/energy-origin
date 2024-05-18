@@ -347,9 +347,21 @@
             The endpoint will return 202 Accepted was initial validation has succeeded.
             The certificate-slice will further verified with data from the registry in a seperate thread.
             </remarks>
-            <param name = "unitOfWork" ></param>
-            <param name = "hdAlgorithm" ></param>
-            <param name = "bus" ></param>
+            <param name = "request" >Contains the data </param>
+            <response code="202">The slice was accepted.</response>
+            <response code="400">Public key could not be decoded.</response>
+            <response code="404">Receiver endpoint not found.</response>
+        </member>
+        <member name="M:Proxy.Controllers.SlicesController.ReceiveSliceV2(Proxy.Controllers.ReceiveRequest,System.String)">
+            <summary>
+            Receive a certificate-slice from another wallet.
+            </summary>
+            <remarks>
+            This request is used to receive a certificate-slice from another wallet, which is then stored in the local wallet.
+            The endpoint is verified to exists within the wallet system, otherwise a 404 will be returned.
+            The endpoint will return 202 Accepted was initial validation has succeeded.
+            The certificate-slice will further verified with data from the registry in a seperate thread.
+            </remarks>
             <param name = "request" >Contains the data </param>
             <response code="202">The slice was accepted.</response>
             <response code="400">Public key could not be decoded.</response>

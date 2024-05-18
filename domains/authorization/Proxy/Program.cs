@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
@@ -21,6 +23,13 @@ builder.Services.AddHttpClient("Proxy", options =>
 {
     options.BaseAddress = new Uri("http://localhost:5182/", UriKind.Absolute); //new Uri(builder.Configuration["WalletServiceUrl"]!); // Maybe validate WalletServiceUrl, and throw startup exception.
 });
+
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+        //o.JsonSerializerOptions.Converters.Add(new IHDPublicKeyConverter(algorithm)); TODO: Find out if we need this
+    });
 
 builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
