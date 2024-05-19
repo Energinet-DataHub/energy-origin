@@ -87,11 +87,16 @@ public class ProxyBase : ControllerBase
         return requestMessage;
     }
 
-    protected async Task ProxyClientCredentialsRequest(string path, string organizationId)
+    /// <summary>
+    /// Proxies a request to the wallet service using the client credentials flow.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="organizationId"></param>
+    protected async Task ProxyClientCredentialsRequest(string path, string? organizationId)
     {
         var orgIds = User.Claims.Where(x => x.Type == "org_ids").Select(x => x.Value).ToList();
 
-        if (string.IsNullOrEmpty(organizationId) || !orgIds.Contains(organizationId))
+        if (string.IsNullOrEmpty(organizationId) || !orgIds.Contains(organizationId) || Guid.TryParse(organizationId, out _))
         {
             Forbidden();
             return;
@@ -106,6 +111,10 @@ public class ProxyBase : ControllerBase
         Response.Body.Close();
     }
 
+    /// <summary>
+    /// Proxies a request to the wallet service using the internal token validation.
+    /// </summary>
+    /// <param name="path"></param>
     protected async Task ProxyTokenValidationRequest(string path)
     {
         var organizationId = User.FindFirst("sub")?.Value;
@@ -119,6 +128,10 @@ public class ProxyBase : ControllerBase
         await ProxyRequest(path, organizationId);
     }
 
+    /// <summary>
+    /// Proxies a request to the wallet service without any validation.
+    /// </summary>
+    /// <param name="path"></param>
     protected async Task ProxyInsecureCall(string path)
     {
         await ProxyRequest(path, "todo"); // TODO: This will most likely work, since we don't care about extra headers, but we shouldn't add it if not needed.
