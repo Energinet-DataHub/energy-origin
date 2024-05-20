@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# 
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.Proxy", "Wallet.Proxy\Wallet.Proxy.csproj", "{69715E83-B0F5-4A25-B74D-91A28941758D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wallet.Proxy.IntegrationTests", "Wallet.Proxy.IntegrationTests\Wallet.Proxy.IntegrationTests.csproj", "{03CEA066-E153-49B3-9F84-86985A43D22B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69715E83-B0F5-4A25-B74D-91A28941758D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69715E83-B0F5-4A25-B74D-91A28941758D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69715E83-B0F5-4A25-B74D-91A28941758D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69715E83-B0F5-4A25-B74D-91A28941758D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03CEA066-E153-49B3-9F84-86985A43D22B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03CEA066-E153-49B3-9F84-86985A43D22B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03CEA066-E153-49B3-9F84-86985A43D22B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03CEA066-E153-49B3-9F84-86985A43D22B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

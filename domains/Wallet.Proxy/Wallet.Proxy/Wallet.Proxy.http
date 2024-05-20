@@ -1,0 +1,6 @@
+@Wallet.Proxy_HostAddress = http://localhost:5230
+
+GET {{Wallet.Proxy_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
