@@ -18,26 +18,19 @@ using DataContext;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using FluentAssertions;
 using Grpc.Net.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-using NBitcoin;
-using Polly;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
-using Policy = EnergyOrigin.TokenValidation.b2c.Policy;
 using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests.Factories;
@@ -53,6 +46,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
+    private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -110,22 +104,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
             // Remove MeasurementsSyncerWorker
             services.Remove(services.First(s => s.ImplementationType == typeof(MeasurementsSyncerWorker)));
-
-            // var serviceDescriptor = services.FirstOrDefault(s => typeof(IAuthenticationSchemeProvider).IsAssignableFrom(s.ServiceType));
-            // if (serviceDescriptor is not null)
-            // {
-            //     services.Remove(serviceDescriptor);
-            // }
-            //
-            // services.AddSingleton<IAuthenticationSchemeProvider, IntegrationTestAuthenticationSchemeProvider>();
-            // var tokenValidationParameters = new ValidationParameters(Encoding.UTF8.GetBytes(publicKeyPem));
-            // tokenValidationParameters.ValidIssuer = "demo.energioprindelse.dk";
-            // tokenValidationParameters.ValidAudience = "Users";
-            // services.AddAuthentication().AddJwtBearer(AuthenticationScheme.TokenValidation, options =>
-            // {
-            //     options.MapInboundClaims = false;
-            //     options.TokenValidationParameters = tokenValidationParameters;
-            // });
         });
     }
 
@@ -147,30 +125,35 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         using var dbContext = factory.CreateDbContext();
         dbContext.Database.Migrate();
 
+        ReplaceB2CAuthenticationSchemes(host);
+
+        return host;
+    }
+
+    private static void ReplaceB2CAuthenticationSchemes(IHost host)
+    {
         var authenticationSchemeProvider = host.Services.GetService<IAuthenticationSchemeProvider>()!;
         authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CAuthenticationScheme);
         authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme);
-        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme);
 
         var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
-            typeof(IntegrationTestAuthHandler));
+            AuthenticationScheme.B2CAuthenticationScheme,
+            AuthenticationScheme.B2CAuthenticationScheme,
+            typeof(IntegrationTestB2CAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CScheme);
 
         var b2CMitIdScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme,
-            typeof(IntegrationTestAuthHandler));
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            typeof(IntegrationTestB2CAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CMitIdScheme);
 
         var b2CClientCredentialsScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
-            typeof(IntegrationTestAuthHandler));
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            typeof(IntegrationTestB2CAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
-
-        return host;
     }
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
@@ -178,18 +161,18 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     {
         client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
+            new AuthenticationHeaderValue("Bearer", GenerateSelfSignedToken(sub: sub, tin: tin, name: name, actor: actor));
         client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
         return client;
     }
 
-    public HttpClient CreateB2CAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string orgId = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20230101)
+    public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
+        string apiVersion = ApiVersions.Version20240515)
     {
         client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, orgId: orgId));
+            new AuthenticationHeaderValue("Bearer", GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString()));
         client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
         return client;
@@ -199,7 +182,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
-        var authentication = new AuthenticationHeaderValue("Bearer", GenerateToken(sub: subject));
+        var authentication = new AuthenticationHeaderValue("Bearer", GenerateSelfSignedToken(sub: subject));
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authentication.Scheme, authentication.Parameter);
 
         return client;
@@ -207,7 +190,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
 
-    private string GenerateToken(
+    private string GenerateSelfSignedToken(
         string scope = "",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
         string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
@@ -226,10 +209,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             { UserClaimName.Tin, tin },
             { UserClaimName.OrganizationName, cpn },
             { JwtRegisteredClaimNames.Name, name },
-            { ClaimType.OrgIds, orgId },
-            { ClaimType.OrgCvr, tin },
-            { ClaimType.OrgName, cpn },
-            { ClaimType.SubType, "User" },
             { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString() },
             { UserClaimName.AllowCprLookup, "false" },
             { UserClaimName.AccessToken, "" },
@@ -242,6 +221,42 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         };
 
         var signedJwtToken = new TokenSigner(PrivateKey).Sign(
+            sub,
+            name,
+            issuer,
+            audience,
+            null,
+            60,
+            claims
+        );
+
+        return signedJwtToken;
+    }
+
+    private string GenerateB2CDummyToken(
+        string scope = "",
+        string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
+        string tin = "11223344",
+        string cpn = "Producent A/S",
+        string name = "Peter Producent",
+        string issuer = "demo.energioprindelse.dk",
+        string audience = "Users",
+        string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7")
+    {
+        var claims = new Dictionary<string, object>()
+        {
+            { UserClaimName.Scope, scope },
+            { JwtRegisteredClaimNames.Name, name },
+            { ClaimType.OrgIds, orgId },
+            { ClaimType.OrgCvr, tin },
+            { ClaimType.OrgName, cpn },
+            { ClaimType.SubType, "User" },
+            { UserClaimName.AccessToken, "" },
+            { UserClaimName.IdentityToken, "" },
+            { UserClaimName.ProviderKeys, "" },
+        };
+
+        var signedJwtToken = new TokenSigner(B2CDummyPrivateKey).Sign(
             sub,
             name,
             issuer,

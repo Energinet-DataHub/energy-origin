@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,7 +78,8 @@ public class ContractsV20250515Controller : ControllerBase
     {
         var identity = new IdentityDescriptor(HttpContext, orgId);
 
-        var contract = await service.GetById(id, identity.OrgId.ToString(), cancellationToken);
+        var orgIdsAsStrings = identity.OrgIds.Select(id => id.ToString()).ToList();
+        var contract = await service.GetById(id, orgIdsAsStrings, cancellationToken);
 
         return contract == null
             ? NotFound()
@@ -102,57 +104,6 @@ public class ContractsV20250515Controller : ControllerBase
         return contracts.Any()
             ? Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) })
             : Ok(new ContractList());
-    }
-
-    /// <summary>
-    /// Edit the end date for contract
-    /// </summary>
-    [HttpPut]
-    [ProducesResponseType(typeof(void), 200)]
-    [ProducesResponseType(typeof(void), 404)]
-    [ProducesResponseType(typeof(void), 403)]
-    [Route("api/certificates/contracts/{id}")]
-    public async Task<ActionResult> UpdateEndDate(
-        [FromRoute] Guid id,
-        [FromQuery] Guid orgId,
-        [FromBody] EditContractEndDate20230101 editContractEndDate,
-        [FromServices] IValidator<EditContractEndDate20230101> validator,
-        [FromServices] IContractService service,
-        CancellationToken cancellationToken)
-    {
-        var identity = new IdentityDescriptor(HttpContext, orgId);
-
-        var validationResult = await validator.ValidateAsync(editContractEndDate, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            validationResult.AddToModelState(ModelState, null);
-            return ValidationProblem(ModelState);
-        }
-
-        var result = await service.SetEndDate(
-            new EditContracts([
-                new EditContractEndDate
-                {
-                    EndDate = editContractEndDate.EndDate,
-                    Id = id
-                }
-            ]),
-            identity.OrgId,
-            identity.Sub,
-            identity.Name,
-            identity.OrgName,
-            identity.OrgCvr ?? string.Empty,
-            cancellationToken);
-
-        return result switch
-        {
-            NonExistingContract => NotFound(),
-            MeteringPointOwnerNoMatch => Forbid(),
-            EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
-            OverlappingContract => ValidationProblem(statusCode: 409),
-            SetEndDateResult.Success => Ok(),
-            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
-        };
     }
 
     /// <summary>
@@ -184,7 +135,7 @@ public class ContractsV20250515Controller : ControllerBase
 
         var result = await service.SetEndDate(
             editContracts,
-            identity.OrgId,
+            orgId,
             identity.Sub,
             identity.Name,
             identity.OrgName,

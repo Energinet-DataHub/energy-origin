@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,7 +119,7 @@ public class ContractsController : ControllerBase
         var user = new UserDescriptor(User);
         var meteringPointOwner = user.Subject.ToString();
 
-        var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
+        var contract = await service.GetById(id, new List<string> { meteringPointOwner }, cancellationToken);
 
         return contract == null
             ? NotFound()

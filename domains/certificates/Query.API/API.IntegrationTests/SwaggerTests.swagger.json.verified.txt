@@ -245,71 +245,6 @@
             "description": "Not Found"
           }
         }
-      },
-      "put": {
-        "tags": [
-          "ContractsV"
-        ],
-        "summary": "Edit the end date for contract",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "orgId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "EO_API_VERSION",
-            "in": "header",
-            "description": "The requested API version",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "default": "20240515"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EditContractEndDate20230101"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EditContractEndDate20230101"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/EditContractEndDate20230101"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        }
       }
     }
   },
@@ -403,18 +338,6 @@
             "type": "string",
             "format": "uuid"
           },
-          "endDate": {
-            "type": "integer",
-            "description": "End Date for generation of certificates in Unix time seconds. Set to null for no end date",
-            "format": "int64",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "EditContractEndDate20230101": {
-        "type": "object",
-        "properties": {
           "endDate": {
             "type": "integer",
             "description": "End Date for generation of certificates in Unix time seconds. Set to null for no end date",

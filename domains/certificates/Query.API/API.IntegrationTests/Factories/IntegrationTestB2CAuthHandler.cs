@@ -1,7 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,9 +11,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace API.IntegrationTests.Factories;
 
-public class IntegrationTestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+public class IntegrationTestB2CAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    public IntegrationTestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
+    public IntegrationTestB2CAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
         UrlEncoder encoder) : base(options, logger, encoder)
     {
     }
@@ -21,6 +23,12 @@ public class IntegrationTestAuthHandler : AuthenticationHandler<AuthenticationSc
         var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
         var authorizationHeader = Context.Request.Headers[HeaderNames.Authorization].ToString().Substring(7);
         var securityToken = jwtSecurityTokenHandler.ReadToken(authorizationHeader) as JwtSecurityToken;
+
+        // Check for the existence of a claim that only B2C should provide
+        if (!securityToken!.Claims.Any(c => c.Type == ClaimType.OrgIds))
+        {
+            return Task.FromResult(AuthenticateResult.Fail("Not authenticated"));
+        }
 
         var identity = new ClaimsIdentity(securityToken!.Claims, "Test");
         var principal = new ClaimsPrincipal(identity);

@@ -159,11 +159,6 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsV20250515Controller.UpdateEndDate(System.Guid,System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate20230101,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate20230101},API.ContractService.IContractService,System.Threading.CancellationToken)">
-            <summary>
-            Edit the end date for contract
-            </summary>
-        </member>
         <member name="M:API.Query.API.Controllers.ContractsV20250515Controller.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Edit the end date for multiple contracts

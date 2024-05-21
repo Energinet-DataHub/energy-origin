@@ -36,7 +36,7 @@ public sealed class ContractTests : TestBase
     }
 
     [Fact]
-    public async Task CreateMulitpleContract_ActivateWithEndDate_Created()
+    public async Task CreateMultipleContract_ActivateWithEndDate_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
         var gsrn1 = GsrnHelper.GenerateRandom();

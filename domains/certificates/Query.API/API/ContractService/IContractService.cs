@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Query.API.ApiModels.Requests;
 using DataContext.Models;
-using EnergyOrigin.TokenValidation.Utilities;
 
 namespace API.ContractService;
 
@@ -17,5 +16,5 @@ public interface IContractService
         string organizationTin, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken);
-    Task<CertificateIssuingContract?> GetById(Guid id, string meteringPointOwner, CancellationToken cancellationToken);
+    Task<CertificateIssuingContract?> GetById(Guid id, IList<string> authorizedOrgIds, CancellationToken cancellationToken);
 }
