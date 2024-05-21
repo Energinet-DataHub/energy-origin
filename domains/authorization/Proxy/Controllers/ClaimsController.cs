@@ -52,6 +52,12 @@ public class ClaimsController : ProxyBase
         await ProxyClientCredentialsRequest("v1/claims", organizationId);
     }
 
+    /// <summary>
+    /// Returns a list of aggregates claims for the authenticated user based on the specified time zone and time range.
+    /// </summary>
+    /// <response code="200">Returns the aggregated claims.</response>
+    /// <response code="400">If the time zone is invalid.</response>
+    /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
     [Route("v1/aggregate-claims")]
     [Produces("application/json")]
@@ -59,6 +65,7 @@ public class ClaimsController : ProxyBase
     [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultList<AggregatedClaims>), StatusCodes.Status200OK)]
     public async Task AggregateClaims([FromQuery] AggregateClaimsQueryParameters param)
     {
@@ -78,6 +85,7 @@ public class ClaimsController : ProxyBase
     [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultList<AggregatedClaims>), StatusCodes.Status200OK)]
     public async Task AggregateClaimsV2([FromQuery] AggregateClaimsQueryParameters param, string organizationId)
     {
@@ -97,7 +105,7 @@ public class ClaimsController : ProxyBase
     [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status202Accepted)]
     public async Task ClaimCertificate([FromBody] ClaimRequest request)
     {
         await ProxyTokenValidationRequest("v1/claims");
@@ -116,7 +124,7 @@ public class ClaimsController : ProxyBase
     [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status202Accepted)]
     public async Task ClaimCertificateV2([FromBody] ClaimRequest request, string? orgranizationId)
     {
         await ProxyClientCredentialsRequest("v1/claims", orgranizationId);
