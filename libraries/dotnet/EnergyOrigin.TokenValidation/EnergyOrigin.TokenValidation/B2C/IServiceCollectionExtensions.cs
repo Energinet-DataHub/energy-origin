@@ -54,7 +54,7 @@ public static class IServiceCollectionExtensions
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
-                    AuthenticationScheme.B2CMitICustomPolicyDAuthenticationScheme)
+                    AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme)
                 .RequireClaim(ClaimType.SubType, Enum.GetName(SubjectType.User)!, Enum.GetName(SubjectType.User)!.ToLower())
                 .Build();
             options.AddPolicy(Policy.B2CSubTypeUserPolicy, b2SubTypeUserPolicy);
