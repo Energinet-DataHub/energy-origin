@@ -103,9 +103,10 @@ public class IdentityDescriptor
     {
         var usedAuthenticationScheme = GetUsedAuthenticationScheme(httpContext);
         var clientCredentialsScheme = AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme;
-        var mitIdScheme = AuthenticationScheme.B2CMitICustomPolicyDAuthenticationScheme;
+        var mitIdScheme = AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme;
 
-        return usedAuthenticationScheme == clientCredentialsScheme || usedAuthenticationScheme == mitIdScheme;
+        return usedAuthenticationScheme is not null &&
+               (usedAuthenticationScheme.Contains(clientCredentialsScheme) || usedAuthenticationScheme.Contains(mitIdScheme));
     }
 
     private static string? GetUsedAuthenticationScheme(HttpContext httpContext)
