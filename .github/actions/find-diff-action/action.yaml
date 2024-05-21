@@ -1,0 +1,112 @@
+name: Find diff action
+description: |
+  Finds and compares two commits and outputs lists with the differences.
+
+branding:
+  icon: git-pull-request
+  color: gray-dark
+
+inputs:
+  paths:
+    description: Search path(s) to limit the search to. Space separated list. Defaults to 'everything'.
+    default: "**"
+
+outputs:
+  pattern:
+    description: A egrep-style pattern consisting of all matches
+    value: ${{ steps.diff.outputs.pattern }}
+  list:
+    description: A list of all matches
+    value: ${{ steps.diff.outputs.list }}
+  matches:
+    description: A boolean value to indicate if there was at least one match.
+    value: ${{ steps.diff.outputs.matches }}
+
+runs:
+  using: composite
+  steps:
+    - name: Find diff
+      id: diff
+      shell: bash
+      env:
+        PATHS: ${{ inputs.paths }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        echo "Configuration:"
+        GITHUB_PR_NUMBER=$(jq -r '.pull_request.number' "$GITHUB_EVENT_PATH" || "N/A")
+        GITHUB_DEFAULT_BRANCH=$(jq -r '.repository.default_branch' "$GITHUB_EVENT_PATH" || "N/A")
+        echo "  GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+        echo "  GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+        echo "  GITHUB_REF: $GITHUB_REF"
+        echo "  GITHUB_REF_NAME: $GITHUB_REF_NAME"
+        echo "  GITHUB_PR_NUMBER: $GITHUB_PR_NUMBER"
+        echo "  GITHUB_DEFAULT_BRANCH: $GITHUB_DEFAULT_BRANCH"
+
+        case "$GITHUB_EVENT_NAME" in
+          pull_request|pull_request_target)
+            CHANGES=$(gh api --paginate "/repos/$GITHUB_REPOSITORY/pulls/$GITHUB_PR_NUMBER/files" | jq -r '.[].filename')
+            ;;
+          push)
+            CHANGES=$(gh api --paginate "/repos/$GITHUB_REPOSITORY/commits/$GITHUB_REF" | jq -r '.files // [] | .[].filename')
+            ;;
+          workflow_dispatch)
+            if [ "$GITHUB_DEFAULT_BRANCH" = "$GITHUB_REF_NAME" ]; then
+              CHANGES=$(gh api --paginate "/repos/$GITHUB_REPOSITORY/commits/$GITHUB_REF" | jq -r '.files // [] | .[].filename')
+            else # assuming all workflow dispatches not run on default branch should be diffed against the default branch
+              CHANGES=$(gh api --paginate "/repos/$GITHUB_REPOSITORY/compare/$GITHUB_DEFAULT_BRANCH...$GITHUB_REF" | jq -r '.files // [] | .[].filename')
+            fi
+            ;;
+          *)
+            printf '::error title=Invalid event::Event %s is not supported.\n' "$GITHUB_EVENT_NAME"
+            exit 1
+            ;;
+        esac
+
+        printgroup() {
+          printf '::group::%s\n' "$1"
+          printf '%s\n' "$2"
+          echo '::endgroup::'
+        }
+
+        printgroup Changes "$CHANGES"
+
+        SUBSTITUTIONS='
+        s|/|\\/|g;
+        s|\.|\\.|g;
+        s|([^*])\*([^*])|\1[^/]+\2|g;
+        s|^\*([^*])|[^/]+\1|g;
+        s|([^*])\*$|\1[^/]+|g;
+        s|^\*$|[^/]+|g;
+        s|\*\*|.*|g;
+        s/ /|^/g;
+        '
+
+        SEARCH=^$(echo "$PATHS" | sed -E "$SUBSTITUTIONS")
+
+        printgroup "Applied pattern" "$SEARCH"
+
+        LIST=$(printf '%s' "$CHANGES" | (grep -oE "$SEARCH" || true) | sort -u)
+        printgroup "Change list" "${LIST:-No changes matched.}"
+
+        PATTERN=$(printf '%s' "$LIST" | xargs -r printf '^%s|' | sed 's/|$//g')
+        printgroup "Change pattern" "${PATTERN:-No changes matched.}"
+
+        if [ -z "$LIST" ]; then
+          echo "No matches found".
+          {
+            printf 'list=\n'
+            printf 'pattern=\n'
+            printf 'matches=false\n'
+          } >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        echo "Matches found".
+        EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
+        {
+          printf "list<<%s\n" "$EOF"
+          printf "%s\n" "$LIST"
+          printf "%s\n" "$EOF"
+          printf "pattern=%s\n" "$PATTERN"
+          printf 'matches=true\n' >> "$GITHUB_OUTPUT"
+        } >> "$GITHUB_OUTPUT"

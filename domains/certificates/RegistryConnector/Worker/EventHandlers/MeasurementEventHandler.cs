@@ -203,12 +203,6 @@ public class MeasurementEventHandler : IConsumer<EnergyMeasuredIntegrationEvent>
                 CertificateId = certificateId,
                 MeteringPointType = matchingContract.MeteringPointType
             }));
-        builder.AddSubscription(issueCertificateFailedConsumerEndpoint, RoutingSlipEvents.Faulted,
-            x => x.Send(new IssueCertificateFaulted
-            {
-                CertificateId = certificateId,
-                MeteringPointType = matchingContract.MeteringPointType
-            }));
     }
 
     private void AddActivity<T, TArguments>(RoutingSlipBuilder routingSlipBuilder, TArguments arguments)

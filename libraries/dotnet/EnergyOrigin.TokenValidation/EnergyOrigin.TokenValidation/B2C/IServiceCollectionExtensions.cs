@@ -28,7 +28,7 @@ public static class IServiceCollectionExtensions
                 options.Audience = b2COptions.Audience;
                 options.MetadataAddress = b2COptions.ClientCredentialsCustomPolicyWellKnownUrl;
             })
-            .AddJwtBearer(AuthenticationScheme.B2CMitICustomPolicyDAuthenticationScheme, options =>
+            .AddJwtBearer(AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
                 options.Audience = b2COptions.Audience;
@@ -46,9 +46,18 @@ public static class IServiceCollectionExtensions
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
-                    AuthenticationScheme.B2CMitICustomPolicyDAuthenticationScheme)
+                    AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme)
                 .Build();
             options.AddPolicy(Policy.B2CPolicy, b2CPolicy);
+
+            var b2SubTypeUserPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(
+                    AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+                    AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme)
+                .RequireClaim(ClaimType.SubType, Enum.GetName(SubjectType.User)!, Enum.GetName(SubjectType.User)!.ToLower())
+                .Build();
+            options.AddPolicy(Policy.B2CSubTypeUserPolicy, b2SubTypeUserPolicy);
 
             var b2CCustomPolicyClientPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()

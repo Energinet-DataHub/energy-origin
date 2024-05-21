@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Diagnostics.CodeAnalysis;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authentication;
@@ -88,6 +88,18 @@ public class UserDescriptor : IIdentityDescriptor
         {
             throw new PropertyMissingException(nameof(Organization));
         }
+    }
+
+    public static bool IsSupported(HttpContext httpContext)
+    {
+        var usedAuthenticationScheme = GetUsedAuthenticationScheme(httpContext);
+        var tokenValidationScheme = AuthenticationScheme.TokenValidation;
+        return usedAuthenticationScheme == tokenValidationScheme;
+    }
+
+    private static string? GetUsedAuthenticationScheme(HttpContext httpContext)
+    {
+        return httpContext.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult?.Ticket?.AuthenticationScheme;
     }
 
     public static bool IsSupported(HttpContext httpContext)
