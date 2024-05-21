@@ -11,7 +11,7 @@ namespace API.Authorization.Controllers;
 
 [ApiController]
 [ApiVersion(ApiVersions.Version20230101)]
-[Authorize(Policy = Policy.B2CPolicy)]
+[Authorize(Policy = Policy.B2CCustomPolicyClientPolicy)]
 public class AuthorizationController : ControllerBase
 {
     private readonly IMediator _mediator;

@@ -9,11 +9,6 @@ using Microsoft.Net.Http.Headers;
 
 namespace API.IntegrationTests.Setup;
 
-public static class TestAuthScheme
-{
-    public const string Scheme = "TestScheme";
-}
-
 public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,

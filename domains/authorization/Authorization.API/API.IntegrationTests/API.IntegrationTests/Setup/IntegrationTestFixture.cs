@@ -50,7 +50,6 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
     private HttpClient CreateAuthenticatedClient(string sub, string name, string orgIds, string subType)
     {
         var httpClient = CreateClient();
-        // var httpClient = CreateDefaultClient();
         var token = GenerateToken(sub, name, orgIds, subType);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20230101);
@@ -98,6 +97,12 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
     protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
+        ReplaceB2CAuthenticationSchemes(host);
+        return host;
+    }
+
+    private static void ReplaceB2CAuthenticationSchemes(IHost host)
+    {
         var authenticationSchemeProvider = host.Services.GetRequiredService<IAuthenticationSchemeProvider>();
         authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
             .B2CAuthenticationScheme);
@@ -123,7 +128,6 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
-        return host;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -137,9 +141,6 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
             });
 
             services.EnsureDbCreated<ApplicationDbContext>();
-            //
-            // services.AddAuthentication(TestAuthScheme.Scheme)
-            // .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthScheme.Scheme, options => { });
         });
     }
 }
