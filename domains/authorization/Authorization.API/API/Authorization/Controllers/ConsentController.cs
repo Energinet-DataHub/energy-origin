@@ -14,6 +14,7 @@ namespace API.Authorization.Controllers;
 
 [ApiController]
 [ApiVersion(ApiVersions.Version20230101)]
+[Authorize(Policy = Policy.B2CSubTypeUserPolicy)]
 public class ConsentController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -29,13 +30,13 @@ public class ConsentController : ControllerBase
     /// Grants consent.
     /// </summary>
     [HttpPost]
-    [Authorize(Policy = Policy.B2CSubTypeUserPolicy)]
     [Route("api/consent/grant/")]
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger,
         [FromBody] GrantConsentRequest request)
     {
         ;
-        await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, _entityDescriptor.OrgIds.First(), new IdpClientId(request.ClientId)));
+        await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, _entityDescriptor.OrgIds.First(),
+            new IdpClientId(request.ClientId)));
         return Ok();
     }
 
@@ -43,7 +44,6 @@ public class ConsentController : ControllerBase
     /// Get consent from a specific Client.
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = Policy.B2CSubTypeUserPolicy)]
     [Route("api/consent/grant/{clientId}")]
     public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger,
         [FromRoute] Guid clientId)

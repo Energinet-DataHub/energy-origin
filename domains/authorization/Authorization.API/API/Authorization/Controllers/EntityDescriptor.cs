@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace API.Authorization.Controllers;
 
-
 public class EntityDescriptor
 {
     private readonly IHttpContextAccessor _httpContextAccessor;

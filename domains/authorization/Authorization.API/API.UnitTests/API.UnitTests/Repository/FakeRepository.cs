@@ -16,6 +16,7 @@ public class FakeGenericRepository<TEntity> : IGenericRepository<TEntity> where 
         {
             throw new EntityNotFoundException(id.ToString(), typeof(TEntity).Name);
         }
+
         return Task.FromResult(entity);
     }
 
@@ -25,6 +26,7 @@ public class FakeGenericRepository<TEntity> : IGenericRepository<TEntity> where 
         {
             throw new InvalidOperationException("Entity with same id already added");
         }
+
         _entities.Add(entity);
         return Task.CompletedTask;
     }
@@ -45,6 +47,7 @@ public class FakeGenericRepository<TEntity> : IGenericRepository<TEntity> where 
         {
             throw new EntityNotFoundException(entity.Id.ToString(), typeof(TEntity).Name);
         }
+
         _entities.Remove(existingEntity);
         _entities.Add(entity);
     }
@@ -60,6 +63,3 @@ public class FakeClientRepository : FakeGenericRepository<Client>, IClientReposi
 public class FakeOrganizationRepository : FakeGenericRepository<Organization>, IOrganizationRepository;
 
 public class FakeUserRepository : FakeGenericRepository<User>, IUserRepository;
-
-
-

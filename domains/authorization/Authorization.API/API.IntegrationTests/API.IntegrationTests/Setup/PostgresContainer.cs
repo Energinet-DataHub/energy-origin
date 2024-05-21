@@ -40,4 +40,3 @@ public class DatabaseInfo
         ConnectionString = connectionString;
     }
 }
-

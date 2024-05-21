@@ -29,14 +29,12 @@ public class GetClientQueryTest
     [Fact]
     public async Task GivenIdpClientId_WhenGettingClient_ClientReturned()
     {
-
         var client = Any.Client();
         await using var dbContext = new ApplicationDbContext(options);
         await dbContext.Clients.AddAsync(client);
         await dbContext.SaveChangesAsync();
 
-        var api = _integrationTestFixture.CreateApi();
-        var response = await api.GetClient(client.IdpClientId.Value);
+        var response = await _api.GetClient(client.IdpClientId.Value);
         response.Should().Be200Ok();
 
         var content = await response.Content.ReadFromJsonAsync<ClientResponse>();

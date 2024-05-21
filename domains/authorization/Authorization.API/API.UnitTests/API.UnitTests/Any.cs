@@ -22,7 +22,6 @@ public class Any
 
     public static UserName Name()
     {
-
         return API.ValueObjects.UserName.Create("Test Testesen");
     }
 
@@ -55,8 +54,10 @@ public class Any
     {
         return API.Models.Consent.Create(Organization(), Client(), DateTimeOffset.UtcNow);
     }
+
     public static Client Client()
     {
-        return API.Models.Client.Create(IdpClientId(), new ClientName("ClientName"), ClientType.External, "https://redirect.url");
+        return API.Models.Client.Create(IdpClientId(), new ClientName("ClientName"), ClientType.External,
+            "https://redirect.url");
     }
 }

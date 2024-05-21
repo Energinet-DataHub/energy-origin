@@ -6,40 +6,40 @@
     <members>
         <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationClientRequest)">
             <summary>
-            Retreives Authorization Model.
+                Retreives Authorization Model.
             </summary>
         </member>
         <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForUser(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationUserRequest)">
             <summary>
-            Retreives Authorization Model.
+                Retreives Authorization Model.
             </summary>
         </member>
-        <member name="M:API.Authorization.Controllers.AuthorizationController.GetClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},System.Guid)">
+        <member name="M:API.Authorization.Controllers.ClientController.GetClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},System.Guid)">
             <summary>
-            Retreives Client.
+                Retreives Client.
             </summary>
         </member>
         <member name="M:API.Authorization.Controllers.ConsentController.GrantConsent(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},API.Authorization.Controllers.GrantConsentRequest)">
             <summary>
-            Grants consent.
+                Grants consent.
             </summary>
         </member>
         <member name="M:API.Authorization.Controllers.ConsentController.GetConsent(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},System.Guid)">
             <summary>
-            Get consent from a specific Client.
+                Get consent from a specific Client.
             </summary>
         </member>
         <member name="T:API.Migrations.InitialCreate">
-            <inheritdoc />
+            <inheritdoc/>
         </member>
         <member name="M:API.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
+            <inheritdoc/>
         </member>
         <member name="M:API.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
+            <inheritdoc/>
         </member>
         <member name="M:API.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
+            <inheritdoc/>
         </member>
     </members>
 </doc>

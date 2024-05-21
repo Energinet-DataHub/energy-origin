@@ -28,7 +28,8 @@ public class GrantConsentCommandTest
 
         var command = new GrantConsentCommand(user.Id, organization.Id, new IdpClientId(client.IdpClientId.Value));
 
-        var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository, _userRepository, _fakeUnitOfWork);
+        var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository,
+            _userRepository, _fakeUnitOfWork);
         await handler.Handle(command, CancellationToken.None);
 
         Assert.Single(_fakeClientRepository.Query().First().Consents);
@@ -46,9 +47,11 @@ public class GrantConsentCommandTest
         await _userRepository.AddAsync(user, CancellationToken.None);
 
         var command = new GrantConsentCommand(user.Id, organization.Id, Any.IdpClientId());
-        var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository, _userRepository, _fakeUnitOfWork);
+        var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository,
+            _userRepository, _fakeUnitOfWork);
 
-        await Assert.ThrowsAsync<EntityNotFoundException>(async () => await handler.Handle(command, CancellationToken.None));
+        await Assert.ThrowsAsync<EntityNotFoundException>(async () =>
+            await handler.Handle(command, CancellationToken.None));
     }
 
     [Fact]
@@ -60,9 +63,11 @@ public class GrantConsentCommandTest
         await _userRepository.AddAsync(user, CancellationToken.None);
 
         var command = new GrantConsentCommand(Any.Guid(), Any.Guid(), new IdpClientId(client.IdpClientId.Value));
-        var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository, _userRepository, _fakeUnitOfWork);
+        var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository,
+            _userRepository, _fakeUnitOfWork);
 
-        await Assert.ThrowsAsync<UserNotAffiliatedWithOrganizationCommandException>(async () => await handler.Handle(command, CancellationToken.None));
+        await Assert.ThrowsAsync<UserNotAffiliatedWithOrganizationCommandException>(async () =>
+            await handler.Handle(command, CancellationToken.None));
     }
 
     [Fact]
@@ -77,8 +82,10 @@ public class GrantConsentCommandTest
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
 
         var command = new GrantConsentCommand(user.Id, organization.Id, new IdpClientId(client.IdpClientId.Value));
-        var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository, _userRepository, _fakeUnitOfWork);
+        var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository,
+            _userRepository, _fakeUnitOfWork);
 
-        await Assert.ThrowsAsync<UserNotAffiliatedWithOrganizationCommandException>(async () => await handler.Handle(command, CancellationToken.None));
+        await Assert.ThrowsAsync<UserNotAffiliatedWithOrganizationCommandException>(async () =>
+            await handler.Handle(command, CancellationToken.None));
     }
 }

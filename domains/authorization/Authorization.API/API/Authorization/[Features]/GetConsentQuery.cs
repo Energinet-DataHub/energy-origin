@@ -19,7 +19,8 @@ public class GetConsentQueryHandler(IClientRepository clientRepository)
 
         var consent = await clientRepository.Query()
             .Where(client => client.IdpClientId == idpClientId)
-            .SelectMany(client => client.Consents.Select(consent => new ConsentDto(client.IdpClientId, consent.Organization.Name, client.RedirectUrl)))
+            .SelectMany(client => client.Consents.Select(consent =>
+                new ConsentDto(client.IdpClientId, consent.Organization.Name, client.RedirectUrl)))
             .ToListAsync(cancellationToken);
 
         return new GetConsentsQueryResult(consent);
