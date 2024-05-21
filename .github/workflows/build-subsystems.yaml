@@ -1,0 +1,116 @@
+name: Build Subsystems
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      auth: ${{ steps.auth.outputs.matches }}
+      authorization: ${{ steps.authorization.outputs.matches }}
+      certificates: ${{ steps.certificates.outputs.matches }}
+      measurements: ${{ steps.measurements.outputs.matches }}
+      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
+      transfer: ${{ steps.transfer.outputs.matches }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: detect auth
+        id: auth
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: domains/auth/
+
+      - name: detect authorization
+        id: authorization
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: domains/authorization/
+
+      - name: detect certificates
+        id: certificates
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: domains/certificates/
+
+      - name: detect measurements
+        id: measurements
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: domains/measurements/
+
+      - name: detect oidc-mock
+        id: oidc-mock
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: domains/oidc-mock/
+
+      - name: detect transfer
+        id: transfer
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: domains/transfer/
+
+  build-auth:
+    needs: setup
+    if: needs.setup.outputs.auth == 'true'
+    uses: ./.github/workflows/build-auth.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-authorization:
+    needs: setup
+    if: needs.setup.outputs.authorization == 'true'
+    uses: ./.github/workflows/build-authorization.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-certificates:
+    needs: setup
+    if: needs.setup.outputs.certificates == 'true'
+    uses: ./.github/workflows/build-certificates.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-measurements:
+    needs: setup
+    if: needs.setup.outputs.measurements == 'true'
+    uses: ./.github/workflows/build-measurements.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-oidc-mock:
+    needs: setup
+    if: needs.setup.outputs.oidc-mock == 'true'
+    uses: ./.github/workflows/build-oidc-mock.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-transfer:
+    needs: setup
+    if: needs.setup.outputs.transfer == 'true'
+    uses: ./.github/workflows/build-transfer.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
