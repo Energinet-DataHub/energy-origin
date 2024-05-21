@@ -19,7 +19,10 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("sub")] Guid Sub,
     [property: JsonPropertyName("sub_type")] string SubType,
     [property: JsonPropertyName("org_name")] string OrgName,
-    [property: JsonPropertyName("org_ids")] IEnumerable<Guid> OrgIds,
-    [property: JsonPropertyName("scope")] string Scope);
+    [property: JsonPropertyName("org_ids")]IEnumerable<Guid> OrgIds,
+    [property: JsonPropertyName("scope")] string Scope
+    );
 
 public record GrantConsentRequest(Guid ClientId);
+
+public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);

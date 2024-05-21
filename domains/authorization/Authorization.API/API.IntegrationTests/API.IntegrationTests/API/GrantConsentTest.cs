@@ -36,7 +36,6 @@ public class GrantConsentTest
     [Fact]
     public async Task GivenKnownClientId_WhenGrantingConsent_200OkReturned()
     {
-
         var client = Any.Client();
         var user = Any.User();
         var organization = Any.Organization();

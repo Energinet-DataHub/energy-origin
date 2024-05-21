@@ -28,7 +28,9 @@ public class GrantConsentCommandHandler(
                      ?? throw new EntityNotFoundException(command.idpClientId.Value.ToString(), nameof(Client));
 
         var affiliatedOrganization = await userRepository.Query()
-            .Select(u => u.Affiliations.FirstOrDefault(a => a.Organization.Id == command.organizationId && u.Id == command.userId))
+            .Select(u =>
+                u.Affiliations.FirstOrDefault(
+                    a => a.Organization.Id == command.organizationId && u.Id == command.userId))
             .Select(a => a != null ? a.Organization : null)
             .FirstOrDefaultAsync(cancellationToken);
 

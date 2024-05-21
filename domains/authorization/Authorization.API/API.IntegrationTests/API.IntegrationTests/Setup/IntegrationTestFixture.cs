@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.Encodings.Web;
 using API.Authorization.Controllers;
 using API.Models;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -76,7 +78,7 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
         {
             Audience = "audience",
             Issuer = "issuer",
-            NotBefore = DateTime.Now.AddHours(1),
+            NotBefore = DateTime.Now.AddHours(-1),
             Expires = DateTime.Now.AddHours(1),
             SigningCredentials = signingCredentials,
             Subject = identity
@@ -92,6 +94,42 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
         await PostgresContainer.DisposeAsync();
     }
 
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        var host = base.CreateHost(builder);
+        ReplaceB2CAuthenticationSchemes(host);
+        return host;
+    }
+
+    private static void ReplaceB2CAuthenticationSchemes(IHost host)
+    {
+        var authenticationSchemeProvider = host.Services.GetRequiredService<IAuthenticationSchemeProvider>();
+        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
+            .B2CAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
+            .B2CClientCredentialsCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
+            .B2CMitICustomPolicyAuthenticationScheme);
+
+        var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
+            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
+            typeof(TestAuthHandler));
+        authenticationSchemeProvider.AddScheme(b2CScheme);
+
+        var b2CMitIdScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme,
+            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme,
+            typeof(TestAuthHandler));
+        authenticationSchemeProvider.AddScheme(b2CMitIdScheme);
+
+        var b2CClientCredentialsScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            typeof(TestAuthHandler));
+        authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureTestServices(services =>
@@ -103,9 +141,6 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>, IAsyncLife
             });
 
             services.EnsureDbCreated<ApplicationDbContext>();
-
-            services.AddAuthentication("Development")
-                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Development", options => { });
         });
     }
 }

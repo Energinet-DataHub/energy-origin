@@ -7,7 +7,7 @@ namespace API.UnitTests._Queries_;
 
 public class GetConsentQueryTests
 {
-    readonly FakeClientRepository _fakeClientRepository = new ();
+    readonly FakeClientRepository _fakeClientRepository = new();
 
     [Fact]
     async Task GivenClientId_WhenGettingConsent_ConsentReturned()

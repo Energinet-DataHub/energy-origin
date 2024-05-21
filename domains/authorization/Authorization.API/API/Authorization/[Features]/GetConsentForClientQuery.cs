@@ -18,11 +18,14 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
         _clientRepository = clientRepository;
     }
 
-    public async Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query, CancellationToken cancellationToken)
+    public async Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query,
+        CancellationToken cancellationToken)
     {
         var result = await _clientRepository.Query()
             .Where(x => x.IdpClientId.Value == query.ClientId)
-            .Select(x => new GetConsentForClientQueryResult(query.ClientId, x.ClientType.ToString(), "someOrgName", new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() }, "dashboard production meters certificates wallet"))
+            .Select(x => new GetConsentForClientQueryResult(query.ClientId, x.ClientType.ToString(), "someOrgName",
+                new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() },
+                "dashboard production meters certificates wallet"))
             .FirstAsync(cancellationToken);
 
         if (result.OrgName == "Energinet")
@@ -36,4 +39,9 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
 
 public record GetConsentForClientQuery(Guid ClientId) : IRequest<GetConsentForClientQueryResult>;
 
-public record GetConsentForClientQueryResult(Guid Sub, string SubType, string OrgName, IEnumerable<Guid> OrgIds, string Scope);
+public record GetConsentForClientQueryResult(
+    Guid Sub,
+    string SubType,
+    string OrgName,
+    IEnumerable<Guid> OrgIds,
+    string Scope);

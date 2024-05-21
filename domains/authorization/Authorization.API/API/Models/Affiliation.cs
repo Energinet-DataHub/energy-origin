@@ -21,6 +21,7 @@ public class Affiliation
     private Affiliation()
     {
     }
+
     public Guid UserId { get; private set; }
     public Guid OrganizationId { get; private set; }
     public Organization Organization { get; private set; } = null!;

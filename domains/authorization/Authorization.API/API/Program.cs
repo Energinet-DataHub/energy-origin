@@ -5,6 +5,8 @@ using API.Data;
 using API.Models;
 using API.Repository;
 using EnergyOrigin.Setup;
+using EnergyOrigin.TokenValidation.b2c;
+using EnergyOrigin.TokenValidation.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -32,15 +34,19 @@ builder.Services.AddAuthentication()
             "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration";
     });
 
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("SubTypeUser", policy => policy.RequireClaim("sub_type", "user")
-);
-
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
     .AddRabbitMQ();
 
 
+var tokenValidationOptions =
+    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
+    .ValidateDataAnnotations().ValidateOnStart();
+var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
+builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
 
 // Register DbContext and related services
 builder.Services.AddDbContext<ApplicationDbContext>(
