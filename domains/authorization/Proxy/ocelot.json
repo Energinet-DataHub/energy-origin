@@ -1,7 +1,7 @@
 {
     "Routes": [
         {
-            "DownstreamPathTemplate": "/{everything}",
+            "DownstreamPathTemplate": "/wallet-api/v1/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
@@ -9,7 +9,7 @@
                     "Port": 5000
                 }
             ],
-            "UpstreamPathTemplate": "/{everything}",
+            "UpstreamPathTemplate": "/wallet-api/{everything}",
             "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
             "AddHeadersToRequest": {
                 "X-Original-EO_API_VERSION": "EO_API_VERSION"

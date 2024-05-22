@@ -1,21 +1,27 @@
-namespace Proxy
+using System.Net;
+
+namespace Proxy;
+
+public class VersionHeaderHandler : DelegatingHandler
 {
-    public class VersionHeaderHandler : DelegatingHandler
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            request.Headers.TryGetValues("EO_API_VERSION", out var versions);
-            var version = versions?.FirstOrDefault();
+        var hasVersionHeader = request.Headers.TryGetValues("EO_API_VERSION", out var versions);
+        var version = versions?.FirstOrDefault();
 
-            if (version == "20250101")
+        if (!hasVersionHeader || version != ApiVersions.Version20250101)
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
             {
-                request.Headers.Remove("EO_API_VERSION");
-                var newUri = request.RequestUri?.ToString().Replace("http://localhost:5000/", "http://localhost:5000/v1/")
-                             ?? throw new InvalidOperationException("RequestUri is null");
-                request.RequestUri = new Uri(newUri);
-            }
+                Content = new StringContent("Missing or invalid EO_API_VERSION header.")
+            });
 
+        var requestUri = request.RequestUri?.ToString();
+        if (requestUri is null || !requestUri.StartsWith("http://localhost:5000/wallet-api/", StringComparison.OrdinalIgnoreCase))
             return base.SendAsync(request, cancellationToken);
-        }
+
+        var newUri = requestUri.Replace("http://localhost:5000/wallet-api/", "http://localhost:5000/wallet-api/v1/");
+        request.RequestUri = new Uri(newUri);
+
+        return base.SendAsync(request, cancellationToken);
     }
 }
