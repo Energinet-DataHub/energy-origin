@@ -46,7 +46,7 @@ jobs:
           solution: domains/certificates/Certificates.sln
           project: domains/certificates/RegistryConnector/Worker/Worker.csproj
           configuration: domains/certificates/RegistryConnector/configuration.yaml
-          migrations: domains/certificates/migrations/Worker.sql
+          migrations: domains/certificates/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}
 
   update:
