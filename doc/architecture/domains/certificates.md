@@ -15,7 +15,7 @@ The component diagram shows how the solution works, based on a RabbitMQ message 
 ### Message flow: Issue certificate
 The sequence diagram below shows the flow of messages between the components when issuing a single certificate. All messages are published to the message broker; the message broker is not shown in the diagram. Before that flow is possible, a wallet deposit endpoint must be created in the user's wallet; that happens as part of creating the Contract.
 
-The RegistryConnector listens to EnergyMeasured events from the MeasurementsSyncer. The RegistryConnector is responsible for anything related to issuance. It utilizes MassTransit RoutingSlips in order to handle the issuance flow, which builds activities that are executed in sequence. If anything goes wrong in that sequnce, we have a subscription to handle it, which rejects the certificate.
+The RegistryConnector listens to EnergyMeasured events from the MeasurementsSyncer. The RegistryConnector is responsible for anything related to issuance. After receiving the EnergyMeasured event, the issuance flow starts with publishing an event. This starts a series of event handlers which is executed in sequence after eachother as modeled below:
 
 ```mermaid
 sequenceDiagram
@@ -23,14 +23,15 @@ sequenceDiagram
     participant rc as RegistryConnector
 
     ms->>rc: EnergyMeasured
-    rc->>rc: IssueToRegistry
-    rc->>rc: WaitForComittedRegistryTransaction
-    rc->>rc: MarkCertificateAsIssued
-    rc->>rc: SendCertificateToWallet
-
-    alt If anything fails on the way
-        rc->>rc: RejectCertificate
+    rc->>rc: CertificateCreatedEvent
+    rc->>rc: CertificateSentToRegistryEvent
+    alt If Registry accepted the issuance transaction
+        rc->>rc: CertificateIssuedInRegistryEvent
+        rc->>rc: CertificateMarkedAsIssuedEvent
+    else If Registry did not accept the issuance transaction
+        rc->>rc: CertificateFailedInRegistryEvent
     end
+
 ```
 
 The Registry only allows issuing of certificates from the issuing body and in this case that is Energinet. Hence, a Wallet System is not able to issue certificates. So the Certificates domain is responsible for issuing first to the registry and then sending to the wallet. For this to happen, the owner public key on the certificate must be created or calculated by the Certificates domain; the next section describes how the Certificates domain calculates the key.
