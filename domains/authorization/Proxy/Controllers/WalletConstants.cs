@@ -2,5 +2,5 @@
 
 public static class WalletConstants
 {
-    public const string Header = "x-resource-owner";
+    public const string Header = "wallet-owner";
 }
