@@ -1,97 +1,38 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using EnergyOrigin.Setup;
-using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.TokenValidation.Options;
-using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwagger("ProjectOrigin.WalletSystem.Server");
-
-builder.Services.AddSwaggerGen(c =>
+namespace Proxy
 {
-    c.DocumentFilter<WalletTagDocumentFilter>();
-});
-
-builder.Services.AddVersioningToApi();
-
-builder.Services.AddHttpClient("Proxy", options =>
-{
-    options.BaseAddress = new Uri("http://localhost:5182/", UriKind.Absolute);
-});
-
-builder.Services.AddControllers()
-    .AddJsonOptions(o =>
+    public class Program
     {
-        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-    });
-
-builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations()
-    .ValidateOnStart();
-
-var tokenConfiguration = builder.Configuration.GetSection(TokenValidationOptions.Prefix);
-var tokenOptions = tokenConfiguration.Get<TokenValidationOptions>()!;
-
-builder.Services.AttachOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
-    .ValidateOnStart();
-
-var b2cConfiguration = builder.Configuration.GetSection(B2COptions.Prefix);
-var b2cOptions = b2cConfiguration.Get<B2COptions>()!;
-
-builder.Services.AddB2CAndTokenValidation(b2cOptions, tokenOptions);
-
-
-var app = builder.Build();
-
-app.AddSwagger(app.Environment, "authorization-proxy");
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
-
-
-public static class ServiceCollectionExtensions
-{
-    public static OptionsBuilder<T> AttachOptions<T>(this IServiceCollection services) where T : class
-    {
-        var builder = services.AddOptions<T>();
-        services.AddTransient(x => x.GetRequiredService<IOptions<T>>().Value);
-        return builder;
-    }
-}
-
-public class WalletTagDocumentFilter : IDocumentFilter
-{
-    public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
-    {
-        // Check if the "Contracts" tag already exists to avoid duplicates
-        if (!swaggerDoc.Tags.Any(tag => tag.Name == "Wallet"))
+        public static void Main(string[] args)
         {
-            swaggerDoc.Tags.Add(new OpenApiTag
-            {
-                Name = "Wallet",
-                Description = "The Wallet is essential for Energy Origin," +
-                              " since it keeps track of all the user’s Granular Certificates" +
-                              " – both the ones generated from the user’s own metering points," +
-                              " but also the ones transferred from other users." +
-                              " In other words, the Wallet will hold all available certificates for the user." +
-                              " Moreover, it will show all transfers, that may have been made," +
-                              " to other users’ wallets as well.\n"
-            });
+            new WebHostBuilder()
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config
+                        .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
+                        .AddJsonFile("appsettings.json", true, true)
+                        .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
+                        .AddJsonFile("ocelot.json")
+                        .AddEnvironmentVariables();
+                })
+                .ConfigureServices(s => {
+                    s.AddOcelot();
+                })
+                .ConfigureLogging((hostingContext, logging) =>
+                {
+                    //add your logging
+                })
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    app.UseOcelot().Wait();
+                })
+                .Build()
+                .Run();
         }
     }
-}
-
-public partial class Program
-{
-
 }

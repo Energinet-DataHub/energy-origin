@@ -6,11 +6,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <DocumentationFile>documentation.xml</DocumentationFile>
+        <NoWarn>1701;1702;1591</NoWarn>
+        
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="EnergyOrigin.Setup" Version="4.2.0" />
       <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.2.1" />
+      <PackageReference Include="Ocelot" Version="23.2.2" />
     </ItemGroup>
     <ItemGroup>
         <None Update="documentation.xml">
