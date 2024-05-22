@@ -1,3 +1,5 @@
+using API.Authorization._Features_;
+using API.Authorization.Controllers;
 using EnergyOrigin.Setup;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +16,7 @@ public static class Startup
             //c.DocumentFilter<AddContractsTagDocumentFilter>();
         });
         services.AddHttpContextAccessor();
+        services.AddScoped<EntityDescriptor>();
 
         //services.AddValidatorsFromAssemblyContaining<CreateContractValidator>();
     }

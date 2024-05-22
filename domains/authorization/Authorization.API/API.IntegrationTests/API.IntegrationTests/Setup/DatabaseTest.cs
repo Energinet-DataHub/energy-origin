@@ -1,25 +1,39 @@
 using API.Data;
 using API.Models;
 using API.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using Respawn;
 
 namespace API.IntegrationTests.Setup;
 
-[Collection(nameof(DatabaseTestCollection))]
 public abstract class DatabaseTest : IAsyncLifetime
 {
-    public Func<Task> _resetDatabase;
     public readonly ApplicationDbContext Db;
     public readonly IUnitOfWork UnitOfWork;
     private readonly IServiceScope _scope;
     public readonly IOrganizationRepository OrganizationRepository;
 
-    public DatabaseTest(IntegrationTestFactory factory)
+    public DatabaseTest(IntegrationTestFixture fixture)
     {
-        _resetDatabase = factory.ResetDatabase;
-        Db = factory.Db;
+        var dbInfo = fixture.PostgresContainer.CreateNewDatabase().Result;
 
-        _scope = factory.Services.CreateScope();
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(dbInfo.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(options);
+        dbContext.Database.Migrate();
+
+        using var dbConnection = new NpgsqlConnection(dbInfo.ConnectionString);
+        dbConnection.Open();
+        var respawner = Respawner.CreateAsync(dbConnection, new RespawnerOptions
+        {
+            DbAdapter = DbAdapter.Postgres,
+            SchemasToInclude = new[] { "public" }
+        }).Result;
+        respawner.ResetAsync(dbInfo.ConnectionString);
+
+        _scope = fixture.Services.CreateScope();
+        Db = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         UnitOfWork = _scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         OrganizationRepository = _scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();
     }
@@ -28,7 +42,6 @@ public abstract class DatabaseTest : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _resetDatabase();
         if (_scope is IAsyncDisposable asyncDisposable)
         {
             await asyncDisposable.DisposeAsync();

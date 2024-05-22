@@ -19,4 +19,9 @@ public class Tin : ValueObject
     }
 
     private static bool IsDigitsOnly(string str) => str.All(char.IsDigit);
+
+    public static Tin Create(string value)
+    {
+        return new Tin(value);
+    }
 }
