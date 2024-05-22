@@ -21,15 +21,15 @@ public class WeatherForecastController : ControllerBase
     [HttpGet(Name = "GetWeatherForecast")]
     public ActionResult<IEnumerable<WeatherForecast>> Get()
     {
-        var errors = new List<string>();
-
-        errors.Add("Something went wrong");
-        errors.Add("Sooooo wrong");
-
-        if (errors.Count > 0)
-        {
-            return BadRequest(new { errors });
-        }
+        // var errors = new List<string>();
+        //
+        // errors.Add("Something went wrong");
+        // errors.Add("Sooooo wrong");
+        //
+        // if (errors.Count > 0)
+        // {
+        //     return BadRequest(new { errors });
+        // }
 
         return Ok(Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {

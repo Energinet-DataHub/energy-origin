@@ -96,7 +96,7 @@ public class ProxyBase : ControllerBase
     {
         var orgIds = User.Claims.Where(x => x.Type == "org_ids").Select(x => x.Value).ToList();
 
-        if (string.IsNullOrEmpty(organizationId) || !orgIds.Contains(organizationId) || Guid.TryParse(organizationId, out _))
+        if (string.IsNullOrEmpty(organizationId) || !orgIds.Contains(organizationId))
         {
             Forbidden();
             return;

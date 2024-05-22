@@ -5,7 +5,6 @@ using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace Proxy.Controllers;
 
 [ApiController]
@@ -25,7 +24,7 @@ public class ClaimsController : ProxyBase
     [Route("v1/claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
+    [ApiVersion(ApiVersions.Version20240101, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
@@ -62,7 +61,7 @@ public class ClaimsController : ProxyBase
     [Route("v1/aggregate-claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
+    [ApiVersion(ApiVersions.Version20240101, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -102,7 +101,7 @@ public class ClaimsController : ProxyBase
     [Route("v1/claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
+    [ApiVersion(ApiVersions.Version20240101, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status202Accepted)]
@@ -285,3 +284,4 @@ public record AggregatedClaims()
     /// </summary>
     public required long Quantity { get; init; }
 }
+

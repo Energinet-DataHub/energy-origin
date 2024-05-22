@@ -31,7 +31,7 @@ public class SlicesController : ProxyBase
     [Route("v1/slices")]
     [Produces("application/json")]
     [AllowAnonymous]
-    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)] // TODO: Would our custom headers cause problems here?
+    [ApiVersion(ApiVersions.Version20240101, Deprecated = true)] // TODO: Would our custom headers cause problems here?
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status202Accepted)]

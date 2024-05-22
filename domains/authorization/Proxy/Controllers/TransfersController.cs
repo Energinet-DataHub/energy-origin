@@ -8,6 +8,7 @@ namespace Proxy.Controllers;
 
 [Authorize]
 [ApiController]
+
 public class TransfersController : ProxyBase
 {
     public TransfersController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
@@ -23,7 +24,7 @@ public class TransfersController : ProxyBase
     [Route("v1/transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
+    [ApiVersion(ApiVersions.Version20240101, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer>), StatusCodes.Status200OK)]
@@ -59,7 +60,7 @@ public class TransfersController : ProxyBase
     [Route("v1/aggregate-transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
+    [ApiVersion(ApiVersions.Version20240101, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
@@ -76,7 +77,7 @@ public class TransfersController : ProxyBase
     /// <response code="200">Returns the individual transferes within the filter.</response>
     /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
-    [Route("v1/aggregate-transfers")]
+    [Route("aggregate-transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
     [ApiVersion(ApiVersions.Version20250101)]
@@ -97,6 +98,8 @@ public class TransfersController : ProxyBase
     [HttpPost]
     [Route("v1/transfers")]
     [Produces("application/json")]
+    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [ApiVersion(ApiVersions.Version20240101, Deprecated = true)]
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     public async Task TransferCertificate([FromBody] TransferRequest request)
@@ -110,10 +113,13 @@ public class TransfersController : ProxyBase
     /// <param name="request"></param>
     /// <param name="organizationId"></param>
     [HttpPost]
-    [Route("v1/transfers")]
+    [Route("transfers")]
     [Produces("application/json")]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status200OK)]
     public async Task TransferCertificateV2([FromBody] TransferRequest request, string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/transfers", organizationId);
@@ -249,4 +255,3 @@ public record AggregatedTransfers()
     /// </summary>
     public required long Quantity { get; init; }
 }
-
