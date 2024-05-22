@@ -6,7 +6,6 @@ using Testcontainers.PostgreSql;
 
 namespace Proxy.IntegrationTests.Testcontainers;
 
-
 public class ProjectOriginStack : RegistryFixture
 {
     private readonly Lazy<IContainer> walletContainer;
@@ -29,7 +28,6 @@ public class ProjectOriginStack : RegistryFixture
         {
             var connectionString = $"Host={postgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
-            // Get an available port from system and use that as the host port
             var udp = new UdpClient(0, AddressFamily.InterNetwork);
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 

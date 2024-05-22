@@ -5,9 +5,9 @@ using Proxy.IntegrationTests.Testcontainers;
 
 namespace Proxy.IntegrationTests;
 
-public class ProjectOriginStackTests : IAsyncLifetime
+public class ProjectOriginStackTests(ProjectOriginStackFixture fixture) : IClassFixture<ProjectOriginStackFixture>
 {
-    private readonly ProjectOriginStack _projectOriginStack = new();
+    private readonly ProjectOriginStack _projectOriginStack = fixture.ProjectOriginStack;
 
     [Fact]
     public async Task Confirm_WalletSetup_returns401_ifNoHeader()
@@ -35,15 +35,5 @@ public class ProjectOriginStackTests : IAsyncLifetime
         var response = await httpClient.PostAsync(walletEndpoint, content);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-    }
-
-    public async Task InitializeAsync()
-    {
-        await _projectOriginStack.InitializeAsync();
-    }
-
-    public async Task DisposeAsync()
-    {
-        await _projectOriginStack.DisposeAsync();
     }
 }

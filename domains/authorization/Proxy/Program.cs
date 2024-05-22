@@ -5,7 +5,6 @@ using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using Proxy.Controllers;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -104,3 +103,7 @@ public class WalletTagDocumentFilter : IDocumentFilter
     }
 }
 
+public partial class Program
+{
+
+}
