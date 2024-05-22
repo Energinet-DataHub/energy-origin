@@ -52,7 +52,7 @@ builder.Services.AddActivityLog(options => options.ServiceName = "certificates")
 builder.Services.AddRabbitMq(builder.Configuration);
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
-builder.Services.AddDataSyncSyncer();
+builder.Services.AddMeasurementsSyncer();
 builder.Services.AddIssuingContractCleanup();
 builder.Services.AddVersioningToApi();
 
