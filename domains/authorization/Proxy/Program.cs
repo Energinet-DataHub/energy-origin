@@ -9,10 +9,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwagger("ProjectOrigin.WalletSystem.Server");
@@ -26,14 +22,13 @@ builder.Services.AddVersioningToApi();
 
 builder.Services.AddHttpClient("Proxy", options =>
 {
-    options.BaseAddress = new Uri("http://localhost:5182/", UriKind.Absolute); //new Uri(builder.Configuration["WalletServiceUrl"]!); // Maybe validate WalletServiceUrl, and throw startup exception.
+    options.BaseAddress = new Uri("http://localhost:5182/", UriKind.Absolute);
 });
 
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-        //o.JsonSerializerOptions.Converters.Add(new IHDPublicKeyConverter(algorithm)); TODO: Find out if we need this
     });
 
 builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations()
@@ -51,14 +46,7 @@ var b2cOptions = b2cConfiguration.Get<B2COptions>()!;
 builder.Services.AddB2CAndTokenValidation(b2cOptions, tokenOptions);
 
 
-
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-
-}
 
 app.AddSwagger(app.Environment, "authorization-proxy");
 
