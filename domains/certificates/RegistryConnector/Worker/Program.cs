@@ -12,7 +12,6 @@ using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Converters;
 using RegistryConnector.Worker.EventHandlers;
-using RegistryConnector.Worker.RoutingSlips;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,9 +51,11 @@ builder.Services.AddMassTransit(o =>
     o.SetKebabCaseEndpointNameFormatter();
 
     o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
-    o.AddConsumer<IssueCertificateNotCompletedConsumer, IssueCertificateNotCompletedConsumerDefinition>();
-
-    o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
+    o.AddConsumer<CertificateCreatedEventHandler, CertificateCreatedEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateFailedInRegistryEventHandler, CertificateFailedInRegistryEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateIssuedInRegistryEventHandler, CertificateIssuedInRegistryEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateMarkedAsIssuedEventHandler, CertificateMarkedAsIssuedEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateSentToRegistryEventHandler, CertificateSentToRegistryEventHandlerConsumerDefinition>();
 
     o.UsingRabbitMq((context, cfg) =>
     {
