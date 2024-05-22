@@ -1,15 +1,15 @@
 {
     "Routes": [
         {
-            "DownstreamPathTemplate": "/{everything}",
+            "DownstreamPathTemplate": "/v1/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
-                    "Port": 5000
+                    "Port": "5001"
                 }
             ],
-            "UpstreamPathTemplate": "/{everything}",
+            "UpstreamPathTemplate": "/api/{everything}",
             "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
             "AddHeadersToRequest": {
                 "X-Original-EO_API_VERSION": "EO_API_VERSION"
