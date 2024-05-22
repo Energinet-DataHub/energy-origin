@@ -91,8 +91,6 @@ public class CertificateCreatedEventHandler : IConsumer<CertificateCreatedEvent>
         var request = new SendTransactionsRequest();
         request.Transactions.Add(transaction);
 
-        // The Registry is idempotent wrt. sending the same Transaction. Re-sending the transaction
-        // after it has been committed, will not change the status of the initial transaction
         await client.SendTransactionsAsync(request);
 
         await context.Publish(new CertificateSentToRegistryEvent

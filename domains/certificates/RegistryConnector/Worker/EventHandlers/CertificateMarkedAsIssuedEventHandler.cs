@@ -54,10 +54,9 @@ public class CertificateMarkedAsIssuedEventHandler : IConsumer<CertificateMarked
         };
 
         using var client = httpClientFactory.CreateClient();
-        var requestStr = JsonSerializer.Serialize(request);
-        var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
+        var requestJson = JsonSerializer.Serialize(request);
+        var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
 
-        // The Wallet is idempotent wrt. sending the same ReceiveRequest.
         var res = await client.PostAsync(message.WalletUrl, content);
         res.EnsureSuccessStatusCode();
 

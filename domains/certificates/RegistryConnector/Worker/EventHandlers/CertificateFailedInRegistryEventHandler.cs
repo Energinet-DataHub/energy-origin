@@ -1,11 +1,13 @@
 using System;
 using System.Threading.Tasks;
 using DataContext;
+using DataContext.Models;
 using DataContext.ValueObjects;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NBitcoin.Protocol;
 
 namespace RegistryConnector.Worker.EventHandlers;
 
@@ -38,45 +40,26 @@ public class CertificateFailedInRegistryEventHandler : IConsumer<CertificateFail
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
-        if (meteringPointType == MeteringPointType.Production)
+        Certificate? certificate = meteringPointType == MeteringPointType.Production
+            ? await dbContext.ProductionCertificates.FindAsync([certificateId])
+            : await dbContext.ConsumptionCertificates.FindAsync([certificateId]);
+
+        if (certificate == null)
         {
-            var productionCertificate = await dbContext.ProductionCertificates.FindAsync(certificateId);
-
-            if (productionCertificate == null)
-            {
-                logger.LogWarning("Production certificate with certificateId {certificateId} not found.", certificateId);
-                return;
-            }
-
-            if (productionCertificate.IsRejected)
-            {
-                logger.LogWarning("Production certificate with certificateId {certificateId} already rejected.", certificateId);
-                return;
-            }
-
-            productionCertificate.Reject(rejectionReason);
+            logger.LogWarning("Certificate with certificateId {certificateId} and type {meteringPointType} not found.", certificateId, meteringPointType);
+            return;
         }
-        else
+
+        if (certificate.IsRejected)
         {
-            var consumptionCertificate = await dbContext.ConsumptionCertificates.FindAsync(certificateId);
-
-            if (consumptionCertificate == null)
-            {
-                logger.LogWarning("Consumption certificate with certificateId {certificateId} not found.", certificateId);
-                return;
-            }
-
-            if (consumptionCertificate.IsRejected)
-            {
-                logger.LogWarning("Consumption certificate with certificateId {certificateId} already rejected.", certificateId);
-                return;
-            }
-
-            consumptionCertificate.Reject(rejectionReason);
+            logger.LogWarning("Certificate with certificateId {certificateId} and type {meteringPointType} already rejected.", certificateId, meteringPointType);
+            return;
         }
+
+        certificate.Reject(rejectionReason);
 
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("Certificate with certificateId {certificateId} rejected", certificateId);
+        logger.LogInformation("Certificate with certificateId {certificateId} and type {meteringPointType} rejected", certificateId, meteringPointType);
     }
 }
 
