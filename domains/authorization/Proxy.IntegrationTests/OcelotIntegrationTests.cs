@@ -102,4 +102,20 @@ public class OcelotIntegrationTests(IntegrationTestFixture integrationFixture)
 
         response.StatusCode.Should().Be(statusCode);
     }
+
+    [Fact]
+    public async Task Ocelot_Redirects_To_Downstream_Swagger_Endpoint()
+    {
+        using var wireMockHelper = new WireMockServerHelper();
+
+        wireMockHelper.Server
+            .Given(Request.Create().WithPath("/wallet-api-docs/v1/swagger.json").UsingGet())
+            .RespondWith(Response.Create().WithStatusCode(HttpStatusCode.OK));
+
+        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api-docs/swagger.json");
+
+        var response = await Client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 }

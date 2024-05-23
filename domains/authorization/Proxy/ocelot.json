@@ -6,7 +6,7 @@
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
-                    "Port": 5000
+                    "Port": 5001
                 }
             ],
             "UpstreamPathTemplate": "/wallet-api/{everything}",
@@ -17,6 +17,18 @@
             "DelegatingHandlers": [
                 "VersionHeaderHandler"
             ]
+        },
+        {
+            "DownstreamPathTemplate": "/wallet-api-docs/v1/swagger.json",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5001
+                }
+            ],
+            "UpstreamPathTemplate": "/wallet-api-docs/swagger.json",
+            "UpstreamHttpMethod": [ "GET" ]
         }
     ],
     "GlobalConfiguration": {
