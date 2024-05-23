@@ -233,12 +233,12 @@ internal class ContractServiceImpl : IContractService
         return new SetEndDateResult.Success();
     }
 
-    public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner,
+    public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(Guid meteringPointOwnerId,
         CancellationToken cancellationToken)
-        => unitOfWork.CertificateIssuingContractRepo.GetAllMeteringPointOwnerContracts(meteringPointOwner,
+        => unitOfWork.CertificateIssuingContractRepo.GetAllMeteringPointOwnerContracts(meteringPointOwnerId.ToString(),
             cancellationToken);
 
-    public async Task<CertificateIssuingContract?> GetById(Guid id, IList<string> authorizedOrgIds, CancellationToken cancellationToken)
+    public async Task<CertificateIssuingContract?> GetById(Guid id, IList<Guid> authorizedMeteringPointOwnerIds, CancellationToken cancellationToken)
     {
         var contract = await unitOfWork.CertificateIssuingContractRepo.GetById(id, cancellationToken);
 
@@ -247,7 +247,7 @@ internal class ContractServiceImpl : IContractService
             return null;
         }
 
-        return authorizedOrgIds.Contains(contract.MeteringPointOwner.Trim())
+        return authorizedMeteringPointOwnerIds.Select(x => x.ToString()).Contains(contract.MeteringPointOwner.Trim())
             ? contract
             : null;
     }

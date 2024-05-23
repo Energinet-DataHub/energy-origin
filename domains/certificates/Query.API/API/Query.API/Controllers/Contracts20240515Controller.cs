@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +19,7 @@ namespace API.Query.API.Controllers;
 [Authorize(Policy = Policy.B2CPolicy)]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240515)]
-public class ContractsV20250515Controller : ControllerBase
+public class Contracts20250515Controller : ControllerBase
 {
 
     /// <summary>
@@ -78,8 +77,7 @@ public class ContractsV20250515Controller : ControllerBase
     {
         var identity = new IdentityDescriptor(HttpContext, orgId);
 
-        var orgIdsAsStrings = identity.OrgIds.Select(id => id.ToString()).ToList();
-        var contract = await service.GetById(id, orgIdsAsStrings, cancellationToken);
+        var contract = await service.GetById(id, identity.OrgIds, cancellationToken);
 
         return contract == null
             ? NotFound()
@@ -99,7 +97,7 @@ public class ContractsV20250515Controller : ControllerBase
     {
         var identity = new IdentityDescriptor(HttpContext, orgId);
 
-        var contracts = await service.GetByOwner(identity.OrgId.ToString(), cancellationToken);
+        var contracts = await service.GetByOwner(identity.OrgId, cancellationToken);
 
         return contracts.Any()
             ? Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) })

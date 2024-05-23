@@ -15,6 +15,6 @@ public interface IContractService
     Task<SetEndDateResult> SetEndDate(EditContracts contracts, Guid meteringPointOwnerId, Guid subjectId, string subjectName, string organizationName,
         string organizationTin, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner, CancellationToken cancellationToken);
-    Task<CertificateIssuingContract?> GetById(Guid id, IList<string> authorizedOrgIds, CancellationToken cancellationToken);
+    Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(Guid meteringPointOwnerId, CancellationToken cancellationToken);
+    Task<CertificateIssuingContract?> GetById(Guid id, IList<Guid> authorizedMeteringPointOwnerIds, CancellationToken cancellationToken);
 }

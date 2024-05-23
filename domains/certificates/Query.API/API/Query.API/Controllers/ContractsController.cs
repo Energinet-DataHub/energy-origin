@@ -117,9 +117,9 @@ public class ContractsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
+        var meteringPointOwner = user.Subject;
 
-        var contract = await service.GetById(id, new List<string> { meteringPointOwner }, cancellationToken);
+        var contract = await service.GetById(id, new List<Guid> { meteringPointOwner }, cancellationToken);
 
         return contract == null
             ? NotFound()
@@ -137,7 +137,7 @@ public class ContractsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
+        var meteringPointOwner = user.Subject;
 
         var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
 

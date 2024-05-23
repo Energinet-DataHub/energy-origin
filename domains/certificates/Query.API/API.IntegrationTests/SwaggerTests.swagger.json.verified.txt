@@ -9,7 +9,7 @@
     "/api/certificates/contracts": {
       "post": {
         "tags": [
-          "ContractsV"
+          "Contracts"
         ],
         "summary": "Create contracts that activates granular certificate generation for a metering point",
         "parameters": [
@@ -82,7 +82,7 @@
       },
       "get": {
         "tags": [
-          "ContractsV"
+          "Contracts"
         ],
         "summary": "Returns all the user's contracts for issuing granular certificates",
         "parameters": [
@@ -130,7 +130,7 @@
       },
       "put": {
         "tags": [
-          "ContractsV"
+          "Contracts"
         ],
         "summary": "Edit the end date for multiple contracts",
         "parameters": [
@@ -188,7 +188,7 @@
     "/api/certificates/contracts/{id}": {
       "get": {
         "tags": [
-          "ContractsV"
+          "Contracts"
         ],
         "summary": "Returns contract based on the id",
         "parameters": [
