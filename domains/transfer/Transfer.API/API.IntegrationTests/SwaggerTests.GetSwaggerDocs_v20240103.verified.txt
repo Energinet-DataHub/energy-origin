@@ -828,7 +828,15 @@
             "format": "int64",
             "nullable": true
           },
-          "receiverCompanyTin": {
+          "senderName": {
+            "type": "string",
+            "nullable": true
+          },
+          "senderTin": {
+            "type": "string",
+            "nullable": true
+          },
+          "receiverTin": {
             "type": "string",
             "nullable": true
           },

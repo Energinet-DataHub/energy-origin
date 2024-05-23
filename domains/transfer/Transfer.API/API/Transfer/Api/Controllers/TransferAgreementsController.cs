@@ -315,11 +315,11 @@ public class TransferAgreementsController(
         }
 
         var transferAgreementDtos = transferAgreements
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.ReceiverTin, GetTransferAgreementStatusFromAgreement(x)))
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.SenderName, x.SenderTin, x.ReceiverTin, GetTransferAgreementStatusFromAgreement(x)))
             .ToList();
 
         var transferAgreementProposalDtos = transferAgreementProposals
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.ReceiverCompanyTin, GetTransferAgreementStatusFromProposal(x)))
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), string.Empty, string.Empty, x.ReceiverCompanyTin, GetTransferAgreementStatusFromProposal(x)))
             .ToList();
 
         transferAgreementProposalDtos.AddRange(transferAgreementDtos);
