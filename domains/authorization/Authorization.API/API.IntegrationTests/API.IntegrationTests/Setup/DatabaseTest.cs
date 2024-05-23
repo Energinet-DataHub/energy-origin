@@ -32,7 +32,7 @@ public abstract class DatabaseTest : IAsyncLifetime
         }).Result;
         respawner.ResetAsync(dbInfo.ConnectionString);
 
-        _scope = fixture.Services.CreateScope();
+        _scope = fixture.WebAppFactory.Services.CreateScope();
         Db = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         UnitOfWork = _scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         OrganizationRepository = _scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();

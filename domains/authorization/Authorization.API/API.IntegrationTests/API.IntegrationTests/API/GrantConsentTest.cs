@@ -4,6 +4,7 @@ using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
 using API.ValueObjects;
+using EnergyOrigin.TokenValidation.b2c;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,15 +15,15 @@ public class GrantConsentTest
 {
     private readonly Api _api;
     private readonly IntegrationTestFixture _integrationTestFixture;
-    private readonly DbContextOptions<ApplicationDbContext> options;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
 
     public GrantConsentTest(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = integrationTestFixture.PostgresContainer.ConnectionString;
-        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
 
         _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.CreateApi();
+        _api = integrationTestFixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
@@ -40,14 +41,14 @@ public class GrantConsentTest
         var user = Any.User();
         var organization = Any.Organization();
         var affiliation = Affiliation.Create(user, organization);
-        await using var dbContext = new ApplicationDbContext(options);
+        await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Clients.AddAsync(client);
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var api = _integrationTestFixture.CreateApi(sub: user.Id.ToString(), orgIds: organization.Id.ToString());
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.Id.ToString(), orgIds: organization.Id.ToString());
         var response = await api.GrantConsent(client.IdpClientId.Value);
         response.Should().Be200Ok();
     }
@@ -73,7 +74,7 @@ public class GrantConsentTest
         var client = Any.Client();
         var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow);
 
-        await using var dbContext = new ApplicationDbContext(options);
+        await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Affiliations.AddAsync(affiliation);
@@ -87,7 +88,7 @@ public class GrantConsentTest
     [Fact]
     public async Task GivenSubTypeNotUser_WhenGrantingConsent_HttpForbiddenIsReturned()
     {
-        var api = _integrationTestFixture.CreateApi(subType: "external");
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString());
 
         var response = await api.GrantConsent(Guid.NewGuid());
 
@@ -97,7 +98,7 @@ public class GrantConsentTest
     [Fact]
     public async Task GivenSubTypeNotUser_WhenGettingConsent_HttpForbiddenIsReturned()
     {
-        var api = _integrationTestFixture.CreateApi(subType: "external");
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString());
 
         var response = await api.GetConsent(Guid.NewGuid());
 

@@ -1,10 +1,8 @@
 using System.Net.Http.Json;
-using API.Authorization._Features_;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
-using API.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,23 +12,20 @@ namespace API.IntegrationTests.API;
 public class GetClientQueryTest
 {
     private readonly Api _api;
-    private readonly IntegrationTestFixture _integrationTestFixture;
-    private readonly DbContextOptions<ApplicationDbContext> options;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
 
     public GetClientQueryTest(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = integrationTestFixture.PostgresContainer.ConnectionString;
-        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-
-        _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.CreateApi();
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
+        _api = integrationTestFixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
     public async Task GivenIdpClientId_WhenGettingClient_ClientReturned()
     {
         var client = Any.Client();
-        await using var dbContext = new ApplicationDbContext(options);
+        await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Clients.AddAsync(client);
         await dbContext.SaveChangesAsync();
 
@@ -47,8 +42,7 @@ public class GetClientQueryTest
     [Fact]
     public async Task GivenUnknownIdpClientId_WhenGettingClient_404NotFound()
     {
-        var api = _integrationTestFixture.CreateApi();
-        var response = await api.GetClient(Guid.NewGuid());
+        var response = await _api.GetClient(Guid.NewGuid());
         response.Should().Be404NotFound();
     }
 }
