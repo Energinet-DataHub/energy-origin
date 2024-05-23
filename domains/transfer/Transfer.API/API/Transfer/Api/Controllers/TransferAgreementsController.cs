@@ -298,4 +298,46 @@ public class TransferAgreementsController(
             SenderTin: transferAgreement.SenderTin,
             ReceiverTin: transferAgreement.ReceiverTin
         );
+
+    [Authorize(Policy = PolicyName.RequiresCompany)]
+    [ProducesResponseType(typeof(TransferAgreementProposalOverviewResponse), 200)]
+    [HttpGet("overview")]
+    public async Task<ActionResult<TransferAgreementProposalOverviewResponse>> GetTransferAgreementProposal()
+    {
+        var user = new UserDescriptor(User);
+
+        var transferAgreements = await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(user.Subject, user.Organization!.Tin);
+        var transferAgreementProposals = await unitOfWork.TransferAgreementRepo.GetTransferAgreementProposals(user.Subject);
+
+        if (!transferAgreementProposals.Any() && !transferAgreements.Any())
+        {
+            return Ok(new TransferAgreementProposalOverviewResponse(new ()));
+        }
+
+        var transferAgreementDtos = transferAgreements
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.ReceiverTin, GetTransferAgreementStatus(x)))
+            .ToList();
+
+        var transferAgreementProposalDtos = transferAgreementProposals
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.ReceiverCompanyTin, TransferAgreementStatus.Proposal))
+            .ToList();
+
+        transferAgreementProposalDtos.AddRange(transferAgreementDtos);
+
+        return Ok(new TransferAgreementProposalOverviewResponse(transferAgreementProposalDtos));
+    }
+
+    private TransferAgreementStatus GetTransferAgreementStatus(TransferAgreement transferAgreement)
+    {
+        if(transferAgreement.StartDate < DateTimeOffset.UtcNow && transferAgreement.EndDate == null)
+        {
+            return TransferAgreementStatus.Active;
+        }
+        else if(transferAgreement.StartDate < DateTimeOffset.UtcNow && transferAgreement.EndDate > DateTimeOffset.UtcNow)
+        {
+            return TransferAgreementStatus.Active;
+        }
+
+        return TransferAgreementStatus.Inactive;
+    }
 }
