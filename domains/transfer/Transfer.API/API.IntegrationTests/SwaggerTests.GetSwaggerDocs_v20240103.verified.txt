@@ -880,7 +880,8 @@
         "enum": [
           "Active",
           "Inactive",
-          "Proposal"
+          "Proposal",
+          "ProposalExpired"
         ],
         "type": "string"
       },
