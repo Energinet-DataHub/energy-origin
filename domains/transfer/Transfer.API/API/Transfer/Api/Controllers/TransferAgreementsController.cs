@@ -311,7 +311,7 @@ public class TransferAgreementsController(
 
         if (!transferAgreementProposals.Any() && !transferAgreements.Any())
         {
-            return Ok(new TransferAgreementProposalOverviewResponse(new ()));
+            return Ok(new TransferAgreementProposalOverviewResponse(new()));
         }
 
         var transferAgreementDtos = transferAgreements
@@ -329,11 +329,11 @@ public class TransferAgreementsController(
 
     private TransferAgreementStatus GetTransferAgreementStatus(TransferAgreement transferAgreement)
     {
-        if(transferAgreement.StartDate < DateTimeOffset.UtcNow && transferAgreement.EndDate == null)
+        if (transferAgreement.StartDate < DateTimeOffset.UtcNow && transferAgreement.EndDate == null)
         {
             return TransferAgreementStatus.Active;
         }
-        else if(transferAgreement.StartDate < DateTimeOffset.UtcNow && transferAgreement.EndDate > DateTimeOffset.UtcNow)
+        else if (transferAgreement.StartDate < DateTimeOffset.UtcNow && transferAgreement.EndDate > DateTimeOffset.UtcNow)
         {
             return TransferAgreementStatus.Active;
         }

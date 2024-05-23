@@ -1,4 +1,4 @@
-﻿namespace API.Transfer.Api.Dto.Responses;
+namespace API.Transfer.Api.Dto.Responses;
 
 public enum TransferAgreementStatus
 {
