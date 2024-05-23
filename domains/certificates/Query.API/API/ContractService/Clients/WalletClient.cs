@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
@@ -109,12 +110,20 @@ public class WalletClient : IWalletClient
         client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext!.Request.Headers.Authorization!);
     }
 
-    private void ValidateOwnerAndSubjectMatch(string ownerSubject)
+    private void ValidateOwnerAndSubjectMatch(string owner)
     {
-        var user = new UserDescriptor(httpContextAccessor.HttpContext!.User);
-        var subject = user.Subject.ToString();
-        if (!ownerSubject.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
-            throw new HttpRequestException("Owner must match subject");
+        if (IdentityDescriptor.IsSupported(httpContextAccessor.HttpContext!))
+        {
+            // Does an implicit check for consent
+            _ = new IdentityDescriptor(httpContextAccessor.HttpContext!, Guid.Parse(owner));
+        }
+        else
+        {
+            var user = new UserDescriptor(httpContextAccessor.HttpContext!.User);
+            var subject = user.Subject.ToString();
+            if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+                throw new HttpRequestException("Owner must match subject");
+        }
     }
 }
 
