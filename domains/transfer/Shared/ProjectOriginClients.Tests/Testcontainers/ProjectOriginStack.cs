@@ -16,6 +16,8 @@ public class ProjectOriginStack : RegistryFixture
 
     private const int WalletHttpPort = 5000;
 
+    private const string PathBase = "/wallet-api";
+
     public ProjectOriginStack()
     {
         postgresContainer = new PostgreSqlBuilder()
@@ -36,25 +38,26 @@ public class ProjectOriginStack : RegistryFixture
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/wallet-server:0.10.3")
+                .WithImage("ghcr.io/project-origin/wallet-server:1.2.0")
                 .WithNetwork(Network)
                 .WithPortBinding(hostPort, WalletHttpPort)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://localhost:{hostPort}/")
+                .WithEnvironment("ServiceOptions__PathBase", PathBase)
                 .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
-                .WithEnvironment("RestApiOptions__PathBase", "/wallet-api")
                 .WithEnvironment("Otlp__Endpoint", "http://foo")
                 .WithEnvironment("Otlp__Enabled", "false")
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
                 .WithEnvironment("MessageBroker__Type", "InMemory")
-                .WithEnvironment("jwt__AllowAnyJwtToken", "true")
+                .WithEnvironment("auth__type", "jwt")
+                .WithEnvironment("auth__jwt__AllowAnyJwtToken", "true")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(WalletHttpPort))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
         });
     }
 
-    public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(WalletHttpPort)).Uri.ToString();
+    public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(WalletHttpPort), PathBase).Uri.ToString();
 
     public override async Task InitializeAsync()
     {
