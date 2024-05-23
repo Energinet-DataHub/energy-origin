@@ -6,5 +6,6 @@ public record TransferAgreementProposalOverviewDto(
     Guid Id,
     long StartDate,
     long? EndDate,
+    long CreatedDate,
     string? ReceiverCompanyTin,
     TransferAgreementStatus TransferAgreementStatus);
