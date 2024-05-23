@@ -88,16 +88,4 @@ public class UserDescriptor
             throw new PropertyMissingException(nameof(Organization));
         }
     }
-
-    public static bool IsSupported(HttpContext httpContext)
-    {
-        var usedAuthenticationScheme = GetUsedAuthenticationScheme(httpContext);
-        var tokenValidationScheme = AuthenticationScheme.TokenValidation;
-        return usedAuthenticationScheme == tokenValidationScheme;
-    }
-
-    private static string? GetUsedAuthenticationScheme(HttpContext httpContext)
-    {
-        return httpContext.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult?.Ticket?.AuthenticationScheme;
-    }
 }

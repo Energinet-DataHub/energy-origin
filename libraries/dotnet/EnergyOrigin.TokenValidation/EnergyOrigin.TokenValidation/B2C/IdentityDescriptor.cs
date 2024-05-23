@@ -19,7 +19,8 @@ public class IdentityDescriptor
 
         if (!OrgIds.Contains(orgId))
         {
-            throw new InvalidOperationException("IdentityDescriptor not supported");
+            httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+            httpContext.Response.WriteAsJsonAsync("");
         }
     }
 
@@ -103,9 +104,10 @@ public class IdentityDescriptor
     {
         var usedAuthenticationScheme = GetUsedAuthenticationScheme(httpContext);
         var clientCredentialsScheme = AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme;
-        var mitIdScheme = AuthenticationScheme.B2CMitICustomPolicyDAuthenticationScheme;
+        var mitIdScheme = AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme;
 
-        return usedAuthenticationScheme == clientCredentialsScheme || usedAuthenticationScheme == mitIdScheme;
+        return usedAuthenticationScheme is not null &&
+               (usedAuthenticationScheme.Contains(clientCredentialsScheme) || usedAuthenticationScheme.Contains(mitIdScheme));
     }
 
     private static string? GetUsedAuthenticationScheme(HttpContext httpContext)
