@@ -340,7 +340,7 @@ public class TransferAgreementsController(
 
     private TransferAgreementStatus GetTransferAgreementStatusFromAgreement(TransferAgreement transferAgreement)
     {
-        if (transferAgreement.StartDate < DateTimeOffset.UtcNow && transferAgreement.EndDate == null)
+        if (transferAgreement.StartDate <= DateTimeOffset.UtcNow && transferAgreement.EndDate == null)
         {
             return TransferAgreementStatus.Active;
         }
