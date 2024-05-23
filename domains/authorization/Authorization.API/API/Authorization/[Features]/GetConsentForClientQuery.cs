@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Repository;
+using API.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,8 +22,10 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
     public async Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query,
         CancellationToken cancellationToken)
     {
+        var idpClientID = new IdpClientId(query.ClientId);
+
         var result = await _clientRepository.Query()
-            .Where(x => x.IdpClientId.Value == query.ClientId)
+            .Where(x => x.IdpClientId == idpClientID)
             .Select(x => new GetConsentForClientQueryResult(query.ClientId, x.ClientType.ToString(), "someOrgName",
                 new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() },
                 "dashboard production meters certificates wallet"))

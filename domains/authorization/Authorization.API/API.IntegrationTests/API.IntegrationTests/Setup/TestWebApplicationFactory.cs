@@ -50,7 +50,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
             .B2CClientCredentialsCustomPolicyAuthenticationScheme);
         authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
-            .B2CMitICustomPolicyAuthenticationScheme);
+            .B2CMitIDCustomPolicyAuthenticationScheme);
 
         var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
@@ -59,8 +59,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         authenticationSchemeProvider.AddScheme(b2CScheme);
 
         var b2CMitIdScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitICustomPolicyAuthenticationScheme,
+            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CMitIdScheme);
 
