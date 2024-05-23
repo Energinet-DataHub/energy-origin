@@ -31,18 +31,24 @@ internal static class OidcHelper
     internal static string BuildRedirectionUri(OidcOptions oidcOptions, OidcState? oidcState)
     {
         var redirectionUri = oidcOptions.FrontendRedirectUri.AbsoluteUri;
-        if (oidcState?.RedirectionPath != null)
+        var isUriOverridden = false;
+
+        if (oidcState?.RedirectionUri != null && oidcOptions.AllowRedirection)
+        {
+            redirectionUri = oidcState.RedirectionUri;
+            isUriOverridden = true;
+        }
+
+        if (oidcState?.RedirectionPath != null && !isUriOverridden)
         {
             redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "redirectionPath", oidcState.RedirectionPath.Trim('/'));
         }
-        if (oidcOptions.AllowRedirection && oidcState?.RedirectionUri != null)
-        {
-            redirectionUri = oidcState.RedirectionUri;
-        }
+
         if (oidcState?.State != null)
         {
             redirectionUri = QueryHelpers.AddQueryString(redirectionUri, "state", oidcState.State);
         }
+
         return redirectionUri;
     }
 
