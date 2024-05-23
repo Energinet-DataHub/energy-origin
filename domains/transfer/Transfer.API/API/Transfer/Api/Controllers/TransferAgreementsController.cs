@@ -315,11 +315,11 @@ public class TransferAgreementsController(
         }
 
         var transferAgreementDtos = transferAgreements
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.ReceiverTin, GetTransferAgreementStatus(x)))
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.ReceiverTin, GetTransferAgreementStatusFromAgreement(x)))
             .ToList();
 
         var transferAgreementProposalDtos = transferAgreementProposals
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.ReceiverCompanyTin, TransferAgreementStatus.Proposal))
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.ReceiverCompanyTin, GetTransferAgreementStatusFromProposal(x)))
             .ToList();
 
         transferAgreementProposalDtos.AddRange(transferAgreementDtos);
@@ -327,7 +327,18 @@ public class TransferAgreementsController(
         return Ok(new TransferAgreementProposalOverviewResponse(transferAgreementProposalDtos));
     }
 
-    private TransferAgreementStatus GetTransferAgreementStatus(TransferAgreement transferAgreement)
+    private TransferAgreementStatus GetTransferAgreementStatusFromProposal(TransferAgreementProposal transferAgreementProposal)
+    {
+        var timespan = DateTimeOffset.UtcNow - transferAgreementProposal.CreatedAt;
+
+        return timespan.Days switch
+        {
+            >= 0 and <= 14 => TransferAgreementStatus.Proposal,
+            _ => TransferAgreementStatus.ProposalExpired
+        };
+    }
+
+    private TransferAgreementStatus GetTransferAgreementStatusFromAgreement(TransferAgreement transferAgreement)
     {
         if (transferAgreement.StartDate < DateTimeOffset.UtcNow && transferAgreement.EndDate == null)
         {

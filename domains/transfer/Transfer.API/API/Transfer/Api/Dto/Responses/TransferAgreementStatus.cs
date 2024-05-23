@@ -4,5 +4,6 @@ public enum TransferAgreementStatus
 {
     Active,
     Inactive,
-    Proposal
+    Proposal,
+    ProposalExpired
 }
