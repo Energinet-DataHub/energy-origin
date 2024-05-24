@@ -19,7 +19,8 @@ public class IdentityDescriptor
 
         if (!OrgIds.Contains(orgId))
         {
-            throw new InvalidOperationException("IdentityDescriptor not supported");
+            httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+            httpContext.Response.WriteAsJsonAsync("");
         }
     }
 

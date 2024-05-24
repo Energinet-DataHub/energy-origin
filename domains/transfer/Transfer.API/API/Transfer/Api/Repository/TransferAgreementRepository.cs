@@ -83,4 +83,11 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
             IsOverlappingTransferAgreement(a, proposal.StartDate, proposal.EndDate)
         );
     }
+
+    public async Task<List<TransferAgreementProposal>> GetTransferAgreementProposals(Guid subjectId)
+    {
+        return await context.TransferAgreementProposals
+            .Where(p => p.SenderCompanyId == subjectId)
+            .ToListAsync();
+    }
 }
