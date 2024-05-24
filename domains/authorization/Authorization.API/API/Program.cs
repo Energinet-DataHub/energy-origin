@@ -69,6 +69,7 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.AddSwagger("authorization");
 app.MapHealthChecks("/health");
 
 app.MapControllers();
