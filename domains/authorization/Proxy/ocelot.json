@@ -19,7 +19,7 @@
             ]
         },
         {
-            "DownstreamPathTemplate": "/wallet-api-docs/v1/swagger.json",
+            "DownstreamPathTemplate": "/wallet-api-docs/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
@@ -27,7 +27,7 @@
                     "Port": 5001
                 }
             ],
-            "UpstreamPathTemplate": "/wallet-api-docs/swagger.json",
+            "UpstreamPathTemplate": "/wallet-api-docs/{everything}",
             "UpstreamHttpMethod": [ "GET" ]
         }
     ],

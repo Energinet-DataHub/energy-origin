@@ -109,10 +109,10 @@ public class OcelotIntegrationTests(IntegrationTestFixture integrationFixture)
         using var wireMockHelper = new WireMockServerHelper();
 
         wireMockHelper.Server
-            .Given(Request.Create().WithPath("/wallet-api-docs/v1/swagger.json").UsingGet())
+            .Given(Request.Create().WithPath("/wallet-api-docs/20250101/swagger.json").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(HttpStatusCode.OK));
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api-docs/swagger.json");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api-docs/20250101/swagger.json");
 
         var response = await Client.SendAsync(request);
 
