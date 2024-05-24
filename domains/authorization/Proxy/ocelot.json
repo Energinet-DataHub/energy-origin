@@ -9,18 +9,6 @@
                     "Port": 5001
                 }
             ],
-            "UpstreamPathTemplate": "/wallet-api/v1/{everything}",
-            "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
-        },
-        {
-            "DownstreamPathTemplate": "/wallet-api/v1/{everything}",
-            "DownstreamScheme": "http",
-            "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 5001
-                }
-            ],
             "UpstreamPathTemplate": "/wallet-api/{everything}",
             "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
             "AddHeadersToRequest": {
