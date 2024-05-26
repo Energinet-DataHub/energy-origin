@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API.UnitTests", "Authorizat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API.IntegrationTests", "Authorization.API\API.IntegrationTests\API.IntegrationTests\API.IntegrationTests.csproj", "{72EDA1C4-26CD-4858-B195-4D0902D21522}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccessControl.API", "AccessControl.API\AccessControl.API.csproj", "{C07604B2-8E37-4627-9860-30CF34B7BEC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{72EDA1C4-26CD-4858-B195-4D0902D21522}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72EDA1C4-26CD-4858-B195-4D0902D21522}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72EDA1C4-26CD-4858-B195-4D0902D21522}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C07604B2-8E37-4627-9860-30CF34B7BEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C07604B2-8E37-4627-9860-30CF34B7BEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C07604B2-8E37-4627-9860-30CF34B7BEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C07604B2-8E37-4627-9860-30CF34B7BEC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
