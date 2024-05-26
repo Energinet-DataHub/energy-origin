@@ -1,9 +1,12 @@
+using System;
+using System.Linq;
 using AccessControl.API.Policies;
 using AccessControl.API.Swagger;
 using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -37,15 +40,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddSingleton<IAuthorizationHandler, OrganizationAccessHandler>();
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("OrganizationAccess", policy =>
     {
         policy.RequireAuthenticatedUser();
         policy.RequireClaim("org_ids");
-        policy.RequireAssertion()
-        policy.AddRequirements(new OrganizationAccessRequirement());
+
+        policy.RequireAssertion(context =>
+        {
+            if (context.Resource is not HttpContext httpContext ||
+                !Guid.TryParse(httpContext.Request.Query["organizationId"], out Guid organizationId)) return false;
+
+            var orgIdsClaim = context.User.Claims.FirstOrDefault(c => c.Type == "org_ids")?.Value;
+            var orgIds = orgIdsClaim?.Split(' ') ?? [];
+
+            return orgIds.Contains(organizationId.ToString());
+        });
     });
+
 
 
 builder.Services.AddEndpointsApiExplorer();
