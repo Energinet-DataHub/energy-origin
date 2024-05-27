@@ -5,17 +5,40 @@ using Xunit;
 
 namespace AccessControl.IntegrationTests.Controllers;
 
-public class AccessControlControllerTests(AccessControlWebApplicationFactory factory)
-    : IClassFixture<AccessControlWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class AccessControlControllerTests
 {
+    private readonly Api _api;
+    private readonly IntegrationTestFixture _integrationTestFixture;
+
+    public AccessControlControllerTests(IntegrationTestFixture integrationTestFixture)
+    {
+        _integrationTestFixture = integrationTestFixture;
+        _api = integrationTestFixture.WebAppFactory.CreateApi();
+    }
+
     [Fact]
     public async Task Decision_AuthenticatedWithValidOrgId_ReturnsOk()
     {
-        var orgId = "b63c357f-1732-4016-ba28-a9066ff9f03c";
-        var client = factory.CreateAuthenticatedClient(sub: orgId);
+        var organizationId = Guid.NewGuid();
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(orgIds: organizationId.ToString());
 
-        var response = await client.GetAsync($"/api/decision?organizationId={orgId}");
+        // Act
+        var response = await api.Decision(organizationId);
 
+        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+
+    [Fact]
+    public async Task Decision_Unauthenticated_ReturnsUnauthorized()
+    {
+        var client = new HttpClient(); // Unauthenticated client
+        var api = new Api(client);
+
+        var response = await api.Decision(Guid.NewGuid());
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

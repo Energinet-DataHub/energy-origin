@@ -1,5 +1,6 @@
 using System;
 using Asp.Versioning;
+using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace AccessControl.API.Controllers;
 
 [ApiController]
-[Route("api/decision")]
 [ApiVersion(ApiVersions.Version20230101)]
 public class AccessControlController : ControllerBase
 {
@@ -22,14 +22,17 @@ public class AccessControlController : ControllerBase
     /// <response code="400">Invalid organizationId</response>
     /// <response code="401">Unauthenticated</response>
     /// <response code="403">Unauthorized</response>
-    [HttpGet]
-    [Authorize(Policy = "OrganizationAccess")]
+    [HttpPost]
+    [Route("api/access-control/")]
+    [Authorize(Policy = Policy.B2CPolicy)]
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 401)]
     [ProducesResponseType(typeof(void), 403)]
     public IActionResult Decision([FromQuery] Guid organizationId)
     {
+        var identity = new IdentityDescriptor(HttpContext, organizationId);
+
         if (organizationId == Guid.Empty)
             return ValidationProblem("Must provide a valid organizationId as a GUID");
 

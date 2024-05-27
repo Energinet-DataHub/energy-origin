@@ -1,127 +1,127 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
+using System.Security.Cryptography.X509Certificates;
 using AccessControl.API.Controllers;
-using Asp.Versioning.ApiExplorer;
-using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Values;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
+using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace AccessControl.IntegrationTests.Setup;
 
 public class AccessControlWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
-
-    public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
-    {
-        using var scope = Services.CreateScope();
-        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
-        await withAction(provider);
-    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
-        string publicKeyPem;
-
-        using (RSA rsa = RSA.Create())
-        {
-            rsa.ImportFromPem(privateKeyPem);
-            publicKeyPem = rsa.ExportRSAPublicKeyPem();
-        }
-
-        var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
-
-        builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
-        builder.UseSetting("TokenValidation:Audience", "Users");
     }
-
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
-        using var serviceScope = host.Services.CreateScope();
-
+        ReplaceB2CAuthenticationSchemes(host);
         return host;
     }
 
-    public HttpClient CreateUnauthenticatedClient()
+    private static void ReplaceB2CAuthenticationSchemes(IHost host)
     {
-        var client = CreateClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20230101);
-        return client;
+        var authenticationSchemeProvider = host.Services.GetRequiredService<IAuthenticationSchemeProvider>();
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme
+            .B2CAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme
+            .B2CClientCredentialsCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme
+            .B2CMitIDCustomPolicyAuthenticationScheme);
+
+        var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.B2CAuthenticationScheme,
+            AuthenticationScheme.B2CAuthenticationScheme,
+            typeof(TestAuthHandler));
+        authenticationSchemeProvider.AddScheme(b2CScheme);
+
+        var b2CMitIdScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            typeof(TestAuthHandler));
+        authenticationSchemeProvider.AddScheme(b2CMitIdScheme);
+
+        var b2CClientCredentialsScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            typeof(TestAuthHandler));
+        authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
 
-    public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Producent A/S", string apiVersion = ApiVersions.Version20230101)
+    public Api CreateApi(string sub = "", string name = "", string orgIds = "", string subType = "")
     {
-        var client = CreateClient();
-        AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, cpn, apiVersion: apiVersion);
-        return client;
+        sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
+        name = string.IsNullOrEmpty(name) ? "Test Testesen" : name;
+        orgIds = string.IsNullOrEmpty(orgIds) ? Guid.NewGuid().ToString() : orgIds;
+        subType = string.IsNullOrEmpty(subType) ? "user" : subType;
+
+        return new Api(CreateAuthenticatedClient(sub, name, orgIds, subType));
     }
 
-    private HttpClient AuthenticateHttpClient(HttpClient client, string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Producent A/S", string apiVersion = ApiVersions.Version20230101)
+    private HttpClient CreateAuthenticatedClient(string sub, string name, string orgIds, string subType)
     {
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor, cpn: cpn));
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
-
-        return client;
+        var httpClient = CreateClient();
+        var token = GenerateToken(sub, name, orgIds, subType);
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20230101);
+        return httpClient;
     }
 
-    private string GenerateToken(
-        string scope = "",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
-        string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
-        string tin = "11223344",
-        string cpn = "Producent A/S",
-        string name = "Peter Producent",
-        string issuer = "demo.energioprindelse.dk",
-        string audience = "Users")
+    private string GenerateToken(string sub, string name, string orgIds, string subType)
     {
+        using RSA rsa = RSA.Create(2048 * 2);
+        var req = new CertificateRequest("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        req.CertificateExtensions.Add(
+            new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature,
+                true));
+        var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
 
-        var claims = new Dictionary<string, object>()
+        var signingCredentials = new SigningCredentials(new X509SecurityKey(cert), SecurityAlgorithms.RsaSha256);
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var identity = new ClaimsIdentity(new List<Claim>
         {
-            { UserClaimName.Scope, scope },
-            { UserClaimName.ActorLegacy, actor },
-            { UserClaimName.Actor, actor },
-            { UserClaimName.Tin, tin },
-            { UserClaimName.OrganizationName, cpn },
-            { JwtRegisteredClaimNames.Name, name },
-            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
-            { UserClaimName.AllowCprLookup, "false"},
-            { UserClaimName.AccessToken, ""},
-            { UserClaimName.IdentityToken, ""},
-            { UserClaimName.ProviderKeys, ""},
-            { UserClaimName.OrganizationId, sub},
-            { "org_ids", new List<string> { "b63c357f-1732-4016-ba28-a9066ff9f03c b558feb2-78c0-409d-9b65-f57f2f8aa2d7" }},
-            { UserClaimName.MatchedRoles, ""},
-            { UserClaimName.Roles, ""},
-            { UserClaimName.AssignedRoles, ""}
+            new("sub", sub),
+            new("name", name),
+            new("org_ids", orgIds),
+            new("sub_type", subType),
+        });
+        var securityTokenDescriptor = new SecurityTokenDescriptor
+        {
+            Audience = "audience",
+            Issuer = "issuer",
+            NotBefore = DateTime.Now.AddHours(-1),
+            Expires = DateTime.Now.AddHours(1),
+            SigningCredentials = signingCredentials,
+            Subject = identity
         };
 
-        var signedJwtToken = new TokenSigner(PrivateKey).Sign(
-            sub,
-            name,
-            issuer,
-            audience,
-            null,
-            60,
-            claims
-        );
-
-        return signedJwtToken;
+        var token = tokenHandler.CreateToken(securityTokenDescriptor);
+        var encodedAccessToken = tokenHandler.WriteToken(token);
+        return encodedAccessToken!;
     }
+
+    public Task InitializeAsync()
+    {
+        Server.Should().NotBeNull();
+        return Task.CompletedTask;
+    }
+
+    public new async Task DisposeAsync()
+    {
+        await base.DisposeAsync();
+    }
+}
+
+public static class ServiceCollectionExtensions
+{
 }
