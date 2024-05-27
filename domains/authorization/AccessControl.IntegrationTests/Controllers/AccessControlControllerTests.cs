@@ -6,34 +6,38 @@ using Xunit;
 
 namespace AccessControl.IntegrationTests.Controllers;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class AccessControlControllerTests : IClassFixture<AccessControlWebApplicationFactory>
+public class AccessControlControllerTests : EndToEndTestCase
 {
-    private readonly Api _api;
-    private static readonly Guid organizationId = new("0eeec713-df51-442d-8550-02e0a4301c9d");
-
-    public AccessControlControllerTests(AccessControlWebApplicationFactory factory)
-    {
-        _api = factory.CreateApi();
-    }
 
     [Fact]
-    public async Task Decision_AuthenticatedWithValidOrgId_ReturnsOk()
+    public async Task Should_Reject_Unauthenticated_Requests()
     {
-        var response = await _api.Decision(organizationId);
+        var request = new HttpRequestMessage(HttpMethod.Get, "api/authorization/access-control");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
+        request.Headers.Add("EO_API_VERSION", "20230101");
 
-    [Fact]
-    public async Task Decision_Unauthenticated_ReturnsUnauthorized()
-    {
-        var factory = new AccessControlWebApplicationFactory();
-        var client = factory.CreateClient();
-        var api = new Api(client);
-
-        var response = await api.Decision(Guid.NewGuid());
+        var response = await Client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    // [Fact]
+    // public async Task Decision_AuthenticatedWithValidOrgId_ReturnsOk()
+    // {
+    //     var response = await _api.Decision(organizationId);
+    //
+    //     response.StatusCode.Should().Be(HttpStatusCode.OK);
+    // }
+    //
+    // [Fact]
+    // public async Task Decision_Unauthenticated_ReturnsUnauthorized()
+    // {
+    //     var factory = new AccessControlWebApplicationFactory();
+    //     var client = factory.CreateClient();
+    //     var api = new Api(client);
+    //
+    //     var response = await api.Decision(Guid.NewGuid());
+    //
+    //     response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    // }
 }

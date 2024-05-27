@@ -1,5 +1,4 @@
 using AccessControl.API.Configuration;
-using AccessControl.API.Swagger;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
@@ -8,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddProblemDetails();
+
 builder.Services.AddControllersWithEnumsAsStrings();
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
@@ -39,9 +38,6 @@ builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddVersioningToApi();
-builder.Services.AddSwagger("access-control");
-builder.Services.AddSwaggerGen(c =>
-    c.DocumentFilter<ProblemDetailsDocumentFilter>());
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
@@ -49,8 +45,6 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.AddSwagger("access-control");
 
 app.MapControllers();
 

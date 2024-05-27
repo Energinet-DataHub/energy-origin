@@ -5,8 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <DocumentationFile>documentation.xml</DocumentationFile>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <NoWarn>1701;1702;1591</NoWarn>
     </PropertyGroup>
@@ -17,12 +16,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.5" />
         <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.2" />
         <PackageReference Include="EnergyOrigin.Setup" Version="4.2.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.2" />
     </ItemGroup>
 
 </Project>
