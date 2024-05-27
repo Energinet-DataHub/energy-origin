@@ -1,12 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using AccessControl.API.Policies;
 using AccessControl.API.Swagger;
 using EnergyOrigin.Setup;
+using EnergyOrigin.TokenValidation.Options;
+using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -15,30 +17,37 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
 
-var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-    builder.Configuration["AzureAdB2C:WellKnownUrl"],
-    new OpenIdConnectConfigurationRetriever(),
-    new HttpDocumentRetriever());
+// var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+//     builder.Configuration["AzureAdB2C:WellKnownUrl"],
+//     new OpenIdConnectConfigurationRetriever(),
+//     new HttpDocumentRetriever());
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = builder.Configuration["AzureAdB2C:Authority"];
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["AzureAdB2C:Issuer"],
-            ValidateAudience = true,
-            ValidAudiences = new[] { builder.Configuration["AzureAdB2C:Audience"] },
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
-            {
-                var configuration = configurationManager.GetConfigurationAsync().Result;
-                return configuration.SigningKeys;
-            }
-        };
-    });
+// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//     .AddJwtBearer(options =>
+//     {
+//         options.Authority = builder.Configuration["AzureAdB2C:Authority"];
+//         options.TokenValidationParameters = new TokenValidationParameters
+//         {
+//             ValidateIssuer = true,
+//             ValidIssuer = builder.Configuration["AzureAdB2C:Issuer"],
+//             ValidateAudience = true,
+//             ValidAudiences = new[] { builder.Configuration["AzureAdB2C:Audience"] },
+//             ValidateLifetime = true,
+//             ValidateIssuerSigningKey = true,
+//             IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
+//             {
+//                 var configuration = configurationManager.GetConfigurationAsync().Result;
+//                 return configuration.SigningKeys;
+//             }
+//         };
+//     });
+
+var tokenValidationOptions =
+    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
+    .ValidateDataAnnotations().ValidateOnStart();
+
+builder.AddTokenValidation(tokenValidationOptions);
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("OrganizationAccess", policy =>
@@ -52,13 +61,11 @@ builder.Services.AddAuthorizationBuilder()
                 !Guid.TryParse(httpContext.Request.Query["organizationId"], out Guid organizationId)) return false;
 
             var orgIdsClaim = context.User.Claims.FirstOrDefault(c => c.Type == "org_ids")?.Value;
-            var orgIds = orgIdsClaim?.Split(' ') ?? [];
+            var orgIds = orgIdsClaim != null ? orgIdsClaim.Split(' ').Select(Guid.Parse).ToList() : new List<Guid>();
 
-            return orgIds.Contains(organizationId.ToString());
+            return orgIds.Contains(organizationId);
         });
     });
-
-
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddVersioningToApi();
@@ -76,3 +83,5 @@ app.AddSwagger("access-control");
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
