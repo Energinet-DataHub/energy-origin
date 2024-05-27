@@ -1,7 +1,6 @@
 using System.Net;
 using AccessControl.IntegrationTests.Setup;
 using FluentAssertions;
-using Xunit;
 
 namespace AccessControl.IntegrationTests.Controllers;
 
@@ -23,10 +22,8 @@ public class AccessControlControllerTests
         var organizationId = Guid.NewGuid();
         var api = _integrationTestFixture.WebAppFactory.CreateApi(orgIds: organizationId.ToString());
 
-        // Act
         var response = await api.Decision(organizationId);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -34,7 +31,7 @@ public class AccessControlControllerTests
     [Fact]
     public async Task Decision_Unauthenticated_ReturnsUnauthorized()
     {
-        var client = new HttpClient(); // Unauthenticated client
+        var client = new HttpClient();
         var api = new Api(client);
 
         var response = await api.Decision(Guid.NewGuid());

@@ -29,31 +29,6 @@ builder.Services.AddOpenTelemetryMetricsAndTracing("AccessControl.API", otlpOpti
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-// var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-//     builder.Configuration["AzureAdB2C:WellKnownUrl"],
-//     new OpenIdConnectConfigurationRetriever(),
-//     new HttpDocumentRetriever());
-
-// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//     .AddJwtBearer(options =>
-//     {
-//         options.Authority = builder.Configuration["AzureAdB2C:Authority"];
-//         options.TokenValidationParameters = new TokenValidationParameters
-//         {
-//             ValidateIssuer = true,
-//             ValidIssuer = builder.Configuration["AzureAdB2C:Issuer"],
-//             ValidateAudience = true,
-//             ValidAudiences = new[] { builder.Configuration["AzureAdB2C:Audience"] },
-//             ValidateLifetime = true,
-//             ValidateIssuerSigningKey = true,
-//             IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
-//             {
-//                 var configuration = configurationManager.GetConfigurationAsync().Result;
-//                 return configuration.SigningKeys;
-//             }
-//         };
-//     });
-
 var tokenValidationOptions =
     builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
@@ -62,24 +37,6 @@ var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COpti
 builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
-
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("OrganizationAccess", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-        policy.RequireClaim("org_ids");
-
-        policy.RequireAssertion(context =>
-        {
-            if (context.Resource is not HttpContext httpContext ||
-                !Guid.TryParse(httpContext.Request.Query["organizationId"], out Guid organizationId)) return false;
-
-            var orgIdsClaim = context.User.Claims.FirstOrDefault(c => c.Type == "org_ids")?.Value;
-            var orgIds = orgIdsClaim != null ? orgIdsClaim.Split(' ').Select(Guid.Parse).ToList() : new List<Guid>();
-
-            return orgIds.Contains(organizationId);
-        });
-    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddVersioningToApi();
