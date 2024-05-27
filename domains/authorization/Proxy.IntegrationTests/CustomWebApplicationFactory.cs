@@ -18,12 +18,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((hostingContext, config) =>
-        {
-            config.Sources.Clear();
-            config.AddJsonFile("appsettings.Test.json", optional: false, reloadOnChange: true);
-        });
-
         builder.ConfigureServices(services =>
         {
             var descriptor = services.SingleOrDefault(

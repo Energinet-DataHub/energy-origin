@@ -6,21 +6,26 @@ using WireMock.ResponseBuilders;
 
 namespace Proxy.IntegrationTests;
 
-public class ProxyIntegrationTests(IntegrationTestFixture integrationFixture)
-    : IClassFixture<IntegrationTestFixture>
+public class ProxyIntegrationTests : IClassFixture<IntegrationTestFixture>
 {
-    private HttpClient Client => integrationFixture.Client ?? throw new InvalidOperationException("HttpClient is not initialized.");
+    private readonly IntegrationTestFixture _fixture;
+    private HttpClient Client => _fixture.Client ?? throw new InvalidOperationException("HttpClient is not initialized.");
+
+    public ProxyIntegrationTests(IntegrationTestFixture fixture)
+    {
+        _fixture = fixture;
+    }
 
     [Fact]
-    public async Task Ocelot_Forwards_Request_To_Downstream_With_Version_Header()
+    public async Task Proxy_Forwards_Request_To_Downstream_With_Version_Header()
     {
         using var wireMockHelper = new WireMockServerHelper();
 
         wireMockHelper.Server
-            .Given(Request.Create().WithPath("/wallet-api/v1/test").UsingGet())
+            .Given(Request.Create().WithPath("/v1/certificates").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(200));
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api/test");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
         request.Headers.Add("EO_API_VERSION", ApiVersions.Version20250101);
 
         var response = await Client.SendAsync(request);
@@ -29,9 +34,9 @@ public class ProxyIntegrationTests(IntegrationTestFixture integrationFixture)
     }
 
     [Fact]
-    public async Task Ocelot_Returns_Bad_Gateway_Without_Downstream()
+    public async Task Proxy_Returns_Bad_Gateway_Without_Downstream()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api/test");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
         request.Headers.Add("EO_API_VERSION", ApiVersions.Version20250101);
 
         var response = await Client.SendAsync(request);
@@ -40,7 +45,7 @@ public class ProxyIntegrationTests(IntegrationTestFixture integrationFixture)
     }
 
     [Fact]
-    public async Task Ocelot_Returns_Not_Found_For_Unmatched_Route()
+    public async Task Proxy_Returns_Not_Found_For_Unmatched_Route()
     {
         var request = new HttpRequestMessage(HttpMethod.Get, "/unknown/path");
         request.Headers.Add("EO_API_VERSION", ApiVersions.Version20250101);
@@ -51,9 +56,9 @@ public class ProxyIntegrationTests(IntegrationTestFixture integrationFixture)
     }
 
     [Fact]
-    public async Task Ocelot_Returns_BadRequest_If_Header_Missing()
+    public async Task Proxy_Returns_BadRequest_If_Header_Missing()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api/test");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
 
         var response = await Client.SendAsync(request);
 
@@ -61,9 +66,9 @@ public class ProxyIntegrationTests(IntegrationTestFixture integrationFixture)
     }
 
     [Fact]
-    public async Task Ocelot_Returns_BadRequest_If_Invalid_Header_Version()
+    public async Task Proxy_Returns_BadRequest_If_Invalid_Header_Version()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api/test");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
         request.Headers.Add("EO_API_VERSION", "13371337");
 
         var response = await Client.SendAsync(request);
@@ -87,15 +92,15 @@ public class ProxyIntegrationTests(IntegrationTestFixture integrationFixture)
     [InlineData(HttpStatusCode.NotImplemented)]
     [InlineData(HttpStatusCode.BadGateway)]
     [InlineData(HttpStatusCode.ServiceUnavailable)]
-    public async Task Ocelot_Forwards_Downstream_Response_Back_To_Client(HttpStatusCode statusCode)
+    public async Task Proxy_Forwards_Downstream_Response_Back_To_Client(HttpStatusCode statusCode)
     {
         using var wireMockHelper = new WireMockServerHelper();
 
         wireMockHelper.Server
-            .Given(Request.Create().WithPath("/wallet-api/v1/certificates").UsingGet())
+            .Given(Request.Create().WithPath("/v1/certificates").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(statusCode));
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api/certificates");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
         request.Headers.Add("EO_API_VERSION", "20250101");
 
         var response = await Client.SendAsync(request);
@@ -104,7 +109,7 @@ public class ProxyIntegrationTests(IntegrationTestFixture integrationFixture)
     }
 
     [Fact]
-    public async Task Ocelot_Redirects_To_Downstream_Swagger_Endpoint()
+    public async Task Proxy_Redirects_To_Downstream_Swagger_Endpoint()
     {
         using var wireMockHelper = new WireMockServerHelper();
 
