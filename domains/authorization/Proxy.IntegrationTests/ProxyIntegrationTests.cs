@@ -6,7 +6,7 @@ using WireMock.ResponseBuilders;
 
 namespace Proxy.IntegrationTests;
 
-public class OcelotIntegrationTests(IntegrationTestFixture integrationFixture)
+public class ProxyIntegrationTests(IntegrationTestFixture integrationFixture)
     : IClassFixture<IntegrationTestFixture>
 {
     private HttpClient Client => integrationFixture.Client ?? throw new InvalidOperationException("HttpClient is not initialized.");
@@ -92,10 +92,10 @@ public class OcelotIntegrationTests(IntegrationTestFixture integrationFixture)
         using var wireMockHelper = new WireMockServerHelper();
 
         wireMockHelper.Server
-            .Given(Request.Create().WithPath("/wallet-api/v1/test").UsingGet())
+            .Given(Request.Create().WithPath("/wallet-api/v1/certificates").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(statusCode));
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api/test");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api/certificates");
         request.Headers.Add("EO_API_VERSION", "20250101");
 
         var response = await Client.SendAsync(request);
