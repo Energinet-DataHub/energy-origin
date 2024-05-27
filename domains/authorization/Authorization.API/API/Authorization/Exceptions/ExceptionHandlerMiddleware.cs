@@ -45,4 +45,16 @@ public class ExceptionHandlerMiddleware
     }
 }
 
-public record Error(HttpStatusCode StatusCode, String Description);
+public class Error
+{
+    public string Status { get; private set; }
+    public int StatusCode { get; private set; }
+    public string Description { get; private set; }
+
+    public Error(HttpStatusCode statusCode, string description)
+    {
+        Status = statusCode.ToString();
+        StatusCode = (int)statusCode;
+        Description = description;
+    }
+}
