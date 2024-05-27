@@ -2,18 +2,15 @@
 
 public class IntegrationTestFixture : IDisposable
 {
-    public HttpClient Client { get; private set; }
-    private readonly CustomWebApplicationFactory _factory;
+    public CustomWebApplicationFactory Factory { get; private set; }
 
     public IntegrationTestFixture()
     {
-        _factory = new CustomWebApplicationFactory();
-
-        Client = _factory.CreateAuthenticatedClient();
+        Factory = new CustomWebApplicationFactory();
     }
 
     public void Dispose()
     {
-        Client?.Dispose();
+
     }
 }

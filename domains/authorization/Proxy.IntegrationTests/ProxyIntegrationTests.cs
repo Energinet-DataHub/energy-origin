@@ -9,11 +9,15 @@ namespace Proxy.IntegrationTests;
 public class ProxyIntegrationTests : IClassFixture<IntegrationTestFixture>
 {
     private readonly IntegrationTestFixture _fixture;
-    private HttpClient Client => _fixture.Client ?? throw new InvalidOperationException("HttpClient is not initialized.");
 
     public ProxyIntegrationTests(IntegrationTestFixture fixture)
     {
         _fixture = fixture;
+    }
+
+    private HttpClient CreateClientWithOrgIds(List<string> orgIds)
+    {
+        return _fixture.Factory.CreateAuthenticatedClient(orgIds: orgIds);
     }
 
     [Fact]
@@ -25,10 +29,14 @@ public class ProxyIntegrationTests : IClassFixture<IntegrationTestFixture>
             .Given(Request.Create().WithPath("/v1/certificates").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(200));
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
+        var orgIds = new List<string> { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        var client = CreateClientWithOrgIds(orgIds);
+        var organizationId = orgIds[0];
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
         request.Headers.Add("EO_API_VERSION", ApiVersions.Version20250101);
 
-        var response = await Client.SendAsync(request);
+        var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -36,10 +44,14 @@ public class ProxyIntegrationTests : IClassFixture<IntegrationTestFixture>
     [Fact]
     public async Task Proxy_Returns_Bad_Gateway_Without_Downstream()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var client = CreateClientWithOrgIds(orgIds);
+        var organizationId = orgIds[0];
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
         request.Headers.Add("EO_API_VERSION", ApiVersions.Version20250101);
 
-        var response = await Client.SendAsync(request);
+        var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadGateway);
     }
@@ -47,10 +59,14 @@ public class ProxyIntegrationTests : IClassFixture<IntegrationTestFixture>
     [Fact]
     public async Task Proxy_Returns_Not_Found_For_Unmatched_Route()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "/unknown/path");
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var client = CreateClientWithOrgIds(orgIds);
+        var organizationId = orgIds[0];
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/unknown/path?organizationId={organizationId}");
         request.Headers.Add("EO_API_VERSION", ApiVersions.Version20250101);
 
-        var response = await Client.SendAsync(request);
+        var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -58,9 +74,13 @@ public class ProxyIntegrationTests : IClassFixture<IntegrationTestFixture>
     [Fact]
     public async Task Proxy_Returns_BadRequest_If_Header_Missing()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var client = CreateClientWithOrgIds(orgIds);
+        var organizationId = orgIds[0];
 
-        var response = await Client.SendAsync(request);
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
+
+        var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -68,10 +88,14 @@ public class ProxyIntegrationTests : IClassFixture<IntegrationTestFixture>
     [Fact]
     public async Task Proxy_Returns_BadRequest_If_Invalid_Header_Version()
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var client = CreateClientWithOrgIds(orgIds);
+        var organizationId = orgIds[0];
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
         request.Headers.Add("EO_API_VERSION", "13371337");
 
-        var response = await Client.SendAsync(request);
+        var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -100,10 +124,14 @@ public class ProxyIntegrationTests : IClassFixture<IntegrationTestFixture>
             .Given(Request.Create().WithPath("/v1/certificates").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(statusCode));
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/certificates");
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var client = CreateClientWithOrgIds(orgIds);
+        var organizationId = orgIds[0];
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
         request.Headers.Add("EO_API_VERSION", "20250101");
 
-        var response = await Client.SendAsync(request);
+        var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(statusCode);
     }
@@ -117,9 +145,13 @@ public class ProxyIntegrationTests : IClassFixture<IntegrationTestFixture>
             .Given(Request.Create().WithPath("/wallet-api-docs/20250101/swagger.json").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(HttpStatusCode.OK));
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/wallet-api-docs/20250101/swagger.json");
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var client = CreateClientWithOrgIds(orgIds);
+        var organizationId = orgIds[0];
 
-        var response = await Client.SendAsync(request);
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api-docs/20250101/swagger.json?organizationId={organizationId}");
+
+        var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }

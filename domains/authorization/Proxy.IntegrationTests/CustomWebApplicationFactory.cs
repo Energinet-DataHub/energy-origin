@@ -3,11 +3,9 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
@@ -15,7 +13,6 @@ namespace Proxy.IntegrationTests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
@@ -27,8 +24,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            services.AddAuthentication("Development")
-                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Development", options => {});
+            services.AddAuthentication("Test")
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", options => {});
         });
     }
 
@@ -37,6 +34,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
         name = string.IsNullOrEmpty(name) ? "Test Testesen" : name;
         subType = string.IsNullOrEmpty(subType) ? "user" : subType;
+        orgIds = orgIds ?? new List<string> { Guid.NewGuid().ToString() };
 
         var client = CreateClient();
         var token = GenerateToken(sub, name, orgIds, subType);
@@ -54,20 +52,20 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         var signingCredentials = new SigningCredentials(new X509SecurityKey(cert), SecurityAlgorithms.RsaSha256);
         var tokenHandler = new JwtSecurityTokenHandler();
 
-        var orgIdsJson = JsonSerializer.Serialize(orgIds ?? []);
+        var orgIdsString = string.Join(" ", orgIds ?? new List<string>());
 
         var identity = new ClaimsIdentity(new List<Claim>
         {
             new("sub", sub),
             new("name", name),
-            new("org_ids", orgIdsJson),
+            new("org_ids", orgIdsString),
             new("sub_type", subType),
         });
 
         var securityTokenDescriptor = new SecurityTokenDescriptor
         {
-            Audience = "audience",
-            Issuer = "issuer",
+            Audience = "f00b9b4d-3c59-4c40-b209-2ef87e509f54",
+            Issuer = "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0",
             NotBefore = DateTime.Now,
             Expires = DateTime.Now.AddHours(1),
             SigningCredentials = signingCredentials,
