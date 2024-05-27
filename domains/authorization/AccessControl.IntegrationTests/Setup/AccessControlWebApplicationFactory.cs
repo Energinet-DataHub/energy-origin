@@ -26,6 +26,7 @@ public class AccessControlWebApplicationFactory : WebApplicationFactory<Program>
     {
         var host = base.CreateHost(builder);
         ReplaceB2CAuthenticationSchemes(host);
+
         return host;
     }
 

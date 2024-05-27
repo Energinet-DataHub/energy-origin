@@ -9,6 +9,7 @@ namespace AccessControl.API.Controllers;
 
 [ApiController]
 [ApiVersion(ApiVersions.Version20230101)]
+[Route("api/authorization/access-control")]
 public class AccessControlController : ControllerBase
 {
     /// <summary>
@@ -22,8 +23,7 @@ public class AccessControlController : ControllerBase
     /// <response code="400">Invalid organizationId</response>
     /// <response code="401">Unauthenticated</response>
     /// <response code="403">Unauthorized</response>
-    [HttpPost]
-    [Route("api/access-control/")]
+    [HttpGet]
     [Authorize(Policy = Policy.B2CPolicy)]
     public IActionResult Decision([FromQuery] Guid organizationId)
     {
