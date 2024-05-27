@@ -25,10 +25,6 @@ public class AccessControlController : ControllerBase
     [HttpPost]
     [Route("api/access-control/")]
     [Authorize(Policy = Policy.B2CPolicy)]
-    [ProducesResponseType(typeof(void), 200)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
-    [ProducesResponseType(typeof(void), 401)]
-    [ProducesResponseType(typeof(void), 403)]
     public IActionResult Decision([FromQuery] Guid organizationId)
     {
         var identity = new IdentityDescriptor(HttpContext, organizationId);

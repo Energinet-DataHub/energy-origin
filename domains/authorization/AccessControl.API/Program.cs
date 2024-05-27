@@ -1,23 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using AccessControl.API.Configuration;
 using AccessControl.API.Swagger;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
+builder.Services.AddControllersWithEnumsAsStrings();
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
