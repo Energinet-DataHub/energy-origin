@@ -7,7 +7,6 @@ using API.ContractService;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using Asp.Versioning;
-using DataContext.ValueObjects;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -48,10 +47,9 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-
         var result = await service.Create(
             new CreateContracts([createContract]),
-            user,
+            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
             cancellationToken);
 
         return result switch
@@ -93,7 +91,7 @@ public class ContractsController : ControllerBase
 
         var result = await service.Create(
             createContracts,
-            user,
+            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
             cancellationToken);
 
         return result switch
@@ -119,9 +117,9 @@ public class ContractsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
+        var meteringPointOwner = user.Subject;
 
-        var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
+        var contract = await service.GetById(id, new List<Guid> { meteringPointOwner }, cancellationToken);
 
         return contract == null
             ? NotFound()
@@ -139,7 +137,7 @@ public class ContractsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
+        var meteringPointOwner = user.Subject;
 
         var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
 
@@ -179,7 +177,7 @@ public class ContractsController : ControllerBase
                 EndDate = editContractEndDate.EndDate,
                 Id = id
             }]),
-            user,
+            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
             cancellationToken);
 
         return result switch
@@ -222,7 +220,7 @@ public class ContractsController : ControllerBase
 
         var result = await service.SetEndDate(
             editContracts,
-            user,
+            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
             cancellationToken);
 
         return result switch

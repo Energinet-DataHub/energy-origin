@@ -1,5 +1,8 @@
 using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using API.Authorization.Exceptions;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,29 +13,32 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
 {
     protected readonly ApplicationDbContext Context = context ?? throw new ArgumentNullException(nameof(context));
 
-    public async Task<T> GetAsync(Guid id)
+    public async Task<T> GetAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await Context.Set<T>().FindAsync(id) ?? throw new EntityNotFoundException(id, typeof(T).Name);
+        return await Context.Set<T>().FindAsync(id, cancellationToken) ??
+               throw new EntityNotFoundException(id.ToString(), typeof(T).Name);
     }
 
-    public async Task AddAsync(T entity)
+    public async Task AddAsync(T entity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(entity);
-        await Context.Set<T>().AddAsync(entity);
+        await Context.Set<T>().AddAsync(entity, cancellationToken);
     }
 
-    public Task RemoveAsync(T entity)
+    public void Remove(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Set<T>().Remove(entity);
-        return Task.CompletedTask;
-
     }
 
-    public Task UpdateAsync(T entity)
+    public void Update(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Entry(entity).State = EntityState.Modified;
-        return Task.CompletedTask;
+    }
+
+    public IQueryable<T> Query()
+    {
+        return Context.Set<T>().AsQueryable();
     }
 }

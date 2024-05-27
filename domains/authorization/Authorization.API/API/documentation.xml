@@ -14,6 +14,21 @@
             Retreives Authorization Model.
             </summary>
         </member>
+        <member name="M:API.Authorization.Controllers.ClientController.GetClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},System.Guid)">
+            <summary>
+            Retreives Client.
+            </summary>
+        </member>
+        <member name="M:API.Authorization.Controllers.ConsentController.GrantConsent(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},API.Authorization.Controllers.GrantConsentRequest)">
+            <summary>
+            Grants consent.
+            </summary>
+        </member>
+        <member name="M:API.Authorization.Controllers.ConsentController.GetConsent(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},System.Guid)">
+            <summary>
+            Get consent from a specific Client.
+            </summary>
+        </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
         </member>

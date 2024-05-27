@@ -24,22 +24,15 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.Affiliation", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("UserId", "OrganizationId");
 
                     b.HasIndex("OrganizationId");
-
-                    b.HasIndex("UserId", "OrganizationId")
-                        .IsUnique();
 
                     b.ToTable("Affiliations");
                 });
@@ -50,17 +43,19 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("ClientType")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("IdpClientId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpClientId");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Name");
+                        .HasColumnType("text");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
+                    b.Property<string>("RedirectUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -72,20 +67,16 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.Consent", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ClientId")
+                    b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("ConsentDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("ClientId", "OrganizationId");
 
                     b.HasIndex("OrganizationId");
 
@@ -101,28 +92,15 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("IdpId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpId");
-
-                    b.Property<Guid>("IdpOrganizationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpOrganizationId");
-
-                    b.Property<string>("OrganizationName")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("OrganizationName");
+                        .HasColumnType("text");
 
                     b.Property<string>("Tin")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Tin");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IdpOrganizationId")
-                        .IsUnique();
 
                     b.ToTable("Organizations");
                 });
@@ -133,18 +111,12 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("IdpId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpId");
-
                     b.Property<Guid>("IdpUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("IdpUserId");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Name");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
