@@ -1,4 +1,4 @@
-﻿using WireMock.Server;
+using WireMock.Server;
 
 namespace Proxy.IntegrationTests.Setup
 {

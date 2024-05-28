@@ -1,4 +1,4 @@
-﻿using Proxy.IntegrationTests.Swagger;
+using Proxy.IntegrationTests.Swagger;
 
 namespace Proxy.IntegrationTests.Setup;
 

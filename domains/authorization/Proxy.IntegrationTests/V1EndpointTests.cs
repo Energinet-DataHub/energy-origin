@@ -13,6 +13,11 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
         return fixture.Factory.CreateAuthenticatedClient(orgIds: orgIds);
     }
 
+    private HttpClient CreateClientWithOrgAsSub(string sub)
+    {
+        return fixture.Factory.CreateAuthenticatedClient(sub: sub);
+    }
+
     [Theory]
     [InlineData("GET", "/v1/wallets")]
     [InlineData("GET", "/v1/wallets/{walletId}")]
@@ -93,8 +98,6 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-
-    // TODO: V1 ENDPOINTS, DO NOT GET WALLETOWNER
     [Theory]
     [InlineData("GET", "/v1/wallets")]
     [InlineData("GET", "/v1/wallets/{walletId}")]
@@ -104,7 +107,7 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
     [InlineData("GET", "/v1/aggregate-claims")]
     [InlineData("GET", "/v1/transfers")]
     [InlineData("GET", "/v1/aggregate-transfers")]
-    public async Task Wallet_Receives_WalletOwnerHeader_Through_V1_Endpoints(string method, string v1ProxyEndpoint)
+    public async Task GivenOldAuth_WhenV1EndpointsAreUsed_ThenAppendSubClaimAsWalletOwnerHeader(string method, string v1ProxyEndpoint)
     {
         using var wireMockHelper = new ProxyWireMockServerHelper();
 
@@ -117,9 +120,15 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 
         wireMockHelper.Server
             .Given(requestBuilder)
-            .RespondWith(Response.Create().WithStatusCode(200).WithHeader("wallet-owner", organizationId));
+            .RespondWith(
+                Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "text/plain")
+                    .WithBody("{{request.headers.wallet-owner}}")
+                    .WithTransformer()
+            );
 
-        var client = CreateClientWithOrgIds(orgIds);
+        var client = CreateClientWithOrgAsSub(sub: organizationId);
 
         var queryParameters = "";
         if (v1ProxyEndpoint.StartsWith("/v1/aggregate-"))
@@ -134,20 +143,21 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var walletOwnerHeader = response.Headers.GetValues("wallet-owner").FirstOrDefault();
-        walletOwnerHeader.Should().Be(organizationId);
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        responseContent.Should().Be(organizationId);
     }
 
     [Theory]
     [InlineData("GET", "/wallets")]
-// [InlineData("GET", "/wallets/{walletId}")]
+    // [InlineData("GET", "/wallets/{walletId}")]
     [InlineData("GET", "/certificates")]
     [InlineData("GET", "/aggregate-certificates")]
     [InlineData("GET", "/claims")]
     [InlineData("GET", "/aggregate-claims")]
     [InlineData("GET", "/transfers")]
     [InlineData("GET", "/aggregate-transfers")]
-    public async Task Wallet_Receives_WalletOwnerHeader_Through_V20250101_Endpoints(string method, string v2025ProxyEndpoint)
+    public async Task GivenB2C_WhenV20250101EndpointsAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string method, string v2025ProxyEndpoint)
     {
         using var wireMockHelper = new ProxyWireMockServerHelper();
 
@@ -163,7 +173,13 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 
         wireMockHelper.Server
             .Given(requestBuilder)
-            .RespondWith(Response.Create().WithStatusCode(200).WithHeader("wallet-owner", organizationId));
+            .RespondWith(
+                Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "text/plain")
+                    .WithBody("{{request.headers.wallet-owner}}")
+                    .WithTransformer()
+            );
 
         var client = CreateClientWithOrgIds(orgIds);
 
@@ -180,10 +196,8 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var walletOwnerHeader = response.Headers.GetValues("wallet-owner").FirstOrDefault();
-        walletOwnerHeader.Should().Be(organizationId);
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        responseContent.Should().Be(organizationId);
     }
 }
-
-
-

@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -15,13 +15,6 @@ namespace Proxy.IntegrationTests.Setup;
 
 public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
 {
-    public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
-    {
-        using var scope = Services.CreateScope();
-        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
-        await withAction(provider);
-    }
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Proxy:WalletBaseUrl", "http://localhost:5001");
@@ -36,11 +29,11 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
 
 
             services.AddAuthentication("Test")
-                .AddScheme<AuthenticationSchemeOptions, ProxyTestAuthHandler>("Test", _ => {});
+                .AddScheme<AuthenticationSchemeOptions, ProxyTestAuthHandler>("Test", _ => { });
         });
     }
 
-       protected override IHost CreateHost(IHostBuilder builder)
+    protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
         ReplaceB2CAuthenticationSchemes(host);

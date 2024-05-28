@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Testcontainers.RabbitMq;
 using Xunit;
