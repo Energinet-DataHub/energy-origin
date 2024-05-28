@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
@@ -22,7 +23,21 @@ builder.Services.AddSwaggerGen(c =>
     c.DocumentFilter<WalletTagDocumentFilter>();
 });
 
-builder.Services.AddVersioningToApi();
+builder.Services.AddApiVersioning(options =>
+    {
+        options.AssumeDefaultVersionWhenUnspecified = false;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = ApiVersionReader.Combine(
+            new HeaderApiVersionReader("EO_API_VERSION"),
+            new UrlSegmentApiVersionReader()
+        );
+    })
+    .AddMvc()
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
 
 builder.Services.AddHttpClient("Proxy", options =>
 {
@@ -67,6 +82,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapSwagger();
 
 app.Run();
 

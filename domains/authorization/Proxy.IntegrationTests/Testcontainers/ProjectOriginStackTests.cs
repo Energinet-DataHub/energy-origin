@@ -1,9 +1,8 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
-using Proxy.IntegrationTests.Testcontainers;
 
-namespace Proxy.IntegrationTests;
+namespace Proxy.IntegrationTests.Testcontainers;
 
 public class ProjectOriginStackTests(ProjectOriginStackFixture fixture) : IClassFixture<ProjectOriginStackFixture>
 {

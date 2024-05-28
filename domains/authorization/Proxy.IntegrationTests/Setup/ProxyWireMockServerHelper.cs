@@ -1,8 +1,8 @@
 ﻿using WireMock.Server;
 
-namespace Proxy.IntegrationTests
+namespace Proxy.IntegrationTests.Setup
 {
-    public class WireMockServerHelper : IDisposable
+    public class ProxyWireMockServerHelper : IDisposable
     {
         public WireMockServer Server { get; } = WireMockServer.Start(5001);
 

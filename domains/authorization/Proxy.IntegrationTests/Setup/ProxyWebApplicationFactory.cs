@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -10,10 +11,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Proxy.IntegrationTests;
+namespace Proxy.IntegrationTests.Setup;
 
-public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
 {
+    public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
+    {
+        using var scope = Services.CreateScope();
+        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+        await withAction(provider);
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Proxy:WalletBaseUrl", "http://localhost:5001");
@@ -28,7 +36,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
 
             services.AddAuthentication("Test")
-                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", options => {});
+                .AddScheme<AuthenticationSchemeOptions, ProxyTestAuthHandler>("Test", _ => {});
         });
     }
 
@@ -49,23 +57,30 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
             .B2CMitIDCustomPolicyAuthenticationScheme);
 
-        var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+        var b2CScheme = new AuthenticationScheme(
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
-            typeof(TestAuthHandler));
+            typeof(ProxyTestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CScheme);
 
-        var b2CMitIdScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+        var b2CMitIdScheme = new AuthenticationScheme(
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
-            typeof(TestAuthHandler));
+            typeof(ProxyTestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CMitIdScheme);
 
-        var b2CClientCredentialsScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+        var b2CClientCredentialsScheme = new AuthenticationScheme(
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
-            typeof(TestAuthHandler));
+            typeof(ProxyTestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
+    }
+
+    public HttpClient CreateUnauthenticatedClient()
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20240103");
+        return client;
     }
 
     public HttpClient CreateAuthenticatedClient(string sub = "", string name = "", List<string>? orgIds = null, string subType = "")
