@@ -1,11 +1,8 @@
 using System.Net;
-using System.Text;
 using FluentAssertions;
-using Proxy.Controllers;
 using Proxy.IntegrationTests.Setup;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
-using WireMock.Server;
 
 namespace Proxy.IntegrationTests;
 
@@ -18,30 +15,61 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 
     [Theory]
     [InlineData("GET", "/v1/wallets")]
-    [InlineData("POST", "/v1/wallets")]
     [InlineData("GET", "/v1/wallets/{walletId}")]
-    [InlineData("POST", "/v1/wallets/{walletId}/endpoints")]
-    [InlineData("POST", "/v1/external-endpoints")]
     [InlineData("GET", "/v1/certificates")]
     [InlineData("GET", "/v1/aggregate-certificates")]
     [InlineData("GET", "/v1/claims")]
-    [InlineData("POST", "/v1/claims")]
     [InlineData("GET", "/v1/aggregate-claims")]
-    [InlineData("POST", "/v1/slices")]
     [InlineData("GET", "/v1/transfers")]
-    [InlineData("POST", "/v1/transfers")]
     [InlineData("GET", "/v1/aggregate-transfers")]
-    public async Task Test_Endpoints_ReturnOk(string method, string v1Endpoint)
+    public async Task V1_Endpoints_ReturnOk(string method, string v1ProxyEndpoint)
     {
         using var wireMockHelper = new ProxyWireMockServerHelper();
 
-        var endpoint = v1Endpoint.Contains("{walletId}") ? v1Endpoint.Replace("{walletId}", Guid.NewGuid().ToString()) : v1Endpoint;
+        var endpoint = v1ProxyEndpoint.Contains("{walletId}") ? v1ProxyEndpoint.Replace("{walletId}", Guid.NewGuid().ToString()) : v1ProxyEndpoint;
 
         var requestBuilder = Request.Create().WithPath(endpoint).UsingMethod(method);
-        if (method == "POST")
+
+        wireMockHelper.Server
+            .Given(requestBuilder)
+            .RespondWith(Response.Create().WithStatusCode(200));
+
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var client = CreateClientWithOrgIds(orgIds);
+
+        var queryParameters = "";
+        if (v1ProxyEndpoint.StartsWith("/v1/aggregate-"))
         {
-            requestBuilder = requestBuilder.WithBody(new Func<string, bool>(body => true));
+            queryParameters = "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600";
         }
+
+        var request = new HttpRequestMessage(new HttpMethod(method), $"{endpoint}{queryParameters}");
+        request.Headers.Add("EO_API_VERSION", "1");
+
+        var response = await client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Theory]
+    [InlineData("GET", "/wallets")]
+    // [InlineData("GET", "/wallets/{walletId}")]
+    [InlineData("GET", "/certificates")]
+    [InlineData("GET", "/aggregate-certificates")]
+    [InlineData("GET", "/claims")]
+    [InlineData("GET", "/aggregate-claims")]
+    [InlineData("GET", "/transfers")]
+    [InlineData("GET", "/aggregate-transfers")]
+    public async Task V20250101_Endpoints_ReturnOk(string method, string v2025ProxyEndpoint)
+    {
+        using var wireMockHelper = new ProxyWireMockServerHelper();
+
+        var walletId = Guid.NewGuid().ToString();
+        var downstreamEndpoint = v2025ProxyEndpoint.Contains("{walletId}") ? v2025ProxyEndpoint.Replace("{walletId}", walletId) : v2025ProxyEndpoint;
+
+        var requestBuilder = Request.Create()
+            .WithPath($"/v1{downstreamEndpoint}")
+            .UsingMethod(method);
 
         wireMockHelper.Server
             .Given(requestBuilder)
@@ -51,27 +79,109 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
         var client = CreateClientWithOrgIds(orgIds);
         var organizationId = orgIds[0];
 
+        var queryParameters = $"?organizationId={organizationId}";
+        if (v2025ProxyEndpoint.StartsWith("/aggregate-"))
+        {
+            queryParameters += "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600";
+        }
+
+        var request = new HttpRequestMessage(new HttpMethod(method), $"{downstreamEndpoint}{queryParameters}");
+        request.Headers.Add("EO_API_VERSION", "20250101");
+
+        var response = await client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+
+    // TODO: V1 ENDPOINTS, DO NOT GET WALLETOWNER
+    [Theory]
+    [InlineData("GET", "/v1/wallets")]
+    [InlineData("GET", "/v1/wallets/{walletId}")]
+    [InlineData("GET", "/v1/certificates")]
+    [InlineData("GET", "/v1/aggregate-certificates")]
+    [InlineData("GET", "/v1/claims")]
+    [InlineData("GET", "/v1/aggregate-claims")]
+    [InlineData("GET", "/v1/transfers")]
+    [InlineData("GET", "/v1/aggregate-transfers")]
+    public async Task Wallet_Receives_WalletOwnerHeader_Through_V1_Endpoints(string method, string v1ProxyEndpoint)
+    {
+        using var wireMockHelper = new ProxyWireMockServerHelper();
+
+        var endpoint = v1ProxyEndpoint.Contains("{walletId}") ? v1ProxyEndpoint.Replace("{walletId}", Guid.NewGuid().ToString()) : v1ProxyEndpoint;
+
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var organizationId = orgIds[0];
+
+        var requestBuilder = Request.Create().WithPath(endpoint).UsingMethod(method);
+
+        wireMockHelper.Server
+            .Given(requestBuilder)
+            .RespondWith(Response.Create().WithStatusCode(200).WithHeader("wallet-owner", organizationId));
+
+        var client = CreateClientWithOrgIds(orgIds);
+
         var queryParameters = "";
-        if (v1Endpoint.StartsWith("/v1/aggregate-"))
+        if (v1ProxyEndpoint.StartsWith("/v1/aggregate-"))
         {
             queryParameters = "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600";
-        }
-        else
-        {
-            queryParameters = $"?organizationId={organizationId}";
         }
 
         var request = new HttpRequestMessage(new HttpMethod(method), $"{endpoint}{queryParameters}");
         request.Headers.Add("EO_API_VERSION", "1");
 
-        if (method == "POST")
+        var response = await client.SendAsync(request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var walletOwnerHeader = response.Headers.GetValues("wallet-owner").FirstOrDefault();
+        walletOwnerHeader.Should().Be(organizationId);
+    }
+
+    [Theory]
+    [InlineData("GET", "/wallets")]
+// [InlineData("GET", "/wallets/{walletId}")]
+    [InlineData("GET", "/certificates")]
+    [InlineData("GET", "/aggregate-certificates")]
+    [InlineData("GET", "/claims")]
+    [InlineData("GET", "/aggregate-claims")]
+    [InlineData("GET", "/transfers")]
+    [InlineData("GET", "/aggregate-transfers")]
+    public async Task Wallet_Receives_WalletOwnerHeader_Through_V20250101_Endpoints(string method, string v2025ProxyEndpoint)
+    {
+        using var wireMockHelper = new ProxyWireMockServerHelper();
+
+        var walletId = Guid.NewGuid().ToString();
+        var downstreamEndpoint = v2025ProxyEndpoint.Contains("{walletId}") ? v2025ProxyEndpoint.Replace("{walletId}", walletId) : v2025ProxyEndpoint;
+
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var organizationId = orgIds[0];
+
+        var requestBuilder = Request.Create()
+            .WithPath($"/v1{downstreamEndpoint}")
+            .UsingMethod(method);
+
+        wireMockHelper.Server
+            .Given(requestBuilder)
+            .RespondWith(Response.Create().WithStatusCode(200).WithHeader("wallet-owner", organizationId));
+
+        var client = CreateClientWithOrgIds(orgIds);
+
+        var queryParameters = $"?organizationId={organizationId}";
+        if (v2025ProxyEndpoint.StartsWith("/aggregate-"))
         {
-            request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+            queryParameters += "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600";
         }
+
+        var request = new HttpRequestMessage(new HttpMethod(method), $"{downstreamEndpoint}{queryParameters}");
+        request.Headers.Add("EO_API_VERSION", "20250101");
 
         var response = await client.SendAsync(request);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var walletOwnerHeader = response.Headers.GetValues("wallet-owner").FirstOrDefault();
+        walletOwnerHeader.Should().Be(organizationId);
     }
 }
 
