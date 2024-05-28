@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -15,9 +16,11 @@ namespace Proxy.IntegrationTests.Setup;
 
 public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
 {
+    public string WalletBaseUrl { get; set; } = "SomeUrl";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseSetting("Proxy:WalletBaseUrl", "http://localhost:5001");
+        builder.UseSetting("Proxy:WalletBaseUrl", WalletBaseUrl);
         builder.ConfigureServices(services =>
         {
             var descriptor = services.SingleOrDefault(
@@ -123,4 +126,6 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
         var encodedAccessToken = tokenHandler.WriteToken(token);
         return encodedAccessToken;
     }
+
+    public void Start() => Server.Should().NotBeNull();
 }
