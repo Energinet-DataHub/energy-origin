@@ -3,13 +3,13 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Asp.Versioning.ApiExplorer;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace Proxy.IntegrationTests.Setup;
 
@@ -43,28 +43,28 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
     private static void ReplaceB2CAuthenticationSchemes(IHost host)
     {
         var authenticationSchemeProvider = host.Services.GetRequiredService<IAuthenticationSchemeProvider>();
-        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme
             .B2CAuthenticationScheme);
-        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme
             .B2CClientCredentialsCustomPolicyAuthenticationScheme);
-        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme
             .B2CMitIDCustomPolicyAuthenticationScheme);
 
-        var b2CScheme = new AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
+        var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.B2CAuthenticationScheme,
+            AuthenticationScheme.B2CAuthenticationScheme,
             typeof(ProxyTestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CScheme);
 
-        var b2CMitIdScheme = new AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+        var b2CMitIdScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
             typeof(ProxyTestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CMitIdScheme);
 
-        var b2CClientCredentialsScheme = new AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+        var b2CClientCredentialsScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
             typeof(ProxyTestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
@@ -81,7 +81,7 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
         sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
         name = string.IsNullOrEmpty(name) ? "Test Testesen" : name;
         subType = string.IsNullOrEmpty(subType) ? "user" : subType;
-        orgIds = orgIds ?? new List<string> { Guid.NewGuid().ToString() };
+        orgIds ??= new List<string> { Guid.NewGuid().ToString() };
 
         var client = CreateClient();
         var token = GenerateToken(sub, name, orgIds, subType);
