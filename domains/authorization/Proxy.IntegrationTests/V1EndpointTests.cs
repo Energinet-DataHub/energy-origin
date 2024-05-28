@@ -8,15 +8,8 @@ namespace Proxy.IntegrationTests;
 
 public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixture<ProxyIntegrationTestFixture>
 {
-    private HttpClient CreateClientWithOrgIds(List<string> orgIds)
-    {
-        return fixture.Factory.CreateAuthenticatedClient(orgIds: orgIds);
-    }
-
-    private HttpClient CreateClientWithOrgAsSub(string sub)
-    {
-        return fixture.Factory.CreateAuthenticatedClient(sub: sub);
-    }
+    private HttpClient CreateClientWithOrgIds(List<string> orgIds) => fixture.Factory.CreateAuthenticatedClient(orgIds: orgIds);
+    private HttpClient CreateClientWithOrgAsSub(string sub) => fixture.Factory.CreateAuthenticatedClient(sub: sub);
 
     [Theory]
     [InlineData("GET", "/v1/wallets")]
@@ -29,13 +22,12 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
     [InlineData("GET", "/v1/aggregate-transfers")]
     public async Task V1_Endpoints_ReturnOk(string method, string v1ProxyEndpoint)
     {
-        using var wireMockHelper = new ProxyWireMockServerHelper();
 
         var endpoint = v1ProxyEndpoint.Contains("{walletId}") ? v1ProxyEndpoint.Replace("{walletId}", Guid.NewGuid().ToString()) : v1ProxyEndpoint;
 
         var requestBuilder = Request.Create().WithPath(endpoint).UsingMethod(method);
 
-        wireMockHelper.Server
+        fixture.WalletWireMockServer
             .Given(requestBuilder)
             .RespondWith(Response.Create().WithStatusCode(200));
 
@@ -67,8 +59,6 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
     [InlineData("GET", "/aggregate-transfers")]
     public async Task V20250101_Endpoints_ReturnOk(string method, string v2025ProxyEndpoint)
     {
-        using var wireMockHelper = new ProxyWireMockServerHelper();
-
         var walletId = Guid.NewGuid().ToString();
         var downstreamEndpoint = v2025ProxyEndpoint.Contains("{walletId}") ? v2025ProxyEndpoint.Replace("{walletId}", walletId) : v2025ProxyEndpoint;
 
@@ -76,7 +66,7 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
             .WithPath($"/v1{downstreamEndpoint}")
             .UsingMethod(method);
 
-        wireMockHelper.Server
+        fixture.WalletWireMockServer
             .Given(requestBuilder)
             .RespondWith(Response.Create().WithStatusCode(200));
 
@@ -109,8 +99,6 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
     [InlineData("GET", "/v1/aggregate-transfers")]
     public async Task GivenOldAuth_WhenV1EndpointsAreUsed_ThenAppendSubClaimAsWalletOwnerHeader(string method, string v1ProxyEndpoint)
     {
-        using var wireMockHelper = new ProxyWireMockServerHelper();
-
         var endpoint = v1ProxyEndpoint.Contains("{walletId}") ? v1ProxyEndpoint.Replace("{walletId}", Guid.NewGuid().ToString()) : v1ProxyEndpoint;
 
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
@@ -118,7 +106,7 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 
         var requestBuilder = Request.Create().WithPath(endpoint).UsingMethod(method);
 
-        wireMockHelper.Server
+        fixture.WalletWireMockServer
             .Given(requestBuilder)
             .RespondWith(
                 Response.Create()
@@ -159,8 +147,6 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
     [InlineData("GET", "/aggregate-transfers")]
     public async Task GivenB2C_WhenV20250101EndpointsAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string method, string v2025ProxyEndpoint)
     {
-        using var wireMockHelper = new ProxyWireMockServerHelper();
-
         var walletId = Guid.NewGuid().ToString();
         var downstreamEndpoint = v2025ProxyEndpoint.Contains("{walletId}") ? v2025ProxyEndpoint.Replace("{walletId}", walletId) : v2025ProxyEndpoint;
 
@@ -171,7 +157,7 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
             .WithPath($"/v1{downstreamEndpoint}")
             .UsingMethod(method);
 
-        wireMockHelper.Server
+        fixture.WalletWireMockServer
             .Given(requestBuilder)
             .RespondWith(
                 Response.Create()

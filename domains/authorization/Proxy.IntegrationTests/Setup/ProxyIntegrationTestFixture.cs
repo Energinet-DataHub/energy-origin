@@ -13,24 +13,20 @@ public class ProxyIntegrationTestFixture : IAsyncLifetime
 {
     public ProxyWebApplicationFactory Factory { get; private set; } = new();
     public SwaggerWebApplicationFactory SwaggerFactory { get; private set; } = new();
+    public WireMockServer WalletWireMockServer { get; private set; } = WireMockServer.Start();
 
-    public WireMockServer CvrWireMockServer { get; private set; }
-
-
-    public ProxyIntegrationTestFixture()
+    public Task InitializeAsync()
     {
-        Factory = new ProxyWebApplicationFactory();
-        CvrWireMockServer = WireMockServer.Start();
-    }
-
-    public async Task InitializeAsync()
-    {
-        Factory.WalletBaseUrl = CvrWireMockServer.Url!;
+        Factory.WalletBaseUrl = WalletWireMockServer.Url!;
         Factory.Start();
+        return Task.CompletedTask;
     }
 
     public async Task DisposeAsync()
     {
+        WalletWireMockServer.Stop();
+        WalletWireMockServer.Dispose();
         await Factory.DisposeAsync();
+
     }
 }

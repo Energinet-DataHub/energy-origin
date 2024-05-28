@@ -21,6 +21,7 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Proxy:WalletBaseUrl", WalletBaseUrl);
+
         builder.ConfigureServices(services =>
         {
             var descriptor = services.SingleOrDefault(
