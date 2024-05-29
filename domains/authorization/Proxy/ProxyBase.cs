@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Diagnostics;
+using EnergyOrigin.TokenValidation.b2c;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Proxy.Controllers;
 
@@ -94,15 +96,18 @@ public class ProxyBase : ControllerBase
     /// <param name="organizationId"></param>
     protected async Task ProxyClientCredentialsRequest(string path, string? organizationId)
     {
-        var orgIds = User.Claims.Where(x => x.Type == "org_ids").Select(x => x.Value).ToList();
-
-        if (string.IsNullOrEmpty(organizationId) || !orgIds.Contains(organizationId))
+        if (organizationId is not null)
         {
-            Forbidden();
-            return;
+            var orgId = Guid.Parse(organizationId);
+            var identity = new IdentityDescriptor(HttpContext, orgId);
+            if (!identity.OrgIds.Contains(orgId))
+            {
+                Forbidden();
+                return;
+            }
         }
 
-        await ProxyRequest(path, organizationId);
+        await ProxyRequest(path, organizationId!);
     }
 
     private void Forbidden()

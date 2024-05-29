@@ -1,20 +1,19 @@
-using API.ContractService.Clients;
-using DataContext.Models;
-using DataContext.ValueObjects;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.ContractService.Clients;
 using API.Query.API.ApiModels.Requests;
 using API.UnitOfWork;
+using DataContext.Models;
+using DataContext.ValueObjects;
+using EnergyOrigin.ActivityLog.DataContext;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 using Technology = DataContext.ValueObjects.Technology;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.ActivityLog.DataContext;
-using Microsoft.Extensions.Logging;
 
 namespace API.ContractService;
 
@@ -37,11 +36,10 @@ internal class ContractServiceImpl : IContractService
         this.logger = logger;
     }
 
-    public async Task<CreateContractResult> Create(CreateContracts contracts, UserDescriptor user,
-        CancellationToken cancellationToken)
+    public async Task<CreateContractResult> Create(CreateContracts contracts, Guid meteringPointOwnerId, Guid subjectId, string subjectName, string organizationName,
+        string organizationTin, CancellationToken cancellationToken)
     {
-        var meteringPointOwner = user.Subject.ToString();
-        var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwner, cancellationToken);
+        var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwnerId.ToString(), cancellationToken);
         var contractsByGsrn =
             await GetAllContractsByGsrn(contracts.Contracts.Select(c => c.GSRN).ToList(), cancellationToken);
 
@@ -71,12 +69,12 @@ internal class ContractServiceImpl : IContractService
                 return new ContractAlreadyExists(overlappingContract);
             }
 
-            var wallets = await walletClient.GetWallets(user.Subject.ToString(), cancellationToken);
+            var wallets = await walletClient.GetWallets(meteringPointOwnerId.ToString(), cancellationToken);
 
             var walletId = wallets.Result.FirstOrDefault()?.Id;
             if (walletId == null)
             {
-                var createWalletResponse = await walletClient.CreateWallet(user.Subject.ToString(), cancellationToken);
+                var createWalletResponse = await walletClient.CreateWallet(meteringPointOwnerId.ToString(), cancellationToken);
 
                 if (createWalletResponse == null)
                     throw new ApplicationException("Failed to create wallet.");
@@ -89,7 +87,7 @@ internal class ContractServiceImpl : IContractService
                 : number;
 
             var walletDepositEndpoint =
-                await walletClient.CreateWalletEndpoint(walletId.Value, user.Subject.ToString(),
+                await walletClient.CreateWalletEndpoint(walletId.Value, meteringPointOwnerId.ToString(),
                     cancellationToken);
 
             var issuingContract = CertificateIssuingContract.Create(
@@ -97,7 +95,7 @@ internal class ContractServiceImpl : IContractService
                 contract.GSRN,
                 matchingMeteringPoint.GridArea,
                 Map(matchingMeteringPoint.Type),
-                meteringPointOwner,
+                meteringPointOwnerId.ToString(),
                 startDate,
                 endDate,
                 walletDepositEndpoint.Endpoint.ToString(),
@@ -108,11 +106,11 @@ internal class ContractServiceImpl : IContractService
             contractsByGsrn.Add(issuingContract);
 
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-                actorId: user.Subject,
+                actorId: subjectId,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
-                actorName: user.Name,
-                organizationTin: user.Organization!.Tin,
-                organizationName: user.Organization.Name,
+                actorName: subjectName,
+                organizationTin: organizationTin,
+                organizationName: organizationName,
                 otherOrganizationTin: string.Empty,
                 otherOrganizationName: string.Empty,
                 entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
@@ -164,9 +162,10 @@ internal class ContractServiceImpl : IContractService
     }
 
     public async Task<SetEndDateResult> SetEndDate(EditContracts contracts,
-        UserDescriptor user, CancellationToken cancellationToken)
+        Guid meteringPointOwnerId, Guid subjectId, string subjectName, string organizationName,
+        string organizationTin, CancellationToken cancellationToken)
     {
-        var meteringPointOwner = user.Subject.ToString();
+        var meteringPointOwner = meteringPointOwnerId.ToString();
         var issuingContracts =
             await unitOfWork.CertificateIssuingContractRepo.GetAllByIds(contracts.Contracts.Select(c => c.Id).ToList(),
                 cancellationToken);
@@ -215,11 +214,12 @@ internal class ContractServiceImpl : IContractService
 
             existingContract.EndDate = newEndDate;
 
-            await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(user.Subject,
+            await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+                actorId: subjectId,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
-                actorName: user.Name,
-                organizationTin: user.Organization!.Tin,
-                organizationName: user.Organization.Name,
+                actorName: subjectName,
+                organizationTin: organizationTin,
+                organizationName: organizationName,
                 otherOrganizationTin: string.Empty,
                 otherOrganizationName: string.Empty,
                 entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
@@ -233,13 +233,12 @@ internal class ContractServiceImpl : IContractService
         return new SetEndDateResult.Success();
     }
 
-    public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(string meteringPointOwner,
+    public Task<IReadOnlyList<CertificateIssuingContract>> GetByOwner(Guid meteringPointOwnerId,
         CancellationToken cancellationToken)
-        => unitOfWork.CertificateIssuingContractRepo.GetAllMeteringPointOwnerContracts(meteringPointOwner,
+        => unitOfWork.CertificateIssuingContractRepo.GetAllMeteringPointOwnerContracts(meteringPointOwnerId.ToString(),
             cancellationToken);
 
-    public async Task<CertificateIssuingContract?> GetById(Guid id, string meteringPointOwner,
-        CancellationToken cancellationToken)
+    public async Task<CertificateIssuingContract?> GetById(Guid id, IList<Guid> authorizedMeteringPointOwnerIds, CancellationToken cancellationToken)
     {
         var contract = await unitOfWork.CertificateIssuingContractRepo.GetById(id, cancellationToken);
 
@@ -248,8 +247,8 @@ internal class ContractServiceImpl : IContractService
             return null;
         }
 
-        return contract.MeteringPointOwner.Trim() != meteringPointOwner.Trim()
-            ? null
-            : contract;
+        return authorizedMeteringPointOwnerIds.Select(x => x.ToString()).Contains(contract.MeteringPointOwner.Trim())
+            ? contract
+            : null;
     }
 }

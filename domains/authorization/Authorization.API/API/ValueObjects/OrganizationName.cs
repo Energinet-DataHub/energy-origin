@@ -25,4 +25,8 @@ public class OrganizationName : ValueObject
 
     private static Regex MyRegex() => new Regex(@"^[a-zA-Z0-9\s&.,'\-]+$");
 
+    public static OrganizationName Create(string value)
+    {
+        return new OrganizationName(value);
+    }
 }

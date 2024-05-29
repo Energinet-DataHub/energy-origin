@@ -26,7 +26,7 @@ builder.Services.AddVersioningToApi();
 
 builder.Services.AddHttpClient("Proxy", options =>
 {
-    options.BaseAddress = new Uri("http://localhost:5182/", UriKind.Absolute); //new Uri(builder.Configuration["WalletServiceUrl"]!); // Maybe validate WalletServiceUrl, and throw startup exception.
+    options.BaseAddress = new Uri(builder.Configuration.GetSection("Proxy").GetValue<string>("WalletBaseUrl")!, UriKind.Absolute); //new Uri(builder.Configuration["WalletServiceUrl"]!); // Maybe validate WalletServiceUrl, and throw startup exception.
 });
 
 builder.Services.AddControllers()
