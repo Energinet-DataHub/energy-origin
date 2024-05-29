@@ -12,6 +12,7 @@
     <ItemGroup>
       <PackageReference Include="EnergyOrigin.Setup" Version="4.2.0" />
       <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.4.1" />
+      <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.5.0" />
     </ItemGroup>
     <ItemGroup>
         <None Update="documentation.xml">
