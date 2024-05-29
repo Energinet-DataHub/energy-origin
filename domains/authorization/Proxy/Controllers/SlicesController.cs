@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +31,8 @@ public class SlicesController : ProxyBase
     [Route("v1/slices")]
     [Produces("application/json")]
     [AllowAnonymous]
-    [ApiVersion(ApiVersions.WalletLegacy, Deprecated = true)] // TODO: Would our custom headers cause problems here?
+    [ApiVersionNeutral]
+    [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status202Accepted)]

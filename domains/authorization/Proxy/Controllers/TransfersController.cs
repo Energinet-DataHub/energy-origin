@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +24,8 @@ public class TransfersController : ProxyBase
     [Route("v1/transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.WalletLegacy, Deprecated = true)]
+    [ApiVersionNeutral]
+    [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer>), StatusCodes.Status200OK)]
@@ -60,7 +61,8 @@ public class TransfersController : ProxyBase
     [Route("v1/aggregate-transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.WalletLegacy, Deprecated = true)]
+    [ApiVersionNeutral]
+    [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
@@ -99,7 +101,8 @@ public class TransfersController : ProxyBase
     [Route("v1/transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.WalletLegacy, Deprecated = true)]
+    [ApiVersionNeutral]
+    [Obsolete]
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     public async Task TransferCertificate([FromBody] TransferRequest request)

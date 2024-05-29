@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Security.Claims;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
@@ -24,7 +24,8 @@ public class ClaimsController : ProxyBase
     [Route("v1/claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.WalletLegacy, Deprecated = true)]
+    [ApiVersionNeutral]
+    [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
@@ -61,7 +62,8 @@ public class ClaimsController : ProxyBase
     [Route("v1/aggregate-claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.WalletLegacy, Deprecated = true)]
+    [ApiVersionNeutral]
+    [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
@@ -101,7 +103,8 @@ public class ClaimsController : ProxyBase
     [Route("v1/claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.WalletLegacy, Deprecated = true)]
+    [ApiVersionNeutral]
+    [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status202Accepted)]
