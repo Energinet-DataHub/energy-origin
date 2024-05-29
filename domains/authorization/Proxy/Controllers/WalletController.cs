@@ -109,7 +109,7 @@ public class WalletController : ProxyBase
     /// <response code="401">If the user is not authenticated.</response>
     /// <response code="404">If the wallet specified is not found for the user.</response>
     [HttpGet]
-    [Route("v1/wallets/{walletId}")]
+    [Route("wallets/{walletId}")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
     [ApiVersion(ApiVersions.Version20250101)]

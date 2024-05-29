@@ -900,7 +900,7 @@
         }
       }
     },
-    "/v1/wallets/{walletId}": {
+    "/wallets/{walletId}": {
       "get": {
         "tags": [
           "Wallet"

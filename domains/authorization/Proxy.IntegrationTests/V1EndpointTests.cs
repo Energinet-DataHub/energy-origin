@@ -49,7 +49,7 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 
     [Theory]
     [InlineData("GET", "/wallets")]
-    // [InlineData("GET", "/wallets/{walletId}")]
+    [InlineData("GET", "/wallets/{walletId}")]
     [InlineData("GET", "/certificates")]
     [InlineData("GET", "/aggregate-certificates")]
     [InlineData("GET", "/claims")]
@@ -136,7 +136,7 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 
     [Theory]
     [InlineData("GET", "/wallets")]
-    // [InlineData("GET", "/wallets/{walletId}")]
+    [InlineData("GET", "/wallets/{walletId}")]
     [InlineData("GET", "/certificates")]
     [InlineData("GET", "/aggregate-certificates")]
     [InlineData("GET", "/claims")]
