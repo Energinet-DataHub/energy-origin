@@ -1,4 +1,4 @@
-﻿namespace Proxy.Controllers;
+namespace Proxy.Controllers;
 
 public static class WalletConstants
 {

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
@@ -26,7 +26,7 @@ public class CertificatesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
-    public async Task GetCertificatesV2([FromQuery] GetCertificatesQueryParameters param, [FromQuery]string? organizationId)
+    public async Task GetCertificatesV2([FromQuery] GetCertificatesQueryParameters param, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/certificates", organizationId);
     }
@@ -64,7 +64,7 @@ public class CertificatesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<AggregatedCertificates>), StatusCodes.Status200OK)]
-    public async Task AggregateCertificatesV2([FromQuery] AggregateCertificatesQueryParameters param, [FromQuery]string? organizationId)
+    public async Task AggregateCertificatesV2([FromQuery] AggregateCertificatesQueryParameters param, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/aggregate-certificates", organizationId);
     }

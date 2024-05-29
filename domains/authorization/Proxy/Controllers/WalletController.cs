@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +20,7 @@ public class WalletController : ProxyBase
     [ApiVersion(ApiVersions.WalletLegacy, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(CreateWalletResponse),StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreateWalletResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task CreateWallet([FromBody] CreateWalletRequest request)
     {
@@ -34,7 +34,7 @@ public class WalletController : ProxyBase
     [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(CreateWalletResponse),StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreateWalletResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task CreateWalletV2([FromBody] CreateWalletRequest request, string? organizationId)
     {
@@ -150,7 +150,7 @@ public class WalletController : ProxyBase
     [HttpPost]
     [Route("v1/external-endpoints")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(CreateExternalEndpointResponse),StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreateExternalEndpointResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
     [ApiVersion(ApiVersions.WalletLegacy, Deprecated = true)]
@@ -164,7 +164,7 @@ public class WalletController : ProxyBase
     [HttpPost]
     [Route("external-endpoints")]
     [Produces("application/json")]
-    [ProducesResponseType(typeof(CreateExternalEndpointResponse),StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreateExternalEndpointResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize(policy: Policy.B2CPolicy)]
     [ApiVersion(ApiVersions.Version20250101)]

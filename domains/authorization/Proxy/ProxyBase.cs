@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Mvc;
 
@@ -46,7 +46,7 @@ public class ProxyBase : ControllerBase
         {
             foreach (var value in header.Value)
             {
-                Response.Headers.Add(header.Key, value);
+                Response.Headers.Append(header.Key, value);
             }
         }
 
@@ -54,7 +54,7 @@ public class ProxyBase : ControllerBase
         {
             foreach (var value in header.Value)
             {
-                Response.Headers.Add(header.Key, value);
+                Response.Headers.Append(header.Key, value);
             }
         }
     }

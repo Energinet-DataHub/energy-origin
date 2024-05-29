@@ -1,4 +1,4 @@
-﻿namespace Proxy.IntegrationTests.Testcontainers;
+namespace Proxy.IntegrationTests.Testcontainers;
 
 public class ProjectOriginStackFixture : IAsyncLifetime
 {

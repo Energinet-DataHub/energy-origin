@@ -1,10 +1,12 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Proxy.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,12 +24,31 @@ builder.Services.AddSwaggerGen(c =>
     c.DocumentFilter<WalletTagDocumentFilter>();
 });
 
-builder.Services.AddVersioningToApi();
+builder.Services.AddApiVersioning(options =>
+    {
+        options.AssumeDefaultVersionWhenUnspecified = false;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = ApiVersionReader.Combine(
+            new HeaderApiVersionReader("EO_API_VERSION"),
+            new UrlSegmentApiVersionReader()
+        );
+    })
+    .AddMvc()
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
 
-builder.Services.AddHttpClient("Proxy", options =>
-{
-    options.BaseAddress = new Uri(builder.Configuration.GetSection("Proxy").GetValue<string>("WalletBaseUrl")!, UriKind.Absolute); //new Uri(builder.Configuration["WalletServiceUrl"]!); // Maybe validate WalletServiceUrl, and throw startup exception.
-});
+var proxyOptions = builder.Configuration.GetSection(ProxyOptions.Prefix).Get<ProxyOptions>()!;
+builder.Services.AddOptions<ProxyOptions>()
+    .BindConfiguration(ProxyOptions.Prefix)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddHttpClient("Proxy", options => options.BaseAddress = new Uri(
+    proxyOptions.WalletBaseUrl.AbsoluteUri,
+    UriKind.Absolute));
 
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
@@ -67,6 +88,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapSwagger();
 
 app.Run();
 
