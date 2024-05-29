@@ -34,6 +34,19 @@ jobs:
           configuration: domains/authorization/Authorization.API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
 
+  build-proxy:
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dotnet-build
+        with:
+          solution: domains/authorization/Autorization.sln
+          project: domains/authorization/Proxy/Proxy.csproj
+          configuration: domains/authorization/Proxy/configuration.yaml
+          dry-run: ${{ inputs.dry-run }}
+
   update:
     runs-on: ubuntu-latest
     name: Update environment
