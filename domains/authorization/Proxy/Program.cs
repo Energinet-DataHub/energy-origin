@@ -4,6 +4,7 @@ using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Proxy.Options;
@@ -21,11 +22,15 @@ builder.Services.AddSwagger("ProjectOrigin.WalletSystem.Server");
 
 builder.Services.AddSwaggerGen(c =>
 {
+    c.IgnoreObsoleteActions();
     c.DocumentFilter<WalletTagDocumentFilter>();
 });
 
+
+
 builder.Services.AddApiVersioning(options =>
     {
+
         options.AssumeDefaultVersionWhenUnspecified = false;
         options.ReportApiVersions = true;
         options.ApiVersionReader = ApiVersionReader.Combine(
