@@ -41,7 +41,6 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
         }
 
         var request = new HttpRequestMessage(new HttpMethod(method), $"{endpoint}{queryParameters}");
-        request.Headers.Add("EO_API_VERSION", "1");
 
         var response = await client.SendAsync(request);
 
@@ -125,7 +124,6 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
         }
 
         var request = new HttpRequestMessage(new HttpMethod(method), $"{endpoint}{queryParameters}");
-        request.Headers.Add("EO_API_VERSION", "1");
 
         var response = await client.SendAsync(request);
 
