@@ -9,15 +9,15 @@ namespace Oidc.Mock.Controllers;
 
 public class AuthController : Controller
 {
-    private readonly Client client;
+    private readonly ClientCollection clientCollection;
     private readonly User[] users;
     private readonly IJwtTokenGenerator tokenGenerator;
     private readonly ILogger<AuthController> logger;
     private readonly Options options;
 
-    public AuthController(Client client, User[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger, Options options)
+    public AuthController(ClientCollection clientCollection, User[] users, IJwtTokenGenerator tokenGenerator, ILogger<AuthController> logger, Options options)
     {
-        this.client = client;
+        this.clientCollection = clientCollection;
         this.users = users;
         this.tokenGenerator = tokenGenerator;
         this.logger = logger;
@@ -32,7 +32,7 @@ public class AuthController : Controller
     [Route("Connect/Authorize")]
     public IActionResult Authorize(string client_id, string redirect_uri)
     {
-        var (isValid, validationError) = client.Validate(client_id, redirect_uri);
+        var (isValid, validationError) = clientCollection.Validate(client_id, redirect_uri);
         if (!isValid)
         {
             return BadRequest(validationError);
@@ -49,23 +49,27 @@ public class AuthController : Controller
 
     [HttpPost]
     [Route("Connect/Token")]
-    public IActionResult Token(string grant_type, string code, string redirect_uri)
+    public IActionResult Token(string grant_type, string code, string? client_id, string? client_secret, string redirect_uri)
     {
-        var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]!);
-        logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}", $"{authorizationHeader.Scheme} {authorizationHeader.Parameter}");
+        if (client_id is null || client_secret is null)
+        {
+            var authorizationHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]!);
+            logger.LogDebug("connect/token: authorization header: {AuthorizationHeader}", $"{authorizationHeader.Scheme} {authorizationHeader.Parameter}");
+            var auth = (authorizationHeader.Parameter ?? ":").DecodeBase64();
+            var split = auth.Split(":");
+            client_id = split[0];
+            client_secret = split[1];
+        }
+
         logger.LogDebug("connect/token: form data: {Data}", string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")));
 
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
+            logger.LogDebug($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
             return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
         }
 
-        var auth = (authorizationHeader.Parameter ?? ":").DecodeBase64();
-        var split = auth.Split(":");
-        var clientId = split[0];
-        var clientSecret = split[1];
-
-        var (isValid, validationError) = client.Validate(clientId, clientSecret, redirect_uri);
+        var (isValid, validationError) = clientCollection.Validate(client_id, client_secret, redirect_uri);
         if (!isValid)
         {
             logger.LogDebug("connect/token: {validationError}", validationError);
@@ -93,7 +97,7 @@ public class AuthController : Controller
             { "iat", now },
             { "nbf", now },
             { "exp", now + expirationInSeconds },
-            { "aud", clientId },
+            { "aud", client_id },
             { "scope", "openid nemid mitid userinfo_token" }
         };
 
