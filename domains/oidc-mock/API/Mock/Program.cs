@@ -14,11 +14,8 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddFromJsonFile<User[]>(builder.Configuration[Configuration.UsersFilePathKey]!);
-builder.Services.AddSingleton(_ =>
-    new Client(
-        builder.Configuration[Configuration.ClientIdKey]!,
-        builder.Configuration[Configuration.ClientSecretKey]!,
-        builder.Configuration[Configuration.ClientRedirectUriKey]!));
+var clients = builder.Configuration.GetSection(Configuration.ClientsPrefix).Get<List<Client>>() ?? new List<Client>();
+builder.Services.AddSingleton(new ClientCollection(clients));
 builder.Services.AddSingleton(x => new Options(Host: builder.Configuration[Configuration.Host]!));
 
 var app = builder.Build();
