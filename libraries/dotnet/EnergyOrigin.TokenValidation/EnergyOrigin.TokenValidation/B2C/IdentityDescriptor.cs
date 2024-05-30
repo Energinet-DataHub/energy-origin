@@ -20,7 +20,8 @@ public class IdentityDescriptor
         if (!OrgIds.Contains(orgId))
         {
             httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
-            httpContext.Response.WriteAsJsonAsync("");
+            httpContext.Response.Body.Close();
+            throw new ForbiddenException(orgId);
         }
     }
 
