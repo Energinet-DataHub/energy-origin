@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
@@ -12,6 +13,7 @@ using DataContext.Models;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Polly;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
@@ -168,13 +170,13 @@ public class TransferAgreementProposalsControllerTests
     [InlineData("123456789", "ReceiverTin must be 8 digits without any spaces.")]
     [InlineData("ABCDEFG", "ReceiverTin must be 8 digits without any spaces.")]
     [InlineData("11223344", "ReceiverTin cannot be the same as SenderTin.")]
-    public async Task Create_ShouldFail_WhenReceiverTinInvalid(string tin, string expectedContent)
+    public async Task Create_ShouldFail_WhenReceiverTinInvalid(string receiverTin, string expectedContent)
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var request = new CreateTransferAgreementProposal(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: tin
+            ReceiverTin: receiverTin
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer/transfer-agreement-proposals", JsonContent.Create(request));
@@ -190,13 +192,13 @@ public class TransferAgreementProposalsControllerTests
     [Theory]
     [InlineData(null)]
     [InlineData("12345678")]
-    public async Task Create_ShouldSucceed_WhenReceiverTinValid(string? tin)
+    public async Task Create_ShouldSucceed_WhenReceiverTinValid(string? receiverTin)
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var request = new CreateTransferAgreementProposal(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: tin
+            ReceiverTin: receiverTin
         );
 
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer/transfer-agreement-proposals", request);
@@ -357,7 +359,11 @@ public class TransferAgreementProposalsControllerTests
 
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
-        var response = await client.GetAsync($"api/transfer/transfer-agreement-proposals/{invitationId}");
+        var retryPolicy = Policy
+            .HandleResult<HttpResponseMessage>(response => response.StatusCode != HttpStatusCode.NotFound)
+            .WaitAndRetryAsync(10, _ => TimeSpan.FromSeconds(1));
+
+        var response = await retryPolicy.ExecuteAsync(() => client.GetAsync($"api/transfer/transfer-agreement-proposals/{invitationId}"));
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
