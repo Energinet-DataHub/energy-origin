@@ -9,30 +9,23 @@ public class OrganizationTests
     [Fact]
     public void Organization_WithValidData_CreatesSuccessfully()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = Organization.Create(tin, organizationName);
 
         organization.Should().NotBeNull();
         organization.Id.Should().NotBeEmpty();
-        organization.IdpId.Should().Be(idpId);
-        organization.IdpOrganizationId.Should().Be(idpOrganizationId);
         organization.Tin.Should().Be(tin);
-        organization.OrganizationName.Should().Be(organizationName);
     }
 
     [Fact]
     public void Organization_CanExist_WithoutAffiliations()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = Organization.Create(tin, organizationName);
 
         organization.Affiliations.Should().NotBeNull().And.BeEmpty();
     }
@@ -40,12 +33,10 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanExist_WithoutConsents()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = Organization.Create(tin, organizationName);
 
         organization.Consents.Should().NotBeNull().And.BeEmpty();
     }
@@ -53,17 +44,14 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanHave_Affiliations()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = Organization.Create(tin, organizationName);
 
-        var idpIdForUser = new IdpId(Guid.NewGuid());
-        var idpUserId = new IdpUserId(Guid.NewGuid());
-        var userName = new Name("Test User");
-        var user = User.Create(idpIdForUser, idpUserId, userName);
+        var idpUserId = IdpUserId.Create(Guid.NewGuid());
+        var userName = UserName.Create("Test User");
+        var user = User.Create(idpUserId, userName);
 
         var affiliation = Affiliation.Create(user, organization);
 
@@ -73,19 +61,16 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanHave_Consents()
     {
-        var idpId = new IdpId(Guid.NewGuid());
-        var idpOrganizationId = new IdpOrganizationId(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(idpId, idpOrganizationId, tin, organizationName);
+        var organization = Organization.Create(tin, organizationName);
 
         var idpClientId = new IdpClientId(Guid.NewGuid());
-        var clientName = new Name("Test Client");
-        var role = Role.External;
-        var client = Client.Create(idpClientId, clientName, role);
+        var role = ClientType.External;
+        var client = Client.Create(idpClientId, new ClientName("Client"), role, "https://redirect.url");
 
-        var consentDate = DateTime.UtcNow;
+        var consentDate = DateTimeOffset.UtcNow;
         var consent = Consent.Create(organization, client, consentDate);
 
         organization.Consents.Should().Contain(consent);
