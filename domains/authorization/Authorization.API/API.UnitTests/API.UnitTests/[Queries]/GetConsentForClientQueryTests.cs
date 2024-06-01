@@ -8,7 +8,7 @@ namespace API.UnitTests._Queries_;
 public class GetConsentForClientQueryTests
 {
     [Fact]
-    public async Task Return_External_Client_When_Everything_Is_Awesome()
+    public async Task GivenClientIdExist_WhenQueryingForAuthorization_ReturnsOKResult()
     {
         var clientRepository = new FakeClientRepository();
         var client = Any.Client();
