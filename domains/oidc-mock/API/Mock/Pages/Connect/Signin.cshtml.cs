@@ -8,7 +8,7 @@ namespace Oidc.Mock.Pages.Connect;
 public class SigninModel : PageModel
 {
     private readonly ILogger<SigninModel> logger;
-    private readonly Client client;
+    private readonly ClientCollection clientCollection;
 
     public User[] Users { get; }
 
@@ -24,9 +24,9 @@ public class SigninModel : PageModel
     [FromQuery(Name = "state")]
     public string? State { get; set; }
 
-    public SigninModel(User[] users, Client client, ILogger<SigninModel> logger)
+    public SigninModel(User[] users, ClientCollection clientCollection, ILogger<SigninModel> logger)
     {
-        this.client = client;
+        this.clientCollection = clientCollection;
         this.logger = logger;
         Users = users;
     }
@@ -39,7 +39,7 @@ public class SigninModel : PageModel
     {
         logger.LogInformation("OnPost: ClientId={ClientId}, Name={Name}, RedirectUri={RedirectUri}, State={State}", ClientId, Name, RedirectUri, State);
 
-        var (isValid, validationError) = client.Validate(ClientId, RedirectUri);
+        var (isValid, validationError) = clientCollection.Validate(ClientId, RedirectUri);
         if (!isValid)
         {
             return BadRequest(validationError);

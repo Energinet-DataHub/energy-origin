@@ -1,30 +1,52 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Authorization.Controllers;
+using API.Authorization.Exceptions;
+using API.Models;
+using API.Repository;
+using API.ValueObjects;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
 public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClientQuery, GetConsentForClientQueryResult>
 {
-    public Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query, CancellationToken cancellationToken)
+    private readonly IClientRepository _clientRepository;
+
+    public GetConsentForClientQueryHandler(IClientRepository clientRepository)
     {
-        GetConsentForClientQueryResult result;
-        if (query.ClientId.Equals("529a55d0-68c7-4129-ba3c-e06d4f1038c4"))
+        _clientRepository = clientRepository;
+    }
+
+    public async Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query,
+        CancellationToken cancellationToken)
+    {
+        var requestedClientId = new IdpClientId(query.ClientId);
+
+        var client = await _clientRepository.Query()
+            .Where(x => x.IdpClientId == requestedClientId)
+            .Select(x => new GetConsentForClientQueryResult(query.ClientId, x.ClientType.ToString(), "someOrgName",
+                new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() },
+                "dashboard production meters certificates wallet"))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (client is null)
         {
-            result = new GetConsentForClientQueryResult(query.ClientId, "Granular System", "External", "Granular", new[] { "123456789", Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }, "dashboard production meters certificates wallet");
-        }
-        else
-        {
-            result = new GetConsentForClientQueryResult(default!, default!, default!, default!, default!, default!);
+            throw new EntityNotFoundException(query.ClientId, typeof(Client));
         }
 
-        return Task.FromResult(result);
+        return client;
     }
 }
 
-public record GetConsentForClientQuery(string ClientId) : IRequest<GetConsentForClientQueryResult>;
+public record GetConsentForClientQuery(Guid ClientId) : IRequest<GetConsentForClientQueryResult>;
 
-public record GetConsentForClientQueryResult(string Sub, string Name, string SubType, string OrgName, IEnumerable<string> OrgIds, string Scope);
+public record GetConsentForClientQueryResult(
+    Guid Sub,
+    string SubType,
+    string OrgName,
+    IEnumerable<Guid> OrgIds,
+    string Scope);

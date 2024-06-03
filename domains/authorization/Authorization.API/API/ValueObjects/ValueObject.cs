@@ -11,7 +11,8 @@ public abstract class ValueObject : IEquatable<ValueObject>
 
     private List<FieldInfo>? _fields;
 
-    public static bool operator ==(ValueObject? obj1, ValueObject? obj2) => obj1?.Equals(obj2) ?? object.Equals(obj2, null);
+    public static bool operator ==(ValueObject? obj1, ValueObject? obj2) =>
+        obj1?.Equals(obj2) ?? object.Equals(obj2, null);
 
     public static bool operator !=(ValueObject? obj1, ValueObject? obj2) => !(obj1 == obj2);
 

@@ -91,7 +91,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -150,7 +150,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           },
           "404": {
             "description": "Not Found"
@@ -191,7 +191,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -401,7 +401,7 @@
   "tags": [
     {
       "name": "Contracts",
-      "description": "Contracts are key in Energy Origin. When you have an active contract for at metering point Granular Certificates will be generated until the end of the contract. It applies to both production and consumption metering points. However, the production metering points must be either Wind or Solar – otherwise it is not possible to generate GCs. When a contract is inactive Granular Certificates will no longer be generated."
+      "description": "Contracts are key in Energy Track & Trace. When you have an active contract for at metering point Granular Certificates will be generated until the end of the contract. It applies to both production and consumption metering points. However, the production metering points must be either Wind or Solar – otherwise it is not possible to generate GCs. When a contract is inactive Granular Certificates will no longer be generated."
     }
   ]
 }

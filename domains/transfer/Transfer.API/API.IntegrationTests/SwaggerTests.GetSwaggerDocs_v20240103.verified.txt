@@ -337,7 +337,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -387,7 +387,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -457,7 +457,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -515,6 +515,47 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transfer/transfer-agreements/overview": {
+      "get": {
+        "tags": [
+          "TransferAgreements"
+        ],
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240103"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementProposalOverviewResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementProposalOverviewResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAgreementProposalOverviewResponse"
                 }
               }
             }
@@ -633,6 +674,10 @@
         "additionalProperties": false
       },
       "CvrCompanyDto": {
+        "required": [
+          "companyCvr",
+          "companyName"
+        ],
         "type": "object",
         "properties": {
           "companyCvr": {
@@ -771,6 +816,52 @@
         },
         "additionalProperties": false
       },
+      "TransferAgreementProposalOverviewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "endDate": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "senderName": {
+            "type": "string",
+            "nullable": true
+          },
+          "senderTin": {
+            "type": "string",
+            "nullable": true
+          },
+          "receiverTin": {
+            "type": "string",
+            "nullable": true
+          },
+          "transferAgreementStatus": {
+            "$ref": "#/components/schemas/TransferAgreementStatus"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferAgreementProposalOverviewResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferAgreementProposalOverviewDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "TransferAgreementProposalResponse": {
         "type": "object",
         "properties": {
@@ -796,6 +887,15 @@
           }
         },
         "additionalProperties": false
+      },
+      "TransferAgreementStatus": {
+        "enum": [
+          "Active",
+          "Inactive",
+          "Proposal",
+          "ProposalExpired"
+        ],
+        "type": "string"
       },
       "TransferAgreementsResponse": {
         "type": "object",

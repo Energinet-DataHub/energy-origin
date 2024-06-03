@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -550,5 +551,81 @@ public class TransferAgreementsControllerTests
         using var scope = factory.Services.CreateScope();
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
         await TestData.SeedTransferAgreementProposals(dbContext, transferAgreementProposals);
+    }
+
+    [Fact]
+    public async Task GetOverviewBySubjectId_ShouldReturnTransferAgreementsOverview_WhenUserHasTransferAgreements()
+    {
+        await SeedTransferAgreements(
+            new List<TransferAgreement>()
+            {
+                new() // Active
+                {
+                    Id = Guid.NewGuid(),
+                    StartDate = DateTimeOffset.UtcNow,
+                    EndDate = DateTimeOffset.UtcNow.AddDays(1),
+                    SenderId = Guid.NewGuid(),
+                    SenderName = "nrgi A/S",
+                    SenderTin = "44332211",
+                    ReceiverName = "Producent A/S",
+                    ReceiverTin = "11223344",
+                    ReceiverReference = Guid.NewGuid()
+                },
+                new() // Inactive
+                {
+                    Id = Guid.NewGuid(),
+                    StartDate = DateTimeOffset.UtcNow.AddDays(2),
+                    EndDate = DateTimeOffset.UtcNow.AddDays(3),
+                    SenderId = Guid.Parse(sub),
+                    SenderName = "Producent A/S",
+                    SenderTin = "11223344",
+                    ReceiverName = "Test A/S",
+                    ReceiverTin = "87654321",
+                    ReceiverReference = Guid.NewGuid()
+                }
+            });
+
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal>
+        {
+            new () // Proposal
+            {
+                CreatedAt = DateTimeOffset.UtcNow,
+                EndDate = DateTimeOffset.UtcNow.AddDays(5),
+                Id = Guid.NewGuid(),
+                StartDate = DateTimeOffset.UtcNow,
+                SenderCompanyName = "SomeOrg",
+                ReceiverCompanyTin = "11223342",
+                SenderCompanyId = new Guid(sub),
+                SenderCompanyTin = "11223344"
+            },
+            new () // Expired
+            {
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-16),
+                EndDate = DateTimeOffset.UtcNow.AddDays(5),
+                Id = Guid.NewGuid(),
+                StartDate = DateTimeOffset.UtcNow,
+                SenderCompanyName = "SomeOrg",
+                ReceiverCompanyTin = "11223342",
+                SenderCompanyId = new Guid(sub),
+                SenderCompanyTin = "11223344"
+            }
+        });
+
+        var response = await authenticatedClient.GetAsync("api/transfer/transfer-agreements/overview");
+
+        response.EnsureSuccessStatusCode();
+        var transferAgreements = await response.Content.ReadAsStringAsync();
+        var transferAgreementsResponse = JsonConvert.DeserializeObject<TransferAgreementProposalOverviewResponse>(transferAgreements);
+
+        transferAgreementsResponse.Should().NotBeNull();
+        transferAgreementsResponse!.Result.Should().HaveCount(4);
+        transferAgreementsResponse!.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Active)
+            .Should().HaveCount(1);
+        transferAgreementsResponse!.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Inactive)
+            .Should().HaveCount(1);
+        transferAgreementsResponse!.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Proposal)
+            .Should().HaveCount(1);
+        transferAgreementsResponse!.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.ProposalExpired)
+            .Should().HaveCount(1);
     }
 }
