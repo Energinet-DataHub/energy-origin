@@ -337,7 +337,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -387,7 +387,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -457,7 +457,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -541,7 +541,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
@@ -674,6 +674,10 @@
         "additionalProperties": false
       },
       "CvrCompanyDto": {
+        "required": [
+          "companyCvr",
+          "companyName"
+        ],
         "type": "object",
         "properties": {
           "companyCvr": {
