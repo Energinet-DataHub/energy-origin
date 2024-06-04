@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Authorization.Exceptions;
+using API.Models;
 using API.Repository;
 using API.ValueObjects;
 using MediatR;
@@ -22,21 +24,21 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
     public async Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query,
         CancellationToken cancellationToken)
     {
-        var idpClientID = new IdpClientId(query.ClientId);
+        var requestedClientId = new IdpClientId(query.ClientId);
 
-        var result = await _clientRepository.Query()
-            .Where(x => x.IdpClientId == idpClientID)
+        var client = await _clientRepository.Query()
+            .Where(x => x.IdpClientId == requestedClientId)
             .Select(x => new GetConsentForClientQueryResult(query.ClientId, x.ClientType.ToString(), "someOrgName",
                 new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() },
                 "dashboard production meters certificates wallet"))
-            .FirstAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (result.OrgName == "Energinet")
+        if (client is null)
         {
-            throw new Exception("Nooooooh!");
+            throw new EntityNotFoundException(query.ClientId, typeof(Client));
         }
 
-        return result;
+        return client;
     }
 }
 

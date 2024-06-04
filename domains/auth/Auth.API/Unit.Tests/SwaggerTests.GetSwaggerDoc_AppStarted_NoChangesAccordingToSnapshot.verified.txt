@@ -14,7 +14,6 @@
           {
             "name": "state",
             "in": "query",
-            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -22,7 +21,6 @@
           {
             "name": "overrideRedirectionUri",
             "in": "query",
-            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -30,7 +28,6 @@
           {
             "name": "redirectionPath",
             "in": "query",
-            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -38,7 +35,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -52,7 +49,6 @@
           {
             "name": "overrideRedirectionUri",
             "in": "query",
-            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -60,7 +56,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -74,7 +70,6 @@
           {
             "name": "code",
             "in": "query",
-            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -82,7 +77,6 @@
           {
             "name": "error",
             "in": "query",
-            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -90,7 +84,6 @@
           {
             "name": "error_description",
             "in": "query",
-            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -98,7 +91,6 @@
           {
             "name": "state",
             "in": "query",
-            "style": "form",
             "schema": {
               "type": "string"
             }
@@ -106,7 +98,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -121,7 +113,6 @@
             "name": "userId",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -130,7 +121,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -142,7 +133,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -157,7 +148,6 @@
             "name": "role",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "string"
             }
@@ -166,7 +156,6 @@
             "name": "userId",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -175,7 +164,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -190,7 +179,6 @@
             "name": "role",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "string"
             }
@@ -199,7 +187,6 @@
             "name": "userId",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -208,7 +195,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -220,7 +207,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -235,7 +222,6 @@
             "name": "version",
             "in": "path",
             "required": true,
-            "style": "simple",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -244,7 +230,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
@@ -256,7 +242,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "OK"
           }
         }
       }
