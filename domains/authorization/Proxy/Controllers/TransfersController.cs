@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
