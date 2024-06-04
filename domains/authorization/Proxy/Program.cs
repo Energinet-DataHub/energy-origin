@@ -45,14 +45,14 @@ builder.Services.AddApiVersioning(options =>
         options.SubstituteApiVersionInUrl = true;
     });
 
-var proxyOptions = builder.Configuration.GetSection(ProxyOptions.Prefix).Get<ProxyOptions>()!;
-builder.Services.AddOptions<ProxyOptions>()
-    .BindConfiguration(ProxyOptions.Prefix)
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
+// var proxyOptions = builder.Configuration.GetSection(ProxyOptions.Prefix).Get<ProxyOptions>()!;
+// builder.Services.AddOptions<ProxyOptions>()
+    // .BindConfiguration(ProxyOptions.Prefix)
+    // .ValidateDataAnnotations()
+    // .ValidateOnStart();
 
 builder.Services.AddHttpClient("Proxy", options => options.BaseAddress = new Uri(
-    proxyOptions.WalletBaseUrl.AbsoluteUri,
+    "https://wallet/",//proxyOptions.WalletBaseUrl.AbsoluteUri,
     UriKind.Absolute));
 
 builder.Services.AddControllers()
