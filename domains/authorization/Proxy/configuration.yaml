@@ -2,4 +2,4 @@ name: eo-proxy
 repo: ghcr.io/energinet-datahub
 references:
   - file: k8s/energy-origin-apps/authorization/base/proxy-deployment.yaml
-    path: .spec.template.spec.containers[] | select(.name == "proxy") | .image
+    path: .spec.template.spec.containers[] | select(.name == "proxy-api") | .image
