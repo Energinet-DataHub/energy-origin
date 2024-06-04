@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <DocumentationFile>documentation.xml</DocumentationFile>
+        <DocumentationFile>proxy-documentation.xml</DocumentationFile>
         <NoWarn>1573;1701;1702;1591</NoWarn>
     </PropertyGroup>
 
@@ -14,8 +14,10 @@
       <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.4.1" />
     </ItemGroup>
     <ItemGroup>
-        <None Update="documentation.xml">
+        <None Update="proxy-documentation.xml">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 </Project>
+
+
