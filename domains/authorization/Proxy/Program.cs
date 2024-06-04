@@ -45,14 +45,14 @@ builder.Services.AddApiVersioning(options =>
         options.SubstituteApiVersionInUrl = true;
     });
 
-// var proxyOptions = builder.Configuration.GetSection(ProxyOptions.Prefix).Get<ProxyOptions>()!;
-// builder.Services.AddOptions<ProxyOptions>()
-    // .BindConfiguration(ProxyOptions.Prefix)
-    // .ValidateDataAnnotations()
-    // .ValidateOnStart();
+var proxyOptions = builder.Configuration.GetSection(ProxyOptions.Prefix).Get<ProxyOptions>()!;
+builder.Services.AddOptions<ProxyOptions>()
+    .BindConfiguration(ProxyOptions.Prefix)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddHttpClient("Proxy", options => options.BaseAddress = new Uri(
-    "https://wallet/",//proxyOptions.WalletBaseUrl.AbsoluteUri,
+    proxyOptions.WalletBaseUrl.AbsoluteUri,
     UriKind.Absolute));
 
 builder.Services.AddControllers()
@@ -76,6 +76,7 @@ var b2cOptions = b2cConfiguration.Get<B2COptions>()!;
 
 builder.Services.AddB2CAndTokenValidation(b2cOptions, tokenOptions);
 
+builder.Services.AddHealthChecks();
 
 
 var app = builder.Build();
@@ -87,6 +88,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.AddSwagger(app.Environment, "authorization-proxy");
+
+app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 
