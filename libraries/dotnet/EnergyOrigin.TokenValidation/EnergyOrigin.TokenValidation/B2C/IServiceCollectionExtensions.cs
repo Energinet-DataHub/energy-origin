@@ -50,14 +50,21 @@ public static class IServiceCollectionExtensions
                 .Build();
             options.AddPolicy(Policy.B2CPolicy, b2CPolicy);
 
-            var b2SubTypeUserPolicy = new AuthorizationPolicyBuilder()
+            var b2CSubTypeUserPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
                     AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .RequireClaim(ClaimType.SubType, Enum.GetName(SubjectType.User)!, Enum.GetName(SubjectType.User)!.ToLower())
                 .Build();
-            options.AddPolicy(Policy.B2CSubTypeUserPolicy, b2SubTypeUserPolicy);
+            options.AddPolicy(Policy.B2CSubTypeUserPolicy, b2CSubTypeUserPolicy);
+
+            var b2CCvrClaimPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
+                .RequireClaim(ClaimType.OrgCvr)
+                .Build();
+            options.AddPolicy(Policy.B2CCvrClaim, b2CCvrClaimPolicy);
 
             var b2CCustomPolicyClientPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
