@@ -12,12 +12,14 @@
 
     <ItemGroup>
       <PackageReference Include="EnergyOrigin.Setup" Version="4.2.0" />
-      <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.4.1" />
     </ItemGroup>
     <ItemGroup>
         <None Update="documentation.xml">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\libraries\dotnet\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
     </ItemGroup>
 </Project>
 

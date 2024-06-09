@@ -77,7 +77,7 @@ var b2cOptions = b2cConfiguration.Get<B2COptions>()!;
 builder.Services.AddB2CAndTokenValidation(b2cOptions, tokenOptions);
 
 builder.Services.AddHealthChecks();
-
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

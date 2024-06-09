@@ -39,15 +39,17 @@ public static class IServiceCollectionExtensions
                 options.MapInboundClaims = false;
                 options.TokenValidationParameters = tokenValidationParameters;
             });
-
+        services.AddTransient<IAuthorizationHandler, IdentityMustHaveAccessToOrganizationRequirmentHandler>();
         services.AddAuthorization(options =>
         {
             var b2CPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
+                .AddRequirements(new IdentityMustHaveAccessToOrganizationRequirment())
                 .AddAuthenticationSchemes(
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
                     AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .Build();
+
             options.AddPolicy(Policy.B2CPolicy, b2CPolicy);
 
             var b2CSubTypeUserPolicy = new AuthorizationPolicyBuilder()
