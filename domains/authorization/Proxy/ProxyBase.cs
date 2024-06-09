@@ -15,7 +15,7 @@ public class ProxyBase : ControllerBase
 
     private async Task ProxyRequest(string path, string organizationId)
     {
-        var requestMessage = BuildProxyRequest(path);
+        var requestMessage = await BuildProxyRequest(path);
 
         BuildProxyForwardHeaders(organizationId, requestMessage);
 
@@ -77,15 +77,24 @@ public class ProxyBase : ControllerBase
         requestMessage.Content?.Headers.TryAddWithoutValidation(WalletConstants.Header, organizationId);
     }
 
-    private HttpRequestMessage BuildProxyRequest(string path)
+    private async Task<HttpRequestMessage> BuildProxyRequest(string path)
     {
-        var requestMessage = new HttpRequestMessage();
-        var requestMethod = HttpContext.Request.Method;
-        var requestContent = new StreamContent(HttpContext.Request.Body);
+        if (HttpContext.Request.Body.CanSeek)
+        {
+            HttpContext.Request.Body.Position = 0;
+        }
+        var requestBodyStream = new MemoryStream();
+        await HttpContext.Request.Body.CopyToAsync(requestBodyStream);
+        requestBodyStream.Seek(0, SeekOrigin.Begin);
 
-        requestMessage.Method = new HttpMethod(requestMethod);
+        var requestMessage = new HttpRequestMessage()
+        {
+            Content = new StreamContent(requestBodyStream)
+        };
+
+        requestMessage.Method = new HttpMethod(HttpContext.Request.Method);
         requestMessage.RequestUri = new Uri($"{path}{HttpContext.Request.QueryString}", UriKind.Relative);
-        requestMessage.Content = requestContent;
+
         return requestMessage;
     }
 
@@ -96,16 +105,20 @@ public class ProxyBase : ControllerBase
     /// <param name="organizationId"></param>
     protected async Task ProxyClientCredentialsRequest(string path, string? organizationId)
     {
-        if (organizationId is not null)
+        if(string.IsNullOrEmpty(organizationId))
         {
-            var orgId = Guid.Parse(organizationId);
-            var identity = new IdentityDescriptor(HttpContext, orgId);
-            if (!identity.OrgIds.Contains(orgId))
-            {
-                Forbidden();
-                return;
-            }
+            Forbidden();
+            return;
         }
+
+        var orgId = Guid.Parse(organizationId);
+        var identity = new IdentityDescriptor(HttpContext, orgId); // TODO: Not  a fan of IdentityDescriptor breaking this code. https://chatgpt.com/share/9214da86-f6ab-4222-b0e6-adc935656226
+        if (!identity.OrgIds.Contains(orgId))
+        {
+            //Forbidden();
+            return;
+        }
+
 
         await ProxyRequest(path, organizationId!);
     }

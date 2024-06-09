@@ -1,5 +1,11 @@
+using System.Collections;
 using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using FluentAssertions;
+using Proxy.Controllers;
 using Proxy.IntegrationTests.Setup;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
@@ -11,99 +17,63 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
     private HttpClient CreateClientWithOrgIds(List<string> orgIds) => fixture.Factory.CreateAuthenticatedClient(orgIds: orgIds);
     private HttpClient CreateClientWithOrgAsSub(string sub) => fixture.Factory.CreateAuthenticatedClient(sub: sub);
 
-    [Theory]
-    [InlineData("GET", "/v1/wallets")]
-    [InlineData("GET", "/v1/wallets/{walletId}")]
-    [InlineData("GET", "/v1/certificates")]
-    [InlineData("GET", "/v1/aggregate-certificates")]
-    [InlineData("GET", "/v1/claims")]
-    [InlineData("GET", "/v1/aggregate-claims")]
-    [InlineData("GET", "/v1/transfers")]
-    [InlineData("GET", "/v1/aggregate-transfers")]
-    public async Task V1_Endpoints_ReturnOk(string method, string v1ProxyEndpoint)
+
+    [Fact]
+    public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithInvalidOrgnaisationId_Return403Forbidden()
     {
+        // Arrange
+        var client = CreateClientWithOrgIds(new (){Guid.NewGuid().ToString()});
 
-        var endpoint = v1ProxyEndpoint.Contains("{walletId}") ? v1ProxyEndpoint.Replace("{walletId}", Guid.NewGuid().ToString()) : v1ProxyEndpoint;
+        // Act
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
+        var response = await client.GetAsync($"wallets?organizationId={Guid.NewGuid()}");
 
-        var requestBuilder = Request.Create().WithPath(endpoint).UsingMethod(method);
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 
-        fixture.WalletWireMockServer
-            .Given(requestBuilder)
-            .RespondWith(Response.Create().WithStatusCode(200));
+    [Fact]
+    public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithoutEoApiVersion_Return400BadRequest()
+    {
+        // Arrange
+        var orgId = Guid.NewGuid().ToString();
+        var client = CreateClientWithOrgIds(new (){orgId});
 
-        var orgIds = new List<string> { Guid.NewGuid().ToString() };
-        var client = CreateClientWithOrgIds(orgIds);
+        // Act
+        var response = await client.GetAsync($"wallets?organizationId={orgId}");
 
-        var queryParameters = "";
-        if (v1ProxyEndpoint.StartsWith("/v1/aggregate-"))
-        {
-            queryParameters = "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600";
-        }
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 
-        var request = new HttpRequestMessage(new HttpMethod(method), $"{endpoint}{queryParameters}");
+    [Fact]
+    public async Task GivenB2C_WhenV1GetEndpointAreUsed_WithEoApiVersion_Return404NotFound()
+    {
+        // Arrange
+        var orgId = Guid.NewGuid().ToString();
+        var client = CreateClientWithOrgIds(new (){orgId});
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
 
-        var response = await client.SendAsync(request);
+        // Act
+        var response = await client.GetAsync($"v1/wallets?organizationId={orgId}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Theory]
-    [InlineData("GET", "/wallets")]
-    [InlineData("GET", "/wallets/{walletId}")]
-    [InlineData("GET", "/certificates")]
-    [InlineData("GET", "/aggregate-certificates")]
-    [InlineData("GET", "/claims")]
-    [InlineData("GET", "/aggregate-claims")]
-    [InlineData("GET", "/transfers")]
-    [InlineData("GET", "/aggregate-transfers")]
-    public async Task V20250101_Endpoints_ReturnOk(string method, string v2025ProxyEndpoint)
+    [InlineData("/v1/wallets", "")]
+    [InlineData("/v1/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
+    [InlineData("/v1/certificates", "")]
+    [InlineData("/v1/aggregate-certificates", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/v1/claims", "")]
+    [InlineData("/v1/aggregate-claims", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/v1/transfers", "")]
+    [InlineData("/v1/aggregate-transfers", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    public async Task GivenB2C_WhenV1GetEndpointsAreUsed_WithoutEoApiVersion_Return200Ok(string endpoint, string queryParameters)
     {
-        var walletId = Guid.NewGuid().ToString();
-        var downstreamEndpoint = v2025ProxyEndpoint.Contains("{walletId}") ? v2025ProxyEndpoint.Replace("{walletId}", walletId) : v2025ProxyEndpoint;
-
-        var requestBuilder = Request.Create()
-            .WithPath($"/v1{downstreamEndpoint}")
-            .UsingMethod(method);
-
-        fixture.WalletWireMockServer
-            .Given(requestBuilder)
-            .RespondWith(Response.Create().WithStatusCode(200));
-
-        var orgIds = new List<string> { Guid.NewGuid().ToString() };
-        var client = CreateClientWithOrgIds(orgIds);
-        var organizationId = orgIds[0];
-
-        var queryParameters = $"?organizationId={organizationId}";
-        if (v2025ProxyEndpoint.StartsWith("/aggregate-"))
-        {
-            queryParameters += "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600";
-        }
-
-        var request = new HttpRequestMessage(new HttpMethod(method), $"{downstreamEndpoint}{queryParameters}");
-        request.Headers.Add("EO_API_VERSION", "20250101");
-
-        var response = await client.SendAsync(request);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
-    [Theory]
-    [InlineData("GET", "/v1/wallets")]
-    [InlineData("GET", "/v1/wallets/{walletId}")]
-    [InlineData("GET", "/v1/certificates")]
-    [InlineData("GET", "/v1/aggregate-certificates")]
-    [InlineData("GET", "/v1/claims")]
-    [InlineData("GET", "/v1/aggregate-claims")]
-    [InlineData("GET", "/v1/transfers")]
-    [InlineData("GET", "/v1/aggregate-transfers")]
-    public async Task GivenOldAuth_WhenV1EndpointsAreUsed_ThenAppendSubClaimAsWalletOwnerHeader(string method, string v1ProxyEndpoint)
-    {
-        var endpoint = v1ProxyEndpoint.Contains("{walletId}") ? v1ProxyEndpoint.Replace("{walletId}", Guid.NewGuid().ToString()) : v1ProxyEndpoint;
-
-        var orgIds = new List<string> { Guid.NewGuid().ToString() };
-        var organizationId = orgIds[0];
-
-        var requestBuilder = Request.Create().WithPath(endpoint).UsingMethod(method);
+        // Arrange
+        var requestBuilder = Request.Create().UsingGet().WithPath(endpoint);
 
         fixture.WalletWireMockServer
             .Given(requestBuilder)
@@ -115,45 +85,35 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
                     .WithTransformer()
             );
 
-        var client = CreateClientWithOrgAsSub(sub: organizationId);
+        var orgId = Guid.NewGuid().ToString();
+        var client = CreateClientWithOrgAsSub(orgId);
 
-        var queryParameters = "";
-        if (v1ProxyEndpoint.StartsWith("/v1/aggregate-"))
-        {
-            queryParameters = "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600";
-        }
-
-        var request = new HttpRequestMessage(new HttpMethod(method), $"{endpoint}{queryParameters}");
-
-        var response = await client.SendAsync(request);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
+        // Act
+        var response = await client.GetAsync($"{endpoint}{queryParameters}");
         var responseContent = await response.Content.ReadAsStringAsync();
 
-        responseContent.Should().Be(organizationId);
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent.Should().Be(orgId);
     }
 
     [Theory]
-    [InlineData("GET", "/wallets")]
-    [InlineData("GET", "/wallets/{walletId}")]
-    [InlineData("GET", "/certificates")]
-    [InlineData("GET", "/aggregate-certificates")]
-    [InlineData("GET", "/claims")]
-    [InlineData("GET", "/aggregate-claims")]
-    [InlineData("GET", "/transfers")]
-    [InlineData("GET", "/aggregate-transfers")]
-    public async Task GivenB2C_WhenV20250101EndpointsAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string method, string v2025ProxyEndpoint)
+    [InlineData("/wallets", "")]
+    [InlineData("/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
+    [InlineData("/certificates", "")]
+    [InlineData("/aggregate-certificates", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/claims", "")]
+    [InlineData("/aggregate-claims", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/transfers", "")]
+    [InlineData("/aggregate-transfers", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string endpoint, string queryParameters)
     {
-        var walletId = Guid.NewGuid().ToString();
-        var downstreamEndpoint = v2025ProxyEndpoint.Contains("{walletId}") ? v2025ProxyEndpoint.Replace("{walletId}", walletId) : v2025ProxyEndpoint;
-
+        // Arrange
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
-        var organizationId = orgIds[0];
 
         var requestBuilder = Request.Create()
-            .WithPath($"/v1{downstreamEndpoint}")
-            .UsingMethod(method);
+            .UsingGet()
+            .WithPath($"/v1{endpoint}");
 
         fixture.WalletWireMockServer
             .Given(requestBuilder)
@@ -166,22 +126,115 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
             );
 
         var client = CreateClientWithOrgIds(orgIds);
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
 
-        var queryParameters = $"?organizationId={organizationId}";
-        if (v2025ProxyEndpoint.StartsWith("/aggregate-"))
-        {
-            queryParameters += "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600";
-        }
-
-        var request = new HttpRequestMessage(new HttpMethod(method), $"{downstreamEndpoint}{queryParameters}");
-        request.Headers.Add("EO_API_VERSION", "20250101");
-
-        var response = await client.SendAsync(request);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
+        // Act
+        var response = await client.GetAsync($"{endpoint}?organizationId={orgIds[0]}{queryParameters}");
         var responseContent = await response.Content.ReadAsStringAsync();
 
-        responseContent.Should().Be(organizationId);
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent.Should().Be(orgIds[0]);
+    }
+
+
+    public class V1PostTestData : IEnumerable<object[]>
+    {
+        private readonly List<object[]> _data = new List<object[]>
+        {
+            new object[] {"/v1/wallets", new CreateWalletRequest{ PrivateKey = Encoding.ASCII.GetBytes("test") }},
+            new object[] {"/v1/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0/endpoints", new {}},
+            new object[] {"/v1/external-endpoints", new CreateExternalEndpointRequest{TextReference = "Hello", WalletReference = new WalletEndpointReference(){ Endpoint = new Uri("https://test"), Version = 0, PublicKey = "test"}}},
+            new object[] {"/v1/claims", new ClaimRequest{ Quantity = 1, ConsumptionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ProductionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}}},
+            // slices is our only insecure endpoint. new object[] {"/slices", new ReceiveRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1, HashedAttributes = new List<HashedAttribute>()}},
+            new object[] {"/v1/transfers", new TransferRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ReceiverId = Guid.NewGuid(), HashedAttributes = new []{"None :D"}}},
+        };
+
+        public IEnumerator<object[]> GetEnumerator() => _data.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    [Theory]
+    [ClassData(typeof(V1PostTestData))]
+    public async Task GivenB2C_WhenV1PostEndpointsAreUsed_WithoutEoApiVersion_Return200Ok(string endpoint, object requestBody)
+    {
+        // Arrange
+        var requestBuilder = Request.Create()
+            .WithPath($"{endpoint}")
+            .WithBody(JsonSerializer.Serialize(requestBody))
+            .UsingPost();
+
+        fixture.WalletWireMockServer
+            .Given(requestBuilder)
+            .RespondWith(
+                Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "text/plain")
+                    .WithBody("{{request.headers.wallet-owner}}")
+                    .WithTransformer()
+            );
+
+        var orgId = Guid.NewGuid().ToString();
+        var client = CreateClientWithOrgAsSub(orgId);
+
+        // Act
+        var response = await client.PostAsync($"{endpoint}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent.Should().Be(orgId);
+    }
+
+    public class V20250101PostTestData : IEnumerable<object[]>
+    {
+        private readonly List<object[]> _data = new List<object[]>
+        {
+            new object[] {"/wallets", new CreateWalletRequest{ PrivateKey = Encoding.ASCII.GetBytes("test") }},
+            new object[] {"/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0/endpoints", new {}},
+            new object[] {"/external-endpoints", new CreateExternalEndpointRequest{TextReference = "Hello", WalletReference = new WalletEndpointReference(){ Endpoint = new Uri("https://test"), Version = 0, PublicKey = "test"}}},
+            new object[] {"/claims", new ClaimRequest{ Quantity = 1, ConsumptionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ProductionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}}},
+            // slices is our only insecure endpoint. new object[] {"/slices", new ReceiveRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1, HashedAttributes = new List<HashedAttribute>()}},
+            new object[] {"/transfers", new TransferRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ReceiverId = Guid.NewGuid(), HashedAttributes = new []{"None :D"}}},
+        };
+
+        public IEnumerator<object[]> GetEnumerator() => _data.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    [Theory]
+    [ClassData(typeof(V20250101PostTestData))]
+    public async Task GivenB2C_WhenV20250101EndpointsPostAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string endpoint, object requestBody)
+    {
+        // Arrange
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+
+        var requestBuilder = Request.Create()
+            .WithPath($"/v1{endpoint}")
+            .WithBody(JsonSerializer.Serialize(requestBody))
+            .UsingPost();
+
+        fixture.WalletWireMockServer
+            .Given(requestBuilder)
+            .RespondWith(
+                Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "text/plain")
+                    .WithBody("{{request.headers.wallet-owner}}")
+                    .WithTransformer()
+            );
+
+        var client = CreateClientWithOrgIds(orgIds);
+
+        // Act
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
+        var response = await client.PostAsync($"{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent.Should().Be(orgIds[0]);
     }
 }

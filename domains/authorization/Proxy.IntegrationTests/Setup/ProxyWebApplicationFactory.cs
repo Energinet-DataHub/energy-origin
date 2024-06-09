@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Proxy.Controllers;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
+using Claim = System.Security.Claims.Claim;
 
 namespace Proxy.IntegrationTests.Setup;
 

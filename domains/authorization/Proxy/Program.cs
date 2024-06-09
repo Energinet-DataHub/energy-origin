@@ -81,6 +81,12 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
+app.Use(async (context, next) =>
+{
+    context.Request.EnableBuffering();
+    await next();
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

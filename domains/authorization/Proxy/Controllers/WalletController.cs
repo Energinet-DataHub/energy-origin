@@ -37,7 +37,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(CreateWalletResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task CreateWalletV2([FromBody] CreateWalletRequest request, string? organizationId)
+    public async Task CreateWalletV2([FromBody] CreateWalletRequest request, [FromQuery]string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/wallets", organizationId);
     }
@@ -74,7 +74,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(ResultList<WalletRecord>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task GetWalletsV2(string? organizationId)
+    public async Task GetWalletsV2([FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/wallets", organizationId);
     }
@@ -117,13 +117,13 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(WalletRecord), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task GetWalletV2([FromRoute] Guid walletId, string organizationId)
+    public async Task GetWalletV2([FromRoute] Guid walletId, [FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest($"v1/wallets/{walletId}", organizationId);
     }
 
     [HttpPost]
-    [Route("wallets/{walletId}/endpoints")]
+    [Route("v1/wallets/{walletId}/endpoints")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
     [ApiVersionNeutral]
@@ -146,7 +146,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(WalletRecord), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task CreateWalletEndpointV2([FromRoute] Guid walletId, string? organizationId)
+    public async Task CreateWalletEndpointV2([FromRoute] Guid walletId, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest($"v1/wallets/{walletId}/endpoints", organizationId);
     }
@@ -175,7 +175,7 @@ public class WalletController : ProxyBase
     [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task CreateExternalEndpointV2([FromBody] CreateExternalEndpointRequest request, string? organizationId)
+    public async Task CreateExternalEndpointV2([FromBody] CreateExternalEndpointRequest request, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/external-endpoints", organizationId);
     }

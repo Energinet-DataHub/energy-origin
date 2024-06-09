@@ -293,7 +293,7 @@
         "summary": "Queues a request to claim two certificate for a given quantity.",
         "parameters": [
           {
-            "name": "orgranizationId",
+            "name": "organizationId",
             "in": "query",
             "schema": {
               "type": "string"
