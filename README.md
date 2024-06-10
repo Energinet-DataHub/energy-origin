@@ -14,6 +14,7 @@
 - [DataSync](./doc/api/datasync.md)
 - [Measurements](./doc/api/measurements.md)
 - [Metering points](./doc/api/meteringpoint.md)
+- [Authorization Proxy]
 
 ## CI / CD Documentation
 
@@ -31,3 +32,9 @@
 ### Acorn Actions
 
 - [acorn-actions repository](https://github.com/Energinet-DataHub/acorn-actions)
+
+## Other Documentation
+
+### Authentication & Authorization
+
+- [Azure B2C](./domains/authorization/documentation/readme.md)
