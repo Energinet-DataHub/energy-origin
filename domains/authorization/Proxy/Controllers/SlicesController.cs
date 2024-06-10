@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Proxy.Controllers;
 
-[AllowAnonymous]
 [ApiController]
 public class SlicesController : ProxyBase
 {
@@ -36,7 +35,7 @@ public class SlicesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public async Task ReceiveSlice([FromBody] ReceiveRequest request)
     {
         await ProxyInsecureCall("v1/slices");
@@ -63,7 +62,7 @@ public class SlicesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public async Task ReceiveSliceV2([FromBody] ReceiveRequest request, string organizationId)
     {
         await ProxyInsecureCall("v1/slices");
@@ -132,5 +131,4 @@ public record HashedAttribute()
 /// <summary>
 /// Response to receive a certificate-slice from another wallet.
 /// </summary>
-public record ReceiveResponse() { }
-
+public record ReceiveResponse();

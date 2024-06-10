@@ -119,7 +119,6 @@ public class ProxyBase : ControllerBase
             return;
         }
 
-
         await ProxyRequest(path, organizationId!);
     }
 

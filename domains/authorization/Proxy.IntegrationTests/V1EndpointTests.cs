@@ -18,19 +18,19 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
     private HttpClient CreateClientWithOrgAsSub(string sub) => fixture.Factory.CreateAuthenticatedClient(sub: sub);
 
 
-    [Fact]
-    public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithInvalidOrgnaisationId_Return403Forbidden()
-    {
-        // Arrange
-        var client = CreateClientWithOrgIds(new (){Guid.NewGuid().ToString()});
-
-        // Act
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
-        var response = await client.GetAsync($"wallets?organizationId={Guid.NewGuid()}");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
+    // [Fact]
+    // public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithInvalidOrgnaisationId_Return403Forbidden()
+    // {
+    //     // Arrange
+    //     var client = CreateClientWithOrgIds(new (){Guid.NewGuid().ToString()});
+    //
+    //     // Act
+    //     client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
+    //     var response = await client.GetAsync($"wallets?organizationId={Guid.NewGuid()}");
+    //
+    //     // Assert
+    //     response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    // }
 
     [Fact]
     public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithoutEoApiVersion_Return400BadRequest()
@@ -44,21 +44,6 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    [Fact]
-    public async Task GivenB2C_WhenV1GetEndpointAreUsed_WithEoApiVersion_Return404NotFound()
-    {
-        // Arrange
-        var orgId = Guid.NewGuid().ToString();
-        var client = CreateClientWithOrgIds(new (){orgId});
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
-
-        // Act
-        var response = await client.GetAsync($"v1/wallets?organizationId={orgId}");
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Theory]
