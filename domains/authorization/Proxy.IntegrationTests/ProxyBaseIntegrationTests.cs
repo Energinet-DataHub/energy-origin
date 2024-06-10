@@ -34,22 +34,6 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    // TODO: Make sure it actually follows http standards
-    // [Fact]
-    // public async Task Proxy_Returns_Bad_Gateway_When_Upstream_Returns_Invalid_Response()
-    // {
-    //     var orgIds = new List<string> { Guid.NewGuid().ToString() };
-    //     var client = CreateClientWithOrgIds(orgIds);
-    //     var organizationId = orgIds[0];
-    //
-    //     var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
-    //     request.Headers.Add("EO_API_VERSION", ApiVersions.Version20250101);
-    //
-    //     var response = await client.SendAsync(request);
-    //
-    //     response.StatusCode.Should().Be(HttpStatusCode.BadGateway);
-    // }
-
     [Fact]
     public async Task Proxy_Returns_Not_Found_For_Unmatched_Route()
     {
