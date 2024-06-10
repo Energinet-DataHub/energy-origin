@@ -14,7 +14,6 @@
 - [DataSync](./doc/api/datasync.md)
 - [Measurements](./doc/api/measurements.md)
 - [Metering points](./doc/api/meteringpoint.md)
-- [Authorization Proxy]
 
 ## CI / CD Documentation
 
