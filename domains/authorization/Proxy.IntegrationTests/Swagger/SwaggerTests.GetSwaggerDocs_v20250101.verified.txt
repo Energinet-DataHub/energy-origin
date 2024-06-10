@@ -515,14 +515,7 @@
             }
           },
           "404": {
-            "description": "Receiver endpoint not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Receiver endpoint not found."
           },
           "400": {
             "description": "Public key could not be decoded."
