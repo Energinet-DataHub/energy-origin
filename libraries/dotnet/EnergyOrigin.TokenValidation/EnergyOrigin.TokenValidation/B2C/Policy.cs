@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-
 namespace EnergyOrigin.TokenValidation.b2c;
 
 public static class Policy

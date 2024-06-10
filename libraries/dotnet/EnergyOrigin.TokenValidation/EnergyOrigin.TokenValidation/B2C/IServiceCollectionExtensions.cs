@@ -48,7 +48,6 @@ public static class IServiceCollectionExtensions
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
                     AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .Build();
-
             options.AddPolicy(Policy.B2CPolicy, b2CPolicy);
 
             var b2CSubTypeUserPolicy = new AuthorizationPolicyBuilder()
