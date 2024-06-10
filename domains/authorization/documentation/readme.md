@@ -210,3 +210,9 @@ Set up ncat to listen and dump all traffic on port 9090 on localhost
 Set up ngrok to forward traffic to netcat
 
 ```ngrok http 9090```
+
+# Authorization Proxy
+
+This section describes the first version of Authorization Proxy in Energy Origin. Authorization Proxy is built to handle authentication and authorization for opensource Wallet project. Since Wallet is opensource and needs to be generic, we have to have a wrapper (Authorization Proxy) to secure all calls against it. The way this is handled is by having 1 to 1 mapping between Wallet API's and the Authorization Proxy API. We then have extra requirements for providing OrganizationID, that we can check if client's request has access to, before forwarding the request towards Wallet API.
+
+Authorization Proxy is made backwards compaitble allowing old self signed tokens, aswell as the new Azure B2C tokens, to ensure we can use this new proxy service without breaking old code. THe proxy is simple and only needs B2C, TokenValidation and WalletBaseUrl in enviroment variables.
