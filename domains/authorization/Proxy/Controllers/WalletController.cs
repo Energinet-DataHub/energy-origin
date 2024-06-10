@@ -37,7 +37,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(CreateWalletResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task CreateWalletV2([FromBody] CreateWalletRequest request, [FromQuery]string? organizationId)
+    public async Task CreateWalletV2([FromBody] CreateWalletRequest request, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/wallets", organizationId);
     }

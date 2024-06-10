@@ -37,7 +37,7 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
     {
         // Arrange
         var orgId = Guid.NewGuid().ToString();
-        var client = CreateClientWithOrgIds(new (){orgId});
+        var client = CreateClientWithOrgIds(new() { orgId });
 
         // Act
         var response = await client.GetAsync($"wallets?organizationId={orgId}");

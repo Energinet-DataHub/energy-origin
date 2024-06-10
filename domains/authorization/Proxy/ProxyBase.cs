@@ -105,7 +105,7 @@ public class ProxyBase : ControllerBase
     /// <param name="organizationId"></param>
     protected async Task ProxyClientCredentialsRequest(string path, string? organizationId)
     {
-        if(string.IsNullOrEmpty(organizationId))
+        if (string.IsNullOrEmpty(organizationId))
         {
             Forbidden();
             return;
