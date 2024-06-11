@@ -23,7 +23,7 @@ public class UserService : IUserService
     public async Task UpdateTermsAccepted(User user, DecodableUserDescriptor descriptor)
     {
         repository.UpdateTermsAccepted(user);
-        await publishEndpoint.Publish(new OrgAcceptedTerms((Guid)user.Id!, descriptor.Organization?.Tin, descriptor.Id));
+        await publishEndpoint.Publish(new OrgAcceptedTerms(descriptor.Subject, descriptor.Organization?.Tin, descriptor.Id));
         await repository.SaveChangeAsync();
     }
     public async Task<User?> GetUserByIdAsync(Guid? id) => id is null ? null : await repository.GetUserByIdAsync(id.Value);

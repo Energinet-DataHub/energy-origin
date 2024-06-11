@@ -24,9 +24,9 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         .WithWebHostBuilder(builder => builder
             .UseEnvironment("Test")
             .UseSetting(Configuration.UsersFilePathKey, "test-users.json")
-            .UseSetting(Configuration.ClientIdKey, clientId)
-            .UseSetting(Configuration.ClientSecretKey, clientSecret)
-            .UseSetting(Configuration.ClientRedirectUriKey, redirectUri));
+            .UseSetting($"{Configuration.ClientsPrefix}:0:{Configuration.ClientIdKey}", clientId)
+            .UseSetting($"{Configuration.ClientsPrefix}:0:{Configuration.ClientSecretKey}", clientSecret)
+            .UseSetting($"{Configuration.ClientsPrefix}:0:{Configuration.ClientRedirectUriKey}", redirectUri));
 
     [Fact]
     public async Task CompleteFlowTest()

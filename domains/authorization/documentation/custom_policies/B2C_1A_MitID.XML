@@ -89,7 +89,13 @@
             <ClaimType Id="org_ids">
                 <DisplayName>org_ids</DisplayName>
                 <DataType>stringCollection</DataType>
-                <UserHelpText>List of organization authorized to act on behalf of</UserHelpText>
+                <UserHelpText>List of id of organizations authorized to act on behalf of</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="org_ids_string">
+                <DisplayName>org_ids_string</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>String of org_ids space separated</UserHelpText>
             </ClaimType>
 
             <ClaimType Id="sub_type">
@@ -229,6 +235,19 @@
                     <OutputClaim ClaimTypeReferenceId="userPrincipalName" TransformationClaimType="outputClaim"/>
                 </OutputClaims>
             </ClaimsTransformation>
+
+            <ClaimsTransformation Id="OrgIdsAsStringTransformation" TransformationMethod="StringJoin">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="org_ids" TransformationClaimType="inputClaim"/>
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter DataType="string" Id="delimiter" Value=" " />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="org_ids_string" TransformationClaimType="outputClaim"/>
+                </OutputClaims>
+            </ClaimsTransformation>
+
         </ClaimsTransformations>
 
         <ContentDefinitions>
@@ -254,7 +273,7 @@
                     <OutputTokenFormat>JWT</OutputTokenFormat>
                     <Metadata>
                         <Item Key="client_id">{service:te}</Item>
-                        <Item Key="issuer_refresh_token_user_identity_claim_type">objectId</Item>
+                        <Item Key="issuer_refresh_token_user_identity_claim_type">sub</Item>
                         <Item Key="SendTokenResponseBodyWithJsonNumbers">true</Item>
                     </Metadata>
                     <CryptographicKeys>
@@ -282,49 +301,6 @@
         <ClaimsProvider>
             <DisplayName>Azure AD Technical Profiles</DisplayName>
             <TechnicalProfiles>
-                <TechnicalProfile Id="AAD-UserWrite">
-                    <DisplayName>Write user information to AAD</DisplayName>
-                    <Protocol Name="Proprietary"
-                              Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
-                    <Metadata>
-                        <Item Key="Operation">Write</Item>
-                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">true</Item>
-                        <Item Key="UserMessageIfClaimsPrincipalAlreadyExists">The account already exists. Try to create another account</Item>
-                    </Metadata>
-                    <InputClaims>
-                        <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress" Required="true"/>
-                    </InputClaims>
-                    <PersistedClaims>
-                        <PersistedClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress"/>
-                        <PersistedClaim ClaimTypeReferenceId="givenName"/>
-                        <PersistedClaim ClaimTypeReferenceId="surname"/>
-                    </PersistedClaims>
-                    <OutputClaims>
-                        <OutputClaim ClaimTypeReferenceId="objectId"/>
-                        <OutputClaim ClaimTypeReferenceId="userPrincipalName"/>
-                        <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress"/>
-                    </OutputClaims>
-                </TechnicalProfile>
-                <TechnicalProfile Id="AAD-UserRead">
-                    <DisplayName>Read user from Azure AD storage</DisplayName>
-                    <Protocol Name="Proprietary"
-                              Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
-                    <Metadata>
-                        <Item Key="Operation">Read</Item>
-                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
-                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
-                    </Metadata>
-                    <InputClaims>
-                        <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress" Required="true"/>
-                    </InputClaims>
-                    <OutputClaims>
-                        <OutputClaim ClaimTypeReferenceId="objectId"/>
-                        <OutputClaim ClaimTypeReferenceId="userPrincipalName"/>
-                        <OutputClaim ClaimTypeReferenceId="givenName"/>
-                        <OutputClaim ClaimTypeReferenceId="surname"/>
-                        <OutputClaim ClaimTypeReferenceId="displayName"/>
-                    </OutputClaims>
-                </TechnicalProfile>
 
                 <TechnicalProfile Id="AAD-UserWriteUsingAlternativeSecurityId">
                     <DisplayName>Azure Active Directory technical profile for handling social accounts</DisplayName>
@@ -346,12 +322,9 @@
                         <!-- Required claims -->
                         <PersistedClaim ClaimTypeReferenceId="alternativeSecurityId"/>
                         <PersistedClaim ClaimTypeReferenceId="userPrincipalName"/>
-                        <PersistedClaim ClaimTypeReferenceId="mailNickName" DefaultValue="unknown"/>
                         <PersistedClaim ClaimTypeReferenceId="displayName" DefaultValue="unknown"/>
 
                         <!-- Optional claims -->
-                        <PersistedClaim ClaimTypeReferenceId="givenName"/>
-                        <PersistedClaim ClaimTypeReferenceId="surname"/>
                     </PersistedClaims>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="objectId"/>
@@ -380,8 +353,6 @@
                         <!-- Optional claims -->
                         <OutputClaim ClaimTypeReferenceId="userPrincipalName"/>
                         <OutputClaim ClaimTypeReferenceId="displayName"/>
-                        <OutputClaim ClaimTypeReferenceId="givenName"/>
-                        <OutputClaim ClaimTypeReferenceId="surname"/>
                     </OutputClaims>
                 </TechnicalProfile>
             </TechnicalProfiles>
@@ -411,7 +382,6 @@
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="sub"/>
                         <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="first_name"/>
-                        <OutputClaim ClaimTypeReferenceId="objectid" PartnerClaimType="sub"/>
                         <OutputClaim ClaimTypeReferenceId="mitIDBearerToken" PartnerClaimType="{oauth2:access_token}"/>
                         <OutputClaim ClaimTypeReferenceId="identityProvider" PartnerClaimType="iss"/>
                     </OutputClaims>
@@ -420,44 +390,6 @@
                         <OutputClaimsTransformation ReferenceId="CreateUserPrincipalName"/>
                         <OutputClaimsTransformation ReferenceId="CreateAlternativeSecurityId"/>
                     </OutputClaimsTransformations>
-                </TechnicalProfile>
-            </TechnicalProfiles>
-        </ClaimsProvider>
-
-        <ClaimsProvider>
-            <DisplayName>Self Asserted for social sign in</DisplayName>
-            <TechnicalProfiles>
-                <TechnicalProfile Id="SelfAsserted-Social">
-                    <DisplayName>Collect more info during social signup</DisplayName>
-                    <Protocol Name="Proprietary"
-                              Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
-                    <Metadata>
-                        <Item Key="ContentDefinitionReferenceId">socialAccountsignupContentDefinition</Item>
-                    </Metadata>
-                    <CryptographicKeys>
-                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer"/>
-                    </CryptographicKeys>
-                    <InputClaims>
-                        <InputClaim ClaimTypeReferenceId="displayName"/>
-                        <InputClaim ClaimTypeReferenceId="givenName"/>
-                        <InputClaim ClaimTypeReferenceId="surname"/>
-                    </InputClaims>
-                    <DisplayClaims>
-                        <DisplayClaim ClaimTypeReferenceId="displayName"/>
-                        <DisplayClaim ClaimTypeReferenceId="givenName"/>
-                        <DisplayClaim ClaimTypeReferenceId="surname"/>
-                    </DisplayClaims>
-
-                    <OutputClaims>
-                        <OutputClaim ClaimTypeReferenceId="objectId"/>
-                        <OutputClaim ClaimTypeReferenceId="newUser"/>
-                        <OutputClaim ClaimTypeReferenceId="displayName"/>
-                        <OutputClaim ClaimTypeReferenceId="givenName"/>
-                        <OutputClaim ClaimTypeReferenceId="surname"/>
-                    </OutputClaims>
-                    <ValidationTechnicalProfiles>
-                        <ValidationTechnicalProfile ReferenceId="AAD-UserWriteUsingAlternativeSecurityId"/>
-                    </ValidationTechnicalProfiles>
                 </TechnicalProfile>
             </TechnicalProfiles>
         </ClaimsProvider>
@@ -522,7 +454,7 @@
                     <DisplayName>Check that the user has entered a valid access code by using Claims Transformations</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
-                        <Item Key="ServiceUrl">https://authstage.at.energioprindelse.dk/api/authorization/user-consent</Item>
+                        <Item Key="ServiceUrl">https://demo.energytrackandtrace.dk/api/authorization/user-consent</Item>
                         <Item Key="SendClaimsIn">Body</Item>
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="UseClaimAsBearerToken">self_access_token</Item>
@@ -545,6 +477,9 @@
                         <OutputClaim ClaimTypeReferenceId="org_ids"/>
                         <OutputClaim ClaimTypeReferenceId="scope"/>
                     </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="OrgIdsAsStringTransformation"/>
+                    </OutputClaimsTransformations>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
                 </TechnicalProfile>
             </TechnicalProfiles>
@@ -582,41 +517,29 @@
                         </Precondition>
                     </Preconditions>
                     <ClaimsExchanges>
-                        <ClaimsExchange Id="SelfAsserted-Social" TechnicalProfileReferenceId="SelfAsserted-Social"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
-
-                <OrchestrationStep Order="5" Type="ClaimsExchange">
-                    <Preconditions>
-                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
-                            <Value>objectId</Value>
-                            <Action>SkipThisOrchestrationStep</Action>
-                        </Precondition>
-                    </Preconditions>
-                    <ClaimsExchanges>
                         <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="6" Type="ClaimsExchange">
+                <OrchestrationStep Order="5" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="RestMethodExample" TechnicalProfileReferenceId="restMethod"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="7" Type="ClaimsExchange">
+                <OrchestrationStep Order="6" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="8" Type="ClaimsExchange">
+                <OrchestrationStep Order="7" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="AuthorizationExchange" TechnicalProfileReferenceId="authorizationMethod"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="9" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
+                <OrchestrationStep Order="8" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
             </OrchestrationSteps>
         </UserJourney>
     </UserJourneys>
@@ -635,7 +558,7 @@
                 <OutputClaim ClaimTypeReferenceId="email"/>
                 <OutputClaim ClaimTypeReferenceId="org_cvr"/>
                 <OutputClaim ClaimTypeReferenceId="org_name"/>
-                <OutputClaim ClaimTypeReferenceId="org_ids"/>
+                <OutputClaim ClaimTypeReferenceId="org_ids_string" PartnerClaimType="org_ids"/>
                 <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="scope"/>
             </OutputClaims>
