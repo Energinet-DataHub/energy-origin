@@ -29,7 +29,7 @@ public class MeasurementSyncerServiceTest
     [Fact]
     public async Task Test1()
     {
-        var emptyDb = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        var emptyDb = await integrationTestFixture.PostgresContainer.CreateNewDatabase();
         options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
         await using var dbContext = new ApplicationDbContext(options);
         await dbContext.Database.EnsureCreatedAsync();
