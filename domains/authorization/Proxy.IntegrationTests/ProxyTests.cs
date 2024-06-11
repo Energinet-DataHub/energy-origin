@@ -12,7 +12,7 @@ using WireMock.ResponseBuilders;
 
 namespace Proxy.IntegrationTests;
 
-public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixture<ProxyIntegrationTestFixture>
+public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<ProxyIntegrationTestFixture>
 {
     private HttpClient CreateClientWithOrgIds(List<string> orgIds) => fixture.Factory.CreateAuthenticatedClient(orgIds: orgIds);
     private HttpClient CreateClientWithOrgAsSub(string sub) => fixture.Factory.CreateAuthenticatedClient(sub: sub);
