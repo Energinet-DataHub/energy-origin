@@ -39,7 +39,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     {
         // Arrange
         var endpoint = "/slices";
-        var requestBody = new ReceiveRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1337, HashedAttributes = new List<HashedAttribute>()};
+        var requestBody = new ReceiveRequest { Quantity = 1, CertificateId = new FederatedStreamId() { Registry = "test", StreamId = Guid.NewGuid() }, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1337, HashedAttributes = new List<HashedAttribute>() };
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
 
         var requestBuilder = Request.Create()
@@ -73,7 +73,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     {
         // Arrange
         var endpoint = "v1/slices";
-        var requestBody = new ReceiveRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1337, HashedAttributes = new List<HashedAttribute>()};
+        var requestBody = new ReceiveRequest { Quantity = 1, CertificateId = new FederatedStreamId() { Registry = "test", StreamId = Guid.NewGuid() }, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1337, HashedAttributes = new List<HashedAttribute>() };
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
 
         var requestBuilder = Request.Create()

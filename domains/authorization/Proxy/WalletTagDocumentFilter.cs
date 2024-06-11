@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 public class WalletTagDocumentFilter : IDocumentFilter
