@@ -96,3 +96,5 @@ app.Run();
 public partial class Program
 {
 }
+
+// WHy won't the pipeline trigger a build?
