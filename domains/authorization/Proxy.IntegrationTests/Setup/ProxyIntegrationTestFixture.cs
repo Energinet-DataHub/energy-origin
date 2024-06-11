@@ -1,4 +1,3 @@
-using Proxy.IntegrationTests.Swagger;
 using WireMock.Server;
 
 namespace Proxy.IntegrationTests.Setup;
@@ -12,7 +11,6 @@ public class IntegrationTestCollection : ICollectionFixture<ProxyIntegrationTest
 public class ProxyIntegrationTestFixture : IAsyncLifetime
 {
     public ProxyWebApplicationFactory Factory { get; private set; } = new();
-    public SwaggerWebApplicationFactory SwaggerFactory { get; private set; } = new();
     public WireMockServer WalletWireMockServer { get; private set; } = WireMockServer.Start();
 
     public Task InitializeAsync()

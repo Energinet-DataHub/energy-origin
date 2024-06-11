@@ -19,13 +19,13 @@ public class ProxyTestAuthHandler(
 {
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var endpoint = Context.GetEndpoint();
-        if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+        var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+
+        if (!Context.Request.Headers.ContainsKey(HeaderNames.Authorization))
         {
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
-        var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
         var authorizationHeader = Context.Request.Headers[HeaderNames.Authorization].ToString().Substring(7);
         var securityToken = jwtSecurityTokenHandler.ReadToken(authorizationHeader) as JwtSecurityToken;
 

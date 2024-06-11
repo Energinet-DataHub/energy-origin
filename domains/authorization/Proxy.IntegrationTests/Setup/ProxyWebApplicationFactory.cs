@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Asp.Versioning.ApiExplorer;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -80,6 +81,13 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
         var client = CreateClient();
 
         return client;
+    }
+
+    public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
+    {
+        using var scope = Services.CreateScope();
+        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+        await withAction(provider);
     }
 
     public HttpClient CreateAuthenticatedClient(string sub = "", string name = "", List<string>? orgIds = null, string subType = "")

@@ -1,14 +1,13 @@
 using System.Net;
 using FluentAssertions;
 using Proxy.IntegrationTests.Setup;
-using Proxy.IntegrationTests.Swagger;
 
 namespace Proxy.IntegrationTests;
 
 [Collection(IntegrationTestCollection.CollectionName)]
 public class SwaggerTests(ProxyIntegrationTestFixture proxyIntegrationTestFixture)
 {
-    private readonly SwaggerWebApplicationFactory factory = proxyIntegrationTestFixture.SwaggerFactory;
+    private readonly ProxyWebApplicationFactory factory = proxyIntegrationTestFixture.Factory;
 
     [Fact]
     public async Task GetSwaggerUI_AppStarted_ReturnsOk()

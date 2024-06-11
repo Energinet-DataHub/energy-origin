@@ -56,7 +56,6 @@ builder.Services.AddControllers()
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-
     });
 
 builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations()
@@ -83,12 +82,6 @@ app.Use(async (context, next) =>
     context.Request.EnableBuffering();
     await next();
 });
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-
-}
 
 app.AddSwagger(app.Environment, "authorization-proxy");
 
