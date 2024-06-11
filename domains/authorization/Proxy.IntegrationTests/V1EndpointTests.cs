@@ -97,6 +97,7 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
         var response = await client.PostAsync($"{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
         var responseContent = await response.Content.ReadAsStringAsync();
 
+        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         responseContent.Should().Be("ok");
     }
