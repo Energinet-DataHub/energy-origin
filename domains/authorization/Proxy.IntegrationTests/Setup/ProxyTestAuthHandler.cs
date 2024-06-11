@@ -3,6 +3,8 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -17,6 +19,12 @@ public class ProxyTestAuthHandler(
 {
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        var endpoint = Context.GetEndpoint();
+        if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+        {
+            return Task.FromResult(AuthenticateResult.NoResult());
+        }
+
         var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
         var authorizationHeader = Context.Request.Headers[HeaderNames.Authorization].ToString().Substring(7);
         var securityToken = jwtSecurityTokenHandler.ReadToken(authorizationHeader) as JwtSecurityToken;

@@ -78,7 +78,7 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20240103");
+
         return client;
     }
 

@@ -16,8 +16,10 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
 {
     private HttpClient CreateClientWithOrgIds(List<string> orgIds) => fixture.Factory.CreateAuthenticatedClient(orgIds: orgIds);
     private HttpClient CreateClientWithOrgAsSub(string sub) => fixture.Factory.CreateAuthenticatedClient(sub: sub);
+    private HttpClient CreateUnauthenticatedClient() => fixture.Factory.CreateUnauthenticatedClient();
 
 
+    // Needs IdentityDescriptor to be fixed first. Current error is 500 internal server.
     // [Fact]
     // public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithInvalidOrgnaisationId_Return403Forbidden()
     // {
@@ -31,6 +33,73 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
     //     // Assert
     //     response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     // }
+
+    [Fact]
+    public async Task GivenB2C_WhenV20250101PostSliceEndpoint_WithoutBearerToken_Return200Ok()
+    {
+        // Arrange
+        var endpoint = "/slices";
+        var requestBody = new ReceiveRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1337, HashedAttributes = new List<HashedAttribute>()};
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+
+        var requestBuilder = Request.Create()
+            .WithPath($"/v1{endpoint}")
+            .WithBody(JsonSerializer.Serialize(requestBody))
+            .UsingPost();
+
+        fixture.WalletWireMockServer
+            .Given(requestBuilder)
+            .RespondWith(
+                Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "text/plain")
+                    .WithBody("ok")
+                    .WithTransformer()
+            );
+
+        var client = CreateUnauthenticatedClient();
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
+
+        // Act
+        var response = await client.PostAsync($"{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent.Should().Be("ok");
+    }
+
+    [Fact]
+    public async Task GivenB2C_WhenV1PostSliceEndpoint_WithoutBearerToken_Return200Ok()
+    {
+        // Arrange
+        var endpoint = "v1/slices";
+        var requestBody = new ReceiveRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1337, HashedAttributes = new List<HashedAttribute>()};
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+
+        var requestBuilder = Request.Create()
+            .WithPath($"/{endpoint}")
+            .WithBody(JsonSerializer.Serialize(requestBody))
+            .UsingPost();
+
+        fixture.WalletWireMockServer
+            .Given(requestBuilder)
+            .RespondWith(
+                Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "text/plain")
+                    .WithBody("ok")
+                    .WithTransformer()
+            );
+
+        var client = CreateUnauthenticatedClient();
+
+        // Act
+        var response = await client.PostAsync($"{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent.Should().Be("ok");
+    }
 
     [Fact]
     public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithoutEoApiVersion_Return400BadRequest()
@@ -131,7 +200,6 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
             new object[] {"/v1/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0/endpoints", new {}},
             new object[] {"/v1/external-endpoints", new CreateExternalEndpointRequest{TextReference = "Hello", WalletReference = new WalletEndpointReference(){ Endpoint = new Uri("https://test"), Version = 0, PublicKey = "test"}}},
             new object[] {"/v1/claims", new ClaimRequest{ Quantity = 1, ConsumptionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ProductionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}}},
-            // slices is our only insecure endpoint. new object[] {"/slices", new ReceiveRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1, HashedAttributes = new List<HashedAttribute>()}},
             new object[] {"/v1/transfers", new TransferRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ReceiverId = Guid.NewGuid(), HashedAttributes = new []{"None :D"}}},
         };
 
@@ -180,7 +248,6 @@ public class V1EndpointTests(ProxyIntegrationTestFixture fixture) : IClassFixtur
             new object[] {"/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0/endpoints", new {}},
             new object[] {"/external-endpoints", new CreateExternalEndpointRequest{TextReference = "Hello", WalletReference = new WalletEndpointReference(){ Endpoint = new Uri("https://test"), Version = 0, PublicKey = "test"}}},
             new object[] {"/claims", new ClaimRequest{ Quantity = 1, ConsumptionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ProductionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}}},
-            // slices is our only insecure endpoint. new object[] {"/slices", new ReceiveRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1, HashedAttributes = new List<HashedAttribute>()}},
             new object[] {"/transfers", new TransferRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ReceiverId = Guid.NewGuid(), HashedAttributes = new []{"None :D"}}},
         };
 
