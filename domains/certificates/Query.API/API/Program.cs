@@ -38,6 +38,16 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
 builder.Services.Configure<RabbitMqOptions>(
     builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 
+builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
+    {
+        options.UseNpgsql(
+            builder.Configuration.GetConnectionString("Postgres"),
+            providerOptions => providerOptions.EnableRetryOnFailure()
+        );
+    },
+    optionsLifetime: ServiceLifetime.Singleton);
+builder.Services.AddDbContextFactory<ApplicationDbContext>();
+
 builder.Services.AddMassTransit(
     x =>
     {
@@ -55,18 +65,13 @@ builder.Services.AddMassTransit(
             });
             cfg.ConfigureEndpoints(context);
         });
-        x.AddEntityFrameworkOutbox<ApplicationDbContext>(o => o.UsePostgres());
+        x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+        {
+            o.UsePostgres();
+            o.UseBusOutbox();
+        });
     }
 );
-builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
-    {
-        options.UseNpgsql(
-            builder.Configuration.GetConnectionString("Postgres"),
-            providerOptions => providerOptions.EnableRetryOnFailure()
-        );
-    },
-    optionsLifetime: ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddHealthChecks()

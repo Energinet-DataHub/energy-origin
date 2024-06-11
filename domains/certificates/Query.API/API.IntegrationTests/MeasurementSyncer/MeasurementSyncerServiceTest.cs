@@ -18,20 +18,21 @@ namespace API.IntegrationTests.MeasurementSyncer;
 public class MeasurementSyncerServiceTest
 {
     private readonly IntegrationTestFixture integrationTestFixture;
-    private readonly DbContextOptions<ApplicationDbContext> options;
+    private  DbContextOptions<ApplicationDbContext> options;
 
     public MeasurementSyncerServiceTest(IntegrationTestFixture integrationTestFixture)
     {
         this.integrationTestFixture = integrationTestFixture;
-        var emptyDb = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
-        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
-        using var dbContext = new ApplicationDbContext(options);
-        dbContext.Database.EnsureCreated();
+
     }
 
     [Fact]
     public async Task Test1()
     {
+        var emptyDb = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
+        await using var dbContext = new ApplicationDbContext(options);
+        await dbContext.Database.EnsureCreatedAsync();
         var gsrn = GsrnHelper.GenerateRandom();
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
@@ -42,17 +43,16 @@ public class MeasurementSyncerServiceTest
             DateTo: utcMidnight.AddHours(1).ToUnixTimeSeconds(),
             Quantity: 42,
             Quality: MeasurementQuality.Measured);
+        using var scope = integrationTestFixture.WebApplicationFactory.Services.CreateScope();
+        // var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await dbContext.Database.EnsureCreatedAsync();
+        dbContext.Add(MeteringPointTimeSeriesSlidingWindow.Create(gsrn, UnixTimestamp.Create(now)));
+        await scope.ServiceProvider.GetRequiredService<IPublishEndpoint>().Publish(measurement);
 
-        await using (var dbContext = new ApplicationDbContext(options))
-        {
-            dbContext.Add(MeteringPointTimeSeriesSlidingWindow.Create(gsrn, UnixTimestamp.Create(now)));
-            using var scope = integrationTestFixture.WebApplicationFactory.Services.CreateScope();
-            scope.ServiceProvider.GetRequiredService<IPublishEndpoint>().Publish(measurement);
+        await Task.Delay(TimeSpan.FromSeconds(15));
 
-            await Task.Delay(TimeSpan.FromSeconds(15));
+        await dbContext.SaveChangesAsync();
 
-            await dbContext.SaveChangesAsync();
-        }
-
+        var slidingWindow = await dbContext.MeteringPointTimeSeriesSlidingWindows.SingleAsync();
     }
 }
