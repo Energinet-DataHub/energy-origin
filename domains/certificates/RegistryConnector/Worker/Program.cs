@@ -69,7 +69,6 @@ builder.Services.AddMassTransit(o =>
         });
 
         cfg.ConfigureEndpoints(context);
-        cfg.SetQuorumQueue();
 
         cfg.ConfigureJsonSerializerOptions(jsonSerializerOptions =>
         {
