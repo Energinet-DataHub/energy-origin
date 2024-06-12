@@ -92,36 +92,6 @@ public class SyncStateTests
     }
 
     [Fact]
-    public async Task SetSyncPosition_FirstTime_ReturnsSyncedTo()
-    {
-        var gsrn = GsrnHelper.GenerateRandom();
-        var syncedTo = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-        await using var dbContext = new ApplicationDbContext(options);
-        var syncState = new SyncState(dbContext, Substitute.For<ILogger<SyncState>>());
-        await syncState.SetSyncPosition(gsrn, syncedTo, CancellationToken.None);
-
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn), CancellationToken.None);
-        actualPeriodStartTime.Should().Be(syncedTo);
-    }
-
-    [Fact]
-    public async Task SetSyncPosition_SecondTime_ReturnsSecondSyncPosition()
-    {
-        var gsrn = GsrnHelper.GenerateRandom();
-        var syncedTo1 = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        var syncedTo2 = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds();
-
-        await using var dbContext = new ApplicationDbContext(options);
-        var syncState = new SyncState(dbContext, Substitute.For<ILogger<SyncState>>());
-        await syncState.SetSyncPosition(gsrn, syncedTo1, CancellationToken.None);
-        await syncState.SetSyncPosition(gsrn, syncedTo2, CancellationToken.None);
-
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(CreateSyncInfo(gsrn), CancellationToken.None);
-        actualPeriodStartTime.Should().Be(syncedTo2);
-    }
-
-    [Fact]
     public async Task GivenSlidingWindow_WhenStoringInDatabase_MissingIntervalsCanBeRetrievedLater()
     {
         var gsrn = GsrnHelper.GenerateRandom();
