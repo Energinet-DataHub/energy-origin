@@ -28,11 +28,9 @@ public class ClientController : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("api/authorization/client/{idpClientId}")]
-    public async Task<ActionResult<AuthorizationResponse>> GetClient(
-        [FromServices] ILogger<AuthorizationController> logger, [FromRoute] Guid idpClientId)
+    public async Task<ActionResult<ClientResponse>> GetClient([FromServices] ILogger<ClientResponse> logger, [FromRoute] Guid idpClientId)
     {
         var queryResult = await _mediator.Send(new GetlientQuery(new IdpClientId(idpClientId)));
-
         return Ok(new ClientResponse(queryResult.IdpClientId.Value, queryResult.Name.Value, queryResult.RedirectUrl));
     }
 }

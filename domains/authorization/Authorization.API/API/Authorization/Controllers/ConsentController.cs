@@ -30,13 +30,11 @@ public class ConsentController : ControllerBase
     /// Grants consent.
     /// </summary>
     [HttpPost]
-    [Route("api/consent/grant/")]
-    public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger,
-        [FromBody] GrantConsentRequest request)
+    [Route("api/authorization/consent/grant/")]
+    public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentRequest request)
     {
-        ;
         await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, _entityDescriptor.OrgIds.First(),
-            new IdpClientId(request.ClientId)));
+            new IdpClientId(request.IdpClientId)));
         return Ok();
     }
 
@@ -44,9 +42,8 @@ public class ConsentController : ControllerBase
     /// Get consent from a specific Client.
     /// </summary>
     [HttpGet]
-    [Route("api/consent/grant/{clientId}")]
-    public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger,
-        [FromRoute] Guid clientId)
+    [Route("api/authorization/consent/grant/{clientId}")]
+    public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger, [FromRoute] Guid clientId)
     {
         var result = await _mediator.Send(new GetConsentQuery(clientId));
         return Ok(result);
