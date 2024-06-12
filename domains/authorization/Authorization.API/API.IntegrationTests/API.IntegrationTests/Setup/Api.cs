@@ -14,12 +14,12 @@ public class Api : IAsyncLifetime
     public async Task<HttpResponseMessage> GrantConsent(Guid clientId)
     {
         var request = new GrantConsentRequest(clientId);
-        return await _client.PostAsJsonAsync("/api/consent/grant", request);
+        return await _client.PostAsJsonAsync("/api/authorization/consent/grant", request);
     }
 
     public async Task<HttpResponseMessage> GetConsent(Guid clientId)
     {
-        return await _client.GetAsync("/api/consent/grant/" + clientId);
+        return await _client.GetAsync("/api/authorization/consent/grant/" + clientId);
     }
 
     public async Task<HttpResponseMessage> GetClient(Guid idpClientId)
