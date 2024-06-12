@@ -19,19 +19,22 @@ public static class IServiceCollectionExtensions
             .AddJwtBearer(AuthenticationScheme.B2CAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
-                options.Audience = b2COptions.Audience;
+                options.TokenValidationParameters.ValidateAudience = false;
+                options.TokenValidationParameters.AudienceValidator = (_, _, _) => true;
                 options.MetadataAddress = b2COptions.B2CWellKnownUrl;
             })
             .AddJwtBearer(AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
-                options.Audience = b2COptions.Audience;
+                options.TokenValidationParameters.ValidateAudience = false;
+                options.TokenValidationParameters.AudienceValidator = (_, _, _) => true;
                 options.MetadataAddress = b2COptions.ClientCredentialsCustomPolicyWellKnownUrl;
             })
             .AddJwtBearer(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
-                options.Audience = b2COptions.Audience;
+                options.TokenValidationParameters.ValidateAudience = false;
+                options.TokenValidationParameters.AudienceValidator = (_, _, _) => true;
                 options.MetadataAddress = b2COptions.MitIDCustomPolicyWellKnownUrl;
             })
             .AddJwtBearer(AuthenticationScheme.TokenValidation, options =>
