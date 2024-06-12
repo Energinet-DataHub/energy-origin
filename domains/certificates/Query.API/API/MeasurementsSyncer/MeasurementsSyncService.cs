@@ -54,7 +54,7 @@ public class MeasurementsSyncService
 
             slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, synchronizationPoint);
             await syncState.UpdateSlidingWindow(slidingWindow, stoppingToken);
-            syncState.SaveChangesAsync(stoppingToken);
+            await syncState.SaveChangesAsync(stoppingToken);
         }
     }
 
