@@ -1,3 +1,15 @@
+# Authorization Domain
+
+## Container diagram
+
+![Container diagram](../diagrams/auth.container.drawio.svg)
+
+## Endpoints
+
+There is a description of the current endpoints available at [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20Proxy%20v20230101).
+
+There is a description of the current endpoints available at [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20v20230101#/).
+
 # Authentication & authorization
 
 ## Consent
@@ -174,7 +186,7 @@ sequenceDiagram
 
 Azure B2C itself will have to be registered as a client. This allows B2C to obtain a token for itself and call the EO authorization API.
 
-![New App Registration](images/new_app_registration.png)
+![New App Registration](../images/new_app_registration.png)
 
 Provide the name `self` for the app, and register by clicking `Register`.
 
@@ -182,7 +194,7 @@ Afterwards change settings in the manifest file. Make sure the following two set
 
 Add a new client secret to the app registration.
 
-![New Client Secret](images/new_client_secret.png)
+![New Client Secret](../images/new_client_secret.png)
 
 Make sure to copy the secret value and store it somewhere safe. Use client id and client secret to configure client_credentials custom policy.
 
@@ -210,3 +222,13 @@ Set up ncat to listen and dump all traffic on port 9090 on localhost
 Set up ngrok to forward traffic to netcat
 
 ```ngrok http 9090```
+
+# Authorization Proxy
+
+This section describes the first version of Authorization Proxy in Energy Origin. Authorization Proxy is built to handle authentication and authorization for opensource Wallet project. Since Wallet is opensource and needs to be generic, we have to have a wrapper (Authorization Proxy) to secure all calls against it. The way this is handled is by having 1 to 1 mapping between Wallet API's and the Authorization Proxy API. We then have extra requirements for providing OrganizationID, that we can check if client's request has access to, before forwarding the request towards Wallet API.
+
+Authorization Proxy is made backwards compaitble allowing old self signed tokens, aswell as the new Azure B2C tokens, to ensure we can use this new proxy service without breaking old code. The proxy is simple and only needs B2C, TokenValidation and WalletBaseUrl in enviroment variables.
+
+# TODO:
+We need to align on what documentation to keep, delete dead documents and update authorization documentation.
+https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/2909
