@@ -16,11 +16,5 @@ public class B2COptions
     public string MitIDCustomPolicyWellKnownUrl { get; init; } = null!;
 
     [Required]
-    public string Audience { get; init; } = null!;
-
-    [Required]
     public string CustomPolicyClientId { get; init; } = null!;
-
-
-
 }

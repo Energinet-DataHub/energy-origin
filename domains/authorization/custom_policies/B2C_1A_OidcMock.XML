@@ -280,7 +280,6 @@
                         <OutputClaim ClaimTypeReferenceId="org_name"/>
                         <OutputClaim ClaimTypeReferenceId="org_ids"/>
                         <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
-                        <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
                     </OutputClaims>
                 </TechnicalProfile>
             </TechnicalProfiles>
@@ -323,7 +322,7 @@
                 <OutputClaim ClaimTypeReferenceId="org_name"/>
                 <OutputClaim ClaimTypeReferenceId="org_ids"/>
                 <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
-                <OutputClaim ClaimTypeReferenceId="scope"/>
+                <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
         </TechnicalProfile>
