@@ -23,6 +23,6 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("scope")] string Scope
     );
 
-public record GrantConsentRequest(Guid ClientId);
+public record GrantConsentRequest(Guid IdpClientId);
 
 public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
