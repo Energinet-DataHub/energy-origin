@@ -16,17 +16,8 @@ namespace API.Authorization.Controllers;
 [ApiVersion(ApiVersions.Version20230101)]
 [Authorize(Policy.B2CCvrClaim)]
 [Authorize(Policy.B2CSubTypeUserPolicy)]
-public class ConsentController : ControllerBase
+public class ConsentController(IMediator mediator, EntityDescriptor entityDescriptor) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly EntityDescriptor _entityDescriptor;
-
-    public ConsentController(IMediator mediator, EntityDescriptor entityDescriptor)
-    {
-        _mediator = mediator;
-        _entityDescriptor = entityDescriptor;
-    }
-
     /// <summary>
     /// Grants consent.
     /// </summary>
@@ -34,7 +25,7 @@ public class ConsentController : ControllerBase
     [Route("api/authorization/consent/grant/")]
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentRequest request)
     {
-        await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, _entityDescriptor.OrgIds.Single(),
+        await mediator.Send(new GrantConsentCommand(entityDescriptor.Sub, entityDescriptor.OrgIds.Single(),
             new IdpClientId(request.IdpClientId)));
         return Ok();
     }
@@ -46,7 +37,18 @@ public class ConsentController : ControllerBase
     [Route("api/authorization/consent/grant/{clientId}")]
     public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger, [FromRoute] Guid clientId)
     {
-        var result = await _mediator.Send(new GetConsentQuery(clientId));
+        var result = await mediator.Send(new GetConsentQuery(clientId));
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get consent from a specific Client.
+    /// </summary>
+    [HttpGet]
+    [Route("api/authorization/consent/grant/")]
+    public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger)
+    {
+        var result = await mediator.Send(new GetUserOrganizationConsentsQuery(entityDescriptor.Sub.ToString()));
         return Ok(result);
     }
 }
