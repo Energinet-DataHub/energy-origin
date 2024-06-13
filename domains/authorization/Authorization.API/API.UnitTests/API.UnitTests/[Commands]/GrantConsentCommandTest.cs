@@ -26,7 +26,7 @@ public class GrantConsentCommandTest
         await _fakeClientRepository.AddAsync(client, CancellationToken.None);
         await _userRepository.AddAsync(user, CancellationToken.None);
 
-        var command = new GrantConsentCommand(user.Id, organization.Id, new IdpClientId(client.IdpClientId.Value));
+        var command = new GrantConsentCommand(user.IdpUserId.Value, organization.Id, new IdpClientId(client.IdpClientId.Value));
 
         var handler = new GrantConsentCommandHandler(_fakeClientRepository, _fakeOrganizationRepository,
             _userRepository, _fakeUnitOfWork);

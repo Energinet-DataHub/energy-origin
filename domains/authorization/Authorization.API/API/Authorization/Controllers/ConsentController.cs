@@ -16,8 +16,15 @@ namespace API.Authorization.Controllers;
 [ApiVersion(ApiVersions.Version20230101)]
 [Authorize(Policy.B2CCvrClaim)]
 [Authorize(Policy.B2CSubTypeUserPolicy)]
-public class ConsentController(IMediator mediator, EntityDescriptor entityDescriptor) : ControllerBase
+public class ConsentController : ControllerBase
 {
+    private readonly IMediator _mediator;
+
+    public ConsentController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
     /// <summary>
     /// Grants consent.
     /// </summary>
@@ -25,7 +32,9 @@ public class ConsentController(IMediator mediator, EntityDescriptor entityDescri
     [Route("api/authorization/consent/grant/")]
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentRequest request)
     {
-        await mediator.Send(new GrantConsentCommand(entityDescriptor.Sub, entityDescriptor.OrgIds.Single(),
+        var identity = new IdentityDescriptor(HttpContext);
+
+        await _mediator.Send(new GrantConsentCommand(identity.Sub, identity.OrgId,
             new IdpClientId(request.IdpClientId)));
         return Ok();
     }
@@ -37,18 +46,7 @@ public class ConsentController(IMediator mediator, EntityDescriptor entityDescri
     [Route("api/authorization/consent/grant/{clientId}")]
     public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger, [FromRoute] Guid clientId)
     {
-        var result = await mediator.Send(new GetConsentQuery(clientId));
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Get consent from a specific Client.
-    /// </summary>
-    [HttpGet]
-    [Route("api/authorization/consent/grant/")]
-    public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger)
-    {
-        var result = await mediator.Send(new GetUserOrganizationConsentsQuery(entityDescriptor.Sub.ToString()));
+        var result = await _mediator.Send(new GetConsentQuery(clientId));
         return Ok(result);
     }
 }
