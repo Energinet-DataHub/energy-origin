@@ -49,4 +49,16 @@ public class ConsentController : ControllerBase
         var result = await _mediator.Send(new GetConsentQuery(clientId));
         return Ok(result);
     }
+
+    /// <summary>
+    /// Get consent from a specific Client.
+    /// </summary>
+    [HttpGet]
+    [Route("api/authorization/consent/grant/")]
+    public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger)
+    {
+        var identity = new IdentityDescriptor(HttpContext);
+        var result = await _mediator.Send(new GetUserOrganizationConsentsQuery(identity.Sub.ToString()));
+        return Ok(result);
+    }
 }
