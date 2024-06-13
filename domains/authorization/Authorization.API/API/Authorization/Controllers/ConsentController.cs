@@ -19,12 +19,10 @@ namespace API.Authorization.Controllers;
 public class ConsentController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly EntityDescriptor _entityDescriptor;
 
-    public ConsentController(IMediator mediator, EntityDescriptor entityDescriptor)
+    public ConsentController(IMediator mediator)
     {
         _mediator = mediator;
-        _entityDescriptor = entityDescriptor;
     }
 
     /// <summary>
@@ -34,7 +32,9 @@ public class ConsentController : ControllerBase
     [Route("api/authorization/consent/grant/")]
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentRequest request)
     {
-        await _mediator.Send(new GrantConsentCommand(_entityDescriptor.Sub, _entityDescriptor.OrgIds.Single(),
+        var identity = new IdentityDescriptor(HttpContext);
+
+        await _mediator.Send(new GrantConsentCommand(identity.Sub, identity.OrgId,
             new IdpClientId(request.IdpClientId)));
         return Ok();
     }

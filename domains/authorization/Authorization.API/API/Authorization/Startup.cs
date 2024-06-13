@@ -14,6 +14,5 @@ public static class Startup
         services.AddSwagger("authorization");
         services.AddSwaggerGen();
         services.AddHttpContextAccessor();
-        services.AddScoped<EntityDescriptor>();
     }
 }
