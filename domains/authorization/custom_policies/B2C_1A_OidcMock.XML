@@ -310,7 +310,7 @@
     <RelyingParty>
         <DefaultUserJourney ReferenceId="OidcMockJourney"/>
         <UserJourneyBehaviors>
-            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="12622adc-07e1-4a7f-a7e9-b93525d4ee78" DeveloperMode="true"
+            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="126..." DeveloperMode="true"
                              ClientEnabled="true" ServerEnabled="true" TelemetryVersion="1.0.0"/>
         </UserJourneyBehaviors>
         <TechnicalProfile Id="HelloWorldPolicyProfile">
@@ -323,6 +323,7 @@
                 <OutputClaim ClaimTypeReferenceId="org_ids"/>
                 <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
+                <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
         </TechnicalProfile>
