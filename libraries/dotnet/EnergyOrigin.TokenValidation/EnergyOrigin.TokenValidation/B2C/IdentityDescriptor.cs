@@ -10,6 +10,14 @@ public class IdentityDescriptor
     private readonly Guid _orgId;
     private readonly ClaimsPrincipal _user;
 
+    public IdentityDescriptor(HttpContext httpContext)
+    {
+        _httpContext = httpContext;
+        _user = httpContext.User;
+        _orgId = OrgIds.Single();
+        ThrowExceptionIfUnsupportedAuthenticationScheme();
+    }
+
     public IdentityDescriptor(HttpContext httpContext, Guid orgId)
     {
         _httpContext = httpContext;
@@ -19,8 +27,6 @@ public class IdentityDescriptor
 
         if (!OrgIds.Contains(orgId))
         {
-            httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
-            httpContext.Response.Body.Close();
             throw new ForbiddenException(orgId);
         }
     }
