@@ -78,6 +78,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         orgIds = string.IsNullOrEmpty(orgIds) ? Guid.NewGuid().ToString() : orgIds;
         subType = string.IsNullOrEmpty(subType) ? "user" : subType;
 
+
+
         return new Api(CreateAuthenticatedClient(sub, name, orgIds, subType));
     }
 

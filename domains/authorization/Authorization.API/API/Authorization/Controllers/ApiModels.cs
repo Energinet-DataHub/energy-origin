@@ -26,3 +26,6 @@ public record AuthorizationResponse(
 public record GrantConsentRequest(Guid IdpClientId);
 
 public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
+
+public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName);
+public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Items); // What do we call lists of items? Items? Data? Results?

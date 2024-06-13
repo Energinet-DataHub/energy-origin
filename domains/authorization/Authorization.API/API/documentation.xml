@@ -19,6 +19,11 @@
             Retreives Client.
             </summary>
         </member>
+        <member name="M:API.Authorization.Controllers.ClientController.GetClientConsents(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ClientResponse})">
+            <summary>
+            Retreives Client.
+            </summary>
+        </member>
         <member name="M:API.Authorization.Controllers.ConsentController.GrantConsent(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},API.Authorization.Controllers.GrantConsentRequest)">
             <summary>
             Grants consent.

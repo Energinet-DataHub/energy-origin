@@ -27,6 +27,11 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/client/" + idpClientId);
     }
 
+    public async Task<HttpResponseMessage> GetClientConsents()
+    {
+        return await _client.GetAsync("/api/authorization/client/consents/");
+    }
+
     public Task InitializeAsync()
     {
         return Task.CompletedTask;
