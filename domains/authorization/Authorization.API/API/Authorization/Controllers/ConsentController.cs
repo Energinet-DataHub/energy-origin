@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using API.ValueObjects;
@@ -16,15 +15,8 @@ namespace API.Authorization.Controllers;
 [ApiVersion(ApiVersions.Version20230101)]
 [Authorize(Policy.B2CCvrClaim)]
 [Authorize(Policy.B2CSubTypeUserPolicy)]
-public class ConsentController : ControllerBase
+public class ConsentController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public ConsentController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     /// <summary>
     /// Grants consent.
     /// </summary>
@@ -34,7 +26,7 @@ public class ConsentController : ControllerBase
     {
         var identity = new IdentityDescriptor(HttpContext);
 
-        await _mediator.Send(new GrantConsentCommand(identity.Sub, identity.OrgId,
+        await mediator.Send(new GrantConsentCommand(identity.Sub, identity.OrgId,
             new IdpClientId(request.IdpClientId)));
         return Ok();
     }
@@ -46,19 +38,19 @@ public class ConsentController : ControllerBase
     [Route("api/authorization/consent/grant/{clientId}")]
     public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger, [FromRoute] Guid clientId)
     {
-        var result = await _mediator.Send(new GetConsentQuery(clientId));
+        var result = await mediator.Send(new GetConsentQuery(clientId));
         return Ok(result);
     }
 
     /// <summary>
-    /// Get consent from a specific Client.
+    /// Get consent for a specific User, representing an Organization.
     /// </summary>
     [HttpGet]
-    [Route("api/authorization/consent/grant/")]
+    [Route("api/authorization/consents/")]
     public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger)
     {
         var identity = new IdentityDescriptor(HttpContext);
-        var result = await _mediator.Send(new GetUserOrganizationConsentsQuery(identity.Sub.ToString()));
+        var result = await mediator.Send(new GetUserOrganizationConsentsQuery(identity.Sub.ToString()));
         return Ok(result);
     }
 }
