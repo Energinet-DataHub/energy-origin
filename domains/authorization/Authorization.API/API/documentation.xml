@@ -31,7 +31,7 @@
         </member>
         <member name="M:API.Authorization.Controllers.ConsentController.GetConsent(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController})">
             <summary>
-            Get consent from a specific Client.
+            Get consent for a specific User, representing an Organization.
             </summary>
         </member>
         <member name="T:API.Migrations.InitialCreate">
