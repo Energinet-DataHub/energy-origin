@@ -10,22 +10,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
-public class GetUserOrganizationConsentsQueryHandler(IClientRepository clientRepository)
+public class GetUserOrganizationConsentsQueryHandler(IConsentRepository consentRepository)
     : IRequestHandler<GetUserOrganizationConsentsQuery, GetUserOrganizationConsentsQueryResult>
 {
     public async Task<GetUserOrganizationConsentsQueryResult> Handle(GetUserOrganizationConsentsQuery request, CancellationToken cancellationToken)
     {
         var idpUserId = IdpUserId.Create(Guid.Parse(request.IdpUserId));
 
-        var clients = await clientRepository
+        var consents = await consentRepository
             .Query()
-            .Where(client => client.Consents
-                .Any(consent => consent.Organization.Affiliations
-                    .Any(o => o.User.IdpUserId == idpUserId)))
-            .Select(client => new GetUserOrganizationConsentsQueryResultItem(client.Name.Value))
+            .Where(consent => consent.Organization.Affiliations
+                .Any(o => o.User.IdpUserId == idpUserId))
+            .Select(consent => new GetUserOrganizationConsentsQueryResultItem(
+                consent.Client.Name.Value,
+                UnixTimestamp.Create(consent.ConsentDate).Seconds
+            ))
             .ToListAsync(cancellationToken: cancellationToken);
 
-        return new GetUserOrganizationConsentsQueryResult(clients);
+        return new GetUserOrganizationConsentsQueryResult(consents);
     }
 }
 
@@ -33,4 +35,4 @@ public record GetUserOrganizationConsentsQuery(string IdpUserId) : IRequest<GetU
 
 public record GetUserOrganizationConsentsQueryResult(List<GetUserOrganizationConsentsQueryResultItem> Result);
 
-public record GetUserOrganizationConsentsQueryResultItem(string Name);
+public record GetUserOrganizationConsentsQueryResultItem(string ClientName, long ConsentDate);
