@@ -6,6 +6,7 @@ using API.UnitTests;
 using API.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace API.IntegrationTests.API;
 
@@ -38,6 +39,37 @@ public class GetConsentTests
 
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
         result!.Result.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task AsUser_WhenGettingConsent_VerifyResponseSnapshot()
+    {
+        var idpUserId = await SeedData();
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString());
+        var response = await userClient.GetUserOrganizationConsents();
+
+        response.Should().Be200Ok();
+
+        var getConsentAgreement = JsonConvert.DeserializeObject<GetUserOrganizationConsentsQueryResult>(await response.Content.ReadAsStringAsync());
+
+        var settings = new VerifySettings();
+        settings.ScrubMembersWithType(typeof(long));
+
+        await Verify(getConsentAgreement, settings);
+    }
+
+    [Fact]
+    public async Task GivenNoConsentsExist_WhenUserQueriesForConsents_HttpOKEmptyBody()
+    {
+        await SeedData();
+
+        var response = await _api.GetUserOrganizationConsents();
+
+        response.Should().Be200Ok();
+
+        var deserializedResponse = JsonConvert.DeserializeObject<GetUserOrganizationConsentsQueryResult>(await response.Content.ReadAsStringAsync());
+
+        await Verify(deserializedResponse);
     }
 
     private async Task<IdpUserId> SeedData()

@@ -1,0 +1,8 @@
+﻿{
+  Result: [
+    {
+      ClientName: ClientName,
+      ConsentDate: {Scrubbed}
+    }
+  ]
+}
