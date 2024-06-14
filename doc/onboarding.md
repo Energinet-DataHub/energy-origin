@@ -1,5 +1,19 @@
 # Onboarding 3rd party Clients to ETT
 
+This is a small document describing how we want to manually onboard 3rd party clients to Energy Track and Trace. This could be companies like Flexidao or Granular. Broad overview of the process would be like the following:
+
+* Goto https://portal.azure.com/#view/Microsoft_AAD_B2CAdmin/TenantManagementMenuBlade/~/registeredApps
+* Create new client registration with name ETT-External-{Name}
+    * Note down Client ID
+* Add Client Secret with expire date of default 6 months
+    * Note down Client Secret (value field.)
+* Test that your newly created client works
+    * Run: samples\Scripts\client-credentials.rest
+* Deliver Client Id + Client Secret to customer securely
+
+
+Details with screenshots:
+
 First we need to register the new client on azure portal. To do so, we need to go to: https://portal.azure.com/#view/Microsoft_AAD_B2CAdmin/TenantManagementMenuBlade/~/registeredApps
 
 press
