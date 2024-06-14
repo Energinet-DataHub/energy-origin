@@ -27,7 +27,7 @@ public class GetConsentTests
     }
 
     [Fact]
-    public async Task AsUser_WhenGettingConsent_HttpOkConsentReturned()
+    public async Task GivenUser_WhenGettingConsent_ThenHttpOkConsentReturned()
     {
         var idpUserId = await SeedData();
 
@@ -42,7 +42,7 @@ public class GetConsentTests
     }
 
     [Fact]
-    public async Task AsUser_WhenGettingConsent_VerifyResponseSnapshot()
+    public async Task GivenUser_WhenGettingConsent_ThenVerifyResponseSnapshot()
     {
         var idpUserId = await SeedData();
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString());
@@ -70,6 +70,80 @@ public class GetConsentTests
         var deserializedResponse = JsonConvert.DeserializeObject<GetUserOrganizationConsentsQueryResult>(await response.Content.ReadAsStringAsync());
 
         await Verify(deserializedResponse);
+    }
+
+    [Fact]
+    public async Task GivenUserAffiliatedWithMultipleOrganizations_WhenGettingConsent_ThenOnlyConsentFromCurrentOrganizationContextIncludedInResponse()
+    {
+        var user = Any.User();
+        var organization1 = Any.Organization();
+        var organization2 = Any.Organization(Tin.Create("87654321"));
+        var client1 = Any.Client();
+        var client2 = Any.Client();
+
+        var consent1 = Consent.Create(organization1, client1, DateTimeOffset.UtcNow);
+        var consent2 = Consent.Create(organization2, client2, DateTimeOffset.UtcNow);
+
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddRangeAsync([organization1, organization2]);
+        await dbContext.Clients.AddRangeAsync([client1, client2]);
+
+        var affiliation1 = Affiliation.Create(user, organization1);
+        var affiliation2 = Affiliation.Create(user, organization2);
+
+        await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
+        await dbContext.Consents.AddRangeAsync([consent1, consent2]);
+
+        await dbContext.SaveChangesAsync();
+
+        var userIdString = user.IdpUserId.Value.ToString();
+
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString);
+        var response = await userClient.GetUserOrganizationConsents();
+
+        response.Should().Be200Ok();
+
+        var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
+        result!.Result.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GivenTwoDistinctUsersAssociatedWithSameOrganization_WhenQueryingForConsents_ThenReturnTheSameConsentResponse()
+    {
+        var user1 = Any.User();
+        var user2 = Any.User();
+        var organization = Any.Organization();
+        var client = Any.Client();
+
+        var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow);
+
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Users.AddRangeAsync(user1, user2);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Clients.AddAsync(client);
+
+        var affiliation1 = Affiliation.Create(user1, organization);
+        var affiliation2 = Affiliation.Create(user2, organization);
+
+        await dbContext.Affiliations.AddRangeAsync(affiliation1, affiliation2);
+        await dbContext.Consents.AddAsync(consent);
+
+        await dbContext.SaveChangesAsync();
+
+        var userClient1 = _integrationTestFixture.WebAppFactory.CreateApi(sub: user1.IdpUserId.Value.ToString());
+        var response1 = await userClient1.GetUserOrganizationConsents();
+
+        var userClient2 = _integrationTestFixture.WebAppFactory.CreateApi(sub: user2.IdpUserId.Value.ToString());
+        var response2 = await userClient2.GetUserOrganizationConsents();
+
+        response1.Should().Be200Ok();
+        response2.Should().Be200Ok();
+
+        var result1 = await response1.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
+        var result2 = await response2.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
+
+        result1.Should().BeEquivalentTo(result2);
     }
 
     private async Task<IdpUserId> SeedData()

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using API.ValueObjects;
@@ -6,6 +7,7 @@ using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -50,7 +52,8 @@ public class ConsentController(IMediator mediator) : ControllerBase
     public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger)
     {
         var identity = new IdentityDescriptor(HttpContext);
-        var result = await mediator.Send(new GetUserOrganizationConsentsQuery(identity.Sub.ToString()));
+
+        var result = await mediator.Send(new GetUserOrganizationConsentsQuery(identity.Sub.ToString(), identity.OrgCvr!));
         return Ok(result);
     }
 }
