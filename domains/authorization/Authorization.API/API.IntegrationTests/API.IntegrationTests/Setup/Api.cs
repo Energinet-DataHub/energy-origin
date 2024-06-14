@@ -29,7 +29,7 @@ public class Api : IAsyncLifetime
 
     public async Task<HttpResponseMessage> GetUserOrganizationConsents()
     {
-        return await _client.GetAsync("/api/authorization/consent/grant/");
+        return await _client.GetAsync("/api/authorization/consents/");
     }
 
     public Task InitializeAsync()
