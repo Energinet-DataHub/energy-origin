@@ -88,6 +88,11 @@ public class UnixTimestamp : ValueObject
         return DateTimeOffset.FromUnixTimeSeconds(Seconds).ToString();
     }
 
+    public string ToUnixTimeString()
+    {
+        return Seconds.ToString();
+    }
+
     public const long SecondsPerDay = 86400;
     public const long SecondsPerHour = 3600;
     public const long SecondsPerMinute = 60;
