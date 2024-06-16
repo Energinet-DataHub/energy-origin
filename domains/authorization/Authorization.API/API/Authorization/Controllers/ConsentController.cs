@@ -45,7 +45,7 @@ public class ConsentController(IMediator mediator) : ControllerBase
     }
 
     /// <summary>
-    /// Get consent for a specific User, representing an Organization.
+    /// Retrieves consents granted by the organization that a user is affiliated with. It will read the IdpUserId and OrgCvr claims from the users session token, use those to query the database, and return a list of consents.
     /// </summary>
     [HttpGet]
     [Route("api/authorization/consents/")]
