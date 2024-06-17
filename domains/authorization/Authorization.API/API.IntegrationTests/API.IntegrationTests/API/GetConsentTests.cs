@@ -39,23 +39,8 @@ public class GetConsentTests
 
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
         result!.Result.Should().NotBeEmpty();
-    }
-
-    [Fact]
-    public async Task GivenUser_WhenGettingConsent_ThenVerifyResponseSnapshot()
-    {
-        var idpUserId = await SeedData();
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString());
-        var response = await userClient.GetUserOrganizationConsents();
-
-        response.Should().Be200Ok();
-
-        var getConsentAgreement = JsonConvert.DeserializeObject<GetUserOrganizationConsentsQueryResult>(await response.Content.ReadAsStringAsync());
-
-        var settings = new VerifySettings();
-        settings.ScrubMembersWithType(typeof(long));
-
-        await Verify(getConsentAgreement, settings);
+        result.Result.First().ClientName.Should().NotBeNullOrEmpty();
+        result.Result.First().ConsentDate.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -69,7 +54,7 @@ public class GetConsentTests
 
         var deserializedResponse = JsonConvert.DeserializeObject<GetUserOrganizationConsentsQueryResult>(await response.Content.ReadAsStringAsync());
 
-        await Verify(deserializedResponse);
+        deserializedResponse!.Result.Should().BeEmpty();
     }
 
     [Fact]

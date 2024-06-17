@@ -16,11 +16,11 @@ public class GetUserOrganizationConsentsQueryHandler(IConsentRepository consentR
     public async Task<GetUserOrganizationConsentsQueryResult> Handle(GetUserOrganizationConsentsQuery request, CancellationToken cancellationToken)
     {
         var idpUserId = IdpUserId.Create(Guid.Parse(request.IdpUserId));
-        var equality = Tin.Create(request.OrgCvr);
+        var userOrgCvr = Tin.Create(request.OrgCvr);
 
         var consents = await consentRepository
             .Query()
-            .Where(consent => consent.Organization.Tin == equality &&
+            .Where(consent => consent.Organization.Tin == userOrgCvr &&
                               consent.Organization.Affiliations
                                   .Any(o => o.User.IdpUserId == idpUserId))
             .Select(consent => new GetUserOrganizationConsentsQueryResultItem(
