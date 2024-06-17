@@ -52,7 +52,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     {
         options.UseNpgsql(
             builder.Configuration.GetConnectionString("Postgres"),
-            providerOptions => providerOptions.EnableRetryOnFailure()
+            providerOptions => { }
         );
     });
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
