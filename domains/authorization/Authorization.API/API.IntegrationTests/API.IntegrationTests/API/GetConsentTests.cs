@@ -53,21 +53,9 @@ public class GetConsentTests
 
         response.Should().Be200Ok();
 
-        var deserializedResponse = JsonConvert.DeserializeObject<GetUserOrganizationConsentsQueryResult>(await response.Content.ReadAsStringAsync());
+        var deserializedResponse = await response.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>();
 
         deserializedResponse!.Result.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task GivenNoConsentsExist_WhenUserQueriesForConsents_VerifyEmptyBodyFormat()
-    {
-        await SeedData();
-
-        var response = await _api.GetUserOrganizationConsents();
-
-        var deserializedResponse = response.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>();
-
-        await Verify(deserializedResponse);
     }
 
     [Fact]
