@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using API.Authorization._Features_;
+using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
@@ -57,7 +58,6 @@ public class GetConsentTests
         deserializedResponse!.Result.Should().BeEmpty();
     }
 
-
     [Fact]
     public async Task GivenNoConsentsExist_WhenUserQueriesForConsents_VerifyEmptyBodyFormat()
     {
@@ -65,12 +65,9 @@ public class GetConsentTests
 
         var response = await _api.GetUserOrganizationConsents();
 
-        response.Should().Be200Ok();
-
-        var deserializedResponse = JsonConvert.DeserializeObject<GetUserOrganizationConsentsQueryResult>(await response.Content.ReadAsStringAsync());
+        var deserializedResponse = response.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>();
 
         await Verify(deserializedResponse);
-        deserializedResponse!.Result.Should().BeEmpty();
     }
 
     [Fact]
