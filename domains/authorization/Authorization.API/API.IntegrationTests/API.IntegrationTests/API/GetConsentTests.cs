@@ -57,12 +57,28 @@ public class GetConsentTests
         deserializedResponse!.Result.Should().BeEmpty();
     }
 
+
+    [Fact]
+    public async Task GivenNoConsentsExist_WhenUserQueriesForConsents_VerifyEmptyBodyFormat()
+    {
+        await SeedData();
+
+        var response = await _api.GetUserOrganizationConsents();
+
+        response.Should().Be200Ok();
+
+        var deserializedResponse = JsonConvert.DeserializeObject<GetUserOrganizationConsentsQueryResult>(await response.Content.ReadAsStringAsync());
+
+        await Verify(deserializedResponse);
+        deserializedResponse!.Result.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task GivenUserAffiliatedWithMultipleOrganizations_WhenGettingConsent_ThenOnlyConsentFromCurrentOrganizationContextIncludedInResponse()
     {
         var user = Any.User();
 
-        var organization1 = Any.Organization();
+        var organization1 = Any.Organization(Tin.Create("87654321"));
         var organization2 = Any.Organization();
 
         var client1 = Any.Client();
