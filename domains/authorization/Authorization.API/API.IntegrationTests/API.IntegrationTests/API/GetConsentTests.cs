@@ -61,8 +61,10 @@ public class GetConsentTests
     public async Task GivenUserAffiliatedWithMultipleOrganizations_WhenGettingConsent_ThenOnlyConsentFromCurrentOrganizationContextIncludedInResponse()
     {
         var user = Any.User();
+
         var organization1 = Any.Organization();
-        var organization2 = Any.Organization(Tin.Create("87654321"));
+        var organization2 = Any.Organization();
+
         var client1 = Any.Client();
         var client2 = Any.Client();
 
@@ -84,13 +86,15 @@ public class GetConsentTests
 
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString);
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
         response.Should().Be200Ok();
 
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
+
         result!.Result.Count.Should().Be(1);
+        result.Result.First().ClientName.Should().Be(client1.Name.Value);
     }
 
     [Fact]
