@@ -26,3 +26,7 @@ public record AuthorizationResponse(
 public record GrantConsentRequest(Guid IdpClientId);
 
 public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
+
+public record UserOrganizationConsentsResponseItem(string ClientName, long ConsentDate);
+
+public record UserOrganizationConsentsResponse(IEnumerable<UserOrganizationConsentsResponseItem> Result);

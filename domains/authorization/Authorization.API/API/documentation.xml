@@ -29,6 +29,11 @@
             Get consent from a specific Client.
             </summary>
         </member>
+        <member name="M:API.Authorization.Controllers.ConsentController.GetConsent">
+            <summary>
+            Retrieves consents granted by the organization that a user is affiliated with. It will read the IdpUserId and OrgCvr claims from the users session token, use those to query the database, and return a list of consents.
+            </summary>
+        </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
         </member>
