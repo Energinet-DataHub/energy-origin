@@ -33,24 +33,26 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/client/consents/");
     }
 
-    public async Task<HttpResponseMessage> CreateClient(Guid idpClientId, string name, ClientType clientType, string redirectUrl)
+    public async Task<HttpResponseMessage> CreateClient(Guid idpClientId, string name, ClientType clientType,
+        string redirectUrl)
     {
         var request = new CreateClientRequest(idpClientId, name, clientType, redirectUrl);
         return await _client.PostAsJsonAsync("/api/authorization/Admin/Client", request);
-
-        public async Task<HttpResponseMessage> GetUserOrganizationConsents()
-        {
-            return await _client.GetAsync("/api/authorization/consents/");
-        }
-
-        public Task InitializeAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public Task DisposeAsync()
-        {
-            _client.Dispose();
-            return Task.CompletedTask;
-        }
     }
+
+    public async Task<HttpResponseMessage> GetUserOrganizationConsents()
+    {
+        return await _client.GetAsync("/api/authorization/consents/");
+    }
+
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task DisposeAsync()
+    {
+        _client.Dispose();
+        return Task.CompletedTask;
+    }
+}
