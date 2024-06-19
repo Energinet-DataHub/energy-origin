@@ -17,7 +17,7 @@ grant_type={{grantType}}
 
 @accessToken = {{tokenResponse.response.body.access_token}}
 
-POST https://energytrackandtrace.dk.2676onboarding.v.acorn-dev.dk/api/authorization/Admin/Client
+POST https://demo.energytrackandtrace.dk/api/authorization/Admin/Client
 Authorization: bearer {{accessToken}}
 Content-Type: application/json
 Eo_api_version: 20230101
