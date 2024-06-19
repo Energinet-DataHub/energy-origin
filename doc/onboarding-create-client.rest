@@ -1,6 +1,6 @@
 @grantType = client_credentials
-@clientId = 529a5...
-@clientSecret = w3c8Q....
+@clientId = f00...
+@clientSecret = 6Dv...
 @scope = https://datahubeouenerginet.onmicrosoft.com/energy-origin/.default
 ###
 
@@ -17,13 +17,14 @@ grant_type={{grantType}}
 
 @accessToken = {{tokenResponse.response.body.access_token}}
 
-POST http://localhost:5043/api/authorization/Admin/Client
+POST https://energytrackandtrace.dk.2676onboarding.v.acorn-dev.dk/api/authorization/Admin/Client
 Authorization: bearer {{accessToken}}
 Content-Type: application/json
+Eo_api_version: 20230101
 
 {
-    "idpClientId": "00000000-68c7-4129-ba3c-e06d4f1038c4",
-    "name": "Energinet",
-    "clientType": "External",
-    "redirectUrl": "http://localhost:5043"
+  "idpClientId": "f75da90c-3429-4454-b6d8-603159b1805d",
+  "name": "{name}",
+  "clientType": "External",
+  "redicrectUrl": "https://localhost:8080/callback"
 }

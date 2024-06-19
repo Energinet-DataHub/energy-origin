@@ -4,16 +4,19 @@ This is a small document describing how we want to manually onboard 3rd party cl
 
 ## TLDR Version
 
+Onboarding clients to Demo:
+
 * Goto https://portal.azure.com/#view/Microsoft_AAD_B2CAdmin/TenantManagementMenuBlade/~/registeredApps
 * Create new client registration with name ETT-External-{Name}
-* Insert customer into Authorization Database using SQL Migrations.
-    * Use template doc\onboarding.sql and copy script into new migration
+* Insert customer into Authorization Database.
+    * Run: doc\onboarding-create-client.rest (to make admin call to create a new client)
 * Add Client Secret with expire date of default 6 months
     * Note down Client Secret (value field.)
 * Test that your newly created client works
-    * Run: doc\onboarding-test-client-credentials.rest
+    * Run: doc\onboarding-test-client.rest (test that new client can login and that client can make call to our api's)
 * Deliver Client Id + Client Secret to customer securely
 
+Same steps for Prod, just with other URL's. At the moment we have issue, that clients onboarded on VClusters also need to be onboarded on Demo, since Azure B2C always ask DEMO if client exists before login.
 
 
 ## Detailed with screenshots guide:
@@ -54,9 +57,17 @@ You will get redirected back to prior page with the newly created secret. Copy s
 
 With the newly created secret you should be able to test a login with our .REST scripts at:
 
-samples\Scripts\self-client-credentials copy.rest
+With Client ID and Client Secret we can now onboard and test to our application:
 
-Replace client ID and Client Secret and test out the script to get a bearer token and after calling the endpoint to get consents. The endpoint should just return an empty list. This will test A) we can get an bearer token for client credentials and B) We are able to call an API and get access.
+Creation of client
+* doc\onboarding-create-client.rest
+    * Use Energinet Issuer Client Credentials to login and get token
+    * Use token to Create client.
+
+Test of client
+* doc\onboarding-test-client-credentials.rest
+    * Login as created client
+    * Test client can make API calls. (Get list of consents. Will be empty Result list.)
 
 With everything tested we just need to deliver Client ID and Client Secret to the contact person in a securely manor.
 

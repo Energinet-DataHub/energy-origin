@@ -27,12 +27,12 @@ public class AdminController : ControllerBase
     /// </summary>
     [HttpPost]
     [Authorize(Policy.B2CCustomPolicyClientPolicy)]
-    [Route("api/authorization/Admin/Client")]
+    [Route("api/authorization/admin/client")]
     public async Task<ActionResult> CreateClient(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] CreateClientRequest request)
     {
         var result = await _mediator.Send(new CreateClientCommand(new IdpClientId(request.IdpClientId), new ClientName(request.Name), ClientTypeMapper.MapToDatabaseClientType(request.ClientType), request.RedicrectUrl));
 
-        return Created($"api/authorization/Admin/Client/{result.Id}", new CreateClientResponse(result.Id, result.IdpClientId.Value, result.Name.Value, ClientTypeMapper.MapToApiClientType(result.ClientType), result.RedirectUrl));
+        return Created($"api/authorization/admin/client/{result.Id}", new CreateClientResponse(result.Id, result.IdpClientId.Value, result.Name.Value, ClientTypeMapper.MapToApiClientType(result.ClientType), result.RedirectUrl));
     }
 }
