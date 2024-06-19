@@ -34,12 +34,13 @@ public class CreateClientTest
 
         // Act
         var response = await _api.CreateClient(idpClientId, "Test Client", ClientType.Internal, "http://localhost:5000");
+        var client = await response.Content.ReadFromJsonAsync<CreateClientResponse>(_api.SerializerOptions);
         var dbClient = await dbContext.Clients.FirstOrDefaultAsync(x => x.IdpClientId == new IdpClientId(idpClientId));
 
         // Assert
-        response.Should().Be200Ok();
+        response.Should().Be201Created();
         dbClient!.IdpClientId.Value.Should().Be(idpClientId);
-
+        client!.Id.Should().Be(dbClient.Id);
     }
 }
 
