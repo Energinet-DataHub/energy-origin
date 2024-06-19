@@ -28,4 +28,12 @@ public record GrantConsentRequest(Guid IdpClientId);
 public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
 
 public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName);
-public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Items); // What do we call lists of items? Items? Data? Results?
+public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Result);
+
+public enum ClientType
+{
+    External = 0,
+    Internal = 1
+}
+
+public record CreateClientRequest(Guid IdpClientId, string Name, ClientType ClientType, string RedicrectUrl);

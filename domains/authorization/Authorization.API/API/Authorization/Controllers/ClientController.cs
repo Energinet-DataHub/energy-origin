@@ -42,8 +42,10 @@ public class ClientController : ControllerBase
     [Route("api/authorization/client/consents")]
     public async Task<ActionResult<ClientConsentsResponse>> GetClientConsents([FromServices] ILogger<ClientResponse> logger)
     {
-        var queryResult = await _mediator.Send(new GetClientConsentsQuery(new IdpClientId(new(User.Claims.Single(c => c.Type == ClaimType.Sub).Value))));
+        var queryResult = await _mediator.Send(new GetClientConsentsQuery(new IdpClientId(new(User.Claims.First(c => c.Type == ClaimType.Sub).Value))));
 
         return Ok(new ClientConsentsResponse(queryResult.GetClientConsentsQueryResultItems.Select(x => new ClientConsentsResponseItem(x.OrganizationId, x.OrganizationName.Value))));
     }
+
+
 }

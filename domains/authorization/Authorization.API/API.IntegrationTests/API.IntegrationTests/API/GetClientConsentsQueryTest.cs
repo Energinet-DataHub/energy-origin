@@ -6,6 +6,7 @@ using API.UnitTests;
 using API.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.API;
 
@@ -41,13 +42,12 @@ public class GetClientConsentsQueryTest
 
         // Act
         var response = await _api.GetClientConsents();
-        response.Should().Be200Ok();
-
         var result = await response.Content.ReadFromJsonAsync<ClientConsentsResponse>();
 
         // Assert
-        result!.Items.Count().Should().Be(1);
-        result!.Items.First().OrganizationName.Should().Be(organization.Name.Value);
+        response.Should().Be200Ok();
+        result!.Result.Count().Should().Be(1);
+        result!.Result.First().OrganizationName.Should().Be(organization.Name.Value);
     }
 
     [Fact]
@@ -67,11 +67,10 @@ public class GetClientConsentsQueryTest
 
         // Act
         var response = await _api.GetClientConsents();
-        response.Should().Be200Ok();
-
         var result = await response.Content.ReadFromJsonAsync<ClientConsentsResponse>();
 
         // Assert
-        result!.Items.Should().BeEmpty();
+        response.Should().Be200Ok();
+        result!.Result.Should().BeEmpty();
     }
 }

@@ -52,6 +52,9 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
             .B2CMitIDCustomPolicyAuthenticationScheme);
 
+
+        // TODO Add self scheme aswell.
+
         var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
             EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
