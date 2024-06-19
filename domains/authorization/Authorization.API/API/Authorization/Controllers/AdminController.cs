@@ -33,6 +33,6 @@ public class AdminController : ControllerBase
     {
         var result = await _mediator.Send(new CreateClientCommand(new IdpClientId(request.IdpClientId), new ClientName(request.Name), ClientTypeMapper.MapToDatabaseClientType(request.ClientType), request.RedicrectUrl));
 
-        return Created($"api/authorization/Admin/Client/{result.Id}", result.Id);
+        return Created($"api/authorization/Admin/Client/{result.Id}", new CreateClientResponse(result.Id, result.IdpClientId.Value, result.Name.Value, ClientTypeMapper.MapToApiClientType(result.ClientType) , result.RedirectUrl));
     }
 }

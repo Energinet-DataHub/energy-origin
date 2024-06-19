@@ -18,11 +18,10 @@ public record CreateClientCommandHandler(IUnitOfWork UnitOfWork, IClientReposito
         await ClientRepository.AddAsync(client, cancellationToken);
         await UnitOfWork.CommitAsync();
 
-        return new CreateClientCommandResult(client.Id);
+        return new CreateClientCommandResult(client.Id, client.IdpClientId, client.Name, client.ClientType, client.RedirectUrl);
     }
 }
 
-public record CreateClientCommand(IdpClientId IdpClientId, ClientName Name, ClientType ClientType, string RedirectUrl)
-    : IRequest<CreateClientCommandResult>;
+public record CreateClientCommand(IdpClientId IdpClientId, ClientName Name, ClientType ClientType, string RedirectUrl) : IRequest<CreateClientCommandResult>;
 
-public record CreateClientCommandResult(Guid Id);
+public record CreateClientCommandResult(Guid Id, IdpClientId IdpClientId, ClientName Name, ClientType ClientType, string RedirectUrl);
