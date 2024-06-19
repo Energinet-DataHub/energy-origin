@@ -1,4 +1,4 @@
-﻿using API.Authorization.Controllers;
+using API.Authorization.Controllers;
 using FluentAssertions;
 
 namespace API.UnitTests.Mappers;
@@ -36,7 +36,7 @@ public class TestTest
     public void GivenClientType_WhenUnknown_ThenShouldThrowException()
     {
         // Arrange
-        ClientType clientType = (ClientType) 2;
+        ClientType clientType = (ClientType)2;
 
         // Act
         Action act = () => ClientTypeMapper.MapToDatabaseClientType(clientType);

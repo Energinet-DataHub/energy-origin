@@ -31,7 +31,7 @@ public class GetClientConsentsQueryTest
         // Arrange
         await using var dbContext = new ApplicationDbContext(_options);
 
-        var client = Client.Create(new IdpClientId(_sub), new ("Loz"), ClientType.Internal, "https://localhost:5001");
+        var client = Client.Create(new IdpClientId(_sub), new("Loz"), ClientType.Internal, "https://localhost:5001");
         var organization = Any.Organization();
         var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow);
 

@@ -1,4 +1,4 @@
-﻿using API.Authorization._Features_;
+using API.Authorization._Features_;
 using API.Models;
 using API.UnitTests.Repository;
 using API.ValueObjects;

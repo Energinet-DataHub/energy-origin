@@ -18,7 +18,7 @@ public class GetClientConsentsQueryHandler(IOrganizationRepository organizationR
     {
         var consentsQueryResultItems = await organizationRepository
             .Query()
-            .Where(organization => organization.Consents.Any(consent => consent.Client. IdpClientId == request.IdpClientId))
+            .Where(organization => organization.Consents.Any(consent => consent.Client.IdpClientId == request.IdpClientId))
             .Select(x => new GetClientConsentsQueryResultItem(x.Id, x.Name))
             .ToListAsync(cancellationToken);
 
