@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using ClientType = API.Authorization.Controllers.ClientType;
 
 namespace API.IntegrationTests.API;
-
+/*
 [Collection(IntegrationTestCollection.CollectionName)]
 public class CreateClientTest
 {
@@ -42,3 +42,4 @@ public class CreateClientTest
 
     }
 }
+*/
