@@ -23,15 +23,17 @@ public class GrantConsentCommandHandler(
     {
         await unitOfWork.BeginTransactionAsync();
 
+        var idpUserId = IdpUserId.Create(command.userId);
+
         var client = clientRepository.Query()
                          .FirstOrDefault(it => it.IdpClientId == command.idpClientId)
                      ?? throw new EntityNotFoundException(command.idpClientId.Value.ToString(), nameof(Client));
 
         var affiliatedOrganization = await userRepository.Query()
-            .Select(u =>
-                u.Affiliations.FirstOrDefault(
-                    a => a.Organization.Id == command.organizationId && u.Id == command.userId))
-            .Select(a => a != null ? a.Organization : null)
+            .Where(u => u.IdpUserId == idpUserId)
+            .SelectMany(u => u.Affiliations)
+            .Where(a => a.Organization.Id == command.organizationId)
+            .Select(a => a.Organization)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (affiliatedOrganization is null)

@@ -37,3 +37,7 @@ public enum ClientType
 }
 
 public record CreateClientRequest(Guid IdpClientId, string Name, ClientType ClientType, string RedicrectUrl);
+
+public record UserOrganizationConsentsResponseItem(string ClientName, long ConsentDate);
+
+public record UserOrganizationConsentsResponse(IEnumerable<UserOrganizationConsentsResponseItem> Result);

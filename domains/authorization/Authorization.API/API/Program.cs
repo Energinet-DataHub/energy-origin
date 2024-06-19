@@ -51,7 +51,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     {
         options.UseNpgsql(
             builder.Configuration.GetConnectionString("Postgres"),
-            providerOptions => providerOptions.EnableRetryOnFailure()
+            providerOptions => { }
         );
     });
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -61,6 +61,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Pr
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IConsentRepository, ConsentRepository>();
 
 builder.Services.AddAuthorizationApi();
 

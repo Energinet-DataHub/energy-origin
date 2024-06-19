@@ -27,6 +27,7 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/client/" + idpClientId);
     }
 
+
     public async Task<HttpResponseMessage> GetClientConsents()
     {
         return await _client.GetAsync("/api/authorization/client/consents/");
@@ -36,6 +37,10 @@ public class Api : IAsyncLifetime
     {
         var request = new CreateClientRequest(idpClientId, name, clientType, redirectUrl);
         return await _client.PostAsJsonAsync("/api/authorization/Admin/Client", request);
+
+    public async Task<HttpResponseMessage> GetUserOrganizationConsents()
+    {
+        return await _client.GetAsync("/api/authorization/consents/");
     }
 
     public Task InitializeAsync()
