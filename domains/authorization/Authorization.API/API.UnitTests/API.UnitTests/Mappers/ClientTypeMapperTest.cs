@@ -36,7 +36,7 @@ public class ClientTypeMapperTest
     public void GivenApiClientType_WhenUnknown_ThenShouldThrowException()
     {
         // Arrange
-        ClientType clientType = (ClientType)2;
+        ClientType clientType = (ClientType)1337;
 
         // Act
         Action act = () => ClientTypeMapper.MapToDatabaseClientType(clientType);
@@ -75,7 +75,7 @@ public class ClientTypeMapperTest
     public void GivenDatabaseClientType_WhenUnknown_ThenShouldThrowException()
     {
         // Arrange
-        API.Models.ClientType clientType = (API.Models.ClientType)2;
+        API.Models.ClientType clientType = (API.Models.ClientType)1337;
 
         // Act
         Action act = () => ClientTypeMapper.MapToApiClientType(clientType);
