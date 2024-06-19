@@ -14,14 +14,15 @@ public record CreateClientCommandHandler(IUnitOfWork UnitOfWork, IClientReposito
     public async Task<CreateClientCommandResult> Handle(CreateClientCommand request, CancellationToken cancellationToken)
     {
         await UnitOfWork.BeginTransactionAsync();
-        await ClientRepository.AddAsync(Client.Create(request.IdpClientId, request.Name, request.ClientType, request.RedirectUrl), cancellationToken);
+        var client = Client.Create(request.IdpClientId, request.Name, request.ClientType, request.RedirectUrl);
+        await ClientRepository.AddAsync(client, cancellationToken);
         await UnitOfWork.CommitAsync();
 
-        return new CreateClientCommandResult();
+        return new CreateClientCommandResult(client.Id);
     }
 }
 
 public record CreateClientCommand(IdpClientId IdpClientId, ClientName Name, ClientType ClientType, string RedirectUrl)
     : IRequest<CreateClientCommandResult>;
 
-public record CreateClientCommandResult();
+public record CreateClientCommandResult(Guid Id);

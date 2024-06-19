@@ -13,18 +13,26 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [Authorize(Policy = Policy.B2CCustomPolicyClientPolicy)]
 [ApiVersion(ApiVersions.Version20230101)]
-public class AdminController(IMediator Mediator) : ControllerBase
+public class AdminController : ControllerBase
 {
+    private readonly IMediator _mediator;
+
+    public AdminController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
     /// <summary>
     /// Create Client.
     /// </summary>
     [HttpPost]
+    [Authorize(Policy.B2CCustomPolicyClientPolicy)]
     [Route("api/authorization/Admin/Client")]
     public async Task<ActionResult> CreateClient(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] CreateClientRequest request)
     {
-        var result = await Mediator.Send(new CreateClientCommand(new IdpClientId(request.IdpClientId), new ClientName(request.Name), ClientTypeMapper.MapToDatabaseClientType(request.ClientType), request.RedicrectUrl));
+        var result = await _mediator.Send(new CreateClientCommand(new IdpClientId(request.IdpClientId), new ClientName(request.Name), ClientTypeMapper.MapToDatabaseClientType(request.ClientType), request.RedicrectUrl));
 
-        return Ok();
+        return Created($"api/authorization/Admin/Client/{result.Id}", result.Id);
     }
 }

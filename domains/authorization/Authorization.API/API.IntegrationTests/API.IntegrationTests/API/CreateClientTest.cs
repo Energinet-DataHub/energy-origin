@@ -9,20 +9,20 @@ using Microsoft.EntityFrameworkCore;
 using ClientType = API.Authorization.Controllers.ClientType;
 
 namespace API.IntegrationTests.API;
-/*
+
 [Collection(IntegrationTestCollection.CollectionName)]
 public class CreateClientTest
 {
+    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly Api _api;
-    private readonly Guid _sub;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
     public CreateClientTest(IntegrationTestFixture integrationTestFixture)
     {
+        _integrationTestFixture = integrationTestFixture;
         var connectionString = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(connectionString).Options;
-        _sub = Guid.NewGuid();
-        _api = integrationTestFixture.WebAppFactory.CreateApi(_sub.ToString());
+        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: _integrationTestFixture.WebAppFactory.IssuerIdpClientId.ToString());
     }
 
     [Fact]
@@ -42,4 +42,4 @@ public class CreateClientTest
 
     }
 }
-*/
+
