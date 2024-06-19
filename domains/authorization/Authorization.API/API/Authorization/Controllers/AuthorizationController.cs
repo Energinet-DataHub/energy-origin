@@ -26,7 +26,7 @@ public class AuthorizationController : ControllerBase
     }
 
     /// <summary>
-    /// Retreives Authorization Model.
+    /// Retrieves Authorization Model.
     /// </summary>
     [HttpPost]
     [Route("api/authorization/client-consent/")]
