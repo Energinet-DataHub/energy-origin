@@ -6,7 +6,7 @@ This is a small document describing how we want to manually onboard 3rd party cl
 
 Onboarding clients to Demo:
 
-* Goto https://portal.azure.com/#view/Microsoft_AAD_B2CAdmin/TenantManagementMenuBlade/~/registeredApps (Remember to be on Developer tenant)
+* Goto https://portal.azure.com/#view/Microsoft_AAD_B2CAdmin/TenantManagementMenuBlade/~/registeredApps (Remember to be on Developer tenant - datahubeo**u**energinet and not datahubeo**p**energinet)
 * Create new client registration with name ETT-External-{Name}
 * Insert customer into Authorization Database.
     * Run: doc\onboarding-create-client.rest (to make admin call to create a new client)

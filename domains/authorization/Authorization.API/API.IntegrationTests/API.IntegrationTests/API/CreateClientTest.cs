@@ -41,9 +41,9 @@ public class CreateClientTest
         response.Should().Be201Created();
         dbClient!.IdpClientId.Value.Should().Be(idpClientId);
         client!.Id.Should().Be(dbClient.Id);
-        client!.IdpClientId.Should().Be(dbClient.IdpClientId.Value);
-        client!.Name.Should().Be(dbClient.Name.Value);
-        client!.RedirectUrl.Should().Be(dbClient.RedirectUrl);
+        client.IdpClientId.Should().Be(dbClient.IdpClientId.Value);
+        client.Name.Should().Be(dbClient.Name.Value);
+        client.RedirectUrl.Should().Be(dbClient.RedirectUrl);
     }
 }
 
