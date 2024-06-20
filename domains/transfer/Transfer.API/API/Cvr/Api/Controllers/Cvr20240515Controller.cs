@@ -43,6 +43,7 @@ public class Cvr20240515Controller(CvrClient client) : Controller
         if (searchResult?.hits?.hits == null)
             return new CvrCompanyListResponse(new List<CvrCompanyDto>());
 
+
         var companies = searchResult.hits.hits
             .Select(hit => ToDto(hit._source?.Vrvirksomhed))
             .Where(dto => dto != null)
