@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Text.Json.Serialization;
 using API.UnitOfWork;
+using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Http.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,12 +62,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-var tokenValidationOptions =
-    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
-    .ValidateDataAnnotations().ValidateOnStart();
-
-builder.AddTokenValidation(tokenValidationOptions);
+var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
+builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
+builder.Services.AddScoped<IdentityDescriptor>();
+builder.Services.AddScoped<AccessDescriptor>();
 
 var app = builder.Build();
 

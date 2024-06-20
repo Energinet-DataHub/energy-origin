@@ -19,19 +19,22 @@ public static class IServiceCollectionExtensions
             .AddJwtBearer(AuthenticationScheme.B2CAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
-                options.Audience = b2COptions.Audience;
+                options.TokenValidationParameters.ValidateAudience = false;
+                options.TokenValidationParameters.AudienceValidator = (_, _, _) => true;
                 options.MetadataAddress = b2COptions.B2CWellKnownUrl;
             })
             .AddJwtBearer(AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
-                options.Audience = b2COptions.Audience;
+                options.TokenValidationParameters.ValidateAudience = false;
+                options.TokenValidationParameters.AudienceValidator = (_, _, _) => true;
                 options.MetadataAddress = b2COptions.ClientCredentialsCustomPolicyWellKnownUrl;
             })
             .AddJwtBearer(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
-                options.Audience = b2COptions.Audience;
+                options.TokenValidationParameters.ValidateAudience = false;
+                options.TokenValidationParameters.AudienceValidator = (_, _, _) => true;
                 options.MetadataAddress = b2COptions.MitIDCustomPolicyWellKnownUrl;
             })
             .AddJwtBearer(AuthenticationScheme.TokenValidation, options =>
@@ -50,14 +53,21 @@ public static class IServiceCollectionExtensions
                 .Build();
             options.AddPolicy(Policy.B2CPolicy, b2CPolicy);
 
-            var b2SubTypeUserPolicy = new AuthorizationPolicyBuilder()
+            var b2CSubTypeUserPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
                     AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .RequireClaim(ClaimType.SubType, Enum.GetName(SubjectType.User)!, Enum.GetName(SubjectType.User)!.ToLower())
                 .Build();
-            options.AddPolicy(Policy.B2CSubTypeUserPolicy, b2SubTypeUserPolicy);
+            options.AddPolicy(Policy.B2CSubTypeUserPolicy, b2CSubTypeUserPolicy);
+
+            var b2CCvrClaimPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
+                .RequireClaim(ClaimType.OrgCvr)
+                .Build();
+            options.AddPolicy(Policy.B2CCvrClaim, b2CCvrClaimPolicy);
 
             var b2CCustomPolicyClientPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()

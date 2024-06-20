@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using API.Authorization;
 using API.Authorization.Exceptions;
 using API.Configuration;
@@ -26,14 +28,6 @@ builder.Services.AddControllersWithEnumsAsStrings();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddAuthentication()
-    .AddJwtBearer(options =>
-    {
-        options.Audience = "f00b9b4d-3c59-4c40-b209-2ef87e509f54";
-        options.MetadataAddress =
-            "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration";
-    });
-
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
@@ -52,7 +46,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     {
         options.UseNpgsql(
             builder.Configuration.GetConnectionString("Postgres"),
-            providerOptions => providerOptions.EnableRetryOnFailure()
+            providerOptions => { }
         );
     });
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -62,6 +56,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Pr
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IConsentRepository, ConsentRepository>();
 
 builder.Services.AddAuthorizationApi();
 

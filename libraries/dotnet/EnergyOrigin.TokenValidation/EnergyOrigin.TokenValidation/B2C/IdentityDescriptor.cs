@@ -7,36 +7,31 @@ namespace EnergyOrigin.TokenValidation.b2c;
 public class IdentityDescriptor
 {
     private readonly HttpContext _httpContext;
-    private readonly Guid _orgId;
     private readonly ClaimsPrincipal _user;
 
-    public IdentityDescriptor(HttpContext httpContext, Guid orgId)
+    public IdentityDescriptor(IHttpContextAccessor httpContextAccessor)
     {
-        _httpContext = httpContext;
-        _orgId = orgId;
-        _user = httpContext.User;
-        ThrowExceptionIfUnsupportedAuthenticationScheme();
-
-        if (!OrgIds.Contains(orgId))
+        if (httpContextAccessor.HttpContext is null)
         {
-            httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
-            httpContext.Response.WriteAsJsonAsync("");
+            throw new ForbiddenException("HttpContext is null");
         }
+
+        _httpContext = httpContextAccessor.HttpContext;
+        _user = _httpContext.User;
+        ThrowExceptionIfUnsupportedAuthenticationScheme();
     }
 
-    public Guid Sub => GetClaimAsGuid(ClaimType.Sub);
+    public Guid Subject => GetClaimAsGuid(ClaimType.Sub);
 
-    public SubjectType SubType => GetClaimAsEnum<SubjectType>(ClaimType.SubType);
+    public SubjectType SubjectType => GetClaimAsEnum<SubjectType>(ClaimType.SubType);
 
     public string Name => GetClaimAsString(ClaimType.Name);
 
-    public string OrgName => GetClaimAsString(ClaimType.OrgName);
+    public string OrganizationName => GetClaimAsString(ClaimType.OrgName);
 
-    public string? OrgCvr => GetClaimAsOptionalString(ClaimType.OrgCvr);
+    public string? OrganizationCvr => GetClaimAsOptionalString(ClaimType.OrgCvr);
 
-    public Guid OrgId => _orgId;
-
-    public IList<Guid> OrgIds => GetClaimAsGuidList(ClaimType.OrgIds);
+    public IList<Guid> AuthorizedOrganizationIds => GetClaimAsGuidList(ClaimType.OrgIds);
 
     public IList<string> Scope => GetClaimAsStringList(ClaimType.OrgIds);
 

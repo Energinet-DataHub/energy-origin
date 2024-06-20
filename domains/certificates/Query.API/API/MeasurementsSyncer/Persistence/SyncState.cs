@@ -38,22 +38,6 @@ public class SyncState : ISyncState
         }
     }
 
-    public async Task SetSyncPosition(string gsrn, long syncedTo, CancellationToken cancellationToken)
-    {
-        var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(gsrn, cancellationToken);
-        if (synchronizationPosition != null)
-        {
-            synchronizationPosition.SyncedTo = syncedTo;
-            dbContext.Update(synchronizationPosition);
-        }
-        else
-        {
-            synchronizationPosition = new SynchronizationPosition { GSRN = gsrn, SyncedTo = syncedTo };
-            await dbContext.AddAsync(synchronizationPosition);
-        }
-        await dbContext.SaveChangesAsync();
-    }
-
     public async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn, CancellationToken cancellationToken)
     {
         var slidingWindow = await dbContext.MeteringPointTimeSeriesSlidingWindows.FindAsync(gsrn);
@@ -71,8 +55,11 @@ public class SyncState : ISyncState
         {
             dbContext.MeteringPointTimeSeriesSlidingWindows.Update(slidingWindow);
         }
+    }
 
-        await dbContext.SaveChangesAsync();
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken)

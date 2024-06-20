@@ -5,7 +5,6 @@ using API;
 using Asp.Versioning.ApiExplorer;
 using FluentAssertions;
 using Tests.Fixtures;
-using Tests.TestContainers;
 using VerifyXunit;
 using Xunit;
 

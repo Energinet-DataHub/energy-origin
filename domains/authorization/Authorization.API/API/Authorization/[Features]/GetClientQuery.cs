@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Authorization._Features_;
 
 public class GetClientQueryHandler(IClientRepository clientRepository)
-    : IRequestHandler<GetlientQuery, GetClientQueryResult>
+    : IRequestHandler<GetClientQuery, GetClientQueryResult>
 {
-    public async Task<GetClientQueryResult> Handle(GetlientQuery request, CancellationToken cancellationToken)
+    public async Task<GetClientQueryResult> Handle(GetClientQuery request, CancellationToken cancellationToken)
     {
         var client = await clientRepository
                          .Query()
@@ -25,6 +25,6 @@ public class GetClientQueryHandler(IClientRepository clientRepository)
     }
 }
 
-public record GetlientQuery(IdpClientId IdpClientId) : IRequest<GetClientQueryResult>;
+public record GetClientQuery(IdpClientId IdpClientId) : IRequest<GetClientQueryResult>;
 
 public record GetClientQueryResult(IdpClientId IdpClientId, ClientName Name, string RedirectUrl);

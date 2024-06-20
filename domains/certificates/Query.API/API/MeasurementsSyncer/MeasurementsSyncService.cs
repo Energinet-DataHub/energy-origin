@@ -18,13 +18,13 @@ public class MeasurementsSyncService
 {
     private readonly ISyncState syncState;
     private readonly Measurements.V1.Measurements.MeasurementsClient measurementsClient;
-    private readonly IBus bus;
+    private readonly IPublishEndpoint bus;
     private readonly SlidingWindowService slidingWindowService;
     private readonly IMeasurementSyncMetrics measurementSyncMetrics;
     private readonly ILogger<MeasurementsSyncService> logger;
 
     public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISyncState syncState,
-        Measurements.V1.Measurements.MeasurementsClient measurementsClient, IBus bus, SlidingWindowService slidingWindowService,
+        Measurements.V1.Measurements.MeasurementsClient measurementsClient, IPublishEndpoint bus, SlidingWindowService slidingWindowService,
         IMeasurementSyncMetrics measurementSyncMetrics)
     {
         this.logger = logger;
@@ -54,6 +54,7 @@ public class MeasurementsSyncService
 
             slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, synchronizationPoint);
             await syncState.UpdateSlidingWindow(slidingWindow, stoppingToken);
+            await syncState.SaveChangesAsync(stoppingToken);
         }
     }
 
