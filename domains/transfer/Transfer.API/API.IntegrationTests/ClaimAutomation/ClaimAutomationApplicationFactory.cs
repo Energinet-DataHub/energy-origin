@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using API.ClaimAutomation.Api.Controllers;
+using API.Transfer.Api.Controllers;
 using Asp.Versioning.ApiExplorer;
 using DataContext;
 using EnergyOrigin.TokenValidation.Utilities;
