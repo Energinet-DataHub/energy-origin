@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using API.ClaimAutomation.Api.Dto.Response;
 using API.ClaimAutomation.Api.Repositories;
+using API.Transfer.Api.Controllers;
 using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;

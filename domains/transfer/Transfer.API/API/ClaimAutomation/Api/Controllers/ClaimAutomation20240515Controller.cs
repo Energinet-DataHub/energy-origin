@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using API.ClaimAutomation.Api.Dto.Response;
 using API.ClaimAutomation.Api.Repositories;
+using API.Transfer.Api.Controllers;
 using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
@@ -14,19 +15,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.ClaimAutomation.Api.Controllers;
 
-[Authorize]
 [ApiController]
 [Authorize(Policy.B2CCvrClaim)]
-[ApiVersion(ApiVersions.Version20300101)]
+[ApiVersion(ApiVersions.Version20240515)]
 [Route("api/claim-automation")]
-public class ClaimAutomationController20300101(IUnitOfWork unitOfWork) : ControllerBase
+public class ClaimAutomation20240515Controller(IUnitOfWork unitOfWork, AccessDescriptor accessDescriptor) : ControllerBase
 {
-    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpPost("start")]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 201)]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
     public async Task<ActionResult> StartClaimAutomation([FromQuery] Guid organizationId)
     {
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
+        {
+            return Forbid();
+        }
+
         var claim = await unitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(organizationId);
 
         if (claim != null)
@@ -53,12 +57,17 @@ public class ClaimAutomationController20300101(IUnitOfWork unitOfWork) : Control
             return Ok(claimAutomationArgumentDto);
         }
     }
-    [Authorize(Policy = PolicyName.RequiresCompany)]
+
     [HttpDelete("stop")]
     [ProducesResponseType(204)]
     [ProducesResponseType(typeof(void), 404)]
     public async Task<ActionResult> StopClaimAutomation([FromQuery] Guid organizationId)
     {
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
+        {
+            return Forbid();
+        }
+
         var claim = await unitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(organizationId);
 
         if (claim == null)
@@ -70,12 +79,17 @@ public class ClaimAutomationController20300101(IUnitOfWork unitOfWork) : Control
         return NoContent();
     }
 
-    [Authorize(Policy = PolicyName.RequiresCompany)]
+
     [HttpGet]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
     public async Task<ActionResult<ClaimAutomationArgumentDto>> GetClaimAutomation([FromQuery] Guid organizationId)
     {
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
+        {
+            return Forbid();
+        }
+
         var claim = await unitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(organizationId);
 
         if (claim == null)
