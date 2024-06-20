@@ -20,9 +20,12 @@ namespace API.IntegrationTests.Setup;
 public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     internal string ConnectionString { get; set; } = "";
+    public readonly Guid IssuerIdpClientId = Guid.NewGuid();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
+
         builder.ConfigureTestServices(services =>
         {
             services.RemoveDbContext<ApplicationDbContext>();

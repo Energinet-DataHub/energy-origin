@@ -1,7 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
+using API.Models;
+using API.ValueObjects;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
+using Google.Protobuf.WellKnownTypes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +26,7 @@ public class AuthorizationController : ControllerBase
     }
 
     /// <summary>
-    /// Retreives Authorization Model.
+    /// Retrieves Authorization Model.
     /// </summary>
     [HttpPost]
     [Route("api/authorization/client-consent/")]

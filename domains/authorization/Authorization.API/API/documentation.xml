@@ -4,6 +4,11 @@
         <name>API</name>
     </assembly>
     <members>
+        <member name="M:API.Authorization.Controllers.AdminController.CreateClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.CreateClientRequest)">
+            <summary>
+            Create Client.
+            </summary>
+        </member>
         <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationClientRequest)">
             <summary>
             Retreives Authorization Model.
@@ -15,6 +20,11 @@
             </summary>
         </member>
         <member name="M:API.Authorization.Controllers.ClientController.GetClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ClientResponse},System.Guid)">
+            <summary>
+            Retreives Client.
+            </summary>
+        </member>
+        <member name="M:API.Authorization.Controllers.ClientController.GetClientConsents(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ClientResponse})">
             <summary>
             Retreives Client.
             </summary>

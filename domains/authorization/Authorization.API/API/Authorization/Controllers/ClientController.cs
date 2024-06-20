@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using API.ValueObjects;
@@ -30,7 +31,21 @@ public class ClientController : ControllerBase
     [Route("api/authorization/client/{idpClientId}")]
     public async Task<ActionResult<ClientResponse>> GetClient([FromServices] ILogger<ClientResponse> logger, [FromRoute] Guid idpClientId)
     {
-        var queryResult = await _mediator.Send(new GetlientQuery(new IdpClientId(idpClientId)));
+        var queryResult = await _mediator.Send(new GetClientQuery(new IdpClientId(idpClientId)));
         return Ok(new ClientResponse(queryResult.IdpClientId.Value, queryResult.Name.Value, queryResult.RedirectUrl));
     }
+
+    /// <summary>
+    /// Retreives Client.
+    /// </summary>
+    [HttpGet]
+    [Route("api/authorization/client/consents")]
+    public async Task<ActionResult<ClientConsentsResponse>> GetClientConsents([FromServices] ILogger<ClientResponse> logger)
+    {
+        var queryResult = await _mediator.Send(new GetClientConsentsQuery(new IdpClientId(new(User.Claims.First(c => c.Type == ClaimType.Sub).Value))));
+
+        return Ok(new ClientConsentsResponse(queryResult.GetClientConsentsQueryResultItems.Select(x => new ClientConsentsResponseItem(x.OrganizationId, x.OrganizationName.Value))));
+    }
+
+
 }
