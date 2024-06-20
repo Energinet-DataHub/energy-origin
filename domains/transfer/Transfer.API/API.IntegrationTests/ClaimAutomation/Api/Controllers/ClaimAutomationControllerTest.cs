@@ -4,10 +4,9 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 
-namespace Worker.IntegrationTests.Api.Controllers;
+namespace API.IntegrationTests.ClaimAutomation.Api.Controllers;
 
-public class ClaimAutomationControllerTest(ClaimAutomationApplicationFactory factory)
-    : IClassFixture<ClaimAutomationApplicationFactory>
+public class ClaimAutomationControllerTest(ClaimAutomationApplicationFactory factory) : IClassFixture<ClaimAutomationApplicationFactory>
 {
     [Fact]
     public async Task StopProcess_WhenClaimProcessExists_ReturnsNoContent()

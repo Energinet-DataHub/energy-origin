@@ -1,4 +1,4 @@
-namespace ClaimAutomation.Worker.Api.Controllers;
+namespace API.ClaimAutomation.Api.Controllers;
 
 public static class ApiVersions
 {

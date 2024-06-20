@@ -1,8 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using API.ClaimAutomation.Api.Dto.Response;
+using API.ClaimAutomation.Api.Repositories;
+using API.UnitOfWork;
 using Asp.Versioning;
-using ClaimAutomation.Worker.Api.Dto.Response;
-using ClaimAutomation.Worker.Api.Repositories;
 using DataContext.Models;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -10,13 +11,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ClaimAutomation.Worker.Api.Controllers;
+namespace API.ClaimAutomation.Api.Controllers;
 
 [Authorize]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240103)]
 [Route("api/claim-automation")]
-public class ClaimAutomationController(IClaimAutomationRepository claimAutomationRepository) : ControllerBase
+public class ClaimAutomationController(IUnitOfWork UnitOfWork) : ControllerBase
 {
     [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpPost("start")]
@@ -26,7 +27,7 @@ public class ClaimAutomationController(IClaimAutomationRepository claimAutomatio
     {
         var user = new UserDescriptor(User);
 
-        var claim = await claimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+        var claim = await UnitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(user.Subject);
 
         if (claim != null)
         {
@@ -39,14 +40,14 @@ public class ClaimAutomationController(IClaimAutomationRepository claimAutomatio
 
         try
         {
-            claim = await claimAutomationRepository.AddClaimAutomationArgument(claimAutomationArgument);
+            claim = await UnitOfWork.ClaimAutomationRepository.AddClaimAutomationArgument(claimAutomationArgument);
             var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt.ToUnixTimeSeconds());
 
             return CreatedAtAction(nameof(GetClaimAutomation), null, claimAutomationArgumentDto);
         }
         catch (DbUpdateException)
         {
-            var claimAutomation = await claimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+            var claimAutomation = await UnitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(user.Subject);
 
             var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claimAutomation!.CreatedAt.ToUnixTimeSeconds());
             return Ok(claimAutomationArgumentDto);
@@ -60,14 +61,14 @@ public class ClaimAutomationController(IClaimAutomationRepository claimAutomatio
     {
         var user = new UserDescriptor(User);
 
-        var claim = await claimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+        var claim = await UnitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(user.Subject);
 
         if (claim == null)
         {
             return NotFound();
         }
 
-        await claimAutomationRepository.DeleteClaimAutomationArgument(claim);
+        await UnitOfWork.ClaimAutomationRepository.DeleteClaimAutomationArgument(claim);
         return NoContent();
     }
 
@@ -79,7 +80,7 @@ public class ClaimAutomationController(IClaimAutomationRepository claimAutomatio
     {
         var user = new UserDescriptor(User);
 
-        var claim = await claimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+        var claim = await UnitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(user.Subject);
 
         if (claim == null)
         {

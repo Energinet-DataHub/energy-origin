@@ -6,8 +6,8 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using API.ClaimAutomation.Api.Controllers;
 using Asp.Versioning.ApiExplorer;
-using ClaimAutomation.Worker.Api.Controllers;
 using DataContext;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -21,7 +21,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace Worker.IntegrationTests;
+namespace API.IntegrationTests.ClaimAutomation;
 
 public class ClaimAutomationApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
