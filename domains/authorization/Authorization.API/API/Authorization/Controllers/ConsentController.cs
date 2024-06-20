@@ -29,7 +29,7 @@ public class ConsentController(IMediator mediator) : ControllerBase
 
         await mediator.Send(new GrantConsentCommand(identity.Sub, identity.OrgId,
             new IdpClientId(request.IdpClientId)));
-        return Ok();
+        return Created();
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public class ConsentController(IMediator mediator) : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("api/authorization/consent/grant/{clientId}")]
-    public async Task<ActionResult> GetConsent([FromServices] ILogger<ConsentController> logger, [FromRoute] Guid clientId)
+    public async Task<ActionResult<GetConsentsQueryResult>> GetConsent([FromServices] ILogger<ConsentController> logger, [FromRoute] Guid clientId)
     {
         var result = await mediator.Send(new GetConsentQuery(clientId));
         return Ok(result);
@@ -48,7 +48,7 @@ public class ConsentController(IMediator mediator) : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("api/authorization/consents/")]
-    public async Task<ActionResult> GetConsent()
+    public async Task<ActionResult<UserOrganizationConsentsResponse>> GetConsent()
     {
         var identity = new IdentityDescriptor(HttpContext);
 
