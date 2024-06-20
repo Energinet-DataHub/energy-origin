@@ -111,7 +111,26 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240514093230_InitialCreate') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240514093230_InitialCreate', '8.0.4');
+    VALUES ('20240514093230_InitialCreate', '8.0.6');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240620115450_AddOrganizationTinUniqueIndex') THEN
+    CREATE UNIQUE INDEX "IX_Organizations_Tin" ON "Organizations" ("Tin");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240620115450_AddOrganizationTinUniqueIndex') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20240620115450_AddOrganizationTinUniqueIndex', '8.0.6');
     END IF;
 END $EF$;
 COMMIT;

@@ -34,7 +34,6 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-
             services.AddAuthentication("Test")
                 .AddScheme<AuthenticationSchemeOptions, ProxyTestAuthHandler>("Test", _ => { });
         });
