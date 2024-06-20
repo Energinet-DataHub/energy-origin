@@ -30,9 +30,9 @@ public class GetConsentTests
     [Fact]
     public async Task GivenUser_WhenGettingConsent_ThenHttpOkConsentReturned()
     {
-        var idpUserId = await SeedData();
+        var (idpUserId, tin) = await SeedData();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString());
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString(), orgCvr: tin.Value);
 
         var response = await userClient.GetUserOrganizationConsents();
 
@@ -63,7 +63,7 @@ public class GetConsentTests
     {
         var user = Any.User();
 
-        var organization1 = Any.Organization(Tin.Create("87654321"));
+        var organization1 = Any.Organization();
         var organization2 = Any.Organization();
 
         var client1 = Any.Client();
@@ -136,7 +136,7 @@ public class GetConsentTests
         result1.Should().BeEquivalentTo(result2);
     }
 
-    private async Task<IdpUserId> SeedData()
+    private async Task<(IdpUserId, Tin)> SeedData()
     {
         var user = Any.User();
         var organization = Any.Organization();
@@ -152,6 +152,6 @@ public class GetConsentTests
         await dbContext.Consents.AddAsync(consent);
 
         await dbContext.SaveChangesAsync();
-        return user.IdpUserId;
+        return (user.IdpUserId, organization.Tin);
     }
 }

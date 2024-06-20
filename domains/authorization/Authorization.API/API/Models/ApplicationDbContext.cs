@@ -34,6 +34,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasConversion(new ValueConverter<Tin, string>(v => v.Value, v => new Tin(v)))
             .IsRequired();
 
+        modelBuilder.Entity<Organization>().HasIndex(o => o.Tin).IsUnique();
+
         modelBuilder.Entity<Organization>().HasMany(it => it.Affiliations);
     }
 
