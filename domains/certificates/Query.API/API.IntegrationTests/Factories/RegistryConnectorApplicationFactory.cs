@@ -18,12 +18,11 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
 {
     public string ConnectionString { get; set; } = "";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
-    public string OtlpReceiverEndpoint { get; set; } = "http://foo";
-    public ProjectOriginOptions? ProjectOriginOptions { get; set; } = new()
+    public string OtlpReceiverEndpoint { get; private set; } = "http://foo";
+    public ProjectOriginRegistryOptions? PoRegistryOptions { get; set; } = new()
     {
         RegistryName = "foo",
         RegistryUrl = "bar",
-        WalletUrl = "baz",
         Dk1IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText()),
         Dk2IssuerPrivateKeyPem = Encoding.UTF8.GetBytes(Algorithms.Ed25519.GenerateNewPrivateKey().ExportPkixText())
     };
@@ -43,13 +42,12 @@ public class RegistryConnectorApplicationFactory : WebApplicationFactory<registr
         builder.UseSetting("Retry:DefaultSecondLevelRetryCount", RetryOptions.DefaultSecondLevelRetryCount.ToString());
         builder.UseSetting("Retry:RegistryTransactionStillProcessingRetryCount", RetryOptions.RegistryTransactionStillProcessingRetryCount.ToString());
 
-        if (ProjectOriginOptions != null)
+        if (PoRegistryOptions != null)
         {
-            builder.UseSetting("ProjectOrigin:WalletUrl", ProjectOriginOptions.WalletUrl);
-            builder.UseSetting("ProjectOrigin:RegistryName", ProjectOriginOptions.RegistryName);
-            builder.UseSetting("ProjectOrigin:RegistryUrl", ProjectOriginOptions.RegistryUrl);
-            builder.UseSetting("ProjectOrigin:Dk1IssuerPrivateKeyPem", Convert.ToBase64String(ProjectOriginOptions.Dk1IssuerPrivateKeyPem));
-            builder.UseSetting("ProjectOrigin:Dk2IssuerPrivateKeyPem", Convert.ToBase64String(ProjectOriginOptions.Dk2IssuerPrivateKeyPem));
+            builder.UseSetting("ProjectOrigin:RegistryName", PoRegistryOptions.RegistryName);
+            builder.UseSetting("ProjectOrigin:RegistryUrl", PoRegistryOptions.RegistryUrl);
+            builder.UseSetting("ProjectOrigin:Dk1IssuerPrivateKeyPem", Convert.ToBase64String(PoRegistryOptions.Dk1IssuerPrivateKeyPem));
+            builder.UseSetting("ProjectOrigin:Dk2IssuerPrivateKeyPem", Convert.ToBase64String(PoRegistryOptions.Dk2IssuerPrivateKeyPem));
         }
 
         builder.ConfigureTestServices(services =>

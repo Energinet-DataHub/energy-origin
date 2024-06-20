@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace API.Query.API.ApiModels.Requests;
@@ -20,3 +21,5 @@ public class CreateContract
     /// </summary>
     public long? EndDate { get; set; }
 }
+
+public record CreateContracts(List<CreateContract> Contracts);

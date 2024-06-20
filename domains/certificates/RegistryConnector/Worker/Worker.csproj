@@ -11,11 +11,11 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.1" />
-		<PackageReference Include="EnergyOrigin.Setup" Version="1.1.0" />
+		<PackageReference Include="EnergyOrigin.Setup" Version="4.4.2" />
 		<PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.0" />
 		<PackageReference Include="MassTransit.RabbitMQ" Version="8.2.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />

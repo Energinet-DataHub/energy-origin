@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using FluentAssertions;
@@ -5,22 +8,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-public class AddTechnologyToCertificateIssuingContractMigrationTests : IAsyncDisposable
+[Collection(IntegrationTestCollection.CollectionName)]
+public class AddTechnologyToCertificateIssuingContractMigrationTests
 {
-    private readonly PostgresContainer container = new();
+    private readonly DbContextOptions<ApplicationDbContext> options;
+
+    public AddTechnologyToCertificateIssuingContractMigrationTests(IntegrationTestFixture integrationTestFixture)
+    {
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+    }
 
     [Fact]
     public async Task ApplyMigration_WhenExistingDataInDatabase_AddsTechnologyColumnsSuccessfully()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        await using var dbContext = new ApplicationDbContext(options);
 
         var migrator = dbContext.GetService<IMigrator>();
 
@@ -79,20 +85,5 @@ public class AddTechnologyToCertificateIssuingContractMigrationTests : IAsyncDis
     };
 
         await dbContext.Database.ExecuteSqlRawAsync(contractQuery, contractFields);
-    }
-
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
-    {
-        await container.InitializeAsync();
-
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
-            .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
-        return dbContext;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await container.DisposeAsync();
     }
 }

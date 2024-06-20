@@ -8,38 +8,38 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using API.Transfer.Api.Controllers;
 using Asp.Versioning.ApiExplorer;
-using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementProposalCleanup;
 using DataContext;
-using DataContext.Models;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.HostedService;
+using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
+using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Npgsql;
-using Testcontainers.PostgreSql;
-using Xunit;
+using ProjectOriginClients;
+using NSubstitute;
+using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Factories;
 
-public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly PostgreSqlContainer testContainer = new PostgreSqlBuilder().WithImage("postgres:15.2").Build();
-
-    public Task InitializeAsync() => testContainer.StartAsync();
-
-    Task IAsyncLifetime.DisposeAsync() => testContainer.DisposeAsync().AsTask();
+    public string ConnectionString { get; set; } = "";
 
     private string WalletUrl { get; set; } = "http://foo";
 
     private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
+
+    private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
 
@@ -47,12 +47,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
     public bool WithCleanupWorker { get; set; } = true;
+    public IProjectOriginWalletClient WalletClientMock { get; private set; } = Substitute.For<IProjectOriginWalletClient>();
 
-    public IApiVersionDescriptionProvider GetApiVersionDescriptionProvider()
+    public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
     {
         using var scope = Services.CreateScope();
         var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
-        return provider;
+        await withAction(provider);
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -75,9 +76,19 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
+
         builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
         builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
         builder.UseSetting("TokenValidation:Audience", "Users");
+
+        builder.UseSetting("B2C:B2CWellKnownUrl",
+            "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration");
+        builder.UseSetting("B2C:ClientCredentialsCustomPolicyWellKnownUrl",
+            "https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_CLIENTCREDENTIALS");
+        builder.UseSetting("B2C:MitIDCustomPolicyWellKnownUrl",
+            "https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_MITID");
+        builder.UseSetting("B2C:Audience", "f00b9b4d-3c59-4c40-b209-2ef87e509f54");
+        builder.UseSetting("B2C:CustomPolicyClientId", "a701d13c-2570-46fa-9aa2-8d81f0d8d60b");
 
         builder.ConfigureTestServices(s =>
         {
@@ -92,7 +103,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             {
                 var connectionStringBuilder = new DbConnectionStringBuilder
                 {
-                    ConnectionString = testContainer.GetConnectionString()
+                    ConnectionString = ConnectionString
                 };
                 o.Host = (string)connectionStringBuilder["Host"];
                 o.Port = (string)connectionStringBuilder["Port"];
@@ -100,6 +111,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.User = (string)connectionStringBuilder["Username"];
                 o.Password = (string)connectionStringBuilder["Password"];
             });
+
+            s.Remove(s.First(sd => sd.ServiceType == typeof(IProjectOriginWalletClient)));
+            s.AddScoped(_ => WalletClientMock);
 
             if (!WithCleanupWorker)
             {
@@ -113,45 +127,39 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     protected override IHost CreateHost(IHostBuilder builder)
     {
         var host = base.CreateHost(builder);
-        var serviceScope = host.Services.CreateScope();
+        using var serviceScope = host.Services.CreateScope();
         var dbContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Database.Migrate();
+
+        ReplaceB2CAuthenticationSchemes(host);
 
         return host;
     }
 
-    public async Task SeedTransferAgreements(IEnumerable<TransferAgreement> transferAgreements)
+    private static void ReplaceB2CAuthenticationSchemes(IHost host)
     {
-        using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.TruncateTransferAgreementsTables();
+        var authenticationSchemeProvider = host.Services.GetService<IAuthenticationSchemeProvider>()!;
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme);
 
-        foreach (var agreement in transferAgreements)
-        {
-            await InsertTransferAgreement(dbContext, agreement);
-            await InsertTransferAgreementHistoryEntry(dbContext, agreement);
-        }
-    }
+        var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.B2CAuthenticationScheme,
+            AuthenticationScheme.B2CAuthenticationScheme,
+            typeof(IntegrationTestB2CAuthHandler));
+        authenticationSchemeProvider.AddScheme(b2CScheme);
 
-    public async Task SeedTransferAgreementsSaveChangesAsync(TransferAgreement transferAgreement)
-    {
-        using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.TransferAgreements.Add(transferAgreement);
-        await dbContext.SaveChangesAsync();
-    }
+        var b2CMitIdScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            typeof(IntegrationTestB2CAuthHandler));
+        authenticationSchemeProvider.AddScheme(b2CMitIdScheme);
 
-    public async Task SeedTransferAgreementProposals(IEnumerable<TransferAgreementProposal> proposals)
-    {
-        using var scope = Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        foreach (var proposal in proposals)
-        {
-            dbContext.TransferAgreementProposals.Add(proposal);
-        }
-
-        await dbContext.SaveChangesAsync();
+        var b2CClientCredentialsScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            typeof(IntegrationTestB2CAuthHandler));
+        authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
 
     public HttpClient CreateUnauthenticatedClient()
@@ -169,6 +177,17 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return client;
     }
 
+    public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
+        string apiVersion = ApiVersions.Version20240515)
+    {
+        var client = CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString()));
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+
+        return client;
+    }
+
     private HttpClient AuthenticateHttpClient(HttpClient client, string sub, string tin = "11223344", string name = "Peter Producent",
         string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Producent A/S", string apiVersion = "20240103")
     {
@@ -176,21 +195,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor, cpn: cpn));
         client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
 
-        return client;
-    }
-
-    public HttpClient CreateAuthenticatedClient(IProjectOriginWalletService poWalletServiceMock, string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Peter Producent A/S", string apiVersion = "20240103")
-    {
-        var client = WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                services.Remove(services.First(s => s.ImplementationType == typeof(ProjectOriginWalletService)));
-                services.AddScoped(_ => poWalletServiceMock);
-            });
-        }).CreateClient();
-        AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, cpn: cpn, apiVersion);
         return client;
     }
 
@@ -237,51 +241,41 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return signedJwtToken;
     }
 
-    private static async Task InsertTransferAgreement(ApplicationDbContext dbContext, TransferAgreement agreement)
+    private string GenerateB2CDummyToken(
+        string scope = "",
+        string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
+        string tin = "11223344",
+        string cpn = "Producent A/S",
+        string name = "Peter Producent",
+        string issuer = "demo.energioprindelse.dk",
+        string audience = "Users",
+        string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7")
     {
-        var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
-
-        var agreementQuery =
-            $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\", \"TransferAgreementNumber\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference, @TransferAgreementNumber)";
-        object[] agreementFields =
+        var claims = new Dictionary<string, object>()
         {
-            new NpgsqlParameter("Id", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin),
-            new NpgsqlParameter("ReceiverReference", agreement.ReceiverReference),
-            new NpgsqlParameter("TransferAgreementNumber", agreement.TransferAgreementNumber)
+            { UserClaimName.Scope, scope },
+            { JwtRegisteredClaimNames.Name, name },
+            { ClaimType.OrgIds, orgId },
+            { ClaimType.OrgCvr, tin },
+            { ClaimType.OrgName, cpn },
+            { ClaimType.SubType, "User" },
+            { UserClaimName.AccessToken, "" },
+            { UserClaimName.IdentityToken, "" },
+            { UserClaimName.ProviderKeys, "" },
         };
 
-        await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
+        var signedJwtToken = new TokenSigner(B2CDummyPrivateKey).Sign(
+            sub,
+            name,
+            issuer,
+            audience,
+            null,
+            60,
+            claims
+        );
+
+        return signedJwtToken;
     }
 
-    private static async Task InsertTransferAgreementHistoryEntry(ApplicationDbContext dbContext, TransferAgreement agreement)
-    {
-        var historyTable = dbContext.Model.FindEntityType(typeof(TransferAgreementHistoryEntry))!.GetTableName();
-
-        var historyQuery =
-            $"INSERT INTO \"{historyTable}\" (\"Id\", \"CreatedAt\", \"AuditAction\", \"ActorId\", \"ActorName\", \"TransferAgreementId\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\") " +
-            "VALUES (@Id, @CreatedAt, @AuditAction, @ActorId, @ActorName, @TransferAgreementId, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin)";
-        object[] historyFields =
-        {
-            new NpgsqlParameter("Id", Guid.NewGuid()),
-            new NpgsqlParameter("CreatedAt", DateTime.UtcNow),
-            new NpgsqlParameter("AuditAction", "Insert"),
-            new NpgsqlParameter("ActorId", "Test"),
-            new NpgsqlParameter("ActorName", "Test"),
-            new NpgsqlParameter("TransferAgreementId", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin)
-        };
-
-        await dbContext.Database.ExecuteSqlRawAsync(historyQuery, historyFields);
-    }
+    public void Start() => Server.Should().NotBeNull();
 }

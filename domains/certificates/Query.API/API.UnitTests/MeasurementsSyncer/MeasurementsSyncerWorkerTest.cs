@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
 using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using MassTransit;
 using Measurements.V1;
@@ -35,7 +36,9 @@ public class MeasurementsSyncerWorkerTest
 
     public MeasurementsSyncerWorkerTest()
     {
-        var syncService = new MeasurementsSyncService(syncServiceFakeLogger, fakeSyncState, fakeClient, fakeBus, new SlidingWindowService());
+        var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
+        var syncService = new MeasurementsSyncService(syncServiceFakeLogger, fakeSyncState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
+            new MeasurementSyncMetrics());
         scopeFactory.CreateScope().Returns(scope);
         scope.ServiceProvider.Returns(serviceProvider);
         serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);

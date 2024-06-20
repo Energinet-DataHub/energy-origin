@@ -6,7 +6,7 @@
 
 ## Transfer Automation flow
 
-First a Transfer Agreement Proposal is created by the producer (sender). The link to the proposal is sent to the receiver who then accepts or denys the Transfer Agreement Proposal. When the Transfer Agreement Proposal is accepted, a Wallet deposit endpoint is made for the receiver and a Receiver Deposit Endpoint is made for the sender and the Transfer Agreement is made with a reference guid for the Receiver Deposit Endpoint. The reference guid is used by the transfer agreement automation background service.
+First a Transfer Agreement Proposal is created by the producer (sender). The link to the proposal is sent to the receiver who then accepts or denys the Transfer Agreement Proposal. When the Transfer Agreement Proposal is accepted, a Wallet endpoint is made for the receiver and a External Endpoint is made for the sender and the Transfer Agreement is made with a reference guid for the External Endpoint. The reference guid is used by the transfer agreement automation background service.
 
 
 ```mermaid
@@ -25,9 +25,15 @@ sequenceDiagram
     sender ->> receiver: Sends proposal link (over email fx)
 
     receiver ->>+ ta: POST api/transfer-agreements
-    ta ->>+ wallet: gRPC CreateWalletDepositEndpoint()
-    wallet -->>- ta: WalletDepositEndpoint
-    ta ->>+ senderWallet: gRPC CreateReceiverDepositEndpoint()
+    ta ->>+ wallet: GET GetWallets()
+    wallet -->>- ta: wallets
+    alt if no wallets
+        ta ->> wallet: CreateWallet()
+    end
+
+    ta ->>+ wallet: gRPC CreateWalletEndpoint()
+    wallet -->>- ta: WalletEndpoint
+    ta ->>+ senderWallet: gRPC CreateExternalEndpoint()
     senderWallet -->>- ta: Reference guid
     ta -->>- receiver: TransferAgreement
 ```

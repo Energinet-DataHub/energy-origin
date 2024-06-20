@@ -2,18 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using Measurements.V1;
+using NSubstitute;
 using Xunit;
 
 namespace API.UnitTests.MeasurementsSyncer;
 
 public class SlidingWindowServiceTest
 {
-    private readonly SlidingWindowService sut = new();
+    private readonly SlidingWindowService sut;
     private readonly string GSRN = "123456789123456789";
     private readonly UnixTimestamp now = UnixTimestamp.Now();
+
+    public SlidingWindowServiceTest()
+    {
+        var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
+        sut = new SlidingWindowService(measurementSyncMetrics);
+    }
 
     [Fact]
     public void GivenSynchronizationPoint_WhenCreatingSlidingWindow_NextFetchIntervalStartsAtSynchronizationPoint()

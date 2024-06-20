@@ -38,22 +38,6 @@ public class SyncState : ISyncState
         }
     }
 
-    public async Task SetSyncPosition(string gsrn, long syncedTo, CancellationToken cancellationToken)
-    {
-        var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(gsrn, cancellationToken);
-        if (synchronizationPosition != null)
-        {
-            synchronizationPosition.SyncedTo = syncedTo;
-            dbContext.Update(synchronizationPosition);
-        }
-        else
-        {
-            synchronizationPosition = new SynchronizationPosition { GSRN = gsrn, SyncedTo = syncedTo };
-            await dbContext.AddAsync(synchronizationPosition);
-        }
-        await dbContext.SaveChangesAsync();
-    }
-
     public async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn, CancellationToken cancellationToken)
     {
         var slidingWindow = await dbContext.MeteringPointTimeSeriesSlidingWindows.FindAsync(gsrn);
@@ -71,8 +55,11 @@ public class SyncState : ISyncState
         {
             dbContext.MeteringPointTimeSeriesSlidingWindows.Update(slidingWindow);
         }
+    }
 
-        await dbContext.SaveChangesAsync();
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken)
@@ -81,7 +68,6 @@ public class SyncState : ISyncState
         {
             var allContracts = await dbContext.Contracts.AsNoTracking().ToListAsync(cancellationToken);
 
-            //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
             var syncInfos = allContracts.GroupBy(c => c.GSRN)
                 .Where(g => GetNumberOfOwners(g) == 1)
                 .Select(g =>

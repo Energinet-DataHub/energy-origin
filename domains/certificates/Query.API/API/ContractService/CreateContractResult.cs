@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using DataContext.Models;
 
 namespace API.ContractService;
 
 public abstract record CreateContractResult
 {
-    public record Success(CertificateIssuingContract CertificateIssuingContract) : CreateContractResult;
+    public record Success(List<CertificateIssuingContract> CertificateIssuingContracts) : CreateContractResult;
 
     public record GsrnNotFound : CreateContractResult;
 

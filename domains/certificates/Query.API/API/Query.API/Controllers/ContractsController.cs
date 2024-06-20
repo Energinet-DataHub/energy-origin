@@ -1,11 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
-using API.UnitOfWork;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
@@ -20,6 +20,7 @@ namespace API.Query.API.Controllers;
 [Authorize]
 [ApiController]
 [ApiVersion(ApiVersions.Version20230101)]
+[ApiVersion(ApiVersions.Version20240423)]
 public class ContractsController : ControllerBase
 {
     /// <summary>
@@ -29,6 +30,7 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(201)]
     [ProducesResponseType(400)]
     [ProducesResponseType(typeof(void), 409)]
+    [ApiVersion(ApiVersions.Version20230101)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> CreateContract(
         [FromBody] CreateContract createContract,
@@ -45,21 +47,59 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var startDate = DateTimeOffset.FromUnixTimeSeconds(createContract.StartDate);
-        DateTimeOffset? endDate = createContract.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(createContract.EndDate.Value) : null;
-
         var result = await service.Create(
-            createContract.GSRN,
-            user,
-            startDate,
-            endDate,
+            new CreateContracts([createContract]),
+            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
             cancellationToken);
 
         return result switch
         {
-            GsrnNotFound => ValidationProblem($"GSRN {createContract.GSRN} not found"),
+            GsrnNotFound => ValidationProblem(),
             ContractAlreadyExists => ValidationProblem(statusCode: 409),
-            CreateContractResult.Success(var createdContract) => CreatedAtRoute("GetContract", new { id = createdContract.Id }, Contract.CreateFrom(createdContract)),
+            CreateContractResult.Success(var createdContract) => CreatedAtRoute("GetContract",
+                new { id = createdContract[0].Id }, Contract.CreateFrom(createdContract[0])),
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
+        };
+    }
+
+    /// <summary>
+    /// Create contracts that activates granular certificate generation for a metering point
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(201)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(typeof(void), 409)]
+    [ApiVersion(ApiVersions.Version20240423)]
+    [Route("api/certificates/contracts")]
+    public async Task<ActionResult> CreateContract(
+        [FromBody] CreateContracts createContracts,
+        [FromServices] IValidator<CreateContract> validator,
+        [FromServices] IContractService service,
+        CancellationToken cancellationToken)
+    {
+        var user = new UserDescriptor(User);
+
+        foreach (var createContract in createContracts.Contracts)
+        {
+            var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                validationResult.AddToModelState(ModelState, null);
+                return ValidationProblem(ModelState);
+            }
+        }
+
+        var result = await service.Create(
+            createContracts,
+            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
+            cancellationToken);
+
+        return result switch
+        {
+            GsrnNotFound => ValidationProblem(),
+            ContractAlreadyExists => ValidationProblem(statusCode: 409),
+            CreateContractResult.Success(var createdContracts) => Created("",
+                new ContractList { Result = createdContracts.Select(Contract.CreateFrom).ToList() }),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }
@@ -77,9 +117,9 @@ public class ContractsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
+        var meteringPointOwner = user.Subject;
 
-        var contract = await service.GetById(id, meteringPointOwner, cancellationToken);
+        var contract = await service.GetById(id, new List<Guid> { meteringPointOwner }, cancellationToken);
 
         return contract == null
             ? NotFound()
@@ -97,7 +137,7 @@ public class ContractsController : ControllerBase
         CancellationToken cancellationToken)
     {
         var user = new UserDescriptor(User);
-        var meteringPointOwner = user.Subject.ToString();
+        var meteringPointOwner = user.Subject;
 
         var contracts = await service.GetByOwner(meteringPointOwner, cancellationToken);
 
@@ -113,11 +153,12 @@ public class ContractsController : ControllerBase
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
+    [ApiVersion(ApiVersions.Version20230101)]
     [Route("api/certificates/contracts/{id}")]
     public async Task<ActionResult> UpdateEndDate(
         [FromRoute] Guid id,
-        [FromBody] EditContractEndDate editContractEndDate,
-        [FromServices] IValidator<EditContractEndDate> validator,
+        [FromBody] EditContractEndDate20230101 editContractEndDate,
+        [FromServices] IValidator<EditContractEndDate20230101> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
@@ -130,12 +171,13 @@ public class ContractsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        DateTimeOffset? newEndDate = editContractEndDate.EndDate.HasValue ? DateTimeOffset.FromUnixTimeSeconds(editContractEndDate.EndDate.Value) : null;
-
         var result = await service.SetEndDate(
-            id,
-            user,
-            newEndDate,
+            new EditContracts([new EditContractEndDate
+            {
+                EndDate = editContractEndDate.EndDate,
+                Id = id
+            }]),
+            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
             cancellationToken);
 
         return result switch
@@ -143,6 +185,50 @@ public class ContractsController : ControllerBase
             NonExistingContract => NotFound(),
             MeteringPointOwnerNoMatch => Forbid(),
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
+            OverlappingContract => ValidationProblem(statusCode: 409),
+            SetEndDateResult.Success => Ok(),
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
+        };
+    }
+
+    /// <summary>
+    /// Edit the end date for multiple contracts
+    /// </summary>
+    [HttpPut]
+    [ProducesResponseType(typeof(void), 200)]
+    [ProducesResponseType(typeof(void), 404)]
+    [ProducesResponseType(typeof(void), 403)]
+    [ApiVersion(ApiVersions.Version20240423)]
+    [Route("api/certificates/contracts")]
+    public async Task<ActionResult> UpdateEndDate(
+        [FromBody] EditContracts editContracts,
+        [FromServices] IValidator<EditContractEndDate> validator,
+        [FromServices] IContractService service,
+        CancellationToken cancellationToken)
+    {
+        var user = new UserDescriptor(User);
+
+        foreach (var contract in editContracts.Contracts)
+        {
+            var validationResult = await validator.ValidateAsync(contract, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                validationResult.AddToModelState(ModelState, null);
+                return ValidationProblem(ModelState);
+            }
+        }
+
+        var result = await service.SetEndDate(
+            editContracts,
+            user.Subject, user.Id, user.Name, user.Organization!.Name, user.Organization.Tin,
+            cancellationToken);
+
+        return result switch
+        {
+            NonExistingContract => NotFound(),
+            MeteringPointOwnerNoMatch => Forbid(),
+            EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
+            OverlappingContract => ValidationProblem(statusCode: 409),
             SetEndDateResult.Success => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };

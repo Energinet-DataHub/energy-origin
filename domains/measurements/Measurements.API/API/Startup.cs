@@ -8,6 +8,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using EnergyOrigin.Setup;
 using Contracts;
+using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
@@ -32,7 +33,10 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddDbContext<ApplicationDbContext>(
-            options => options.UseNpgsql(_configuration.GetConnectionString("Postgres")),
+            options => options.UseNpgsql(
+                _configuration.GetConnectionString("Postgres"),
+                providerOptions => providerOptions.EnableRetryOnFailure()
+            ),
             optionsLifetime: ServiceLifetime.Singleton);
         services.AddDbContextFactory<ApplicationDbContext>();
 
@@ -75,7 +79,8 @@ public class Startup
             .BindConfiguration(RabbitMqOptions.RabbitMq)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations().ValidateOnStart();
+        services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations()
+            .ValidateOnStart();
 
 
         services.AddMassTransit(o =>
@@ -126,11 +131,11 @@ public class Startup
 
         services.AddVersioningToApi();
 
-        services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
-            .ValidateDataAnnotations().ValidateOnStart();
-        var tokenValidationOptions =
-            _configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-        services.AddTokenValidation(tokenValidationOptions);
+        var tokenValidationOptions = _configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+        services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+        var b2COptions = _configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
+        services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+        services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
 
         services.AddGrpc();
     }

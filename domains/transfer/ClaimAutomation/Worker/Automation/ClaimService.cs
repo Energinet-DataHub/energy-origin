@@ -4,23 +4,25 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ClaimAutomation.Worker.Api.Repositories;
-using ClaimAutomation.Worker.Automation.Services;
 using ClaimAutomation.Worker.Metrics;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using ProjectOrigin.WalletSystem.V1;
+using ProjectOriginClients;
+using ProjectOriginClients.Models;
 
 namespace ClaimAutomation.Worker.Automation;
 
 public class ClaimService(
     ILogger<ClaimService> logger,
     IClaimAutomationRepository claimAutomationRepository,
-    IProjectOriginWalletService walletService,
+    IProjectOriginWalletClient walletClient,
     IShuffler shuffle,
     IClaimAutomationMetrics metrics,
     AutomationCache cache)
     : IClaimService
 {
+    public int BatchSize { get; init; } = 5000;
+
     public async Task Run(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -35,16 +37,29 @@ public class ClaimService(
                 logger.LogInformation("Number of ClaimAutomationArguments for current run: {claimAutomationArguments}", claimAutomationArguments.Count);
                 foreach (var subjectId in claimAutomationArguments.Select(x => x.SubjectId).Distinct())
                 {
-                    var certificates = await walletService.GetGranularCertificates(subjectId);
-                    logger.LogInformation("Trying to claim {certificates} certificates for {subjectId}", certificates.Count, subjectId);
-                    certificates = certificates.OrderBy<GranularCertificate, int>(x => shuffle.Next()).ToList();
+                    var hasMoreCertificates = true;
+                    var certificates = new List<GranularCertificate>();
+                    while (hasMoreCertificates)
+                    {
+                        var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken, limit: BatchSize, skip: certificates.Count);
 
+                        if (response == null)
+                            throw new ClaimCertificatesException($"Something went wrong when getting certificates from the wallet for {subjectId}. Response is null.");
+
+                        certificates.AddRange(response.Result);
+                        if (certificates.Count >= response.Metadata.Total)
+                        {
+                            hasMoreCertificates = false;
+                        }
+                    }
+
+                    certificates = certificates.OrderBy<GranularCertificate, int>(x => shuffle.Next()).ToList();
                     var certificatesGrouped = certificates.GroupBy(x => new { x.GridArea, x.Start, x.End });
 
-                    foreach (var cert in certificatesGrouped)
+                    foreach (var certGrp in certificatesGrouped)
                     {
-                        var productionCerts = cert.Where(x => x.Type == GranularCertificateType.Production).ToList();
-                        var consumptionCerts = cert.Where(x => x.Type == GranularCertificateType.Consumption).ToList();
+                        var productionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Production).ToList();
+                        var consumptionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Consumption).ToList();
                         logger.LogInformation("Claiming {productionCerts} production certs and {consumptionCerts} consumption certs for {subjectId}", productionCerts.Count, consumptionCerts.Count, subjectId);
                         await Claim(subjectId, consumptionCerts, productionCerts);
                     }
@@ -68,9 +83,9 @@ public class ClaimService(
 
             var quantity = Math.Min(productionCert.Quantity, consumptionCert.Quantity);
 
-            await walletService.ClaimCertificates(subjectId, consumptionCert, productionCert, quantity);
-            SetClaimAttempt(consumptionCert.FederatedId.StreamId.ToString());
-            SetClaimAttempt(productionCert.FederatedId.StreamId.ToString());
+            await walletClient.ClaimCertificates(subjectId, consumptionCert, productionCert, quantity);
+            SetClaimAttempt(consumptionCert.FederatedStreamId.StreamId.ToString());
+            SetClaimAttempt(productionCert.FederatedStreamId.StreamId.ToString());
             metrics.AddClaim();
 
             productionCert.Quantity -= quantity;

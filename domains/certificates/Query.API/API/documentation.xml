@@ -4,6 +4,66 @@
         <name>API</name>
     </assembly>
     <members>
+        <member name="P:API.ContractService.Clients.CreateWalletRequest.PrivateKey">
+            <summary>
+            The private key to import. If not provided, a private key will be generated.
+            </summary>
+        </member>
+        <member name="T:API.ContractService.Clients.ReceiveRequest">
+            <summary>
+            Request to receive a certificate-slice from another wallet.
+            </summary>
+        </member>
+        <member name="M:API.ContractService.Clients.ReceiveRequest.#ctor">
+            <summary>
+            Request to receive a certificate-slice from another wallet.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.ReceiveRequest.PublicKey">
+            <summary>
+            The public key of the receiving wallet.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.ReceiveRequest.Position">
+            <summary>
+            The sub-position of the publicKey used on the slice on the registry.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.ReceiveRequest.CertificateId">
+            <summary>
+            The id of the certificate.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.ReceiveRequest.Quantity">
+            <summary>
+            The quantity of the slice.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.ReceiveRequest.RandomR">
+            <summary>
+            The random R used to generate the pedersen commitment with the quantity.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.ReceiveRequest.HashedAttributes">
+            <summary>
+            List of hashed attributes, their values and salts so the receiver can access the data.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.HashedAttribute.Key">
+            <summary>
+            The key of the attribute.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.HashedAttribute.Value">
+            <summary>
+            The value of the attribute.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.HashedAttribute.Salt">
+            <summary>
+            The salt used to hash the attribute.
+            </summary>
+        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
@@ -20,6 +80,11 @@
             </summary>
         </member>
         <member name="P:API.Query.API.ApiModels.Requests.EditContractEndDate.EndDate">
+            <summary>
+            End Date for generation of certificates in Unix time seconds. Set to null for no end date
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Requests.EditContractEndDate20230101.EndDate">
             <summary>
             End Date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
@@ -49,9 +114,34 @@
             Metering point type of the contract. Can be Production or Consumption
             </summary>
         </member>
+        <member name="M:API.Query.API.Controllers.Contracts20250515Controller.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Create contracts that activates granular certificate generation for a metering point
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.Contracts20250515Controller.GetContract(System.Guid,System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Returns contract based on the id
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.Contracts20250515Controller.GetAllContracts(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Returns all the user's contracts for issuing granular certificates
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.Contracts20250515Controller.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Edit the end date for multiple contracts
+            </summary>
+        </member>
         <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Create a contract that activates granular certificate generation for a metering point
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Create contracts that activates granular certificate generation for a metering point
             </summary>
         </member>
         <member name="M:API.Query.API.Controllers.ContractsController.GetContract(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
@@ -64,9 +154,14 @@
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate20230101,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate20230101},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Edit the end date for contract
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
+            <summary>
+            Edit the end date for multiple contracts
             </summary>
         </member>
         <member name="T:Measurements.V1.MeasurementsReflection">

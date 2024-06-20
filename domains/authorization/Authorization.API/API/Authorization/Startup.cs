@@ -1,3 +1,5 @@
+using API.Authorization._Features_;
+using API.Authorization.Controllers;
 using EnergyOrigin.Setup;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,13 +10,9 @@ public static class Startup
     public static void AddAuthorizationApi(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
+        services.AddVersioningToApi();
         services.AddSwagger("authorization");
-        services.AddSwaggerGen(c =>
-        {
-            //c.DocumentFilter<AddContractsTagDocumentFilter>();
-        });
+        services.AddSwaggerGen();
         services.AddHttpContextAccessor();
-
-        //services.AddValidatorsFromAssemblyContaining<CreateContractValidator>();
     }
 }

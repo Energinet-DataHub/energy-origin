@@ -8,29 +8,31 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using OpenTelemetry.Resources;
 using ProjectOrigin.Registry.V1;
 using RegistryConnector.Worker;
 using RegistryConnector.Worker.Converters;
 using RegistryConnector.Worker.EventHandlers;
-using RegistryConnector.Worker.RoutingSlips;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithOpenTelemetryWithoutOutboxLogs(otlpOptions.ReceiverEndpoint);
+builder.AddSerilog();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")),
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Postgres"),
+        providerOptions => providerOptions.EnableRetryOnFailure()
+    ),
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations()
+    .ValidateOnStart();
 builder.Services.AddProjectOriginOptions();
 
 builder.Services.AddScoped<IKeyGenerator, KeyGenerator>();
@@ -40,7 +42,7 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddGrpcClient<RegistryService.RegistryServiceClient>((sp, o) =>
 {
-    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+    var options = sp.GetRequiredService<IOptions<ProjectOriginRegistryOptions>>().Value;
     o.Address = new Uri(options.RegistryUrl);
 });
 
@@ -49,9 +51,11 @@ builder.Services.AddMassTransit(o =>
     o.SetKebabCaseEndpointNameFormatter();
 
     o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
-    o.AddConsumer<IssueCertificateNotCompletedConsumer, IssueCertificateNotCompletedConsumerDefinition>();
-
-    o.AddActivitiesFromNamespaceContaining<IssueToRegistryActivity>();
+    o.AddConsumer<CertificateCreatedEventHandler, CertificateCreatedEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateFailedInRegistryEventHandler, CertificateFailedInRegistryEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateIssuedInRegistryEventHandler, CertificateIssuedInRegistryEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateMarkedAsIssuedEventHandler, CertificateMarkedAsIssuedEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateSentToRegistryEventHandler, CertificateSentToRegistryEventHandlerConsumerDefinition>();
 
     o.UsingRabbitMq((context, cfg) =>
     {
@@ -69,7 +73,6 @@ builder.Services.AddMassTransit(o =>
         cfg.ConfigureJsonSerializerOptions(jsonSerializerOptions =>
         {
             jsonSerializerOptions.Converters.Add(new TransactionConverter());
-            jsonSerializerOptions.Converters.Add(new ReceiveRequestConverter());
             return jsonSerializerOptions;
         });
     });
@@ -81,13 +84,8 @@ builder.Services.AddMassTransit(o =>
     });
 });
 
-void ConfigureResource(ResourceBuilder r)
-{
-    r.AddService("RegistryConnector",
-        serviceInstanceId: Environment.MachineName);
-}
-
-builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit(ConfigureResource, otlpOptions.ReceiverEndpoint);
+builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit("RegistryConnector",
+    otlpOptions.ReceiverEndpoint);
 
 var app = builder.Build();
 

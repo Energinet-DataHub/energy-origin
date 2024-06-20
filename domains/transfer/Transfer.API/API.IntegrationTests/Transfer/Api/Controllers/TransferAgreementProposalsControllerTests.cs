@@ -1,25 +1,34 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using Asp.Versioning;
+using DataContext;
 using DataContext.Models;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Polly;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
-public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebApplicationFactory factory)
-    : IClassFixture<TransferAgreementsApiWebApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class TransferAgreementProposalsControllerTests
 {
     private readonly string sub = Guid.NewGuid().ToString();
     private readonly string tin = "12345678";
+    private readonly TransferAgreementsApiWebApplicationFactory factory;
+
+    public TransferAgreementProposalsControllerTests(IntegrationTestFixture integrationTestFixture)
+    {
+        factory = integrationTestFixture.Factory;
+    }
 
     [Fact]
     public async Task Create()
@@ -98,7 +107,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
         var receiverTin = "12345678";
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var id = Guid.NewGuid();
-        await factory.SeedTransferAgreements(new List<TransferAgreement>()
+        await SeedTransferAgreements(new List<TransferAgreement>()
         {
             new()
             {
@@ -129,7 +138,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var id = Guid.NewGuid();
-        await factory.SeedTransferAgreements(new List<TransferAgreement>()
+        await SeedTransferAgreements(new List<TransferAgreement>()
         {
             new()
             {
@@ -161,13 +170,13 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
     [InlineData("123456789", "ReceiverTin must be 8 digits without any spaces.")]
     [InlineData("ABCDEFG", "ReceiverTin must be 8 digits without any spaces.")]
     [InlineData("11223344", "ReceiverTin cannot be the same as SenderTin.")]
-    public async Task Create_ShouldFail_WhenReceiverTinInvalid(string tin, string expectedContent)
+    public async Task Create_ShouldFail_WhenReceiverTinInvalid(string receiverTin, string expectedContent)
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var request = new CreateTransferAgreementProposal(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: tin
+            ReceiverTin: receiverTin
         );
 
         var response = await authenticatedClient.PostAsync("api/transfer/transfer-agreement-proposals", JsonContent.Create(request));
@@ -183,13 +192,13 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
     [Theory]
     [InlineData(null)]
     [InlineData("12345678")]
-    public async Task Create_ShouldSucceed_WhenReceiverTinValid(string? tin)
+    public async Task Create_ShouldSucceed_WhenReceiverTinValid(string? receiverTin)
     {
         var authenticatedClient = factory.CreateAuthenticatedClient(sub);
         var request = new CreateTransferAgreementProposal(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
-            ReceiverTin: tin
+            ReceiverTin: receiverTin
         );
 
         var response = await authenticatedClient.PostAsJsonAsync("api/transfer/transfer-agreement-proposals", request);
@@ -282,7 +291,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
             SenderCompanyTin = "11223344"
         };
 
-        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
         var receiverClient = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: receiverTin);
 
@@ -319,7 +328,7 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
             SenderCompanyTin = "11223344"
         };
 
-        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
@@ -346,11 +355,15 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
             ReceiverCompanyTin = tin
         };
 
-        await factory.SeedTransferAgreementProposals(new List<TransferAgreementProposal> { proposal });
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { proposal });
 
         var client = factory.CreateAuthenticatedClient(sub: sub, tin: tin);
 
-        var response = await client.GetAsync($"api/transfer/transfer-agreement-proposals/{invitationId}");
+        var retryPolicy = Policy
+            .HandleResult<HttpResponseMessage>(response => response.StatusCode != HttpStatusCode.NotFound)
+            .WaitAndRetryAsync(10, _ => TimeSpan.FromSeconds(1));
+
+        var response = await retryPolicy.ExecuteAsync(() => client.GetAsync($"api/transfer/transfer-agreement-proposals/{invitationId}"));
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -381,5 +394,19 @@ public class TransferAgreementProposalsControllerTests(TransferAgreementsApiWebA
         var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{randomGuid}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    private async Task SeedTransferAgreements(List<TransferAgreement> transferAgreements)
+    {
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        await TestData.SeedTransferAgreements(dbContext, transferAgreements);
+    }
+
+    private async Task SeedTransferAgreementProposals(List<TransferAgreementProposal> transferAgreementProposals)
+    {
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        await TestData.SeedTransferAgreementProposals(dbContext, transferAgreementProposals);
     }
 }

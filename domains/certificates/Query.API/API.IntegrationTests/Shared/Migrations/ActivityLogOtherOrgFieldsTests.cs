@@ -8,19 +8,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-public class ActivityLogEntryOtherOrgFieldsTests : IAsyncDisposable
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ActivityLogEntryOtherOrgFieldsTests
 {
-    private readonly PostgresContainer container = new();
+    private readonly DbContextOptions<ApplicationDbContext> options;
+
+    public ActivityLogEntryOtherOrgFieldsTests(IntegrationTestFixture integrationTestFixture)
+    {
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+    }
 
     [Fact]
     public async Task GivenMigrationApplied_IfNewActivityLogEntryIsCreated_OtherOrganizationFieldsExist()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        await using var dbContext = new ApplicationDbContext(options);
         var migrator = dbContext.GetService<IMigrator>();
         var applyMigration = () => migrator.MigrateAsync();
 
@@ -37,7 +43,7 @@ public class ActivityLogEntryOtherOrgFieldsTests : IAsyncDisposable
     [Fact]
     public async Task GivenActivityLogExists_IfMigrationApplied_OldActivityLogsOtherOrganizationFieldsEqualStringEmpty()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        await using var dbContext = new ApplicationDbContext(options);
         var migrator = dbContext.GetService<IMigrator>();
         await migrator.MigrateAsync("20240216110232_ActivityLogEntityIdIsNowAString");
         await InsertOldActivityLogEntry(dbContext, Guid.NewGuid());
@@ -144,21 +150,6 @@ public class ActivityLogEntryOtherOrgFieldsTests : IAsyncDisposable
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(logEntryQuery, logEntryFields);
-    }
-
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
-    {
-        await container.InitializeAsync();
-
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
-            .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
-        return dbContext;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await container.DisposeAsync();
     }
 }
 

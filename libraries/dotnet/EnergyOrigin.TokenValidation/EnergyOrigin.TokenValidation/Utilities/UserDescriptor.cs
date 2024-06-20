@@ -1,7 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Diagnostics.CodeAnalysis;
 using EnergyOrigin.TokenValidation.Values;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace EnergyOrigin.TokenValidation.Utilities;
 
@@ -23,6 +26,9 @@ public class UserDescriptor
     public Guid Subject => Organization?.Id ?? Id;
 
     public UserDescriptor() { }
+
+    [SetsRequiredMembers]
+    public UserDescriptor(HttpContext httpContext) : this(httpContext.User) { }
 
     [SetsRequiredMembers]
     public UserDescriptor(ClaimsPrincipal? user)

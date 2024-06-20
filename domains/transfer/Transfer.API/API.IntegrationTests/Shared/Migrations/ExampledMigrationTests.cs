@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using API.IntegrationTests.Testcontainers;
 using DataContext;
 using DataContext.Models;
 using FluentAssertions;
@@ -13,12 +12,17 @@ using Xunit;
 
 namespace API.IntegrationTests.Shared.Migrations;
 
-public class ExampledMigrationTests : IAsyncDisposable
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ExampledMigrationTests : MigrationsTestBase
 {
-    private PostgresContainer container;
-    public ExampledMigrationTests()
+    private readonly DbContextOptions<ApplicationDbContext> options;
+
+    public ExampledMigrationTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
-        container = new PostgresContainer();
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(options);
+        dbContext.Database.Migrate();
     }
 
     [Fact(Skip = "This is an exampled migration test that other migration tests can be based on.")]
@@ -66,20 +70,5 @@ public class ExampledMigrationTests : IAsyncDisposable
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
-    }
-
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
-    {
-        await container.InitializeAsync();
-
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
-            .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
-        return dbContext;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        await container.DisposeAsync();
     }
 }

@@ -9,5 +9,7 @@ public abstract record SetEndDateResult
     public record NonExistingContract : SetEndDateResult;
     public record MeteringPointOwnerNoMatch : SetEndDateResult;
 
+    public record OverlappingContract : SetEndDateResult;
+
     private SetEndDateResult() { }
 }

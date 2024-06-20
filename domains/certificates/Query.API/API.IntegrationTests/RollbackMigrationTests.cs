@@ -1,39 +1,36 @@
-using API.IntegrationTests.Factories;
+using System.Threading.Tasks;
 using DataContext;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Tasks;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests;
 
-public class RollbackMigrationTests :
-    TestBase,
-    IClassFixture<QueryApiWebApplicationFactory>,
-    IClassFixture<PostgresContainer>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class RollbackMigrationTests : TestBase
 {
-    private readonly QueryApiWebApplicationFactory factory;
 
-    public RollbackMigrationTests(QueryApiWebApplicationFactory factory, PostgresContainer dbContainer)
+    private readonly DbContextOptions<ApplicationDbContext> options;
+
+    public RollbackMigrationTests(IntegrationTestFixture integrationTestFixture)
     {
-        this.factory = factory;
-        this.factory.ConnectionString = dbContainer.ConnectionString;
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
     }
 
     [Fact]
     public async Task can_rollback_all_migrations()
     {
-        factory.Start();
-        var dbContextFactory = factory.Services.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
-        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
-
+        await using var dbContext = new ApplicationDbContext(options);
         var migrator = dbContext.Database.GetService<IMigrator>();
 
+        await migrator.MigrateAsync();
         var rollbackAllMigrations = () => migrator.Migrate("0");
+
         rollbackAllMigrations.Should().NotThrow();
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+        pendingMigrations.Should().NotBeEmpty();
     }
 }
