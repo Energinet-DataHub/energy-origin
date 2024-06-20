@@ -47,16 +47,11 @@ namespace ClaimAutomation.Worker
                     providerOptions => providerOptions.EnableRetryOnFailure()
                 ),
                 optionsLifetime: ServiceLifetime.Singleton);
-            builder.Services.AddDbContextFactory<ApplicationDbContext>();
+            builder.Services.AddDbContextFactory<ApplicationDbContext>(); // TODO: Look into why we add DbContext twice.
 
-            builder.Services.AddControllers().AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-            builder.Services.AddAuthorization();
             builder.Services.AddHealthChecks()
                 .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddHttpContextAccessor();
+
             builder.Services.AddLogging();
 
             builder.Services.AddScoped<IClaimAutomationRepository, ClaimAutomationRepository>();
@@ -70,15 +65,6 @@ namespace ClaimAutomation.Worker
                 var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
                 c.BaseAddress = new Uri(options.WalletUrl);
             });
-
-            builder.Services.AddVersioningToApi();
-
-            builder.Services.AddSwagger("Claim Automation");
-            builder.Services.AddSwaggerGen();
-
-            var tokenValidationOptions =
-                builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-            builder.AddTokenValidation(tokenValidationOptions);
 
             builder.Services.AddOpenTelemetry()
                 .ConfigureResource(resource => resource
@@ -108,7 +94,6 @@ namespace ClaimAutomation.Worker
 
             var app = builder.Build();
             app.MapHealthChecks("/health");
-            app.AddSwagger("claim-automation");
 
             app.UseHttpsRedirection();
             app.UseAuthentication();

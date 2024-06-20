@@ -4,9 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
-    <DocumentationFile>documentation.xml</DocumentationFile>
     <RootNamespace>ClaimAutomation.Worker</RootNamespace>
     <AssemblyName>ClaimAutomation.Worker</AssemblyName>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
@@ -27,12 +25,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="API.IntegrationTests" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="documentation.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

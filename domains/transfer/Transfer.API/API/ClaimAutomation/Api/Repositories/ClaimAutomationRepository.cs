@@ -12,11 +12,6 @@ public class ClaimAutomationRepository : IClaimAutomationRepository
 {
     private readonly ApplicationDbContext context;
 
-    public ClaimAutomationRepository(IDbContextFactory<ApplicationDbContext> contextFactory)
-    {
-        context = contextFactory!.CreateDbContext();
-    }
-
     public ClaimAutomationRepository(ApplicationDbContext context)
     {
         this.context = context;
