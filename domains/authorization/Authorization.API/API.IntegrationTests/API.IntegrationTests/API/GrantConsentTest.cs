@@ -50,7 +50,7 @@ public class GrantConsentTest
 
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgIds: organization.Id.ToString());
         var response = await api.GrantConsent(client.IdpClientId.Value);
-        response.Should().Be200Ok();
+        response.Should().Be201Created();
     }
 
     [Fact]
