@@ -16,11 +16,9 @@ public static class WebApplicationBuilderExtensions
         LoggerConfiguration log = new LoggerConfiguration()
             .Filter
             .ByExcluding("RequestPath like '/health%'").Filter.ByExcluding("RequestPath like '/metrics%'")
-            .WriteTo.OpenTelemetry(options =>
-            {
-                options.IncludedData = IncludedData.MessageTemplateRenderingsAttribute |
-                                       IncludedData.TraceIdField | IncludedData.SpanIdField;
-            });
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("TraceId", () => Activity.Current?.TraceId)
+            .Enrich.WithProperty("SpanId", () => Activity.Current?.SpanId);
 
         var console = builder.Environment.IsDevelopment()
             ? log.WriteTo.Console()
