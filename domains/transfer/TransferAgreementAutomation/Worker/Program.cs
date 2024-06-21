@@ -84,9 +84,6 @@ app.MapHealthChecks("/health");
 
 app.Run();
 
-namespace TransferAgreementAutomation.Worker
+public partial class Program
 {
-    public partial class Program
-    {
-    }
 }
