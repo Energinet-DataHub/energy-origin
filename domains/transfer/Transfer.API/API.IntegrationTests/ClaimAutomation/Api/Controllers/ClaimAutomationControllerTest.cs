@@ -10,8 +10,6 @@ namespace API.IntegrationTests.ClaimAutomation.Api.Controllers;
 [Collection(IntegrationTestCollection.CollectionName)]
 public class ClaimAutomationControllerTest
 {
-    private readonly string sub = Guid.NewGuid().ToString();
-    //private readonly string tin = "12345678";
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
     public ClaimAutomationControllerTest(IntegrationTestFixture integrationTestFixture)
