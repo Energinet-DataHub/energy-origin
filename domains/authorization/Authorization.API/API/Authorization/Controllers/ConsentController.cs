@@ -7,6 +7,7 @@ using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -48,6 +49,7 @@ public class ConsentController(IMediator mediator) : ControllerBase
     /// </summary>
     [HttpGet]
     [Route("api/authorization/consents/")]
+    [ProducesResponseType(typeof(UserOrganizationConsentsResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult> GetConsent()
     {
         var identity = new IdentityDescriptor(HttpContext);
