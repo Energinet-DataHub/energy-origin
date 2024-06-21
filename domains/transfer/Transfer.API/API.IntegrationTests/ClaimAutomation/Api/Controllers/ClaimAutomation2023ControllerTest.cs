@@ -8,13 +8,13 @@ using Xunit;
 namespace API.IntegrationTests.ClaimAutomation.Api.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class ClaimAutomationControllerTest
+public class ClaimAutomation2030ControllerTest
 {
     private readonly string sub = Guid.NewGuid().ToString();
     //private readonly string tin = "12345678";
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
-    public ClaimAutomationControllerTest(IntegrationTestFixture integrationTestFixture)
+    public ClaimAutomation2030ControllerTest(IntegrationTestFixture integrationTestFixture)
     {
         factory = integrationTestFixture.Factory;
     }
