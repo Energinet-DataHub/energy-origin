@@ -14,11 +14,11 @@ public static class WebApplicationBuilderExtensions
     public static void AddSerilog(this WebApplicationBuilder builder)
     {
         LoggerConfiguration log = new LoggerConfiguration()
-            .Filter
-            .ByExcluding("RequestPath like '/health%'").Filter.ByExcluding("RequestPath like '/metrics%'")
+            .Filter.ByExcluding("RequestPath like '/health%'")
+            .Filter.ByExcluding("RequestPath like '/metrics%'")
             .Enrich.FromLogContext()
-            .Enrich.WithProperty("TraceId", () => Activity.Current?.TraceId)
-            .Enrich.WithProperty("SpanId", () => Activity.Current?.SpanId);
+            .Enrich.WithProperty("TraceId", "${Activity.Current?.TraceId}")
+            .Enrich.WithProperty("SpanId", "${Activity.Current?.SpanId}");
 
         var console = builder.Environment.IsDevelopment()
             ? log.WriteTo.Console()
