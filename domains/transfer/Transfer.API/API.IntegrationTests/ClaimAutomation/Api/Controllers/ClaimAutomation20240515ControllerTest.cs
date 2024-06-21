@@ -8,14 +8,14 @@ using Xunit;
 namespace API.IntegrationTests.ClaimAutomation.Api.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class ClaimAutomation2030ControllerTest
+public class ClaimAutomation20240515ControllerTest
 {
     private readonly Guid sub = Guid.NewGuid();
     private readonly Guid orgId = Guid.NewGuid();
 
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
-    public ClaimAutomation2030ControllerTest(IntegrationTestFixture integrationTestFixture)
+    public ClaimAutomation20240515ControllerTest(IntegrationTestFixture integrationTestFixture)
     {
         factory = integrationTestFixture.Factory;
     }

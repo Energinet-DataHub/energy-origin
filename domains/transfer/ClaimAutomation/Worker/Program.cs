@@ -40,7 +40,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
         providerOptions => providerOptions.EnableRetryOnFailure()
     ),
     optionsLifetime: ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<ApplicationDbContext>(); // TODO: Look into why we add DbContext twice.
+builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
