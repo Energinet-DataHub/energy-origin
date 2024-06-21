@@ -14,11 +14,11 @@ public static class WebApplicationBuilderExtensions
     public static void AddSerilog(this WebApplicationBuilder builder)
     {
         LoggerConfiguration log = new LoggerConfiguration()
-            .Filter
-            .ByExcluding("RequestPath like '/health%'").Filter.ByExcluding("RequestPath like '/metrics%'")
+            .Filter.ByExcluding("RequestPath like '/health%'")
+            .Filter.ByExcluding("RequestPath like '/metrics%'")
             .Enrich.FromLogContext()
-            .Enrich.WithProperty("TraceId", () => Activity.Current?.TraceId.ToString())
-            .Enrich.WithProperty("SpanId", () => Activity.Current?.SpanId.ToString());
+            .Enrich.WithProperty("TraceId", "${Activity.Current?.TraceId}")
+            .Enrich.WithProperty("SpanId", "${Activity.Current?.SpanId}");
 
         var console = builder.Environment.IsDevelopment()
             ? log.WriteTo.Console()
@@ -33,8 +33,8 @@ public static class WebApplicationBuilderExtensions
         var log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
             .Filter.ByExcluding("RequestPath like '/metrics%'")
-            .Enrich.WithProperty("TraceId", () => Activity.Current?.TraceId.ToString())
-            .Enrich.WithProperty("SpanId", () => Activity.Current?.SpanId.ToString())
+            .Enrich.WithProperty("TraceId", "${Activity.Current?.TraceId}")
+            .Enrich.WithProperty("SpanId", "${Activity.Current?.SpanId}")
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning);
 
         var console = builder.Environment.IsDevelopment()
