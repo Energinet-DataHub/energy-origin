@@ -12,18 +12,8 @@ public class OrganizationName : ValueObject
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("Value cannot be null, empty, or whitespace.", nameof(value));
 
-        if (value.Length > 100)
-            throw new ArgumentException("OrganizationName cannot exceed 100 characters.", nameof(value));
-
-        if (!IsValidOrganizationName(value))
-            throw new ArgumentException("Value contains invalid characters.", nameof(value));
-
         Value = value.Trim();
     }
-
-    private static bool IsValidOrganizationName(string value) => MyRegex().IsMatch(value);
-
-    private static Regex MyRegex() => new Regex(@"^[a-zA-Z0-9\s&.,'\-]+$");
 
     public static OrganizationName Create(string value)
     {

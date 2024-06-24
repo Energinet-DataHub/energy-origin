@@ -19,19 +19,6 @@ public class OrganizationNameTests
     }
 
     [Fact]
-    public void OrganizationName_WithInvalidCharacters_ThrowsException()
-    {
-        Assert.Throws<ArgumentException>(() => new OrganizationName("Test Organization!"));
-    }
-
-    [Fact]
-    public void OrganizationName_WithExceedingLength_ThrowsException()
-    {
-        var longName = new string('a', 101);
-        Assert.Throws<ArgumentException>(() => new OrganizationName(longName));
-    }
-
-    [Fact]
     public void OrganizationName_WithEmptyValue_ThrowsException()
     {
         Assert.Throws<ArgumentException>(() => new OrganizationName(""));
@@ -41,5 +28,12 @@ public class OrganizationNameTests
     public void OrganizationName_WithNullValue_ThrowsException()
     {
         Assert.Throws<ArgumentException>(() => new OrganizationName(null!));
+    }
+
+    [Fact]
+    public void OrganizationName_WithDanishStockCompanyEnding_ShouldBeAccepted()
+    {
+        var organizationName = new OrganizationName("Producent A/S");
+        Assert.Equal("Producent A/S", organizationName.Value);
     }
 }
