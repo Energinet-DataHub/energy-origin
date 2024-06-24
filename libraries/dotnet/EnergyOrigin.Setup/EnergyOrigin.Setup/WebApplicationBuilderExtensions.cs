@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Enrichers.Span;
 using Serilog.Formatting.Json;
 using Serilog.Sinks.OpenTelemetry;
 
@@ -16,9 +17,7 @@ public static class WebApplicationBuilderExtensions
         LoggerConfiguration log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
             .Filter.ByExcluding("RequestPath like '/metrics%'")
-            .Enrich.FromLogContext()
-            .Enrich.WithProperty("TraceId", "${Activity.Current?.TraceId}")
-            .Enrich.WithProperty("SpanId", "${Activity.Current?.SpanId}");
+            .Enrich.WithSpan();
 
         var console = builder.Environment.IsDevelopment()
             ? log.WriteTo.Console()
