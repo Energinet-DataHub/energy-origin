@@ -1,12 +1,10 @@
-using System;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Enrichers.Span;
+using Serilog.Events;
 using Serilog.Formatting.Json;
-using Serilog.Sinks.OpenTelemetry;
 
 namespace EnergyOrigin.Setup;
 
@@ -32,9 +30,8 @@ public static class WebApplicationBuilderExtensions
         var log = new LoggerConfiguration()
             .Filter.ByExcluding("RequestPath like '/health%'")
             .Filter.ByExcluding("RequestPath like '/metrics%'")
-            .Enrich.WithProperty("TraceId", "${Activity.Current?.TraceId}")
-            .Enrich.WithProperty("SpanId", "${Activity.Current?.SpanId}")
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Warning);
+            .Enrich.WithSpan()
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning);
 
         var console = builder.Environment.IsDevelopment()
             ? log.WriteTo.Console()
