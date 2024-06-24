@@ -83,5 +83,8 @@ public static class IServiceCollectionExtensions
                 .Build();
             options.AddPolicy(PolicyName.RequiresCompany, tokenValidationRequiredCompanyPolicy);
         });
+
+        services.AddScoped<IdentityDescriptor>();
+        services.AddScoped<AccessDescriptor>();
     }
 }
