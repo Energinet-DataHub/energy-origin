@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataContext.Models;
 
-namespace ClaimAutomation.Worker.Api.Repositories;
+namespace API.ClaimAutomation.Api.Repositories;
 
 public interface IClaimAutomationRepository
 {

@@ -1,21 +1,20 @@
+using System.Text.Json.Serialization;
 using API.Cvr;
 using API.Shared.Options;
 using API.Transfer;
+using API.UnitOfWork;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
+using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization;
-using API.UnitOfWork;
-using EnergyOrigin.TokenValidation.b2c;
-using Microsoft.AspNetCore.Http.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +44,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
 
-builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(API.Program).Assembly);
 
 builder.Services.AddActivityLog(options => options.ServiceName = "transfer");
 
@@ -86,6 +85,9 @@ app.UseActivityLog();
 
 app.Run();
 
-public partial class Program
+namespace API
 {
+    public partial class Program
+    {
+    }
 }

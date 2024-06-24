@@ -1,14 +1,12 @@
 using System;
-using System.Text.Json.Serialization;
+using API.ClaimAutomation.Api.Repositories;
 using ClaimAutomation.Worker;
-using ClaimAutomation.Worker.Api.Repositories;
 using ClaimAutomation.Worker.Automation;
 using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using DataContext;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.Options;
-using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -44,14 +42,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
-builder.Services.AddAuthorization();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddLogging();
 
 builder.Services.AddScoped<IClaimAutomationRepository, ClaimAutomationRepository>();
@@ -65,15 +58,6 @@ builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletCl
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     c.BaseAddress = new Uri(options.WalletUrl);
 });
-
-builder.Services.AddVersioningToApi();
-
-builder.Services.AddSwagger("Claim Automation");
-builder.Services.AddSwaggerGen();
-
-var tokenValidationOptions =
-    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-builder.AddTokenValidation(tokenValidationOptions);
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
@@ -103,16 +87,14 @@ builder.Services.AddOpenTelemetry()
 
 var app = builder.Build();
 app.MapHealthChecks("/health");
-app.AddSwagger("claim-automation");
 
 app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
 
 app.Run();
 
-public partial class Program
+namespace ClaimAutomation
 {
+    public partial class Program
+    {
+    }
 }

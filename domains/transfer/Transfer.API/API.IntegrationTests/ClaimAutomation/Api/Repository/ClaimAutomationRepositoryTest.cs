@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Testing.Testcontainers;
 using Xunit;
 
-namespace Worker.IntegrationTests.Api.Repository;
+namespace API.IntegrationTests.ClaimAutomation.Api.Repository;
 
 public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClassFixture<PostgresContainer>
 {

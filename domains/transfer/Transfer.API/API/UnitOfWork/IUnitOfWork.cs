@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using API.ClaimAutomation.Api.Repositories;
 using API.Transfer.Api.Repository;
 using DataContext;
 using EnergyOrigin.ActivityLog.API;
@@ -11,6 +12,7 @@ public interface IUnitOfWork : IAsyncDisposable
     ITransferAgreementRepository TransferAgreementRepo { get; }
     IActivityLogEntryRepository ActivityLogEntryRepo { get; }
     ITransferAgreementProposalRepository TransferAgreementProposalRepo { get; }
+    IClaimAutomationRepository ClaimAutomationRepository { get; }
 
     Task SaveAsync();
 }
@@ -21,6 +23,7 @@ public class UnitOfWork : IUnitOfWork
     private ITransferAgreementRepository transferAgreementRepo = null!;
     private IActivityLogEntryRepository activityLogEntryRepo = null!;
     private ITransferAgreementProposalRepository transferAgreementProposalRepo = null!;
+    private IClaimAutomationRepository claimAutomationRepository = null!;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -40,6 +43,11 @@ public class UnitOfWork : IUnitOfWork
     public ITransferAgreementProposalRepository TransferAgreementProposalRepo
     {
         get => transferAgreementProposalRepo ??= new TransferAgreementProposalRepository(context);
+    }
+
+    public IClaimAutomationRepository ClaimAutomationRepository
+    {
+        get => claimAutomationRepository ??= new ClaimAutomationRepository(context);
     }
 
     public Task SaveAsync()
