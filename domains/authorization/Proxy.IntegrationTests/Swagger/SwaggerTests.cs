@@ -2,7 +2,7 @@ using System.Net;
 using FluentAssertions;
 using Proxy.IntegrationTests.Setup;
 
-namespace Proxy.IntegrationTests;
+namespace Proxy.IntegrationTests.Swagger;
 
 [Collection(IntegrationTestCollection.CollectionName)]
 public class SwaggerTests(ProxyIntegrationTestFixture proxyIntegrationTestFixture)
