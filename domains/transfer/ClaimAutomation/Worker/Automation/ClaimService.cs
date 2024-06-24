@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ClaimAutomation.Worker.Api.Repositories;
+using API.ClaimAutomation.Api.Repositories;
 using ClaimAutomation.Worker.Metrics;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;

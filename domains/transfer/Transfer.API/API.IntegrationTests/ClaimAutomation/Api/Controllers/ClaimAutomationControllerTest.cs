@@ -1,14 +1,22 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using API.IntegrationTests.Factories;
 using FluentAssertions;
 using Xunit;
 
-namespace Worker.IntegrationTests.Api.Controllers;
+namespace API.IntegrationTests.ClaimAutomation.Api.Controllers;
 
-public class ClaimAutomationControllerTest(ClaimAutomationApplicationFactory factory)
-    : IClassFixture<ClaimAutomationApplicationFactory>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ClaimAutomationControllerTest
 {
+    private readonly TransferAgreementsApiWebApplicationFactory factory;
+
+    public ClaimAutomationControllerTest(IntegrationTestFixture integrationTestFixture)
+    {
+        factory = integrationTestFixture.Factory;
+    }
+
     [Fact]
     public async Task StopProcess_WhenClaimProcessExists_ReturnsNoContent()
     {
