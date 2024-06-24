@@ -25,7 +25,7 @@ var builder = WebApplication.CreateBuilder(args);
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilog();
+builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("Certificates.API", otlpOptions.ReceiverEndpoint)
     .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(MeasurementSyncMetrics.MetricName));
