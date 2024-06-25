@@ -1,19 +1,21 @@
-using System.Diagnostics;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Mvc;
+using Proxy.Controllers;
 
-namespace Proxy.Controllers;
+namespace Proxy;
 
 public class ProxyBase : ControllerBase
 {
+    private readonly AccessDescriptor? _accessDescriptor;
     private readonly HttpClient _httpClient;
 
-    public ProxyBase(IHttpClientFactory httpClientFactory)
+    public ProxyBase(IHttpClientFactory httpClientFactory, AccessDescriptor? accessDescriptor)
     {
+        _accessDescriptor = accessDescriptor;
         _httpClient = httpClientFactory.CreateClient("Proxy");
     }
 
-    private async Task ProxyRequest(string path, string organizationId)
+    private async Task ProxyRequest(string path, string? organizationId)
     {
         var requestMessage = await BuildProxyRequest(path);
 
@@ -64,7 +66,7 @@ public class ProxyBase : ControllerBase
         return await _httpClient.SendAsync(requestMessage);
     }
 
-    private void BuildProxyForwardHeaders(string organizationId, HttpRequestMessage requestMessage)
+    private void BuildProxyForwardHeaders(string? organizationId, HttpRequestMessage requestMessage)
     {
         foreach (var header in HttpContext.Request.Headers)
         {
@@ -74,7 +76,10 @@ public class ProxyBase : ControllerBase
             }
         }
 
-        requestMessage.Content?.Headers.TryAddWithoutValidation(WalletConstants.Header, organizationId);
+        if (organizationId is not null)
+        {
+            requestMessage.Content?.Headers.TryAddWithoutValidation(WalletConstants.Header, organizationId);
+        }
     }
 
     private async Task<HttpRequestMessage> BuildProxyRequest(string path)
@@ -112,10 +117,9 @@ public class ProxyBase : ControllerBase
         }
 
         var orgId = Guid.Parse(organizationId);
-        var identity = new IdentityDescriptor(HttpContext, orgId); // TODO: Not  a fan of IdentityDescriptor breaking this code. https://chatgpt.com/share/9214da86-f6ab-4222-b0e6-adc935656226
-        if (!identity.OrgIds.Contains(orgId))
+        if (_accessDescriptor is not null && !_accessDescriptor.IsAuthorizedToOrganization(orgId))
         {
-            //Forbidden();
+            Forbidden();
             return;
         }
 
@@ -151,7 +155,7 @@ public class ProxyBase : ControllerBase
     /// <param name="path"></param>
     protected async Task ProxyInsecureCall(string path)
     {
-        await ProxyRequest(path, "todo"); // TODO: This will most likely work, since we don't care about extra headers, but we shouldn't add it if not needed.
+        await ProxyRequest(path, null);
     }
 
 }

@@ -13,6 +13,7 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.b2c;
 using API.IssuingContractCleanup;
 using API.MeasurementsSyncer.Metrics;
+using API.Query.API.Controllers;
 using API.UnitOfWork;
 using Contracts;
 using EnergyOrigin.Setup;
@@ -94,6 +95,7 @@ builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).V
     .ValidateOnStart();
 builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
 
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
@@ -107,7 +109,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseActivityLog();
+var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
+app.UseActivityLog().WithApiVersionSet(activityLogApiVersionSet)
+    .HasApiVersion(ApiVersions.Version20240423AsInt)
+    .HasApiVersion(ApiVersions.Version20230101AsInt);
+app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet).HasApiVersion(ApiVersions.Version20240515AsInt);
+
 
 app.Run();
 

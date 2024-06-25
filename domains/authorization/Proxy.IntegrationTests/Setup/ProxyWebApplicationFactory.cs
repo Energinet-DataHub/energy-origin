@@ -93,7 +93,7 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
     {
         sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
         name = string.IsNullOrEmpty(name) ? "Test Testesen" : name;
-        subType = string.IsNullOrEmpty(subType) ? "user" : subType;
+        subType = string.IsNullOrEmpty(subType) ? "User" : subType;
         orgIds ??= new List<string> { Guid.NewGuid().ToString() };
 
         var client = CreateClient();
