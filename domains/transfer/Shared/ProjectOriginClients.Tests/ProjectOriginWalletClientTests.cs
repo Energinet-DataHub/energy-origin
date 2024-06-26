@@ -26,7 +26,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, null); // TODO: Pass in IClientCredentialsService
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -43,7 +43,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, null); // TODO: Pass in IClientCredentialsService
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         var wallets = await walletClient.GetWallets(ownerSubject, new CancellationToken());
 
@@ -56,7 +56,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, null); // TODO: Pass in IClientCredentialsService
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -72,7 +72,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, null); // TODO: Pass in IClientCredentialsService
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -93,7 +93,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, null); // TODO: Pass in IClientCredentialsService
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -131,7 +131,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, null); // TODO: Pass in IClientCredentialsService
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         //This does not go well in the wallet since we haven't sent the certificate to the registry first,
         //and since the certificates does not appear in the wallet, but for this test we don't care
@@ -167,7 +167,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, null); // TODO: Pass in IClientCredentialsService
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         //I cannot send any certificates to the wallet since I can't send to the registry first
         var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: int.MaxValue, skip: 0);
@@ -181,7 +181,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new ProjectOriginWalletClient(httpClient, null); // TODO: Pass in IClientCredentialsService
+        var walletClient = new ProjectOriginWalletClient(httpClient);
 
         //I cannot send any certificates to the wallet since I can't send to the registry first
         var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: null);

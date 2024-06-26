@@ -31,11 +31,7 @@ public static class Startup
             var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
             c.BaseAddress = new Uri(options.WalletUrl);
         });
-        services.AddHttpClient<IClientCredentialsService, ClientCredentialsService>((sp, c) =>
-        {
-            var options = sp.GetRequiredService<IOptions<ClientCredentialsOptions>>().Value;
-            c.BaseAddress = new Uri(options.TokenUrl);
-        });
+
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
         services.AddHostedService<TransferAgreementCleanupWorker>();
