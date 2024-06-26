@@ -77,6 +77,8 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
+app.UsePathBase("/wallet-proxy");
+
 app.Use(async (context, next) =>
 {
     context.Request.EnableBuffering();
