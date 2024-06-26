@@ -38,7 +38,7 @@ public class ProjectOriginStack : RegistryFixture
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/wallet-server:1.2.0")
+                .WithImage("ghcr.io/project-origin/wallet-server:1.2.1")
                 .WithNetwork(Network)
                 .WithPortBinding(hostPort, WalletHttpPort)
                 .WithCommand("--serve", "--migrate")
@@ -49,8 +49,8 @@ public class ProjectOriginStack : RegistryFixture
                 .WithEnvironment("Otlp__Enabled", "false")
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
                 .WithEnvironment("MessageBroker__Type", "InMemory")
-                .WithEnvironment("auth__type", "jwt")
-                .WithEnvironment("auth__jwt__AllowAnyJwtToken", "true")
+                .WithEnvironment("auth__type", "header")
+                .WithEnvironment("auth__header__headerName", "wallet-owner")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(WalletHttpPort))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
