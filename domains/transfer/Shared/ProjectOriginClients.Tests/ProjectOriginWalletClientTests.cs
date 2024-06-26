@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Extensions.Configuration;
 using ProjectOriginClients.Models;
 using ProjectOriginClients.Tests.Testcontainers;
 using Xunit;
