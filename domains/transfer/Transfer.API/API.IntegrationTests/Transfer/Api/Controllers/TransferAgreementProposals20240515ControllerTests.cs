@@ -9,6 +9,7 @@ using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.ActivityLog.API;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -71,7 +72,8 @@ public class TransferAgreementProposals20240515ControllerTests
             ReceiverTin: "12345678"
         );
 
-        var response = await authenticatedClient.PostAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", JsonContent.Create(request));
+        var response = await authenticatedClient.PostAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}",
+            JsonContent.Create(request));
 
         var validationProblemContent = await response.Content.ReadAsStringAsync();
 
@@ -93,7 +95,8 @@ public class TransferAgreementProposals20240515ControllerTests
             ReceiverTin: receiverTin
         );
 
-        var response = await authenticatedClient.PostAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", JsonContent.Create(request));
+        var response = await authenticatedClient.PostAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}",
+            JsonContent.Create(request));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -131,7 +134,8 @@ public class TransferAgreementProposals20240515ControllerTests
             ReceiverTin: receiverTin
         );
 
-        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", overlappingRequest);
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}",
+            overlappingRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
@@ -224,7 +228,8 @@ public class TransferAgreementProposals20240515ControllerTests
         var receiverOrgId = Guid.NewGuid();
         var receiverClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), receiverOrgId, receiverTin);
 
-        var getResponse = await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={receiverOrgId}");
+        var getResponse =
+            await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={receiverOrgId}");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -271,7 +276,8 @@ public class TransferAgreementProposals20240515ControllerTests
         var receiverOrgId = Guid.NewGuid();
         var receiverClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), receiverOrgId, "12345679");
 
-        var getResponse = await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={receiverOrgId}");
+        var getResponse =
+            await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={receiverOrgId}");
 
         getResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -384,7 +390,8 @@ public class TransferAgreementProposals20240515ControllerTests
         var receiverOrgId = Guid.NewGuid();
         var receiverClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), receiverOrgId, receiverTin);
 
-        var deleteResponse = await receiverClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={receiverOrgId}");
+        var deleteResponse =
+            await receiverClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={receiverOrgId}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
@@ -398,6 +405,24 @@ public class TransferAgreementProposals20240515ControllerTests
         var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{randomGuid}?organizationId={orgId}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GivenActivityLog_WhenUsingOldAuth_EndpointReturnsOk()
+    {
+        var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(), tin: "1223344");
+        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+        using var activityLogResponse = await client.PostAsJsonAsync("api/transfer/activity-log", activityLogRequest);
+        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GivenActivityLog_WhenUsingB2CAuth_EndpointReturnsOk()
+    {
+        var client = factory.CreateB2CAuthenticatedClient(sub: Guid.NewGuid(), orgId: Guid.NewGuid(), tin: "1223344");
+        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+        using var activityLogResponse = await client.PostAsJsonAsync("api/transfer/activity-log", activityLogRequest);
+        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     private async Task SeedTransferAgreements(List<TransferAgreement> transferAgreements)

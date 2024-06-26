@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
@@ -18,21 +16,19 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     private HttpClient CreateClientWithOrgAsSub(string sub) => fixture.Factory.CreateAuthenticatedClient(sub: sub);
     private HttpClient CreateUnauthenticatedClient() => fixture.Factory.CreateUnauthenticatedClient();
 
+    [Fact]
+    public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithInvalidOrgnaisationId_Return403Forbidden()
+    {
+        // Arrange
+        var client = CreateClientWithOrgIds(new() { Guid.NewGuid().ToString() });
 
-    // Needs IdentityDescriptor to be fixed first. Current error is 500 internal server.
-    // [Fact]
-    // public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithInvalidOrgnaisationId_Return403Forbidden()
-    // {
-    //     // Arrange
-    //     var client = CreateClientWithOrgIds(new (){Guid.NewGuid().ToString()});
-    //
-    //     // Act
-    //     client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
-    //     var response = await client.GetAsync($"wallets?organizationId={Guid.NewGuid()}");
-    //
-    //     // Assert
-    //     response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    // }
+        // Act
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
+        var response = await client.GetAsync($"wallets?organizationId={Guid.NewGuid()}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 
     [Fact]
     public async Task GivenB2C_WhenV20250101PostSliceEndpoint_WithoutBearerToken_Return200Ok()
