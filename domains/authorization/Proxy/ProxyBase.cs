@@ -44,7 +44,7 @@ public class ProxyBase : ControllerBase
 
     private void BuildProxyResponseHeaders(HttpResponseMessage proxyResponse)
     {
-        foreach (var header in proxyResponse.Headers.Where(x => !x.Key.Equals("Transfer-Encoding")))
+        foreach (var header in proxyResponse.Headers.Where(x => !x.Key.Equals("Transfer-Encoding", StringComparison.InvariantCultureIgnoreCase)))
         {
             foreach (var value in header.Value)
             {
@@ -68,7 +68,7 @@ public class ProxyBase : ControllerBase
 
     private void BuildProxyForwardHeaders(string? organizationId, HttpRequestMessage requestMessage)
     {
-        foreach (var header in HttpContext.Request.Headers)
+        foreach (var header in HttpContext.Request.Headers.Where(x => !x.Key.Equals("Authorization", StringComparison.InvariantCultureIgnoreCase)))
         {
             if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
             {
