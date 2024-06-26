@@ -31,7 +31,6 @@ public static class Startup
             var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
             c.BaseAddress = new Uri(options.WalletUrl);
         });
-
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
         services.AddHostedService<TransferAgreementCleanupWorker>();
