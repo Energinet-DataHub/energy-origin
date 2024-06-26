@@ -107,6 +107,7 @@
             "name": "TimeAggregate",
             "in": "query",
             "description": "The size of each bucket in the aggregation.",
+            "required": true,
             "schema": {
               "$ref": "#/components/schemas/TimeAggregate"
             }
@@ -115,6 +116,7 @@
             "name": "TimeZone",
             "in": "query",
             "description": "The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -361,6 +363,7 @@
             "name": "TimeAggregate",
             "in": "query",
             "description": "The size of each bucket in the aggregation",
+            "required": true,
             "schema": {
               "$ref": "#/components/schemas/TimeAggregate"
             }
@@ -369,6 +372,7 @@
             "name": "TimeZone",
             "in": "query",
             "description": "The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -664,7 +668,7 @@
             "description": "Unauthorized"
           },
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -687,6 +691,7 @@
             "name": "TimeAggregate",
             "in": "query",
             "description": "The size of each bucket in the aggregation",
+            "required": true,
             "schema": {
               "$ref": "#/components/schemas/TimeAggregate"
             }
@@ -695,6 +700,7 @@
             "name": "TimeZone",
             "in": "query",
             "description": "The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -992,7 +998,7 @@
             "description": "Forbidden"
           },
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -1084,6 +1090,12 @@
   "components": {
     "schemas": {
       "AggregatedCertificates": {
+        "required": [
+          "end",
+          "quantity",
+          "start",
+          "type"
+        ],
         "type": "object",
         "properties": {
           "start": {
@@ -1109,6 +1121,10 @@
         "description": "A result of aggregated certificates that is available to use in the wallet."
       },
       "AggregatedCertificatesResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
         "type": "object",
         "properties": {
           "result": {
@@ -1124,6 +1140,11 @@
         "additionalProperties": false
       },
       "AggregatedClaims": {
+        "required": [
+          "end",
+          "quantity",
+          "start"
+        ],
         "type": "object",
         "properties": {
           "start": {
@@ -1146,6 +1167,10 @@
         "description": "A result of aggregated claims."
       },
       "AggregatedClaimsResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
         "type": "object",
         "properties": {
           "result": {
@@ -1161,6 +1186,11 @@
         "additionalProperties": false
       },
       "AggregatedTransfers": {
+        "required": [
+          "end",
+          "quantity",
+          "start"
+        ],
         "type": "object",
         "properties": {
           "start": {
@@ -1183,6 +1213,10 @@
         "description": "A result of aggregated transfers."
       },
       "AggregatedTransfersResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
         "type": "object",
         "properties": {
           "result": {
@@ -1205,6 +1239,12 @@
         "type": "string"
       },
       "Claim": {
+        "required": [
+          "claimId",
+          "consumptionCertificate",
+          "productionCertificate",
+          "quantity"
+        ],
         "type": "object",
         "properties": {
           "claimId": {
@@ -1226,6 +1266,11 @@
         "description": "A claim record representing a claim of a production and consumption certificate."
       },
       "ClaimRequest": {
+        "required": [
+          "consumptionCertificateId",
+          "productionCertificateId",
+          "quantity"
+        ],
         "type": "object",
         "properties": {
           "productionCertificateId": {
@@ -1244,6 +1289,9 @@
         "description": "A request to claim a production and consumption certificate."
       },
       "ClaimResponse": {
+        "required": [
+          "claimRequestId"
+        ],
         "type": "object",
         "properties": {
           "claimRequestId": {
@@ -1256,6 +1304,10 @@
         "description": "A response to a claim request."
       },
       "ClaimResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
         "type": "object",
         "properties": {
           "result": {
@@ -1271,6 +1323,13 @@
         "additionalProperties": false
       },
       "ClaimedCertificate": {
+        "required": [
+          "attributes",
+          "end",
+          "federatedStreamId",
+          "gridArea",
+          "start"
+        ],
         "type": "object",
         "properties": {
           "federatedStreamId": {
@@ -1302,6 +1361,10 @@
         "description": "Info record of a claimed certificate."
       },
       "CreateExternalEndpointRequest": {
+        "required": [
+          "textReference",
+          "walletReference"
+        ],
         "type": "object",
         "properties": {
           "walletReference": {
@@ -1316,6 +1379,9 @@
         "description": "Request to create a new external endpoint."
       },
       "CreateExternalEndpointResponse": {
+        "required": [
+          "receiverId"
+        ],
         "type": "object",
         "properties": {
           "receiverId": {
@@ -1353,6 +1419,10 @@
         "description": "Response to create a new wallet."
       },
       "FederatedStreamId": {
+        "required": [
+          "registry",
+          "streamId"
+        ],
         "type": "object",
         "properties": {
           "registry": {
@@ -1366,6 +1436,15 @@
         "additionalProperties": false
       },
       "GranularCertificate": {
+        "required": [
+          "attributes",
+          "certificateType",
+          "end",
+          "federatedStreamId",
+          "gridArea",
+          "quantity",
+          "start"
+        ],
         "type": "object",
         "properties": {
           "federatedStreamId": {
@@ -1405,6 +1484,10 @@
         "description": "A certificate that is available to use in the wallet."
       },
       "GranularCertificateResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
         "type": "object",
         "properties": {
           "result": {
@@ -1420,6 +1503,11 @@
         "additionalProperties": false
       },
       "HashedAttribute": {
+        "required": [
+          "key",
+          "salt",
+          "value"
+        ],
         "type": "object",
         "properties": {
           "key": {
@@ -1440,6 +1528,12 @@
         "description": "Hashed attribute with salt."
       },
       "PageInfo": {
+        "required": [
+          "count",
+          "limit",
+          "offset",
+          "total"
+        ],
         "type": "object",
         "properties": {
           "count": {
@@ -1462,6 +1556,14 @@
         "additionalProperties": false
       },
       "ReceiveRequest": {
+        "required": [
+          "certificateId",
+          "hashedAttributes",
+          "position",
+          "publicKey",
+          "quantity",
+          "randomR"
+        ],
         "type": "object",
         "properties": {
           "publicKey": {
@@ -1517,6 +1619,14 @@
         "type": "string"
       },
       "Transfer": {
+        "required": [
+          "end",
+          "federatedStreamId",
+          "gridArea",
+          "quantity",
+          "receiverId",
+          "start"
+        ],
         "type": "object",
         "properties": {
           "federatedStreamId": {
@@ -1545,6 +1655,12 @@
         "description": "A transfer record of a transfer of a part of a certificate to another wallet."
       },
       "TransferRequest": {
+        "required": [
+          "certificateId",
+          "hashedAttributes",
+          "quantity",
+          "receiverId"
+        ],
         "type": "object",
         "properties": {
           "certificateId": {
@@ -1572,6 +1688,9 @@
         "description": "A request to transfer a certificate to another wallet."
       },
       "TransferResponse": {
+        "required": [
+          "transferRequestId"
+        ],
         "type": "object",
         "properties": {
           "transferRequestId": {
@@ -1584,6 +1703,10 @@
         "description": "A response to a transfer request."
       },
       "TransferResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
         "type": "object",
         "properties": {
           "result": {
@@ -1635,6 +1758,11 @@
         "additionalProperties": { }
       },
       "WalletEndpointReference": {
+        "required": [
+          "endpoint",
+          "publicKey",
+          "version"
+        ],
         "type": "object",
         "properties": {
           "version": {
@@ -1655,6 +1783,10 @@
         "additionalProperties": false
       },
       "WalletRecord": {
+        "required": [
+          "id",
+          "publicKey"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -1669,6 +1801,10 @@
         "description": "A wallet record"
       },
       "WalletRecordResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
         "type": "object",
         "properties": {
           "result": {

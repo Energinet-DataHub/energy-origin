@@ -114,8 +114,12 @@ public class WalletClient : IWalletClient
     {
         if (IdentityDescriptor.IsSupported(httpContextAccessor.HttpContext!))
         {
-            // Does an implicit check for consent
-            _ = new IdentityDescriptor(httpContextAccessor.HttpContext!, Guid.Parse(owner));
+            var identityDescriptor = new IdentityDescriptor(httpContextAccessor);
+            var accessDescriptor = new AccessDescriptor(identityDescriptor);
+            if (!accessDescriptor.IsAuthorizedToOrganization(Guid.Parse(owner)))
+            {
+                throw new HttpRequestException("Owner must match subject");
+            }
         }
         else
         {

@@ -17,7 +17,7 @@ namespace API.Authorization.Controllers;
 [ApiVersion(ApiVersions.Version20230101)]
 [Authorize(Policy.B2CCvrClaim)]
 [Authorize(Policy.B2CSubTypeUserPolicy)]
-public class ConsentController(IMediator mediator) : ControllerBase
+public class ConsentController(IMediator mediator, IdentityDescriptor identity) : ControllerBase
 {
     /// <summary>
     /// Grants consent.
@@ -26,9 +26,7 @@ public class ConsentController(IMediator mediator) : ControllerBase
     [Route("api/authorization/consent/grant/")]
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentRequest request)
     {
-        var identity = new IdentityDescriptor(HttpContext);
-
-        await mediator.Send(new GrantConsentCommand(identity.Sub, identity.OrgId,
+        await mediator.Send(new GrantConsentCommand(identity.Subject, identity.AuthorizedOrganizationIds.Single(),
             new IdpClientId(request.IdpClientId)));
         return Ok();
     }
@@ -52,9 +50,7 @@ public class ConsentController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(UserOrganizationConsentsResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult> GetConsent()
     {
-        var identity = new IdentityDescriptor(HttpContext);
-
-        var queryResult = await mediator.Send(new GetUserOrganizationConsentsQuery(identity.Sub.ToString(), identity.OrgCvr!));
+        var queryResult = await mediator.Send(new GetUserOrganizationConsentsQuery(identity.Subject.ToString(), identity.OrganizationCvr!));
 
         var response = new UserOrganizationConsentsResponse(
             queryResult.Result.Select(item => new UserOrganizationConsentsResponseItem(item.ClientName, item.ConsentDate))

@@ -19,9 +19,8 @@ namespace API.Query.API.Controllers;
 [Authorize(Policy = Policy.B2CPolicy)]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240515)]
-public class Contracts20250515Controller : ControllerBase
+public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
 {
-
     /// <summary>
     /// Create contracts that activates granular certificate generation for a metering point
     /// </summary>
@@ -37,7 +36,10 @@ public class Contracts20250515Controller : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var identity = new IdentityDescriptor(HttpContext, orgId);
+        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
+        {
+            return Forbid();
+        }
 
         foreach (var createContract in createContracts.Contracts)
         {
@@ -49,8 +51,8 @@ public class Contracts20250515Controller : ControllerBase
             }
         }
 
-        var result = await service.Create(createContracts, identity.OrgId, identity.Sub, identity.Name, identity.OrgName,
-            identity.OrgCvr ?? string.Empty, cancellationToken);
+        var result = await service.Create(createContracts, orgId, identityDescriptor.Subject, identityDescriptor.Name,
+            identityDescriptor.OrganizationName, identityDescriptor.OrganizationCvr ?? string.Empty, cancellationToken);
 
         return result switch
         {
@@ -75,9 +77,12 @@ public class Contracts20250515Controller : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var identity = new IdentityDescriptor(HttpContext, orgId);
+        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
+        {
+            return Forbid();
+        }
 
-        var contract = await service.GetById(id, identity.OrgIds, cancellationToken);
+        var contract = await service.GetById(id, identityDescriptor.AuthorizedOrganizationIds, cancellationToken);
 
         return contract == null
             ? NotFound()
@@ -95,9 +100,12 @@ public class Contracts20250515Controller : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var identity = new IdentityDescriptor(HttpContext, orgId);
+        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
+        {
+            return Forbid();
+        }
 
-        var contracts = await service.GetByOwner(identity.OrgId, cancellationToken);
+        var contracts = await service.GetByOwner(orgId, cancellationToken);
 
         return contracts.Any()
             ? Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) })
@@ -119,7 +127,10 @@ public class Contracts20250515Controller : ControllerBase
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        var identity = new IdentityDescriptor(HttpContext, orgId);
+        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
+        {
+            return Forbid();
+        }
 
         foreach (var contract in editContracts.Contracts)
         {
@@ -134,10 +145,10 @@ public class Contracts20250515Controller : ControllerBase
         var result = await service.SetEndDate(
             editContracts,
             orgId,
-            identity.Sub,
-            identity.Name,
-            identity.OrgName,
-            identity.OrgCvr ?? string.Empty,
+            identityDescriptor.Subject,
+            identityDescriptor.Name,
+            identityDescriptor.OrganizationName,
+            identityDescriptor.OrganizationCvr ?? string.Empty,
             cancellationToken);
 
         return result switch

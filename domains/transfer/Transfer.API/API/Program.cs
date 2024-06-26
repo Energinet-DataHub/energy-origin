@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using System;
 using API.Cvr;
 using API.Shared.Options;
 using API.Transfer;
@@ -15,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using API.Transfer.Api.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,8 +68,6 @@ builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenVal
 var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
 builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
-builder.Services.AddScoped<IdentityDescriptor>();
-builder.Services.AddScoped<AccessDescriptor>();
 
 var app = builder.Build();
 
@@ -81,7 +81,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseActivityLog();
+var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
+app.UseActivityLog().WithApiVersionSet(activityLogApiVersionSet).HasApiVersion(ApiVersions.Version20240103AsInt);
+app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet).HasApiVersion(ApiVersions.Version20240515AsInt);
 
 app.Run();
 

@@ -39,6 +39,7 @@ var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COpti
 builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
+builder.Services.AddHttpContextAccessor();
 
 // Register DbContext and related services
 builder.Services.AddDbContext<ApplicationDbContext>(
