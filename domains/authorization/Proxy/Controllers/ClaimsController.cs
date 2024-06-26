@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Security.Claims;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +10,7 @@ namespace Proxy.Controllers;
 public class ClaimsController : ProxyBase
 {
 
-    public ClaimsController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
+    public ClaimsController(IHttpClientFactory httpClientFactory, AccessDescriptor accessDescriptor) : base(httpClientFactory, accessDescriptor)
     {
     }
 
