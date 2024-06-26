@@ -789,20 +789,20 @@
             The public key used to generate sub-public-keys for each slice.
             </summary>
         </member>
-        <member name="M:Proxy.Controllers.ProxyBase.ProxyClientCredentialsRequest(System.String,System.String)">
+        <member name="M:Proxy.ProxyBase.ProxyClientCredentialsRequest(System.String,System.String)">
             <summary>
             Proxies a request to the wallet service using the client credentials flow.
             </summary>
             <param name="path"></param>
             <param name="organizationId"></param>
         </member>
-        <member name="M:Proxy.Controllers.ProxyBase.ProxyTokenValidationRequest(System.String)">
+        <member name="M:Proxy.ProxyBase.ProxyTokenValidationRequest(System.String)">
             <summary>
             Proxies a request to the wallet service using the internal token validation.
             </summary>
             <param name="path"></param>
         </member>
-        <member name="M:Proxy.Controllers.ProxyBase.ProxyInsecureCall(System.String)">
+        <member name="M:Proxy.ProxyBase.ProxyInsecureCall(System.String)">
             <summary>
             Proxies a request to the wallet service without any validation.
             </summary>

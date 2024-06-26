@@ -12,15 +12,8 @@ public class ClientName : ValueObject
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("Value cannot be null, empty, or whitespace.", nameof(value));
 
-        if (!IsValidClientName(value))
-            throw new ArgumentException("Value contains invalid characters.", nameof(value));
-
         Value = value.Trim();
     }
-
-    private static bool IsValidClientName(string value) => MyRegex().IsMatch(value);
-
-    private static Regex MyRegex() => new Regex(@"^[a-zA-Z0-9\s&.,'/\-]+$");
 
     public static ClientName Create(string value)
     {

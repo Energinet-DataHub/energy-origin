@@ -1,10 +1,14 @@
 using System.ComponentModel;
+using System.Reflection;
+using System.Text.Json.Serialization;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.ActivityLog.HostedService;
+using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +22,28 @@ public static class ActivityLogExtensions
     {
         services.AddScoped<IActivityLogEntryRepository, ActivityLogEntryRepository>();
         services.AddHostedService<CleanupActivityLogsHostedService>();
-
         services.Configure(options);
-
         return services;
+    }
+
+    public static RouteHandlerBuilder UseActivityLogWithB2CSupport(this IEndpointRouteBuilder builder)
+    {
+        var options = builder.ServiceProvider.GetRequiredService<IOptions<ActivityLogOptions>>();
+        var serviceName = options.Value.ServiceName;
+
+        ArgumentException.ThrowIfNullOrEmpty(serviceName);
+
+        return builder.MapPost(
+                $"api/{serviceName}/activity-log",
+                async ([FromBody] ActivityLogEntryFilterRequest request, [FromServices] IHttpContextAccessor httpContextAccessor,
+                    [FromServices] IActivityLogEntryRepository activityLogEntryRepository) =>
+                {
+                    var identityDescriptor = new IdentityDescriptor(httpContextAccessor);
+                    return await GetActivityLogFromCvr(activityLogEntryRepository, identityDescriptor.OrganizationCvr!, request);
+                })
+            .WithTags("Activity log")
+            .ExcludeFromDescription()
+            .RequireAuthorization(Policy.B2CCvrClaim);
     }
 
     public static RouteHandlerBuilder UseActivityLog(this IEndpointRouteBuilder builder)
@@ -32,37 +54,43 @@ public static class ActivityLogExtensions
         ArgumentException.ThrowIfNullOrEmpty(serviceName);
 
         return builder.MapPost(
-            $"api/{serviceName}/activity-log",
-            async (HttpContext HttpContext, ActivityLogEntryFilterRequest request, IActivityLogEntryRepository activityLogEntryRepository)
-                =>
-            {
-                var user = new UserDescriptor(HttpContext.User);
-                var activityLogEntries =
-                    await activityLogEntryRepository.GetActivityLogAsync(user.Organization!.Tin, request);
-                return new ActivityLogListEntryResponse
+                $"api/{serviceName}/activity-log",
+                async (ActivityLogEntryFilterRequest request, [FromServices] IHttpContextAccessor HttpContextAccessor,
+                        [FromServices] IActivityLogEntryRepository activityLogEntryRepository)
+                    =>
                 {
-                    ActivityLogEntries = activityLogEntries.Select(x =>
-                        new ActivityLogEntryResponse
-                        {
-                            Id = x.Id,
-                            OrganizationTin = x.OrganizationTin,
-                            EntityId = x.EntityId,
-                            Timestamp = x.Timestamp.ToUnixTimeSeconds(),
-                            ActorName = x.ActorName,
-                            ActorId = x.ActorId,
-                            OrganizationName = x.OrganizationName,
-                            OtherOrganizationTin = x.OtherOrganizationTin,
-                            OtherOrganizationName = x.OtherOrganizationName,
-                            EntityType = EntityTypeMapper(x.EntityType),
-                            ActorType = ActorTypeMapper(x.ActorType),
-                            ActionType = ActionTypeMapper(x.ActionType)
-                        }).Take(100),
-                    HasMore = activityLogEntries.Count > 100
-                };
-            })
+                    var user = new UserDescriptor(HttpContextAccessor.HttpContext!.User);
+                    return await GetActivityLogFromCvr(activityLogEntryRepository, user.Organization!.Tin, request);
+                })
             .WithTags("Activity log")
             .ExcludeFromDescription()
             .RequireAuthorization();
+    }
+
+    private static async Task<ActivityLogListEntryResponse> GetActivityLogFromCvr(IActivityLogEntryRepository activityLogEntryRepository, string cvr,
+        ActivityLogEntryFilterRequest request)
+    {
+        var activityLogEntries = await activityLogEntryRepository.GetActivityLogAsync(cvr, request);
+        return new ActivityLogListEntryResponse
+        {
+            ActivityLogEntries = activityLogEntries.Select(x =>
+                new ActivityLogEntryResponse
+                {
+                    Id = x.Id,
+                    OrganizationTin = x.OrganizationTin,
+                    EntityId = x.EntityId,
+                    Timestamp = x.Timestamp.ToUnixTimeSeconds(),
+                    ActorName = x.ActorName,
+                    ActorId = x.ActorId,
+                    OrganizationName = x.OrganizationName,
+                    OtherOrganizationTin = x.OtherOrganizationTin,
+                    OtherOrganizationName = x.OtherOrganizationName,
+                    EntityType = EntityTypeMapper(x.EntityType),
+                    ActorType = ActorTypeMapper(x.ActorType),
+                    ActionType = ActionTypeMapper(x.ActionType)
+                }).Take(100),
+            HasMore = activityLogEntries.Count > 100
+        };
     }
 
     public static void AddActivityLogEntry(this ModelBuilder modelBuilder)

@@ -21,11 +21,16 @@ public class MeteringPoints20240515Controller : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
     private readonly ApplicationDbContext _dbContext;
+    private readonly IdentityDescriptor _identityDescriptor;
+    private readonly AccessDescriptor _accessDescriptor;
 
-    public MeteringPoints20240515Controller(Meteringpoint.V1.Meteringpoint.MeteringpointClient client, ApplicationDbContext dbContext)
+    public MeteringPoints20240515Controller(Meteringpoint.V1.Meteringpoint.MeteringpointClient client, ApplicationDbContext dbContext,
+        IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor)
     {
         _client = client;
         _dbContext = dbContext;
+        _identityDescriptor = identityDescriptor;
+        _accessDescriptor = accessDescriptor;
     }
 
 
@@ -37,12 +42,15 @@ public class MeteringPoints20240515Controller : ControllerBase
     [ProducesResponseType(typeof(GetMeteringPointsResponse), 200)]
     public async Task<ActionResult> GetMeteringPoints([FromQuery] Guid orgId)
     {
-        var identity = new IdentityDescriptor(HttpContext, orgId);
+        if (!_accessDescriptor.IsAuthorizedToOrganization(orgId))
+        {
+            return Forbid();
+        }
 
         var request = new OwnedMeteringPointsRequest
         {
             Subject = orgId.ToString(),
-            Actor = identity.Sub.ToString()
+            Actor = _identityDescriptor.Subject.ToString()
         };
         var response = await _client.GetOwnedMeteringPointsAsync(request);
 

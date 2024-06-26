@@ -20,8 +20,8 @@
 
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.1" />
-        <PackageReference Include="EnergyOrigin.Setup" Version="4.4.2" />
-        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.6.7" />
+        <PackageReference Include="EnergyOrigin.Setup" Version="4.4.6" />
+        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.6.8" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
         <PackageReference Include="IdentityModel" Version="7.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />

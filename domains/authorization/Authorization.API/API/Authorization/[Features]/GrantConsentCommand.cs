@@ -41,9 +41,16 @@ public class GrantConsentCommandHandler(
             throw new UserNotAffiliatedWithOrganizationCommandException();
         }
 
-        _ = Consent.Create(affiliatedOrganization, client, DateTimeOffset.UtcNow);
-        clientRepository.Update(client);
-        organizationRepository.Update(affiliatedOrganization);
+        var existingConsent = organizationRepository.Query().Where(o => o == affiliatedOrganization && o.Consents.Any(c => c.Client == client))
+            .SelectMany(o => o.Consents)
+            .FirstOrDefault();
+
+        if (existingConsent is null)
+        {
+            _ = Consent.Create(affiliatedOrganization, client, DateTimeOffset.UtcNow);
+            clientRepository.Update(client);
+            organizationRepository.Update(affiliatedOrganization);
+        }
 
         await unitOfWork.CommitAsync();
     }

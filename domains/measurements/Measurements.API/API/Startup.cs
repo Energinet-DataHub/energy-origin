@@ -60,6 +60,8 @@ public class Startup
 
         services.AddControllersWithEnumsAsStrings();
 
+        services.AddHttpContextAccessor();
+
         services.AddOptions<OtlpOptions>()
             .BindConfiguration(OtlpOptions.Prefix)
             .ValidateDataAnnotations()
