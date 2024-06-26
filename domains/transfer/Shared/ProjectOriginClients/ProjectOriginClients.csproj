@@ -20,6 +20,5 @@
 		<PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="1.0.0" />
 		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="1.1.1" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0" />
-		<PackageReference Include="xunit" Version="2.8.1" />
 	</ItemGroup>
 </Project>
