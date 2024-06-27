@@ -6,9 +6,10 @@ using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using EnergyOrigin.Setup;
 using Contracts;
+using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
+using EnergyOrigin.TokenValidation.Utilities;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,7 +20,6 @@ using RabbitMQ.Client;
 
 namespace API;
 
-//We startup this way so we can use the TestServerFixture class for integration testing gRPC services
 public class Startup
 {
     private readonly IConfiguration _configuration;
@@ -40,22 +40,22 @@ public class Startup
         services.AddDbContextFactory<ApplicationDbContext>();
 
         services.AddSingleton<IConnection>(sp =>
-            {
-                var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+        {
+            var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
 
-                var factory = new ConnectionFactory
-                {
-                    HostName = options.Host,
-                    Port = options.Port ?? 0,
-                    UserName = options.Username,
-                    Password = options.Password,
-                    AutomaticRecoveryEnabled = true
-                };
-                return factory.CreateConnection();
-            })
-            .AddHealthChecks()
-            .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
-            .AddRabbitMQ();
+            var factory = new ConnectionFactory
+            {
+                HostName = options.Host,
+                Port = options.Port ?? 0,
+                UserName = options.Username,
+                Password = options.Password,
+                AutomaticRecoveryEnabled = true
+            };
+            return factory.CreateConnection();
+        })
+        .AddHealthChecks()
+        .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+        .AddRabbitMQ();
 
         services.AddControllersWithEnumsAsStrings();
 
@@ -74,13 +74,14 @@ public class Startup
         services.AddSwagger("measurements");
         services.AddSwaggerGen();
 
+        services.AddLogging();
+
         services.AddOptions<RabbitMqOptions>()
             .BindConfiguration(RabbitMqOptions.RabbitMq)
             .ValidateDataAnnotations()
             .ValidateOnStart();
         services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations()
             .ValidateOnStart();
-
 
         services.AddMassTransit(o =>
         {
