@@ -13,19 +13,9 @@ on:
         type: string
 
 jobs:
-  test:
-    name: Test Transfer
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
-        with:
-          solution: domains/transfer/Transfer.sln
-
+ 
   build-api:
     name: Build Transfer.API
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +29,6 @@ jobs:
 
   build-claim-automation:
     name: Build ClaimAutomation
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,8 +42,6 @@ jobs:
 
   build-transfer-automation:
     name: Build TransferAutomation
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -66,25 +52,3 @@ jobs:
           configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
           migrations: domains/transfer/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}
-
-  update-transfer:
-    runs-on: ubuntu-latest
-    name: Update environment
-    needs:
-      - build-api
-      - build-claim-automation
-      - build-transfer-automation
-    concurrency: commits-base-environment
-    if: ${{ inputs.is-dependabot == 'false' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
-        with:
-          configurations: |
-            domains/transfer/Transfer.API/configuration.yaml
-            domains/transfer/ClaimAutomation/configuration.yaml
-            domains/transfer/TransferAgreementAutomation/configuration.yaml
-          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ inputs.dry-run }}

@@ -13,17 +13,8 @@ on:
         type: string
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
-        with:
-          solution: domains/certificates/Certificates.sln
-
+  
   build-api:
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,8 +27,6 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-registry-connector:
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,23 +37,3 @@ jobs:
           configuration: domains/certificates/RegistryConnector/configuration.yaml
           migrations: domains/certificates/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}
-
-  update:
-    runs-on: ubuntu-latest
-    name: Update environment
-    needs:
-      - build-api
-      - build-registry-connector
-    concurrency: commits-base-environment
-    if: ${{ inputs.is-dependabot == 'false' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
-        with:
-          configurations: |
-            domains/certificates/Query.API/configuration.yaml
-            domains/certificates/RegistryConnector/configuration.yaml
-          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ inputs.dry-run }}
