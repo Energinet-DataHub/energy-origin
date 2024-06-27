@@ -41,7 +41,7 @@
         </member>
         <member name="M:API.Authorization.Controllers.ConsentController.GetConsent">
             <summary>
-            Retrieves consents granted by the organization that a user is affiliated with. It will read the IdpUserId and OrgCvr claims from the user's session token, use those to query the database, and return a list of consents.
+            Retrieves consents granted by the organization that a user is affiliated with. It will read the IdpUserId and OrgCvr claims from the users session token, use those to query the database, and return a list of consents.
             </summary>
         </member>
         <member name="M:API.Authorization.Controllers.ConsentController.DeleteConsent(System.Guid,System.Guid)">

@@ -43,7 +43,7 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
     }
 
     /// <summary>
-    /// Retrieves consents granted by the organization that a user is affiliated with. It will read the IdpUserId and OrgCvr claims from the user's session token, use those to query the database, and return a list of consents.
+    /// Retrieves consents granted by the organization that a user is affiliated with. It will read the IdpUserId and OrgCvr claims from the users session token, use those to query the database, and return a list of consents.
     /// </summary>
     [HttpGet]
     [Route("api/authorization/consents/")]
@@ -60,7 +60,7 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
     }
 
     /// <summary>
-    /// Deletes a consent.
+    /// Deletes a consent, from the organization, which the user is affiliated with.
     /// </summary>
     /// <param name="clientId">The ID of the client.</param>
     /// <param name="organizationId">The ID of the organization.</param>
