@@ -31,7 +31,7 @@ public class WalletController : ProxyBase
     [HttpPost]
     [Route("wallets")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [Authorize(policy: Policy.B2CPolicy)]
     [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
