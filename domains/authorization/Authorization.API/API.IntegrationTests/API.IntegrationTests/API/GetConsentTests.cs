@@ -7,7 +7,6 @@ using API.UnitTests;
 using API.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace API.IntegrationTests.API;
 
@@ -40,8 +39,11 @@ public class GetConsentTests
 
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
         result!.Result.Should().NotBeEmpty();
-        result.Result.First().ClientName.Should().NotBeNullOrEmpty();
-        result.Result.First().ConsentDate.Should().BeGreaterThan(0);
+        var firstResult = result.Result.First();
+        firstResult.ClientId.Should().NotBeEmpty();
+        firstResult.OrganizationId.Should().NotBeEmpty();
+        firstResult.ClientName.Should().NotBeNullOrEmpty();
+        firstResult.ConsentDate.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -74,14 +76,14 @@ public class GetConsentTests
 
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddRangeAsync([organization1, organization2]);
-        await dbContext.Clients.AddRangeAsync([client1, client2]);
+        await dbContext.Organizations.AddRangeAsync(new[] { organization1, organization2 });
+        await dbContext.Clients.AddRangeAsync(new[] { client1, client2 });
 
         var affiliation1 = Affiliation.Create(user, organization1);
         var affiliation2 = Affiliation.Create(user, organization2);
 
-        await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
-        await dbContext.Consents.AddRangeAsync([consent1, consent2]);
+        await dbContext.Affiliations.AddRangeAsync(new[] { affiliation1, affiliation2 });
+        await dbContext.Consents.AddRangeAsync(new[] { consent1, consent2 });
 
         await dbContext.SaveChangesAsync();
 
@@ -95,7 +97,10 @@ public class GetConsentTests
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
 
         result!.Result.Count.Should().Be(1);
-        result.Result.First().ClientName.Should().Be(client1.Name.Value);
+        var firstResult = result.Result.First();
+        firstResult.ClientId.Should().Be(client1.Id);
+        firstResult.OrganizationId.Should().Be(organization1.Id);
+        firstResult.ClientName.Should().Be(client1.Name.Value);
     }
 
     [Fact]
@@ -116,7 +121,7 @@ public class GetConsentTests
         var affiliation1 = Affiliation.Create(user1, organization);
         var affiliation2 = Affiliation.Create(user2, organization);
 
-        await dbContext.Affiliations.AddRangeAsync(affiliation1, affiliation2);
+        await dbContext.Affiliations.AddRangeAsync(new[] { affiliation1, affiliation2 });
         await dbContext.Consents.AddAsync(consent);
 
         await dbContext.SaveChangesAsync();
