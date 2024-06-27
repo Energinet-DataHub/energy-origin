@@ -46,7 +46,7 @@
         </member>
         <member name="M:API.Authorization.Controllers.ConsentController.DeleteConsent(System.Guid,System.Guid)">
             <summary>
-            Deletes a consent.
+            Deletes a consent, from the organization, which the user is affiliated with.
             </summary>
             <param name="clientId">The ID of the client.</param>
             <param name="organizationId">The ID of the organization.</param>
