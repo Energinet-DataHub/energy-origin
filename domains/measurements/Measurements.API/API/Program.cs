@@ -1,29 +1,44 @@
 using System;
-using API.Extensions;
+using API;
 using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);
-
-var configuration = builder.Configuration;
-
-builder.AddSerilogWithoutOutboxLogs();
-
-try
+public class Program
 {
-    Log.Information("Starting server.");
-    WebApplication app = configuration.BuildApp(args);
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-    await app.RunAsync();
-    Log.Information("Server stopped.");
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Host terminated unexpectedly");
-    Environment.ExitCode = -1;
-}
-finally
-{
-    Log.CloseAndFlush();
+        // Add Serilog configuration
+        builder.AddSerilogWithoutOutboxLogs();
+
+        // Configure services
+        var startup = new Startup(builder.Configuration);
+        startup.ConfigureServices(builder.Services);
+
+        var app = builder.Build();
+
+        try
+        {
+            Log.Information("Starting server.");
+
+            // Configure middleware and endpoints
+            startup.Configure(app, builder.Environment);
+
+            app.Run();
+
+            Log.Information("Server stopped.");
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Host terminated unexpectedly");
+            Environment.ExitCode = -1;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
 }
