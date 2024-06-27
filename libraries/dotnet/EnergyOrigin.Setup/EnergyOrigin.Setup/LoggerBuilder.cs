@@ -1,4 +1,4 @@
-﻿using Serilog;
+using Serilog;
 using Serilog.Formatting.Json;
 
 namespace EnergyOrigin.Setup;
