@@ -13,19 +13,19 @@ on:
         type: string
 
 jobs:
-  test:
-    name: Test Transfer
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
-        with:
-          solution: domains/transfer/Transfer.sln
+  #test:
+  #  name: Test Transfer
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #    - uses: ./.github/actions/dotnet-test
+  #      with:
+  #        solution: domains/transfer/Transfer.sln
 
   build-api:
     name: Build Transfer.API
-    needs:
-      - test
+    #needs:
+    #  - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +39,8 @@ jobs:
 
   build-claim-automation:
     name: Build ClaimAutomation
-    needs:
-      - test
+    #needs:
+    #  - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,8 +54,8 @@ jobs:
 
   build-transfer-automation:
     name: Build TransferAutomation
-    needs:
-      - test
+    #needs:
+    #  - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

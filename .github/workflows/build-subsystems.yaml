@@ -25,90 +25,100 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: detect auth
-        id: auth
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/auth/
+      #- name: detect auth
+      #  id: auth
+      #  uses: ./.github/actions/find-diff-action
+      #  with:
+      #    paths: domains/auth/
+      #
+      #- name: detect authorization
+      #  id: authorization
+      #  uses: ./.github/actions/find-diff-action
+      #  with:
+      #    paths: domains/authorization/
+      #
+      #- name: detect certificates
+      #  id: certificates
+      #  uses: ./.github/actions/find-diff-action
+      #  with:
+      #    paths: domains/certificates/
+      #
+      #- name: detect measurements
+      #  id: measurements
+      #  uses: ./.github/actions/find-diff-action
+      #  with:
+      #    paths: domains/measurements/
+      #
+      #- name: detect oidc-mock
+      #  id: oidc-mock
+      #  uses: ./.github/actions/find-diff-action
+      #  with:
+      #    paths: domains/oidc-mock/
+      #
+      #- name: detect transfer
+      #  id: transfer
+      #  uses: ./.github/actions/find-diff-action
+      #  with:
+      #    paths: domains/transfer/
 
-      - name: detect authorization
-        id: authorization
-        uses: ./.github/actions/find-diff-action
+  solution-test:
+    needs: setup
+    #if: needs.setup.outputs.auth == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dotnet-test
         with:
-          paths: domains/authorization/
-
-      - name: detect certificates
-        id: certificates
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/certificates/
-
-      - name: detect measurements
-        id: measurements
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/measurements/
-
-      - name: detect oidc-mock
-        id: oidc-mock
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/oidc-mock/
-
-      - name: detect transfer
-        id: transfer
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/transfer/
+          solution: domains/EnergyTrackAndTrace.sln
 
   build-auth:
-    needs: setup
-    if: needs.setup.outputs.auth == 'true'
+    needs: solution-test
+    #if: needs.setup.outputs.auth == 'true'
     uses: ./.github/workflows/build-auth.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-
+  
   build-authorization:
-    needs: setup
-    if: needs.setup.outputs.authorization == 'true'
+    needs: build-auth
+    #if: needs.setup.outputs.authorization == 'true'
     uses: ./.github/workflows/build-authorization.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-
+  
   build-certificates:
-    needs: setup
-    if: needs.setup.outputs.certificates == 'true'
+    needs: build-authorization
+    #if: needs.setup.outputs.certificates == 'true'
     uses: ./.github/workflows/build-certificates.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-
+  
   build-measurements:
-    needs: setup
-    if: needs.setup.outputs.measurements == 'true'
+    needs: build-certificates
+    #if: needs.setup.outputs.measurements == 'true'
     uses: ./.github/workflows/build-measurements.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-
+  
   build-oidc-mock:
-    needs: setup
-    if: needs.setup.outputs.oidc-mock == 'true'
+    needs: build-measurements
+    #if: needs.setup.outputs.oidc-mock == 'true'
     uses: ./.github/workflows/build-oidc-mock.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-
+  
   build-transfer:
-    needs: setup
-    if: needs.setup.outputs.transfer == 'true'
+    needs: build-oidc-mock
+    #if: needs.setup.outputs.transfer == 'true'
     uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:

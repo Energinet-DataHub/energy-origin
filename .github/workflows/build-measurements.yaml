@@ -13,17 +13,17 @@ on:
         type: string
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
-        with:
-          solution: domains/measurements/Measurements.sln
+  #test:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #    - uses: ./.github/actions/dotnet-test
+  #      with:
+  #        solution: domains/measurements/Measurements.sln
 
   build-api:
-    needs:
-      - test
+    #needs:
+    #  - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -13,17 +13,17 @@ on:
         type: string
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
-        with:
-          solution: domains/authorization/Autorization.sln
+  #test:
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v4
+  #    - uses: ./.github/actions/dotnet-test
+  #      with:
+  #        solution: domains/authorization/Autorization.sln
 
   build-api:
-    needs:
-      - test
+    #needs:
+    #  - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,8 +36,8 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-proxy:
-    needs:
-      - test
+    #needs:
+    #  - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
