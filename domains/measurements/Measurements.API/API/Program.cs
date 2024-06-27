@@ -1,17 +1,14 @@
-using API.Extensions;
-using API.Options;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Serilog;
 using System;
+using API.Extensions;
 using EnergyOrigin.Setup;
+using Microsoft.AspNetCore.Builder;
+using Serilog;
 
-var configuration = WebApplication.CreateBuilder(args).Configuration;
+var builder = WebApplication.CreateBuilder(args);
 
-var otlpConfiguration = configuration.GetSection(OtlpOptions.Prefix);
-var otlpOptions = otlpConfiguration.Get<OtlpOptions>();
+var configuration = builder.Configuration;
 
-Log.Logger = LoggerBuilder.BuildSerilogger(otlpOptions!.ReceiverEndpoint);
+builder.AddSerilogWithoutOutboxLogs();
 
 try
 {

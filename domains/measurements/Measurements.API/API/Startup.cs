@@ -9,7 +9,6 @@ using FluentValidation.AspNetCore;
 using EnergyOrigin.Setup;
 using Contracts;
 using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.TokenValidation.Utilities;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -74,8 +73,6 @@ public class Startup
 
         services.AddSwagger("measurements");
         services.AddSwaggerGen();
-
-        services.AddLogging();
 
         services.AddOptions<RabbitMqOptions>()
             .BindConfiguration(RabbitMqOptions.RabbitMq)
