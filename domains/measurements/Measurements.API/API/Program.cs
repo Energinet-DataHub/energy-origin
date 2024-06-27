@@ -1,44 +1,32 @@
-using System;
-using API;
-using EnergyOrigin.Setup;
+using API.Extensions;
+using API.Options;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 using Serilog;
+using System;
+using EnergyOrigin.Setup;
 
-public class Program
+var configuration = WebApplication.CreateBuilder(args).Configuration;
+
+var otlpConfiguration = configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>();
+
+Log.Logger = LoggerBuilder.BuildSerilogger(otlpOptions!.ReceiverEndpoint);
+
+try
 {
-    public static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
+    Log.Information("Starting server.");
+    WebApplication app = configuration.BuildApp(args);
 
-        // Add Serilog configuration
-        builder.AddSerilogWithoutOutboxLogs();
-
-        // Configure services
-        var startup = new Startup(builder.Configuration);
-        startup.ConfigureServices(builder.Services);
-
-        var app = builder.Build();
-
-        try
-        {
-            Log.Information("Starting server.");
-
-            // Configure middleware and endpoints
-            startup.Configure(app, builder.Environment);
-
-            app.Run();
-
-            Log.Information("Server stopped.");
-        }
-        catch (Exception ex)
-        {
-            Log.Fatal(ex, "Host terminated unexpectedly");
-            Environment.ExitCode = -1;
-        }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
-    }
+    await app.RunAsync();
+    Log.Information("Server stopped.");
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Host terminated unexpectedly");
+    Environment.ExitCode = -1;
+}
+finally
+{
+    Log.CloseAndFlush();
 }
