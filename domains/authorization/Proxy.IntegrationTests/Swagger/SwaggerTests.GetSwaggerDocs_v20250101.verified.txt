@@ -461,7 +461,7 @@
           "RequestStatus"
         ],
         "summary": "Get status of claim or transfer request.",
-        "description": "This endpoint is used to get the status of a claim or transfer request.\r\nTheses are asynchronous operations and the status will be updated as the request is processed.",
+        "description": "This endpoint is used to get the status of a claim or transfer request.\r\nThese are asynchronous operations and the status will be updated as the request is processed.",
         "parameters": [
           {
             "name": "requestId",
