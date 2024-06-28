@@ -375,6 +375,18 @@
             The type of the aggregated certificates.
             </summary>
         </member>
+        <member name="M:Proxy.Controllers.RequestStatusController.GetRequestStatus(System.Guid,System.String)">
+            <summary>
+            Get status of claim or transfer request.
+            </summary>
+            <remarks>
+            This endpoint is used to get the status of a claim or transfer request.
+            Theses are asynchronous operations and the status will be updated as the request is processed.
+            </remarks>
+            <response code="200">The status was successfully found.</response>
+            <response code="400">The user is not authenticated.</response>
+            <response code="404">Status not found.</response>
+        </member>
         <member name="M:Proxy.Controllers.SlicesController.ReceiveSlice(Proxy.Controllers.ReceiveRequest)">
             <summary>
             Receive a certificate-slice from another wallet.
