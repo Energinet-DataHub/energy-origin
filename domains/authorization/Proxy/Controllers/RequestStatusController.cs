@@ -17,7 +17,7 @@ public class RequestStatusController : ProxyBase
     /// </summary>
     /// <remarks>
     /// This endpoint is used to get the status of a claim or transfer request.
-    /// Theses are asynchronous operations and the status will be updated as the request is processed.
+    /// These are asynchronous operations and the status will be updated as the request is processed.
     /// </remarks>
     /// <response code="200">The status was successfully found.</response>
     /// <response code="400">The user is not authenticated.</response>
