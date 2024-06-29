@@ -1,8 +1,8 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-alpine AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
 
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 ARG PROJECT
 ARG MIGRATIONS
 WORKDIR /src/
