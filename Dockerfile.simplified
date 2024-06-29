@@ -1,6 +1,6 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM ubuntu/dotnet-runtime:8.0-24.04_112 AS base
+FROM ubuntu/dotnet-runtime:8.0-24.04_111 AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 ARG PROJECT
