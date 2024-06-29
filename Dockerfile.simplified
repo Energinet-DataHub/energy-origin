@@ -30,9 +30,6 @@ FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY --from=build /app/migrations /migrations/
-COPY --from=busybox:1.36.1-uclibc /bin/cp /bin/cp
-COPY --from=busybox:1.36.1-uclibc /bin/cat /bin/cat
-COPY --from=busybox:1.36.1-uclibc /bin/ls /bin/ls
 EXPOSE 8080
 EXPOSE 8081
 ENTRYPOINT ["/app/main"]
