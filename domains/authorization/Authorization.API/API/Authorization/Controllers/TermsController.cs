@@ -1,49 +1,51 @@
+using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API.Authorization.Controllers
+namespace API.Authorization.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class TermsController(IMediator mediator) : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class TermsController : ControllerBase
+    [HttpPost("accept")]
+    public async Task<IActionResult> AcceptTerms([FromBody] AcceptTermsDto acceptTermsDto)
     {
-        private readonly IMediator _mediator;
+        var isValid = await mediator.Send(new OrganizationStateQuery(acceptTermsDto.Tin));
 
-        public TermsController(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
+        if (isValid)
+            return Ok(new TermsResponseDto(true));
 
-        [HttpPost("accept")]
-        public async Task<IActionResult> AcceptTerms([FromBody] AcceptTermsDto acceptTermsDto)
-        {
-            // Check if organization exists and terms are accepted
-            var organization = await _mediator.Send(new GetOrganizationByTinQuery(acceptTermsDto.Tin));
-            var terms = await _mediator.Send(new GetTermsByVersionQuery(acceptTermsDto.TermsVersion));
+        var latestTerms = await mediator.Send(new GetLatestTermsQuery());
 
-            if (organization == null || !organization.TermsAccepted)
-            {
-                // Return terms text if not accepted
-                if (organization == null || organization.TermsVersion != terms.Version)
-                {
-                    return Ok(new { TermsText = terms.Text });
-                }
+        if (acceptTermsDto.TermsVersion != latestTerms.Version)
+            return Ok(new TermsResponseDto(false, latestTerms.Text, latestTerms.Version));
 
-                // Accept terms and create organization, user, and affiliation
-                var result = await _mediator.Send(new CreateOrganizationAndUserCommand(
-                    acceptTermsDto.Tin,
-                    acceptTermsDto.OrganizationName,
-                    acceptTermsDto.UserIdpId,
-                    acceptTermsDto.UserName,
-                    acceptTermsDto.TermsVersion
-                ));
+        var createResult = await mediator.Send(new CreateOrganizationAndUserCommand(
+            acceptTermsDto.Tin,
+            acceptTermsDto.OrganizationName,
+            acceptTermsDto.UserIdpId,
+            acceptTermsDto.UserName,
+            latestTerms.Version
+        ));
 
-                return Ok(result);
-            }
-
-            return Ok(new { Message = "Terms already accepted" });
-        }
+        return Ok(new TermsResponseDto(true, CreateResult: createResult));
     }
 }
+
+public record AcceptTermsDto(
+    string Tin,
+    string OrganizationName,
+    Guid UserIdpId,
+    string UserName,
+    string TermsVersion
+);
+
+public record TermsResponseDto(
+    bool Accepted = false,
+    string? TermsText = null,
+    string? TermsVersion = null,
+    CreateOrganizationAndUserCommandResult? CreateResult = null
+);

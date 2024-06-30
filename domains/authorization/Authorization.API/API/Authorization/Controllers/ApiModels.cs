@@ -42,13 +42,3 @@ public record CreateClientResponse(Guid Id, Guid IdpClientId, string Name, Clien
 public record UserOrganizationConsentsResponseItem(string ClientName, long ConsentDate);
 
 public record UserOrganizationConsentsResponse(IEnumerable<UserOrganizationConsentsResponseItem> Result);
-
-public class AcceptTermsDto
-{
-    public string Tin { get; set; }
-    public string OrganizationName { get; set; }
-    public string UserIdpId { get; set; }
-    public string UserName { get; set; }
-    public string TermsVersion { get; set; }
-}
-

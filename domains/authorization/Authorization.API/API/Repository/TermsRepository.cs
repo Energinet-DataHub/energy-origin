@@ -1,22 +1,23 @@
-using API.Models;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Repository
+namespace API.Repository;
+
+public interface ITermsRepository : IGenericRepository<Terms>
 {
-    public interface ITermsRepository : IGenericRepository<Terms>
-    {
-        Task<Terms> GetByVersionAsync(string version, CancellationToken cancellationToken);
-    }
+    Task<Terms> GetLatestAsync(CancellationToken cancellationToken);
+}
 
-    public class TermsRepository : GenericRepository<Terms>, ITermsRepository
+public class TermsRepository(ApplicationDbContext context) : GenericRepository<Terms>(context), ITermsRepository
+{
+    public async Task<Terms> GetLatestAsync(CancellationToken cancellationToken)
     {
-        public TermsRepository(ApplicationDbContext context) : base(context) { }
-
-        public async Task<Terms> GetByVersionAsync(string version, CancellationToken cancellationToken)
-        {
-            return await Context.Set<Terms>().FirstOrDefaultAsync(t => t.Version == version, cancellationToken);
-        }
+        return (await Context.Set<Terms>()
+            .OrderByDescending(t => t.EffectiveDate)
+            .FirstOrDefaultAsync(cancellationToken))!;
     }
 }
+

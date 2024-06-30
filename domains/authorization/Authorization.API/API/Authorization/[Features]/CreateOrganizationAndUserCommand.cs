@@ -9,72 +9,42 @@ using MediatR;
 
 namespace API.Authorization._Features_;
 
-public class CreateOrganizationAndUserCommandHandler : IRequestHandler<CreateOrganizationAndUserCommand, CreateOrganizationAndUserCommandResult>
+public class CreateOrganizationAndUserCommandHandler(
+    IUnitOfWork unitOfWork,
+    IOrganizationRepository organizationRepository,
+    IUserRepository userRepository,
+    IAffiliationRepository affiliationRepository)
+    : IRequestHandler<CreateOrganizationAndUserCommand, CreateOrganizationAndUserCommandResult>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IOrganizationRepository _organizationRepository;
-    private readonly IUserRepository _userRepository;
-    private readonly IAffiliationRepository _affiliationRepository;
-    private readonly ITermsRepository _termsRepository;
-
-    public CreateOrganizationAndUserCommandHandler(
-        IUnitOfWork unitOfWork,
-        IOrganizationRepository organizationRepository,
-        IUserRepository userRepository,
-        IAffiliationRepository affiliationRepository,
-        ITermsRepository termsRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _organizationRepository = organizationRepository;
-        _userRepository = userRepository;
-        _affiliationRepository = affiliationRepository;
-        _termsRepository = termsRepository;
-    }
-
     public async Task<CreateOrganizationAndUserCommandResult> Handle(CreateOrganizationAndUserCommand request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync();
 
-        var terms = await _termsRepository.GetByVersionAsync(request.TermsVersion, cancellationToken);
-        if (terms == null)
-        {
-            terms = new Terms(request.TermsVersion, "Sample terms text.");
-            await _termsRepository.AddAsync(terms, cancellationToken);
-        }
+        var organization = Organization.Create(Tin.Create(request.Tin), OrganizationName.Create(request.OrganizationName));
+        organization.AcceptTerms(new Terms(request.TermsVersion, string.Empty));
+        await organizationRepository.AddAsync(organization, cancellationToken);
 
-        var organization = Organization.Create(new Tin(request.Tin), new OrganizationName(request.OrganizationName));
-        organization.AcceptTerms(terms);
-        await _organizationRepository.AddAsync(organization, cancellationToken);
+        var user = User.Create(IdpUserId.Create(request.UserIdpId), UserName.Create(request.UserName));
+        await userRepository.AddAsync(user, cancellationToken);
 
-        var user = new User
-        {
-            Id = Guid.NewGuid(),
-            IdpUserId = request.UserIdpId,
-            Name = new UserName(request.UserName)
-        };
-        await _userRepository.AddAsync(user, cancellationToken);
+        var affiliation = Affiliation.Create(user, organization);
+        await affiliationRepository.AddAsync(affiliation, cancellationToken);
 
-        var affiliation = new Affiliation
-        {
-            UserId = user.Id,
-            OrganizationId = organization.Id
-        };
-        await _affiliationRepository.AddAsync(affiliation, cancellationToken);
+        await unitOfWork.CommitAsync();
 
-        await _unitOfWork.CommitAsync();
-
-        return new CreateOrganizationAndUserCommandResult(organization.Id, user.Id, affiliation.Id);
+        return new CreateOrganizationAndUserCommandResult(organization.Id, user.Id, affiliation.UserId);
     }
 }
 
 public record CreateOrganizationAndUserCommand(
     string Tin,
     string OrganizationName,
-    string UserIdpId,
+    Guid UserIdpId,
     string UserName,
     string TermsVersion) : IRequest<CreateOrganizationAndUserCommandResult>;
 
 public record CreateOrganizationAndUserCommandResult(
     Guid OrganizationId,
     Guid UserId,
-    Guid AffiliationId);
+    Guid AffiliationId
+);

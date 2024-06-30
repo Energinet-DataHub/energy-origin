@@ -12,6 +12,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Affiliation> Affiliations { get; set; }
     public DbSet<Client> Clients { get; set; }
     public DbSet<Consent> Consents { get; set; }
+    public DbSet<Terms> Terms { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,6 +23,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         ConfigureConsentTable(modelBuilder);
         ConfigureClientTable(modelBuilder);
         ConfigureUserTable(modelBuilder);
+        ConfigureTermsTable(modelBuilder);
     }
 
     private static void ConfigureOrganizationTable(ModelBuilder modelBuilder)
@@ -33,6 +35,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Organization>().Property(o => o.Tin)
             .HasConversion(new ValueConverter<Tin, string>(v => v.Value, v => new Tin(v)))
             .IsRequired();
+
+        modelBuilder.Entity<Organization>().Property(o => o.TermsAccepted)
+            .IsRequired();
+
+        modelBuilder.Entity<Organization>().Property(o => o.TermsVersion)
+            .IsRequired();
+
+        modelBuilder.Entity<Organization>().Property(o => o.TermsAcceptanceDate);
 
         modelBuilder.Entity<Organization>().HasIndex(o => o.Tin).IsUnique();
 
@@ -83,5 +93,17 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Consent>()
             .HasIndex(c => new { c.ClientId, c.OrganizationId })
             .IsUnique();
+    }
+
+    private static void ConfigureTermsTable(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Terms>().Property(t => t.Version)
+            .IsRequired();
+
+        modelBuilder.Entity<Terms>().Property(t => t.Text)
+            .IsRequired();
+
+        modelBuilder.Entity<Terms>().Property(t => t.EffectiveDate)
+            .IsRequired();
     }
 }

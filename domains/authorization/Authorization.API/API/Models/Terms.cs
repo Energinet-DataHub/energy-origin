@@ -7,7 +7,7 @@ public class Terms : IEntity<Guid>
     public Guid Id { get; private set; }
     public string Version { get; private set; } = null!;
     public string Text { get; private set; } = null!;
-    public DateTimeOffset EffectiveDate { get; private set; }
+    public DateTimeOffset EffectiveDate { get; set; }
 
     private Terms() { }
 
