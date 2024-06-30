@@ -1,15 +1,20 @@
 using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
+using Asp.Versioning;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Authorization.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[ApiVersion(ApiVersions.Version20230101)]
+[Route("api/authorization/terms")]
 public class TermsController(IMediator mediator) : ControllerBase
 {
+    [ProducesResponseType(typeof(TermsResponseDto), StatusCodes.Status200OK)]
     [HttpPost("accept")]
     public async Task<IActionResult> AcceptTerms([FromBody] AcceptTermsDto acceptTermsDto)
     {

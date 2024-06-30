@@ -58,6 +58,13 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/consents/");
     }
 
+    public async Task<HttpResponseMessage> AcceptTerms(AcceptTermsDto acceptTermsDto)
+    {
+        var content = JsonContent.Create(acceptTermsDto, options: SerializerOptions);
+        return await _client.PostAsync("/api/terms/accept", content);
+    }
+
+
     public Task InitializeAsync()
     {
         return Task.CompletedTask;
