@@ -26,7 +26,6 @@ public class CreateOrganizationAndUserCommandHandlerTests
     [Fact]
     public async Task GivenValidRequest_WhenHandlingCommand_ThenCreatesEntities()
     {
-        // Arrange
         var request = new CreateOrganizationAndUserCommand(
             "12345678",
             "Test Org",
@@ -35,10 +34,8 @@ public class CreateOrganizationAndUserCommandHandlerTests
             "1.0"
         );
 
-        // Act
         var result = await _handler.Handle(request, CancellationToken.None);
 
-        // Assert
         result.Should().NotBeNull();
         result.OrganizationId.Should().NotBeEmpty();
         result.UserId.Should().NotBeEmpty();
