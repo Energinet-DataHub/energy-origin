@@ -139,31 +139,8 @@ public class MeasurementsSyncService
 
     public async Task HandleSingleSyncInfo(MeteringPointSyncInfo syncInfo, CancellationToken stoppingToken)
     {
-        var slidingWindow = await GetSlidingWindow(syncInfo, stoppingToken);
-
-        if (slidingWindow is null)
-        {
-            logger.LogInformation("Not possible to get start date from sync state for {@syncInfo}", syncInfo);
-            return;
-        }
+        var slidingWindow = await syncState.GetSlidingWindowStartTime(syncInfo, stoppingToken);
 
         await FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, stoppingToken);
-    }
-
-    private async Task<MeteringPointTimeSeriesSlidingWindow?> GetSlidingWindow(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken)
-    {
-        var existingSlidingWindow = await syncState.GetMeteringPointSlidingWindow(syncInfo.GSRN, cancellationToken);
-        if (existingSlidingWindow is not null)
-        {
-            return existingSlidingWindow;
-        }
-
-        var existingSynchronizationPoint = await syncState.GetPeriodStartTime(syncInfo, cancellationToken);
-        if (existingSynchronizationPoint is not null)
-        {
-            return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(existingSynchronizationPoint.Value));
-        }
-
-        return null;
     }
 }

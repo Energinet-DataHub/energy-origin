@@ -1,44 +1,43 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using DataContext.ValueObjects;
 
 namespace API.MeasurementsSyncer.Persistence;
 
 public class SyncState : ISyncState
 {
     private readonly ApplicationDbContext dbContext;
-    private readonly ILogger<SyncState> logger;
 
-    public SyncState(ApplicationDbContext dbContext, ILogger<SyncState> logger)
+    public SyncState(ApplicationDbContext dbContext)
     {
         this.dbContext = dbContext;
-        this.logger = logger;
     }
 
-    public async Task<long?> GetPeriodStartTime(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken)
+    public async Task<MeteringPointTimeSeriesSlidingWindow> GetSlidingWindowStartTime(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken)
     {
-        try
-        {
-            var synchronizationPosition = await dbContext.SynchronizationPositions.FindAsync(syncInfo.GSRN, cancellationToken);
+        var existingSlidingWindow = await GetMeteringPointSlidingWindow(syncInfo.GSRN, cancellationToken);
 
-            return synchronizationPosition != null
-                ? Math.Max(synchronizationPosition.SyncedTo, syncInfo.StartSyncDate.ToUnixTimeSeconds())
-                : syncInfo.StartSyncDate.ToUnixTimeSeconds();
-        }
-        catch (Exception e)
+        if (existingSlidingWindow != null)
         {
-            logger.LogWarning("Failed reading from database. Exception: {exception}", e);
-            return null;
+            var pos = Math.Max(existingSlidingWindow.SynchronizationPoint.Seconds, UnixTimestamp.Create(syncInfo.StartSyncDate).Seconds);
+
+            if (pos > existingSlidingWindow.SynchronizationPoint.Seconds)
+            {
+                existingSlidingWindow.UpdateTo(UnixTimestamp.Create(pos));
+            }
         }
+        else
+        {
+            existingSlidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(syncInfo.StartSyncDate));
+        }
+
+        return existingSlidingWindow;
     }
 
-    public async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn, CancellationToken cancellationToken)
+    private async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn, CancellationToken cancellationToken)
     {
         var slidingWindow = await dbContext.MeteringPointTimeSeriesSlidingWindows.FindAsync(gsrn);
         return slidingWindow;
@@ -60,44 +59,5 @@ public class SyncState : ISyncState
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         await dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var allContracts = await dbContext.Contracts.AsNoTracking().ToListAsync(cancellationToken);
-
-            var syncInfos = allContracts.GroupBy(c => c.GSRN)
-                .Where(g => GetNumberOfOwners(g) == 1)
-                .Select(g =>
-                {
-                    var oldestContract = g.OrderBy(c => c.StartDate).First();
-                    var gsrn = g.Key;
-                    return new MeteringPointSyncInfo(gsrn, oldestContract.StartDate, oldestContract.MeteringPointOwner);
-                })
-                .ToList();
-
-            var contractsWithChangingOwnerForSameMeteringPoint = allContracts.GroupBy(c => c.GSRN)
-                .Where(g => GetNumberOfOwners(g) > 1);
-
-            if (contractsWithChangingOwnerForSameMeteringPoint.Any())
-            {
-                logger.LogWarning("Skipping sync of GSRN with multiple owners: {contractsWithChangingOwnerForSameMeteringPoint}",
-                    contractsWithChangingOwnerForSameMeteringPoint);
-            }
-
-            return syncInfos;
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Failed fetching contracts. Exception: {e}", e);
-            return new List<MeteringPointSyncInfo>();
-        }
-    }
-
-    private static int GetNumberOfOwners(IGrouping<string, CertificateIssuingContract> g)
-    {
-        return g.Select(c => c.MeteringPointOwner).Distinct().Count();
     }
 }

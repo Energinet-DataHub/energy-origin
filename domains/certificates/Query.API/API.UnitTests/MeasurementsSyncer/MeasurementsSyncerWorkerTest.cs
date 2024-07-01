@@ -58,8 +58,8 @@ public class MeasurementsSyncerWorkerTest
             .Returns(new[] { info }).AndDoes(c => tokenSource.Cancel());
 
         // No sync state returned for contract
-        fakeSyncState.GetPeriodStartTime(info, CancellationToken.None)
-            .Returns((long?)null);
+        //fakeSyncState.GetSlidingWindowStartTime(info, CancellationToken.None)
+        //    .Returns(null);
 
         // Run worker and wait for completion or timeout
         var workerTask = worker.StartAsync(tokenSource.Token);

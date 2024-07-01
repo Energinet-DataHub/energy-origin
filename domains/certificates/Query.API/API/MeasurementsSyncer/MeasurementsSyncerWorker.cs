@@ -64,7 +64,6 @@ public class MeasurementsSyncerWorker : BackgroundService
             measurementSyncMetrics.AddNumberOfRecordsBeingSynced(syncInfos.Count);
             foreach (var syncInfo in syncInfos)
             {
-
                 using var scope = scopeFactory.CreateScope();
                 var scopedSyncService = scope.ServiceProvider.GetService<MeasurementsSyncService>()!;
                 await scopedSyncService.HandleSingleSyncInfo(syncInfo, stoppingToken);
