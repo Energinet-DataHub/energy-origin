@@ -29,7 +29,6 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Set<T>().Remove(entity);
-        Context.Entry(entity).State = EntityState.Deleted;
     }
 
     public void Update(T entity)
