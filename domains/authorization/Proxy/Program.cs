@@ -85,7 +85,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.AddSwagger(app.Environment, "wallet-proxy");
+app.AddSwagger(app.Environment, "wallet-proxyyy");
 
 app.MapHealthChecks("/health");
 
