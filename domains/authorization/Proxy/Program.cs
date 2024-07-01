@@ -77,7 +77,7 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-app.UsePathBase("/wallet-api");
+app.UsePathBase("/wallet-proxy");
 
 app.Use(async (context, next) =>
 {
@@ -85,7 +85,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.AddSwagger(app.Environment, "wallet-api");
+app.AddSwagger(app.Environment, "wallet-proxy");
 
 app.MapHealthChecks("/health");
 
