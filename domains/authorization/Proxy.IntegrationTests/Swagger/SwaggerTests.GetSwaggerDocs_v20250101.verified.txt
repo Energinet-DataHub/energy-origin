@@ -455,6 +455,64 @@
         }
       }
     },
+    "/v1/request-status/{requestId}": {
+      "get": {
+        "tags": [
+          "RequestStatus"
+        ],
+        "summary": "Get status of claim or transfer request.",
+        "description": "This endpoint is used to get the status of a claim or transfer request.\r\nThese are asynchronous operations and the status will be updated as the request is processed.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20250101"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The status was successfully found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiveResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Status not found."
+          },
+          "400": {
+            "description": "The user is not authenticated."
+          }
+        }
+      }
+    },
     "/slices": {
       "post": {
         "tags": [
