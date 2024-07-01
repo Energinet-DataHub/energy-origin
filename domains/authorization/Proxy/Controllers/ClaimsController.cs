@@ -20,6 +20,25 @@ public class ClaimsController : ProxyBase
     /// <response code="200">Returns all the indiviual claims.</response>
     /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
+    [Route("v1/claims/cursor")]
+    [Produces("application/json")]
+    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [ApiVersionNeutral]
+    [Obsolete]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
+    public async Task GetClaims([FromQuery] GetClaimsQueryParametersCursor param)
+    {
+        await ProxyTokenValidationRequest("v1/claims/cursor");
+    }
+
+    /// <summary>
+    /// Gets all claims in the wallet
+    /// </summary>
+    /// <response code="200">Returns all the indiviual claims.</response>
+    /// <response code="401">If the user is not authenticated.</response>
+    [HttpGet]
     [Route("v1/claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
