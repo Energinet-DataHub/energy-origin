@@ -54,6 +54,12 @@ public class MeasurementsSyncerWorker : BackgroundService
         {
             var syncInfos = await syncState.GetSyncInfos(stoppingToken);
 
+            if (!syncInfos.Any())
+            {
+                logger.LogInformation("No sync infos found. Skipping sync");
+                return;
+            }
+
             using var outerScope = scopeFactory.CreateScope();
             var measurementSyncMetrics = outerScope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
             measurementSyncMetrics.UpdateTimeSinceLastMeasurementSyncerRun(UnixTimestamp.Now().Seconds);
@@ -64,7 +70,6 @@ public class MeasurementsSyncerWorker : BackgroundService
             measurementSyncMetrics.AddNumberOfRecordsBeingSynced(syncInfos.Count);
             foreach (var syncInfo in syncInfos)
             {
-
                 using var scope = scopeFactory.CreateScope();
                 var scopedSyncService = scope.ServiceProvider.GetService<MeasurementsSyncService>()!;
                 await scopedSyncService.HandleSingleSyncInfo(syncInfo, stoppingToken);
