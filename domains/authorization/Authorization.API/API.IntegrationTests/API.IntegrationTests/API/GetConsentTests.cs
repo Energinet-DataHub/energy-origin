@@ -76,14 +76,14 @@ public class GetConsentTests
 
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddRangeAsync(new[] { organization1, organization2 });
-        await dbContext.Clients.AddRangeAsync(new[] { client1, client2 });
+        await dbContext.Organizations.AddRangeAsync([organization1, organization2]);
+        await dbContext.Clients.AddRangeAsync([client1, client2]);
 
         var affiliation1 = Affiliation.Create(user, organization1);
         var affiliation2 = Affiliation.Create(user, organization2);
 
-        await dbContext.Affiliations.AddRangeAsync(new[] { affiliation1, affiliation2 });
-        await dbContext.Consents.AddRangeAsync(new[] { consent1, consent2 });
+        await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
+        await dbContext.Consents.AddRangeAsync([consent1, consent2]);
 
         await dbContext.SaveChangesAsync();
 
@@ -121,7 +121,7 @@ public class GetConsentTests
         var affiliation1 = Affiliation.Create(user1, organization);
         var affiliation2 = Affiliation.Create(user2, organization);
 
-        await dbContext.Affiliations.AddRangeAsync(new[] { affiliation1, affiliation2 });
+        await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
         await dbContext.Consents.AddAsync(consent);
 
         await dbContext.SaveChangesAsync();
