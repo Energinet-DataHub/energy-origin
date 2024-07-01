@@ -23,7 +23,7 @@ builder.AddSerilog();
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("Authorization.API", otlpOptions.ReceiverEndpoint);
 
-builder.Services.AddControllersWithEnumsAsStrings();
+builder.Services.AddControllersWithEnumsAsStrings(); // Force build
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
