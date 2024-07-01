@@ -13,4 +13,9 @@ public class IdpClientId : ValueObject
 
         Value = value;
     }
+
+    public static IdpClientId Create(Guid value)
+    {
+        return new IdpClientId(value);
+    }
 }

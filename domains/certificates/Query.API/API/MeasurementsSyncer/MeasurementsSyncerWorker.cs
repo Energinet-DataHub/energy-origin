@@ -54,6 +54,12 @@ public class MeasurementsSyncerWorker : BackgroundService
         {
             var syncInfos = await syncState.GetSyncInfos(stoppingToken);
 
+            if (!syncInfos.Any())
+            {
+                logger.LogInformation("No sync infos found. Skipping sync");
+                return;
+            }
+
             using var outerScope = scopeFactory.CreateScope();
             var measurementSyncMetrics = outerScope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
             measurementSyncMetrics.UpdateTimeSinceLastMeasurementSyncerRun(UnixTimestamp.Now().Seconds);
