@@ -1,6 +1,9 @@
+using System.Net.Http.Json;
+using API.Authorization._Features_;
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
+using API.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,7 +44,7 @@ public class DeleteConsentTests
 
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
 
-        var response = await userClient.DeleteConsent(client.Id, organization.Id);
+        var response = await userClient.DeleteConsent(client.IdpClientId.Value);
 
         response.Should().Be204NoContent();
 
@@ -67,9 +70,8 @@ public class DeleteConsentTests
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
 
         var randomGuidClientId = Guid.NewGuid();
-        var randomGuidOrganizationId = Guid.NewGuid();
 
-        var response = await userClient.DeleteConsent(randomGuidClientId, randomGuidOrganizationId);
+        var response = await userClient.DeleteConsent(randomGuidClientId);
 
         response.Should().Be404NotFound();
     }
@@ -90,14 +92,14 @@ public class DeleteConsentTests
 
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddRangeAsync(new[] { organization1, organization2 });
-        await dbContext.Clients.AddRangeAsync(new[] { client1, client2 });
+        await dbContext.Organizations.AddRangeAsync([organization1, organization2]);
+        await dbContext.Clients.AddRangeAsync([client1, client2]);
 
         var affiliation1 = Affiliation.Create(user, organization1);
         var affiliation2 = Affiliation.Create(user, organization2);
 
-        await dbContext.Affiliations.AddRangeAsync(new[] { affiliation1, affiliation2 });
-        await dbContext.Consents.AddRangeAsync(new[] { consent1, consent2 });
+        await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
+        await dbContext.Consents.AddRangeAsync([consent1, consent2]);
 
         await dbContext.SaveChangesAsync();
 
@@ -105,8 +107,40 @@ public class DeleteConsentTests
 
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin.Value);
 
-        var response = await userClient.DeleteConsent(client2.Id, organization2.Id);
+        var response = await userClient.DeleteConsent(client2.IdpClientId.Value);
 
-        response.Should().Be403Forbidden();
+        response.Should().Be404NotFound();
+    }
+
+    [Fact]
+    public async Task GivenConsent_WhenDeleted_ThenAccessTokenShouldNotContainOrganizationId()
+    {
+        var user = Any.User();
+        var organization = Any.Organization();
+        var client = Client.Create(new IdpClientId(Guid.NewGuid()), new("Loz"), ClientType.Internal, "https://localhost:5001");
+        var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow);
+
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Clients.AddAsync(client);
+        await dbContext.Consents.AddAsync(consent);
+        var affiliation = Affiliation.Create(user, organization);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.SaveChangesAsync();
+
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
+        var consentListResponse = await userClient.GetUserOrganizationConsents();
+        consentListResponse.Should().Be200Ok();
+        var consentList = await consentListResponse.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
+        consentList!.Result.Should().NotBeEmpty();
+
+        var deleteResponse = await userClient.DeleteConsent(client.IdpClientId.Value);
+        deleteResponse.Should().Be204NoContent();
+
+        var consentListResponseAfterDeletion = await userClient.GetUserOrganizationConsents();
+        consentListResponseAfterDeletion.Should().Be200Ok();
+        var consentListAfterDeletion = await consentListResponseAfterDeletion.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
+        consentListAfterDeletion!.Result.Should().BeEmpty();
     }
 }

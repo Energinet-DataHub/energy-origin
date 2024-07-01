@@ -24,8 +24,7 @@ public class GetUserOrganizationConsentsQueryHandler(IConsentRepository consentR
                               consent.Organization.Affiliations
                                   .Any(o => o.User.IdpUserId == userIdpUserIdClaim))
             .Select(consent => new GetUserOrganizationConsentsQueryResultItem(
-                consent.ClientId,
-                consent.OrganizationId,
+                consent.Client.IdpClientId.Value,
                 consent.Client.Name.Value,
                 UnixTimestamp.Create(consent.ConsentDate).Seconds
             ))
@@ -39,4 +38,4 @@ public record GetUserOrganizationConsentsQuery(string IdpUserId, string OrgCvr) 
 
 public record GetUserOrganizationConsentsQueryResult(List<GetUserOrganizationConsentsQueryResultItem> Result);
 
-public record GetUserOrganizationConsentsQueryResultItem(Guid ClientId, Guid OrganizationId, string ClientName, long ConsentDate);
+public record GetUserOrganizationConsentsQueryResultItem(Guid IdpClientId, string ClientName, long ConsentDate);

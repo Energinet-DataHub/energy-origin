@@ -40,8 +40,7 @@ public class GetConsentTests
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
         result!.Result.Should().NotBeEmpty();
         var firstResult = result.Result.First();
-        firstResult.ClientId.Should().NotBeEmpty();
-        firstResult.OrganizationId.Should().NotBeEmpty();
+        firstResult.IdpClientId.Should().NotBeEmpty();
         firstResult.ClientName.Should().NotBeNullOrEmpty();
         firstResult.ConsentDate.Should().BeGreaterThan(0);
     }
@@ -98,8 +97,7 @@ public class GetConsentTests
 
         result!.Result.Count.Should().Be(1);
         var firstResult = result.Result.First();
-        firstResult.ClientId.Should().Be(client1.Id);
-        firstResult.OrganizationId.Should().Be(organization1.Id);
+        firstResult.IdpClientId.Should().Be(client1.IdpClientId.Value);
         firstResult.ClientName.Should().Be(client1.Name.Value);
     }
 
