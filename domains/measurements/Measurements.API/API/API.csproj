@@ -27,7 +27,7 @@
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.1" />
 		<PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.1" />
-		<PackageReference Include="EnergyOrigin.Setup" Version="4.4.6" />
+		<PackageReference Include="EnergyOrigin.Setup" Version="5.0.1" />
 		<PackageReference Include="EnergyOrigin.IntegrationEvents" Version="1.3.2" />
 		<PackageReference Include="EnergyOrigin.TokenValidation" Version="3.6.8" />
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
@@ -44,7 +44,7 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.6" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
 		<PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.3" />
-		<PackageReference Include="OpenTelemetry" Version="1.8.1" />
+		<PackageReference Include="OpenTelemetry" Version="1.9.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="documentation.xml">

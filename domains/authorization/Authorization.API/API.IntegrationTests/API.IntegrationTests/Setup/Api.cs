@@ -58,6 +58,11 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/consents/");
     }
 
+    public async Task<HttpResponseMessage> DeleteConsent(Guid clientId)
+    {
+        return await _client.DeleteAsync($"/api/authorization/consents/{clientId}");
+    }
+
     public Task InitializeAsync()
     {
         return Task.CompletedTask;
