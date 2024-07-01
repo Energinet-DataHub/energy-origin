@@ -12,7 +12,7 @@ var otlpConfiguration = configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>();
 
 Log.Logger = LoggerBuilder.BuildSerilogger(otlpOptions!.ReceiverEndpoint);
-
+// test why no build?
 try
 {
     Log.Information("Starting server.");
