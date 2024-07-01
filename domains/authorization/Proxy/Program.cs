@@ -77,7 +77,7 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-app.UsePathBase("/wallet-proxy"); // Test this
+app.UsePathBase("/wallet-proxy");
 
 app.Use(async (context, next) =>
 {
