@@ -57,10 +57,6 @@ public class MeasurementsSyncerWorkerTest
         fakeContractState.GetSyncInfos(Arg.Any<CancellationToken>())
             .Returns(new[] { info }).AndDoes(c => tokenSource.Cancel());
 
-        // No sync state returned for contract
-        //fakeSyncState.GetSlidingWindowStartTime(info, CancellationToken.None)
-        //    .Returns(null);
-
         // Run worker and wait for completion or timeout
         var workerTask = worker.StartAsync(tokenSource.Token);
         await Task.WhenAny(workerTask, Task.Delay(TimeSpan.FromMinutes(2)));
