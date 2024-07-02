@@ -20,7 +20,7 @@ public class UserService : IUserService
 
     public async Task<User> UpsertUserAsync(User user) => await repository.UpsertUserAsync(user);
 
-    public async Task UpdateTermsAccepted(User user, DecodableUserDescriptor descriptor, Guid traceId)
+    public async Task UpdateTermsAccepted(User user, DecodableUserDescriptor descriptor, string traceId)
     {
         repository.UpdateTermsAccepted(user);
         await publishEndpoint.Publish(new OrgAcceptedTerms(Guid.NewGuid(), traceId, DateTimeOffset.UtcNow, descriptor.Subject, descriptor.Organization?.Tin, descriptor.Id));

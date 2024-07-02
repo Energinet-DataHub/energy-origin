@@ -93,7 +93,6 @@ public class TermsController : ControllerBase
         }
         userTerms.AcceptedVersion = version;
 
-
         var traceId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
 
         await userService.UpdateTermsAccepted(user, descriptor, traceId);

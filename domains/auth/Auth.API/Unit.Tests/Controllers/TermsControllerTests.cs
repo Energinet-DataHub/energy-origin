@@ -74,7 +74,7 @@ public class TermsControllerTests
             y.UserTerms.First().AcceptedVersion == newAcceptedTermsVersion
             && y.Name == name
             && y.AllowCprLookup == allowCprLookup
-            && y.Id == id), Arg.Any<DecodableUserDescriptor>());
+            && y.Id == id), Arg.Any<DecodableUserDescriptor>(), Arg.Any<string>());
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class TermsControllerTests
             && y.Company.Name == organization.Name
             && y.UserProviders.Count() == 1
             && y.UserProviders.First().ProviderKeyType == providerKeyType
-            && y.UserProviders.First().UserProviderKey == providerKey), Arg.Any<DecodableUserDescriptor>());
+            && y.UserProviders.First().UserProviderKey == providerKey), Arg.Any<DecodableUserDescriptor>(), Arg.Any<string>());
     }
 
     [Fact]
