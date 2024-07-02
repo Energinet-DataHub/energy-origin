@@ -28,7 +28,7 @@ public class MeasurementsSyncerWorkerTest
     private readonly IServiceScopeFactory scopeFactory = Substitute.For<IServiceScopeFactory>();
     private readonly IServiceScope scope = Substitute.For<IServiceScope>();
     private readonly IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
-    private readonly ISyncState fakeSyncState = Substitute.For<ISyncState>();
+    private readonly ISlidingWindowState fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
     private readonly IContractState fakeContractState = Substitute.For<IContractState>();
     private readonly IBus fakeBus = Substitute.For<IBus>();
     private readonly MeasurementsSyncOptions options = Substitute.For<MeasurementsSyncOptions>();
@@ -37,7 +37,7 @@ public class MeasurementsSyncerWorkerTest
     public MeasurementsSyncerWorkerTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
-        var syncService = new MeasurementsSyncService(syncServiceFakeLogger, fakeSyncState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
+        var syncService = new MeasurementsSyncService(syncServiceFakeLogger, fakeSlidingWindowState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
             new MeasurementSyncMetrics());
         scopeFactory.CreateScope().Returns(scope);
         scope.ServiceProvider.Returns(serviceProvider);
@@ -56,10 +56,6 @@ public class MeasurementsSyncerWorkerTest
 
         fakeContractState.GetSyncInfos(Arg.Any<CancellationToken>())
             .Returns(new[] { info }).AndDoes(c => tokenSource.Cancel());
-
-        // No sync state returned for contract
-        fakeSyncState.GetPeriodStartTime(info, CancellationToken.None)
-            .Returns((long?)null);
 
         // Run worker and wait for completion or timeout
         var workerTask = worker.StartAsync(tokenSource.Token);
