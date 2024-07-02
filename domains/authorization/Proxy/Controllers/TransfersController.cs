@@ -21,7 +21,7 @@ public class TransfersController : ProxyBase
     /// <response code="200">Returns the individual transferes within the filter.</response>
     /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
-    [Route("v1/transfers/cursor")]
+    [Route("transfers/cursor")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
     [ApiVersion(ApiVersions.Version20250101)]

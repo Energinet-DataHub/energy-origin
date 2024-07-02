@@ -20,7 +20,7 @@ public class ClaimsController : ProxyBase
     /// <response code="200">Returns all the indiviual claims.</response>
     /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
-    [Route("v1/claims/cursor")]
+    [Route("claims/cursor")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
     [ApiVersion(ApiVersions.Version20250101)]

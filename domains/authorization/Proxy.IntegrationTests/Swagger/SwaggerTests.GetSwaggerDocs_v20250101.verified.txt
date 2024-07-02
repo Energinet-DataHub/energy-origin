@@ -296,7 +296,7 @@
         }
       }
     },
-    "/v1/claims/cursor": {
+    "/claims/cursor": {
       "get": {
         "tags": [
           "Claims"
@@ -756,7 +756,7 @@
         }
       }
     },
-    "/v1/transfers/cursor": {
+    "/transfers/cursor": {
       "get": {
         "tags": [
           "Transfers"
