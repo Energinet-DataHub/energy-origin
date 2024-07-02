@@ -1,18 +1,13 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext.Models;
 
 namespace API.MeasurementsSyncer.Persistence;
 
-public interface ISyncState
+public interface ISlidingWindowState
 {
-    Task<long?> GetPeriodStartTime(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken);
-
-    Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn, CancellationToken cancellationToken);
-
+    Task<MeteringPointTimeSeriesSlidingWindow> GetSlidingWindowStartTime(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken);
     Task UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow slidingWindow, CancellationToken cancellationToken);
-
     Task SaveChangesAsync(CancellationToken cancellationToken);
 
 }
