@@ -28,7 +28,7 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
-    public async Task GetClaims([FromQuery] GetClaimsQueryParametersCursor param)
+    public async Task GetClaimsCursor([FromQuery] GetClaimsQueryParametersCursor param)
     {
         await ProxyTokenValidationRequest("v1/claims/cursor");
     }

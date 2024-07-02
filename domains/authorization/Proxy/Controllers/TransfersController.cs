@@ -29,7 +29,7 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer>), StatusCodes.Status200OK)]
-    public async Task GetTransfers([FromQuery] GetTransfersQueryParametersCursor param)
+    public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param)
     {
         await ProxyTokenValidationRequest("v1/transfers/cursor");
     }
