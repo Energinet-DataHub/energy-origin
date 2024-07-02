@@ -9,21 +9,21 @@ namespace Proxy.Controllers;
 [ApiController]
 public class WalletController : ProxyBase
 {
-    public WalletController(IHttpClientFactory httpClientFactory, AccessDescriptor accessDescriptor) : base(httpClientFactory, accessDescriptor)
+    public WalletController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
     {
     }
 
     [HttpPost]
     [Route("v1/wallets")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [Authorize]
     [ApiVersionNeutral]
     [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(CreateWalletResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task CreateWallet([FromBody] CreateWalletRequest request)
+    public async Task CreateWalletLegacy([FromBody] CreateWalletRequest request)
     {
         await ProxyTokenValidationRequest("v1/wallets");
     }
@@ -31,13 +31,13 @@ public class WalletController : ProxyBase
     [HttpPost]
     [Route("wallets")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [Authorize(policy: Policy.B2CPolicy)]
     [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(CreateWalletResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task CreateWalletV2([FromBody] CreateWalletRequest request, [FromQuery] string? organizationId)
+    public async Task CreateWallet([FromBody] CreateWalletRequest request, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/wallets", organizationId);
     }
@@ -50,13 +50,13 @@ public class WalletController : ProxyBase
     [HttpGet]
     [Route("v1/wallets")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [Authorize]
     [ApiVersionNeutral]
     [Obsolete]
     [ProducesResponseType(typeof(ResultList<WalletRecord>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task GetWallets()
+    public async Task GetWalletsLegacy()
     {
         await ProxyTokenValidationRequest("v1/wallets");
     }
@@ -74,7 +74,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(ResultList<WalletRecord>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task GetWalletsV2([FromQuery] string? organizationId)
+    public async Task GetWallets([FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/wallets", organizationId);
     }
@@ -89,14 +89,14 @@ public class WalletController : ProxyBase
     [HttpGet]
     [Route("v1/wallets/{walletId}")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [Authorize]
     [ApiVersionNeutral]
     [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(WalletRecord), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task GetWallet([FromRoute] Guid walletId)
+    public async Task GetWalletLegacy([FromRoute] Guid walletId)
     {
         await ProxyTokenValidationRequest($"v1/wallets/{walletId}");
     }
@@ -117,7 +117,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(WalletRecord), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task GetWalletV2([FromRoute] Guid walletId, [FromQuery] string organizationId)
+    public async Task GetWallet([FromRoute] Guid walletId, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest($"v1/wallets/{walletId}", organizationId);
     }
@@ -125,14 +125,14 @@ public class WalletController : ProxyBase
     [HttpPost]
     [Route("v1/wallets/{walletId}/endpoints")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [Authorize]
     [ApiVersionNeutral]
     [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(WalletRecord), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task CreateWalletEndpoint([FromRoute] Guid walletId)
+    public async Task CreateWalletEndpointLegacy([FromRoute] Guid walletId)
     {
         await ProxyTokenValidationRequest($"v1/wallets/{walletId}/endpoints");
     }
@@ -146,7 +146,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(WalletRecord), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task CreateWalletEndpointV2([FromRoute] Guid walletId, [FromQuery] string? organizationId)
+    public async Task CreateWalletEndpoint([FromRoute] Guid walletId, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest($"v1/wallets/{walletId}/endpoints", organizationId);
     }
@@ -156,12 +156,12 @@ public class WalletController : ProxyBase
     [Produces("application/json")]
     [ProducesResponseType(typeof(CreateExternalEndpointResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [Authorize]
     [ApiVersionNeutral]
     [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task CreateExternalEndpoint([FromBody] CreateExternalEndpointRequest request)
+    public async Task CreateExternalEndpointLegacy([FromBody] CreateExternalEndpointRequest request)
     {
         await ProxyTokenValidationRequest("v1/external-endpoints");
     }
@@ -175,7 +175,7 @@ public class WalletController : ProxyBase
     [ApiVersion(ApiVersions.Version20250101)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task CreateExternalEndpointV2([FromBody] CreateExternalEndpointRequest request, [FromQuery] string? organizationId)
+    public async Task CreateExternalEndpoint([FromBody] CreateExternalEndpointRequest request, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/external-endpoints", organizationId);
     }
