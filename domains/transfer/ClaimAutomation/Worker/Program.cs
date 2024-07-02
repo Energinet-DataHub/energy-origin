@@ -25,6 +25,14 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.AddSerilog();
 
+builder.Services.AddOptions<ClientCredentialsOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddHttpClient<IClientCredentialsService, ClientCredentialsService>((sp, c) =>
+{
+    var options = sp.GetRequiredService<IOptions<ClientCredentialsOptions>>().Value;
+    c.BaseAddress = new Uri(options.TokenUrl);
+});
+
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)

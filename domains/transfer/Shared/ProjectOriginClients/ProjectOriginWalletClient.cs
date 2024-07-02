@@ -32,6 +32,7 @@ public interface IProjectOriginWalletClient
 public class ProjectOriginWalletClient : IProjectOriginWalletClient
 {
     private readonly HttpClient client;
+    private readonly IClientCredentialsService clientCredentialsService;
 
     private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
@@ -39,22 +40,23 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
     };
 
-    public ProjectOriginWalletClient(HttpClient client)
+    public ProjectOriginWalletClient(HttpClient client, IClientCredentialsService clientCredentialsService)
     {
         this.client = client;
+        this.clientCredentialsService = clientCredentialsService;
     }
 
     public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        await SetAuthorizationAndVersionHeader();
 
-        return await client.GetFromJsonAsync<ResultList<GranularCertificate>>($"v1/certificates?skip={skip}&limit={limit}",
+        return await client.GetFromJsonAsync<ResultList<GranularCertificate>>($"v1/certificates?organizationId={ownerSubject.ToString()}&skip={skip}&limit={limit}",
             cancellationToken: cancellationToken, options: jsonSerializerOptions);
     }
 
     public async Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        await SetAuthorizationAndVersionHeader();
         var request = new ClaimRequest
         {
             ConsumptionCertificateId = consumptionCertificate.FederatedStreamId,
@@ -64,7 +66,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
-        var res = await client.PostAsync("v1/claims", content);
+        var res = await client.PostAsync($"v1/claims?organizationId={ownerSubject.ToString()}", content);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
@@ -75,7 +77,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        await SetAuthorizationAndVersionHeader();
         var request = new TransferRequest
         {
             CertificateId = certificate.FederatedStreamId,
@@ -86,7 +88,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
-        var res = await client.PostAsync("v1/transfers", content);
+        var res = await client.PostAsync($"v1/transfers?organizationId={ownerSubject.ToString()}", content);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
@@ -97,7 +99,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        await SetAuthorizationAndVersionHeader();
         var request = new CreateWalletRequest
         {
             PrivateKey = null
@@ -105,7 +107,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
-        var res = await client.PostAsync("v1/wallets", content);
+        var res = await client.PostAsync($"v1/wallets?organizationId={ownerSubject.ToString()}", content);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
@@ -116,9 +118,9 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<ResultList<WalletRecord>> GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        await SetAuthorizationAndVersionHeader();
 
-        var response = await client.GetFromJsonAsync<ResultList<WalletRecordDto>>("v1/wallets", cancellationToken);
+        var response = await client.GetFromJsonAsync<ResultList<WalletRecordDto>>($"v1/wallets?organizationId={ownerSubject.ToString()}", cancellationToken);
 
         if (response == null)
             throw new HttpRequestException("Failed to get wallets.");
@@ -137,8 +139,8 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid ownerSubject, Guid walletId, CancellationToken cancellationToken)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
-        var res = await client.PostAsync($"v1/wallets/{walletId}/endpoints", null);
+        await SetAuthorizationAndVersionHeader();
+        var res = await client.PostAsync($"v1/wallets/{walletId}/endpoints?organizationId={ownerSubject.ToString()}", null);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
@@ -151,7 +153,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference, string textReference, CancellationToken cancellationToken)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        await SetAuthorizationAndVersionHeader();
         var request = new CreateExternalEndpointRequest
         {
             TextReference = textReference,
@@ -160,7 +162,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
-        var res = await client.PostAsync("v1/external-endpoints", content);
+        var res = await client.PostAsync($"v1/external-endpoints?organizationId={ownerSubject.ToString()}", content);
         res.EnsureSuccessStatusCode();
 
         if (res == null || res.Content == null)
@@ -169,22 +171,13 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         return (await res.Content.ReadFromJsonAsync<CreateExternalEndpointResponse>())!;
     }
 
-    private void SetDummyAuthorizationHeader(string ownerSubject)
+    private async Task SetAuthorizationAndVersionHeader()
     {
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GenerateBearerToken(ownerSubject));
-    }
-
-    private string GenerateBearerToken(string owner)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var tokenDescriptor = new SecurityTokenDescriptor
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await clientCredentialsService.GetAccessTokenAsync());
+        if (!client.DefaultRequestHeaders.Contains("EO_API_VERSION"))
         {
-            Subject = new ClaimsIdentity(new[] { new Claim("sub", owner) }),
-            Expires = DateTime.UtcNow.AddDays(7),
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-
-        return tokenHandler.WriteToken(token);
+            client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
+        }
     }
 }
 
