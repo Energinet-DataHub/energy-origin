@@ -15,6 +15,7 @@ public class Organization : IEntity<Guid>
         Id = id;
         Tin = tin;
         Name = organizationName;
+        TermsAccepted = true;
     }
 
     private Organization()
@@ -26,6 +27,7 @@ public class Organization : IEntity<Guid>
     public OrganizationName Name { get; private set; } = null!;
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();
+    public bool TermsAccepted { get; private set; }
 
     public static Organization Create(
         Tin tin,

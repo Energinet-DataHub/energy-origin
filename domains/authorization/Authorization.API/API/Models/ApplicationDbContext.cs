@@ -37,6 +37,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Organization>().HasIndex(o => o.Tin).IsUnique();
 
         modelBuilder.Entity<Organization>().HasMany(it => it.Affiliations);
+
+        modelBuilder.Entity<Organization>().Property(o => o.TermsAccepted)
+            .IsRequired()
+            .HasDefaultValue(false);
     }
 
     private static void ConfigureClientTable(ModelBuilder modelBuilder)

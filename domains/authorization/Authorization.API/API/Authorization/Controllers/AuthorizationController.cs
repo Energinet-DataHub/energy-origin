@@ -16,15 +16,8 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [ApiVersionNeutral] // B2C does not support adding a version header
 [Authorize(Policy = Policy.B2CCustomPolicyClientPolicy)]
-public class AuthorizationController : ControllerBase
+public class AuthorizationController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public AuthorizationController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     /// <summary>
     /// Retrieves Authorization Model.
     /// </summary>
@@ -33,7 +26,7 @@ public class AuthorizationController : ControllerBase
     public async Task<ActionResult<AuthorizationResponse>> GetConsentForClient(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationClientRequest request)
     {
-        var queryResult = await _mediator.Send(new GetConsentForClientQuery(request.ClientId));
+        var queryResult = await mediator.Send(new GetConsentForClientQuery(request.ClientId));
 
         return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName,
             queryResult.OrgIds, queryResult.Scope));
@@ -48,10 +41,10 @@ public class AuthorizationController : ControllerBase
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationUserRequest request)
     {
         var queryResult =
-            await _mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName,
+            await mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName,
                 request.OrgCvr));
 
-        bool termsAccepted = false;
+        var termsAccepted = await mediator.Send(new OrganizationStateQuery(request.OrgCvr));
 
         return Ok(new UserAuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName,
             queryResult.OrgIds, queryResult.Scope, termsAccepted));
