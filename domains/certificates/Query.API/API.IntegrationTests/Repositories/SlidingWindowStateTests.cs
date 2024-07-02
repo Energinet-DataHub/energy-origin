@@ -16,11 +16,11 @@ using Xunit;
 namespace API.IntegrationTests.Repositories;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class SyncStateTests
+public class SlidingWindowStateTests
 {
     private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public SyncStateTests(IntegrationTestFixture integrationTestFixture)
+    public SlidingWindowStateTests(IntegrationTestFixture integrationTestFixture)
     {
         var emptyDb = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
         options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
@@ -40,7 +40,7 @@ public class SyncStateTests
         var info = CreateSyncInfo();
 
         await using var dbContext = new ApplicationDbContext(options);
-        var syncState = new SyncState(dbContext);
+        var syncState = new SlidingWindowState(dbContext);
 
         var actualPeriodStartTime = await syncState.GetSlidingWindowStartTime(info, CancellationToken.None);
 
@@ -61,7 +61,7 @@ public class SyncStateTests
         }
 
         await using var newDbContext = new ApplicationDbContext(options);
-        var syncState = new SyncState(newDbContext);
+        var syncState = new SlidingWindowState(newDbContext);
 
         var actualPeriodStartTime = await syncState.GetSlidingWindowStartTime(info, CancellationToken.None);
 
@@ -82,7 +82,7 @@ public class SyncStateTests
         }
 
         await using var newDbContext = new ApplicationDbContext(options);
-        var syncState = new SyncState(newDbContext);
+        var syncState = new SlidingWindowState(newDbContext);
 
         var actualPeriodStartTime = await syncState.GetSlidingWindowStartTime(info, CancellationToken.None);
 

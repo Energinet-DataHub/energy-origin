@@ -4,7 +4,7 @@ using DataContext.Models;
 
 namespace API.MeasurementsSyncer.Persistence;
 
-public interface ISyncState
+public interface ISlidingWindowState
 {
     Task<MeteringPointTimeSeriesSlidingWindow> GetSlidingWindowStartTime(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken);
     Task UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow slidingWindow, CancellationToken cancellationToken);

@@ -7,11 +7,11 @@ using DataContext.ValueObjects;
 
 namespace API.MeasurementsSyncer.Persistence;
 
-public class SyncState : ISyncState
+public class SlidingWindowState : ISlidingWindowState
 {
     private readonly ApplicationDbContext dbContext;
 
-    public SyncState(ApplicationDbContext dbContext)
+    public SlidingWindowState(ApplicationDbContext dbContext)
     {
         this.dbContext = dbContext;
     }
