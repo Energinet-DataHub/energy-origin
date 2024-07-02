@@ -51,7 +51,9 @@ public class AuthorizationController : ControllerBase
             await _mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName,
                 request.OrgCvr));
 
-        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName,
-            queryResult.OrgIds, queryResult.Scope));
+        bool termsAccepted = false;
+
+        return Ok(new UserAuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName,
+            queryResult.OrgIds, queryResult.Scope, termsAccepted));
     }
 }
