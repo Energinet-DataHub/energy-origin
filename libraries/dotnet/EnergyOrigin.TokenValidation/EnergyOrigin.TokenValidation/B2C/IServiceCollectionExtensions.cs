@@ -53,6 +53,15 @@ public static class IServiceCollectionExtensions
                 .Build();
             options.AddPolicy(Policy.B2CPolicy, b2CPolicy);
 
+            var b2CTosAcceptedPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(
+                    AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+                    AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
+                .RequireClaim(ClaimType.TosAccepted, "true")
+                .Build();
+            options.AddPolicy(Policy.B2CTosAcceptedPolicy, b2CTosAcceptedPolicy);
+
             var b2CSubTypeUserPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(
