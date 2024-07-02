@@ -19,14 +19,6 @@ jobs:
       - name: Setup variables
         run: exit 0
 
-  build-libraries:
-    needs: setup
-    uses: ./.github/workflows/build-libraries.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ needs.setup.outputs.dry-run }}
-      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
-
   build-subsystems:
     needs: setup
     uses: ./.github/workflows/build-subsystems.yaml
@@ -38,11 +30,6 @@ jobs:
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/check-licenses.yml
-    secrets: inherit
-
-  check-versions:
-    if: ${{ github.event_name == 'pull_request' }}
-    uses: ./.github/workflows/check-versions.yml
     secrets: inherit
 
   dependabot-update:
@@ -72,10 +59,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [
-        build-libraries,
         build-subsystems,
         check-licenses,
-        check-versions,
         dependabot-validate,
         dependabot-update,
         structurizr-update-pages,
