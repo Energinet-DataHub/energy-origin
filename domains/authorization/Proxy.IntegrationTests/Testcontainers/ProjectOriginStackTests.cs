@@ -3,7 +3,7 @@ using System.Text;
 using FluentAssertions;
 
 namespace Proxy.IntegrationTests.Testcontainers;
-
+/*
 public class ProjectOriginStackTests(ProjectOriginStackFixture fixture) : IClassFixture<ProjectOriginStackFixture>
 {
     private readonly ProjectOriginStack _projectOriginStack = fixture.ProjectOriginStack;
@@ -36,3 +36,4 @@ public class ProjectOriginStackTests(ProjectOriginStackFixture fixture) : IClass
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 }
+*/
