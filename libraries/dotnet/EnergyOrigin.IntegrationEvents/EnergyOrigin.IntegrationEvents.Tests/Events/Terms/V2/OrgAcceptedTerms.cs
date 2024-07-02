@@ -8,7 +8,7 @@ public class OrgAcceptedTermsTests
     public void can_set_values()
     {
         var id = Guid.NewGuid();
-        var traceId = Guid.NewGuid();
+        var traceId = Guid.NewGuid().ToString();
         var created = DateTimeOffset.Now;
         var subjectId = Guid.NewGuid();
         var tin = "1234567890";
