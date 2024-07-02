@@ -24,7 +24,6 @@ public class ClaimsController : ProxyBase
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
     [ApiVersionNeutral]
-    [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
