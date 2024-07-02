@@ -2,7 +2,7 @@ namespace EnergyOrigin.IntegrationEvents.Events;
 
 public abstract record IntegrationEvent
 {
-    protected IntegrationEvent(Guid id, Guid traceId, DateTimeOffset created)
+    protected IntegrationEvent(Guid id, string traceId, DateTimeOffset created)
     {
         Id = id;
         TraceId = traceId;
@@ -10,6 +10,6 @@ public abstract record IntegrationEvent
     }
 
     public Guid Id { get; }
-    public Guid TraceId { get; }
+    public string TraceId { get; }
     public DateTimeOffset Created { get; }
 }
