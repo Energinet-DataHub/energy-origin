@@ -41,7 +41,7 @@
             <response code="400">If the time zone is invalid.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.ClaimsController.GetClaims(Proxy.Controllers.GetClaimsQueryParametersCursor)">
+        <member name="M:Proxy.Controllers.ClaimsController.GetClaimsCursor(Proxy.Controllers.GetClaimsQueryParametersCursor)">
             <summary>
             Gets all claims in the wallet
             </summary>
@@ -576,7 +576,7 @@
             Response to receive a certificate-slice from another wallet.
             </summary>
         </member>
-        <member name="M:Proxy.Controllers.TransfersController.GetTransfers(Proxy.Controllers.GetTransfersQueryParametersCursor)">
+        <member name="M:Proxy.Controllers.TransfersController.GetTransfersCursor(Proxy.Controllers.GetTransfersQueryParametersCursor)">
             <summary>
             Gets detailed list of all of the transfers that have been made to other wallets.
             </summary>
