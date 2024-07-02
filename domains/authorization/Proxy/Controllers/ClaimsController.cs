@@ -10,7 +10,7 @@ namespace Proxy.Controllers;
 public class ClaimsController : ProxyBase
 {
 
-    public ClaimsController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
+    public ClaimsController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
     {
     }
 

@@ -9,7 +9,7 @@ namespace Proxy.Controllers;
 [ApiVersion(ApiVersions.Version20250101)]
 public class CertificatesController : ProxyBase
 {
-    public CertificatesController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
+    public CertificatesController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
     {
     }
 

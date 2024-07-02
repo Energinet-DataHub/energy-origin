@@ -9,7 +9,7 @@ namespace Proxy.Controllers;
 [ApiController]
 public class WalletController : ProxyBase
 {
-    public WalletController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
+    public WalletController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
     {
     }
 

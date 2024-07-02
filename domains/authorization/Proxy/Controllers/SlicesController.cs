@@ -8,7 +8,7 @@ namespace Proxy.Controllers;
 [ApiController]
 public class SlicesController : ProxyBase
 {
-    public SlicesController(IHttpClientFactory httpClientFactory) : base(httpClientFactory, null)
+    public SlicesController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
     {
 
     }

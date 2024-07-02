@@ -6,12 +6,17 @@ namespace Proxy;
 
 public class ProxyBase : ControllerBase
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
     private readonly HttpClient _httpClient;
 
-    public ProxyBase(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+    public ProxyBase(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
+        _httpClient = httpClientFactory.CreateClient("Proxy");
+    }
+
+    public ProxyBase(IHttpClientFactory httpClientFactory)
+    {
         _httpClient = httpClientFactory.CreateClient("Proxy");
     }
 
@@ -110,7 +115,7 @@ public class ProxyBase : ControllerBase
     /// <param name="organizationId"></param>
     protected async Task ProxyClientCredentialsRequest(string path, string? organizationId)
     {
-        AccessDescriptor accessDescriptor = new(new IdentityDescriptor(_httpContextAccessor));
+        AccessDescriptor accessDescriptor = new(new IdentityDescriptor(_httpContextAccessor!));
         if (string.IsNullOrEmpty(organizationId))
         {
             Forbidden();

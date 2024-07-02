@@ -11,7 +11,7 @@ namespace Proxy.Controllers;
 
 public class TransfersController : ProxyBase
 {
-    public TransfersController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
+    public TransfersController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
     {
     }
 
