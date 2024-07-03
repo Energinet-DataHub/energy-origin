@@ -3,6 +3,84 @@ using System.Text.Json.Serialization;
 
 namespace Proxy.Controllers;
 
+public record GetClaimsQueryParametersCursor
+{
+    /// <summary>
+    /// The start of the time range in Unix time in seconds.
+    /// </summary>
+    public long? Start { get; init; }
+
+    /// <summary>
+    /// The end of the time range in Unix time in seconds.
+    /// </summary>
+    public long? End { get; init; }
+
+    /// <summary>
+    /// Filter the type of certificates to return.
+    /// </summary>
+    public CertificateType? Type { get; init; }
+
+    /// <summary>
+    /// The number of items to return.
+    /// </summary>
+    public int? Limit { get; init; }
+
+    /// <summary>
+    /// The time of the last update in Unix time in seconds.
+    /// </summary>
+    public long? UpdatedSince { get; init; }
+}
+
+public record GetCertificatesQueryParametersCursor
+{
+    /// <summary>
+    /// The start of the time range in Unix time in seconds.
+    /// </summary>
+    public long? Start { get; init; }
+
+    /// <summary>
+    /// The end of the time range in Unix time in seconds.
+    /// </summary>
+    public long? End { get; init; }
+
+    /// <summary>
+    /// Filter the type of certificates to return.
+    /// </summary>
+    public CertificateType? Type { get; init; }
+
+    /// <summary>
+    /// The number of items to return.
+    /// </summary>
+    public int? Limit { get; init; }
+
+    /// <summary>
+    /// The time of the last update in Unix time in seconds.
+    /// </summary>
+    public long? UpdatedSince { get; init; }
+}
+public record GetTransfersQueryParametersCursor
+{
+    /// <summary>
+    /// The start of the time range in Unix time in seconds.
+    /// </summary>
+    public long? Start { get; init; }
+
+    /// <summary>
+    /// The end of the time range in Unix time in seconds.
+    /// </summary>
+    public long? End { get; init; }
+
+    /// <summary>
+    /// The number of items to return.
+    /// </summary>
+    public int? Limit { get; init; }
+
+    /// <summary>
+    /// The time of the last update in Unix time in seconds.
+    /// </summary>
+    public long? UpdatedSince { get; init; }
+}
+
 public record GetCertificatesQueryParameters
 {
     /// <summary>

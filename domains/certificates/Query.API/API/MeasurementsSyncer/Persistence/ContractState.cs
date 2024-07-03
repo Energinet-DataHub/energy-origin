@@ -13,9 +13,9 @@ namespace API.MeasurementsSyncer.Persistence;
 public class ContractState : IContractState
 {
     private readonly IDbContextFactory<ApplicationDbContext> dbContextFactory;
-    private readonly ILogger<SyncState> logger;
+    private readonly ILogger<ContractState> logger;
 
-    public ContractState(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<SyncState> logger)
+    public ContractState(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<ContractState> logger)
     {
         this.dbContextFactory = dbContextFactory;
         this.logger = logger;

@@ -30,8 +30,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ProductionCertificate>().OwnsOne(c => c.Technology);
         modelBuilder.Entity<ProductionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
 
-        modelBuilder.Entity<SynchronizationPosition>().HasKey(s => s.GSRN);
-
         modelBuilder.Entity<ConsumptionCertificate>().HasIndex(c => new { c.Gsrn, c.DateFrom, c.DateTo }).IsUnique();
 
         modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().HasKey(s => new { s.GSRN });
@@ -50,7 +48,6 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
     public DbSet<ProductionCertificate> ProductionCertificates { get; set; }
-    public DbSet<SynchronizationPosition> SynchronizationPositions { get; set; }
     public DbSet<ConsumptionCertificate> ConsumptionCertificates { get; set; }
     public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
     public DbSet<MeteringPointTimeSeriesSlidingWindow> MeteringPointTimeSeriesSlidingWindows { get; set; }

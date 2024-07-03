@@ -15,18 +15,18 @@ namespace API.MeasurementsSyncer;
 
 public class MeasurementsSyncerWorker : BackgroundService
 {
-    private readonly IContractState syncState;
+    private readonly IContractState contractState;
     private readonly ILogger<MeasurementsSyncerWorker> logger;
     private readonly IServiceScopeFactory scopeFactory;
     private readonly MeasurementsSyncOptions options;
 
     public MeasurementsSyncerWorker(
         ILogger<MeasurementsSyncerWorker> logger,
-        IContractState syncState,
+        IContractState contractState,
         IOptions<MeasurementsSyncOptions> options,
         IServiceScopeFactory scopeFactory)
     {
-        this.syncState = syncState;
+        this.contractState = contractState;
         this.logger = logger;
         this.scopeFactory = scopeFactory;
         this.options = options.Value;
@@ -52,7 +52,7 @@ public class MeasurementsSyncerWorker : BackgroundService
     {
         try
         {
-            var syncInfos = await syncState.GetSyncInfos(stoppingToken);
+            var syncInfos = await contractState.GetSyncInfos(stoppingToken);
 
             if (!syncInfos.Any())
             {

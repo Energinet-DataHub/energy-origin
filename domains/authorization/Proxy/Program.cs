@@ -77,13 +77,15 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
+app.UsePathBase("/wallet-api");
+
 app.Use(async (context, next) =>
 {
     context.Request.EnableBuffering();
     await next();
 });
 
-app.AddSwagger(app.Environment, "authorization-proxy");
+app.AddSwagger(app.Environment, "wallet-api");
 
 app.MapHealthChecks("/health");
 

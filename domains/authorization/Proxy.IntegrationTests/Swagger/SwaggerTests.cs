@@ -35,7 +35,7 @@ public class SwaggerTests(ProxyIntegrationTestFixture proxyIntegrationTestFixtur
             using var client = factory.CreateClient();
             foreach (var version in apiDesc.ApiVersionDescriptions.Select(v => v.GroupName))
             {
-                using var swaggerDocResponse = await client.GetAsync($"api-docs/authorization-proxy/{version}/swagger.json");
+                using var swaggerDocResponse = await client.GetAsync($"api-docs/wallet-api/{version}/swagger.json");
                 swaggerDocResponse.StatusCode.Should().Be(HttpStatusCode.OK,
                     $"Swagger documentation for version {version} should be accessible.");
             }
@@ -50,7 +50,7 @@ public class SwaggerTests(ProxyIntegrationTestFixture proxyIntegrationTestFixtur
             using var client = factory.CreateClient();
             foreach (var version in apiDesc.ApiVersionDescriptions.Select(v => v.GroupName))
             {
-                var swaggerDocUrl = $"api-docs/authorization-proxy/{version}/swagger.json";
+                var swaggerDocUrl = $"api-docs/wallet-api/{version}/swagger.json";
                 using var response = await client.GetAsync(swaggerDocUrl);
 
                 response.EnsureSuccessStatusCode();

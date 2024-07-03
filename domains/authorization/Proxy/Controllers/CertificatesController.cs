@@ -9,9 +9,28 @@ namespace Proxy.Controllers;
 [ApiVersion(ApiVersions.Version20250101)]
 public class CertificatesController : ProxyBase
 {
-    public CertificatesController(IHttpClientFactory httpClientFactory, AccessDescriptor accessDescriptor) : base(httpClientFactory, accessDescriptor)
+    public CertificatesController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
     {
     }
+
+    /// <summary>
+    /// Gets all certificates in the wallet that are <b>available</b> for use.
+    /// </summary>
+    /// <response code="200">Returns the aggregated claims.</response>
+    /// <response code="401">If the user is not authenticated.</response>
+    [HttpGet]
+    [Route("certificates/cursor")]
+    [Produces("application/json")]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
+    public async Task GetCertificatesCursor([FromQuery] GetCertificatesQueryParametersCursor param, [FromQuery] string? organizationId)
+    {
+        await ProxyClientCredentialsRequest("v1/certificates/cursor", organizationId);
+    }
+
 
     /// <summary>
     /// Gets all certificates in the wallet that are <b>available</b> for use.
@@ -26,7 +45,7 @@ public class CertificatesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
-    public async Task GetCertificatesV2([FromQuery] GetCertificatesQueryParameters param, [FromQuery] string? organizationId)
+    public async Task GetCertificates([FromQuery] GetCertificatesQueryParameters param, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/certificates", organizationId);
     }
@@ -39,13 +58,13 @@ public class CertificatesController : ProxyBase
     [HttpGet]
     [Route("v1/certificates")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [Authorize]
     [ApiVersionNeutral]
     [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
-    public async Task GetCertificates([FromQuery] GetCertificatesQueryParameters param)
+    public async Task GetCertificatesLegacy([FromQuery] GetCertificatesQueryParameters param)
     {
         await ProxyTokenValidationRequest("v1/certificates");
     }
@@ -65,7 +84,7 @@ public class CertificatesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<AggregatedCertificates>), StatusCodes.Status200OK)]
-    public async Task AggregateCertificatesV2([FromQuery] AggregateCertificatesQueryParameters param, [FromQuery] string? organizationId)
+    public async Task AggregateCertificates([FromQuery] AggregateCertificatesQueryParameters param, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/aggregate-certificates", organizationId);
     }
@@ -79,7 +98,7 @@ public class CertificatesController : ProxyBase
     [HttpGet]
     [Route("v1/aggregate-certificates")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [Authorize]
     [ApiVersionNeutral]
     [Obsolete]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -87,7 +106,7 @@ public class CertificatesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<AggregatedCertificates>), StatusCodes.Status200OK)]
-    public async Task AggregateCertificates([FromQuery] AggregateCertificatesQueryParameters param)
+    public async Task AggregateCertificatesLegacy([FromQuery] AggregateCertificatesQueryParameters param)
     {
         await ProxyTokenValidationRequest("v1/aggregate-certificates");
     }

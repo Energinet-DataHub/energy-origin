@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using API.Models.Entities;
 using API.Options;
 using API.Services.Interfaces;
@@ -92,7 +93,9 @@ public class TermsController : ControllerBase
         }
         userTerms.AcceptedVersion = version;
 
-        await userService.UpdateTermsAccepted(user, descriptor);
+        var traceId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+
+        await userService.UpdateTermsAccepted(user, descriptor, traceId);
 
         logger.AuditLog(
             "{User} updated accepted Privacy policy {Version} at {TimeStamp}.",

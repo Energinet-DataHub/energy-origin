@@ -16,19 +16,19 @@ namespace API.MeasurementsSyncer;
 
 public class MeasurementsSyncService
 {
-    private readonly ISyncState syncState;
+    private readonly ISlidingWindowState slidingWindowState;
     private readonly Measurements.V1.Measurements.MeasurementsClient measurementsClient;
     private readonly IPublishEndpoint bus;
     private readonly SlidingWindowService slidingWindowService;
     private readonly IMeasurementSyncMetrics measurementSyncMetrics;
     private readonly ILogger<MeasurementsSyncService> logger;
 
-    public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISyncState syncState,
+    public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISlidingWindowState slidingWindowState,
         Measurements.V1.Measurements.MeasurementsClient measurementsClient, IPublishEndpoint bus, SlidingWindowService slidingWindowService,
         IMeasurementSyncMetrics measurementSyncMetrics)
     {
         this.logger = logger;
-        this.syncState = syncState;
+        this.slidingWindowState = slidingWindowState;
         this.measurementsClient = measurementsClient;
         this.bus = bus;
         this.slidingWindowService = slidingWindowService;
@@ -53,8 +53,8 @@ public class MeasurementsSyncService
             }
 
             slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, synchronizationPoint);
-            await syncState.UpdateSlidingWindow(slidingWindow, stoppingToken);
-            await syncState.SaveChangesAsync(stoppingToken);
+            await slidingWindowState.UpdateSlidingWindow(slidingWindow, stoppingToken);
+            await slidingWindowState.SaveChangesAsync(stoppingToken);
         }
     }
 
@@ -139,31 +139,8 @@ public class MeasurementsSyncService
 
     public async Task HandleSingleSyncInfo(MeteringPointSyncInfo syncInfo, CancellationToken stoppingToken)
     {
-        var slidingWindow = await GetSlidingWindow(syncInfo, stoppingToken);
-
-        if (slidingWindow is null)
-        {
-            logger.LogInformation("Not possible to get start date from sync state for {@syncInfo}", syncInfo);
-            return;
-        }
+        var slidingWindow = await slidingWindowState.GetSlidingWindowStartTime(syncInfo, stoppingToken);
 
         await FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, stoppingToken);
-    }
-
-    private async Task<MeteringPointTimeSeriesSlidingWindow?> GetSlidingWindow(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken)
-    {
-        var existingSlidingWindow = await syncState.GetMeteringPointSlidingWindow(syncInfo.GSRN, cancellationToken);
-        if (existingSlidingWindow is not null)
-        {
-            return existingSlidingWindow;
-        }
-
-        var existingSynchronizationPoint = await syncState.GetPeriodStartTime(syncInfo, cancellationToken);
-        if (existingSynchronizationPoint is not null)
-        {
-            return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(existingSynchronizationPoint.Value));
-        }
-
-        return null;
     }
 }
