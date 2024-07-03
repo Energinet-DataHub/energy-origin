@@ -33,7 +33,7 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
     }
 
     /// <summary>
-    /// Retreives Authorization Model.
+    /// Retrieves Authorization Model.
     /// </summary>
     [HttpPost]
     [Route("api/authorization/user-consent/")]
