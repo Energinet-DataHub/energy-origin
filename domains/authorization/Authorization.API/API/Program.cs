@@ -58,6 +58,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IConsentRepository, ConsentRepository>();
+builder.Services.AddScoped<ITermsRepository, TermsRepository>();
 
 builder.Services.AddAuthorizationApi();
 
