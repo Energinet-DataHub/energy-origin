@@ -100,9 +100,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Terms>().Property(t => t.Version)
             .IsRequired();
 
-        modelBuilder.Entity<Terms>().Property(t => t.Text)
-            .IsRequired();
-
         modelBuilder.Entity<Terms>().Property(t => t.EffectiveDate)
             .IsRequired();
     }

@@ -52,7 +52,7 @@ public class TermsControllerTests
             "1.0"
         );
 
-        var latestTerms = new Terms("2.0", "Latest sample terms text");
+        var latestTerms = new Terms("2.0");
 
         _mediator.Send(Arg.Any<OrganizationStateQuery>(), Arg.Any<CancellationToken>())
             .Returns(false);
@@ -66,7 +66,6 @@ public class TermsControllerTests
         result!.StatusCode.Should().Be(200);
         var value = result.Value as TermsResponseDto;
         value!.Accepted.Should().BeFalse();
-        value.TermsText.Should().Be(latestTerms.Text);
         value.TermsVersion.Should().Be(latestTerms.Version);
     }
 
@@ -84,7 +83,7 @@ public class TermsControllerTests
         _mediator.Send(Arg.Any<OrganizationStateQuery>(), Arg.Any<CancellationToken>())
             .Returns(false);
 
-        var latestTerms = new Terms(acceptTermsDto.TermsVersion, "Sample terms text");
+        var latestTerms = new Terms(acceptTermsDto.TermsVersion);
         _mediator.Send(Arg.Any<GetLatestTermsQuery>(), Arg.Any<CancellationToken>())
             .Returns(latestTerms);
 

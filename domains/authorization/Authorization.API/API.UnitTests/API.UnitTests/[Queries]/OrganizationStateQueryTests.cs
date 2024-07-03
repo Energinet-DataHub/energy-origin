@@ -24,10 +24,10 @@ public class OrganizationStateQueryHandlerTests
     {
         var tin = "12345678";
         var organization = Organization.Create(Tin.Create(tin), OrganizationName.Create("Test Org"));
-        organization.AcceptTerms(new Terms("1.0", "Sample terms text"));
+        organization.AcceptTerms(new Terms("1.0"));
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
 
-        var latestTerms = new Terms("1.0", "Sample terms text");
+        var latestTerms = new Terms("1.0");
         await _fakeTermsRepository.AddAsync(latestTerms, CancellationToken.None);
 
         var query = new OrganizationStateQuery(tin);
@@ -41,7 +41,7 @@ public class OrganizationStateQueryHandlerTests
     public async Task GivenNoOrganization_WhenHandlingQuery_ThenReturnsFalse()
     {
         var tin = "12345678";
-        var latestTerms = new Terms("1.0", "Sample terms text");
+        var latestTerms = new Terms("1.0");
         await _fakeTermsRepository.AddAsync(latestTerms, CancellationToken.None);
 
         var query = new OrganizationStateQuery(tin);
@@ -58,7 +58,7 @@ public class OrganizationStateQueryHandlerTests
         var organization = Organization.Create(Tin.Create(tin), OrganizationName.Create("Test Org"));
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
 
-        var latestTerms = new Terms("1.0", "Sample terms text");
+        var latestTerms = new Terms("1.0");
         await _fakeTermsRepository.AddAsync(latestTerms, CancellationToken.None);
 
         var query = new OrganizationStateQuery(tin);
@@ -73,10 +73,10 @@ public class OrganizationStateQueryHandlerTests
     {
         var tin = "12345678";
         var organization = Organization.Create(Tin.Create(tin), OrganizationName.Create("Test Org"));
-        organization.AcceptTerms(new Terms("0.9", "Old terms text"));
+        organization.AcceptTerms(new Terms("0.9"));
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
 
-        var latestTerms = new Terms("1.0", "Sample terms text");
+        var latestTerms = new Terms("1.0");
         await _fakeTermsRepository.AddAsync(latestTerms, CancellationToken.None);
 
         var query = new OrganizationStateQuery(tin);

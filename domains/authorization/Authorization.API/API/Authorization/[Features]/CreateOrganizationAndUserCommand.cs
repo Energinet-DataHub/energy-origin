@@ -21,7 +21,7 @@ public class CreateOrganizationAndUserCommandHandler(
         await unitOfWork.BeginTransactionAsync();
 
         var organization = Organization.Create(Tin.Create(request.Tin), OrganizationName.Create(request.OrganizationName));
-        organization.AcceptTerms(new Terms(request.TermsVersion, string.Empty));
+        organization.AcceptTerms(new Terms(request.TermsVersion));
         await organizationRepository.AddAsync(organization, cancellationToken);
 
         var user = User.Create(IdpUserId.Create(request.UserIdpId), UserName.Create(request.UserName));

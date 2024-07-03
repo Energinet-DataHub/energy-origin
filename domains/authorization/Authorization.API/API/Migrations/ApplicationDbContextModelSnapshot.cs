@@ -34,7 +34,7 @@ namespace API.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("Affiliations");
+                    b.ToTable("Affiliations", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Client", b =>
@@ -62,7 +62,7 @@ namespace API.Migrations
                     b.HasIndex("IdpClientId")
                         .IsUnique();
 
-                    b.ToTable("Clients");
+                    b.ToTable("Clients", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Consent", b =>
@@ -83,7 +83,7 @@ namespace API.Migrations
                     b.HasIndex("ClientId", "OrganizationId")
                         .IsUnique();
 
-                    b.ToTable("Consents");
+                    b.ToTable("Consents", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Organization", b =>
@@ -96,16 +96,6 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("TermsAcceptanceDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("TermsAccepted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("TermsVersion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Tin")
                         .IsRequired()
                         .HasColumnType("text");
@@ -115,29 +105,7 @@ namespace API.Migrations
                     b.HasIndex("Tin")
                         .IsUnique();
 
-                    b.ToTable("Organizations");
-                });
-
-            modelBuilder.Entity("API.Models.Terms", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("EffectiveDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Version")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Terms");
+                    b.ToTable("Organizations", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.User", b =>
@@ -158,7 +126,7 @@ namespace API.Migrations
                     b.HasIndex("IdpUserId")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Affiliation", b =>

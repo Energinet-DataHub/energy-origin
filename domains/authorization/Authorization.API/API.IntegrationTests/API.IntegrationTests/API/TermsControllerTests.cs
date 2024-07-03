@@ -97,7 +97,7 @@ public class TermsControllerTests
         var organization = Any.Organization();
         if (termsAccepted)
         {
-            organization.AcceptTerms(new Terms(termsVersion, "Sample terms text"));
+            organization.AcceptTerms(new Terms(termsVersion));
         }
         var affiliation = Affiliation.Create(user, organization);
 

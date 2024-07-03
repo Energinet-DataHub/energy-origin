@@ -26,7 +26,7 @@ public class TermsController(IMediator mediator) : ControllerBase
         var latestTerms = await mediator.Send(new GetLatestTermsQuery());
 
         if (acceptTermsDto.TermsVersion != latestTerms.Version)
-            return Ok(new TermsResponseDto(false, latestTerms.Text, latestTerms.Version));
+            return Ok(new TermsResponseDto(false, latestTerms.Version));
 
         var createResult = await mediator.Send(new CreateOrganizationAndUserCommand(
             acceptTermsDto.Tin,
