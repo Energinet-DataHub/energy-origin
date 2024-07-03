@@ -18,11 +18,6 @@ public class TermsConsumer(
 {
     public async Task Consume(ConsumeContext<OrgAcceptedTerms> context)
     {
-        if (await dbContext.OrgAcceptedTermsEvents.AnyAsync(x => x.EventId == context.Message.Id))
-        {
-            return;
-        }
-
         var relationDto =
             await dbContext.Relations.SingleOrDefaultAsync(it => it.SubjectId == context.Message.SubjectId);
         if (relationDto == null)
