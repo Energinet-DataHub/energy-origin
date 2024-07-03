@@ -16,7 +16,7 @@
         </member>
         <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForUser(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationUserRequest)">
             <summary>
-            Retreives Authorization Model.
+            Retrieves Authorization Model.
             </summary>
         </member>
         <member name="M:API.Authorization.Controllers.ClientController.GetClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ClientResponse},System.Guid)">
