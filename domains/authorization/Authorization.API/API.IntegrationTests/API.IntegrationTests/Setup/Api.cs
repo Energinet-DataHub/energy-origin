@@ -46,6 +46,11 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/client/consents/");
     }
 
+    public async Task<HttpResponseMessage> GetConsentForUser(AuthorizationUserRequest request)
+    {
+        return await _client.PostAsJsonAsync("/api/authorization/user-consent/", request, SerializerOptions);
+    }
+
     public async Task<HttpResponseMessage> CreateClient(Guid idpClientId, string name, ClientType clientType,
         string redirectUrl)
     {

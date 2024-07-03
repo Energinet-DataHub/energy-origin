@@ -37,11 +37,15 @@ public class GetConsentForUserQueryHandler(
 
         try
         {
+            var orgTin = Tin.Create(command.OrgCvr);
             var organization = await organizationRepository.Query()
                 .Include(o => o.Affiliations)
-                .FirstOrDefaultAsync(o => o.Tin.Value == command.OrgCvr, cancellationToken);
+                .FirstOrDefaultAsync(o => o.Tin == orgTin, cancellationToken);
 
-            var latestTerms = await termsRepository.Query().LastOrDefaultAsync(cancellationToken);
+            var latestTerms = await termsRepository.Query()
+                .OrderByDescending(t => t.Version)
+                .FirstOrDefaultAsync(cancellationToken);
+
             var termsAccepted = false;
 
             if (organization == null || latestTerms == null)
@@ -74,8 +78,10 @@ public class GetConsentForUserQueryHandler(
                 );
             }
 
+            var userId = IdpUserId.Create(command.Sub);
             var user = await userRepository.Query()
-                .FirstOrDefaultAsync(u => u.IdpUserId.Value == command.Sub, cancellationToken);
+                .Where(u => u.IdpUserId == userId)
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (user == null)
             {
