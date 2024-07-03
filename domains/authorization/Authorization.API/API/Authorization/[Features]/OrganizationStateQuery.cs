@@ -8,7 +8,9 @@ namespace API.Authorization._Features_;
 
 public record OrganizationStateQuery(string Tin) : IRequest<bool>;
 
-public class OrganizationStateQueryHandler(IOrganizationRepository organizationRepository)
+public class OrganizationStateQueryHandler(
+    IOrganizationRepository organizationRepository,
+    ITermsRepository termsRepository)
     : IRequestHandler<OrganizationStateQuery, bool>
 {
     public async Task<bool> Handle(OrganizationStateQuery request, CancellationToken cancellationToken)
@@ -16,6 +18,12 @@ public class OrganizationStateQueryHandler(IOrganizationRepository organizationR
         var organization = await organizationRepository.Query()
             .FirstOrDefaultAsync(o => o.Tin.Value == request.Tin, cancellationToken);
 
-        return organization?.TermsAccepted ?? false;
+        if (organization == null)
+            return false;
+
+        var latestTerms = await termsRepository.Query()
+            .LastOrDefaultAsync(cancellationToken);
+
+        return organization.TermsAccepted && organization.TermsVersion == latestTerms?.Version;
     }
 }
