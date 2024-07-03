@@ -90,7 +90,7 @@ public class GetConsentForUserQueryHandler(
             }
             else
             {
-                await unitOfWork.RollbackAsync(); // No changes needed
+                await unitOfWork.RollbackAsync();
             }
 
             return new GetConsentForUserCommandResult(
