@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Authorization.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
 public class TermsController(IMediator mediator) : ControllerBase
 {
-    [HttpPost("accept")]
+    [HttpPost]
+    [Route("api/authorization/terms/accept")]
     [Authorize(Policy = Policy.B2CPolicy)]
     public async Task<IActionResult> AcceptTerms([FromBody] AcceptTermsRequest request)
     {
