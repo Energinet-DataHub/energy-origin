@@ -39,7 +39,7 @@ When a contract is made public available it's considered final. This means that 
 
 #### Event naming
 
-When choosing a name for an event it should be clear what the intent is. The consumer of an event can expect to get all data related to the event - no need to contact the sending party to get the remaining data. A message name should follow the pattern <entity><verb-in-past-tens>.
+When choosing a name for an event it should be clear what the intent is. The consumer of an event can expect to get all data related to the event - no need to contact the sending party to get the remaining data. A message name should follow the pattern \<entity>\<verb-in-past-tens>.
 
 Examples:
 
