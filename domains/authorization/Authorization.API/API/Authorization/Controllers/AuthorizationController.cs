@@ -37,16 +37,18 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
     /// </summary>
     [HttpPost]
     [Route("api/authorization/user-consent/")]
-    public async Task<ActionResult<AuthorizationResponse>> GetConsentForUser(
-        [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationUserRequest request)
+    public async Task<ActionResult<UserAuthorizationResponse>> GetConsentForUser(
+        [FromServices] ILogger<AuthorizationController> logger,
+        [FromBody] AuthorizationUserRequest request)
     {
-        var queryResult =
-            await mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName,
-                request.OrgCvr));
+        var queryResult = await mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName, request.OrgCvr));
 
-        var termsAccepted = await mediator.Send(new OrganizationStateQuery(request.OrgCvr));
-
-        return Ok(new UserAuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName,
-            queryResult.OrgIds, queryResult.Scope, termsAccepted));
+        return Ok(new UserAuthorizationResponse(
+            queryResult.Sub,
+            queryResult.SubType,
+            queryResult.OrgName,
+            queryResult.OrgIds,
+            queryResult.Scope,
+            queryResult.TermsAccepted));
     }
 }
