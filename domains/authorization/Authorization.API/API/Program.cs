@@ -47,7 +47,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     {
         options.UseNpgsql(
             builder.Configuration.GetConnectionString("Postgres"),
-            providerOptions => { }
+            _ => { }
         );
     });
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
