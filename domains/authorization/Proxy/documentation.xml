@@ -4,6 +4,13 @@
         <name>Proxy</name>
     </assembly>
     <members>
+        <member name="M:Proxy.Controllers.CertificatesController.GetCertificatesCursor(Proxy.Controllers.GetCertificatesQueryParametersCursor,System.String)">
+            <summary>
+            Gets all certificates in the wallet that are <b>available</b> for use.
+            </summary>
+            <response code="200">Returns the aggregated claims.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
         <member name="M:Proxy.Controllers.CertificatesController.GetCertificates(Proxy.Controllers.GetCertificatesQueryParameters,System.String)">
             <summary>
             Gets all certificates in the wallet that are <b>available</b> for use.
@@ -32,6 +39,13 @@
             </summary>
             <response code="200">Returns the aggregated claims.</response>
             <response code="400">If the time zone is invalid.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.ClaimsController.GetClaimsCursor(Proxy.Controllers.GetClaimsQueryParametersCursor)">
+            <summary>
+            Gets all claims in the wallet
+            </summary>
+            <response code="200">Returns all the indiviual claims.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
         <member name="M:Proxy.Controllers.ClaimsController.GetClaimsLegacy(Proxy.Controllers.GetClaimsQueryParameters)">
@@ -238,6 +252,76 @@
         <member name="P:Proxy.Controllers.AggregatedClaims.Quantity">
             <summary>
             The quantity of the aggregated claims.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.Type">
+            <summary>
+            Filter the type of certificates to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.UpdatedSince">
+            <summary>
+            The time of the last update in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.Type">
+            <summary>
+            Filter the type of certificates to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.UpdatedSince">
+            <summary>
+            The time of the last update in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParametersCursor.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParametersCursor.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParametersCursor.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParametersCursor.UpdatedSince">
+            <summary>
+            The time of the last update in Unix time in seconds.
             </summary>
         </member>
         <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Start">
@@ -491,6 +575,13 @@
             <summary>
             Response to receive a certificate-slice from another wallet.
             </summary>
+        </member>
+        <member name="M:Proxy.Controllers.TransfersController.GetTransfersCursor(Proxy.Controllers.GetTransfersQueryParametersCursor)">
+            <summary>
+            Gets detailed list of all of the transfers that have been made to other wallets.
+            </summary>
+            <response code="200">Returns the individual transferes within the filter.</response>
+            <response code="401">If the user is not authenticated.</response>
         </member>
         <member name="M:Proxy.Controllers.TransfersController.GetTransfersLegacy(Proxy.Controllers.GetTransfersQueryParameters)">
             <summary>

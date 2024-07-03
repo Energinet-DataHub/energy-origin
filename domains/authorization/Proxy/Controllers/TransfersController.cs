@@ -21,6 +21,24 @@ public class TransfersController : ProxyBase
     /// <response code="200">Returns the individual transferes within the filter.</response>
     /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
+    [Route("transfers/cursor")]
+    [Produces("application/json")]
+    [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<Transfer>), StatusCodes.Status200OK)]
+    public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param)
+    {
+        await ProxyTokenValidationRequest("v1/transfers/cursor");
+    }
+
+    /// <summary>
+    /// Gets detailed list of all of the transfers that have been made to other wallets.
+    /// </summary>
+    /// <response code="200">Returns the individual transferes within the filter.</response>
+    /// <response code="401">If the user is not authenticated.</response>
+    [HttpGet]
     [Route("v1/transfers")]
     [Produces("application/json")]
     [Authorize]
