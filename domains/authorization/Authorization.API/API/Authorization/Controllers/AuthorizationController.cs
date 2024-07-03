@@ -15,6 +15,7 @@ namespace API.Authorization.Controllers;
 
 [ApiController]
 [ApiVersionNeutral] // B2C does not support adding a version header
+[Authorize(Policy = Policy.B2CCustomPolicyClientPolicy)]
 public class AuthorizationController(IMediator mediator) : ControllerBase
 {
     /// <summary>
