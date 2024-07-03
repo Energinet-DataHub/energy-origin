@@ -19,6 +19,25 @@ public class CertificatesController : ProxyBase
     /// <response code="200">Returns the aggregated claims.</response>
     /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
+    [Route("certificates/cursor")]
+    [Produces("application/json")]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20250101)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
+    public async Task GetCertificatesCursor([FromQuery] GetCertificatesQueryParametersCursor param, [FromQuery] string? organizationId)
+    {
+        await ProxyClientCredentialsRequest("v1/certificates/cursor", organizationId);
+    }
+
+
+    /// <summary>
+    /// Gets all certificates in the wallet that are <b>available</b> for use.
+    /// </summary>
+    /// <response code="200">Returns the aggregated claims.</response>
+    /// <response code="401">If the user is not authenticated.</response>
+    [HttpGet]
     [Route("certificates")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]

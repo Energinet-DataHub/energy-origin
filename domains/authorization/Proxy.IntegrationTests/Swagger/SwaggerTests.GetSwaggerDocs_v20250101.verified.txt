@@ -6,6 +6,95 @@
     "version": "20250101"
   },
   "paths": {
+    "/certificates/cursor": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "summary": "Gets all certificates in the wallet that are <b>available</b> for use.",
+        "parameters": [
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "description": "Filter the type of certificates to return.",
+            "schema": {
+              "$ref": "#/components/schemas/CertificateType"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "UpdatedSince",
+            "in": "query",
+            "description": "The time of the last update in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20250101"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns the aggregated claims.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GranularCertificateResultList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/certificates": {
       "get": {
         "tags": [
@@ -200,6 +289,88 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AggregatedCertificatesResultList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/claims/cursor": {
+      "get": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "Gets all claims in the wallet",
+        "parameters": [
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "description": "Filter the type of certificates to return.",
+            "schema": {
+              "$ref": "#/components/schemas/CertificateType"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "UpdatedSince",
+            "in": "query",
+            "description": "The time of the last update in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20250101"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns all the indiviual claims.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResultList"
                 }
               }
             }
@@ -581,6 +752,80 @@
           },
           "400": {
             "description": "Public key could not be decoded."
+          }
+        }
+      }
+    },
+    "/transfers/cursor": {
+      "get": {
+        "tags": [
+          "Transfers"
+        ],
+        "summary": "Gets detailed list of all of the transfers that have been made to other wallets.",
+        "parameters": [
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "UpdatedSince",
+            "in": "query",
+            "description": "The time of the last update in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20250101"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns the individual transferes within the filter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferResultList"
+                }
+              }
+            }
           }
         }
       }
