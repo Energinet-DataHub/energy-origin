@@ -2,7 +2,7 @@ using API.Models.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
-using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
+using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 using MassTransit;
 
 namespace API.Services;
@@ -20,10 +20,10 @@ public class UserService : IUserService
 
     public async Task<User> UpsertUserAsync(User user) => await repository.UpsertUserAsync(user);
 
-    public async Task UpdateTermsAccepted(User user, DecodableUserDescriptor descriptor)
+    public async Task UpdateTermsAccepted(User user, DecodableUserDescriptor descriptor, string traceId)
     {
         repository.UpdateTermsAccepted(user);
-        await publishEndpoint.Publish(new OrgAcceptedTerms(descriptor.Subject, descriptor.Organization?.Tin, descriptor.Id));
+        await publishEndpoint.Publish(new OrgAcceptedTerms(Guid.NewGuid(), traceId, DateTimeOffset.UtcNow, descriptor.Subject, descriptor.Organization?.Tin, descriptor.Id));
         await repository.SaveChangeAsync();
     }
     public async Task<User?> GetUserByIdAsync(Guid? id) => id is null ? null : await repository.GetUserByIdAsync(id.Value);

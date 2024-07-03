@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.MeteringPoints.Api.Models;
 using API.Options;
-using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
+using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
