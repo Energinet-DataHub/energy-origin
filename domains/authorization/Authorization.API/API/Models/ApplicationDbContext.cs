@@ -43,6 +43,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Organization>().Property(o => o.TermsAccepted)
             .IsRequired()
             .HasDefaultValue(false);
+
+        modelBuilder.Entity<Organization>().Property(o => o.TermsVersion);
+
+        modelBuilder.Entity<Organization>().Property(o => o.TermsAcceptanceDate);
     }
 
     private static void ConfigureClientTable(ModelBuilder modelBuilder)
