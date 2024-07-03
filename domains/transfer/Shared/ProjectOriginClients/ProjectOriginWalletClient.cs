@@ -46,7 +46,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        SetWalletOwnerHeader(ownerSubject.ToString());
 
         return await client.GetFromJsonAsync<ResultList<GranularCertificate>>($"v1/certificates?skip={skip}&limit={limit}",
             cancellationToken: cancellationToken, options: jsonSerializerOptions);
@@ -54,7 +54,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        SetWalletOwnerHeader(ownerSubject.ToString());
         var request = new ClaimRequest
         {
             ConsumptionCertificateId = consumptionCertificate.FederatedStreamId,
@@ -75,7 +75,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        SetWalletOwnerHeader(ownerSubject.ToString());
         var request = new TransferRequest
         {
             CertificateId = certificate.FederatedStreamId,
@@ -97,7 +97,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        SetWalletOwnerHeader(ownerSubject.ToString());
         var request = new CreateWalletRequest
         {
             PrivateKey = null
@@ -116,7 +116,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<ResultList<WalletRecord>> GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        SetWalletOwnerHeader(ownerSubject.ToString());
 
         var response = await client.GetFromJsonAsync<ResultList<WalletRecordDto>>("v1/wallets", cancellationToken);
 
@@ -137,7 +137,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid ownerSubject, Guid walletId, CancellationToken cancellationToken)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        SetWalletOwnerHeader(ownerSubject.ToString());
         var res = await client.PostAsync($"v1/wallets/{walletId}/endpoints", null);
         res.EnsureSuccessStatusCode();
 
@@ -151,7 +151,7 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
 
     public async Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference, string textReference, CancellationToken cancellationToken)
     {
-        SetDummyAuthorizationHeader(ownerSubject.ToString());
+        SetWalletOwnerHeader(ownerSubject.ToString());
         var request = new CreateExternalEndpointRequest
         {
             TextReference = textReference,
@@ -169,22 +169,13 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         return (await res.Content.ReadFromJsonAsync<CreateExternalEndpointResponse>())!;
     }
 
-    private void SetDummyAuthorizationHeader(string ownerSubject)
+    private void SetWalletOwnerHeader(string ownerSubject)
     {
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", GenerateBearerToken(ownerSubject));
-    }
-
-    private string GenerateBearerToken(string owner)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var tokenDescriptor = new SecurityTokenDescriptor
+        if (client.DefaultRequestHeaders.Contains("wallet-owner"))
         {
-            Subject = new ClaimsIdentity(new[] { new Claim("sub", owner) }),
-            Expires = DateTime.UtcNow.AddDays(7),
-        };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-
-        return tokenHandler.WriteToken(token);
+            client.DefaultRequestHeaders.Remove("wallet-owner");
+        }
+        client.DefaultRequestHeaders.Add("wallet-owner", ownerSubject);
     }
 }
 
