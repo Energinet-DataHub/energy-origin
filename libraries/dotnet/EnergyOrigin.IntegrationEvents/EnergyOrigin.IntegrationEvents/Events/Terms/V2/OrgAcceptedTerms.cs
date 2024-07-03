@@ -6,7 +6,7 @@ public record OrgAcceptedTerms : IntegrationEvent
     public string? Tin { get; }
     public Guid Actor { get; }
 
-    public OrgAcceptedTerms(Guid id, Guid traceId, DateTimeOffset created, Guid subjectId, string? tin, Guid actor)
+    public OrgAcceptedTerms(Guid id, string traceId, DateTimeOffset created, Guid subjectId, string? tin, Guid actor)
         : base(id, traceId, created)
     {
         SubjectId = subjectId;
