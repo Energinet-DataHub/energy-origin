@@ -1,7 +1,8 @@
 # Intergration events
 
 * Status: Accepted
-* Deciders: @tnickelsen, @ckr123, @sahma, @TopSwagCode
+* Deciders: @tnickelsen, @ckr123, @sahma19, @TopSwagCode, @martinhenningjensen
+
 * Date: 2024-07-03
 
 ---
