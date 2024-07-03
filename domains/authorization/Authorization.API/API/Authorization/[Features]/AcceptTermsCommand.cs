@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
+using API.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,46 +15,58 @@ public record AcceptTermsCommand(string OrgCvr, Guid UserId, string UserName) : 
 public class AcceptTermsCommandHandler(
     IOrganizationRepository organizationRepository,
     IUserRepository userRepository,
-    ITermsRepository termsRepository)
+    ITermsRepository termsRepository,
+    IUnitOfWork unitOfWork)
     : IRequestHandler<AcceptTermsCommand, bool>
 {
     public async Task<bool> Handle(AcceptTermsCommand request, CancellationToken cancellationToken)
     {
-        var organization = await organizationRepository.Query()
-            .FirstOrDefaultAsync(o => o.Tin.Value == request.OrgCvr, cancellationToken);
+        await unitOfWork.BeginTransactionAsync();
 
-        if (organization == null)
+        try
         {
-            organization = Organization.Create(new Tin(request.OrgCvr), new OrganizationName(request.OrgCvr));
-            await organizationRepository.AddAsync(organization, cancellationToken);
-        }
+            var organization = await organizationRepository.Query()
+                .FirstOrDefaultAsync(o => o.Tin.Value == request.OrgCvr, cancellationToken);
 
-        var latestTerms = await termsRepository.Query().LastOrDefaultAsync(cancellationToken);
+            if (organization == null)
+            {
+                organization = Organization.Create(new Tin(request.OrgCvr), new OrganizationName(request.OrgCvr));
+                await organizationRepository.AddAsync(organization, cancellationToken);
+            }
 
-        if (latestTerms == null)
-        {
-            throw new InvalidOperationException("No terms found in the system.");
-        }
+            var latestTerms = await termsRepository.Query().LastOrDefaultAsync(cancellationToken);
 
-        if (!organization.TermsAccepted || organization.TermsVersion != latestTerms.Version)
-        {
-            organization.AcceptTerms(latestTerms);
-            organizationRepository.Update(organization);
-        }
+            if (latestTerms == null)
+            {
+                throw new InvalidOperationException("No terms found in the system");
+            }
 
-        var user = await userRepository.Query()
-            .FirstOrDefaultAsync(u => u.IdpUserId.Value == request.UserId, cancellationToken);
+            if (!organization.TermsAccepted || organization.TermsVersion != latestTerms.Version)
+            {
+                organization.AcceptTerms(latestTerms);
+                organizationRepository.Update(organization);
+            }
 
-        if (user == null)
-        {
-            user = User.Create(IdpUserId.Create(request.UserId), UserName.Create(request.UserName));
-            await userRepository.AddAsync(user, cancellationToken);
+            var user = await userRepository.Query()
+                .FirstOrDefaultAsync(u => u.IdpUserId.Value == request.UserId, cancellationToken);
+
+            if (user == null)
+            {
+                user = User.Create(IdpUserId.Create(request.UserId), UserName.Create(request.UserName));
+                await userRepository.AddAsync(user, cancellationToken);
+            }
 
             var affiliation = Affiliation.Create(user, organization);
             organization.Affiliations.Add(affiliation);
             organizationRepository.Update(organization);
-        }
 
-        return true;
+            await unitOfWork.CommitAsync();
+            return true;
+        }
+        catch
+        {
+            await unitOfWork.RollbackAsync();
+            throw;
+        }
     }
 }
