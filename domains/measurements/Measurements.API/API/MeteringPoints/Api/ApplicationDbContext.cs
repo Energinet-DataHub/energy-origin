@@ -12,7 +12,6 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<RelationDto> Relations { get; set; }
-    public DbSet<OrgAcceptedTermsEvent> OrgAcceptedTermsEvents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
