@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Data;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
-using API.Data;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,7 +44,7 @@ public class GetConsentForUserQueryHandler(
             var latestTerms = await termsRepository.Query().LastOrDefaultAsync(cancellationToken);
             var termsAccepted = false;
 
-            if (organization == null)
+            if (organization == null || latestTerms == null)
             {
                 await unitOfWork.RollbackAsync();
                 return new GetConsentForUserCommandResult(
@@ -54,11 +54,11 @@ public class GetConsentForUserQueryHandler(
                     command.OrgName,
                     new List<Guid>(),
                     "dashboard production meters certificates wallet",
-                    termsAccepted
+                    false
                 );
             }
 
-            termsAccepted = organization.TermsAccepted && organization.TermsVersion == latestTerms?.Version;
+            termsAccepted = organization.TermsAccepted && organization.TermsVersion == latestTerms.Version;
 
             if (!termsAccepted)
             {
@@ -68,9 +68,9 @@ public class GetConsentForUserQueryHandler(
                     command.Name,
                     "User",
                     command.OrgName,
-                    organization.Affiliations.Select(a => a.UserId),
+                    new List<Guid> { organization.Id },
                     "dashboard production meters certificates wallet",
-                    termsAccepted
+                    false
                 );
             }
 
@@ -82,25 +82,24 @@ public class GetConsentForUserQueryHandler(
                 user = User.Create(IdpUserId.Create(command.Sub), UserName.Create(command.Name));
                 await userRepository.AddAsync(user, cancellationToken);
 
-                var affiliation = Affiliation.Create(user, organization);
-                organization.Affiliations.Add(affiliation);
-                organizationRepository.Update(organization);
+                if (organization.Affiliations.All(a => a.UserId != user.Id))
+                {
+                    var affiliation = Affiliation.Create(user, organization);
+                    organization.Affiliations.Add(affiliation);
+                    organizationRepository.Update(organization);
+                }
+            }
 
-                await unitOfWork.CommitAsync();
-            }
-            else
-            {
-                await unitOfWork.RollbackAsync();
-            }
+            await unitOfWork.CommitAsync();
 
             return new GetConsentForUserCommandResult(
                 command.Sub,
                 command.Name,
                 "User",
                 command.OrgName,
-                organization.Affiliations.Select(a => a.UserId),
+                new List<Guid> { organization.Id },
                 "dashboard production meters certificates wallet",
-                termsAccepted
+                true
             );
         }
         catch

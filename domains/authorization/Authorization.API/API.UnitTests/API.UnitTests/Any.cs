@@ -21,6 +21,11 @@ public class Any
         return API.ValueObjects.IdpUserId.Create(Guid());
     }
 
+    public static Terms Terms()
+    {
+        return API.Models.Terms.Create("1.0");
+    }
+
     public static UserName Name()
     {
         return API.ValueObjects.UserName.Create("Test Testesen");

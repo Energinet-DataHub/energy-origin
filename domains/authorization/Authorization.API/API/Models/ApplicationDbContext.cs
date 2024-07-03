@@ -79,8 +79,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void ConfigureAffiliationTable(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Affiliation>()
-            .HasKey(a => new { a.UserId, a.OrganizationId });
+        modelBuilder.Entity<Affiliation>().HasKey(a => new { a.UserId, a.OrganizationId });
     }
 
     private static void ConfigureConsentTable(ModelBuilder modelBuilder)
