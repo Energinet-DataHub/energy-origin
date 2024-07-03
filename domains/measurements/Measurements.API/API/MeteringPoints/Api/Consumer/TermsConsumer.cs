@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.MeteringPoints.Api.Models;
 using API.Options;
-using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
+using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,6 +18,11 @@ public class TermsConsumer(
 {
     public async Task Consume(ConsumeContext<OrgAcceptedTerms> context)
     {
+        if (await dbContext.OrgAcceptedTermsEvents.AnyAsync(x => x.EventId == context.Message.Id))
+        {
+            return;
+        }
+
         var relationDto =
             await dbContext.Relations.SingleOrDefaultAsync(it => it.SubjectId == context.Message.SubjectId);
         if (relationDto == null)
