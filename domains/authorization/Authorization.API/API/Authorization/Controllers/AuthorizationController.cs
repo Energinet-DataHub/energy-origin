@@ -41,14 +41,14 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
         [FromServices] ILogger<AuthorizationController> logger,
         [FromBody] AuthorizationUserRequest request)
     {
-        var queryResult = await mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName, request.OrgCvr));
+        var commandResult = await mediator.Send(new GetConsentForUserCommand(request.Sub, request.Name, request.OrgName, request.OrgCvr));
 
         return Ok(new UserAuthorizationResponse(
-            queryResult.Sub,
-            queryResult.SubType,
-            queryResult.OrgName,
-            queryResult.OrgIds,
-            queryResult.Scope,
-            queryResult.TermsAccepted));
+            commandResult.Sub,
+            commandResult.SubType,
+            commandResult.OrgName,
+            commandResult.OrgIds,
+            commandResult.Scope,
+            commandResult.TermsAccepted));
     }
 }
