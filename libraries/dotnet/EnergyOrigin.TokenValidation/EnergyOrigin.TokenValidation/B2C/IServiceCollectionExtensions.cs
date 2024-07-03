@@ -53,21 +53,13 @@ public static class IServiceCollectionExtensions
                 .Build();
             options.AddPolicy(Policy.B2CPolicy, b2CPolicy);
 
-            var b2CTosAcceptedPolicy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .AddAuthenticationSchemes(
-                    AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
-                    AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
-                .RequireClaim(ClaimType.TosAccepted, "true")
-                .Build();
-            options.AddPolicy(Policy.B2CTosAcceptedPolicy, b2CTosAcceptedPolicy);
-
             var b2CSubTypeUserPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
                     AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .RequireClaim(ClaimType.SubType, Enum.GetName(SubjectType.User)!, Enum.GetName(SubjectType.User)!.ToLower())
+                .RequireClaim(ClaimType.TosAccepted, "true")
                 .Build();
             options.AddPolicy(Policy.B2CSubTypeUserPolicy, b2CSubTypeUserPolicy);
 
@@ -75,6 +67,7 @@ public static class IServiceCollectionExtensions
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .RequireClaim(ClaimType.OrgCvr)
+                .RequireClaim(ClaimType.TosAccepted, "true")
                 .Build();
             options.AddPolicy(Policy.B2CCvrClaim, b2CCvrClaimPolicy);
 
