@@ -53,7 +53,7 @@ public class WalletController : ProxyBase
     [Authorize]
     [ApiVersionNeutral]
     [Obsolete]
-    [ProducesResponseType(typeof(ResultList<WalletRecord>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<WalletRecord, PageInfo>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task GetWalletsLegacy()
@@ -71,7 +71,7 @@ public class WalletController : ProxyBase
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
     [ApiVersion(ApiVersions.Version20250101)]
-    [ProducesResponseType(typeof(ResultList<WalletRecord>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<WalletRecord, PageInfo>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task GetWallets([FromQuery] string? organizationId)

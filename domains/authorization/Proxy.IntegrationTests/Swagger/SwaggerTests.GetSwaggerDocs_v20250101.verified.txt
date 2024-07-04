@@ -87,7 +87,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GranularCertificateResultList"
+                  "$ref": "#/components/schemas/GranularCertificatePageInfoCursorResultList"
                 }
               }
             }
@@ -177,7 +177,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GranularCertificateResultList"
+                  "$ref": "#/components/schemas/GranularCertificatePageInfoResultList"
                 }
               }
             }
@@ -288,7 +288,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AggregatedCertificatesResultList"
+                  "$ref": "#/components/schemas/AggregatedCertificatesPageInfoResultList"
                 }
               }
             }
@@ -370,7 +370,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClaimResultList"
+                  "$ref": "#/components/schemas/ClaimPageInfoCursorResultList"
                 }
               }
             }
@@ -452,7 +452,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ClaimResultList"
+                  "$ref": "#/components/schemas/ClaimPageInfoResultList"
                 }
               }
             }
@@ -618,7 +618,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AggregatedClaimsResultList"
+                  "$ref": "#/components/schemas/AggregatedClaimsPageInfoResultList"
                 }
               }
             }
@@ -822,7 +822,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransferResultList"
+                  "$ref": "#/components/schemas/TransferPageInfoCursorResultList"
                 }
               }
             }
@@ -904,7 +904,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransferResultList"
+                  "$ref": "#/components/schemas/TransferPageInfoResultList"
                 }
               }
             }
@@ -1070,18 +1070,18 @@
           "403": {
             "description": "Forbidden"
           },
+          "400": {
+            "description": "Bad Request"
+          },
           "200": {
             "description": "Returns the individual transferes within the filter.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AggregatedTransfersResultList"
+                  "$ref": "#/components/schemas/AggregatedTransfersPageInfoResultList"
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request"
           }
         }
       }
@@ -1188,7 +1188,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WalletRecordResultList"
+                  "$ref": "#/components/schemas/WalletRecordPageInfoResultList"
                 }
               }
             }
@@ -1423,7 +1423,7 @@
         "additionalProperties": false,
         "description": "A result of aggregated certificates that is available to use in the wallet."
       },
-      "AggregatedCertificatesResultList": {
+      "AggregatedCertificatesPageInfoResultList": {
         "required": [
           "metadata",
           "result"
@@ -1469,7 +1469,7 @@
         "additionalProperties": false,
         "description": "A result of aggregated claims."
       },
-      "AggregatedClaimsResultList": {
+      "AggregatedClaimsPageInfoResultList": {
         "required": [
           "metadata",
           "result"
@@ -1515,7 +1515,7 @@
         "additionalProperties": false,
         "description": "A result of aggregated transfers."
       },
-      "AggregatedTransfersResultList": {
+      "AggregatedTransfersPageInfoResultList": {
         "required": [
           "metadata",
           "result"
@@ -1568,6 +1568,44 @@
         "additionalProperties": false,
         "description": "A claim record representing a claim of a production and consumption certificate."
       },
+      "ClaimPageInfoCursorResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfoCursor"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClaimPageInfoResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "additionalProperties": false
+      },
       "ClaimRequest": {
         "required": [
           "consumptionCertificateId",
@@ -1605,25 +1643,6 @@
         },
         "additionalProperties": false,
         "description": "A response to a claim request."
-      },
-      "ClaimResultList": {
-        "required": [
-          "metadata",
-          "result"
-        ],
-        "type": "object",
-        "properties": {
-          "result": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Claim"
-            }
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/PageInfo"
-          }
-        },
-        "additionalProperties": false
       },
       "ClaimedCertificate": {
         "required": [
@@ -1786,7 +1805,26 @@
         "additionalProperties": false,
         "description": "A certificate that is available to use in the wallet."
       },
-      "GranularCertificateResultList": {
+      "GranularCertificatePageInfoCursorResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GranularCertificate"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfoCursor"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GranularCertificatePageInfoResultList": {
         "required": [
           "metadata",
           "result"
@@ -1846,6 +1884,35 @@
           "offset": {
             "type": "integer",
             "format": "int32"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PageInfoCursor": {
+        "required": [
+          "count",
+          "limit",
+          "total",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
           },
           "limit": {
             "type": "integer",
@@ -1957,6 +2024,44 @@
         "additionalProperties": false,
         "description": "A transfer record of a transfer of a part of a certificate to another wallet."
       },
+      "TransferPageInfoCursorResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Transfer"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfoCursor"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferPageInfoResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Transfer"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "additionalProperties": false
+      },
       "TransferRequest": {
         "required": [
           "certificateId",
@@ -2004,25 +2109,6 @@
         },
         "additionalProperties": false,
         "description": "A response to a transfer request."
-      },
-      "TransferResultList": {
-        "required": [
-          "metadata",
-          "result"
-        ],
-        "type": "object",
-        "properties": {
-          "result": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Transfer"
-            }
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/PageInfo"
-          }
-        },
-        "additionalProperties": false
       },
       "ValidationProblemDetails": {
         "type": "object",
@@ -2103,7 +2189,7 @@
         "additionalProperties": false,
         "description": "A wallet record"
       },
-      "WalletRecordResultList": {
+      "WalletRecordPageInfoResultList": {
         "required": [
           "metadata",
           "result"
