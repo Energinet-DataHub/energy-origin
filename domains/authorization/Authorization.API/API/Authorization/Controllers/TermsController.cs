@@ -23,12 +23,12 @@ public class TermsController(IMediator mediator) : ControllerBase
         var command = new AcceptTermsCommand(request.OrgCvr, request.UserId, request.UserName);
         var result = await mediator.Send(command);
 
-        if (result)
+        if (!result)
         {
-            return Ok(new AcceptTermsResponseDto(true, "Terms accepted successfully."));
+            return BadRequest(new AcceptTermsResponseDto(false, "Failed to accept terms."));
         }
 
-        return BadRequest(new AcceptTermsResponseDto(false, "Failed to accept terms."));
+        return Ok(new AcceptTermsResponseDto(true, "Terms accepted successfully."));
     }
 }
 
