@@ -11,7 +11,7 @@ public class Api : IAsyncLifetime
     private readonly HttpClient _client;
     public readonly JsonSerializerOptions SerializerOptions;
 
-    internal JsonSerializerOptions JsonSerializerOptions()
+    private JsonSerializerOptions JsonSerializerOptions()
     {
         var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         jsonOptions.Converters.Add(new JsonStringEnumConverter());
@@ -40,6 +40,10 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/client/" + idpClientId);
     }
 
+    public async Task<HttpResponseMessage> AcceptTerms(AcceptTermsRequest request)
+    {
+        return await _client.PostAsJsonAsync("/api/authorization/terms/accept", request, SerializerOptions);
+    }
 
     public async Task<HttpResponseMessage> GetClientConsents()
     {
