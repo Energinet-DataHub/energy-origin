@@ -14,7 +14,8 @@ public class TermsController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     [Route("api/authorization/terms/accept")]
-    [Authorize(Policy = Policy.B2CPolicy)]
+    [Authorize(Policy.B2CCvrClaim)]
+    [Authorize(Policy.B2CSubTypeUserPolicy)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status403Forbidden)]
