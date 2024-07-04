@@ -6,6 +6,7 @@ using API.UnitTests;
 using API.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.Controllers;
 
@@ -22,13 +23,14 @@ public class GetConsentForUserTests
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
 
         _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.WebAppFactory.CreateApi();
+        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: _integrationTestFixture.WebAppFactory.IssuerIdpClientId.ToString());
     }
 
     [Fact]
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenHttpOkAndCorrectResponseReturned()
     {
-        var (idpUserId, tin, orgName) = await SeedData();
+        await using var dbContext = new ApplicationDbContext(_options);
+        var (idpUserId, tin, orgName) = await SeedData(dbContext);
 
         var request = new AuthorizationUserRequest(
             Sub: idpUserId.Value,
@@ -37,9 +39,7 @@ public class GetConsentForUserTests
             OrgName: orgName.Value
         );
 
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString(), orgCvr: tin.Value);
-
-        var response = await userApi.GetConsentForUser(request);
+        var response = await _api.GetConsentForUser(request);
 
         response.Should().Be200Ok();
 
@@ -56,6 +56,11 @@ public class GetConsentForUserTests
     [Fact]
     public async Task GivenNonExistingOrganization_WhenGettingConsent_ThenHttpOkAndTermsNotAccepted()
     {
+        await using var dbContext = new ApplicationDbContext(_options);
+        var client = Client.Create(new IdpClientId(_integrationTestFixture.WebAppFactory.IssuerIdpClientId), ClientName.Create("Internal Client"), ClientType.Internal, "https://localhost:5001");
+        await dbContext.Clients.AddAsync(client);
+        await dbContext.SaveChangesAsync();
+
         var request = new AuthorizationUserRequest(
             Sub: Guid.NewGuid(),
             Name: "Test User",
@@ -77,7 +82,7 @@ public class GetConsentForUserTests
         result.TermsAccepted.Should().BeFalse();
     }
 
-    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData()
+    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext)
     {
         var user = Any.User();
         var organization = Any.Organization(Tin.Create("12345678"));
@@ -85,13 +90,12 @@ public class GetConsentForUserTests
         organization.AcceptTerms(terms);
         var affiliation = Affiliation.Create(user, organization);
 
-        await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.Terms.AddAsync(terms);
-
         await dbContext.SaveChangesAsync();
+
         return (user.IdpUserId, organization.Tin, organization.Name);
     }
 }
