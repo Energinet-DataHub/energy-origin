@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Proxy.Controllers;
 
 [ApiController]
+[Route("wallet-api")]
 public class SlicesController : ProxyBase
 {
     public SlicesController(IHttpClientFactory httpClientFactory) : base(httpClientFactory)
@@ -58,12 +59,12 @@ public class SlicesController : ProxyBase
     [Route("slices")]
     [Produces("application/json")]
     [AllowAnonymous]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task ReceiveSliceV2([FromBody] ReceiveRequest request, string organizationId)
+    public async Task ReceiveSliceV2([FromBody] ReceiveRequest request)
     {
         await ProxyInsecureCall("v1/slices");
     }

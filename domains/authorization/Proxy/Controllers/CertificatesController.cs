@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace Proxy.Controllers;
 
 [ApiController]
-[ApiVersion(ApiVersions.Version20250101)]
+[Route("wallet-api")]
+
 public class CertificatesController : ProxyBase
 {
     public CertificatesController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
@@ -22,7 +23,7 @@ public class CertificatesController : ProxyBase
     [Route("certificates/cursor")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate, PageInfoCursor>), StatusCodes.Status200OK)]
@@ -41,7 +42,7 @@ public class CertificatesController : ProxyBase
     [Route("certificates")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate, PageInfo>), StatusCodes.Status200OK)]
@@ -79,7 +80,7 @@ public class CertificatesController : ProxyBase
     [Route("aggregate-certificates")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101, Deprecated = true)]
+    [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]

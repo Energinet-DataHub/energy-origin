@@ -486,7 +486,7 @@
             <response code="400">Public key could not be decoded.</response>
             <response code="404">Receiver endpoint not found.</response>
         </member>
-        <member name="M:Proxy.Controllers.SlicesController.ReceiveSliceV2(Proxy.Controllers.ReceiveRequest,System.String)">
+        <member name="M:Proxy.Controllers.SlicesController.ReceiveSliceV2(Proxy.Controllers.ReceiveRequest)">
             <summary>
             Receive a certificate-slice from another wallet.
             </summary>
