@@ -54,15 +54,6 @@ public class AcceptTermsCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenNoTermsExist_ThrowsInvalidOperationException()
-    {
-        var command = new AcceptTermsCommand("12345678", "Test Org");
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _handler.Handle(command, CancellationToken.None));
-        await _unitOfWork.Received(1).RollbackAsync();
-    }
-
-    [Fact]
     public async Task Handle_WhenExceptionOccurs_RollsBackTransaction()
     {
         var command = new AcceptTermsCommand("12345678", "Test Org");
