@@ -79,6 +79,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
             _ => { }
         );
     });
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
