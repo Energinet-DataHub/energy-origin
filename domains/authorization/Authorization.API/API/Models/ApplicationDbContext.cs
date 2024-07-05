@@ -1,5 +1,6 @@
 using System;
 using API.ValueObjects;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -24,6 +25,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         ConfigureClientTable(modelBuilder);
         ConfigureUserTable(modelBuilder);
         ConfigureTermsTable(modelBuilder);
+
+        modelBuilder.AddTransactionalOutboxEntities();
     }
 
     private static void ConfigureOrganizationTable(ModelBuilder modelBuilder)

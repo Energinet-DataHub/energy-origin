@@ -23,7 +23,7 @@ public class TermsController(IMediator mediator, IdentityDescriptor identityDesc
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<AcceptTermsResponseDto>> AcceptTerms()
     {
-        var command = new AcceptTermsCommand(identityDescriptor.OrganizationCvr!, identityDescriptor.OrganizationName);
+        var command = new AcceptTermsCommand(identityDescriptor.OrganizationCvr!, identityDescriptor.OrganizationName, identityDescriptor.Subject);
         var result = await mediator.Send(command);
 
         if (!result)

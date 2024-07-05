@@ -1,5 +1,4 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System;
 using API.Authorization;
 using API.Authorization.Exceptions;
 using API.Configuration;
@@ -9,10 +8,12 @@ using API.Repository;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,29 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+
+builder.Services.AddMassTransit(o =>
+{
+    o.SetKebabCaseEndpointNameFormatter();
+
+    o.UsingRabbitMq((context, cfg) =>
+    {
+        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+        var url = $"rabbitmq://{options.Host}:{options.Port}";
+
+        cfg.Host(new Uri(url), h =>
+        {
+            h.Username(options.Username);
+            h.Password(options.Password);
+        });
+        cfg.ConfigureEndpoints(context);
+    });
+    o.AddEntityFrameworkOutbox<ApplicationDbContext>(outboxConfigurator =>
+    {
+        outboxConfigurator.UsePostgres();
+        outboxConfigurator.UseBusOutbox();
+    });
+});
 
 var tokenValidationOptions =
     builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
