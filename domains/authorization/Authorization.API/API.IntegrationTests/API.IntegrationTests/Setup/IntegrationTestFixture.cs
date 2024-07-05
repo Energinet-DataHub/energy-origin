@@ -13,7 +13,6 @@ public class IntegrationTestFixture : IAsyncLifetime
 {
     public PostgresContainer PostgresContainer { get; } = new();
     public RabbitMqContainer RabbitMqContainer { get; } = new RabbitMqBuilder().WithUsername("guest").WithPassword("guest").Build();
-
     public TestWebApplicationFactory WebAppFactory { get; private set; } = null!;
 
     public async Task InitializeAsync()
