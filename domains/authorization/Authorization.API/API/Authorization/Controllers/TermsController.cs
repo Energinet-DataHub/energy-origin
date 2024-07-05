@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
+using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Authorization.Controllers;
 
 [ApiController]
-public class TermsController(IMediator mediator) : ControllerBase
+[ApiVersion(ApiVersions.Version20230101)]
+public class TermsController(IMediator mediator, IdentityDescriptor identityDescriptor) : ControllerBase
 {
     [HttpPost]
     [Route("api/authorization/terms/accept")]
@@ -21,7 +23,7 @@ public class TermsController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<AcceptTermsResponseDto>> AcceptTerms([FromBody] AcceptTermsRequest request)
     {
-        var command = new AcceptTermsCommand(request.OrgCvr, request.UserId, request.UserName);
+        var command = new AcceptTermsCommand(identityDescriptor.OrganizationCvr!, identityDescriptor.Subject, identityDescriptor.Name, identityDescriptor.OrganizationName);
         var result = await mediator.Send(command);
 
         if (!result)
@@ -33,7 +35,7 @@ public class TermsController(IMediator mediator) : ControllerBase
     }
 }
 
-public record AcceptTermsRequest(string OrgCvr, Guid UserId, string UserName);
+public record AcceptTermsRequest(string OrgCvr, Guid UserId, string UserName, string OrganizationName);
 public record AcceptTermsResponseDto(bool Status, string Message);
 
 

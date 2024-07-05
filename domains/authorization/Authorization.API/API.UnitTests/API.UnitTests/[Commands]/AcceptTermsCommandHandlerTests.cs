@@ -29,7 +29,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenOrganizationDoesNotExist_CreatesNewOrganization()
     {
-        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User");
+        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User", "Test Org");
         await _termsRepository.AddAsync(Terms.Create("1.0"), CancellationToken.None);
 
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -42,7 +42,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenOrganizationExistsButTermsNotAccepted_UpdatesTerms()
     {
-        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User");
+        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User", "Test Org");
         var organization = Organization.Create(new Tin(command.OrgCvr), new OrganizationName("Test Org"));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _termsRepository.AddAsync(Terms.Create("1.0"), CancellationToken.None);
@@ -58,7 +58,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenNoTermsExist_ThrowsInvalidOperationException()
     {
-        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User");
+        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User", "Test Org");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _handler.Handle(command, CancellationToken.None));
         await _unitOfWork.Received(1).RollbackAsync();
@@ -67,7 +67,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenUserDoesNotExist_CreatesNewUserAndAffiliation()
     {
-        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User");
+        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User", "Test Org");
         var organization = Organization.Create(new Tin(command.OrgCvr), new OrganizationName("Test Org"));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _termsRepository.AddAsync(Terms.Create("1.0"), CancellationToken.None);
@@ -83,11 +83,9 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenUserExists_CreatesNewAffiliation()
     {
-        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User");
+        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User", "Test Org");
         var organization = Organization.Create(new Tin(command.OrgCvr), new OrganizationName("Test Org"));
-        var user = User.Create(IdpUserId.Create(command.UserId), UserName.Create(command.UserName));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
-        await _userRepository.AddAsync(user, CancellationToken.None);
         await _termsRepository.AddAsync(Terms.Create("1.0"), CancellationToken.None);
 
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -100,7 +98,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenExceptionOccurs_RollsBackTransaction()
     {
-        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User");
+        var command = new AcceptTermsCommand("12345678", Guid.NewGuid(), "Test User", "Test Org");
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
         mockOrganizationRepository.Query().Returns(x => throw new Exception("Test exception"));
         var mockUnitOfWork = Substitute.For<IUnitOfWork>();

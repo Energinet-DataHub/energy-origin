@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Models;
@@ -10,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
-public record AcceptTermsCommand(string OrgCvr, Guid UserId, string UserName) : IRequest<bool>;
+public record AcceptTermsCommand(string OrgCvr, Guid UserId, string UserName, string OrgName ) : IRequest<bool>;
 
 public class AcceptTermsCommandHandler(
     IOrganizationRepository organizationRepository,
@@ -25,16 +26,20 @@ public class AcceptTermsCommandHandler(
 
         try
         {
+            var orgTin = Tin.Create(request.OrgCvr);
             var organization = await organizationRepository.Query()
-                .FirstOrDefaultAsync(o => o.Tin.Value == request.OrgCvr, cancellationToken);
+                .Include(o => o.Affiliations)
+                .FirstOrDefaultAsync(o => o.Tin == orgTin, cancellationToken);
 
             if (organization == null)
             {
-                organization = Organization.Create(new Tin(request.OrgCvr), new OrganizationName(request.OrgCvr));
+                organization = Organization.Create(orgTin, OrganizationName.Create(request.OrgCvr));
                 await organizationRepository.AddAsync(organization, cancellationToken);
             }
 
-            var latestTerms = await termsRepository.Query().LastOrDefaultAsync(cancellationToken);
+            var latestTerms = await termsRepository.Query()
+                .OrderByDescending(t => t.Version)
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (latestTerms == null)
             {
@@ -47,18 +52,20 @@ public class AcceptTermsCommandHandler(
                 organizationRepository.Update(organization);
             }
 
+            var idpUserId = IdpUserId.Create(request.UserId);
             var user = await userRepository.Query()
-                .FirstOrDefaultAsync(u => u.IdpUserId.Value == request.UserId, cancellationToken);
+                .Where(u => u.IdpUserId == idpUserId)
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (user == null)
             {
-                user = User.Create(IdpUserId.Create(request.UserId), UserName.Create(request.UserName));
+                user = User.Create(idpUserId, UserName.Create(request.UserName));
                 await userRepository.AddAsync(user, cancellationToken);
-            }
 
-            var affiliation = Affiliation.Create(user, organization);
-            organization.Affiliations.Add(affiliation);
-            organizationRepository.Update(organization);
+                var affiliation = Affiliation.Create(user, organization);
+                organization.Affiliations.Add(affiliation);
+                organizationRepository.Update(organization);
+            }
 
             await unitOfWork.CommitAsync();
             return true;
