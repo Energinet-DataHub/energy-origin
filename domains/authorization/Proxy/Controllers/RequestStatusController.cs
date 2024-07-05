@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Proxy.Controllers;
 
 [ApiController]
+[Route("wallet-api")]
 public class RequestStatusController : ProxyBase
 {
     public RequestStatusController(IHttpClientFactory httpClientFactory) : base(httpClientFactory, null)
@@ -26,7 +27,7 @@ public class RequestStatusController : ProxyBase
     [Route("v1/request-status/{requestId}")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
