@@ -3,10 +3,8 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using API.Authorization.Controllers;
 using API.Models;
-using EnergyOrigin.TokenValidation.Utilities;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -23,24 +21,10 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 {
     internal string ConnectionString { get; set; } = "";
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
-    private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
-        string publicKeyPem;
-
-        using (RSA rsa = RSA.Create())
-        {
-            rsa.ImportFromPem(privateKeyPem);
-            publicKeyPem = rsa.ExportRSAPublicKeyPem();
-        }
-
-        var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
-        builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
-        builder.UseSetting("TokenValidation:Audience", "Users");
 
         builder.ConfigureTestServices(services =>
         {
