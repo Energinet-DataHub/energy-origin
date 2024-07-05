@@ -1,0 +1,2227 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Wallet API API 20240515",
+    "description": "",
+    "version": "20240515"
+  },
+  "paths": {
+    "/wallet-api/certificates/cursor": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "summary": "Gets all certificates in the wallet that are <b>available</b> for use.",
+        "parameters": [
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "description": "Filter the type of certificates to return.",
+            "schema": {
+              "$ref": "#/components/schemas/CertificateType"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "UpdatedSince",
+            "in": "query",
+            "description": "The time of the last update in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns the aggregated claims.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GranularCertificatePageInfoCursorResultList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet-api/certificates": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "summary": "Gets all certificates in the wallet that are <b>available</b> for use.",
+        "parameters": [
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "description": "Filter the type of certificates to return.",
+            "schema": {
+              "$ref": "#/components/schemas/CertificateType"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Skip",
+            "in": "query",
+            "description": "The number of items to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns the aggregated claims.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GranularCertificatePageInfoResultList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet-api/aggregate-certificates": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "summary": "Returns aggregates certificates that are <b>available</b> to use, based on the specified time zone and time range.",
+        "parameters": [
+          {
+            "name": "TimeAggregate",
+            "in": "query",
+            "description": "The size of each bucket in the aggregation.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TimeAggregate"
+            }
+          },
+          {
+            "name": "TimeZone",
+            "in": "query",
+            "description": "The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "description": "Filter the type of certificates to return.",
+            "schema": {
+              "$ref": "#/components/schemas/CertificateType"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Skip",
+            "in": "query",
+            "description": "The number of items to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "If the time zone is invalid."
+          },
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns the aggregated claims.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AggregatedCertificatesPageInfoResultList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet-api/claims/cursor": {
+      "get": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "Gets all claims in the wallet",
+        "parameters": [
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "description": "Filter the type of certificates to return.",
+            "schema": {
+              "$ref": "#/components/schemas/CertificateType"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "UpdatedSince",
+            "in": "query",
+            "description": "The time of the last update in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns all the indiviual claims.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimPageInfoCursorResultList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet-api/claims": {
+      "get": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "Gets all claims in the wallet",
+        "parameters": [
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Skip",
+            "in": "query",
+            "description": "The number of items to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns all the indiviual claims.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimPageInfoResultList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "Queues a request to claim two certificate for a given quantity.",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The claim request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "202": {
+            "description": "Claim request has been queued for processing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet-api/aggregate-claims": {
+      "get": {
+        "tags": [
+          "Claims"
+        ],
+        "summary": "Returns a list of aggregates claims for the authenticated user based on the specified time zone and time range.",
+        "parameters": [
+          {
+            "name": "TimeAggregate",
+            "in": "query",
+            "description": "The size of each bucket in the aggregation",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TimeAggregate"
+            }
+          },
+          {
+            "name": "TimeZone",
+            "in": "query",
+            "description": "The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Skip",
+            "in": "query",
+            "description": "The number of items to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "400": {
+            "description": "If the time zone is invalid."
+          },
+          "200": {
+            "description": "Returns the aggregated claims.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AggregatedClaimsPageInfoResultList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet-api/v1/request-status/{requestId}": {
+      "get": {
+        "tags": [
+          "RequestStatus"
+        ],
+        "summary": "Get status of claim or transfer request.",
+        "description": "This endpoint is used to get the status of a claim or transfer request.\r\nThese are asynchronous operations and the status will be updated as the request is processed.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The status was successfully found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiveResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Status not found."
+          },
+          "400": {
+            "description": "The user is not authenticated."
+          }
+        }
+      }
+    },
+    "/wallet-api/slices": {
+      "post": {
+        "tags": [
+          "Slices"
+        ],
+        "summary": "Receive a certificate-slice from another wallet.",
+        "description": "This request is used to receive a certificate-slice from another wallet, which is then stored in the local wallet.\r\nThe endpoint is verified to exists within the wallet system, otherwise a 404 will be returned.\r\nThe endpoint will return 202 Accepted was initial validation has succeeded.\r\nThe certificate-slice will further verified with data from the registry in a seperate thread.",
+        "parameters": [
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Contains the data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiveRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiveRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "202": {
+            "description": "The slice was accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiveResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Receiver endpoint not found."
+          },
+          "400": {
+            "description": "Public key could not be decoded."
+          }
+        }
+      }
+    },
+    "/wallet-api/transfers/cursor": {
+      "get": {
+        "tags": [
+          "Transfers"
+        ],
+        "summary": "Gets detailed list of all of the transfers that have been made to other wallets.",
+        "parameters": [
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "UpdatedSince",
+            "in": "query",
+            "description": "The time of the last update in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns the individual transferes within the filter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferPageInfoCursorResultList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet-api/transfers": {
+      "get": {
+        "tags": [
+          "Transfers"
+        ],
+        "summary": "Gets detailed list of all the transfers that have been made to other wallets.",
+        "parameters": [
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Skip",
+            "in": "query",
+            "description": "The number of items to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "Returns the individual transferes within the filter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferPageInfoResultList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Transfers"
+        ],
+        "summary": "Transfers a certificate to another wallet.",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet-api/aggregate-transfers": {
+      "get": {
+        "tags": [
+          "Transfers"
+        ],
+        "summary": "Gets detailed list of all the transfers that have been made to other wallets.",
+        "parameters": [
+          {
+            "name": "TimeAggregate",
+            "in": "query",
+            "description": "The size of each bucket in the aggregation",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TimeAggregate"
+            }
+          },
+          {
+            "name": "TimeZone",
+            "in": "query",
+            "description": "The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Start",
+            "in": "query",
+            "description": "The start of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "End",
+            "in": "query",
+            "description": "The end of the time range in Unix time in seconds.",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "description": "The number of items to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Skip",
+            "in": "query",
+            "description": "The number of items to skip.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "200": {
+            "description": "Returns the individual transferes within the filter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AggregatedTransfersPageInfoResultList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet-api/wallets": {
+      "post": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "Creates a new wallet for the user.",
+        "description": "Currently, only **one wallet** per user is supported.\r\nThe wallet is created with a private key, which is used to generate sub-public-keys for each certificate-slice.\r\nThe private key can be provided, but it is optional, if omittted a random one is generated.",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWalletRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWalletRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWalletRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "201": {
+            "description": "The wallet was created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateWalletResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "If private key is invalid or if wallet for user already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "Gets all wallets for the user.",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The wallets were found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletRecordPageInfoResultList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/wallet-api/wallets/{walletId}": {
+      "get": {
+        "tags": [
+          "Wallet"
+        ],
+        "summary": "Gets a specific wallet for the user.",
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "path",
+            "description": "The ID of the wallet to get.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "If the user is not authenticated."
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "The wallet was found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletRecord"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "If the wallet specified is not found for the user."
+          }
+        }
+      }
+    },
+    "/wallet-api/wallets/{walletId}/endpoints": {
+      "post": {
+        "tags": [
+          "Wallet"
+        ],
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletRecord"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/wallet-api/external-endpoints": {
+      "post": {
+        "tags": [
+          "Wallet"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExternalEndpointRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExternalEndpointRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExternalEndpointRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateExternalEndpointResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AggregatedCertificates": {
+        "required": [
+          "end",
+          "quantity",
+          "start",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "integer",
+            "description": "The start of the aggregated period.",
+            "format": "int64"
+          },
+          "end": {
+            "type": "integer",
+            "description": "The end of the aggregated period.",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the aggregated certificates.",
+            "format": "int64"
+          },
+          "type": {
+            "$ref": "#/components/schemas/CertificateType"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A result of aggregated certificates that is available to use in the wallet."
+      },
+      "AggregatedCertificatesPageInfoResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AggregatedCertificates"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AggregatedClaims": {
+        "required": [
+          "end",
+          "quantity",
+          "start"
+        ],
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "integer",
+            "description": "The start of the aggregated period.",
+            "format": "int64"
+          },
+          "end": {
+            "type": "integer",
+            "description": "The end of the aggregated period.",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the aggregated claims.",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A result of aggregated claims."
+      },
+      "AggregatedClaimsPageInfoResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AggregatedClaims"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AggregatedTransfers": {
+        "required": [
+          "end",
+          "quantity",
+          "start"
+        ],
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "integer",
+            "description": "The start of the aggregated period.",
+            "format": "int64"
+          },
+          "end": {
+            "type": "integer",
+            "description": "The end of the aggregated period.",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the aggregated transfers.",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A result of aggregated transfers."
+      },
+      "AggregatedTransfersPageInfoResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AggregatedTransfers"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CertificateType": {
+        "enum": [
+          "consumption",
+          "production"
+        ],
+        "type": "string"
+      },
+      "Claim": {
+        "required": [
+          "claimId",
+          "consumptionCertificate",
+          "productionCertificate",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "claimId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productionCertificate": {
+            "$ref": "#/components/schemas/ClaimedCertificate"
+          },
+          "consumptionCertificate": {
+            "$ref": "#/components/schemas/ClaimedCertificate"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A claim record representing a claim of a production and consumption certificate."
+      },
+      "ClaimPageInfoCursorResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfoCursor"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClaimPageInfoResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClaimRequest": {
+        "required": [
+          "consumptionCertificateId",
+          "productionCertificateId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "productionCertificateId": {
+            "$ref": "#/components/schemas/FederatedStreamId"
+          },
+          "consumptionCertificateId": {
+            "$ref": "#/components/schemas/FederatedStreamId"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the certificates to claim.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A request to claim a production and consumption certificate."
+      },
+      "ClaimResponse": {
+        "required": [
+          "claimRequestId"
+        ],
+        "type": "object",
+        "properties": {
+          "claimRequestId": {
+            "type": "string",
+            "description": "The id of the claim request.",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A response to a claim request."
+      },
+      "ClaimedCertificate": {
+        "required": [
+          "attributes",
+          "end",
+          "federatedStreamId",
+          "gridArea",
+          "start"
+        ],
+        "type": "object",
+        "properties": {
+          "federatedStreamId": {
+            "$ref": "#/components/schemas/FederatedStreamId"
+          },
+          "start": {
+            "type": "integer",
+            "description": "The start period of the claimed certificate.",
+            "format": "int64"
+          },
+          "end": {
+            "type": "integer",
+            "description": "The end period the claimed certificate.",
+            "format": "int64"
+          },
+          "gridArea": {
+            "type": "string",
+            "description": "The Grid Area of the claimed certificate."
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "The attributes of the claimed certificate."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Info record of a claimed certificate."
+      },
+      "CreateExternalEndpointRequest": {
+        "required": [
+          "textReference",
+          "walletReference"
+        ],
+        "type": "object",
+        "properties": {
+          "walletReference": {
+            "$ref": "#/components/schemas/WalletEndpointReference"
+          },
+          "textReference": {
+            "type": "string",
+            "description": "The text reference for the wallet, one wants to create a link to."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request to create a new external endpoint."
+      },
+      "CreateExternalEndpointResponse": {
+        "required": [
+          "receiverId"
+        ],
+        "type": "object",
+        "properties": {
+          "receiverId": {
+            "type": "string",
+            "description": "The ID of the created external endpoint.",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response to create a new external endpoint."
+      },
+      "CreateWalletRequest": {
+        "type": "object",
+        "properties": {
+          "privateKey": {
+            "type": "string",
+            "description": "The private key to import. If not provided, a private key will be generated.",
+            "format": "byte",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request to create a new wallet."
+      },
+      "CreateWalletResponse": {
+        "type": "object",
+        "properties": {
+          "walletId": {
+            "type": "string",
+            "description": "The ID of the created wallet.",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response to create a new wallet."
+      },
+      "FederatedStreamId": {
+        "required": [
+          "registry",
+          "streamId"
+        ],
+        "type": "object",
+        "properties": {
+          "registry": {
+            "type": "string"
+          },
+          "streamId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GranularCertificate": {
+        "required": [
+          "attributes",
+          "certificateType",
+          "end",
+          "federatedStreamId",
+          "gridArea",
+          "quantity",
+          "start"
+        ],
+        "type": "object",
+        "properties": {
+          "federatedStreamId": {
+            "$ref": "#/components/schemas/FederatedStreamId"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity available on the certificate.",
+            "format": "int32"
+          },
+          "start": {
+            "type": "integer",
+            "description": "The start of the certificate.",
+            "format": "int64"
+          },
+          "end": {
+            "type": "integer",
+            "description": "The end of the certificate.",
+            "format": "int64"
+          },
+          "gridArea": {
+            "type": "string",
+            "description": "The Grid Area of the certificate."
+          },
+          "certificateType": {
+            "$ref": "#/components/schemas/CertificateType"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "The attributes of the certificate."
+          }
+        },
+        "additionalProperties": false,
+        "description": "A certificate that is available to use in the wallet."
+      },
+      "GranularCertificatePageInfoCursorResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GranularCertificate"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfoCursor"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GranularCertificatePageInfoResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GranularCertificate"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "HashedAttribute": {
+        "required": [
+          "key",
+          "salt",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "The key of the attribute."
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the attribute."
+          },
+          "salt": {
+            "type": "string",
+            "description": "The salt used to hash the attribute.",
+            "format": "byte"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Hashed attribute with salt."
+      },
+      "PageInfo": {
+        "required": [
+          "count",
+          "limit",
+          "offset",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PageInfoCursor": {
+        "required": [
+          "count",
+          "limit",
+          "total",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReceiveRequest": {
+        "required": [
+          "certificateId",
+          "hashedAttributes",
+          "position",
+          "publicKey",
+          "quantity",
+          "randomR"
+        ],
+        "type": "object",
+        "properties": {
+          "publicKey": {
+            "type": "string",
+            "description": "The public key of the receiving wallet.",
+            "format": "byte"
+          },
+          "position": {
+            "type": "integer",
+            "description": "The sub-position of the publicKey used on the slice on the registry.",
+            "format": "int32"
+          },
+          "certificateId": {
+            "$ref": "#/components/schemas/FederatedStreamId"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the slice.",
+            "format": "int32"
+          },
+          "randomR": {
+            "type": "string",
+            "description": "The random R used to generate the pedersen commitment with the quantitiy.",
+            "format": "byte"
+          },
+          "hashedAttributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HashedAttribute"
+            },
+            "description": "List of hashed attributes, their values and salts so the receiver can access the data."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request to receive a certificate-slice from another wallet."
+      },
+      "ReceiveResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Response to receive a certificate-slice from another wallet."
+      },
+      "TimeAggregate": {
+        "enum": [
+          "actual",
+          "total",
+          "year",
+          "month",
+          "week",
+          "day",
+          "hour",
+          "quarterHour"
+        ],
+        "type": "string"
+      },
+      "Transfer": {
+        "required": [
+          "end",
+          "federatedStreamId",
+          "gridArea",
+          "quantity",
+          "receiverId",
+          "start"
+        ],
+        "type": "object",
+        "properties": {
+          "federatedStreamId": {
+            "$ref": "#/components/schemas/FederatedStreamId"
+          },
+          "receiverId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "start": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "end": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "gridArea": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A transfer record of a transfer of a part of a certificate to another wallet."
+      },
+      "TransferPageInfoCursorResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Transfer"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfoCursor"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferPageInfoResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Transfer"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransferRequest": {
+        "required": [
+          "certificateId",
+          "hashedAttributes",
+          "quantity",
+          "receiverId"
+        ],
+        "type": "object",
+        "properties": {
+          "certificateId": {
+            "$ref": "#/components/schemas/FederatedStreamId"
+          },
+          "receiverId": {
+            "type": "string",
+            "description": "The id of the wallet to transfer the certificate to.",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the certificate to transfer.",
+            "format": "int32"
+          },
+          "hashedAttributes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of hashed attributes to transfer with the certificate."
+          }
+        },
+        "additionalProperties": false,
+        "description": "A request to transfer a certificate to another wallet."
+      },
+      "TransferResponse": {
+        "required": [
+          "transferRequestId"
+        ],
+        "type": "object",
+        "properties": {
+          "transferRequestId": {
+            "type": "string",
+            "description": "The id of the transfer request.",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A response to a transfer request."
+      },
+      "ValidationProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "additionalProperties": { }
+      },
+      "WalletEndpointReference": {
+        "required": [
+          "endpoint",
+          "publicKey",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "description": "The version of the ReceiveSlice API.",
+            "format": "int32"
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "The url endpoint of where the wallet is hosted.",
+            "format": "uri"
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "The public key used to generate sub-public-keys for each slice."
+          }
+        },
+        "additionalProperties": false
+      },
+      "WalletRecord": {
+        "required": [
+          "id",
+          "publicKey"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publicKey": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A wallet record"
+      },
+      "WalletRecordPageInfoResultList": {
+        "required": [
+          "metadata",
+          "result"
+        ],
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletRecord"
+            }
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\"",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ],
+  "tags": [
+    {
+      "name": "Wallet",
+      "description": "The Wallet is essential for Energy Origin, since it keeps track of all the user’s Granular Certificates – both the ones generated from the user’s own metering points, but also the ones transferred from other users. In other words, the Wallet will hold all available certificates for the user. Moreover, it will show all transfers, that may have been made, to other users’ wallets as well.\n"
+    }
+  ]
+}
