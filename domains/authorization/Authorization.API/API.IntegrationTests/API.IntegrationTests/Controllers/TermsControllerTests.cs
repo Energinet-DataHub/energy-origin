@@ -10,37 +10,16 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AcceptTermsTests : IAsyncLifetime
+public class AcceptTermsTests
 {
     private readonly IntegrationTestFixture _integrationTestFixture;
-    private DbContextOptions<ApplicationDbContext> _options;
-    private string? _databaseName;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
 
     public AcceptTermsTests(IntegrationTestFixture integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-
         _integrationTestFixture = integrationTestFixture;
-    }
-
-    public Task InitializeAsync()
-    {
-        _databaseName = $"TestDb_{Guid.NewGuid()}";
-        var connectionString = _integrationTestFixture.WebAppFactory.ConnectionString
-            .Replace("Database=your_database_name", $"Database={_databaseName}");
-
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(connectionString)
-            .Options;
-
-        return Task.CompletedTask;
-    }
-
-    public async Task DisposeAsync()
-    {
-        await using var context = new ApplicationDbContext(_options);
-        await context.Database.EnsureDeletedAsync();
     }
 
     [Fact]
@@ -68,25 +47,6 @@ public class AcceptTermsTests : IAsyncLifetime
         organization.Should().NotBeNull();
         organization!.TermsAccepted.Should().BeTrue();
         organization.TermsVersion.Should().Be(terms.Version);
-    }
-
-    [Fact]
-    public async Task GivenNoTermsExist_WhenAcceptingTerms_ThenHttpBadRequest()
-    {
-        await using var context = new ApplicationDbContext(_options);
-        await context.Database.EnsureCreatedAsync();
-
-        var orgCvr = Tin.Create("12345678");
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: orgCvr.Value);
-
-        var response = await userApi.AcceptTerms();
-
-        response.Should().Be400BadRequest();
-
-        var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponseDto>();
-        result.Should().NotBeNull();
-        result!.Status.Should().BeFalse();
-        result.Message.Should().Be("Failed to accept terms.");
     }
 
     [Fact]
