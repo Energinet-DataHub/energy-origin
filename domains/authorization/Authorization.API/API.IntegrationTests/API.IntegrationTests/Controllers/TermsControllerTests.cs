@@ -10,14 +10,17 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AcceptTermsTests : IClassFixture<IntegrationTestFixture>, IAsyncLifetime
+public class AcceptTermsTests : IAsyncLifetime
 {
     private readonly IntegrationTestFixture _integrationTestFixture;
-    private DbContextOptions<ApplicationDbContext>? _options;
+    private DbContextOptions<ApplicationDbContext> _options;
     private string? _databaseName;
 
     public AcceptTermsTests(IntegrationTestFixture integrationTestFixture)
     {
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
+
         _integrationTestFixture = integrationTestFixture;
     }
 
@@ -36,14 +39,14 @@ public class AcceptTermsTests : IClassFixture<IntegrationTestFixture>, IAsyncLif
 
     public async Task DisposeAsync()
     {
-        await using var context = new ApplicationDbContext(_options!);
+        await using var context = new ApplicationDbContext(_options);
         await context.Database.EnsureDeletedAsync();
     }
 
     [Fact]
     public async Task GivenValidRequest_WhenAcceptingTerms_ThenHttpOkAndTermsAccepted()
     {
-        await using var context = new ApplicationDbContext(_options!);
+        await using var context = new ApplicationDbContext(_options);
         await context.Database.EnsureCreatedAsync();
 
         var terms = Terms.Create("1.0");
@@ -70,7 +73,7 @@ public class AcceptTermsTests : IClassFixture<IntegrationTestFixture>, IAsyncLif
     [Fact]
     public async Task GivenNoTermsExist_WhenAcceptingTerms_ThenHttpBadRequest()
     {
-        await using var context = new ApplicationDbContext(_options!);
+        await using var context = new ApplicationDbContext(_options);
         await context.Database.EnsureCreatedAsync();
 
         var orgCvr = Tin.Create("12345678");
@@ -89,7 +92,7 @@ public class AcceptTermsTests : IClassFixture<IntegrationTestFixture>, IAsyncLif
     [Fact]
     public async Task GivenExistingOrganizationAndUser_WhenAcceptingTerms_ThenHttpOkAndTermsUpdated()
     {
-        await using var context = new ApplicationDbContext(_options!);
+        await using var context = new ApplicationDbContext(_options);
         await context.Database.EnsureCreatedAsync();
 
         var terms = Terms.Create("1.0");
@@ -119,14 +122,14 @@ public class AcceptTermsTests : IClassFixture<IntegrationTestFixture>, IAsyncLif
 
     private async Task SeedTerms(Terms terms)
     {
-        await using var dbContext = new ApplicationDbContext(_options!);
+        await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Terms.AddAsync(terms);
         await dbContext.SaveChangesAsync();
     }
 
     private async Task SeedOrganizationAndUser(Organization organization, User user)
     {
-        await using var dbContext = new ApplicationDbContext(_options!);
+        await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Users.AddAsync(user);
         await dbContext.SaveChangesAsync();
