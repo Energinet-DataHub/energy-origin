@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
-public record AcceptTermsCommand(string OrgCvr, string OrgName ) : IRequest<bool>;
+public record AcceptTermsCommand(string OrgCvr, string OrgName) : IRequest<bool>;
 
 public class AcceptTermsCommandHandler(
     IOrganizationRepository organizationRepository,

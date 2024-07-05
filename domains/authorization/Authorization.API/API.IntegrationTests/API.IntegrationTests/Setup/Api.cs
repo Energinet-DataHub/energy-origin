@@ -41,7 +41,7 @@ public class Api : IAsyncLifetime
 
     public async Task<HttpResponseMessage> AcceptTerms()
     {
-        return await _client.PostAsJsonAsync("/api/authorization/terms/accept", new {}, SerializerOptions);
+        return await _client.PostAsJsonAsync("/api/authorization/terms/accept", new { }, SerializerOptions);
     }
 
     public async Task<HttpResponseMessage> GetClientConsents()
