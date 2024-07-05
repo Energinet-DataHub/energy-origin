@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using API.Authorization.Controllers;
+using API.Configuration;
 using API.Models;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
@@ -20,6 +21,7 @@ namespace API.IntegrationTests.Setup;
 public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     internal string ConnectionString { get; set; } = "";
+    internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -35,7 +37,19 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             });
 
             services.EnsureDbCreated<ApplicationDbContext>();
+            services.Configure<RabbitMqOptions>(options =>
+            {
+                options.Host = RabbitMqOptions.Host;
+                options.Port = RabbitMqOptions.Port;
+                options.Username = RabbitMqOptions.Username;
+                options.Password = RabbitMqOptions.Password;
+            });
         });
+    }
+
+    public void SetRabbitMqOptions(RabbitMqOptions options)
+    {
+        RabbitMqOptions = options;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
