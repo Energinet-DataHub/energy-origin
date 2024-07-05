@@ -17,13 +17,13 @@ public class TermsController(IMediator mediator, IdentityDescriptor identityDesc
     [HttpPost]
     [Route("api/authorization/terms/accept")]
     [Authorize(Policy.B2CCvrClaim)]
-    [Authorize(Policy.B2CSubTypeUserPolicy)]
+
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<AcceptTermsResponseDto>> AcceptTerms([FromBody] AcceptTermsRequest request)
+    public async Task<ActionResult<AcceptTermsResponseDto>> AcceptTerms()
     {
-        var command = new AcceptTermsCommand(identityDescriptor.OrganizationCvr!, identityDescriptor.Subject, identityDescriptor.Name, identityDescriptor.OrganizationName);
+        var command = new AcceptTermsCommand(identityDescriptor.OrganizationCvr!, identityDescriptor.OrganizationName);
         var result = await mediator.Send(command);
 
         if (!result)
@@ -34,8 +34,6 @@ public class TermsController(IMediator mediator, IdentityDescriptor identityDesc
         return Ok(new AcceptTermsResponseDto(true, "Terms accepted successfully."));
     }
 }
-
-public record AcceptTermsRequest(string OrgCvr, Guid UserId, string UserName, string OrganizationName);
 public record AcceptTermsResponseDto(bool Status, string Message);
 
 

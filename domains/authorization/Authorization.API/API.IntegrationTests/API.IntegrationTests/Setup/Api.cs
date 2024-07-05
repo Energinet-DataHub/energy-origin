@@ -1,4 +1,3 @@
-using System.Net.Http.Formatting;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -40,9 +39,9 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/client/" + idpClientId);
     }
 
-    public async Task<HttpResponseMessage> AcceptTerms(AcceptTermsRequest request)
+    public async Task<HttpResponseMessage> AcceptTerms()
     {
-        return await _client.PostAsJsonAsync("/api/authorization/terms/accept", request, SerializerOptions);
+        return await _client.PostAsJsonAsync("/api/authorization/terms/accept", new {}, SerializerOptions);
     }
 
     public async Task<HttpResponseMessage> GetClientConsents()
