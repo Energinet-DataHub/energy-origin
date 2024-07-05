@@ -13,6 +13,18 @@ public class WalletController : ProxyBase
     {
     }
 
+    /// <summary>
+    /// Creates a new wallet for the user.
+    /// </summary>
+    /// <remarks>
+    /// Currently, only **one wallet** per user is supported.
+    /// The wallet is created with a private key, which is used to generate sub-public-keys for each certificate-slice.
+    /// The private key can be provided, but it is optional, if omittted a random one is generated.
+    /// </remarks>
+    /// <param name = "request" > The private key to import. If not provided, a new private key will be generated.</param>
+    /// <response code="201">The wallet was created.</response>
+    /// <response code="400">If private key is invalid or if wallet for user already exists.</response>
+    /// <response code="401">If the user is not authenticated.</response>
     [HttpPost]
     [Route("v1/wallets")]
     [Produces("application/json")]
@@ -28,6 +40,17 @@ public class WalletController : ProxyBase
         await ProxyTokenValidationRequest("v1/wallets");
     }
 
+    /// <summary>
+    /// Creates a new wallet for the user.
+    /// </summary>
+    /// <remarks>
+    /// Currently, only **one wallet** per user is supported.
+    /// The wallet is created with a private key, which is used to generate sub-public-keys for each certificate-slice.
+    /// The private key can be provided, but it is optional, if omittted a random one is generated.
+    /// </remarks>
+    /// <response code="201">The wallet was created.</response>
+    /// <response code="400">If private key is invalid or if wallet for user already exists.</response>
+    /// <response code="401">If the user is not authenticated.</response>
     [HttpPost]
     [Route("wallets")]
     [Produces("application/json")]
