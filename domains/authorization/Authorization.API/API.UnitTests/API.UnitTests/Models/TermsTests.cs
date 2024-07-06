@@ -1,4 +1,4 @@
-﻿using API.Models;
+using API.Models;
 using FluentAssertions;
 
 namespace API.UnitTests.Models;
