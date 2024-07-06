@@ -56,7 +56,6 @@ sequenceDiagram
         API-->>User: 400 Bad Request (Failed to accept terms)
         deactivate API
     end
-
 ```
 
 ## Endpoint
