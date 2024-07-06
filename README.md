@@ -37,7 +37,7 @@
 ### Authentication & Authorization
 
 - [Azure B2C Field Guide](https://energinet.atlassian.net/wiki/spaces/EnergyOrigin/pages/902463491/Azure+B2C+Field+Guide) (Requires Confluence access to Energy Origin space)
-- [Authorization](./doc/architecture/domains/authorization.md)
+- [Authorization](./doc/architecture/domains/authorization/authorization.md)
 
 ### NuGet packages
 

@@ -4,13 +4,14 @@
 
 ![Container diagram](../../diagrams/auth.container.drawio.svg)
 
-## Endpoints
+## API Specifications
 
-There is a description of the current endpoints available at [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20Proxy%20v20230101).
+- [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20Proxy%20v20230101).
+- [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20v20230101#/).
 
-There is a description of the current endpoints available at [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20v20230101#/).
+## Features
 
-# Authentication & authorization
+- [Accept Terms](./features/accept-terms.md)
 
 ## Consent
 
