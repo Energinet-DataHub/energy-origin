@@ -32,6 +32,5 @@ public class TermsController(IMediator mediator, IdentityDescriptor identityDesc
         return Ok(new AcceptTermsResponseDto(true, "Terms accepted successfully."));
     }
 }
+
 public record AcceptTermsResponseDto(bool Status, string Message);
-
-
