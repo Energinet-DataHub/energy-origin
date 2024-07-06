@@ -15,10 +15,10 @@ then follow these steps:
 
 **1. Install the following NuGet packages:**
 
-```
-Install-Package EnergyOrigin.IntegrationEvents
-Install-Package MassTransit.RabbitMQ
-Install-Package MassTransit.EntityFrameworkCore
+```shell
+dotnet add package EnergyOrigin.IntegrationEvents
+dotnet add package MassTransit.RabbitMQ
+dotnet add package MassTransit.EntityFrameworkCore
 ```
 
 **2. Add the following Configuration to your `appsettings.Development.json` file:**
@@ -92,7 +92,7 @@ builder.Services.AddMassTransit(o => // <---- This enables Transactional outbox 
 ```
 
 **6. Generate the required migration files by running the following command, from solution root
-(You will need to have the dotnet-ef tools, installed):**
+(You will need to have the [dotnet-ef tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) installed):**
 
 ```shell
 dotnet ef migrations add AddOutbox --project Path/To/Your/Project.csproj --startup-project Path/To/Your/Project.csproj
@@ -104,7 +104,8 @@ This should generate a new migrationfile for 3 new tables called:
 - OutboxState
 - OutboxMessage
 
-**7. Apply the migrations by running the following command, using the dotnet-ef tools:**
+**7. Apply the migrations by running the following command,
+using the [dotnet-ef tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):**
 
 ```shell
 dotnet ef database update --project Path/To/Your/Project.csproj --startup-project Path/To/Your/Project.csproj
