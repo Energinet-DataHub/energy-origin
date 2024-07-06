@@ -11,7 +11,7 @@ to RabbitMQ, using MassTransit's transactional outbox pattern.
 ```mermaid
 sequenceDiagram
     actor User
-    participant API as API Endpoint
+    participant API as Terms Endpoint
     participant Handler as Command Handler
     participant DB as Database
     participant RabbitMQ as RabbitMQ Broker
@@ -32,16 +32,16 @@ sequenceDiagram
 
     rect rgb(50, 50, 50)
         note over Handler, RabbitMQ: Publish integration event
-        Handler->>RabbitMQ: Publish OrgAcceptedTerms event
+        Handler->>RabbitMQ: Send OrgAcceptedTerms message
     end
 
-    Handler-->>API: Return success
+    Handler-->>API: Return true
     deactivate Handler
 
     API-->>User: 200 OK (Terms accepted successfully)
 
     alt Terms Acceptance Fails
-        Handler-->>API: Return failure
+        Handler-->>API: Return false
         API-->>User: 400 Bad Request (Failed to accept terms)
     end
 ```
