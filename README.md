@@ -8,7 +8,7 @@
 - [Versioning Strategy](./doc/api-versioning/versioning-strategy.md)
 - [Conventions](./doc/api/conventions.md)
 
-### Domains
+## Domains
 
 - [Auth](./doc/api/auth.md)
 - [Authorization](./doc/architecture/domains/authorization/authorization.md)
