@@ -49,7 +49,6 @@ public class AcceptTermsCommandHandlerTests
         ), Arg.Any<CancellationToken>());
     }
 
-
     [Fact]
     public async Task Handle_WhenOrganizationExistsButTermsNotAccepted_UpdatesTermsAndPublishesMessage()
     {
