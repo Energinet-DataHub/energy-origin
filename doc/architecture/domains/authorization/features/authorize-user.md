@@ -208,4 +208,3 @@ If an error occurs during the process:
 1. Implement more granular scopes for fine-tuned access control
 2. Add support for different user types (e.g., admin, regular user)
 3. Implement audit logging for all authorization checks and changes
-
