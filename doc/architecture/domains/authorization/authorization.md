@@ -12,6 +12,7 @@
 ## Features
 
 - [Accept Terms](./features/accept-terms.md)
+- [Authorize User](./features/authorize-user.md)
 
 ## Consent
 
