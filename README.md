@@ -38,3 +38,10 @@
 
 - [Azure B2C Field Guide](https://energinet.atlassian.net/wiki/spaces/EnergyOrigin/pages/902463491/Azure+B2C+Field+Guide) (Requires Confluence access to Energy Origin space)
 - [Authorization](./doc/architecture/domains/authorization.md)
+
+### NuGet packages
+
+- [EnergyOrigin.ActivityLog](./libraries/dotnet/EnergyOrigin.ActivityLog/README.md)
+- [EnergyOrigin.IntegrationEvents](./libraries/dotnet/EnergyOrigin.IntegrationEvents/README.md)
+- [EnergyOrigin.Setup](./libraries/dotnet/EnergyOrigin.Setup/README.md)
+- [EnergyOrigin.TokenValidation](./libraries/dotnet/EnergyOrigin.TokenValidation/README.md)
