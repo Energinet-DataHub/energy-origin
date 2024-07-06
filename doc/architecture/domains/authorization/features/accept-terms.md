@@ -17,17 +17,24 @@ sequenceDiagram
     participant RabbitMQ as RabbitMQ Broker
 
     User->>API: POST /api/authorization/terms/accept
+    activate API
     API->>API: Validate JWT and extract claims
     API->>Handler: Send AcceptTermsCommand
-
     activate Handler
+
     rect rgb(50, 50, 50)
-        note over Handler, DB: Save to database
+        Note over Handler, DB: Database Interactions
         Handler->>DB: Begin transaction
+        activate DB
         Handler->>DB: Get or create organization
+        DB-->>Handler: Return organization
         Handler->>DB: Fetch latest terms
+        DB-->>Handler: Return latest terms
         Handler->>DB: Update organization's terms acceptance
+        DB-->>Handler: Confirm update
         Handler->>DB: Commit transaction
+        DB-->>Handler: Confirm commit
+        deactivate DB
     end
 
     rect rgb(50, 50, 50)
@@ -39,11 +46,17 @@ sequenceDiagram
     deactivate Handler
 
     API-->>User: 200 OK (Terms accepted successfully)
+    deactivate API
 
     alt Terms Acceptance Fails
+        activate Handler
         Handler-->>API: Return false
+        deactivate Handler
+        activate API
         API-->>User: 400 Bad Request (Failed to accept terms)
+        deactivate API
     end
+
 ```
 
 ## Endpoint
