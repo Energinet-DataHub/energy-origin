@@ -42,13 +42,14 @@ public class AcceptTermsCommandHandler : IRequestHandler<AcceptTermsCommand, boo
         try
         {
             var usersOrganizationsCvr = Tin.Create(request.OrgCvr);
-            var organization = await _organizationRepository.Query()
+
+            var usersAffiliatedOrganization = await _organizationRepository.Query()
                 .FirstOrDefaultAsync(o => o.Tin == usersOrganizationsCvr, cancellationToken);
 
-            if (organization == null)
+            if (usersAffiliatedOrganization == null)
             {
-                organization = Organization.Create(usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
-                await _organizationRepository.AddAsync(organization, cancellationToken);
+                usersAffiliatedOrganization = Organization.Create(usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
+                await _organizationRepository.AddAsync(usersAffiliatedOrganization, cancellationToken);
             }
 
             var latestTerms = await _termsRepository.Query()
@@ -60,9 +61,9 @@ public class AcceptTermsCommandHandler : IRequestHandler<AcceptTermsCommand, boo
                 return false;
             }
 
-            if (!organization.TermsAccepted || organization.TermsVersion != latestTerms.Version)
+            if (!usersAffiliatedOrganization.TermsAccepted || usersAffiliatedOrganization.TermsVersion != latestTerms.Version)
             {
-                organization.AcceptTerms(latestTerms);
+                usersAffiliatedOrganization.AcceptTerms(latestTerms);
             }
 
             await _unitOfWork.CommitAsync();
@@ -71,7 +72,7 @@ public class AcceptTermsCommandHandler : IRequestHandler<AcceptTermsCommand, boo
                 Guid.NewGuid(),
                 Activity.Current?.Id ?? Guid.NewGuid().ToString(),
                 DateTimeOffset.UtcNow,
-                organization.Id,
+                usersAffiliatedOrganization.Id,
                 request.OrgCvr,
                 request.UserId
             ), cancellationToken);
