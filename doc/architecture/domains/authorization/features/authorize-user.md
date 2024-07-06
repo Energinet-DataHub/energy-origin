@@ -83,7 +83,6 @@ sequenceDiagram
         API-->>B2C: Return Error Response
         deactivate API
     end
-
 ```
 
 ## Endpoint
