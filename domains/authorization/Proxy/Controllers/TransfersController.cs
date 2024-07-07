@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Proxy.Controllers;
 
-[Authorize]
 [ApiController]
+[Route("wallet-api")]
 
 public class TransfersController : ProxyBase
 {
@@ -24,10 +24,10 @@ public class TransfersController : ProxyBase
     [Route("transfers/cursor")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<Transfer>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<Transfer, PageInfoCursor>), StatusCodes.Status200OK)]
     public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param)
     {
         await ProxyTokenValidationRequest("v1/transfers/cursor");
@@ -46,7 +46,7 @@ public class TransfersController : ProxyBase
     [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<Transfer>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<Transfer, PageInfo>), StatusCodes.Status200OK)]
     public async Task GetTransfersLegacy([FromQuery] GetTransfersQueryParameters param)
     {
         await ProxyTokenValidationRequest("v1/transfers");
@@ -61,10 +61,10 @@ public class TransfersController : ProxyBase
     [Route("transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<Transfer>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<Transfer, PageInfo>), StatusCodes.Status200OK)]
     public async Task GetTransfers([FromQuery] GetTransfersQueryParameters param, string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/transfers", organizationId);
@@ -83,9 +83,8 @@ public class TransfersController : ProxyBase
     [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ResultList<AggregatedTransfers>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<AggregatedTransfers, PageInfo>), StatusCodes.Status200OK)]
     public async Task AggregateTransfersLegacy([FromQuery] AggregateTransfersQueryParameters param)
     {
         await ProxyTokenValidationRequest("v1/aggregate-transfers");
@@ -100,12 +99,11 @@ public class TransfersController : ProxyBase
     [Route("aggregate-transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<GranularCertificate>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ResultList<AggregatedTransfers>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<AggregatedTransfers, PageInfo>), StatusCodes.Status200OK)]
     public async Task AggregateTransfers([FromQuery] AggregateTransfersQueryParameters param, string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/aggregate-transfers", organizationId);
@@ -137,7 +135,7 @@ public class TransfersController : ProxyBase
     [Route("transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status200OK)]

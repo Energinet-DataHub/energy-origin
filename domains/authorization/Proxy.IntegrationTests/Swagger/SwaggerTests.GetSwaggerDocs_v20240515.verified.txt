@@ -1,12 +1,12 @@
 ﻿{
   "openapi": "3.0.1",
   "info": {
-    "title": "ProjectOrigin.WalletSystem.Server API 20250101",
+    "title": "Wallet API API 20240515",
     "description": "",
-    "version": "20250101"
+    "version": "20240515"
   },
   "paths": {
-    "/certificates/cursor": {
+    "/wallet-api/certificates/cursor": {
       "get": {
         "tags": [
           "Certificates"
@@ -71,7 +71,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -95,7 +95,7 @@
         }
       }
     },
-    "/certificates": {
+    "/wallet-api/certificates": {
       "get": {
         "tags": [
           "Certificates"
@@ -161,7 +161,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -185,7 +185,7 @@
         }
       }
     },
-    "/aggregate-certificates": {
+    "/wallet-api/aggregate-certificates": {
       "get": {
         "tags": [
           "Certificates"
@@ -269,7 +269,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -296,7 +296,7 @@
         }
       }
     },
-    "/claims/cursor": {
+    "/wallet-api/claims/cursor": {
       "get": {
         "tags": [
           "Claims"
@@ -354,7 +354,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -378,7 +378,7 @@
         }
       }
     },
-    "/claims": {
+    "/wallet-api/claims": {
       "get": {
         "tags": [
           "Claims"
@@ -436,7 +436,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -479,7 +479,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -523,7 +523,7 @@
         }
       }
     },
-    "/aggregate-claims": {
+    "/wallet-api/aggregate-claims": {
       "get": {
         "tags": [
           "Claims"
@@ -599,7 +599,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -626,7 +626,7 @@
         }
       }
     },
-    "/v1/request-status/{requestId}": {
+    "/wallet-api/v1/request-status/{requestId}": {
       "get": {
         "tags": [
           "RequestStatus"
@@ -657,7 +657,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -684,7 +684,7 @@
         }
       }
     },
-    "/slices": {
+    "/wallet-api/slices": {
       "post": {
         "tags": [
           "Slices"
@@ -693,20 +693,13 @@
         "description": "This request is used to receive a certificate-slice from another wallet, which is then stored in the local wallet.\r\nThe endpoint is verified to exists within the wallet system, otherwise a 404 will be returned.\r\nThe endpoint will return 202 Accepted was initial validation has succeeded.\r\nThe certificate-slice will further verified with data from the registry in a seperate thread.",
         "parameters": [
           {
-            "name": "organizationId",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "EO_API_VERSION",
             "in": "header",
             "description": "The requested API version",
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -756,7 +749,7 @@
         }
       }
     },
-    "/transfers/cursor": {
+    "/wallet-api/transfers/cursor": {
       "get": {
         "tags": [
           "Transfers"
@@ -806,7 +799,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -830,7 +823,7 @@
         }
       }
     },
-    "/transfers": {
+    "/wallet-api/transfers": {
       "get": {
         "tags": [
           "Transfers"
@@ -888,7 +881,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -932,7 +925,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -983,7 +976,7 @@
         }
       }
     },
-    "/aggregate-transfers": {
+    "/wallet-api/aggregate-transfers": {
       "get": {
         "tags": [
           "Transfers"
@@ -1059,7 +1052,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -1086,11 +1079,13 @@
         }
       }
     },
-    "/wallets": {
+    "/wallet-api/wallets": {
       "post": {
         "tags": [
           "Wallet"
         ],
+        "summary": "Creates a new wallet for the user.",
+        "description": "Currently, only **one wallet** per user is supported.\r\nThe wallet is created with a private key, which is used to generate sub-public-keys for each certificate-slice.\r\nThe private key can be provided, but it is optional, if omittted a random one is generated.",
         "parameters": [
           {
             "name": "organizationId",
@@ -1106,7 +1101,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -1131,13 +1126,13 @@
         },
         "responses": {
           "401": {
-            "description": "Unauthorized"
+            "description": "If the user is not authenticated."
           },
           "403": {
             "description": "Forbidden"
           },
           "201": {
-            "description": "Created",
+            "description": "The wallet was created.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1147,7 +1142,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "If private key is invalid or if wallet for user already exists.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1178,7 +1173,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -1202,7 +1197,7 @@
         }
       }
     },
-    "/wallets/{walletId}": {
+    "/wallet-api/wallets/{walletId}": {
       "get": {
         "tags": [
           "Wallet"
@@ -1233,7 +1228,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -1260,7 +1255,7 @@
         }
       }
     },
-    "/wallets/{walletId}/endpoints": {
+    "/wallet-api/wallets/{walletId}/endpoints": {
       "post": {
         "tags": [
           "Wallet"
@@ -1289,7 +1284,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],
@@ -1316,7 +1311,7 @@
         }
       }
     },
-    "/external-endpoints": {
+    "/wallet-api/external-endpoints": {
       "post": {
         "tags": [
           "Wallet"
@@ -1336,7 +1331,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "default": "20250101"
+              "default": "20240515"
             }
           }
         ],

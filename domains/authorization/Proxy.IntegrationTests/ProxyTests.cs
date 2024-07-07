@@ -17,29 +17,29 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     private HttpClient CreateUnauthenticatedClient() => fixture.Factory.CreateUnauthenticatedClient();
 
     [Fact]
-    public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithInvalidOrgnaisationId_Return403Forbidden()
+    public async Task GivenB2C_WhenV20240515GetEndpointsAreUsed_WithInvalidOrgnaisationId_Return403Forbidden()
     {
         // Arrange
         var client = CreateClientWithOrgIds(new() { Guid.NewGuid().ToString() });
 
         // Act
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
-        var response = await client.GetAsync($"wallets?organizationId={Guid.NewGuid()}");
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240515);
+        var response = await client.GetAsync($"/wallet-api/wallets?organizationId={Guid.NewGuid()}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
-    public async Task GivenB2C_WhenV20250101PostSliceEndpoint_WithoutBearerToken_Return200Ok()
+    public async Task GivenB2C_WhenV20240515PostSliceEndpoint_WithoutBearerToken_Return200Ok()
     {
         // Arrange
-        var endpoint = "/slices";
+        var endpoint = "/wallet-api/slices";
         var requestBody = new ReceiveRequest { Quantity = 1, CertificateId = new FederatedStreamId() { Registry = "test", StreamId = Guid.NewGuid() }, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1337, HashedAttributes = new List<HashedAttribute>() };
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
 
         var requestBuilder = Request.Create()
-            .WithPath($"/v1{endpoint}")
+            .WithPath($"/wallet-api/v1/slices")
             .WithBody(JsonSerializer.Serialize(requestBody))
             .UsingPost();
 
@@ -54,10 +54,10 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
             );
 
         var client = CreateUnauthenticatedClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240515);
 
         // Act
-        var response = await client.PostAsync($"{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
+        var response = await client.PostAsync(endpoint, new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
         var responseContent = await response.Content.ReadAsStringAsync();
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -68,7 +68,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     public async Task GivenB2C_WhenV1PostSliceEndpoint_WithoutBearerToken_Return200Ok()
     {
         // Arrange
-        var endpoint = "v1/slices";
+        var endpoint = "wallet-api/v1/slices";
         var requestBody = new ReceiveRequest { Quantity = 1, CertificateId = new FederatedStreamId() { Registry = "test", StreamId = Guid.NewGuid() }, PublicKey = Encoding.ASCII.GetBytes("test"), RandomR = Encoding.ASCII.GetBytes("test"), Position = 1337, HashedAttributes = new List<HashedAttribute>() };
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
 
@@ -90,7 +90,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         var client = CreateUnauthenticatedClient();
 
         // Act
-        var response = await client.PostAsync($"{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
+        var response = await client.PostAsync($"{endpoint}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
         var responseContent = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -99,28 +99,28 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     }
 
     [Fact]
-    public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_WithoutEoApiVersion_Return400BadRequest()
+    public async Task GivenB2C_WhenV20240515GetEndpointsAreUsed_WithoutEoApiVersion_Return400BadRequest()
     {
         // Arrange
         var orgId = Guid.NewGuid().ToString();
         var client = CreateClientWithOrgIds(new() { orgId });
 
         // Act
-        var response = await client.GetAsync($"wallets?organizationId={orgId}");
+        var response = await client.GetAsync($"wallet-api/wallets?organizationId={orgId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Theory]
-    [InlineData("/v1/wallets", "")]
-    [InlineData("/v1/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
-    [InlineData("/v1/certificates", "")]
-    [InlineData("/v1/aggregate-certificates", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
-    [InlineData("/v1/claims", "")]
-    [InlineData("/v1/aggregate-claims", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
-    [InlineData("/v1/transfers", "")]
-    [InlineData("/v1/aggregate-transfers", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/wallet-api/v1/wallets", "")]
+    [InlineData("/wallet-api/v1/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
+    [InlineData("/wallet-api/v1/certificates", "")]
+    [InlineData("/wallet-api/v1/aggregate-certificates", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/wallet-api/v1/claims", "")]
+    [InlineData("/wallet-api/v1/aggregate-claims", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/wallet-api/v1/transfers", "")]
+    [InlineData("/wallet-api/v1/aggregate-transfers", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
     public async Task GivenB2C_WhenV1GetEndpointsAreUsed_WithoutEoApiVersion_Return200Ok(string endpoint, string queryParameters)
     {
         // Arrange
@@ -149,15 +149,15 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     }
 
     [Theory]
-    [InlineData("/wallets", "")]
-    [InlineData("/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
-    [InlineData("/certificates", "")]
-    [InlineData("/aggregate-certificates", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
-    [InlineData("/claims", "")]
-    [InlineData("/aggregate-claims", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
-    [InlineData("/transfers", "")]
-    [InlineData("/aggregate-transfers", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
-    public async Task GivenB2C_WhenV20250101GetEndpointsAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string endpoint, string queryParameters)
+    [InlineData("/wallet-api/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
+    [InlineData("/wallet-api/wallets", "")]
+    [InlineData("/wallet-api/certificates", "")]
+    [InlineData("/wallet-api/aggregate-certificates", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/wallet-api/claims", "")]
+    [InlineData("/wallet-api/aggregate-claims", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/wallet-api/transfers", "")]
+    [InlineData("/wallet-api/aggregate-transfers", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    public async Task GivenB2C_WhenV20240515GetEndpointsAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string endpoint, string queryParameters)
     {
         // Arrange
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
@@ -177,7 +177,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
             );
 
         var client = CreateClientWithOrgIds(orgIds);
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240515);
 
         // Act
         var response = await client.GetAsync($"{endpoint}?organizationId={orgIds[0]}{queryParameters}");
@@ -193,11 +193,11 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     {
         private readonly List<object[]> _data = new List<object[]>
         {
-            new object[] {"/v1/wallets", new CreateWalletRequest{ PrivateKey = Encoding.ASCII.GetBytes("test") }},
-            new object[] {"/v1/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0/endpoints", new {}},
-            new object[] {"/v1/external-endpoints", new CreateExternalEndpointRequest{TextReference = "Hello", WalletReference = new WalletEndpointReference(){ Endpoint = new Uri("https://test"), Version = 0, PublicKey = "test"}}},
-            new object[] {"/v1/claims", new ClaimRequest{ Quantity = 1, ConsumptionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ProductionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}}},
-            new object[] {"/v1/transfers", new TransferRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ReceiverId = Guid.NewGuid(), HashedAttributes = new []{"None :D"}}},
+            new object[] {"/wallet-api/v1/wallets", new CreateWalletRequest{ PrivateKey = Encoding.ASCII.GetBytes("test") }},
+            new object[] {"/wallet-api/v1/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0/endpoints", new {}},
+            new object[] {"/wallet-api/v1/external-endpoints", new CreateExternalEndpointRequest{TextReference = "Hello", WalletReference = new WalletEndpointReference(){ Endpoint = new Uri("https://test"), Version = 0, PublicKey = "test"}}},
+            new object[] {"/wallet-api/v1/claims", new ClaimRequest{ Quantity = 1, ConsumptionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ProductionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}}},
+            new object[] {"/wallet-api/v1/transfers", new TransferRequest{ Quantity = 1, CertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ReceiverId = Guid.NewGuid(), HashedAttributes = new []{"None :D"}}},
         };
 
         public IEnumerator<object[]> GetEnumerator() => _data.GetEnumerator();
@@ -237,7 +237,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         responseContent.Should().Be(orgId);
     }
 
-    public class V20250101PostTestData : IEnumerable<object[]>
+    public class V20240515PostTestData : IEnumerable<object[]>
     {
         private readonly List<object[]> _data = new List<object[]>
         {
@@ -254,14 +254,14 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     }
 
     [Theory]
-    [ClassData(typeof(V20250101PostTestData))]
-    public async Task GivenB2C_WhenV20250101EndpointsPostAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string endpoint, object requestBody)
+    [ClassData(typeof(V20240515PostTestData))]
+    public async Task GivenB2C_WhenV20240515EndpointsPostAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string endpoint, object requestBody)
     {
         // Arrange
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
 
         var requestBuilder = Request.Create()
-            .WithPath($"/v1{endpoint}")
+            .WithPath($"/wallet-api/v1{endpoint}")
             .WithBody(JsonSerializer.Serialize(requestBody))
             .UsingPost();
 
@@ -278,8 +278,8 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         var client = CreateClientWithOrgIds(orgIds);
 
         // Act
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20250101");
-        var response = await client.PostAsync($"{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
+        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240515);
+        var response = await client.PostAsync($"/wallet-api{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
         var responseContent = await response.Content.ReadAsStringAsync();
 
         // Assert

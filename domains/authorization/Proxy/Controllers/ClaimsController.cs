@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Proxy.Controllers;
 
 [ApiController]
+[Route("wallet-api")]
 public class ClaimsController : ProxyBase
 {
 
@@ -23,10 +24,10 @@ public class ClaimsController : ProxyBase
     [Route("claims/cursor")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CSubTypeUserPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<Claim, PageInfoCursor>), StatusCodes.Status200OK)]
     public async Task GetClaimsCursor([FromQuery] GetClaimsQueryParametersCursor param)
     {
         await ProxyTokenValidationRequest("v1/claims/cursor");
@@ -45,7 +46,7 @@ public class ClaimsController : ProxyBase
     [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<Claim, PageInfo>), StatusCodes.Status200OK)]
     public async Task GetClaimsLegacy([FromQuery] GetClaimsQueryParameters param)
     {
         await ProxyTokenValidationRequest("v1/claims");
@@ -60,10 +61,10 @@ public class ClaimsController : ProxyBase
     [Route("claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<Claim>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<Claim, PageInfo>), StatusCodes.Status200OK)]
     public async Task GetClaims([FromQuery] GetClaimsQueryParameters param, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/claims", organizationId);
@@ -84,7 +85,7 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ResultList<AggregatedClaims>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<AggregatedClaims, PageInfo>), StatusCodes.Status200OK)]
     public async Task AggregateClaimsLegacy([FromQuery] AggregateClaimsQueryParameters param)
     {
         await ProxyTokenValidationRequest("v1/aggregate-claims");
@@ -100,11 +101,11 @@ public class ClaimsController : ProxyBase
     [Route("aggregate-claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ResultList<AggregatedClaims>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultList<AggregatedClaims, PageInfo>), StatusCodes.Status200OK)]
     public async Task AggregateClaims([FromQuery] AggregateClaimsQueryParameters param, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/aggregate-claims", organizationId);
@@ -140,7 +141,7 @@ public class ClaimsController : ProxyBase
     [Route("claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.B2CPolicy)]
-    [ApiVersion(ApiVersions.Version20250101)]
+    [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status202Accepted)]

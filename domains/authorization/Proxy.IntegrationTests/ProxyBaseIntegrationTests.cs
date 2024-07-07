@@ -19,15 +19,15 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
     {
 
         fixture.WalletWireMockServer
-            .Given(Request.Create().WithPath("/v1/certificates").UsingGet())
+            .Given(Request.Create().WithPath("/wallet-api/v1/certificates").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(200));
 
         var orgIds = new List<string> { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
         var client = CreateClientWithOrgIds(orgIds);
         var organizationId = orgIds[0];
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
-        request.Headers.Add("EO_API_VERSION", ApiVersions.Version20250101);
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
+        request.Headers.Add("EO_API_VERSION", ApiVersions.Version20240515);
 
         var response = await client.SendAsync(request);
 
@@ -42,7 +42,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var organizationId = orgIds[0];
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/unknown/path?organizationId={organizationId}");
-        request.Headers.Add("EO_API_VERSION", ApiVersions.Version20250101);
+        request.Headers.Add("EO_API_VERSION", ApiVersions.Version20240515);
 
         var response = await client.SendAsync(request);
 
@@ -56,7 +56,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var client = CreateClientWithOrgIds(orgIds);
         var organizationId = orgIds[0];
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
 
         var response = await client.SendAsync(request);
 
@@ -70,7 +70,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var client = CreateClientWithOrgIds(orgIds);
         var organizationId = orgIds[0];
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
         request.Headers.Add("EO_API_VERSION", "13371337");
 
         var response = await client.SendAsync(request);
@@ -96,15 +96,15 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
     {
 
         fixture.WalletWireMockServer
-            .Given(Request.Create().WithPath("/v1/certificates").UsingGet())
+            .Given(Request.Create().WithPath("/wallet-api/v1/certificates").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(statusCode));
 
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
         var client = CreateClientWithOrgIds(orgIds);
         var organizationId = orgIds[0];
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/certificates?organizationId={organizationId}");
-        request.Headers.Add("EO_API_VERSION", "20250101");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
+        request.Headers.Add("EO_API_VERSION", ApiVersions.Version20240515);
 
         var response = await client.SendAsync(request);
 
