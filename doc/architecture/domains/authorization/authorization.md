@@ -4,13 +4,15 @@
 
 ![Container diagram](../../diagrams/auth.container.drawio.svg)
 
-## Endpoints
+## API Specifications
 
-There is a description of the current endpoints available at [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20Proxy%20v20230101).
+- [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20Proxy%20v20230101).
+- [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20v20230101#/).
 
-There is a description of the current endpoints available at [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20v20230101#/).
+## Features
 
-# Authentication & authorization
+- [Accept Terms](./features/accept-terms.md)
+- [Authorize User](./features/authorize-user.md)
 
 ## Consent
 
@@ -19,7 +21,7 @@ This section describes the first version of consent functionality in Energy Orig
 ### Definitions
 
 - 3rd party client: A third party company using the APIs exposed by Energy Origin. A 3rd party client may have software systems running and interacting with the Energy Origin APIs without user interaction.
-- User: A user authenticated with MitID erhverv and acting as employee in a company. A user may be employeed in multiple companies, but is forced to select a specific company as part of MitID authenticattion.
+- User: A user authenticated with MitID erhverv and acting as employee in a company. A user may be employed by multiple companies, but is forced to select a specific company as part of MitID authenticattion.
 - TIN: Tax Identification Number, in Denmark the CVR number.
 - Terms: Terms a user must agree to, before using Energy Origin Web application or APIs.
 - Consent: A user grants consent to a 3rd party. The 3rd party may after being granted consent, use Energy Origin APIs on behalf of the user.

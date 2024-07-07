@@ -8,9 +8,10 @@
 - [Versioning Strategy](./doc/api-versioning/versioning-strategy.md)
 - [Conventions](./doc/api/conventions.md)
 
-### APIs
+## Domains
 
 - [Auth](./doc/api/auth.md)
+- [Authorization](./doc/architecture/domains/authorization/authorization.md)
 - [DataSync](./doc/api/datasync.md)
 - [Measurements](./doc/api/measurements.md)
 - [Metering points](./doc/api/meteringpoint.md)
@@ -34,10 +35,9 @@
 
 ## Other Documentation
 
-### Authentication & Authorization
+### Azure B2C
 
 - [Azure B2C Field Guide](https://energinet.atlassian.net/wiki/spaces/EnergyOrigin/pages/902463491/Azure+B2C+Field+Guide) (Requires Confluence access to Energy Origin space)
-- [Authorization](./doc/architecture/domains/authorization.md)
 
 ### NuGet packages
 
