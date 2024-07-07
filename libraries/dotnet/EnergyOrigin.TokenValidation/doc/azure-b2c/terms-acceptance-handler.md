@@ -38,9 +38,9 @@ To do this, you can use the `[DisableTermsRequirement]` Attribute on a controlle
 ```csharp
 [HttpGet]
 [Route("some/api/endpoint/]
-[DisableTermsRequirement] //<--- This Attribute disables Terms Acceptance requirement
+[DisableTermsRequirement]                  //<--- This Attribute disables Terms Acceptance requirement
 [Authorize(Policy = Policy.B2CCvrClaim)]
-public IActionResult SomeEndpoint() {} //<--- This action will not check for terms acceptance
+public IActionResult SomeEndpoint() {}     //<--- This action will not check for terms acceptance
 ```
 When the `[DisableTermsRequirement]` attribute is present, the Terms Acceptance Handler will automatically succeed,
 without checking the `TosAccepted` claim.
