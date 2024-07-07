@@ -1,4 +1,4 @@
-using API.Configuration;
+using API.Options;
 using Testcontainers.RabbitMq;
 
 namespace API.IntegrationTests.Setup;

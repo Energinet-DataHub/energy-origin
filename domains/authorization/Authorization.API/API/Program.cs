@@ -1,9 +1,9 @@
 using System;
 using API.Authorization;
 using API.Authorization.Exceptions;
-using API.Configuration;
 using API.Data;
 using API.Models;
+using API.Options;
 using API.Repository;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
