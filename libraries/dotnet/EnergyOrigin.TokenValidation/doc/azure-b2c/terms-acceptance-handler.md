@@ -77,5 +77,5 @@ This approach:
 4. Allows for easy auditing of where terms acceptance is and isn't being enforced.
 
 By providing an opt-out mechanism,
-we maintain flexibility for scenarios where terms acceptance might not be necessary or appropriate,
+flexibility is maintained for scenarios where terms acceptance might not be necessary or appropriate,
 such as public endpoints or certain API calls.
