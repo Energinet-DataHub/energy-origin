@@ -52,12 +52,12 @@ and allow opting out, using the `[DisableTermsRequirement]` attribute.
 This ensures that terms acceptance is enforced, broadly, across the application, unless explicitly disabled.
 
 
-2. **Claim-Based**: Using a claim for terms acceptance allows for flexible management of user consent,
+2. **Claim-Based**: Using the `toc_accepted` claim for terms acceptance allows for flexible management of user consent,
 across different parts of the system.
 
 
 3. **Policy-Based**: By tying the handler to specific authorization policies,
-separation of concerns is maintained,
+namely the `B2CSubTypeUserPolicy` and `B2CCvrClaimPolicy`, separation of concerns is maintained,
 and allows for easy configuration, and management of where terms acceptance is required.
 
 
