@@ -48,7 +48,7 @@ without checking the `TosAccepted` claim.
 ## Design Choices
 
 1. **Opt-Out Approach**: It was chosen to enable the Terms Acceptance Handler, by default, for specific policies,
-and allow opting out, using an attribute.
+and allow opting out, using the `[DisableTermsRequirement]` attribute.
 This ensures that terms acceptance is enforced, broadly, across the application, unless explicitly disabled.
 
 
