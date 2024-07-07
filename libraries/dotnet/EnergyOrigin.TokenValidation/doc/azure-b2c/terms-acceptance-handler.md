@@ -1,8 +1,8 @@
-# Terms Acceptance Handler
+# Terms Requirement Handler
 
 ## Purpose
 
-The Terms Acceptance Handler is designed to enforce the acceptance of Terms of Service (ToS),
+The Terms Requirement Handler is designed to enforce the acceptance of Terms of Service (ToS),
 for users accessing certain parts of Energy Track & Trace™.
 It ensures that users have agreed to the latest terms before allowing access to protected resources.
 
@@ -14,7 +14,7 @@ which indicates whether the user has accepted the current terms of service.
 
 ## Usage
 
-The Terms Acceptance Handler is automatically applied, to these specific authorization policies in our application.
+The Terms Requirement Handler is automatically applied, to these specific authorization policies in our application.
 By default, it is enabled for the following policies:
 
 - `B2CSubTypeUserPolicy`
@@ -25,7 +25,7 @@ the Terms Acceptance Handler will be invoked as part of the authorization proces
 
 ## Default Behavior
 
-By default, the Terms Acceptance Handler is enabled for the specified policies. This means:
+By default, the Terms Requirement Handler is enabled for the specified policies. This means:
 
 1. If a user has a `tos_accepted` claim with a value of "true", access is granted.
 2. If a user doesn't have a `tos_accepted` claim, or its value is not "true", access is denied.
@@ -47,7 +47,7 @@ without checking the `TosAccepted` claim.
 
 ## Design Choices
 
-1. **Opt-Out Approach**: It was chosen to enable the Terms Acceptance Handler, by default, for specific policies,
+1. **Opt-Out Approach**: It was chosen to enable the Terms Requirement Handler, by default, for specific policies,
 and allow opting out, using the `[DisableTermsRequirement]` attribute.
 This ensures that terms acceptance is enforced, broadly, across the application, unless explicitly disabled.
 
@@ -66,7 +66,7 @@ provides developers with fine-grained control over terms acceptance enforcement.
 
 ## Rationale
 
-The decision to have the Terms Acceptance Handler enabled by default
+The decision to have the Terms Requirement Handler enabled by default
 stems from the importance of ensuring users have agreed to the latest terms of service.
 
 This approach:
