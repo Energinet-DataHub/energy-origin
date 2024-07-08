@@ -16,7 +16,7 @@ public class TermsRequirementAnalyzerTests : AnalyzerTestBase
         var test = GetBasicTestCode(@"
 public class TestController
 {
-    [Authorize(Policy = Policy.B2CSubTypeUserPolicy)]
+    [Authorize(Policy.B2CSubTypeUserPolicy)]
     public void TestMethod() { }
 }");
 
@@ -30,7 +30,7 @@ public class TestController
 public class TestController
 {
     [DisableTermsRequirement]
-    [Authorize(Policy = Policy.B2CSubTypeUserPolicy)]
+    [Authorize(Policy.B2CSubTypeUserPolicy)]
     public void TestMethod() { }
 }");
 
@@ -44,7 +44,7 @@ public class TestController
 public class TestController
 {
     [DisableTermsRequirement]
-    [Authorize(Policy = ""SomeOtherPolicy"")]
+    [Authorize(""SomeOtherPolicy"")]
     public void TestMethod() { }
 }");
 
@@ -74,7 +74,7 @@ public class TestController
 public class TestController
 {
     [DisableTermsRequirement]
-    [Authorize(Policy = Policy.B2CCvrClaim)]
+    [Authorize(Policy.B2CCvrClaim)]
     public void TestMethod() { }
 }");
 

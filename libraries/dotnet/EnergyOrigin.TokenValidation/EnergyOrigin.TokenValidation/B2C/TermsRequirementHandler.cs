@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 

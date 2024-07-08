@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace EnergyOrigin.TokenValidation.Analyzers;
 
@@ -50,8 +51,8 @@ public class TermsRequirementAnalyzer : DiagnosticAnalyzer
             .SelectMany(al => al.Attributes)
             .Any(a => a.Name.ToString() == "Authorize" &&
                       (a.ArgumentList?.Arguments.Any(arg =>
-                          arg.ToString().Contains("Policy = Policy.B2CSubTypeUserPolicy") ||
-                          arg.ToString().Contains("Policy = Policy.B2CCvrClaim")) ?? false));
+                          arg.ToString().Contains("Policy.B2CSubTypeUserPolicy") ||
+                          arg.ToString().Contains("Policy.B2CCvrClaim")) ?? false));
 
         if (hasCorrectPolicy) return;
         var diagnostic = Diagnostic.Create(Rule, methodDeclaration.GetLocation());
