@@ -3,7 +3,7 @@
 ## Overview
 
 The Terms Acceptance API allows organizations to accept the latest terms and conditions.
-When an organization accepts the terms, the Authorization database is updated, and an integration event is published,
+When an organization accepts the terms, the Authorization database is updated, and an integration event is published
 to RabbitMQ, using MassTransit's transactional outbox pattern.
 
 ## Accept terms flow:
