@@ -16,7 +16,6 @@ sequenceDiagram
     participant API as Authorization API
     participant Handler as Command Handler
     participant DB as Database
-
     activate B2C
     B2C->>API: POST /api/authorization/user-consent/
     Note over B2C,API: Send user info (sub, name, orgName, orgCvr)
