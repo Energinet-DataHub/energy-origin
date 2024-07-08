@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Terms Acceptance API allows organizations to accept the latest terms and conditions.
+The Terms Acceptance feature allows organizations to accept the latest terms and conditions.
 When an organization accepts the terms, the Authorization database is updated, and an integration event is published
 to RabbitMQ, using MassTransit's transactional outbox pattern.
 
@@ -63,9 +63,6 @@ sequenceDiagram
 `
 POST /api/authorization/terms/accept
 `
-## Request
-
-The endpoint expects an empty body. All necessary information is derived from the users' claims in their JWT token.
 
 ### Authorization
 
@@ -76,31 +73,6 @@ they are accepting the terms on behalf of.
 
 The policy is implemented as a custom authorization policy,
 in the [EnergyOrigin.TokenValidation NuGet package](../../../../../libraries/dotnet/EnergyOrigin.TokenValidation/README.md).
-
-## Response
-
-### Success (200 OK)
-
-```json
-{
-  "status": true,
-  "message": "Terms accepted successfully."
-}
-```
-
-### Failure (400 Bad Request)
-```json
-{
-  "status": false,
-  "message": "Failed to accept terms."
-}
-```
-
-### Failure (403 Forbidden)
-
-```json
-{}
-```
 
 ## Implementation Details
 
