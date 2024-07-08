@@ -7,7 +7,7 @@ which stores the organization's metering point data, and the Energy Track & Trac
 When an organization accepts the terms and conditions, through the API served by the Authorization subsystem,
 this record is sent to a RabbitMQ message broker and then consumed by the Datahub 2 (DH2) system.
 This is to ensure that the organization's metering point data can be accessed, and processed,
-by establishing integration between the Datahub 2 (DH2) system and the Energy Track & Trace™ domain.
+by establishing a relation in Datahub 2 (DH2) system.
 
 ## Event Details
 
