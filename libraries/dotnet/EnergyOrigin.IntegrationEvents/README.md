@@ -8,32 +8,9 @@ through a message-driven architecture.
 
 ## How it works
 
-The package contains an abstract IntegrationEvent record that serves as the base for all integration events.
-This base record includes common properties such as:
+- [Integration Events](../../../doc/architecture/adr/0025-integration-events.md)
 
-- **Id:** A unique identifier for the event.
-- **TraceId:** An identifier for tracing the event through the system.
-- **Created:** The timestamp when the event was created.
-
-**IntegrationEvent.cs:**
-
-```csharp
-public abstract record IntegrationEvent
-{
-protected IntegrationEvent(Guid id, string traceId, DateTimeOffset created)
-{
-Id = id;
-TraceId = traceId;
-Created = created;
-}
-
-    public Guid Id { get; }
-    public string TraceId { get; }
-    public DateTimeOffset Created { get; }
-}
-```
-
-### Integration Events
+### Specific Integration Events
 
 Specific integration events are defined as records, that inherit from IntegrationEvent,
 adding their own properties, as needed.
