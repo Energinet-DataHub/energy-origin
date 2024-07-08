@@ -1,42 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <IsPackable>true</IsPackable>
-        <PackageId>EnergyOrigin.TokenValidation</PackageId>
-        <RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin</RepositoryUrl>
-        <Authors>Energinet</Authors>
-        <Company>Energinet DataHub A/S</Company>
-        <PackageDescription>This library enables token validation in Energy Origin.</PackageDescription>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-        <IncludeBuildOutput>false</IncludeBuildOutput>
-        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-        <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
-    </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>true</IsPackable>
+		<PackageId>EnergyOrigin.TokenValidation</PackageId>
+		<RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin</RepositoryUrl>
+		<Authors>Energinet</Authors>
+		<Company>Energinet DataHub A/S</Company>
+		<PackageDescription>This library enables token validation in Energy Origin.</PackageDescription>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+	</PropertyGroup>
 
-    <Target Name="GetDependencyTargetPaths">
-        <ItemGroup>
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_CodeAnalysis_Analyzers)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" IncludeRuntimeDependency="false" />
-            <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_CodeAnalysis_Analyzers)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" IncludeRuntimeDependency="false" />
-        </ItemGroup>
-    </Target>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
-        <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="lib\net8.0" Visible="false" />
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
+	</ItemGroup>
 
 </Project>
