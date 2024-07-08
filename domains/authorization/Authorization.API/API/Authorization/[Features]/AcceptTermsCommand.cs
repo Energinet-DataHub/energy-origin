@@ -54,8 +54,6 @@ public class AcceptTermsCommandHandler(
                 usersAffiliatedOrganization.AcceptTerms(latestTerms);
             }
 
-            await unitOfWork.CommitAsync();
-
             await publishEndpoint.Publish(new OrgAcceptedTerms(
                 Guid.NewGuid(),
                 Activity.Current?.Id ?? Guid.NewGuid().ToString(),
@@ -64,6 +62,9 @@ public class AcceptTermsCommandHandler(
                 request.OrgCvr,
                 request.UserId
             ), cancellationToken);
+
+            await unitOfWork.CommitAsync();
+
 
             return true;
         }
