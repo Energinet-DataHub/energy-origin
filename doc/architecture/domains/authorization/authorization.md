@@ -11,8 +11,8 @@
 
 ## Features
 
-- [Accept Terms](./features/accept-terms.md)
-- [Authorize User](./features/authorize-user.md)
+- [Accept Terms](./flows/accept-terms.md)
+- [Authorize User](./flows/authorize-user.md)
 
 ## Consent
 
