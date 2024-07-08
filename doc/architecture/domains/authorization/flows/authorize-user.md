@@ -26,7 +26,7 @@ sequenceDiagram
     Note over API,Handler: Command contains sub, name, orgName, orgCvr
     activate Handler
 
-    rect rgb(50, 50, 50)
+    rect rgb(100, 100, 100)
         Note over Handler, DB: Database Interactions
         Handler->>DB: Begin Transaction
         activate DB
