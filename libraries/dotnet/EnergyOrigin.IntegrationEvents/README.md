@@ -2,7 +2,7 @@
 
 ## Overview
 
-The EnergyOrigin.IntegrationEvents NuGet package provides a standardized way to define and use integration events,
+The EnergyOrigin.IntegrationEvents NuGet package provides our way to define and use integration events,
 across the Energy Origin system. It facilitates communication between different microservices and components,
 through a message-driven architecture.
 
