@@ -22,7 +22,7 @@ sequenceDiagram
     API->>Handler: Send AcceptTermsCommand
     activate Handler
 
-    rect rgb(50, 50, 50)
+    rect rgb(100, 100, 100)
         Note over Handler, DB: Database Interactions
         Handler->>DB: Begin transaction
         activate DB
@@ -37,7 +37,7 @@ sequenceDiagram
         deactivate DB
     end
 
-    rect rgb(50, 50, 50)
+    rect rgb(100, 100, 100)
         note over Handler, RabbitMQ: Publish integration event
         Handler->>RabbitMQ: Send OrgAcceptedTerms message
     end
