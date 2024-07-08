@@ -1,4 +1,4 @@
-namespace EnergyOrigin.TokenValidation.Unit.Tests.Analyzers;
+﻿namespace EnergyOrigin.TokenValidation.Unit.Tests.Analyzers;
 
 public abstract class AnalyzerTestBase
 {

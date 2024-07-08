@@ -1,4 +1,4 @@
-using EnergyOrigin.TokenValidation.Analyzers;
+﻿using EnergyOrigin.TokenValidation.Analyzers;
 using EnergyOrigin.TokenValidation.B2C;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.CodeAnalysis.CSharp.Testing;
