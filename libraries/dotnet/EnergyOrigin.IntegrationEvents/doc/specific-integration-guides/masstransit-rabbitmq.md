@@ -49,67 +49,8 @@ public class RabbitMqOptions
 }
 ```
 
-**4. Load the RabbitMqOptions and enable Masstransit by adding the following to `Program.cs`:**
-
-```csharp
-builder.Services.AddOptions<RabbitMqOptions>() //<---- This loads the configuration settings for RabbitMq
-    .BindConfiguration(RabbitMqOptions.RabbitMq)
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
-
-builder.Services.AddMassTransit(o => // <---- This enables Transactional outbox via Masstransit, and EF core
-{
-    o.SetKebabCaseEndpointNameFormatter();
-
-    o.UsingRabbitMq((context, cfg) =>
-    {
-        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-        var url = $"rabbitmq://{options.Host}:{options.Port}";
-
-        cfg.Host(new Uri(url), h =>
-        {
-            h.Username(options.Username);
-            h.Password(options.Password);
-        });
-        cfg.ConfigureEndpoints(context);
-    });
-    o.AddEntityFrameworkOutbox<ApplicationDbContext>(outboxConfigurator =>
-    {
-        outboxConfigurator.UsePostgres();
-        outboxConfigurator.UseBusOutbox();
-    });
-});
-```
-**5. Enable creation of migration files by adding the following to the modelbuilder in `ApplicationDbContext`:**
-
-```csharp
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-
-        modelBuilder.AddTransactionalOutboxEntities(); //<---- Add this!
-    }
-```
-
-**6. Generate the required migration files by running the following command, from solution root
-(You will need to have the [dotnet-ef tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) installed):**
-
-```shell
-dotnet ef migrations add AddOutbox --project Path/To/Your/Project.csproj --startup-project Path/To/Your/Project.csproj
-```
-
-This should generate a new migrationfile for 3 new tables called:
-
-- InboxState
-- OutboxState
-- OutboxMessage
-
-**7. Apply the migrations by running the following command,
-using the [dotnet-ef tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):**
-
-```shell
-dotnet ef database update --project Path/To/Your/Project.csproj --startup-project Path/To/Your/Project.csproj
-```
+**4. Load the RabbitMqOptions and enable Masstransit Transactional Outbox,
+by following the guide [here](https://masstransit.io/documentation/configuration/middleware/outbox):**
 
 ### Testing the integration
 
