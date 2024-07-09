@@ -26,6 +26,7 @@ public class UserService : IUserService
         await publishEndpoint.Publish(new OrgAcceptedTerms(Guid.NewGuid(), traceId, DateTimeOffset.UtcNow, descriptor.Subject, descriptor.Organization?.Tin, descriptor.Id));
         await repository.SaveChangeAsync();
     }
+
     public async Task<User?> GetUserByIdAsync(Guid? id) => id is null ? null : await repository.GetUserByIdAsync(id.Value);
     public async Task<User> InsertUserAsync(User user) => await repository.InsertUserAsync(user);
     public async Task RemoveUserAsync(User user) => await repository.RemoveUserAsync(user);
