@@ -33,11 +33,18 @@ public class UserRepository : IUserRepository
         await dataContext.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<User>> GetUsersByTinAsync(string tin) => await dataContext.Users.Where(x => x.Company != null && x.Company.Tin == tin).Include(u => u.UserRoles).ToListAsync();
-    public void UpdateTermsAccepted(User user)
+    public async Task<User> AddUserAsync(User user)
     {
-        dataContext.Users.Update(user);
+        var result = await dataContext.Users.AddAsync(user);
+        return result.Entity;
     }
+
+    public void UpdateUser(User user)
+    {
+        dataContext.Entry(user).State = EntityState.Modified;
+    }
+
+    public async Task<IEnumerable<User>> GetUsersByTinAsync(string tin) => await dataContext.Users.Where(x => x.Company != null && x.Company.Tin == tin).Include(u => u.UserRoles).ToListAsync();
 
     public async Task SaveChangeAsync()
     {

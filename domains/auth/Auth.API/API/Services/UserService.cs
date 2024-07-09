@@ -22,8 +22,26 @@ public class UserService : IUserService
 
     public async Task UpdateTermsAccepted(User user, DecodableUserDescriptor descriptor, string traceId)
     {
-        repository.UpdateTermsAccepted(user);
-        await publishEndpoint.Publish(new OrgAcceptedTerms(Guid.NewGuid(), traceId, DateTimeOffset.UtcNow, descriptor.Subject, descriptor.Organization?.Tin, descriptor.Id));
+        var existingUser = await repository.GetUserByIdAsync(descriptor.Id);
+
+        if (existingUser == null)
+        {
+            await repository.AddUserAsync(user);
+        }
+        else
+        {
+            repository.UpdateUser(user);
+        }
+
+        await publishEndpoint.Publish(new OrgAcceptedTerms(
+            Guid.NewGuid(),
+            traceId,
+            DateTimeOffset.UtcNow,
+            descriptor.Subject,
+            descriptor.Organization?.Tin,
+            descriptor.Id
+        ));
+
         await repository.SaveChangeAsync();
     }
 
