@@ -15,6 +15,7 @@ namespace API.Authorization._Features_;
 public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClientQuery, GetConsentForClientQueryResult>
 {
     private readonly IClientRepository _clientRepository;
+    private const string Scope = "dashboard production meters certificates wallet";
 
     public GetConsentForClientQueryHandler(IClientRepository clientRepository)
     {
@@ -24,25 +25,24 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
     public async Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query,
         CancellationToken cancellationToken)
     {
-        var requestedClientId = new IdpClientId(query.ClientId);
+        var requestedClientId = new IdpClientId(query.IdpClientId);
 
         var client = await _clientRepository.Query()
-            .Where(x => x.IdpClientId == requestedClientId)
-            .Select(x => new GetConsentForClientQueryResult(query.ClientId, x.ClientType.ToString(), "someOrgName",
-                new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() },
-                "dashboard production meters certificates wallet"))
+            .Where(client => client.IdpClientId == requestedClientId)
+            .Select(client => new GetConsentForClientQueryResult(query.IdpClientId, client.ClientType.ToString(), client.Name.Value,
+                client.Consents.Select(consent => consent.Organization.Id), Scope))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (client is null)
         {
-            throw new EntityNotFoundException(query.ClientId, typeof(Client));
+            throw new EntityNotFoundException(query.IdpClientId, typeof(Client));
         }
 
         return client;
     }
 }
 
-public record GetConsentForClientQuery(Guid ClientId) : IRequest<GetConsentForClientQueryResult>;
+public record GetConsentForClientQuery(Guid IdpClientId) : IRequest<GetConsentForClientQueryResult>;
 
 public record GetConsentForClientQueryResult(
     Guid Sub,
