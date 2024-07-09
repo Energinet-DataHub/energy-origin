@@ -103,7 +103,7 @@ public class ProxyBase : ControllerBase
         };
 
         requestMessage.Method = new HttpMethod(HttpContext.Request.Method);
-        requestMessage.RequestUri = new Uri($"{path}{HttpContext.Request.QueryString}", UriKind.Relative);
+        requestMessage.RequestUri = new Uri($"wallet-api/{path}{HttpContext.Request.QueryString}", UriKind.Relative);
 
         return requestMessage;
     }
