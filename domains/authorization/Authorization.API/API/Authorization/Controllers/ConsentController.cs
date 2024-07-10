@@ -26,8 +26,7 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
     [Route("api/authorization/consent/grant/")]
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentRequest request)
     {
-        await mediator.Send(new GrantConsentCommand(identity.Subject, identity.AuthorizedOrganizationIds.Single(),
-            new IdpClientId(request.IdpClientId)));
+        await mediator.Send(new GrantConsentCommand(identity.Subject, identity.OrganizationCvr!, new IdpClientId(request.IdpClientId)));
         return Ok();
     }
 
