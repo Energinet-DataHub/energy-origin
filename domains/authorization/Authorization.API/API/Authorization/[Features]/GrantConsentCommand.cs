@@ -23,16 +23,17 @@ public class GrantConsentCommandHandler(
     {
         await unitOfWork.BeginTransactionAsync();
 
-        var idpUserId = IdpUserId.Create(command.userId);
+        var idpUserId = IdpUserId.Create(command.UserId);
+        var organizationTin = Tin.Create(command.OrganizationCvr);
 
         var client = clientRepository.Query()
-                         .FirstOrDefault(it => it.IdpClientId == command.idpClientId)
-                     ?? throw new EntityNotFoundException(command.idpClientId.Value.ToString(), nameof(Client));
+                         .FirstOrDefault(it => it.IdpClientId == command.IdpClientId)
+                     ?? throw new EntityNotFoundException(command.IdpClientId.Value.ToString(), nameof(Client));
 
         var affiliatedOrganization = await userRepository.Query()
             .Where(u => u.IdpUserId == idpUserId)
             .SelectMany(u => u.Affiliations)
-            .Where(a => a.Organization.Id == command.organizationId)
+            .Where(a => a.Organization.Tin == organizationTin)
             .Select(a => a.Organization)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -56,7 +57,7 @@ public class GrantConsentCommandHandler(
     }
 }
 
-public record GrantConsentCommand(Guid userId, Guid organizationId, IdpClientId idpClientId) : IRequest;
+public record GrantConsentCommand(Guid UserId, string OrganizationCvr, IdpClientId IdpClientId) : IRequest;
 
 public class UserNotAffiliatedWithOrganizationCommandException()
     : ForbiddenException("Not authorized to perform action");
