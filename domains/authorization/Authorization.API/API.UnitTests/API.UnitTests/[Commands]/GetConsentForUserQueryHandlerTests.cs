@@ -120,6 +120,33 @@ public class GetConsentForUserQueryHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenLatestTermsVersionIsHigherThanAcceptedTerms_ReturnsResultWithFalseTermsAccepted()
+    {
+        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
+        var oldTerms = Terms.Create(1);
+        organization.AcceptTerms(oldTerms);
+        var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Test User"));
+        Affiliation.Create(user, organization);
+        await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
+        await _fakeUserRepository.AddAsync(user, CancellationToken.None);
+        await _fakeTermsRepository.AddAsync(oldTerms, CancellationToken.None);
+
+        var newTerms = Terms.Create(2);
+        await _fakeTermsRepository.AddAsync(newTerms, CancellationToken.None);
+
+        var command = new GetConsentForUserCommand(user.IdpUserId.Value, "Test User", "Test Org", "12345678");
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.OrgIds.Should().ContainSingle().Which.Should().Be(organization.Id);
+        result.TermsAccepted.Should().BeFalse();
+        _fakeUserRepository.Query().Count().Should().Be(1);
+        organization.Affiliations.Count.Should().Be(1);
+        organization.TermsVersion.Should().Be(oldTerms.Version);
+        await _fakeUnitOfWork.Received(1).RollbackAsync();
+    }
+
+    [Fact]
     public async Task Handle_WhenExceptionOccurs_RollsBackTransactionAndThrowsException()
     {
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
