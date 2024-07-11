@@ -10,12 +10,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Authorization.Controllers;
 
 [ApiController]
+[Authorize(Policy.B2CCvrClaim)]
 [ApiVersion(ApiVersions.Version20230101)]
 public class TermsController(IMediator mediator, IdentityDescriptor identityDescriptor) : ControllerBase
 {
     [HttpPost]
     [Route("api/authorization/terms/accept")]
-    [Authorize(Policy.B2CCvrClaim)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status403Forbidden)]
