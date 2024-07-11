@@ -38,13 +38,4 @@
       <ProjectReference Include="..\Testing\Testing.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="Swagger\SwaggerTests.GetSwaggerDocs_v1.verified.txt">
-        <ParentFile>SwaggerTests</ParentFile>
-      </None>
-      <None Update="Swagger\SwaggerTests.GetSwaggerDocs_v20250101.verified.txt">
-        <ParentFile>SwaggerTests</ParentFile>
-      </None>
-    </ItemGroup>
-
 </Project>

@@ -22,9 +22,4 @@
     <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
     <ProjectReference Include="..\..\Transfer.API\API\API.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="API.IntegrationTests" />
-  </ItemGroup>
-
 </Project>
