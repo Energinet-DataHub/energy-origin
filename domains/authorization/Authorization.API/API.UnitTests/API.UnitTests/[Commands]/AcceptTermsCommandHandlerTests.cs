@@ -77,11 +77,10 @@ public class AcceptTermsCommandHandlerTests
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
         mockOrganizationRepository.Query().Returns(_ => throw new Exception("Test exception"));
-        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
+        await using var mockUnitOfWork = Substitute.For<IUnitOfWork>();
         var handler = new AcceptTermsCommandHandler(mockOrganizationRepository, _termsRepository, mockUnitOfWork, _publishEndpoint);
 
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
-        await mockUnitOfWork.Received(1).RollbackAsync();
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
     }
 

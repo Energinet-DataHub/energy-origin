@@ -27,51 +27,42 @@ public class AcceptTermsCommandHandler(
     {
         await unitOfWork.BeginTransactionAsync();
 
-        try
+        var usersOrganizationsCvr = Tin.Create(request.OrgCvr);
+
+        var usersAffiliatedOrganization = await organizationRepository.Query()
+            .FirstOrDefaultAsync(o => o.Tin == usersOrganizationsCvr, cancellationToken);
+
+        if (usersAffiliatedOrganization == null)
         {
-            var usersOrganizationsCvr = Tin.Create(request.OrgCvr);
-
-            var usersAffiliatedOrganization = await organizationRepository.Query()
-                .FirstOrDefaultAsync(o => o.Tin == usersOrganizationsCvr, cancellationToken);
-
-            if (usersAffiliatedOrganization == null)
-            {
-                usersAffiliatedOrganization = Organization.Create(usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
-                await organizationRepository.AddAsync(usersAffiliatedOrganization, cancellationToken);
-            }
-
-            var latestTerms = await termsRepository.Query()
-                .OrderByDescending(t => t.Version)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (latestTerms == null)
-            {
-                return false;
-            }
-
-            if (!usersAffiliatedOrganization.TermsAccepted || usersAffiliatedOrganization.TermsVersion != latestTerms.Version)
-            {
-                usersAffiliatedOrganization.AcceptTerms(latestTerms);
-            }
-
-            await publishEndpoint.Publish(new OrgAcceptedTerms(
-                Guid.NewGuid(),
-                Activity.Current?.Id ?? Guid.NewGuid().ToString(),
-                DateTimeOffset.UtcNow,
-                usersAffiliatedOrganization.Id,
-                request.OrgCvr,
-                request.UserId
-            ), cancellationToken);
-
-            await unitOfWork.CommitAsync();
-
-
-            return true;
+            usersAffiliatedOrganization = Organization.Create(usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
+            await organizationRepository.AddAsync(usersAffiliatedOrganization, cancellationToken);
         }
-        catch
+
+        var latestTerms = await termsRepository.Query()
+            .OrderByDescending(t => t.Version)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (latestTerms == null)
         {
-            await unitOfWork.RollbackAsync();
-            throw;
+            return false;
         }
+
+        if (!usersAffiliatedOrganization.TermsAccepted || usersAffiliatedOrganization.TermsVersion != latestTerms.Version)
+        {
+            usersAffiliatedOrganization.AcceptTerms(latestTerms);
+        }
+
+        await publishEndpoint.Publish(new OrgAcceptedTerms(
+            Guid.NewGuid(),
+            Activity.Current?.Id ?? Guid.NewGuid().ToString(),
+            DateTimeOffset.UtcNow,
+            usersAffiliatedOrganization.Id,
+            request.OrgCvr,
+            request.UserId
+        ), cancellationToken);
+
+        await unitOfWork.CommitAsync();
+
+        return true;
     }
 }
