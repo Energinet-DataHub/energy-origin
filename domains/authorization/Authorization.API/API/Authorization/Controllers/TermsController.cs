@@ -26,7 +26,8 @@ public class TermsController(IMediator mediator, IdentityDescriptor identityDesc
 
         if (!result)
         {
-            return BadRequest(new AcceptTermsResponseDto(false, "Failed to accept terms."));
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new AcceptTermsResponseDto(false, "An unexpected error occurred while processing the request."));
         }
 
         return Ok(new AcceptTermsResponseDto(true, "Terms accepted successfully."));
