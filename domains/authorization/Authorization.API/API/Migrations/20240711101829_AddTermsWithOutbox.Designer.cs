@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240705182439_AddOutBox")]
-    partial class AddOutBox
+    [Migration("20240711101829_AddTermsWithOutbox")]
+    partial class AddTermsWithOutbox
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -107,8 +107,8 @@ namespace API.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("TermsVersion")
-                        .HasColumnType("text");
+                    b.Property<int?>("TermsVersion")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Tin")
                         .IsRequired()
@@ -128,9 +128,8 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Version")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

@@ -75,28 +75,16 @@
         <member name="M:API.Migrations.AddOrganizationTinUniqueIndex.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:API.Migrations.AddTerms">
+        <member name="T:API.Migrations.AddTermsWithOutbox">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddTerms.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:API.Migrations.AddTermsWithOutbox.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddTerms.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:API.Migrations.AddTermsWithOutbox.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:API.Migrations.AddTerms.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:API.Migrations.AddOutBox">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.AddOutBox.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.AddOutBox.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.AddOutBox.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:API.Migrations.AddTermsWithOutbox.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>

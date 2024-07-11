@@ -29,7 +29,7 @@ public class AddTermsMigrationTests
 
         await InsertOldOrganization(dbContext, Guid.NewGuid(), "12345678", "Test Org");
 
-        var applyMigration = () => migrator.MigrateAsync("20240703143706_AddTerms");
+        var applyMigration = () => migrator.MigrateAsync("20240711101829_AddTermsWithOutbox");
         await applyMigration.Should().NotThrowAsync();
 
         var organizations = await dbContext.Organizations.ToListAsync();

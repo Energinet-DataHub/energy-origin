@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -7,11 +7,30 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddOutBox : Migration
+    public partial class AddTermsWithOutbox : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "TermsAcceptanceDate",
+                table: "Organizations",
+                type: "timestamp with time zone",
+                nullable: true);
+
+            migrationBuilder.AddColumn<bool>(
+                name: "TermsAccepted",
+                table: "Organizations",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<int>(
+                name: "TermsVersion",
+                table: "Organizations",
+                type: "integer",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "InboxState",
                 columns: table => new
@@ -83,6 +102,18 @@ namespace API.Migrations
                     table.PrimaryKey("PK_OutboxState", x => x.OutboxId);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Terms",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Version = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Terms", x => x.Id);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_InboxState_Delivered",
                 table: "InboxState",
@@ -127,6 +158,21 @@ namespace API.Migrations
 
             migrationBuilder.DropTable(
                 name: "OutboxState");
+
+            migrationBuilder.DropTable(
+                name: "Terms");
+
+            migrationBuilder.DropColumn(
+                name: "TermsAcceptanceDate",
+                table: "Organizations");
+
+            migrationBuilder.DropColumn(
+                name: "TermsAccepted",
+                table: "Organizations");
+
+            migrationBuilder.DropColumn(
+                name: "TermsVersion",
+                table: "Organizations");
         }
     }
 }
