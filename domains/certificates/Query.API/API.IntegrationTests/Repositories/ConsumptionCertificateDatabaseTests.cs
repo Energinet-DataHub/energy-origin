@@ -38,7 +38,7 @@ public class ConsumptionCertificateDatabaseTests
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(cert);
+            dbContext.ConsumptionCertificates.Add(cert);
             dbContext.SaveChanges();
         }
 
@@ -87,13 +87,13 @@ public class ConsumptionCertificateDatabaseTests
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(cert1);
+            dbContext.ConsumptionCertificates.Add(cert1);
             dbContext.SaveChanges();
         }
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(cert2);
+            dbContext.ConsumptionCertificates.Add(cert2);
             Action act = () => dbContext.SaveChanges();
             act.Should().Throw<DbUpdateException>();
         }
@@ -130,13 +130,13 @@ public class ConsumptionCertificateDatabaseTests
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(cert1);
+            dbContext.ConsumptionCertificates.Add(cert1);
             dbContext.SaveChanges();
         }
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(cert2);
+            dbContext.ConsumptionCertificates.Add(cert2);
             dbContext.SaveChanges();
         }
 
@@ -172,13 +172,13 @@ public class ConsumptionCertificateDatabaseTests
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(cert1);
+            dbContext.ConsumptionCertificates.Add(cert1);
             dbContext.SaveChanges();
         }
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(cert2);
+            dbContext.ConsumptionCertificates.Add(cert2);
             dbContext.SaveChanges();
         }
 
