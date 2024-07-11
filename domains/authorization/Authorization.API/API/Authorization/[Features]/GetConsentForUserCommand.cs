@@ -46,7 +46,6 @@ public class GetConsentForUserQueryHandler(
                 .OrderByDescending(t => t.Version)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            var termsAccepted = false;
 
             if (organization == null || latestTerms == null)
             {
@@ -62,7 +61,7 @@ public class GetConsentForUserQueryHandler(
                 );
             }
 
-            termsAccepted = organization.TermsAccepted && organization.TermsVersion == latestTerms.Version;
+            var termsAccepted = organization.TermsAccepted && organization.TermsVersion == latestTerms.Version;
 
             if (!termsAccepted)
             {
