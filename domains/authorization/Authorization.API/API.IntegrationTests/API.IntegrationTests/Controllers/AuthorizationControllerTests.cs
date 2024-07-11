@@ -86,7 +86,7 @@ public class GetConsentForUserTests
     {
         var user = Any.User();
         var organization = Any.Organization(Tin.Create("12345678"));
-        var terms = Terms.Create("1.0");
+        var terms = Terms.Create(1);
         organization.AcceptTerms(terms);
         var affiliation = Affiliation.Create(user, organization);
 

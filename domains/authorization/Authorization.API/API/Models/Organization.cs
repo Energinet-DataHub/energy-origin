@@ -16,7 +16,7 @@ public class Organization : IEntity<Guid>
         Tin = tin;
         Name = organizationName;
         TermsAccepted = false;
-        TermsVersion = string.Empty;
+        TermsVersion = null;
         TermsAcceptanceDate = null;
     }
 
@@ -28,7 +28,7 @@ public class Organization : IEntity<Guid>
     public Tin Tin { get; private set; } = null!;
     public OrganizationName Name { get; private set; } = null!;
     public bool TermsAccepted { get; private set; }
-    public string? TermsVersion { get; private set; }
+    public int? TermsVersion { get; private set; }
     public DateTimeOffset? TermsAcceptanceDate { get; private set; }
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();

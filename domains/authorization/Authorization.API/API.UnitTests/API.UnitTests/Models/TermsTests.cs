@@ -8,7 +8,7 @@ public class TermsTests
     [Fact]
     public void Create_ShouldReturnNewTermsInstance()
     {
-        string version = "1.0";
+        var version = 1;
 
         var terms = Terms.Create(version);
 
@@ -19,7 +19,7 @@ public class TermsTests
     [Fact]
     public void Create_ShouldSetVersion()
     {
-        string version = "2.1";
+        var version = 2;
 
         var terms = Terms.Create(version);
 
@@ -29,7 +29,7 @@ public class TermsTests
     [Fact]
     public void Create_ShouldGenerateNewId()
     {
-        string version = "1.5";
+        var version = 1;
 
         var terms = Terms.Create(version);
 
@@ -39,7 +39,7 @@ public class TermsTests
     [Fact]
     public void Create_ShouldCreateUniqueInstances()
     {
-        string version = "3.0";
+        var version = 3;
 
         var terms1 = Terms.Create(version);
         var terms2 = Terms.Create(version);
@@ -48,10 +48,10 @@ public class TermsTests
     }
 
     [Theory]
-    [InlineData("1.0")]
-    [InlineData("2.0.1")]
-    [InlineData("v3.5")]
-    public void Create_ShouldAcceptDifferentVersionFormats(string version)
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Create_ShouldAcceptDifferentVersionFormats(int version)
     {
         var terms = Terms.Create(version);
 

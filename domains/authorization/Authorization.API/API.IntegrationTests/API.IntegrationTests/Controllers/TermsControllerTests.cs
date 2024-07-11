@@ -28,7 +28,7 @@ public class AcceptTermsTests
         await using var context = new ApplicationDbContext(_options);
         await context.Database.EnsureCreatedAsync();
 
-        var terms = Terms.Create("1.0");
+        var terms = Terms.Create(1);
         var orgCvr = Tin.Create("12345678");
         await SeedTerms(terms);
 
@@ -55,7 +55,7 @@ public class AcceptTermsTests
         await using var context = new ApplicationDbContext(_options);
         await context.Database.EnsureCreatedAsync();
 
-        var terms = Terms.Create("1.0");
+        var terms = Terms.Create(1);
         var orgCvr = Any.Tin();
         await SeedTerms(terms);
 

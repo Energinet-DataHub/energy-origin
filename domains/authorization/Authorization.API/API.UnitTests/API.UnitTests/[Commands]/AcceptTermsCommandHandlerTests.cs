@@ -34,7 +34,7 @@ public class AcceptTermsCommandHandlerTests
     public async Task Handle_WhenOrganizationDoesNotExist_CreatesNewOrganizationAndPublishesMessage()
     {
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
-        await _termsRepository.AddAsync(Terms.Create("1.0"), CancellationToken.None);
+        await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -55,13 +55,13 @@ public class AcceptTermsCommandHandlerTests
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
         var organization = Organization.Create(new Tin(command.OrgCvr), new OrganizationName("Test Org"));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
-        await _termsRepository.AddAsync(Terms.Create("1.0"), CancellationToken.None);
+        await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
         result.Should().BeTrue();
         organization.TermsAccepted.Should().BeTrue();
-        organization.TermsVersion.Should().Be("1.0");
+        organization.TermsVersion.Should().Be(1);
         await _unitOfWork.Received(1).CommitAsync();
         await _publishEndpoint.Received(1).Publish(Arg.Is<OrgAcceptedTerms>(
             msg =>

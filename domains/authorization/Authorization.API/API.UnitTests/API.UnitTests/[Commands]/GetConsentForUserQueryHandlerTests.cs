@@ -34,7 +34,7 @@ public class GetConsentForUserQueryHandlerTests
     public async Task Handle_WhenOrganizationDoesNotExist_ReturnsResultWithNoOrgIdsAndFalseTermsAccepted()
     {
         var command = new GetConsentForUserCommand(Guid.NewGuid(), "Test User", "Test Org", "12345678");
-        await _fakeTermsRepository.AddAsync(Terms.Create("1.0"), CancellationToken.None);
+        await _fakeTermsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -58,7 +58,7 @@ public class GetConsentForUserQueryHandlerTests
         var affiliation = Affiliation.Create(user, organization);
         organization.Affiliations.Add(affiliation);
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
-        await _fakeTermsRepository.AddAsync(Terms.Create("1.0"), CancellationToken.None);
+        await _fakeTermsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
         var command = new GetConsentForUserCommand(Guid.NewGuid(), "Test User", "Test Org", "12345678");
 
@@ -80,7 +80,7 @@ public class GetConsentForUserQueryHandlerTests
     public async Task Handle_WhenOrganizationExistsAndTermsAcceptedButUserDoesNotExist_CreatesUserAndAffiliation()
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
-        var terms = Terms.Create("1.0");
+        var terms = Terms.Create(1);
         organization.AcceptTerms(terms);
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
         await _fakeTermsRepository.AddAsync(terms, CancellationToken.None);
@@ -100,7 +100,7 @@ public class GetConsentForUserQueryHandlerTests
     public async Task Handle_WhenOrganizationExistsAndTermsAcceptedAndUserExists_ReturnsResultWithoutCreatingNewEntities()
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
-        var terms = Terms.Create("1.0");
+        var terms = Terms.Create(1);
         organization.AcceptTerms(terms);
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Test User"));
         Affiliation.Create(user, organization);

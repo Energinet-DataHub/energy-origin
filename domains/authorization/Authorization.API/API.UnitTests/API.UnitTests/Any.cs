@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using API.Models;
 using API.ValueObjects;
 
@@ -23,12 +22,12 @@ public class Any
 
     public static Terms Terms()
     {
-        return API.Models.Terms.Create("1.0");
+        return API.Models.Terms.Create(1);
     }
 
     public static UserName Name()
     {
-        return API.ValueObjects.UserName.Create("Test Testesen");
+        return UserName.Create("Test Testesen");
     }
 
     public static Guid Guid()

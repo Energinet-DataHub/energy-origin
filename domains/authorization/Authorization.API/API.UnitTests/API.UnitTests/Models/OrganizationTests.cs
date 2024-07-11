@@ -85,7 +85,7 @@ public class OrganizationTests
         var organization = Organization.Create(tin, organizationName);
 
         organization.TermsAccepted.Should().BeFalse();
-        organization.TermsVersion.Should().BeEmpty();
+        organization.TermsVersion.Should().BeNull();
         organization.TermsAcceptanceDate.Should().BeNull();
     }
 
@@ -95,12 +95,12 @@ public class OrganizationTests
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(tin, organizationName);
-        var terms = Terms.Create("1.0");
+        var terms = Terms.Create(1);
 
         organization.AcceptTerms(terms);
 
         organization.TermsAccepted.Should().BeTrue();
-        organization.TermsVersion.Should().Be("1.0");
+        organization.TermsVersion.Should().Be(1);
         organization.TermsAcceptanceDate.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1));
     }
 
@@ -110,14 +110,14 @@ public class OrganizationTests
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(tin, organizationName);
-        var termsV1 = Terms.Create("1.0");
-        var termsV2 = Terms.Create("2.0");
+        var termsV1 = Terms.Create(1);
+        var termsV2 = Terms.Create(2);
 
         organization.AcceptTerms(termsV1);
         organization.AcceptTerms(termsV2);
 
         organization.TermsAccepted.Should().BeTrue();
-        organization.TermsVersion.Should().Be("2.0");
+        organization.TermsVersion.Should().Be(2);
     }
 
     [Fact]
@@ -126,14 +126,14 @@ public class OrganizationTests
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(tin, organizationName);
-        var terms = Terms.Create("1.0");
+        var terms = Terms.Create(1);
 
         organization.AcceptTerms(terms);
         organization.InvalidateTerms();
 
         organization.TermsAccepted.Should().BeFalse();
-        organization.TermsVersion.Should().Be("1.0"); // Version should remain unchanged
-        organization.TermsAcceptanceDate.Should().NotBeNull(); // Date should remain unchanged
+        organization.TermsVersion.Should().Be(1);
+        organization.TermsAcceptanceDate.Should().NotBeNull();
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public class OrganizationTests
         organization.InvalidateTerms();
 
         organization.TermsAccepted.Should().BeFalse();
-        organization.TermsVersion.Should().BeEmpty();
+        organization.TermsVersion.Should().BeNull();
         organization.TermsAcceptanceDate.Should().BeNull();
     }
 }
