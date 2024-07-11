@@ -63,9 +63,9 @@ public class GetConsentForUserQueryHandler(
                 );
             }
 
-            var termsAccepted = organization.TermsAccepted && organization.TermsVersion == latestTerms.Version;
+            var latestTermsAccepted = organization.TermsAccepted && organization.TermsVersion == latestTerms.Version;
 
-            if (!termsAccepted)
+            if (!latestTermsAccepted)
             {
                 await unitOfWork.RollbackAsync();
                 return new GetConsentForUserCommandResult(
