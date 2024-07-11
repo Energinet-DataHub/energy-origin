@@ -33,6 +33,8 @@ public class GetConsentForUserQueryHandler(
 {
     public async Task<GetConsentForUserCommandResult> Handle(GetConsentForUserCommand command, CancellationToken cancellationToken)
     {
+
+        const string scope = "dashboard production meters certificates wallet";
         await unitOfWork.BeginTransactionAsync();
 
         try
@@ -56,7 +58,7 @@ public class GetConsentForUserQueryHandler(
                     "User",
                     command.OrgName,
                     new List<Guid>(),
-                    "dashboard production meters certificates wallet",
+                    scope,
                     false
                 );
             }
@@ -72,7 +74,7 @@ public class GetConsentForUserQueryHandler(
                     "User",
                     command.OrgName,
                     new List<Guid> { organization.Id },
-                    "dashboard production meters certificates wallet",
+                    scope,
                     false
                 );
             }
@@ -103,7 +105,7 @@ public class GetConsentForUserQueryHandler(
                 "User",
                 command.OrgName,
                 new List<Guid> { organization.Id },
-                "dashboard production meters certificates wallet",
+                scope,
                 true
             );
         }
