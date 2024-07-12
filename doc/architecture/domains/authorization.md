@@ -2,17 +2,12 @@
 
 ## Container diagram
 
-![Container diagram](../../diagrams/auth.container.drawio.svg)
+![Container diagram](../diagrams/auth.container.drawio.svg)
 
 ## API Specifications
 
 - [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20Proxy%20v20230101).
 - [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20v20230101#/).
-
-## Features
-
-- [Accept Terms](./flows/accept-terms.md)
-- [Authorize User](./flows/authorize-user.md)
 
 ## Consent
 
@@ -70,7 +65,7 @@ erDiagram
     }
 ```
 
-A user authenticating using MitID will work in the context of  asingle organization and TIN. To work in the context of another organization, the user will need to authenticate again and select a different organization.
+A user authenticating using MitID will work in the context of a single organization and TIN. To work in the context of another organization, the user will need to authenticate again and select a different organization.
 
 A client will be authenticated to work in the context of all the organizations it has been granted consent to. Imagine the client is running a software system trading certificates on behalf of all the organizations it has been granted consent to.
 
@@ -141,8 +136,8 @@ sequenceDiagram
         EO->>B2C: Redirect to B2C
         B2C->>MitID: Redirect to MitID
         User->>MitID: Login
-        MitID->>B2C: Successfull login (tokens)
-        B2C->>EO: Successfull login (tokens)
+        MitID->>B2C: Successful login (tokens)
+        B2C->>EO: Successful login (tokens)
     end
 
     activate EO
@@ -182,13 +177,95 @@ sequenceDiagram
     ClientApp->>Cert: API call (token)
 ```
 
+## Terms Acceptance
+
+### Overview
+
+The Terms Acceptance feature allows organizations to accept the latest terms and conditions.
+When an organization accepts the terms, the Authorization database is updated, and an integration event is published
+to RabbitMQ, using MassTransit's transactional outbox pattern.
+
+### Accept terms flow:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant API as Accept Terms API
+    participant Backend as Authorization
+    participant EventBus as Event Bus
+
+    User->>API: Accept Terms
+    activate API
+    API->>Backend: Process Terms Acceptance
+    activate Backend
+
+    Backend->>Backend: Update Terms Acceptance
+
+    Backend->>EventBus: Publish Terms Accepted Event
+    Backend-->>API: Terms Acceptance Result
+    deactivate Backend
+
+    alt Terms Accepted Successfully
+        API-->>User: Success Response
+    else Terms Acceptance Failed
+        API-->>User: Error Response
+    end
+    deactivate API
+```
+
+The endpoint requires authorization with the `B2CCvrClaim policy`.
+
+This policy ensures that the user attempting to accept the terms is indeed affiliated with the organization,
+they are accepting the terms on behalf of.
+
+The policy is implemented as a custom authorization policy,
+in the [EnergyOrigin.TokenValidation NuGet package](../../../libraries/dotnet/EnergyOrigin.TokenValidation/README.md).
+
+## User Consent Authorization Documentation
+
+### Overview
+
+The User Consent Authorization API is responsible for retrieving and managing user authorization models.
+This endpoint is designed to work in tandem with the Azure B2C tenant,
+which is the only authorized caller of this endpoint.
+
+### User Consent Flow
+
+```mermaid
+sequenceDiagram
+    participant B2C as Azure B2C
+    participant API as Authorization API
+    participant Backend as Authorization Backend
+
+    B2C->>API: Request User Consent
+    activate API
+
+    API->>Backend: Process User Consent
+    activate Backend
+
+    Backend->>Backend: Handle User and Organization Data
+
+    Backend->>Backend: Check and Update Terms Acceptance
+
+    Backend-->>API: Return Consent Result
+    deactivate Backend
+
+    API-->>B2C: Return Authorization Response
+    deactivate API
+
+    alt Error Occurs
+        Backend-->>API: Report Error
+        API-->>B2C: Return Error Response
+    end
+```
+
 ## Deployment
 
 ### Register B2C as client
 
 Azure B2C itself will have to be registered as a client. This allows B2C to obtain a token for itself and call the EO authorization API.
 
-![New App Registration](../../images/new_app_registration.png)
+![New App Registration](../images/new_app_registration.png)
 
 Provide the name `self` for the app, and register by clicking `Register`.
 
@@ -196,7 +273,7 @@ Afterwards change settings in the manifest file. Make sure the following two set
 
 Add a new client secret to the app registration.
 
-![New Client Secret](../../images/new_client_secret.png)
+![New Client Secret](../images/new_client_secret.png)
 
 Make sure to copy the secret value and store it somewhere safe. Use client id and client secret to configure client_credentials custom policy.
 
