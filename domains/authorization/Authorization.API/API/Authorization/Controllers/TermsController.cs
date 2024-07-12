@@ -22,9 +22,7 @@ public class TermsController(IMediator mediator, IdentityDescriptor identityDesc
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status403Forbidden)]
     [SwaggerOperation(
         Summary = "Accept Terms on behalf of users affiliated organization",
-        Description = "Requires 'org_cvr' claim",
-        OperationId = "AcceptTerms",
-        Tags = ["Accept", "Terms"]
+        Description = "Requires 'org_cvr' claim"
     )]
     public async Task<ActionResult<AcceptTermsResponseDto>> AcceptTerms()
     {

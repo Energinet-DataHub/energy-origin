@@ -20,9 +20,7 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
     [Route("client-consent/")]
     [SwaggerOperation(
         Summary = "Retrieves Client Authorization Model",
-        Description = "This endpoint is only used by Azure B2C",
-        OperationId = "RetrieveClientInfo",
-        Tags = ["Retrieve", "ClientInfo"]
+        Description = "This endpoint is only used by Azure B2C"
     )]
     public async Task<ActionResult<AuthorizationResponse>> GetConsentForClient(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationClientRequest request)
@@ -42,9 +40,7 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
     [Route("user-consent/")]
     [SwaggerOperation(
         Summary = "Retrieves User Authorization Model",
-        Description = "This endpoint is only used by Azure B2C",
-        OperationId = "RetrieveUserInfo",
-        Tags = ["Retrieve", "UserInfo"]
+        Description = "This endpoint is only used by Azure B2C"
     )]
     public async Task<ActionResult<UserAuthorizationResponse>> GetConsentForUser(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationUserRequest request)
