@@ -12,7 +12,7 @@ namespace API.Authorization.Controllers;
 
 [ApiController]
 [Authorize(Policy = Policy.B2CCustomPolicyClientPolicy)] // B2C does not support adding a version header
-[Route("api/authorization/api/authorization")]
+[Route("api/authorization")]
 [ApiVersionNeutral]
 public class AuthorizationController(IMediator mediator) : ControllerBase
 {
@@ -24,7 +24,7 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
         OperationId = "RetrieveClientInfo",
         Tags = ["Retrieve", "ClientInfo"]
     )]
-    public async Task<ActionResult<AuthorizationResponse>> GetClientInfo(
+    public async Task<ActionResult<AuthorizationResponse>> GetConsentForClient(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationClientRequest request)
     {
         var queryResult = await mediator.Send(new GetConsentForClientQuery(request.ClientId));
@@ -46,7 +46,7 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
         OperationId = "RetrieveUserInfo",
         Tags = ["Retrieve", "UserInfo"]
     )]
-    public async Task<ActionResult<UserAuthorizationResponse>> GetUserInfo(
+    public async Task<ActionResult<UserAuthorizationResponse>> GetConsentForUser(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationUserRequest request)
     {
         var commandResult = await mediator.Send(new GetConsentForUserCommand(
