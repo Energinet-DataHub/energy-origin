@@ -9,16 +9,6 @@
             Create Client.
             </summary>
         </member>
-        <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationClientRequest)">
-            <summary>
-            Retrieves Authorization Model.
-            </summary>
-        </member>
-        <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForUser(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationUserRequest)">
-            <summary>
-            Retrieves Authorization Model.
-            </summary>
-        </member>
         <member name="M:API.Authorization.Controllers.ClientController.GetClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ClientResponse},System.Guid)">
             <summary>
             Retreives Client.
