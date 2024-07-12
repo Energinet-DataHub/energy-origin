@@ -568,7 +568,7 @@
                 <OutputClaim ClaimTypeReferenceId="org_ids_string" PartnerClaimType="org_ids"/>
                 <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="scope"/>
-                <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                <OutputClaim ClaimTypeReferenceId="tos_accepted" DefaultValue="false"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type"/>
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
