@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace API.Configuration;
+namespace API.Options;
 
 public class OtlpOptions
 {

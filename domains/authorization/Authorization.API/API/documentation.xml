@@ -9,16 +9,6 @@
             Create Client.
             </summary>
         </member>
-        <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationClientRequest)">
-            <summary>
-            Retrieves Authorization Model.
-            </summary>
-        </member>
-        <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForUser(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationUserRequest)">
-            <summary>
-            Retreives Authorization Model.
-            </summary>
-        </member>
         <member name="M:API.Authorization.Controllers.ClientController.GetClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ClientResponse},System.Guid)">
             <summary>
             Retreives Client.
@@ -73,6 +63,18 @@
             <inheritdoc />
         </member>
         <member name="M:API.Migrations.AddOrganizationTinUniqueIndex.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddTermsWithOutbox">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTermsWithOutbox.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTermsWithOutbox.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddTermsWithOutbox.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>
