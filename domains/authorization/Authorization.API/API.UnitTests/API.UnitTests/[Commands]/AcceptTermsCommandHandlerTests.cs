@@ -1,4 +1,5 @@
 using API.Authorization._Features_;
+using API.Authorization.Exceptions;
 using API.Data;
 using API.Models;
 using API.Repository;
@@ -36,9 +37,8 @@ public class AcceptTermsCommandHandlerTests
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
-        result.Should().BeTrue();
         _organizationRepository.Query().Count().Should().Be(1);
         await _unitOfWork.Received(1).CommitAsync();
         await _publishEndpoint.Received(1).Publish(Arg.Is<OrgAcceptedTerms>(
@@ -57,9 +57,8 @@ public class AcceptTermsCommandHandlerTests
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, CancellationToken.None);
 
-        result.Should().BeTrue();
         organization.TermsAccepted.Should().BeTrue();
         organization.TermsVersion.Should().Be(1);
         await _unitOfWork.Received(1).CommitAsync();
@@ -89,9 +88,9 @@ public class AcceptTermsCommandHandlerTests
     {
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var action = async ()=> await _handler.Handle(command, CancellationToken.None);
 
-        result.Should().BeFalse();
+        await action.Should().ThrowAsync<InvalidConfigurationException>();
         await _unitOfWork.DidNotReceive().CommitAsync();
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
     }

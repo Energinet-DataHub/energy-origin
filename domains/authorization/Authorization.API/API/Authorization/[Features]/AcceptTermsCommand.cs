@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Authorization.Exceptions;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
@@ -14,16 +15,16 @@ using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 
 namespace API.Authorization._Features_;
 
-public record AcceptTermsCommand(string OrgCvr, string OrgName, Guid UserId) : IRequest<bool>;
+public record AcceptTermsCommand(string OrgCvr, string OrgName, Guid UserId) : IRequest;
 
 public class AcceptTermsCommandHandler(
     IOrganizationRepository organizationRepository,
     ITermsRepository termsRepository,
     IUnitOfWork unitOfWork,
     IPublishEndpoint publishEndpoint)
-    : IRequestHandler<AcceptTermsCommand, bool>
+    : IRequestHandler<AcceptTermsCommand>
 {
-    public async Task<bool> Handle(AcceptTermsCommand request, CancellationToken cancellationToken)
+    public async Task Handle(AcceptTermsCommand request, CancellationToken cancellationToken)
     {
         await unitOfWork.BeginTransactionAsync();
 
@@ -44,7 +45,7 @@ public class AcceptTermsCommandHandler(
 
         if (latestTerms == null)
         {
-            return false;
+            throw new InvalidConfigurationException("No Terms configured");
         }
 
         if (!usersAffiliatedOrganization.TermsAccepted || usersAffiliatedOrganization.TermsVersion != latestTerms.Version)
@@ -63,6 +64,5 @@ public class AcceptTermsCommandHandler(
 
         await unitOfWork.CommitAsync();
 
-        return true;
     }
 }

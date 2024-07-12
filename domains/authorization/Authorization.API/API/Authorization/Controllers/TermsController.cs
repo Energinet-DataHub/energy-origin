@@ -22,16 +22,9 @@ public class TermsController(IMediator mediator, IdentityDescriptor identityDesc
     public async Task<ActionResult<AcceptTermsResponseDto>> AcceptTerms()
     {
         var command = new AcceptTermsCommand(identityDescriptor.OrganizationCvr!, identityDescriptor.OrganizationName, identityDescriptor.Subject);
-        var result = await mediator.Send(command);
-
-        if (!result)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                new AcceptTermsResponseDto(false, "An unexpected error occurred while processing the request."));
-        }
-
-        return Ok(new AcceptTermsResponseDto(true, "Terms accepted successfully."));
+        await mediator.Send(command);
+        return Ok(new AcceptTermsResponseDto("Terms accepted successfully."));
     }
 }
 
-public record AcceptTermsResponseDto(bool Status, string Message);
+public record AcceptTermsResponseDto(string Message);

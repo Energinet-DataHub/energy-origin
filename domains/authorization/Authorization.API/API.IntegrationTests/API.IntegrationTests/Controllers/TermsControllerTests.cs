@@ -39,8 +39,7 @@ public class AcceptTermsTests
 
         var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponseDto>();
         result.Should().NotBeNull();
-        result!.Status.Should().BeTrue();
-        result.Message.Should().Be("Terms accepted successfully.");
+        result!.Message.Should().Be("Terms accepted successfully.");
 
         var organization = await context.Organizations.FirstOrDefaultAsync(o => o.Tin == orgCvr);
         organization.Should().NotBeNull();
@@ -69,10 +68,10 @@ public class AcceptTermsTests
 
         var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponseDto>();
         result.Should().NotBeNull();
-        result!.Status.Should().BeTrue();
-        result.Message.Should().Be("Terms accepted successfully.");
+        result!.Message.Should().Be("Terms accepted successfully.");
 
         var updatedOrganization = await context.Organizations.FirstOrDefaultAsync(o => o.Tin == orgCvr);
+
         updatedOrganization.Should().NotBeNull();
         updatedOrganization!.TermsAccepted.Should().BeTrue();
         updatedOrganization.TermsVersion.Should().Be(terms.Version);
