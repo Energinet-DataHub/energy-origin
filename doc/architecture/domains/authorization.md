@@ -191,7 +191,7 @@ to RabbitMQ, using MassTransit's transactional outbox pattern.
 sequenceDiagram
     actor User
     participant API as Accept Terms API
-    participant Backend as Authorization
+    participant Backend as Authorization Subsystem
     participant EventBus as Event Bus
 
     User->>API: Accept Terms
@@ -221,7 +221,7 @@ they are accepting the terms on behalf of.
 The policy is implemented as a custom authorization policy,
 in the [EnergyOrigin.TokenValidation NuGet package](../../../libraries/dotnet/EnergyOrigin.TokenValidation/README.md).
 
-## User Consent Authorization Documentation
+## User Consent Authorization
 
 ### Overview
 
@@ -234,8 +234,8 @@ which is the only authorized caller of this endpoint.
 ```mermaid
 sequenceDiagram
     participant B2C as Azure B2C
-    participant API as Authorization API
-    participant Backend as Authorization Backend
+    participant API as User-Consent API
+    participant Backend as Authorization Subsystem
 
     B2C->>API: Request User Consent
     activate API
@@ -257,6 +257,43 @@ sequenceDiagram
         Backend-->>API: Report Error
         API-->>B2C: Return Error Response
     end
+```
+
+## User Delete Consent
+
+### Overview
+
+The User Delete Consent flow is responsible for enabling users to delete consents.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant API as Delete Consent API
+    participant Backend as Authorization Subsystem
+
+    User->>API: Delete Consent Request
+    activate API
+
+    API->>Backend: Process Delete Consent
+    activate Backend
+
+    Backend->>Backend: Verify User Affiliation
+
+    Backend->>Backend: Find and Delete Consent
+
+    alt Consent Deleted Successfully
+        Backend-->>API: Confirm Deletion
+        API-->>User: 204 No Content
+    else User Not Affiliated
+        Backend-->>API: Report User Not Affiliated
+        API-->>User: 403 Forbidden
+    else Consent Not Found
+        Backend-->>API: Report Consent Not Found
+        API-->>User: 404 Not Found
+    end
+
+    deactivate Backend
+    deactivate API
 ```
 
 ## Deployment
