@@ -16,6 +16,7 @@ public abstract class Certificate
 
     protected Certificate(string gridArea, Period period, string meteringPointOwner, string gsrn, long quantity, byte[] blindingValue)
     {
+        Id = Guid.NewGuid();
         IssuedState = IssuedState.Creating;
         GridArea = gridArea;
         DateFrom = period.DateFrom;

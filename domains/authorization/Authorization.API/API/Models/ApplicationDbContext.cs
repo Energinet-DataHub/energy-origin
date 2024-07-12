@@ -1,5 +1,6 @@
 using System;
 using API.ValueObjects;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -12,6 +13,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Affiliation> Affiliations { get; set; }
     public DbSet<Client> Clients { get; set; }
     public DbSet<Consent> Consents { get; set; }
+    public DbSet<Terms> Terms { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,6 +24,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         ConfigureConsentTable(modelBuilder);
         ConfigureClientTable(modelBuilder);
         ConfigureUserTable(modelBuilder);
+        ConfigureTermsTable(modelBuilder);
+
+        modelBuilder.AddTransactionalOutboxEntities();
     }
 
     private static void ConfigureOrganizationTable(ModelBuilder modelBuilder)
@@ -37,6 +42,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Organization>().HasIndex(o => o.Tin).IsUnique();
 
         modelBuilder.Entity<Organization>().HasMany(it => it.Affiliations);
+
+        modelBuilder.Entity<Organization>().Property(o => o.TermsAccepted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        modelBuilder.Entity<Organization>().Property(o => o.TermsVersion);
+
+        modelBuilder.Entity<Organization>().Property(o => o.TermsAcceptanceDate);
     }
 
     private static void ConfigureClientTable(ModelBuilder modelBuilder)
@@ -69,8 +82,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void ConfigureAffiliationTable(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Affiliation>()
-            .HasKey(a => new { a.UserId, a.OrganizationId });
+        modelBuilder.Entity<Affiliation>().HasKey(a => new { a.UserId, a.OrganizationId });
     }
 
     private static void ConfigureConsentTable(ModelBuilder modelBuilder)
@@ -83,5 +95,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Consent>()
             .HasIndex(c => new { c.ClientId, c.OrganizationId })
             .IsUnique();
+    }
+
+    private static void ConfigureTermsTable(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Terms>().Property(t => t.Version)
+            .IsRequired();
     }
 }

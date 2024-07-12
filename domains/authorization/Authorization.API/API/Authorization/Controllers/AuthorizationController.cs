@@ -1,57 +1,62 @@
-using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
-using API.Models;
-using API.ValueObjects;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
-using Google.Protobuf.WellKnownTypes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Authorization.Controllers;
 
 [ApiController]
-[ApiVersionNeutral] // B2C does not support adding a version header
-[Authorize(Policy = Policy.B2CCustomPolicyClientPolicy)]
-public class AuthorizationController : ControllerBase
+[Authorize(Policy = Policy.B2CCustomPolicyClientPolicy)] // B2C does not support adding a version header
+[Route("api/authorization")]
+[ApiVersionNeutral]
+public class AuthorizationController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public AuthorizationController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    /// <summary>
-    /// Retrieves Authorization Model.
-    /// </summary>
     [HttpPost]
-    [Route("api/authorization/client-consent/")]
+    [Route("client-consent/")]
+    [SwaggerOperation(
+        Summary = "Retrieves Client Authorization Model",
+        Description = "This endpoint is only used by Azure B2C"
+    )]
     public async Task<ActionResult<AuthorizationResponse>> GetConsentForClient(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationClientRequest request)
     {
-        var queryResult = await _mediator.Send(new GetConsentForClientQuery(request.ClientId));
+        var queryResult = await mediator.Send(new GetConsentForClientQuery(request.ClientId));
 
-        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName,
-            queryResult.OrgIds, queryResult.Scope));
+        return Ok(new AuthorizationResponse(
+            queryResult.Sub,
+            queryResult.SubType,
+            queryResult.OrgName,
+            queryResult.OrgIds,
+            queryResult.Scope)
+        );
     }
 
-    /// <summary>
-    /// Retreives Authorization Model.
-    /// </summary>
     [HttpPost]
-    [Route("api/authorization/user-consent/")]
-    public async Task<ActionResult<AuthorizationResponse>> GetConsentForUser(
+    [Route("user-consent/")]
+    [SwaggerOperation(
+        Summary = "Retrieves User Authorization Model",
+        Description = "This endpoint is only used by Azure B2C"
+    )]
+    public async Task<ActionResult<UserAuthorizationResponse>> GetConsentForUser(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationUserRequest request)
     {
-        var queryResult =
-            await _mediator.Send(new GetConsentForUserQuery(request.Sub, request.Name, request.OrgName,
-                request.OrgCvr));
+        var commandResult = await mediator.Send(new GetConsentForUserCommand(
+            request.Sub,
+            request.Name,
+            request.OrgName,
+            request.OrgCvr));
 
-        return Ok(new AuthorizationResponse(queryResult.Sub, queryResult.SubType, queryResult.OrgName,
-            queryResult.OrgIds, queryResult.Scope));
+        return Ok(new UserAuthorizationResponse(
+            commandResult.Sub,
+            commandResult.SubType,
+            commandResult.OrgName,
+            commandResult.OrgIds,
+            commandResult.Scope,
+            commandResult.TermsAccepted));
     }
 }
