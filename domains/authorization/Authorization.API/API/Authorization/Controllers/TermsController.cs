@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Authorization.Controllers;
 
@@ -19,6 +20,12 @@ public class TermsController(IMediator mediator, IdentityDescriptor identityDesc
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(AcceptTermsResponseDto), StatusCodes.Status403Forbidden)]
+    [SwaggerOperation(
+        Summary = "Accept Terms on behalf of users affiliated organization",
+        Description = "Requires 'org_cvr' claim",
+        OperationId = "AcceptTerms",
+        Tags = ["Accept", "Terms"]
+    )]
     public async Task<ActionResult<AcceptTermsResponseDto>> AcceptTerms()
     {
         var command = new AcceptTermsCommand(identityDescriptor.OrganizationCvr!, identityDescriptor.OrganizationName, identityDescriptor.Subject);
