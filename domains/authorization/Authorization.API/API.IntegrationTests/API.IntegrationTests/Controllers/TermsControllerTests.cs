@@ -26,7 +26,6 @@ public class AcceptTermsTests
     public async Task GivenValidRequest_WhenAcceptingTerms_ThenHttpOkAndTermsAccepted()
     {
         await using var context = new ApplicationDbContext(_options);
-        await context.Database.EnsureCreatedAsync();
 
         var terms = Terms.Create(1);
         var orgCvr = Tin.Create("12345678");
@@ -53,7 +52,6 @@ public class AcceptTermsTests
     public async Task GivenExistingOrganizationAndUser_WhenAcceptingTerms_ThenHttpOkAndTermsUpdated()
     {
         await using var context = new ApplicationDbContext(_options);
-        await context.Database.EnsureCreatedAsync();
 
         var terms = Terms.Create(1);
         var orgCvr = Any.Tin();
