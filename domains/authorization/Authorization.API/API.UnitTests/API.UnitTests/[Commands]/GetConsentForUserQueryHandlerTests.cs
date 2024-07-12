@@ -30,6 +30,9 @@ public class GetConsentForUserQueryHandlerTests
             _fakeUnitOfWork);
     }
 
+    private const string Scope = "dashboard production meters certificates wallet";
+    private const string SubType = "User";
+
     [Fact]
     public async Task Handle_WhenOrganizationDoesNotExist_ReturnsResultWithNoOrgIdsAndFalseTermsAccepted()
     {
@@ -41,10 +44,10 @@ public class GetConsentForUserQueryHandlerTests
         result.Should().BeEquivalentTo(new GetConsentForUserCommandResult(
             command.Sub,
             command.Name,
-            "User",
+            SubType,
             command.OrgName,
             new List<Guid>(),
-            "dashboard production meters certificates wallet",
+            Scope,
             false
         ));
     }
@@ -66,10 +69,10 @@ public class GetConsentForUserQueryHandlerTests
         result.Should().BeEquivalentTo(new GetConsentForUserCommandResult(
             command.Sub,
             command.Name,
-            "User",
+            SubType,
             command.OrgName,
             new List<Guid> { organization.Id },
-            "dashboard production meters certificates wallet",
+            Scope,
             false
         ));
     }
@@ -147,7 +150,7 @@ public class GetConsentForUserQueryHandlerTests
     public async Task Handle_WhenExceptionOccurs_RollsBackTransactionAndThrowsException()
     {
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
-        mockOrganizationRepository.Query().Returns(x => throw new Exception("Test exception"));
+        mockOrganizationRepository.Query().Returns(_ => throw new Exception("Test exception"));
         var handler = new GetConsentForUserQueryHandler(
             mockOrganizationRepository,
             _fakeUserRepository,
