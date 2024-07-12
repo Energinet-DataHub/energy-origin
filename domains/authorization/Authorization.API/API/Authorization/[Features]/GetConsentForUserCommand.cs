@@ -35,84 +35,76 @@ public class GetConsentForUserQueryHandler(
     {
 
         const string scope = "dashboard production meters certificates wallet";
+        const string subType = "User";
         await unitOfWork.BeginTransactionAsync();
 
-        try
+        var orgTin = Tin.Create(command.OrgCvr);
+        var organization = await organizationRepository.Query()
+            .Include(o => o.Affiliations)
+            .FirstOrDefaultAsync(o => o.Tin == orgTin, cancellationToken);
+
+        var latestTerms = await termsRepository.Query()
+            .OrderByDescending(t => t.Version)
+            .FirstOrDefaultAsync(cancellationToken);
+
+
+
+        if (organization == null || latestTerms == null)
         {
-            var orgTin = Tin.Create(command.OrgCvr);
-            var organization = await organizationRepository.Query()
-                .Include(o => o.Affiliations)
-                .FirstOrDefaultAsync(o => o.Tin == orgTin, cancellationToken);
-
-            var latestTerms = await termsRepository.Query()
-                .OrderByDescending(t => t.Version)
-                .FirstOrDefaultAsync(cancellationToken);
-
-
-            if (organization == null || latestTerms == null)
-            {
-                await unitOfWork.RollbackAsync();
-                return new GetConsentForUserCommandResult(
-                    command.Sub,
-                    command.Name,
-                    "User",
-                    command.OrgName,
-                    new List<Guid>(),
-                    scope,
-                    false
-                );
-            }
-
-            var latestTermsAccepted = organization.TermsAccepted && organization.TermsVersion == latestTerms.Version;
-
-            if (!latestTermsAccepted)
-            {
-                await unitOfWork.RollbackAsync();
-                return new GetConsentForUserCommandResult(
-                    command.Sub,
-                    command.Name,
-                    "User",
-                    command.OrgName,
-                    new List<Guid> { organization.Id },
-                    scope,
-                    false
-                );
-            }
-
-            var userId = IdpUserId.Create(command.Sub);
-            var user = await userRepository.Query()
-                .Where(u => u.IdpUserId == userId)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (user == null)
-            {
-                user = User.Create(IdpUserId.Create(command.Sub), UserName.Create(command.Name));
-                await userRepository.AddAsync(user, cancellationToken);
-
-                if (organization.Affiliations.All(a => a.UserId != user.Id))
-                {
-                    var affiliation = Affiliation.Create(user, organization);
-                    organization.Affiliations.Add(affiliation);
-                    organizationRepository.Update(organization);
-                }
-            }
-
-            await unitOfWork.CommitAsync();
-
             return new GetConsentForUserCommandResult(
                 command.Sub,
                 command.Name,
-                "User",
+                subType,
+                command.OrgName,
+                new List<Guid>(),
+                scope,
+                false
+            );
+        }
+
+        var latestTermsAccepted = organization.TermsAccepted && organization.TermsVersion == latestTerms.Version;
+
+        if (!latestTermsAccepted)
+        {
+            return new GetConsentForUserCommandResult(
+                command.Sub,
+                command.Name,
+                subType,
                 command.OrgName,
                 new List<Guid> { organization.Id },
                 scope,
-                true
+                false
             );
         }
-        catch
+
+        var userId = IdpUserId.Create(command.Sub);
+        var user = await userRepository.Query()
+            .Where(u => u.IdpUserId == userId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (user == null)
         {
-            await unitOfWork.RollbackAsync();
-            throw;
+            user = User.Create(IdpUserId.Create(command.Sub), UserName.Create(command.Name));
+            await userRepository.AddAsync(user, cancellationToken);
+
+            if (organization.Affiliations.All(a => a.UserId != user.Id))
+            {
+                var affiliation = Affiliation.Create(user, organization);
+                organization.Affiliations.Add(affiliation);
+                organizationRepository.Update(organization);
+            }
         }
+
+        await unitOfWork.CommitAsync();
+
+        return new GetConsentForUserCommandResult(
+            command.Sub,
+            command.Name,
+            subType,
+            command.OrgName,
+            new List<Guid> { organization.Id },
+            scope,
+            true
+        );
     }
 }

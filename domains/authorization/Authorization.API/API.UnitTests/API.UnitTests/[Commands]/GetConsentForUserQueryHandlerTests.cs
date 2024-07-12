@@ -47,7 +47,6 @@ public class GetConsentForUserQueryHandlerTests
             "dashboard production meters certificates wallet",
             false
         ));
-        await _fakeUnitOfWork.Received(1).RollbackAsync();
     }
 
     [Fact]
@@ -73,7 +72,6 @@ public class GetConsentForUserQueryHandlerTests
             "dashboard production meters certificates wallet",
             false
         ));
-        await _fakeUnitOfWork.Received(1).RollbackAsync();
     }
 
     [Fact]
@@ -143,7 +141,6 @@ public class GetConsentForUserQueryHandlerTests
         _fakeUserRepository.Query().Count().Should().Be(1);
         organization.Affiliations.Count.Should().Be(1);
         organization.TermsVersion.Should().Be(oldTerms.Version);
-        await _fakeUnitOfWork.Received(1).RollbackAsync();
     }
 
     [Fact]
@@ -160,6 +157,5 @@ public class GetConsentForUserQueryHandlerTests
         var command = new GetConsentForUserCommand(Guid.NewGuid(), "Test User", "Test Org", "12345678");
 
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
-        await _fakeUnitOfWork.Received(1).RollbackAsync();
     }
 }

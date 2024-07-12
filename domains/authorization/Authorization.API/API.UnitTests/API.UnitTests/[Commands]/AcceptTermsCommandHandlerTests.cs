@@ -16,7 +16,6 @@ public class AcceptTermsCommandHandlerTests
 {
     private readonly FakeOrganizationRepository _organizationRepository;
     private readonly FakeTermsRepository _termsRepository;
-    private readonly FakeUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly AcceptTermsCommandHandler _handler;
@@ -25,7 +24,6 @@ public class AcceptTermsCommandHandlerTests
     {
         _organizationRepository = new FakeOrganizationRepository();
         _termsRepository = new FakeTermsRepository();
-        _userRepository = new FakeUserRepository();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _publishEndpoint = Substitute.For<IPublishEndpoint>();
         _handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, _publishEndpoint);
