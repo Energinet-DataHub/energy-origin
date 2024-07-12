@@ -87,7 +87,7 @@ public class AcceptTermsCommandHandlerTests
     {
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
 
-        var action = async ()=> await _handler.Handle(command, CancellationToken.None);
+        var action = async () => await _handler.Handle(command, CancellationToken.None);
 
         await action.Should().ThrowAsync<InvalidConfigurationException>();
         await _unitOfWork.DidNotReceive().CommitAsync();
