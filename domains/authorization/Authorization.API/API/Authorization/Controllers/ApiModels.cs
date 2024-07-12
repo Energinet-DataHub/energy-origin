@@ -36,7 +36,7 @@ public record GrantConsentRequest(Guid IdpClientId);
 
 public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
 
-public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName);
+public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName, string Tin);
 public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Result);
 
 public enum ClientType
@@ -45,7 +45,8 @@ public enum ClientType
     Internal = 1
 }
 
-public record CreateClientRequest(Guid IdpClientId, string Name, ClientType ClientType, string RedicrectUrl);
+public record CreateClientRequest(Guid IdpClientId, string Name, ClientType ClientType, string RedirectUrl);
+
 public record CreateClientResponse(Guid Id, Guid IdpClientId, string Name, ClientType ClientType, string RedirectUrl);
 
 public record UserOrganizationConsentsResponseItem(Guid IdpClientId, string ClientName, long ConsentDate);
