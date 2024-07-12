@@ -78,11 +78,12 @@ public class AcceptTermsCommandHandlerTests
         var handler = new AcceptTermsCommandHandler(mockOrganizationRepository, _termsRepository, mockUnitOfWork, _publishEndpoint);
 
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
+        await mockUnitOfWork.DidNotReceive().CommitAsync();
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task Handle_WhenNoTermsExist_ReturnsFalseAndDoesNotPublishMessage()
+    public async Task Handle_WhenNoTermsExist_RollsBackTransactionAndDoesNotPublishMessage()
     {
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
 

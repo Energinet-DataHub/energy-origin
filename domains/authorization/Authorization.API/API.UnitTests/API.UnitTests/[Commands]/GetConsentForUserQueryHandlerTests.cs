@@ -156,6 +156,7 @@ public class GetConsentForUserQueryHandlerTests
 
         var command = new GetConsentForUserCommand(Guid.NewGuid(), "Test User", "Test Org", "12345678");
 
+        await _fakeUnitOfWork.DidNotReceive().CommitAsync();
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
     }
 }
