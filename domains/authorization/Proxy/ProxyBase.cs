@@ -6,12 +6,17 @@ namespace Proxy;
 
 public class ProxyBase : ControllerBase
 {
-    private readonly AccessDescriptor? _accessDescriptor;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
     private readonly HttpClient _httpClient;
 
-    public ProxyBase(IHttpClientFactory httpClientFactory, AccessDescriptor? accessDescriptor)
+    public ProxyBase(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor)
     {
-        _accessDescriptor = accessDescriptor;
+        _httpContextAccessor = httpContextAccessor;
+        _httpClient = httpClientFactory.CreateClient("Proxy");
+    }
+
+    public ProxyBase(IHttpClientFactory httpClientFactory)
+    {
         _httpClient = httpClientFactory.CreateClient("Proxy");
     }
 
@@ -44,7 +49,7 @@ public class ProxyBase : ControllerBase
 
     private void BuildProxyResponseHeaders(HttpResponseMessage proxyResponse)
     {
-        foreach (var header in proxyResponse.Headers.Where(x => !x.Key.Equals("Transfer-Encoding")))
+        foreach (var header in proxyResponse.Headers.Where(x => !x.Key.Equals("Transfer-Encoding", StringComparison.InvariantCultureIgnoreCase)))
         {
             foreach (var value in header.Value)
             {
@@ -68,7 +73,7 @@ public class ProxyBase : ControllerBase
 
     private void BuildProxyForwardHeaders(string? organizationId, HttpRequestMessage requestMessage)
     {
-        foreach (var header in HttpContext.Request.Headers)
+        foreach (var header in HttpContext.Request.Headers.Where(x => !x.Key.Equals("Authorization", StringComparison.InvariantCultureIgnoreCase)))
         {
             if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
             {
@@ -98,7 +103,7 @@ public class ProxyBase : ControllerBase
         };
 
         requestMessage.Method = new HttpMethod(HttpContext.Request.Method);
-        requestMessage.RequestUri = new Uri($"{path}{HttpContext.Request.QueryString}", UriKind.Relative);
+        requestMessage.RequestUri = new Uri($"wallet-api/{path}{HttpContext.Request.QueryString}", UriKind.Relative);
 
         return requestMessage;
     }
@@ -110,6 +115,7 @@ public class ProxyBase : ControllerBase
     /// <param name="organizationId"></param>
     protected async Task ProxyClientCredentialsRequest(string path, string? organizationId)
     {
+        AccessDescriptor accessDescriptor = new(new IdentityDescriptor(_httpContextAccessor!));
         if (string.IsNullOrEmpty(organizationId))
         {
             Forbidden();
@@ -117,7 +123,7 @@ public class ProxyBase : ControllerBase
         }
 
         var orgId = Guid.Parse(organizationId);
-        if (_accessDescriptor is not null && !_accessDescriptor.IsAuthorizedToOrganization(orgId))
+        if (accessDescriptor is not null && !accessDescriptor.IsAuthorizedToOrganization(orgId))
         {
             Forbidden();
             return;

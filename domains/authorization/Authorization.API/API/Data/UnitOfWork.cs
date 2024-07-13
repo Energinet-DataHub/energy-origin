@@ -24,15 +24,12 @@ public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
         {
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
+            transaction = null;
         }
         catch
         {
             await RollbackAsync();
             throw;
-        }
-        finally
-        {
-            await DisposeTransactionAsync();
         }
     }
 
@@ -41,7 +38,8 @@ public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
         if (transaction is not null)
         {
             await transaction.RollbackAsync();
-            await DisposeTransactionAsync();
+            await transaction.DisposeAsync();
+            transaction = null;
         }
     }
 
@@ -49,8 +47,7 @@ public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
     {
         if (transaction is not null)
         {
-            await transaction.DisposeAsync();
-            transaction = null;
+            await RollbackAsync();
         }
     }
 

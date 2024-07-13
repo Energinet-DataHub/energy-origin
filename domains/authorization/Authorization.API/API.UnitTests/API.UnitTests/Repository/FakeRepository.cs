@@ -63,3 +63,5 @@ public class FakeClientRepository : FakeGenericRepository<Client>, IClientReposi
 public class FakeOrganizationRepository : FakeGenericRepository<Organization>, IOrganizationRepository;
 
 public class FakeUserRepository : FakeGenericRepository<User>, IUserRepository;
+
+public class FakeTermsRepository : FakeGenericRepository<Terms>, ITermsRepository;

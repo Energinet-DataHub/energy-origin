@@ -1,4 +1,3 @@
-using System.Net.Http.Formatting;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,7 +10,7 @@ public class Api : IAsyncLifetime
     private readonly HttpClient _client;
     public readonly JsonSerializerOptions SerializerOptions;
 
-    internal JsonSerializerOptions JsonSerializerOptions()
+    private JsonSerializerOptions JsonSerializerOptions()
     {
         var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         jsonOptions.Converters.Add(new JsonStringEnumConverter());
@@ -40,10 +39,19 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/client/" + idpClientId);
     }
 
+    public async Task<HttpResponseMessage> AcceptTerms()
+    {
+        return await _client.PostAsJsonAsync("/api/authorization/terms/accept", new { }, SerializerOptions);
+    }
 
     public async Task<HttpResponseMessage> GetClientConsents()
     {
         return await _client.GetAsync("/api/authorization/client/consents/");
+    }
+
+    public async Task<HttpResponseMessage> GetConsentForUser(AuthorizationUserRequest request)
+    {
+        return await _client.PostAsJsonAsync("/api/authorization/user-consent/", request, SerializerOptions);
     }
 
     public async Task<HttpResponseMessage> CreateClient(Guid idpClientId, string name, ClientType clientType,
@@ -56,6 +64,11 @@ public class Api : IAsyncLifetime
     public async Task<HttpResponseMessage> GetUserOrganizationConsents()
     {
         return await _client.GetAsync("/api/authorization/consents/");
+    }
+
+    public async Task<HttpResponseMessage> DeleteConsent(Guid clientId)
+    {
+        return await _client.DeleteAsync($"/api/authorization/consents/{clientId}");
     }
 
     public Task InitializeAsync()

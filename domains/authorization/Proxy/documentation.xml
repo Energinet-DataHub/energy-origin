@@ -4,21 +4,28 @@
         <name>Proxy</name>
     </assembly>
     <members>
-        <member name="M:Proxy.Controllers.CertificatesController.GetCertificatesV2(Proxy.Controllers.GetCertificatesQueryParameters,System.String)">
+        <member name="M:Proxy.Controllers.CertificatesController.GetCertificatesCursor(Proxy.Controllers.GetCertificatesQueryParametersCursor,System.String)">
             <summary>
             Gets all certificates in the wallet that are <b>available</b> for use.
             </summary>
             <response code="200">Returns the aggregated claims.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.CertificatesController.GetCertificates(Proxy.Controllers.GetCertificatesQueryParameters)">
+        <member name="M:Proxy.Controllers.CertificatesController.GetCertificates(Proxy.Controllers.GetCertificatesQueryParameters,System.String)">
             <summary>
             Gets all certificates in the wallet that are <b>available</b> for use.
             </summary>
             <response code="200">Returns the aggregated claims.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.CertificatesController.AggregateCertificatesV2(Proxy.Controllers.AggregateCertificatesQueryParameters,System.String)">
+        <member name="M:Proxy.Controllers.CertificatesController.GetCertificatesLegacy(Proxy.Controllers.GetCertificatesQueryParameters)">
+            <summary>
+            Gets all certificates in the wallet that are <b>available</b> for use.
+            </summary>
+            <response code="200">Returns the aggregated claims.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.CertificatesController.AggregateCertificates(Proxy.Controllers.AggregateCertificatesQueryParameters,System.String)">
             <summary>
             Returns aggregates certificates that are <b>available</b> to use, based on the specified time zone and time range.
             </summary>
@@ -26,7 +33,7 @@
             <response code="400">If the time zone is invalid.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.CertificatesController.AggregateCertificates(Proxy.Controllers.AggregateCertificatesQueryParameters)">
+        <member name="M:Proxy.Controllers.CertificatesController.AggregateCertificatesLegacy(Proxy.Controllers.AggregateCertificatesQueryParameters)">
             <summary>
             Returns aggregates certificates that are <b>available</b> to use, based on the specified time zone and time range.
             </summary>
@@ -34,21 +41,28 @@
             <response code="400">If the time zone is invalid.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.ClaimsController.GetClaims(Proxy.Controllers.GetClaimsQueryParameters)">
+        <member name="M:Proxy.Controllers.ClaimsController.GetClaimsCursor(Proxy.Controllers.GetClaimsQueryParametersCursor)">
             <summary>
             Gets all claims in the wallet
             </summary>
             <response code="200">Returns all the indiviual claims.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.ClaimsController.GetClaimsV2(Proxy.Controllers.GetClaimsQueryParameters,System.String)">
+        <member name="M:Proxy.Controllers.ClaimsController.GetClaimsLegacy(Proxy.Controllers.GetClaimsQueryParameters)">
             <summary>
             Gets all claims in the wallet
             </summary>
             <response code="200">Returns all the indiviual claims.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.ClaimsController.AggregateClaims(Proxy.Controllers.AggregateClaimsQueryParameters)">
+        <member name="M:Proxy.Controllers.ClaimsController.GetClaims(Proxy.Controllers.GetClaimsQueryParameters,System.String)">
+            <summary>
+            Gets all claims in the wallet
+            </summary>
+            <response code="200">Returns all the indiviual claims.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.ClaimsController.AggregateClaimsLegacy(Proxy.Controllers.AggregateClaimsQueryParameters)">
             <summary>
             Returns a list of aggregates claims for the authenticated user based on the specified time zone and time range.
             </summary>
@@ -56,7 +70,7 @@
             <response code="400">If the time zone is invalid.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.ClaimsController.AggregateClaimsV2(Proxy.Controllers.AggregateClaimsQueryParameters,System.String)">
+        <member name="M:Proxy.Controllers.ClaimsController.AggregateClaims(Proxy.Controllers.AggregateClaimsQueryParameters,System.String)">
             <summary>
             Returns a list of aggregates claims for the authenticated user based on the specified time zone and time range.
             </summary>
@@ -64,7 +78,7 @@
             <response code="400">If the time zone is invalid.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.ClaimsController.ClaimCertificate(Proxy.Controllers.ClaimRequest)">
+        <member name="M:Proxy.Controllers.ClaimsController.ClaimCertificateLegacy(Proxy.Controllers.ClaimRequest)">
             <summary>
             Queues a request to claim two certificate for a given quantity.
             </summary>
@@ -72,7 +86,7 @@
             <response code="202">Claim request has been queued for processing.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.ClaimsController.ClaimCertificateV2(Proxy.Controllers.ClaimRequest,System.String)">
+        <member name="M:Proxy.Controllers.ClaimsController.ClaimCertificate(Proxy.Controllers.ClaimRequest,System.String)">
             <summary>
             Queues a request to claim two certificate for a given quantity.
             </summary>
@@ -240,6 +254,76 @@
             The quantity of the aggregated claims.
             </summary>
         </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.Type">
+            <summary>
+            Filter the type of certificates to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParametersCursor.UpdatedSince">
+            <summary>
+            The time of the last update in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.Type">
+            <summary>
+            Filter the type of certificates to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParametersCursor.UpdatedSince">
+            <summary>
+            The time of the last update in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParametersCursor.Start">
+            <summary>
+            The start of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParametersCursor.End">
+            <summary>
+            The end of the time range in Unix time in seconds.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParametersCursor.Limit">
+            <summary>
+            The number of items to return.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetTransfersQueryParametersCursor.UpdatedSince">
+            <summary>
+            The time of the last update in Unix time in seconds.
+            </summary>
+        </member>
         <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Start">
             <summary>
             The start of the time range in Unix time in seconds.
@@ -402,7 +486,7 @@
             <response code="400">Public key could not be decoded.</response>
             <response code="404">Receiver endpoint not found.</response>
         </member>
-        <member name="M:Proxy.Controllers.SlicesController.ReceiveSliceV2(Proxy.Controllers.ReceiveRequest,System.String)">
+        <member name="M:Proxy.Controllers.SlicesController.ReceiveSliceV2(Proxy.Controllers.ReceiveRequest)">
             <summary>
             Receive a certificate-slice from another wallet.
             </summary>
@@ -492,41 +576,48 @@
             Response to receive a certificate-slice from another wallet.
             </summary>
         </member>
-        <member name="M:Proxy.Controllers.TransfersController.GetTransfers(Proxy.Controllers.GetTransfersQueryParameters)">
+        <member name="M:Proxy.Controllers.TransfersController.GetTransfersCursor(Proxy.Controllers.GetTransfersQueryParametersCursor)">
             <summary>
             Gets detailed list of all of the transfers that have been made to other wallets.
             </summary>
             <response code="200">Returns the individual transferes within the filter.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.TransfersController.GetTransfersV2(Proxy.Controllers.GetTransfersQueryParameters,System.String)">
+        <member name="M:Proxy.Controllers.TransfersController.GetTransfersLegacy(Proxy.Controllers.GetTransfersQueryParameters)">
+            <summary>
+            Gets detailed list of all of the transfers that have been made to other wallets.
+            </summary>
+            <response code="200">Returns the individual transferes within the filter.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.TransfersController.GetTransfers(Proxy.Controllers.GetTransfersQueryParameters,System.String)">
             <summary>
             Gets detailed list of all the transfers that have been made to other wallets.
             </summary>
             <response code="200">Returns the individual transferes within the filter.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.TransfersController.AggregateTransfers(Proxy.Controllers.AggregateTransfersQueryParameters)">
+        <member name="M:Proxy.Controllers.TransfersController.AggregateTransfersLegacy(Proxy.Controllers.AggregateTransfersQueryParameters)">
             <summary>
             Gets detailed list of all the transfers that have been made to other wallets.
             </summary>
             <response code="200">Returns the individual transferes within the filter.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.TransfersController.AggregateTransfersV2(Proxy.Controllers.AggregateTransfersQueryParameters,System.String)">
+        <member name="M:Proxy.Controllers.TransfersController.AggregateTransfers(Proxy.Controllers.AggregateTransfersQueryParameters,System.String)">
             <summary>
             Gets detailed list of all the transfers that have been made to other wallets.
             </summary>
             <response code="200">Returns the individual transferes within the filter.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.TransfersController.TransferCertificate(Proxy.Controllers.TransferRequest)">
+        <member name="M:Proxy.Controllers.TransfersController.TransferCertificateLegacy(Proxy.Controllers.TransferRequest)">
             <summary>
             Transfers a certificate to another wallet.
             </summary>
             <param name="request"></param>
         </member>
-        <member name="M:Proxy.Controllers.TransfersController.TransferCertificateV2(Proxy.Controllers.TransferRequest,System.String)">
+        <member name="M:Proxy.Controllers.TransfersController.TransferCertificate(Proxy.Controllers.TransferRequest,System.String)">
             <summary>
             Transfers a certificate to another wallet.
             </summary>
@@ -663,21 +754,48 @@
             The quantity of the aggregated transfers.
             </summary>
         </member>
-        <member name="M:Proxy.Controllers.WalletController.GetWallets">
+        <member name="M:Proxy.Controllers.WalletController.CreateWalletLegacy(Proxy.Controllers.CreateWalletRequest)">
+            <summary>
+            Creates a new wallet for the user.
+            </summary>
+            <remarks>
+            Currently, only **one wallet** per user is supported.
+            The wallet is created with a private key, which is used to generate sub-public-keys for each certificate-slice.
+            The private key can be provided, but it is optional, if omittted a random one is generated.
+            </remarks>
+            <param name = "request" > The private key to import. If not provided, a new private key will be generated.</param>
+            <response code="201">The wallet was created.</response>
+            <response code="400">If private key is invalid or if wallet for user already exists.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.WalletController.CreateWallet(Proxy.Controllers.CreateWalletRequest,System.String)">
+            <summary>
+            Creates a new wallet for the user.
+            </summary>
+            <remarks>
+            Currently, only **one wallet** per user is supported.
+            The wallet is created with a private key, which is used to generate sub-public-keys for each certificate-slice.
+            The private key can be provided, but it is optional, if omittted a random one is generated.
+            </remarks>
+            <response code="201">The wallet was created.</response>
+            <response code="400">If private key is invalid or if wallet for user already exists.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.WalletController.GetWalletsLegacy">
             <summary>
             Gets all wallets for the user.
             </summary>
             <response code="200">The wallets were found.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.WalletController.GetWalletsV2(System.String)">
+        <member name="M:Proxy.Controllers.WalletController.GetWallets(System.String)">
             <summary>
             Gets all wallets for the user.
             </summary>
             <response code="200">The wallets were found.</response>
             <response code="401">If the user is not authenticated.</response>
         </member>
-        <member name="M:Proxy.Controllers.WalletController.GetWallet(System.Guid)">
+        <member name="M:Proxy.Controllers.WalletController.GetWalletLegacy(System.Guid)">
             <summary>
             Gets a specific wallet for the user.
             </summary>
@@ -686,7 +804,7 @@
             <response code="401">If the user is not authenticated.</response>
             <response code="404">If the wallet specified is not found for the user.</response>
         </member>
-        <member name="M:Proxy.Controllers.WalletController.GetWalletV2(System.Guid,System.String)">
+        <member name="M:Proxy.Controllers.WalletController.GetWallet(System.Guid,System.String)">
             <summary>
             Gets a specific wallet for the user.
             </summary>

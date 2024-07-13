@@ -6,7 +6,7 @@ using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
 using API.MeteringPoints.Api.Models;
 using Contracts;
-using EnergyOrigin.IntegrationEvents.Events.Terms.V1;
+using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -37,7 +37,7 @@ public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Start
     public async Task when_datahub_relation_is_created_relationstatus_is_created()
     {
         var relationMock = new CreateRelationResponse() { ErrorMessage = "", Success = true };
-        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "22222222", Guid.NewGuid());
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), Guid.NewGuid().ToString(), DateTimeOffset.UtcNow, Guid.NewGuid(), "22222222", Guid.NewGuid());
         var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
         contextMock.Message.Returns(@event);
 
@@ -59,7 +59,7 @@ public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Start
     public async Task when_datahub_relation_is_already_excisting_no_exception()
     {
         var relationMock = new CreateRelationResponse() { ErrorMessage = "", Success = true };
-        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "22222222", Guid.NewGuid());
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), Guid.NewGuid().ToString(), DateTimeOffset.UtcNow, Guid.NewGuid(), "22222222", Guid.NewGuid());
         var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
         contextMock.Message.Returns(@event);
 
@@ -83,7 +83,7 @@ public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Start
     public async Task when_datahub_relation_is_not_created_relationstatus_is_pending()
     {
         var relationMock = new CreateRelationResponse() { ErrorMessage = "Error", Success = false };
-        var @event = new OrgAcceptedTerms(Guid.NewGuid(), "22222222", Guid.NewGuid());
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), Guid.NewGuid().ToString(), DateTimeOffset.UtcNow, Guid.NewGuid(), "22222222", Guid.NewGuid());
         var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
         contextMock.Message.Returns(@event);
 

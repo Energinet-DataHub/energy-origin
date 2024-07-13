@@ -16,7 +16,7 @@ public static class Startup
 
         services.AddScoped<MeasurementsSyncService>();
         services.AddScoped<SlidingWindowService>();
-        services.AddScoped<ISyncState, SyncState>();
+        services.AddScoped<ISlidingWindowState, SlidingWindowState>();
         services.AddSingleton<IContractState, ContractState>();
 
         services.AddSingleton<IMeasurementSyncMetrics, MeasurementSyncMetrics>();

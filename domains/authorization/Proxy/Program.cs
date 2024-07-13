@@ -15,7 +15,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwagger("ProjectOrigin.WalletSystem.Server");
+builder.Services.AddSwagger("Wallet API");
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -83,7 +83,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.AddSwagger(app.Environment, "authorization-proxy");
+app.AddSwagger(app.Environment, "wallet-api");
 
 app.MapHealthChecks("/health");
 

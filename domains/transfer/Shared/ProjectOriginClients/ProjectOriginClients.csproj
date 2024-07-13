@@ -18,6 +18,6 @@
 		<PackageReference Include="Grpc.Tools" Version="2.64.0" PrivateAssets="all" />
 		<PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="1.0.0" />
 		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="1.1.1" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.2" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0" />
 	</ItemGroup>
 </Project>

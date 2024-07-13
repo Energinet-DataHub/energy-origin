@@ -26,8 +26,7 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
     [Route("api/authorization/consent/grant/")]
     public async Task<ActionResult> GrantConsent([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentRequest request)
     {
-        await mediator.Send(new GrantConsentCommand(identity.Subject, identity.AuthorizedOrganizationIds.Single(),
-            new IdpClientId(request.IdpClientId)));
+        await mediator.Send(new GrantConsentCommand(identity.Subject, identity.OrganizationCvr!, new IdpClientId(request.IdpClientId)));
         return Ok();
     }
 
@@ -53,9 +52,28 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
         var queryResult = await mediator.Send(new GetUserOrganizationConsentsQuery(identity.Subject.ToString(), identity.OrganizationCvr!));
 
         var response = new UserOrganizationConsentsResponse(
-            queryResult.Result.Select(item => new UserOrganizationConsentsResponseItem(item.ClientName, item.ConsentDate))
+            queryResult.Result.Select(item => new UserOrganizationConsentsResponseItem(item.IdpClientId, item.ClientName, item.ConsentDate))
         );
 
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Deletes a consent, from the organization, which the user is affiliated with.
+    /// </summary>
+    /// <param name="clientId">The ID of the client.</param>
+    /// <returns>No content if the deletion was successful, Not Found if the consent was not found.</returns>
+    [HttpDelete("api/authorization/consents/{clientId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> DeleteConsent([FromRoute] Guid clientId)
+    {
+        var idpUserId = identity.Subject;
+        var userOrgCvr = identity.OrganizationCvr;
+
+        await mediator.Send(new DeleteConsentCommand(clientId, idpUserId, userOrgCvr!));
+
+        return NoContent();
     }
 }

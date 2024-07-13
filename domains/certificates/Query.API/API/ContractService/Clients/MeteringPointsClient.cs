@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
@@ -33,22 +32,45 @@ public class MeteringPointsClient : IMeteringPointsClient
 
     public async Task<MeteringPointsResponse?> GetMeteringPoints(string owner, CancellationToken cancellationToken)
     {
+        ValidateHttpContext();
         SetAuthorizationHeader();
-
         ValidateOwnerAndSubjectMatch(owner);
+        SetApiVersionHeader();
 
-        return await httpClient.GetFromJsonAsync<MeteringPointsResponse>("/api/measurements/meteringpoints",
-            cancellationToken: cancellationToken, options: jsonSerializerOptions);
+        var meteringPointsUrl = IsBearerTokenIssuedByB2C() ? $"/api/measurements/meteringpoints?orgId={owner}" : "/api/measurements/meteringpoints";
+
+        return await httpClient.GetFromJsonAsync<MeteringPointsResponse>(meteringPointsUrl, jsonSerializerOptions,
+            cancellationToken);
     }
 
     private void SetAuthorizationHeader()
     {
+        httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext!.Request.Headers.Authorization!);
+    }
+
+    private void SetApiVersionHeader()
+    {
+        var downstreamApiVersion = GetDownstreamApiVersion();
+        httpClient.DefaultRequestHeaders.Remove("EO_API_VERSION");
+        httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", downstreamApiVersion);
+    }
+
+    private string GetDownstreamApiVersion()
+    {
+        if (IsBearerTokenIssuedByB2C())
+        {
+            return "20240515";
+        }
+        return "20240110";
+    }
+
+    private void ValidateHttpContext()
+    {
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext == null)
-            throw new HttpRequestException($"No HTTP context found. {nameof(MeteringPointsClient)} must be used as part of a request");
-
-        httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContext.Request.Headers.Authorization!);
-        httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", "20240110");
+        {
+            throw new HttpRequestException($"No HTTP context found. {nameof(WalletClient)} must be used as part of a request");
+        }
     }
 
     private void ValidateOwnerAndSubjectMatch(string owner)
@@ -67,18 +89,41 @@ public class MeteringPointsClient : IMeteringPointsClient
             var user = new UserDescriptor(httpContextAccessor.HttpContext!.User);
             var subject = user.Subject.ToString();
             if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+            {
                 throw new HttpRequestException("Owner must match subject");
+            }
         }
+    }
+
+    private bool IsBearerTokenIssuedByB2C()
+    {
+        return IdentityDescriptor.IsSupported(httpContextAccessor.HttpContext!);
     }
 }
 
 public record MeteringPointsResponse(List<MeteringPoint> Result);
 
-public record MeteringPoint(string Gsrn, string GridArea, MeterType Type, Address Address, Technology Technology, bool CanBeUsedForIssuingCertificates);
+public record MeteringPoint(
+    string Gsrn,
+    string GridArea,
+    MeterType Type,
+    Address Address,
+    Technology Technology,
+    bool CanBeUsedForIssuingCertificates);
 
-public enum MeterType { Consumption, Production, Child }
+public enum MeterType
+{
+    Consumption,
+    Production,
+    Child
+}
 
 public record Technology(string AibFuelCode, string AibTechCode);
 
-public record Address(string Address1, string? Address2, string? Locality, string City, string PostalCode,
+public record Address(
+    string Address1,
+    string? Address2,
+    string? Locality,
+    string City,
+    string PostalCode,
     string Country);

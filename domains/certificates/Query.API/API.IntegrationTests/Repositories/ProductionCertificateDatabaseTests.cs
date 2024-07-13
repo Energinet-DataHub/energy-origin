@@ -39,7 +39,7 @@ public class ProductionCertificateDatabaseTests
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(productionCertificate);
+            dbContext.ProductionCertificates.Add(productionCertificate);
             dbContext.SaveChanges();
         }
 
@@ -90,13 +90,13 @@ public class ProductionCertificateDatabaseTests
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(productionCertificate1);
+            dbContext.ProductionCertificates.Add(productionCertificate1);
             dbContext.SaveChanges();
         }
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(productionCertificate2);
+            dbContext.ProductionCertificates.Add(productionCertificate2);
             Action act = () => dbContext.SaveChanges();
             act.Should().Throw<DbUpdateException>();
         }
@@ -135,13 +135,13 @@ public class ProductionCertificateDatabaseTests
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(productionCertificate1);
+            dbContext.ProductionCertificates.Add(productionCertificate1);
             dbContext.SaveChanges();
         }
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(productionCertificate2);
+            dbContext.ProductionCertificates.Add(productionCertificate2);
             dbContext.SaveChanges();
         }
 
@@ -179,13 +179,13 @@ public class ProductionCertificateDatabaseTests
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(productionCertificate1);
+            dbContext.ProductionCertificates.Add(productionCertificate1);
             dbContext.SaveChanges();
         }
 
         using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Update(productionCertificate2);
+            dbContext.ProductionCertificates.Add(productionCertificate2);
             dbContext.SaveChanges();
         }
 

@@ -10,19 +10,17 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
 using Testing.Helpers;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class SyncStateTests
+public class SlidingWindowStateTests
 {
     private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public SyncStateTests(IntegrationTestFixture integrationTestFixture)
+    public SlidingWindowStateTests(IntegrationTestFixture integrationTestFixture)
     {
         var emptyDb = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
         options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
@@ -37,58 +35,58 @@ public class SyncStateTests
             MeteringPointOwner: "SomeMeteringPointOwner");
 
     [Fact]
-    public async Task GetPeriodStartTime_NoDataInStore_ReturnsContractStartDate()
+    public async Task GetSlidingWindowStartTime_NoDataInStore_ReturnsContractStartDate()
     {
         var info = CreateSyncInfo();
 
         await using var dbContext = new ApplicationDbContext(options);
-        var syncState = new SyncState(dbContext, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SlidingWindowState(dbContext);
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info, CancellationToken.None);
+        var actualPeriodStartTime = await syncState.GetSlidingWindowStartTime(info, CancellationToken.None);
 
-        actualPeriodStartTime.Should().Be(info.StartSyncDate.ToUnixTimeSeconds());
+        actualPeriodStartTime.SynchronizationPoint.Seconds.Should().Be(info.StartSyncDate.ToUnixTimeSeconds());
     }
 
     [Fact]
-    public async Task GetPeriodStartTime_OneCertificateInStore_ReturnsNewestDate()
+    public async Task GetSlidingWindowStartTime_SlidingWindowInStore_ReturnsNewestDate()
     {
         var info = CreateSyncInfo();
 
-        var position = new SynchronizationPosition { GSRN = info.GSRN, SyncedTo = DateTimeOffset.Now.ToUnixTimeSeconds() };
+        var position = MeteringPointTimeSeriesSlidingWindow.Create(info.GSRN, UnixTimestamp.Create(DateTimeOffset.Now.ToUnixTimeSeconds()));
 
         await using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Add(position);
+            dbContext.MeteringPointTimeSeriesSlidingWindows.Add(position);
             await dbContext.SaveChangesAsync();
         }
 
         await using var newDbContext = new ApplicationDbContext(options);
-        var syncState = new SyncState(newDbContext, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SlidingWindowState(newDbContext);
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info, CancellationToken.None);
+        var actualPeriodStartTime = await syncState.GetSlidingWindowStartTime(info, CancellationToken.None);
 
-        actualPeriodStartTime.Should().Be(position.SyncedTo);
+        actualPeriodStartTime.SynchronizationPoint.Should().Be(position.SynchronizationPoint);
     }
 
     [Fact]
-    public async Task GetPeriodStartTime_OneCertificateInStoreButIsBeforeContractStartDate_ReturnsContractStartDate()
+    public async Task GetSlidingWindowStartTime_SlidingWindowInStoreButIsBeforeContractStartDate_ReturnsContractStartDate()
     {
         var info = CreateSyncInfo();
 
-        var position = new SynchronizationPosition { GSRN = info.GSRN, SyncedTo = info.StartSyncDate.AddHours(-1).ToUnixTimeSeconds() };
+        var position = MeteringPointTimeSeriesSlidingWindow.Create(info.GSRN, UnixTimestamp.Create(DateTimeOffset.Now.AddDays(-2).ToUnixTimeSeconds()));
 
         await using (var dbContext = new ApplicationDbContext(options))
         {
-            dbContext.Add(position);
+            dbContext.MeteringPointTimeSeriesSlidingWindows.Add(position);
             await dbContext.SaveChangesAsync();
         }
 
         await using var newDbContext = new ApplicationDbContext(options);
-        var syncState = new SyncState(newDbContext, Substitute.For<ILogger<SyncState>>());
+        var syncState = new SlidingWindowState(newDbContext);
 
-        var actualPeriodStartTime = await syncState.GetPeriodStartTime(info, CancellationToken.None);
+        var actualPeriodStartTime = await syncState.GetSlidingWindowStartTime(info, CancellationToken.None);
 
-        actualPeriodStartTime.Should().Be(info.StartSyncDate.ToUnixTimeSeconds());
+        actualPeriodStartTime.SynchronizationPoint.Seconds.Should().Be(info.StartSyncDate.ToUnixTimeSeconds());
     }
 
     [Fact]

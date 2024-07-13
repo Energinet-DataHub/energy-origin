@@ -23,11 +23,20 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("scope")] string Scope
     );
 
+public record UserAuthorizationResponse(
+    [property: JsonPropertyName("sub")] Guid Sub,
+    [property: JsonPropertyName("sub_type")] string SubType,
+    [property: JsonPropertyName("org_name")] string OrgName,
+    [property: JsonPropertyName("org_ids")] IEnumerable<Guid> OrgIds,
+    [property: JsonPropertyName("scope")] string Scope,
+    [property: JsonPropertyName("terms_accepted")] bool TermsAccepted
+);
+
 public record GrantConsentRequest(Guid IdpClientId);
 
 public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
 
-public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName);
+public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName, string Tin);
 public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Result);
 
 public enum ClientType
@@ -36,9 +45,9 @@ public enum ClientType
     Internal = 1
 }
 
-public record CreateClientRequest(Guid IdpClientId, string Name, ClientType ClientType, string RedicrectUrl);
+public record CreateClientRequest(Guid IdpClientId, string Name, ClientType ClientType, string RedirectUrl);
+
 public record CreateClientResponse(Guid Id, Guid IdpClientId, string Name, ClientType ClientType, string RedirectUrl);
 
-public record UserOrganizationConsentsResponseItem(string ClientName, long ConsentDate);
-
+public record UserOrganizationConsentsResponseItem(Guid IdpClientId, string ClientName, long ConsentDate);
 public record UserOrganizationConsentsResponse(IEnumerable<UserOrganizationConsentsResponseItem> Result);

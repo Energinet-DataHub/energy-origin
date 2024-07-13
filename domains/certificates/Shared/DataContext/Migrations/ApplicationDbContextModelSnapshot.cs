@@ -17,7 +17,7 @@ namespace DataContext.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "8.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -172,19 +172,6 @@ namespace DataContext.Migrations
                         .IsUnique();
 
                     b.ToTable("ProductionCertificates");
-                });
-
-            modelBuilder.Entity("DataContext.Models.SynchronizationPosition", b =>
-                {
-                    b.Property<string>("GSRN")
-                        .HasColumnType("text");
-
-                    b.Property<long>("SyncedTo")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("GSRN");
-
-                    b.ToTable("SynchronizationPositions");
                 });
 
             modelBuilder.Entity("EnergyOrigin.ActivityLog.DataContext.ActivityLogEntry", b =>

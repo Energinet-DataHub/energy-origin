@@ -26,14 +26,14 @@ public class MeasurementsSyncServiceTest
 
     private readonly Measurements.V1.Measurements.MeasurementsClient fakeClient = Substitute.For<Measurements.V1.Measurements.MeasurementsClient>();
     private readonly ILogger<MeasurementsSyncService> fakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
-    private readonly ISyncState fakeSyncState = Substitute.For<ISyncState>();
+    private readonly ISlidingWindowState fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
     private readonly IBus fakeBus = Substitute.For<IBus>();
     private readonly MeasurementsSyncService service;
 
     public MeasurementsSyncServiceTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
-        service = new MeasurementsSyncService(fakeLogger, fakeSyncState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
+        service = new MeasurementsSyncService(fakeLogger, fakeSlidingWindowState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
             new MeasurementSyncMetrics());
     }
 
@@ -72,9 +72,9 @@ public class MeasurementsSyncServiceTest
             .Returns(mockedResponse);
 
         await service.FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, CancellationToken.None);
-        await fakeSyncState.Received(1)
+        await fakeSlidingWindowState.Received(1)
             .UpdateSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.Seconds == dateTo), CancellationToken.None);
-        await fakeSyncState.Received().SaveChangesAsync(CancellationToken.None);
+        await fakeSlidingWindowState.Received().SaveChangesAsync(CancellationToken.None);
     }
 
     [Fact]
@@ -88,8 +88,8 @@ public class MeasurementsSyncServiceTest
             .Returns(mockedResponse);
 
         await service.FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, CancellationToken.None);
-        await fakeSyncState.Received(0)
+        await fakeSlidingWindowState.Received(0)
             .UpdateSlidingWindow(Arg.Any<MeteringPointTimeSeriesSlidingWindow>(), Arg.Any<CancellationToken>());
-        await fakeSyncState.DidNotReceive().SaveChangesAsync(CancellationToken.None);
+        await fakeSlidingWindowState.DidNotReceive().SaveChangesAsync(CancellationToken.None);
     }
 }
