@@ -33,6 +33,7 @@ jobs:
           project: domains/certificates/Query.API/API/API.csproj
           configuration: domains/certificates/Query.API/configuration.yaml
           migrations: domains/certificates/migrations/API.sql
+          seed: domains/certificates/migrations/SEED.sql
           dry-run: ${{ inputs.dry-run }}
 
   build-registry-connector:
@@ -47,6 +48,7 @@ jobs:
           project: domains/certificates/RegistryConnector/Worker/Worker.csproj
           configuration: domains/certificates/RegistryConnector/configuration.yaml
           migrations: domains/certificates/migrations/API.sql
+          seed: domains/certificates/migrations/SEED.sql
           dry-run: ${{ inputs.dry-run }}
 
   update:
