@@ -17,7 +17,12 @@ inputs:
   migrations:
     description: Is the path to a migrations file, if this project uses them.
     required: false
-    default: ""
+    default:
+
+  seed:
+    description: Is the path to a seed file, if this project uses them.
+    required: false
+    default:
 
   dry-run:
     description: Perform all actions but without pushing the image
@@ -64,7 +69,7 @@ runs:
 
     - name: Fetch Dockerfile
       shell: bash
-      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/main/Dockerfile.simplified -O Dockerfile
+      run: mv Dockerfile.simplified Dockerfile
 
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
@@ -94,6 +99,7 @@ runs:
         build-args: |
           PROJECT=${{ inputs.project }}
           MIGRATIONS=${{ inputs.migrations }}
+          SEED=${{ inputs.seed }}
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
 

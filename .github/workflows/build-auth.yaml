@@ -33,6 +33,7 @@ jobs:
           project: domains/auth/Auth.API/API/API.csproj
           configuration: domains/auth/Auth.API/configuration.yaml
           migrations: domains/auth/migrations/API.sql
+          seed: domains/auth/migrations/SEED.sql
           dry-run: ${{ inputs.dry-run }}
 
   update:
