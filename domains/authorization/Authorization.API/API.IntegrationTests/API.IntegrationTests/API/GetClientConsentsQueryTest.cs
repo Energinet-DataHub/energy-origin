@@ -48,6 +48,7 @@ public class GetClientConsentsQueryTest
         response.Should().Be200Ok();
         result!.Result.Count().Should().Be(1);
         result!.Result.First().OrganizationName.Should().Be(organization.Name.Value);
+        result!.Result.First().Tin.Should().Be(organization.Tin.Value);
     }
 
     [Fact]
