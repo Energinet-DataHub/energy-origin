@@ -17,12 +17,12 @@ inputs:
   migrations:
     description: Is the path to a migrations file, if this project uses them.
     required: false
-    default:
+    default: ""
 
   seed:
     description: Is the path to a seed file, if this project uses them.
     required: false
-    default:
+    default: ""
 
   dry-run:
     description: Perform all actions but without pushing the image
