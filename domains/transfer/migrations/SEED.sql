@@ -13,7 +13,7 @@ BEGIN
 
 SELECT COUNT(*) = 0 FROM "ActivityLogs" INTO activity_logs_empty;
 IF activity_logs_empty THEN
-        INSERT INTO public."ActivityLogs" ("Id", "Timestamp", "ActorId", "ActorType", "ActorName", "OrganizationTin", "OrganizationName", "EntityType", "ActionType", "EntityId", "OtherOrganizationName", "OtherOrganizationName") VALUES
+        INSERT INTO public."ActivityLogs" ("Id", "Timestamp", "ActorId", "ActorType", "ActorName", "OrganizationTin", "OrganizationName", "EntityType", "ActionType", "EntityId", "OtherOrganizationName", "OtherOrganizationTin") VALUES
             ('13497eec-131f-4bea-9eba-c44958cc36ad', ninety_days_ago + ('2024-06-29 16:15:47.876339+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone), '64cf9c0f-c634-41c0-9cba-4394024b915f', 0, 'Peter Producent', '11223344', 'Producent A/S', 1, 0, '1512a3bf-b241-48b2-8f4c-868aa017062c', '', '39293595'),
             ('98ae93ca-0b23-4e8a-ac9d-fc372aa17c9d', ninety_days_ago + ('2024-06-29 16:15:58.657819+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone), '00000000-0000-0000-0000-000000000000', 0, '', '11223344', 'Producent A/S', 0, 1, 'f226b326-2ab6-45a1-96fb-78668318f357', 'Company Inc.', '39293595'),
             ('9eeaefe0-2e4d-4fbe-a739-a4e96b708e53', ninety_days_ago + ('2024-06-29 16:15:58.65745+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone), '95d7be81-0cfb-4b52-9c92-33a45747fcef', 0, 'Charlotte C.S. Rasmussen', '39293595', 'Company Inc.', 0, 1, 'f226b326-2ab6-45a1-96fb-78668318f357', 'Producent A/S', '11223344'),
