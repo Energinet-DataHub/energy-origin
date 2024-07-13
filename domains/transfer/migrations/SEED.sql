@@ -13,7 +13,7 @@ BEGIN
 
 SELECT COUNT(*) = 0 FROM "ActivityLogs" INTO activity_logs_empty;
 IF activity_logs_empty THEN
-        INSERT INTO public."ActivityLogs" ("Id", "Timestamp", "ActorId", "ActorType", "ActorName", "ActorTin", "ActorCompanyName", "IsProposal", "IsAcceptance", "TransferAgreementId", "CounterpartCompanyName", "CounterpartTin") VALUES
+        INSERT INTO public."ActivityLogs" ("Id", "Timestamp", "ActorId", "ActorType", "ActorName", "OrganizationTin", "OrganizationName", "EntityType", "ActionType", "EntityId", "OtherOrganizationName", "OtherOrganizationName") VALUES
             ('13497eec-131f-4bea-9eba-c44958cc36ad', ninety_days_ago + ('2024-06-29 16:15:47.876339+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone), '64cf9c0f-c634-41c0-9cba-4394024b915f', 0, 'Peter Producent', '11223344', 'Producent A/S', 1, 0, '1512a3bf-b241-48b2-8f4c-868aa017062c', '', '39293595'),
             ('98ae93ca-0b23-4e8a-ac9d-fc372aa17c9d', ninety_days_ago + ('2024-06-29 16:15:58.657819+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone), '00000000-0000-0000-0000-000000000000', 0, '', '11223344', 'Producent A/S', 0, 1, 'f226b326-2ab6-45a1-96fb-78668318f357', 'Company Inc.', '39293595'),
             ('9eeaefe0-2e4d-4fbe-a739-a4e96b708e53', ninety_days_ago + ('2024-06-29 16:15:58.65745+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone), '95d7be81-0cfb-4b52-9c92-33a45747fcef', 0, 'Charlotte C.S. Rasmussen', '39293595', 'Company Inc.', 0, 1, 'f226b326-2ab6-45a1-96fb-78668318f357', 'Producent A/S', '11223344'),
@@ -28,7 +28,7 @@ END IF;
 
 SELECT COUNT(*) = 0 FROM "ClaimAutomationArguments" INTO claim_automation_arguments_empty;
 IF claim_automation_arguments_empty THEN
-        INSERT INTO public."ClaimAutomationArguments" ("CompanyId", "LastAutomatedClaimDate") VALUES
+        INSERT INTO public."ClaimAutomationArguments" ("SubjectId", "CreatedAt") VALUES
             ('95d7be81-0cfb-4b52-9c92-33a45747fcef', ninety_days_ago + ('2024-06-29 16:15:14.91644+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone)),
             ('b0918bf8-626d-4b35-a0ad-3f5beb6b6fef', ninety_days_ago + ('2024-06-29 16:22:24.62554+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone)),
             ('21e150bd-8a0b-4ba6-905b-7223db248af5', ninety_days_ago + ('2024-06-29 16:24:59.114491+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone))
@@ -40,7 +40,7 @@ END IF;
 
 SELECT COUNT(*) = 0 FROM "TransferAgreements" INTO transfer_agreements_empty;
 IF transfer_agreements_empty THEN
-    INSERT INTO public."TransferAgreements" ("Id", "StartDate", "EndDate", "ReceiverTin", "SenderId", "SenderName", "SenderTin", "CertificateId", "Status", "ReceiverName") VALUES
+    INSERT INTO public."TransferAgreements" ("Id", "StartDate", "EndDate", "ReceiverTin", "SenderId", "SenderName", "SenderTin", "ReceiverReference", "TransferAgreementNumber", "ReceiverName") VALUES
         ('f226b326-2ab6-45a1-96fb-78668318f357',
          date_trunc('hour', ninety_days_ago + ('2024-06-29 16:15:58.657819+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone)) + INTERVAL '1 hour',
          NULL, '39293595', '64cf9c0f-c634-41c0-9cba-4394024b915f', 'Producent A/S', '11223344', '9fe7331e-9b10-4479-99bb-0d6db3c69089', 0, 'Company Inc.'),
