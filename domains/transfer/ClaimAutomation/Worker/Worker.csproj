@@ -15,7 +15,6 @@
     <PackageReference Include="EnergyOrigin.Setup" Version="4.4.6" />
     <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.6.8" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.2" />
   </ItemGroup>
 
   <ItemGroup>
