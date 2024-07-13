@@ -33,6 +33,7 @@ jobs:
           project: domains/measurements/Measurements.API/API/API.csproj
           configuration: domains/measurements/Measurements.API/configuration.yaml
           migrations: domains/measurements/migrations/API.sql
+          seed: domains/measurements/migrations/SEED.sql
           dry-run: ${{ inputs.dry-run }}
 
   update:
