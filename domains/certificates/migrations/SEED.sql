@@ -1,7 +1,6 @@
 ﻿DO $$
 DECLARE
-
-    current_date_time timestamp with time zone;
+current_date_time timestamp with time zone;
     ninety_days_ago timestamp with time zone;
     activity_logs_empty boolean;
     contracts_empty boolean;
@@ -94,7 +93,6 @@ END IF;
 SELECT COUNT(*) = 0 FROM "Contracts" INTO contracts_empty;
 IF contracts_empty THEN
         INSERT INTO public."Contracts" ("Id", "ContractNumber", "GSRN", "GridArea", "MeteringPointType", "MeteringPointOwner", "StartDate", "EndDate", "Created", "WalletUrl", "WalletPublicKey", "Technology_FuelCode", "Technology_TechCode") VALUES
-            ('3642dd9e-1ddd-4b97-bd93-9e0ab02ce703',0,'571313130083535430','DK1',0, '64cf9c0f-c634-41c0-9cba-4394024b915f', ninety_days_ago + ('2024-06-29 16:14:26+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),NULL,ninety_days_ago + ('2024-06-29 16:14:27.679953+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),'WALLET_URL_PLACEHOLDER',WALLET_PUBLIC_KEY_PLACEHOLDER,'F01050100','T020000'),
             ('3642dd9e-1ddd-4b97-bd93-9e0ab02ce703', 0, '571313130083535430', 'DK1', 0, '64cf9c0f-c634-41c0-9cba-4394024b915f', ninety_days_ago + ('2024-06-29 16:14:26+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),NULL,ninety_days_ago + ('2024-06-29 16:14:27.679953+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),'WALLET_URL_PLACEHOLDER', WALLET_PUBLIC_KEY_PLACEHOLDER, 'F01050100', 'T020000'),
             ('269f1d2f-69ae-47c0-be70-780b98f1ab83', 1, '571313115052347880', 'DK1', 1, '95d7be81-0cfb-4b52-9c92-33a45747fcef', ninety_days_ago + ('2024-06-29 16:15:15+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),NULL,ninety_days_ago + ('2024-06-29 16:15:15.688836+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),'WALLET_URL_PLACEHOLDER', WALLET_PUBLIC_KEY_PLACEHOLDER, NULL, NULL),
             ('ef51655a-5052-40fd-9d2b-449a971cc80b', 0, '571313167865625204', 'DK1', 0, '95d7be81-0cfb-4b52-9c92-33a45747fcef', ninety_days_ago + ('2024-06-29 16:15:15+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),NULL,ninety_days_ago + ('2024-06-29 16:15:15.642715+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),'WALLET_URL_PLACEHOLDER', WALLET_PUBLIC_KEY_PLACEHOLDER, 'F01050100', 'T020000'),
