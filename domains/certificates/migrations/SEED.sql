@@ -1,13 +1,13 @@
 ﻿DO $$
 DECLARE
-current_date_time timestamp with time zone;
+activity_logs_empty boolean;
+contracts_empty boolean;
+    current_date_time timestamp with time zone;
     ninety_days_ago timestamp with time zone;
-    activity_logs_empty boolean;
-    contracts_empty boolean;
-
 BEGIN
 
     current_date_time := CURRENT_TIMESTAMP;
+
     ninety_days_ago := current_date_time - INTERVAL '90 days';
 
 SELECT COUNT(*) = 0 FROM "ActivityLogs" INTO activity_logs_empty;
