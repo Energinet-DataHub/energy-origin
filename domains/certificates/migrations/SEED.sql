@@ -84,7 +84,6 @@ IF activity_logs_empty THEN
              ('d86059a1-bbb5-4f68-86e1-076c09a45b96', ninety_days_ago + '2024-06-29 16:24:59.694843+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone, '94bf1ca8-10eb-4e9f-a13d-e5675cf488f0', 0, 'Bolighaj', '66666666', 'Bolighaj', 2, 3, '571313100000040020', '', ''),
              ('e28a973c-0cb0-478c-94fb-acf5ea2ed223', ninety_days_ago + '2024-06-29 16:24:59.554063+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone, '94bf1ca8-10eb-4e9f-a13d-e5675cf488f0', 0, 'Bolighaj', '66666666', 'Bolighaj', 2, 3, '571313100000040013', '', ''),
              ('e8b499a2-1c21-4de8-9a86-def83560567e', ninety_days_ago + '2024-06-29 16:24:59.810214+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone, '94bf1ca8-10eb-4e9f-a13d-e5675cf488f0', 0, 'Bolighaj', '66666666', 'Bolighaj', 2, 3, '571313100000040026', '', '');
-ON CONFLICT DO NOTHING;
         RAISE NOTICE 'ActivityLogs table seeded successfully.';
 ELSE
         RAISE NOTICE 'ActivityLogs table is not empty. Skipping seed data insertion.';
@@ -164,7 +163,6 @@ IF contracts_empty THEN
             ('f9840f9c-4cfa-4b6f-b97a-e116e4d67876', 0, '571313100000040001', 'DK1', 1, '21e150bd-8a0b-4ba6-905b-7223db248af5', ninety_days_ago + ('2024-06-29 16:24:59+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),NULL,ninety_days_ago + ('2024-06-29 16:24:59.313725+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),'WALLET_URL_PLACEHOLDER', WALLET_PUBLIC_KEY_PLACEHOLDER, NULL, NULL),
             ('f98b517b-85df-47a2-8396-2346d68365a8', 5, '571313100000040006', 'DK1', 1, '21e150bd-8a0b-4ba6-905b-7223db248af5', ninety_days_ago + ('2024-06-29 16:24:59+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),NULL,ninety_days_ago + ('2024-06-29 16:24:59.407149+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),'WALLET_URL_PLACEHOLDER', WALLET_PUBLIC_KEY_PLACEHOLDER, NULL, NULL),
             ('fe8b8aa7-64f1-4835-a5c0-7558352772ee', 14, '571313100000040015', 'DK1', 1, '21e150bd-8a0b-4ba6-905b-7223db248af5', ninety_days_ago + ('2024-06-29 16:24:59+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),NULL,ninety_days_ago + ('2024-06-29 16:24:59.587596+00'::timestamp with time zone - '2024-06-29'::timestamp with time zone),'WALLET_URL_PLACEHOLDER', WALLET_PUBLIC_KEY_PLACEHOLDER, NULL, NULL);
-ON CONFLICT DO NOTHING;
 RAISE NOTICE 'Contracts table seeded successfully.';
 ELSE
         RAISE NOTICE 'Contracts table is not empty. Skipping seed data insertion.';
