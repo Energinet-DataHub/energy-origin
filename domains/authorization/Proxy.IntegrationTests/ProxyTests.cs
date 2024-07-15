@@ -162,10 +162,11 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     {
         // Arrange
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var mockEndpoint = $"/wallet-api/v1{endpoint.Remove(0, 11)}";
 
         var requestBuilder = Request.Create()
             .UsingGet()
-            .WithPath($"/v1{endpoint}");
+            .WithPath(mockEndpoint);
 
         fixture.WalletWireMockServer
             .Given(requestBuilder)
