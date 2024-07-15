@@ -13,6 +13,8 @@ namespace API.IntegrationTests.Extensions;
 
 public static class WalletServiceClientExtensions
 {
+    public const string WalletOwnerHeader = "wallet-owner";
+
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,

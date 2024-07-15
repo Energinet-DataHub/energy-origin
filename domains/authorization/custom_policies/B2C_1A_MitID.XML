@@ -201,6 +201,12 @@
                 <DataType>boolean</DataType>
                 <UserHelpText/>
             </ClaimType>
+
+            <ClaimType Id="tos_accepted">
+                <DisplayName>Whether ETT terms has been accepted or not</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText/>
+            </ClaimType>
         </ClaimsSchema>
 
         <ClaimsTransformations>
@@ -476,6 +482,7 @@
                         <OutputClaim ClaimTypeReferenceId="org_name"/>
                         <OutputClaim ClaimTypeReferenceId="org_ids"/>
                         <OutputClaim ClaimTypeReferenceId="scope"/>
+                        <OutputClaim ClaimTypeReferenceId="tos_accepted" PartnerClaimType="terms_accepted"/>
                     </OutputClaims>
                     <OutputClaimsTransformations>
                         <OutputClaimsTransformation ReferenceId="OrgIdsAsStringTransformation"/>
@@ -561,6 +568,7 @@
                 <OutputClaim ClaimTypeReferenceId="org_ids_string" PartnerClaimType="org_ids"/>
                 <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="scope"/>
+                <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type"/>
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>

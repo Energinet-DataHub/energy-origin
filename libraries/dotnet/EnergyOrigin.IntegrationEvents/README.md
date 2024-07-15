@@ -1,5 +1,22 @@
-# Library
+# EnergyOrigin.IntegrationEvents
 
-## EnergyOrigin.IntegrationEvents
+## Overview
 
-The purpose of EnergyOrigin.IntegrationEvents is to have a single library for all the Integration Events that are used in the EnergyOrigin solution.
+The EnergyOrigin.IntegrationEvents NuGet package provides our way of sharing integration event contracts,
+between our systems, across the Energy Track & Trace™.
+It facilitates communication between different microservices and components, through a message-driven architecture.
+
+## How it works
+
+- [Integration Events](../../../doc/architecture/adr/0025-integration-events.md)
+
+### Specific Integration Events
+
+Specific integration events are defined as records, that inherit from IntegrationEvent,
+adding their own properties, as needed.
+
+- [Authorization: Acceptance of Terms](./doc/specific-events/authorization-acceptance-of-terms.md)
+
+### Integration guides for various message brokers:
+
+- [RabbitMQ using MassTransit's Transactional Outbox Pattern](./doc/specific-integration-guides/masstransit-rabbitmq.md)
