@@ -33,7 +33,7 @@ $$ LANGUAGE plpgsql;
 
 DO $$
 DECLARE
-activity_logs_empty boolean;
+    activity_logs_empty boolean;
     claim_automation_arguments_empty boolean;
     transfer_agreements_empty boolean;
     table_list text[] := ARRAY['ActivityLogs', 'ClaimAutomationArguments', 'TransferAgreements'];
