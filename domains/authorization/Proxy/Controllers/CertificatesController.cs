@@ -32,6 +32,25 @@ public class CertificatesController : ProxyBase
         await ProxyClientCredentialsRequest("v1/certificates/cursor", organizationId);
     }
 
+    /// <summary>
+    /// Gets a single certificate
+    /// </summary>
+    /// <response code="200">Returns a certificate.</response>
+    /// <response code="401">If the user is not authenticated.</response>
+    [HttpGet]
+    [Route("certificates/{registry}/{streamId}")]
+    [Produces("application/json")]
+    [Authorize(policy: Policy.B2CPolicy)]
+    [ApiVersion(ApiVersions.Version20240515)]
+    [ProducesResponseType(typeof(GranularCertificate), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    public async Task GetCertificate(
+        [FromRoute] string registry, [FromRoute] Guid streamId, [FromQuery] string? organizationId)
+    {
+        await ProxyClientCredentialsRequest($"v1/certificates/{registry}/{streamId}", organizationId);
+    }
+
 
     /// <summary>
     /// Gets all certificates in the wallet that are <b>available</b> for use.
