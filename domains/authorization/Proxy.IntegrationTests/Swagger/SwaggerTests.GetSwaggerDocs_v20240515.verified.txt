@@ -95,6 +95,68 @@
         }
       }
     },
+    "/wallet-api/certificates/{registry}/{streamId}": {
+      "get": {
+        "tags": [
+          "Certificates"
+        ],
+        "summary": "Gets a single certificate",
+        "parameters": [
+          {
+            "name": "registry",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "streamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EO_API_VERSION",
+            "in": "header",
+            "description": "The requested API version",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "20240515"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a certificate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GranularCertificate"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "If the certificate is not found."
+          },
+          "401": {
+            "description": "If the user is not authenticated."
+          }
+        }
+      }
+    },
     "/wallet-api/certificates": {
       "get": {
         "tags": [
