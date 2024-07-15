@@ -3,7 +3,7 @@
 CREATE OR REPLACE FUNCTION adjust_timestamps_to_90_days_ago()
 RETURNS TRIGGER AS $$
 DECLARE
-    ninety_days_ago timestamp with time zone;
+ninety_days_ago timestamp with time zone;
     current_timestamp_diff interval;
 BEGIN
     ninety_days_ago := CURRENT_TIMESTAMP - INTERVAL '90 days';
@@ -33,7 +33,7 @@ $$ LANGUAGE plpgsql;
 
 DO $$
 DECLARE
-activity_logs_empty boolean;
+    activity_logs_empty boolean;
     claim_automation_arguments_empty boolean;
     transfer_agreements_empty boolean;
     table_list text[] := ARRAY['ActivityLogs', 'ClaimAutomationArguments', 'TransferAgreements'];
@@ -43,7 +43,6 @@ BEGIN
     LOOP
         PERFORM add_trigger_to_table(table_name);
 END LOOP;
-
 
 SELECT COUNT(*) = 0 FROM "ActivityLogs" INTO activity_logs_empty;
 IF activity_logs_empty THEN
@@ -73,12 +72,8 @@ END IF;
 SELECT COUNT(*) = 0 FROM "TransferAgreements" INTO transfer_agreements_empty;
 IF transfer_agreements_empty THEN
         INSERT INTO public."TransferAgreements" ("Id", "StartDate", "EndDate", "ReceiverTin", "SenderId", "SenderName", "SenderTin", "ReceiverReference", "TransferAgreementNumber", "ReceiverName") VALUES
-            ('f226b326-2ab6-45a1-96fb-78668318f357',
-             date_trunc('hour', '2024-06-29 16:15:58.657819+00'::timestamp with time zone) + INTERVAL '1 hour',
-             NULL, '39293595', '64cf9c0f-c634-41c0-9cba-4394024b915f', 'Producent A/S', '11223344', '9fe7331e-9b10-4479-99bb-0d6db3c69089', 0, 'Company Inc.'),
-            ('fb3594bf-0d3f-445f-923a-ea59a5fc42d2',
-             date_trunc('hour', '2024-06-29 16:26:31.691214+00'::timestamp with time zone) + INTERVAL '1 hour',
-             NULL, '66666666', '7f4b6c63-8fbd-4927-8202-c6731c00a0fc', 'Viggos Vindmøller', '77777777', 'a5a1ced5-022e-4012-b294-e55744aabb4b', 0, 'Bolighaj');
+            ('f226b326-2ab6-45a1-96fb-78668318f357', date_trunc('hour', '2024-06-29 16:15:58.657819+00'::timestamp with time zone) + INTERVAL '1 hour', NULL, '39293595', '64cf9c0f-c634-41c0-9cba-4394024b915f', 'Producent A/S', '11223344', '9fe7331e-9b10-4479-99bb-0d6db3c69089', 0, 'Company Inc.'),
+            ('fb3594bf-0d3f-445f-923a-ea59a5fc42d2', date_trunc('hour', '2024-06-29 16:26:31.691214+00'::timestamp with time zone) + INTERVAL '1 hour', NULL, '66666666', '7f4b6c63-8fbd-4927-8202-c6731c00a0fc', 'Viggos Vindmøller', '77777777', 'a5a1ced5-022e-4012-b294-e55744aabb4b', 0, 'Bolighaj');
         RAISE NOTICE 'TransferAgreements table seeded successfully.';
 ELSE
         RAISE NOTICE 'TransferAgreements table is not empty. Skipping seed data insertion.';
