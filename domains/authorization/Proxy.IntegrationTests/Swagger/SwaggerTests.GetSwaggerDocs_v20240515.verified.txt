@@ -149,7 +149,7 @@
             }
           },
           "404": {
-            "description": "Not Found"
+            "description": "If the certificate is not found."
           },
           "401": {
             "description": "If the user is not authenticated."
