@@ -37,6 +37,7 @@ public class CertificatesController : ProxyBase
     /// </summary>
     /// <response code="200">Returns a certificate.</response>
     /// <response code="401">If the user is not authenticated.</response>
+    /// <response code="404">If the certificate is not found.</response>
     [HttpGet]
     [Route("certificates/{registry}/{streamId}")]
     [Produces("application/json")]
