@@ -149,14 +149,7 @@
             }
           },
           "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
+            "description": "Not Found"
           },
           "401": {
             "description": "If the user is not authenticated."

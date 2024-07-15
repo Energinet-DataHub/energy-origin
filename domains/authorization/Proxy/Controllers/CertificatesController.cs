@@ -43,7 +43,7 @@ public class CertificatesController : ProxyBase
     [Authorize(policy: Policy.B2CPolicy)]
     [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(GranularCertificate), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     public async Task GetCertificate(
         [FromRoute] string registry, [FromRoute] Guid streamId, [FromQuery] string? organizationId)
