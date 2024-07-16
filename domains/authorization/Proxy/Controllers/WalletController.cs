@@ -84,7 +84,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task GetWalletsLegacy()
     {
-        _logger.LogInformation("WALLET LEGACY");
+        _logger.LogInformation("WALLET LEGACY TOKEN VALID");
         await ProxyTokenValidationRequest("v1/wallets");
     }
 
