@@ -9,8 +9,11 @@ namespace Proxy.Controllers;
 [Route("wallet-api")]
 public class WalletController : ProxyBase
 {
-    public WalletController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
+    private readonly ILogger<WalletController> _logger;
+
+    public WalletController(ILogger<WalletController> logger, IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
     {
+        _logger = logger;
     }
 
     /// <summary>
@@ -81,6 +84,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task GetWalletsLegacy()
     {
+        _logger.LogInformation("WALLET LEGACY");
         await ProxyTokenValidationRequest("v1/wallets");
     }
 
@@ -99,6 +103,8 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     public async Task GetWallets([FromQuery] string? organizationId)
     {
+        _logger.LogInformation("WALLET CLIENT CREDENTIALS");
+
         await ProxyClientCredentialsRequest("v1/wallets", organizationId);
     }
 
