@@ -59,6 +59,7 @@ internal class ContractServiceImpl : IContractService
                 return new GsrnNotFound();
             }
 
+
             var contractsGsrn = contractsByGsrn.Where(c => c.GSRN == contract.GSRN).ToList();
 
             var overlappingContract = contractsGsrn.Find(c =>
