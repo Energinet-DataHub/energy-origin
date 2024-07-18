@@ -365,6 +365,16 @@
             The number of items to skip.
             </summary>
         </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.SortBy">
+            <summary>
+            Which type to sort by
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Sort">
+            <summary>
+            The order to sort by
+            </summary>
+        </member>
         <member name="P:Proxy.Controllers.AggregateCertificatesQueryParameters.TimeAggregate">
             <summary>
             The size of each bucket in the aggregation.
