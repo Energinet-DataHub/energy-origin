@@ -23,6 +23,8 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.AddSerilog();
 
+builder.Services.AddOptions<TransferAgreementAutomationOptions>().BindConfiguration(TransferAgreementAutomationOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
