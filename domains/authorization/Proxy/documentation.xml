@@ -19,6 +19,14 @@
             <response code="401">If the user is not authenticated.</response>
             <response code="404">If the certificate is not found.</response>
         </member>
+        <member name="M:Proxy.Controllers.CertificatesController.GetCertificateLegacy(System.String,System.Guid)">
+            <summary>
+            Gets a single certificate
+            </summary>
+            <response code="200">Returns a certificate.</response>
+            <response code="401">If the user is not authenticated.</response>
+            <response code="404">If the certificate is not found.</response>
+        </member>
         <member name="M:Proxy.Controllers.CertificatesController.GetCertificates(Proxy.Controllers.GetCertificatesQueryParameters,System.String)">
             <summary>
             Gets all certificates in the wallet that are <b>available</b> for use.
@@ -355,6 +363,16 @@
         <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Skip">
             <summary>
             The number of items to skip.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.SortBy">
+            <summary>
+            Which type to sort by
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.GetCertificatesQueryParameters.Sort">
+            <summary>
+            The order to sort by
             </summary>
         </member>
         <member name="P:Proxy.Controllers.AggregateCertificatesQueryParameters.TimeAggregate">
