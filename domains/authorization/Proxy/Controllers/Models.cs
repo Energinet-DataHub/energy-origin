@@ -108,6 +108,16 @@ public record GetCertificatesQueryParameters
     /// </summary>
     [DefaultValue(0)]
     public int Skip { get; init; }
+
+    /// <summary>
+    /// Which type to sort by
+    /// </summary>
+    public CertificateSortBy SortBy { get; init; }
+
+    /// <summary>
+    /// The order to sort by
+    /// </summary>
+    public AscOrDesc Sort { get; init; }
 }
 
 public record AggregateCertificatesQueryParameters
@@ -263,4 +273,19 @@ public enum TimeAggregate
     Day = 5,
     Hour = 6,
     QuarterHour = 7,
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum CertificateSortBy
+{
+    End,
+    Quantity,
+    Type
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum AscOrDesc
+{
+    ASC,
+    DESC
 }

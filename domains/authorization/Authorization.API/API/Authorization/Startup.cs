@@ -12,7 +12,8 @@ public static class Startup
         services.AddEndpointsApiExplorer();
         services.AddVersioningToApi();
         services.AddSwagger("authorization");
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(o =>
+            o.EnableAnnotations());
         services.AddHttpContextAccessor();
     }
 }

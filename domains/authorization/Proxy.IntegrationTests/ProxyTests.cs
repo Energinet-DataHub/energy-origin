@@ -116,6 +116,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     [InlineData("/wallet-api/v1/wallets", "")]
     [InlineData("/wallet-api/v1/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
     [InlineData("/wallet-api/v1/certificates", "")]
+    [InlineData("/wallet-api/v1/certificates/energy-origin/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
     [InlineData("/wallet-api/v1/aggregate-certificates", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
     [InlineData("/wallet-api/v1/claims", "")]
     [InlineData("/wallet-api/v1/aggregate-claims", "?TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
@@ -152,6 +153,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     [InlineData("/wallet-api/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
     [InlineData("/wallet-api/wallets", "")]
     [InlineData("/wallet-api/certificates", "")]
+    [InlineData("/wallet-api/certificates/energy-origin/8229a340-1c9d-46b6-8212-b767e42e02f0", "")]
     [InlineData("/wallet-api/aggregate-certificates", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
     [InlineData("/wallet-api/claims", "")]
     [InlineData("/wallet-api/aggregate-claims", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
@@ -161,10 +163,11 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     {
         // Arrange
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var mockEndpoint = $"/wallet-api/v1{endpoint.Remove(0, 11)}";
 
         var requestBuilder = Request.Create()
             .UsingGet()
-            .WithPath($"/v1{endpoint}");
+            .WithPath(mockEndpoint);
 
         fixture.WalletWireMockServer
             .Given(requestBuilder)

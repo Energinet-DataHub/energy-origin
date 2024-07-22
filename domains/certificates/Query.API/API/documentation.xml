@@ -9,61 +9,6 @@
             The private key to import. If not provided, a private key will be generated.
             </summary>
         </member>
-        <member name="T:API.ContractService.Clients.ReceiveRequest">
-            <summary>
-            Request to receive a certificate-slice from another wallet.
-            </summary>
-        </member>
-        <member name="M:API.ContractService.Clients.ReceiveRequest.#ctor">
-            <summary>
-            Request to receive a certificate-slice from another wallet.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.ReceiveRequest.PublicKey">
-            <summary>
-            The public key of the receiving wallet.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.ReceiveRequest.Position">
-            <summary>
-            The sub-position of the publicKey used on the slice on the registry.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.ReceiveRequest.CertificateId">
-            <summary>
-            The id of the certificate.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.ReceiveRequest.Quantity">
-            <summary>
-            The quantity of the slice.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.ReceiveRequest.RandomR">
-            <summary>
-            The random R used to generate the pedersen commitment with the quantity.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.ReceiveRequest.HashedAttributes">
-            <summary>
-            List of hashed attributes, their values and salts so the receiver can access the data.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.HashedAttribute.Key">
-            <summary>
-            The key of the attribute.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.HashedAttribute.Value">
-            <summary>
-            The value of the attribute.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.HashedAttribute.Salt">
-            <summary>
-            The salt used to hash the attribute.
-            </summary>
-        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point

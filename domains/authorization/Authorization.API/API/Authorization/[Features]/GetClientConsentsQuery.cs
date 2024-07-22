@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Authorization.Exceptions;
-using API.Models;
 using API.Repository;
 using API.ValueObjects;
 using MediatR;
@@ -19,7 +17,7 @@ public class GetClientConsentsQueryHandler(IOrganizationRepository organizationR
         var consentsQueryResultItems = await organizationRepository
             .Query()
             .Where(organization => organization.Consents.Any(consent => consent.Client.IdpClientId == request.IdpClientId))
-            .Select(x => new GetClientConsentsQueryResultItem(x.Id, x.Name))
+            .Select(x => new GetClientConsentsQueryResultItem(x.Id, x.Name, x.Tin))
             .ToListAsync(cancellationToken);
 
         return new GetClientConsentsQueryResult(consentsQueryResultItems);
@@ -30,4 +28,4 @@ public record GetClientConsentsQuery(IdpClientId IdpClientId) : IRequest<GetClie
 
 public record GetClientConsentsQueryResult(List<GetClientConsentsQueryResultItem> GetClientConsentsQueryResultItems);
 
-public record GetClientConsentsQueryResultItem(Guid OrganizationId, OrganizationName OrganizationName);
+public record GetClientConsentsQueryResultItem(Guid OrganizationId, OrganizationName OrganizationName, Tin Tin);

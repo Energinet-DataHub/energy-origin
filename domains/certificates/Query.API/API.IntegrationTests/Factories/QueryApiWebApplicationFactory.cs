@@ -9,6 +9,7 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
 using API.Query.API.Controllers;
@@ -182,9 +183,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
-        var authentication = new AuthenticationHeaderValue("Bearer", GenerateSelfSignedToken(sub: subject));
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authentication.Scheme, authentication.Parameter);
-
+        client.DefaultRequestHeaders.Remove(WalletServiceClientExtensions.WalletOwnerHeader);
+        client.DefaultRequestHeaders.Add(WalletServiceClientExtensions.WalletOwnerHeader, subject);
         return client;
     }
 

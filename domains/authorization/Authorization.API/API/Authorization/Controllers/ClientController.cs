@@ -9,6 +9,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Authorization.Controllers;
 
@@ -18,34 +19,37 @@ namespace API.Authorization.Controllers;
 public class ClientController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IdentityDescriptor _identityDescriptor;
 
-    public ClientController(IMediator mediator)
+    public ClientController(IMediator mediator, IdentityDescriptor identityDescriptor)
     {
         _mediator = mediator;
+        _identityDescriptor = identityDescriptor;
     }
 
-    /// <summary>
-    /// Retreives Client.
-    /// </summary>
     [HttpGet]
     [Route("api/authorization/client/{idpClientId}")]
+    [SwaggerOperation(
+        Summary = "Retrieves Client",
+        Description = "Retrieves info for client with id idpClientId"
+    )]
     public async Task<ActionResult<ClientResponse>> GetClient([FromServices] ILogger<ClientResponse> logger, [FromRoute] Guid idpClientId)
     {
         var queryResult = await _mediator.Send(new GetClientQuery(new IdpClientId(idpClientId)));
         return Ok(new ClientResponse(queryResult.IdpClientId.Value, queryResult.Name.Value, queryResult.RedirectUrl));
     }
 
-    /// <summary>
-    /// Retreives Client.
-    /// </summary>
     [HttpGet]
     [Route("api/authorization/client/consents")]
+    [SwaggerOperation(
+        Summary = "Retrieves granted consents for client",
+        Description = "Retrieves a list of all consents granted to client identified by bearer token"
+    )]
     public async Task<ActionResult<ClientConsentsResponse>> GetClientConsents([FromServices] ILogger<ClientResponse> logger)
     {
-        var queryResult = await _mediator.Send(new GetClientConsentsQuery(new IdpClientId(new(User.Claims.First(c => c.Type == ClaimType.Sub).Value))));
+        var queryResult = await _mediator.Send(new GetClientConsentsQuery(new IdpClientId(_identityDescriptor.Subject)));
 
-        return Ok(new ClientConsentsResponse(queryResult.GetClientConsentsQueryResultItems.Select(x => new ClientConsentsResponseItem(x.OrganizationId, x.OrganizationName.Value))));
+        return Ok(new ClientConsentsResponse(queryResult.GetClientConsentsQueryResultItems.Select(x =>
+            new ClientConsentsResponseItem(x.OrganizationId, x.OrganizationName.Value, x.Tin.Value))));
     }
-
-
 }

@@ -4,13 +4,10 @@
 
 ![Container diagram](../diagrams/auth.container.drawio.svg)
 
-## Endpoints
+## API Specifications
 
-There is a description of the current endpoints available at [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20Proxy%20v20230101).
-
-There is a description of the current endpoints available at [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20v20230101#/).
-
-# Authentication & authorization
+- [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20Proxy%20v20230101).
+- [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20v20230101#/).
 
 ## Consent
 
@@ -19,7 +16,7 @@ This section describes the first version of consent functionality in Energy Orig
 ### Definitions
 
 - 3rd party client: A third party company using the APIs exposed by Energy Origin. A 3rd party client may have software systems running and interacting with the Energy Origin APIs without user interaction.
-- User: A user authenticated with MitID erhverv and acting as employee in a company. A user may be employeed in multiple companies, but is forced to select a specific company as part of MitID authenticattion.
+- User: A user authenticated with MitID erhverv and acting as employee in a company. A user may be employed by multiple companies, but is forced to select a specific company as part of MitID authenticattion.
 - TIN: Tax Identification Number, in Denmark the CVR number.
 - Terms: Terms a user must agree to, before using Energy Origin Web application or APIs.
 - Consent: A user grants consent to a 3rd party. The 3rd party may after being granted consent, use Energy Origin APIs on behalf of the user.
@@ -68,7 +65,7 @@ erDiagram
     }
 ```
 
-A user authenticating using MitID will work in the context of  asingle organization and TIN. To work in the context of another organization, the user will need to authenticate again and select a different organization.
+A user authenticating using MitID will work in the context of a single organization and TIN. To work in the context of another organization, the user will need to authenticate again and select a different organization.
 
 A client will be authenticated to work in the context of all the organizations it has been granted consent to. Imagine the client is running a software system trading certificates on behalf of all the organizations it has been granted consent to.
 
@@ -109,7 +106,7 @@ UpdateElementStyle(Authorization, $fontColor="lightgrey", $bgColor="transparent"
   UpdateRelStyle(WEB, authorizationAPI, $textColor="lightgrey", $lineColor="lightgrey")
 ```
 
-## Sign-up flow
+## Sign-up flow & Terms
 
 Fist time a MitID user logs into the Energy Origin Web application, the user will have to go through some steps. After agreeing to terms and conditions, a 'shadow' user will be creater in B2C.
 
@@ -139,8 +136,8 @@ sequenceDiagram
         EO->>B2C: Redirect to B2C
         B2C->>MitID: Redirect to MitID
         User->>MitID: Login
-        MitID->>B2C: Successfull login (tokens)
-        B2C->>EO: Successfull login (tokens)
+        MitID->>B2C: Successful login (tokens)
+        B2C->>EO: Successful login (tokens)
     end
 
     activate EO
@@ -178,6 +175,125 @@ sequenceDiagram
     ClientApp->>Cert: API call (token)
     ClientApp->>Cert: ...
     ClientApp->>Cert: API call (token)
+```
+
+## Terms Acceptance
+
+### Overview
+
+The Terms Acceptance feature allows organizations to accept the latest terms and conditions.
+When an organization accepts the terms, the Authorization database is updated, and an integration event is published
+to RabbitMQ, using MassTransit's transactional outbox pattern.
+
+### Accept terms flow:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant API as Accept Terms API
+    participant Backend as Authorization Subsystem
+    participant EventBus as Event Bus
+
+    User->>API: Accept Terms
+    activate API
+    API->>Backend: Process Terms Acceptance
+    activate Backend
+
+    Backend->>Backend: Update Terms Acceptance
+
+    Backend->>EventBus: Publish Terms Accepted Event
+    Backend-->>API: Terms Acceptance Result
+    deactivate Backend
+
+    alt Terms Accepted Successfully
+        API-->>User: Success Response
+    else Terms Acceptance Failed
+        API-->>User: Error Response
+    end
+    deactivate API
+```
+
+The endpoint requires authorization with the `B2CCvrClaim policy`.
+
+This policy ensures that the user attempting to accept the terms is indeed affiliated with the organization,
+they are accepting the terms on behalf of.
+
+The policy is implemented as a custom authorization policy,
+in the [EnergyOrigin.TokenValidation NuGet package](../../../libraries/dotnet/EnergyOrigin.TokenValidation/README.md).
+
+## User Consent Authorization
+
+### Overview
+
+The User Consent Authorization API is responsible for retrieving and managing user authorization models.
+This endpoint is designed to work in tandem with the Azure B2C tenant,
+which is the only authorized caller of this endpoint.
+
+### User Consent Flow
+
+```mermaid
+sequenceDiagram
+    participant B2C as Azure B2C
+    participant API as User-Consent API
+    participant Backend as Authorization Subsystem
+
+    B2C->>API: Request User Consent
+    activate API
+
+    API->>Backend: Process User Consent
+    activate Backend
+
+    Backend->>Backend: Handle User and Organization Data
+
+    Backend->>Backend: Check and Update Terms Acceptance
+
+    Backend-->>API: Return Consent Result
+    deactivate Backend
+
+    API-->>B2C: Return Authorization Response
+    deactivate API
+
+    alt Error Occurs
+        Backend-->>API: Report Error
+        API-->>B2C: Return Error Response
+    end
+```
+
+## User Delete Consent
+
+### Overview
+
+The User Delete Consent flow is responsible for enabling users to delete consents.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant API as Delete Consent API
+    participant Backend as Authorization Subsystem
+
+    User->>API: Delete Consent Request
+    activate API
+
+    API->>Backend: Process Delete Consent
+    activate Backend
+
+    Backend->>Backend: Verify User Affiliation
+
+    Backend->>Backend: Find and Delete Consent
+
+    alt Consent Deleted Successfully
+        Backend-->>API: Confirm Deletion
+        API-->>User: 204 No Content
+    else User Not Affiliated
+        Backend-->>API: Report User Not Affiliated
+        API-->>User: 403 Forbidden
+    else Consent Not Found
+        Backend-->>API: Report Consent Not Found
+        API-->>User: 404 Not Found
+    end
+
+    deactivate Backend
+    deactivate API
 ```
 
 ## Deployment
