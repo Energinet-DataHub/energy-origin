@@ -93,7 +93,7 @@ public class Startup
             {
                 var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
                 var url = $"rabbitmq://{options.Host}:{options.Port}";
-
+                cfg.SetQuorumQueue();
                 cfg.Host(new Uri(url), h =>
                 {
                     h.Username(options.Username);
