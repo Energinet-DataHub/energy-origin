@@ -50,7 +50,7 @@ builder.Services.AddMassTransit(o =>
         {
             rabbitMqConfigurator.SetQueueArgument("x-queue-type", "quorum");
         }
-        
+
         cfg.Host(new Uri(url), h =>
         {
             h.Username(options.Username);
