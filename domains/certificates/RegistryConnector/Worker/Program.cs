@@ -45,11 +45,18 @@ builder.Services.AddGrpcClient<RegistryService.RegistryServiceClient>((sp, o) =>
     var options = sp.GetRequiredService<IOptions<ProjectOriginRegistryOptions>>().Value;
     o.Address = new Uri(options.RegistryUrl);
 });
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production")
-{
+
     builder.Services.AddMassTransit(o =>
     {
         o.SetKebabCaseEndpointNameFormatter();
+
+        o.AddConfigureEndpointsCallback((name, cfg) =>
+        {
+            if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+                rmq.SetQuorumQueue(3);
+
+            cfg.UseMessageRetry(r => r.Immediate(2));
+        });
 
         o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
         o.AddConsumer<CertificateCreatedEventHandler, CertificateCreatedEventHandlerConsumerDefinition>();
@@ -86,7 +93,7 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production"
             outboxConfigurator.UseBusOutbox();
         });
     });
-}
+
 
 builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit("RegistryConnector",
     otlpOptions.ReceiverEndpoint);

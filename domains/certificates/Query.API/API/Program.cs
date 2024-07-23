@@ -51,13 +51,19 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
     optionsLifetime: ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
-var logFactory = new LoggerFactory();
 
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production")
-{
     builder.Services.AddMassTransit(
         x =>
         {
+
+            x.AddConfigureEndpointsCallback((name, cfg) =>
+            {
+                if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+                    rmq.SetQuorumQueue(3);
+
+                cfg.UseMessageRetry(r => r.Immediate(2));
+            });
+            
             x.SetKebabCaseEndpointNameFormatter();
 
             x.UsingRabbitMq((context, cfg) =>
@@ -79,7 +85,6 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production"
             });
         }
     );
-}
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHealthChecks()
