@@ -11,7 +11,7 @@ namespace DataContext.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DELETE FROM public.\"Contracts\"");
+            migrationBuilder.Sql("DELETE FROM public.\"Contracts\";");
 
             migrationBuilder.DropTable(
                 name: "ConsumptionCertificates");

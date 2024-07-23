@@ -532,7 +532,7 @@ START TRANSACTION;
 DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240723091045_ModifiedContractsToUseRecipientIdAndRemovedCertificates') THEN
-    DELETE FROM public."Contracts"
+    DELETE FROM public."Contracts";
     END IF;
 END $EF$;
 
