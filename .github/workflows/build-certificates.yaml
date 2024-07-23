@@ -35,26 +35,11 @@ jobs:
           migrations: domains/certificates/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}
 
-  build-registry-connector:
-    needs:
-      - test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-build
-        with:
-          solution: domains/certificates/Certificates.sln
-          project: domains/certificates/RegistryConnector/Worker/Worker.csproj
-          configuration: domains/certificates/RegistryConnector/configuration.yaml
-          migrations: domains/certificates/migrations/API.sql
-          dry-run: ${{ inputs.dry-run }}
-
   update:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
       - build-api
-      - build-registry-connector
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
@@ -65,6 +50,5 @@ jobs:
         with:
           configurations: |
             domains/certificates/Query.API/configuration.yaml
-            domains/certificates/RegistryConnector/configuration.yaml
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
