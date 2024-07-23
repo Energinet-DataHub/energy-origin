@@ -19,6 +19,7 @@ using API.UnitOfWork;
 using Contracts;
 using EnergyOrigin.Setup;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
 
@@ -48,9 +49,15 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
         );
     },
     optionsLifetime: ServiceLifetime.Singleton);
+
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
+var logFactory = new LoggerFactory();
+
+var logger = logFactory.CreateLogger<Type>();
+logger.LogInformation("STARTING 123");
 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production")
 {
+    logger.LogInformation("We are not production");
     builder.Services.AddMassTransit(
         x =>
         {
