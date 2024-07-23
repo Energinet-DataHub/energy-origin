@@ -52,39 +52,39 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
 
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
-    builder.Services.AddMassTransit(
-        x =>
+builder.Services.AddMassTransit(
+    x =>
+    {
+
+        x.AddConfigureEndpointsCallback((name, cfg) =>
         {
+            if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+                rmq.SetQuorumQueue(3);
 
-            x.AddConfigureEndpointsCallback((name, cfg) =>
-            {
-                if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
-                    rmq.SetQuorumQueue(3);
+            cfg.UseMessageRetry(r => r.Immediate(2));
+        });
 
-                cfg.UseMessageRetry(r => r.Immediate(2));
-            });
-            
-            x.SetKebabCaseEndpointNameFormatter();
+        x.SetKebabCaseEndpointNameFormatter();
 
-            x.UsingRabbitMq((context, cfg) =>
+        x.UsingRabbitMq((context, cfg) =>
+        {
+            var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+            var url = $"rabbitmq://{options.Host}:{options.Port}";
+            cfg.SetQuorumQueue();
+            cfg.Host(new Uri(url), h =>
             {
-                var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-                var url = $"rabbitmq://{options.Host}:{options.Port}";
-                cfg.SetQuorumQueue();
-                cfg.Host(new Uri(url), h =>
-                {
-                    h.Username(options.Username);
-                    h.Password(options.Password);
-                });
-                cfg.ConfigureEndpoints(context);
+                h.Username(options.Username);
+                h.Password(options.Password);
             });
-            x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
-            {
-                o.UsePostgres();
-                o.UseBusOutbox();
-            });
-        }
-    );
+            cfg.ConfigureEndpoints(context);
+        });
+        x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+        {
+            o.UsePostgres();
+            o.UseBusOutbox();
+        });
+    }
+);
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHealthChecks()

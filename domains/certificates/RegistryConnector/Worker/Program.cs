@@ -46,53 +46,53 @@ builder.Services.AddGrpcClient<RegistryService.RegistryServiceClient>((sp, o) =>
     o.Address = new Uri(options.RegistryUrl);
 });
 
-    builder.Services.AddMassTransit(o =>
+builder.Services.AddMassTransit(o =>
+{
+    o.SetKebabCaseEndpointNameFormatter();
+
+    o.AddConfigureEndpointsCallback((name, cfg) =>
     {
-        o.SetKebabCaseEndpointNameFormatter();
+        if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+            rmq.SetQuorumQueue(3);
 
-        o.AddConfigureEndpointsCallback((name, cfg) =>
+        cfg.UseMessageRetry(r => r.Immediate(2));
+    });
+
+    o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
+    o.AddConsumer<CertificateCreatedEventHandler, CertificateCreatedEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateFailedInRegistryEventHandler,
+        CertificateFailedInRegistryEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateIssuedInRegistryEventHandler,
+        CertificateIssuedInRegistryEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateMarkedAsIssuedEventHandler, CertificateMarkedAsIssuedEventHandlerConsumerDefinition>();
+    o.AddConsumer<CertificateSentToRegistryEventHandler, CertificateSentToRegistryEventHandlerConsumerDefinition>();
+
+    o.UsingRabbitMq((context, cfg) =>
+    {
+        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+        var url = $"rabbitmq://{options.Host}:{options.Port}";
+
+        cfg.Host(new Uri(url), h =>
         {
-            if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
-                rmq.SetQuorumQueue(3);
-
-            cfg.UseMessageRetry(r => r.Immediate(2));
+            h.Username(options.Username);
+            h.Password(options.Password);
         });
 
-        o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
-        o.AddConsumer<CertificateCreatedEventHandler, CertificateCreatedEventHandlerConsumerDefinition>();
-        o.AddConsumer<CertificateFailedInRegistryEventHandler,
-            CertificateFailedInRegistryEventHandlerConsumerDefinition>();
-        o.AddConsumer<CertificateIssuedInRegistryEventHandler,
-            CertificateIssuedInRegistryEventHandlerConsumerDefinition>();
-        o.AddConsumer<CertificateMarkedAsIssuedEventHandler, CertificateMarkedAsIssuedEventHandlerConsumerDefinition>();
-        o.AddConsumer<CertificateSentToRegistryEventHandler, CertificateSentToRegistryEventHandlerConsumerDefinition>();
+        cfg.ConfigureEndpoints(context);
 
-        o.UsingRabbitMq((context, cfg) =>
+        cfg.ConfigureJsonSerializerOptions(jsonSerializerOptions =>
         {
-            var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-            var url = $"rabbitmq://{options.Host}:{options.Port}";
-
-            cfg.Host(new Uri(url), h =>
-            {
-                h.Username(options.Username);
-                h.Password(options.Password);
-            });
-
-            cfg.ConfigureEndpoints(context);
-
-            cfg.ConfigureJsonSerializerOptions(jsonSerializerOptions =>
-            {
-                jsonSerializerOptions.Converters.Add(new TransactionConverter());
-                return jsonSerializerOptions;
-            });
-        });
-
-        o.AddEntityFrameworkOutbox<ApplicationDbContext>(outboxConfigurator =>
-        {
-            outboxConfigurator.UsePostgres();
-            outboxConfigurator.UseBusOutbox();
+            jsonSerializerOptions.Converters.Add(new TransactionConverter());
+            return jsonSerializerOptions;
         });
     });
+
+    o.AddEntityFrameworkOutbox<ApplicationDbContext>(outboxConfigurator =>
+    {
+        outboxConfigurator.UsePostgres();
+        outboxConfigurator.UseBusOutbox();
+    });
+});
 
 
 builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit("RegistryConnector",
