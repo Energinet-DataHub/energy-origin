@@ -526,3 +526,57 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240723091045_ModifiedContractsToUseRecipientIdAndRemovedCertificates') THEN
+    DELETE FROM public."Contracts"
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240723091045_ModifiedContractsToUseRecipientIdAndRemovedCertificates') THEN
+    DROP TABLE "ConsumptionCertificates";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240723091045_ModifiedContractsToUseRecipientIdAndRemovedCertificates') THEN
+    DROP TABLE "ProductionCertificates";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240723091045_ModifiedContractsToUseRecipientIdAndRemovedCertificates') THEN
+    ALTER TABLE "Contracts" DROP COLUMN "WalletPublicKey";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240723091045_ModifiedContractsToUseRecipientIdAndRemovedCertificates') THEN
+    ALTER TABLE "Contracts" DROP COLUMN "WalletUrl";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240723091045_ModifiedContractsToUseRecipientIdAndRemovedCertificates') THEN
+    ALTER TABLE "Contracts" ADD "RecipientId" uuid NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240723091045_ModifiedContractsToUseRecipientIdAndRemovedCertificates') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20240723091045_ModifiedContractsToUseRecipientIdAndRemovedCertificates', '8.0.6');
+    END IF;
+END $EF$;
+COMMIT;
+

@@ -1,6 +1,6 @@
 using System;
 using DataContext.ValueObjects;
-using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using ProjectOriginClients.Models;
 
 namespace DataContext.Models;
 
@@ -15,8 +15,7 @@ public class CertificateIssuingContract
     public DateTimeOffset StartDate { get; set; }
     public DateTimeOffset? EndDate { get; set; }
     public DateTimeOffset Created { get; set; }
-    public string WalletUrl { get; set; } = "";
-    public byte[] WalletPublicKey { get; set; } = Array.Empty<byte>();
+    public Guid RecipientId { get; set; }
     public Technology? Technology { get; set; }
 
     public static CertificateIssuingContract Create(int contractNumber,
@@ -26,11 +25,10 @@ public class CertificateIssuingContract
         string meteringPointOwner,
         DateTimeOffset startDate,
         DateTimeOffset? endDate,
-        string walletUrl,
-        byte[] walletPublicKey,
+        Guid recipientId,
         Technology? technology)
     {
-        var contract = new CertificateIssuingContract
+        return new CertificateIssuingContract
         {
             Id = Guid.Empty,
             ContractNumber = contractNumber,
@@ -41,15 +39,14 @@ public class CertificateIssuingContract
             StartDate = startDate,
             EndDate = endDate,
             Created = DateTimeOffset.UtcNow,
-            WalletUrl = walletUrl,
-            WalletPublicKey = walletPublicKey,
+            RecipientId = recipientId,
             Technology = technology
         };
+    }
 
-        // Validate key
-        new Secp256k1Algorithm().ImportHDPublicKey(walletPublicKey);
-
-        return contract;
+    public bool IsExpired()
+    {
+        return EndDate.HasValue && EndDate.Value < DateTimeOffset.UtcNow;
     }
 
     /// <summary>
@@ -87,4 +84,15 @@ public class CertificateIssuingContract
     /// <returns>true if completely within</returns>
     public bool Contains(long startDate, long endDate)
         => Contains(DateTimeOffset.FromUnixTimeSeconds(startDate), DateTimeOffset.FromUnixTimeSeconds(endDate));
+}
+
+
+public static class MeteringPointTypeMapper {
+    public static CertificateType MapToCertificateType(this MeteringPointType meteringPointType) =>
+        meteringPointType switch
+        {
+            MeteringPointType.Production => CertificateType.Production,
+            MeteringPointType.Consumption => CertificateType.Consumption,
+            _ => throw new ArgumentOutOfRangeException(nameof(meteringPointType), meteringPointType, null)
+        };
 }

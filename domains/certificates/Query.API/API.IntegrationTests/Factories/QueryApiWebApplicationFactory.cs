@@ -43,6 +43,10 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string ConnectionString { get; set; } = "";
     public string MeasurementsUrl { get; set; } = "http://foo";
     public string WalletUrl { get; set; } = "bar";
+    public string StampUrl { get; set; } = "baz";
+    public string RegistryName { get; set; } = "TestRegistry";
+    public bool MeasurementsSyncEnabled { get; set; } = false;
+    public Measurements.V1.Measurements.MeasurementsClient? measurementsClient { get; set; } = null;
 
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
@@ -67,8 +71,11 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Measurements:Url", MeasurementsUrl);
         builder.UseSetting("Measurements:GrpcUrl", "http://foo");
         builder.UseSetting("MeasurementsSync:Disabled", "false");
+        builder.UseSetting("MeasurementsSync:SleepType", "EveryThirdSecond");
         builder.UseSetting("IssuingContractCleanup:SleepTime", "00:00:03");
         builder.UseSetting("Wallet:Url", WalletUrl);
+        builder.UseSetting("Stamp:Url", StampUrl);
+        builder.UseSetting("Stamp:RegistryName", RegistryName);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
@@ -104,7 +111,14 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             });
 
             // Remove MeasurementsSyncerWorker
-            services.Remove(services.First(s => s.ImplementationType == typeof(MeasurementsSyncerWorker)));
+            if(!MeasurementsSyncEnabled)
+                services.Remove(services.First(s => s.ImplementationType == typeof(MeasurementsSyncerWorker)));
+
+            if (measurementsClient != null)
+            {
+                services.Remove(services.First(s => s.ServiceType == typeof(Measurements.V1.Measurements.MeasurementsClient)));
+                services.AddSingleton(measurementsClient);
+            }
         });
     }
 

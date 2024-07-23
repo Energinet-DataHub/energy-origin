@@ -26,19 +26,22 @@ public class ContractState : IContractState
         {
             await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
             var allContracts = await dbContext.Contracts.AsNoTracking().ToListAsync(cancellationToken);
+            var nonExpiredContracts = allContracts.Where(c => !c.IsExpired()).ToList();
 
             //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
-            var syncInfos = allContracts.GroupBy(c => c.GSRN)
+            var syncInfos = nonExpiredContracts.GroupBy(c => c.GSRN)
                 .Where(g => GetNumberOfOwners(g) == 1)
                 .Select(g =>
                 {
                     var oldestContract = g.OrderBy(c => c.StartDate).First();
                     var gsrn = g.Key;
-                    return new MeteringPointSyncInfo(gsrn, oldestContract.StartDate, oldestContract.MeteringPointOwner);
+                    return new MeteringPointSyncInfo(gsrn, oldestContract.StartDate, oldestContract.MeteringPointOwner,
+                        oldestContract.MeteringPointType, oldestContract.GridArea, oldestContract.RecipientId,
+                        oldestContract.Technology);
                 })
                 .ToList();
 
-            var contractsWithChangingOwnerForSameMeteringPoint = allContracts.GroupBy(c => c.GSRN)
+            var contractsWithChangingOwnerForSameMeteringPoint = nonExpiredContracts.GroupBy(c => c.GSRN)
                 .Where(g => GetNumberOfOwners(g) > 1);
 
             if (contractsWithChangingOwnerForSameMeteringPoint.Any())
