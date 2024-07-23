@@ -58,10 +58,9 @@ builder.Services.AddMassTransit(
         {
             var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
             var url = $"rabbitmq://{options.Host}:{options.Port}";
-            if (cfg is IRabbitMqReceiveEndpointConfigurator rabbitMqConfigurator)
-            {
-                rabbitMqConfigurator.SetQueueArgument("x-queue-type", "quorum");
-            }
+
+            cfg.SetQueueArgument("x-queue-type", "quorum");
+
 
             cfg.Host(new Uri(url), h =>
             {
@@ -117,7 +116,8 @@ var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
 app.UseActivityLog().WithApiVersionSet(activityLogApiVersionSet)
     .HasApiVersion(ApiVersions.Version20240423AsInt)
     .HasApiVersion(ApiVersions.Version20230101AsInt);
-app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet).HasApiVersion(ApiVersions.Version20240515AsInt);
+app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
+    .HasApiVersion(ApiVersions.Version20240515AsInt);
 
 
 app.Run();
