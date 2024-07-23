@@ -55,13 +55,10 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddMassTransit(
     x =>
     {
-
         x.AddConfigureEndpointsCallback((name, cfg) =>
         {
             if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
                 rmq.SetQuorumQueue(3);
-
-            cfg.UseMessageRetry(r => r.Immediate(2));
         });
 
         x.SetKebabCaseEndpointNameFormatter();

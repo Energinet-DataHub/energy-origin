@@ -89,15 +89,18 @@ public class Startup
 
             o.AddConsumer<TermsConsumer, TermsConsumerErrorDefinition>();
 
+            o.AddConfigureEndpointsCallback((name, cfg) =>
+            {
+                if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+                    rmq.SetQuorumQueue(3);
+            });
+
             o.UsingRabbitMq((context, cfg) =>
             {
                 var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
                 var url = $"rabbitmq://{options.Host}:{options.Port}";
 
-                if (cfg is IRabbitMqReceiveEndpointConfigurator rabbitMqConfigurator)
-                {
-                    rabbitMqConfigurator.SetQueueArgument("x-queue-type", "quorum");
-                }
+
                 cfg.Host(new Uri(url), h =>
                 {
                     h.Username(options.Username);
