@@ -14,7 +14,7 @@ public class ConfigureQuorumReceiveEndpoint : IConfigureReceiveEndpoint
     {
         if (configurator is IRabbitMqReceiveEndpointConfigurator rabbitMqConfigurator)
         {
-            rabbitMqConfigurator.SetQueueArgument(QueueType, QuorumQueue);
+            rabbitMqConfigurator.SetQuorumQueue();
         }
     }
 }

@@ -49,6 +49,7 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
     },
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
+builder.Services.AddTransient<IConfigureReceiveEndpoint, ConfigureQuorumReceiveEndpoint>();
 
 builder.Services.AddMassTransit(
     x =>
@@ -59,7 +60,7 @@ builder.Services.AddMassTransit(
         {
             var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
             var url = $"rabbitmq://{options.Host}:{options.Port}";
-
+            cfg.SetQuorumQueue();
             cfg.Host(new Uri(url), h =>
             {
                 h.Username(options.Username);
@@ -75,7 +76,6 @@ builder.Services.AddMassTransit(
     }
 );
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddTransient<IConfigureReceiveEndpoint, ConfigureQuorumReceiveEndpoint>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
