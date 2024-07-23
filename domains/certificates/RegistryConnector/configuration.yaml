@@ -1,7 +1,0 @@
-name: eo-certificates-registry-connector
-repo: ghcr.io/energinet-datahub
-references:
-  - file: k8s/energy-origin-apps/certificates/base/registry-connector-deployment.yaml
-    path: .spec.template.spec.containers[] | select(.name == "certificates-domain-registry-connector") | .image
-  - file: k8s/energy-origin-apps/certificates/base/registry-connector-deployment.yaml
-    path: .spec.template.spec.initContainers[] | select(.name == "certificates-issuer-worker-init-sql") | .image
