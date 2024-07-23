@@ -53,11 +53,8 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 var logFactory = new LoggerFactory();
 
-var logger = logFactory.CreateLogger<Type>();
-logger.LogInformation("STARTING 123");
 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production")
 {
-    logger.LogInformation("We are not production");
     builder.Services.AddMassTransit(
         x =>
         {

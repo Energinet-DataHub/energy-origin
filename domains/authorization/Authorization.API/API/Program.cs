@@ -46,10 +46,6 @@ builder.Services.AddMassTransit(o =>
         var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
         var url = $"rabbitmq://{options.Host}:{options.Port}";
 
-        if (cfg is IRabbitMqReceiveEndpointConfigurator rabbitMqConfigurator)
-        {
-            rabbitMqConfigurator.SetQueueArgument("x-queue-type", "quorum");
-        }
 
         cfg.Host(new Uri(url), h =>
         {
