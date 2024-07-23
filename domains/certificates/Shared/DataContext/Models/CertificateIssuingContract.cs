@@ -87,7 +87,8 @@ public class CertificateIssuingContract
 }
 
 
-public static class MeteringPointTypeMapper {
+public static class MeteringPointTypeMapper
+{
     public static CertificateType MapToCertificateType(this MeteringPointType meteringPointType) =>
         meteringPointType switch
         {

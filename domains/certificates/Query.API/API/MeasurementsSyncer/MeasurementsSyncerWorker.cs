@@ -96,7 +96,7 @@ public class MeasurementsSyncerWorker : BackgroundService
         {
             throw new ArgumentOutOfRangeException(nameof(options.SleepType), options.SleepType, "Unknown sleep type");
         }
-    } 
+    }
 
     private async Task SleepToNearestHour(CancellationToken cancellationToken)
     {

@@ -46,7 +46,7 @@ public class MeasurementsSyncService
         string gridArea,
         Guid recipientId,
         Technology? technology,
-        MeteringPointTimeSeriesSlidingWindow slidingWindow, 
+        MeteringPointTimeSeriesSlidingWindow slidingWindow,
         CancellationToken stoppingToken)
     {
         var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();

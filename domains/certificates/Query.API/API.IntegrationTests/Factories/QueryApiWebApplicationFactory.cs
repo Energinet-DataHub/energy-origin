@@ -111,7 +111,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             });
 
             // Remove MeasurementsSyncerWorker
-            if(!MeasurementsSyncEnabled)
+            if (!MeasurementsSyncEnabled)
                 services.Remove(services.First(s => s.ImplementationType == typeof(MeasurementsSyncerWorker)));
 
             if (measurementsClient != null)
