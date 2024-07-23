@@ -1,4 +1,5 @@
 using System;
+using API;
 using API.ContractService;
 using API.Query.API;
 using Microsoft.AspNetCore.Builder;
@@ -59,9 +60,6 @@ builder.Services.AddMassTransit(
             var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
             var url = $"rabbitmq://{options.Host}:{options.Port}";
 
-            cfg.SetQueueArgument("x-queue-type", "quorum");
-
-
             cfg.Host(new Uri(url), h =>
             {
                 h.Username(options.Username);
@@ -77,7 +75,7 @@ builder.Services.AddMassTransit(
     }
 );
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
+builder.Services.AddTransient<IConfigureReceiveEndpoint, ConfigureQuorumReceiveEndpoint>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
