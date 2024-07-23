@@ -49,32 +49,32 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
     },
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
-builder.Services.AddTransient<IConfigureReceiveEndpoint, ConfigureQuorumReceiveEndpoint>();
-
-builder.Services.AddMassTransit(
-    x =>
-    {
-        x.SetKebabCaseEndpointNameFormatter();
-
-        x.UsingRabbitMq((context, cfg) =>
-        {
-            var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-            var url = $"rabbitmq://{options.Host}:{options.Port}";
-            cfg.SetQuorumQueue();
-            cfg.Host(new Uri(url), h =>
-            {
-                h.Username(options.Username);
-                h.Password(options.Password);
-            });
-            cfg.ConfigureEndpoints(context);
-        });
-        x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
-        {
-            o.UsePostgres();
-            o.UseBusOutbox();
-        });
-    }
-);
+// builder.Services.AddTransient<IConfigureReceiveEndpoint, ConfigureQuorumReceiveEndpoint>();
+//
+// builder.Services.AddMassTransit(
+//     x =>
+//     {
+//         x.SetKebabCaseEndpointNameFormatter();
+//
+//         x.UsingRabbitMq((context, cfg) =>
+//         {
+//             var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+//             var url = $"rabbitmq://{options.Host}:{options.Port}";
+//             cfg.SetQuorumQueue();
+//             cfg.Host(new Uri(url), h =>
+//             {
+//                 h.Username(options.Username);
+//                 h.Password(options.Password);
+//             });
+//             cfg.ConfigureEndpoints(context);
+//         });
+//         x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+//         {
+//             o.UsePostgres();
+//             o.UseBusOutbox();
+//         });
+//     }
+// );
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
