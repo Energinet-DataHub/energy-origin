@@ -103,3 +103,18 @@ runs:
         image-name: ${{ env.name }}
         image-tag: ${{ env.version }}
         upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+    - name: Generate OpenAPI Specification Certificates
+      run: dotnet swagger tofile --output contracts.yaml ${{ inputs.source-directory }}/bin/Debug/net6.0/API.dll v1
+      shell: bash
+
+    - name: Generate OpenAPI Specification Wallet
+      run: dotnet swagger tofile --output wallet.yaml ${{ inputs.source-directory }}/bin/Debug/net6.0/Proxy.dll v1
+      shell: bash
+
+    - name: Bundle OpenAPI Specifications
+      run: |
+        # Use a tool like swagger-cli to bundle the specs
+        # This is a placeholder command. Replace with actual bundling command
+        swagger-cli bundle -o bundled-openapi.yaml wallet.yaml contracts.yaml
+      shell: bash
