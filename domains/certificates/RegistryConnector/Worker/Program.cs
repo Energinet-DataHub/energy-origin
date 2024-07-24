@@ -54,8 +54,6 @@ builder.Services.AddMassTransit(o =>
     {
         if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
             rmq.SetQuorumQueue(3);
-
-        cfg.UseMessageRetry(r => r.Immediate(2));
     });
 
     o.AddConsumer<MeasurementEventHandler, MeasurementEventHandlerDefinition>();
@@ -93,7 +91,6 @@ builder.Services.AddMassTransit(o =>
         outboxConfigurator.UseBusOutbox();
     });
 });
-
 
 builder.Services.AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit("RegistryConnector",
     otlpOptions.ReceiverEndpoint);
