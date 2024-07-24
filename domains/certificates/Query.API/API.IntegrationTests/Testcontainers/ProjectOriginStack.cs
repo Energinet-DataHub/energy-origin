@@ -82,7 +82,7 @@ public class ProjectOriginStack : RegistryFixture
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/stamp:0.1.0")
+                .WithImage("ghcr.io/project-origin/stamp:1.0.0")
                 .WithNetwork(Network)
                 .WithPortBinding(hostPort, StampHttpPort)
                 .WithCommand("--serve", "--migrate")
@@ -90,9 +90,9 @@ public class ProjectOriginStack : RegistryFixture
                 .WithEnvironment("Otlp__Enabled", "false")
                 .WithEnvironment("Retry__DefaultFirstLevelRetryCount", "5")
                 .WithEnvironment("Retry__RegistryTransactionStillProcessingRetryCount", "100")
-                .WithEnvironment($"Registry__RegistryUrls__{RegistryName}", RegistryContainerUrl)
-                .WithEnvironment($"Registry__IssuerPrivateKeyPems__DK1", Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText())))
-                .WithEnvironment($"Registry__IssuerPrivateKeyPems__DK2", Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText())))
+                .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
+                .WithEnvironment($"IssuerPrivateKeyPems__DK1", Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText())))
+                .WithEnvironment($"IssuerPrivateKeyPems__DK2", Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText())))
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
                 .WithEnvironment("MessageBroker__Type", "InMemory")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(StampHttpPort))
