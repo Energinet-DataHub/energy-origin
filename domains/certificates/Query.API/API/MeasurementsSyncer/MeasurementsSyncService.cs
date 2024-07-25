@@ -57,10 +57,7 @@ public class MeasurementsSyncService
             if (measurementsToPublish.Any())
             {
                 await IssueCertificates(measurementsToPublish,
-                    syncInfo.MeteringPointType,
-                    syncInfo.GridArea,
-                    syncInfo.RecipientId,
-                    syncInfo.Technology,
+                    syncInfo,
                     stoppingToken);
             }
 
@@ -71,10 +68,7 @@ public class MeasurementsSyncService
     }
 
     private async Task IssueCertificates(List<Measurement> measurements,
-        MeteringPointType meteringPointType,
-        string gridArea,
-        Guid recipientId,
-        Technology? technology,
+        MeteringPointSyncInfo syncInfo,
         CancellationToken cancellationToken)
     {
         logger.LogInformation("Sending {Count} measurements to Stamp", measurements.Count);
@@ -97,10 +91,10 @@ public class MeasurementsSyncService
             }
 
             var clearTextAttributes = new Dictionary<string, string>();
-            if (meteringPointType == MeteringPointType.Production)
+            if (syncInfo.MeteringPointType == MeteringPointType.Production)
             {
-                clearTextAttributes.Add(FuelCode, technology!.FuelCode);
-                clearTextAttributes.Add(TechCode, technology.TechCode);
+                clearTextAttributes.Add(FuelCode, syncInfo.Technology!.FuelCode);
+                clearTextAttributes.Add(TechCode, syncInfo.Technology.TechCode);
             }
             clearTextAttributes.Add(AssetId, m.Gsrn);
 
@@ -110,13 +104,13 @@ public class MeasurementsSyncService
                 End = m.DateTo,
                 Start = m.DateFrom,
                 Quantity = (uint)m.Quantity,
-                Type = meteringPointType.MapToCertificateType(),
-                GridArea = gridArea,
+                Type = syncInfo.MeteringPointType.MapToCertificateType(),
+                GridArea = syncInfo.GridArea,
                 ClearTextAttributes = clearTextAttributes,
                 HashedAttributes = new List<HashedAttribute>()
             };
 
-            await stampClient.IssueCertificate(recipientId, m.Gsrn, certificate, cancellationToken);
+            await stampClient.IssueCertificate(syncInfo.RecipientId, m.Gsrn, certificate, cancellationToken);
         }
 
         logger.LogInformation("Sent {Count} measurements to Stamp", measurements.Count);
