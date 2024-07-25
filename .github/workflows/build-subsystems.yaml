@@ -24,10 +24,6 @@ jobs:
       transfer: ${{ steps.transfer.outputs.matches }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install Swashbuckle CLI
-        run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
-        shell: bash
-
 
   test:
     needs: setup
