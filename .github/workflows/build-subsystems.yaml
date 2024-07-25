@@ -105,7 +105,6 @@ jobs:
             domains/authorization/Authorization.API/configuration.yaml
             domains/authorization/Proxy/configuration.yaml
             domains/certificates/Query.API/configuration.yaml
-            domains/certificates/RegistryConnector/configuration.yaml
             domains/measurements/Measurements.API/configuration.yaml
             domains/oidc-mock/API/configuration.yaml
             domains/transfer/Transfer.API/configuration.yaml
