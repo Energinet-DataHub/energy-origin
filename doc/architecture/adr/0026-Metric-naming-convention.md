@@ -34,7 +34,7 @@ Units may be included when it provides additional meaning to the metric name.
 * Metric namespaces __SHOULD NOT__ be pluralized.
 
 * Metric namespace represents a countable concept, then the metric MUST end with count.
-E.g: ett.transfer.message.count
+E.g: ett_transfer_message_count
 
 ### References
 
