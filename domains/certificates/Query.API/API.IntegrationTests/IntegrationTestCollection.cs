@@ -20,7 +20,6 @@ public class IntegrationTestFixture : IAsyncLifetime
     private ProjectOriginStack ProjectOriginStack { get; set; }
     private RabbitMqContainer RabbitMqContainer { get; set; }
     public MeasurementsWireMock MeasurementsMock { get; private set; }
-    public RegistryConnectorApplicationFactory RegistryConnectorFactory { get; private set; }
 
     public IntegrationTestFixture()
     {
@@ -29,7 +28,6 @@ public class IntegrationTestFixture : IAsyncLifetime
         ProjectOriginStack = new ProjectOriginStack();
         RabbitMqContainer = new RabbitMqContainer();
         MeasurementsMock = new MeasurementsWireMock();
-        RegistryConnectorFactory = new RegistryConnectorApplicationFactory();
     }
 
     public async Task InitializeAsync()
@@ -45,23 +43,17 @@ public class IntegrationTestFixture : IAsyncLifetime
 
         MeasurementsMock = new MeasurementsWireMock();
 
-        RegistryConnectorFactory = new RegistryConnectorApplicationFactory();
-        RegistryConnectorFactory.RabbitMqOptions = RabbitMqContainer.Options;
-        RegistryConnectorFactory.PoRegistryOptions = ProjectOriginStack.Options;
-        RegistryConnectorFactory.ConnectionString = PostgresContainer.ConnectionString;
-        RegistryConnectorFactory.Start();
-
         WebApplicationFactory = new QueryApiWebApplicationFactory();
         WebApplicationFactory.ConnectionString = PostgresContainer.ConnectionString;
         WebApplicationFactory.RabbitMqOptions = RabbitMqContainer.Options;
         WebApplicationFactory.MeasurementsUrl = MeasurementsMock.Url;
         WebApplicationFactory.WalletUrl = ProjectOriginStack.WalletUrl;
+        WebApplicationFactory.StampUrl = ProjectOriginStack.StampUrl;
         WebApplicationFactory.Start();
     }
 
     public async Task DisposeAsync()
     {
-        await RegistryConnectorFactory.DisposeAsync();
         await WebApplicationFactory.DisposeAsync();
         await PostgresContainer.DisposeAsync();
         await ProjectOriginStack.DisposeAsync();

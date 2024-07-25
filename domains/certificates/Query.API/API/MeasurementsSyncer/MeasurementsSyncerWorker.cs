@@ -44,7 +44,7 @@ public class MeasurementsSyncerWorker : BackgroundService
         {
             logger.LogInformation("MeasurementSyncer running job");
             await PerformPeriodicTask(stoppingToken);
-            await SleepToNearestHour(stoppingToken);
+            await Sleep(stoppingToken);
         }
     }
 
@@ -68,6 +68,7 @@ public class MeasurementsSyncerWorker : BackgroundService
 
             measurementSyncMetrics.UpdateTimePeriodForSearchingForGSRN(UnixTimestamp.Create(oldestSyncDate).Seconds);
             measurementSyncMetrics.AddNumberOfRecordsBeingSynced(syncInfos.Count);
+
             foreach (var syncInfo in syncInfos)
             {
                 using var scope = scopeFactory.CreateScope();
@@ -78,6 +79,22 @@ public class MeasurementsSyncerWorker : BackgroundService
         catch (Exception e)
         {
             logger.LogError(e, "Error in MeasurementSyncer periodic task");
+        }
+    }
+
+    private async Task Sleep(CancellationToken cancellationToken)
+    {
+        if (options.SleepType == MeasurementsSyncerSleepType.Hourly)
+        {
+            await SleepToNearestHour(cancellationToken);
+        }
+        else if (options.SleepType == MeasurementsSyncerSleepType.EveryThirdSecond)
+        {
+            await Task.Delay(3000, cancellationToken);
+        }
+        else
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.SleepType), options.SleepType, "Unknown sleep type");
         }
     }
 

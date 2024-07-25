@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using API.ContractService.Clients;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
@@ -14,6 +15,7 @@ using NSubstitute;
 using NSubstitute.ReceivedExtensions;
 using Testing.Extensions;
 using Xunit;
+using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.UnitTests.MeasurementsSyncer;
 
@@ -22,19 +24,25 @@ public class MeasurementsSyncServiceTest
     private readonly MeteringPointSyncInfo syncInfo = new(
         GSRN: "gsrn",
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
-        MeteringPointOwner: "meteringPointOwner");
+        MeteringPointOwner: "meteringPointOwner",
+        MeteringPointType.Production,
+        "DK1",
+        Guid.NewGuid(),
+        new Technology("T12345", "T54321"));
 
     private readonly Measurements.V1.Measurements.MeasurementsClient fakeClient = Substitute.For<Measurements.V1.Measurements.MeasurementsClient>();
     private readonly ILogger<MeasurementsSyncService> fakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly ISlidingWindowState fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
     private readonly IBus fakeBus = Substitute.For<IBus>();
     private readonly MeasurementsSyncService service;
+    private readonly IStampClient fakeStampClient = Substitute.For<IStampClient>();
+
 
     public MeasurementsSyncServiceTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         service = new MeasurementsSyncService(fakeLogger, fakeSlidingWindowState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics());
+            new MeasurementSyncMetrics(), fakeStampClient);
     }
 
     [Fact]
@@ -71,7 +79,7 @@ public class MeasurementsSyncServiceTest
         fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
             .Returns(mockedResponse);
 
-        await service.FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, CancellationToken.None);
+        await service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
         await fakeSlidingWindowState.Received(1)
             .UpdateSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.Seconds == dateTo), CancellationToken.None);
         await fakeSlidingWindowState.Received().SaveChangesAsync(CancellationToken.None);
@@ -87,7 +95,7 @@ public class MeasurementsSyncServiceTest
         fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
             .Returns(mockedResponse);
 
-        await service.FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, CancellationToken.None);
+        await service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
         await fakeSlidingWindowState.Received(0)
             .UpdateSlidingWindow(Arg.Any<MeteringPointTimeSeriesSlidingWindow>(), Arg.Any<CancellationToken>());
         await fakeSlidingWindowState.DidNotReceive().SaveChangesAsync(CancellationToken.None);

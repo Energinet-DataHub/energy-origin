@@ -3,43 +3,50 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.ContractService.Clients;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using MassTransit;
-using MeasurementEvents;
 using Measurements.V1;
 using Microsoft.Extensions.Logging;
+using HashedAttribute = API.ContractService.Clients.HashedAttribute;
+using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.MeasurementsSyncer;
 
 public class MeasurementsSyncService
 {
+    public const string AssetId = "AssetId";
+    public const string TechCode = "TechCode";
+    public const string FuelCode = "FuelCode";
+
     private readonly ISlidingWindowState slidingWindowState;
     private readonly Measurements.V1.Measurements.MeasurementsClient measurementsClient;
-    private readonly IPublishEndpoint bus;
     private readonly SlidingWindowService slidingWindowService;
     private readonly IMeasurementSyncMetrics measurementSyncMetrics;
+    private readonly IStampClient stampClient;
     private readonly ILogger<MeasurementsSyncService> logger;
 
     public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISlidingWindowState slidingWindowState,
         Measurements.V1.Measurements.MeasurementsClient measurementsClient, IPublishEndpoint bus, SlidingWindowService slidingWindowService,
-        IMeasurementSyncMetrics measurementSyncMetrics)
+        IMeasurementSyncMetrics measurementSyncMetrics, IStampClient stampClient)
     {
         this.logger = logger;
         this.slidingWindowState = slidingWindowState;
         this.measurementsClient = measurementsClient;
-        this.bus = bus;
         this.slidingWindowService = slidingWindowService;
         this.measurementSyncMetrics = measurementSyncMetrics;
+        this.stampClient = stampClient;
     }
 
-    public async Task FetchAndPublishMeasurements(string meteringPointOwner, MeteringPointTimeSeriesSlidingWindow slidingWindow,
+    public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo,
+        MeteringPointTimeSeriesSlidingWindow slidingWindow,
         CancellationToken stoppingToken)
     {
         var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
-        var fetchedMeasurements = await FetchMeasurements(slidingWindow, meteringPointOwner, synchronizationPoint, stoppingToken);
+        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, synchronizationPoint, stoppingToken);
 
         measurementSyncMetrics.MeasurementsFetched(fetchedMeasurements.Count);
 
@@ -49,7 +56,9 @@ public class MeasurementsSyncService
 
             if (measurementsToPublish.Any())
             {
-                await PublishIntegrationEvents(measurementsToPublish, stoppingToken);
+                await IssueCertificates(measurementsToPublish,
+                    syncInfo,
+                    stoppingToken);
             }
 
             slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, synchronizationPoint);
@@ -58,45 +67,54 @@ public class MeasurementsSyncService
         }
     }
 
-    private async Task PublishIntegrationEvents(List<Measurement> measurements, CancellationToken cancellationToken)
+    private async Task IssueCertificates(List<Measurement> measurements,
+        MeteringPointSyncInfo syncInfo,
+        CancellationToken cancellationToken)
     {
-        var integrationsEvents = MapToIntegrationEvents(measurements);
-        logger.LogInformation("Publishing {numberOfEnergyMeasuredIntegrationEvents} energyMeasuredIntegrationEvents to the Integration Bus",
-            integrationsEvents.Count);
+        logger.LogInformation("Sending {Count} measurements to Stamp", measurements.Count);
 
-        foreach (var @event in integrationsEvents)
+        foreach (var m in measurements)
         {
-            await bus.Publish(@event, cancellationToken);
+            if (m.Quality != EnergyQuantityValueQuality.Measured && m.Quality != EnergyQuantityValueQuality.Calculated)
+                continue;
+
+            if (m.Quantity <= 0)
+            {
+                logger.LogError("Quantity lower than 0: {0}", m.Quantity);
+                continue;
+            }
+
+            if (m.Quantity > uint.MaxValue)
+            {
+                logger.LogError("Quantity too high for measurement. Quantity: {0}", m.Quantity);
+                continue;
+            }
+
+            var clearTextAttributes = new Dictionary<string, string>();
+            if (syncInfo.MeteringPointType == MeteringPointType.Production)
+            {
+                clearTextAttributes.Add(FuelCode, syncInfo.Technology!.FuelCode);
+                clearTextAttributes.Add(TechCode, syncInfo.Technology.TechCode);
+            }
+            clearTextAttributes.Add(AssetId, m.Gsrn);
+
+            var certificate = new CertificateDto
+            {
+                Id = Guid.NewGuid(),
+                End = m.DateTo,
+                Start = m.DateFrom,
+                Quantity = (uint)m.Quantity,
+                Type = syncInfo.MeteringPointType.MapToCertificateType(),
+                GridArea = syncInfo.GridArea,
+                ClearTextAttributes = clearTextAttributes,
+                HashedAttributes = new List<HashedAttribute>()
+            };
+
+            await stampClient.IssueCertificate(syncInfo.RecipientId, m.Gsrn, certificate, cancellationToken);
         }
 
-        logger.LogInformation("Published {numberOfEnergyMeasuredIntegrationEvents} energyMeasuredIntegrationEvents to the Integration Bus",
-            integrationsEvents.Count);
+        logger.LogInformation("Sent {Count} measurements to Stamp", measurements.Count);
     }
-
-    private static List<EnergyMeasuredIntegrationEvent> MapToIntegrationEvents(List<Measurement> measurements)
-    {
-        return measurements
-            .Select(it => new EnergyMeasuredIntegrationEvent(
-                    GSRN: it.Gsrn,
-                    DateFrom: it.DateFrom,
-                    DateTo: it.DateTo,
-                    Quantity: it.Quantity,
-                    Quality: MapQuality(it.Quality)
-                )
-            )
-            .ToList();
-    }
-
-
-    private static MeasurementQuality MapQuality(EnergyQuantityValueQuality q) =>
-        q switch
-        {
-            EnergyQuantityValueQuality.Measured => MeasurementQuality.Measured,
-            EnergyQuantityValueQuality.Estimated => MeasurementQuality.Estimated,
-            EnergyQuantityValueQuality.Calculated => MeasurementQuality.Calculated,
-            EnergyQuantityValueQuality.Revised => MeasurementQuality.Revised,
-            _ => throw new ArgumentOutOfRangeException(nameof(q), q, null)
-        };
 
     public async Task<List<Measurement>> FetchMeasurements(MeteringPointTimeSeriesSlidingWindow slidingWindow, string meteringPointOwner,
         UnixTimestamp synchronizationPoint,
@@ -141,6 +159,8 @@ public class MeasurementsSyncService
     {
         var slidingWindow = await slidingWindowState.GetSlidingWindowStartTime(syncInfo, stoppingToken);
 
-        await FetchAndPublishMeasurements(syncInfo.MeteringPointOwner, slidingWindow, stoppingToken);
+        await FetchAndPublishMeasurements(syncInfo,
+            slidingWindow,
+            stoppingToken);
     }
 }

@@ -4,7 +4,7 @@ using DataContext.ValueObjects;
 using DotNet.Testcontainers.Configurations;
 using Xunit;
 
-namespace RegistryConnector.Worker.UnitTests.DataContext.ValueObjects;
+namespace API.UnitTests.ValueObjects;
 
 public class UnixTimestampTest
 {

@@ -42,8 +42,7 @@ public class IssuingContractCleanupTests
             MeteringPointType = MeteringPointType.Production,
             StartDate = DateTimeOffset.UtcNow.AddHours(-2),
             Technology = new Technology("SomeFuelCode", "SomeTechCode"),
-            WalletUrl = "http://foo",
-            WalletPublicKey = { }
+            RecipientId = Guid.NewGuid()
         };
         var nullEndDateContract = new CertificateIssuingContract
         {
@@ -57,8 +56,7 @@ public class IssuingContractCleanupTests
             MeteringPointType = MeteringPointType.Production,
             StartDate = DateTimeOffset.UtcNow.AddHours(-2),
             Technology = new Technology("SomeFuelCode", "SomeTechCode"),
-            WalletUrl = "http://foo",
-            WalletPublicKey = { }
+            RecipientId = Guid.NewGuid()
         };
         var endDateContract = new CertificateIssuingContract
         {
@@ -72,8 +70,7 @@ public class IssuingContractCleanupTests
             MeteringPointType = MeteringPointType.Production,
             StartDate = DateTimeOffset.UtcNow.AddHours(-2),
             Technology = new Technology("SomeFuelCode", "SomeTechCode"),
-            WalletUrl = "http://foo",
-            WalletPublicKey = { }
+            RecipientId = Guid.NewGuid()
         };
         dbContext.Contracts.AddRange(expiredContract, nullEndDateContract, endDateContract);
         await dbContext.SaveChangesAsync();
