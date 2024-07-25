@@ -26,7 +26,7 @@ jobs:
           migrations: domains/certificates/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}
       - name: Install Swashbuckle CLI
-        run: dotnet tool install Swashbuckle.AspNetCore.Cli
+        run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
         shell: bash
       - name: Generate OpenAPI Specification Certificates
         run: swagger tofile --output contracts.yaml ${{ inputs.certificate-openapi }} v1

@@ -37,7 +37,7 @@ jobs:
           configuration: domains/authorization/Proxy/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
       - name: Install Swashbuckle CLI
-        run: dotnet tool install Swashbuckle.AspNetCore.Cli
+        run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
         shell: bash
 
       - name: Generate OpenAPI Specification Wallet
