@@ -41,5 +41,5 @@ jobs:
         shell: bash
 
       - name: Generate OpenAPI Specification Wallet
-        run: swagger tofile --output wallet.yaml "/src/domains/authorization/Proxy/bin/Release/net8.0/Proxy.dll" v1
+        run: swagger tofile --output wallet.yaml "/src/domains/authorization/Proxy/bin/Release/net8.0/main.dll" v1
         shell: bash
