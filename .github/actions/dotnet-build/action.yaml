@@ -119,11 +119,11 @@ runs:
       shell: bash
 
     - name: Generate OpenAPI Specification Certificates
-      run: dotnet swagger tofile --output contracts.yaml ${{ inputs.certificate-openapi }} v1
+      run: swagger tofile --output contracts.yaml ${{ inputs.certificate-openapi }} v1
       shell: bash
 
     - name: Generate OpenAPI Specification Wallet
-      run: dotnet swagger tofile --output wallet.yaml ${{ inputs.proxy-openapi }} v1
+      run: swagger tofile --output wallet.yaml ${{ inputs.proxy-openapi }} v1
       shell: bash
 
     - name: Bundle OpenAPI Specifications
