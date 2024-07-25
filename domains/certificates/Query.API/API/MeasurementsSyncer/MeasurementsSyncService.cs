@@ -101,6 +101,7 @@ public class MeasurementsSyncService
                 clearTextAttributes.Add(FuelCode, technology!.FuelCode);
                 clearTextAttributes.Add(TechCode, technology.TechCode);
             }
+            clearTextAttributes.Add(AssetId, m.Gsrn);
 
             var certificate = new CertificateDto
             {
@@ -111,10 +112,7 @@ public class MeasurementsSyncService
                 Type = meteringPointType.MapToCertificateType(),
                 GridArea = gridArea,
                 ClearTextAttributes = clearTextAttributes,
-                HashedAttributes = new List<HashedAttribute>
-                {
-                    new() { Key = AssetId, Value = m.Gsrn }
-                }
+                HashedAttributes = new List<HashedAttribute>()
             };
 
             await stampClient.IssueCertificate(recipientId, m.Gsrn, certificate, cancellationToken);

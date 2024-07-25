@@ -81,12 +81,12 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.Quantity.Should().Be(42);
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
-        //TODO ask Martin Schmidt why the asset id is hashed. Maybe it's by design, dunno
-        //granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
-        //{
-        //    { "assetId", gsrn },
-        //    { "fuelCode", "F01040100" },
-        //    { "techCode", "T010000" }
-        //});
+        //TODO ask Martin Schmidt about hashing the assetId
+        granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "assetId", gsrn },
+            { "fuelCode", "F01040100" },
+            { "techCode", "T010000" }
+        });
     }
 }
