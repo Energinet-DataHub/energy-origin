@@ -32,7 +32,11 @@ public class SlidingWindowStateTests
         new(
             GSRN: gsrn ?? GsrnHelper.GenerateRandom(),
             StartSyncDate: DateTimeOffset.Now.AddDays(-1),
-            MeteringPointOwner: "SomeMeteringPointOwner");
+            MeteringPointOwner: "SomeMeteringPointOwner",
+            MeteringPointType.Production,
+            "DK1",
+            Guid.NewGuid(),
+            new Technology("T12345", "T54321"));
 
     [Fact]
     public async Task GetSlidingWindowStartTime_NoDataInStore_ReturnsContractStartDate()

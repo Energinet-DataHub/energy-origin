@@ -1,7 +1,12 @@
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace API.Configurations;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum MeasurementsSyncerSleepType { EveryThirdSecond, Hourly }
 
 public class MeasurementsSyncOptions
 {
@@ -9,6 +14,9 @@ public class MeasurementsSyncOptions
 
     [Required]
     public bool Disabled { get; set; } = false;
+
+    [Required]
+    public MeasurementsSyncerSleepType SleepType { get; set; }
 }
 
 public static partial class OptionsExtensions
