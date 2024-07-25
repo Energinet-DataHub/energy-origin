@@ -5,12 +5,12 @@ inputs:
   certificate-openapi:
     description: Is the path to a certificate openapi file.
     required: true
-    default: "/src/domains/certificates/Query.API/API/bin/Release/net8.0/main.dll"
+    default: "/src/domains/certificates/Query.API/API/bin/Release/net8.0/API.dll"
 
   proxy-openapi:
     description: Is the path to a certificate openapi file.
     required: true
-    default: "/src/domains/authorization/Proxy/bin/Release/net8.0/main.dll"
+    default: "/src/domains/authorization/Proxy/bin/Release/net8.0/Proxy.dll"
 
   solution:
     description: Is the path to a solution file.
@@ -113,22 +113,3 @@ runs:
         image-name: ${{ env.name }}
         image-tag: ${{ env.version }}
         upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-
-    - name: Install Swashbuckle CLI
-      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
-      shell: bash
-
-    - name: Generate OpenAPI Specification Certificates
-      run: swagger tofile --output contracts.yaml ${{ inputs.certificate-openapi }} v1
-      shell: bash
-
-    - name: Generate OpenAPI Specification Wallet
-      run: swagger tofile --output wallet.yaml ${{ inputs.proxy-openapi }} v1
-      shell: bash
-
-    - name: Bundle OpenAPI Specifications
-      run: |
-        # Use a tool like swagger-cli to bundle the specs
-        # This is a placeholder command. Replace with actual bundling command
-        swagger-cli bundle -o bundled-openapi.yaml wallet.yaml contracts.yaml
-      shell: bash

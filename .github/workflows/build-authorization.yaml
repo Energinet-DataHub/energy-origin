@@ -36,3 +36,7 @@ jobs:
           project: domains/authorization/Proxy/Proxy.csproj
           configuration: domains/authorization/Proxy/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
+
+      - name: Generate OpenAPI Specification Wallet
+        run: swagger tofile --output wallet.yaml ${{ inputs.proxy-openapi }} v1
+        shell: bash

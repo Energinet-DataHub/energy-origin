@@ -24,6 +24,10 @@ jobs:
       transfer: ${{ steps.transfer.outputs.matches }}
     steps:
       - uses: actions/checkout@v4
+      - name: Install Swashbuckle CLI
+        run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
+        shell: bash
+
 
   test:
     needs: setup
@@ -41,7 +45,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-authorization:
     needs: test
     uses: ./.github/workflows/build-authorization.yaml
@@ -49,7 +53,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-certificates:
     needs: test
     uses: ./.github/workflows/build-certificates.yaml
@@ -57,7 +61,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-measurements:
     needs: test
     uses: ./.github/workflows/build-measurements.yaml
@@ -65,7 +69,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-oidc-mock:
     needs: test
     uses: ./.github/workflows/build-oidc-mock.yaml
@@ -73,7 +77,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-transfer:
     needs: test
     uses: ./.github/workflows/build-transfer.yaml
@@ -113,3 +117,10 @@ jobs:
             domains/transfer/TransferAgreementAutomation/configuration.yaml
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
+
+      - name: Bundle OpenAPI Specifications
+        run: |
+          # Use a tool like swagger-cli to bundle the specs
+          # This is a placeholder command. Replace with actual bundling command
+          swagger-cli bundle -o bundled-openapi.yaml wallet.yaml contracts.yaml
+        shell: bash
