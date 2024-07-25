@@ -47,8 +47,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API.IntegrationTests", "cer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API.UnitTests", "certificates\Query.API\API.UnitTests\API.UnitTests.csproj", "{B10F90AD-A1ED-40AC-B5D5-DE20CF1CB1C4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RegistryConnector", "RegistryConnector", "{E4A254AB-6DE2-4BD2-999E-1AA79F6EEF96}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker", "certificates\RegistryConnector\Worker\Worker.csproj", "{45599CED-09D7-4E2B-AB15-9D8B465EDEA8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.IntegrationTests", "certificates\RegistryConnector\Worker.IntegrationTests\Worker.IntegrationTests.csproj", "{45634DD8-8F36-4FF0-8A93-9F7B6F3CCC16}"
