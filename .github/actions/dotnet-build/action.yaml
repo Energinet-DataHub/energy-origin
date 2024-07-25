@@ -2,6 +2,16 @@ name: Dotnet - Build
 description: Build a dotnet project
 
 inputs:
+  certificate-openapi:
+    description: Is the path to a certificate openapi file.
+    required: true
+    default: "/src/domains/certificates/Query.API/API/bin/Release/net8.0/main.dll"
+
+  proxy-openapi:
+    description: Is the path to a certificate openapi file.
+    required: true
+    default: "/src/domains/authorization/Proxy/bin/Release/net8.0/main.dll"
+
   solution:
     description: Is the path to a solution file.
     required: true
@@ -109,11 +119,11 @@ runs:
       shell: bash
 
     - name: Generate OpenAPI Specification Certificates
-      run: dotnet swagger tofile --output contracts.yaml ${{ inputs.source-directory }}/bin/Debug/net6.0/API.dll v1
+      run: dotnet swagger tofile --output contracts.yaml ${{ inputs.certificate-openapi }} v1
       shell: bash
 
     - name: Generate OpenAPI Specification Wallet
-      run: dotnet swagger tofile --output wallet.yaml ${{ inputs.source-directory }}/bin/Debug/net6.0/Proxy.dll v1
+      run: dotnet swagger tofile --output wallet.yaml ${{ inputs.proxy-openapi }} v1
       shell: bash
 
     - name: Bundle OpenAPI Specifications
