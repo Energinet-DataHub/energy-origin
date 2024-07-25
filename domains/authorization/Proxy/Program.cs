@@ -5,7 +5,10 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Extensions;
 using Proxy.Options;
+using Swashbuckle.AspNetCore.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,6 +97,13 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapSwagger();
+
+var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
+var swagger = swaggerProvider.GetSwagger("v1");
+File.WriteAllText(
+    Path.Combine(builder.Environment.ContentRootPath, "proxy.yaml"),
+    swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
+);
 
 app.Run();
 

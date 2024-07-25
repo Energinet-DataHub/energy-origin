@@ -118,5 +118,5 @@ jobs:
         run: |
           # Use a tool like swagger-cli to bundle the specs
           # This is a placeholder command. Replace with actual bundling command
-          swagger-cli bundle -o bundled-openapi.yaml wallet.yaml contracts.yaml
+          swagger-cli bundle -o bundled-openapi.yaml ${{ env.GITHUB_WORKSPACE }}/proxy.yaml ${{ env.GITHUB_WORKSPACE }}/contracts.yaml
         shell: bash

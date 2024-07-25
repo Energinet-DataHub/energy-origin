@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using API.ContractService;
 using API.Query.API;
 using Microsoft.AspNetCore.Builder;
@@ -19,7 +20,11 @@ using Contracts;
 using EnergyOrigin.Setup;
 using MassTransit;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Extensions;
+using Newtonsoft.Json;
 using OpenTelemetry;
+using Swashbuckle.AspNetCore.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,6 +91,7 @@ builder.Services.AddMeasurementsSyncer();
 builder.Services.AddIssuingContractCleanup();
 builder.Services.AddVersioningToApi();
 
+
 var tokenValidationOptions =
     builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
@@ -113,7 +119,16 @@ var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
 app.UseActivityLog().WithApiVersionSet(activityLogApiVersionSet)
     .HasApiVersion(ApiVersions.Version20240423AsInt)
     .HasApiVersion(ApiVersions.Version20230101AsInt);
-app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet).HasApiVersion(ApiVersions.Version20240515AsInt);
+app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
+    .HasApiVersion(ApiVersions.Version20240515AsInt);
+
+
+var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
+var swagger = swaggerProvider.GetSwagger("v1");
+File.WriteAllText(
+    Path.Combine(builder.Environment.ContentRootPath, "contracts.yaml"),
+    swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
+);
 
 
 app.Run();

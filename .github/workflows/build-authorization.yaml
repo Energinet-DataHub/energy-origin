@@ -36,10 +36,3 @@ jobs:
           project: domains/authorization/Proxy/Proxy.csproj
           configuration: domains/authorization/Proxy/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
-      - name: Install Swashbuckle CLI
-        run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
-        shell: bash
-
-      - name: Generate OpenAPI Specification Wallet
-        run: swagger tofile --output wallet.yaml "/src/domains/authorization/Proxy/bin/Release/net8.0/main.dll" v1
-        shell: bash
