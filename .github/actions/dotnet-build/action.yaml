@@ -104,6 +104,10 @@ runs:
         image-tag: ${{ env.version }}
         upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
+    - name: Install Swashbuckle CLI
+      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli
+      shell: bash
+
     - name: Generate OpenAPI Specification Certificates
       run: dotnet swagger tofile --output contracts.yaml ${{ inputs.source-directory }}/bin/Debug/net6.0/API.dll v1
       shell: bash
