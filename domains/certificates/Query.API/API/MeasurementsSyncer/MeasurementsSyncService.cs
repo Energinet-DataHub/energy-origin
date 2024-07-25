@@ -41,16 +41,12 @@ public class MeasurementsSyncService
         this.stampClient = stampClient;
     }
 
-    public async Task FetchAndPublishMeasurements(string meteringPointOwner,
-        MeteringPointType meteringPointType,
-        string gridArea,
-        Guid recipientId,
-        Technology? technology,
+    public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo,
         MeteringPointTimeSeriesSlidingWindow slidingWindow,
         CancellationToken stoppingToken)
     {
         var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
-        var fetchedMeasurements = await FetchMeasurements(slidingWindow, meteringPointOwner, synchronizationPoint, stoppingToken);
+        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, synchronizationPoint, stoppingToken);
 
         measurementSyncMetrics.MeasurementsFetched(fetchedMeasurements.Count);
 
@@ -60,7 +56,12 @@ public class MeasurementsSyncService
 
             if (measurementsToPublish.Any())
             {
-                await IssueCertificate(measurementsToPublish, meteringPointType, gridArea, recipientId, technology, stoppingToken);
+                await IssueCertificates(measurementsToPublish,
+                    syncInfo.MeteringPointType,
+                    syncInfo.GridArea,
+                    syncInfo.RecipientId,
+                    syncInfo.Technology,
+                    stoppingToken);
             }
 
             slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, synchronizationPoint);
@@ -69,7 +70,7 @@ public class MeasurementsSyncService
         }
     }
 
-    private async Task IssueCertificate(List<Measurement> measurements,
+    private async Task IssueCertificates(List<Measurement> measurements,
         MeteringPointType meteringPointType,
         string gridArea,
         Guid recipientId,
@@ -164,11 +165,7 @@ public class MeasurementsSyncService
     {
         var slidingWindow = await slidingWindowState.GetSlidingWindowStartTime(syncInfo, stoppingToken);
 
-        await FetchAndPublishMeasurements(syncInfo.MeteringPointOwner,
-            syncInfo.MeteringPointType,
-            syncInfo.GridArea,
-            syncInfo.RecipientId,
-            syncInfo.Technology,
+        await FetchAndPublishMeasurements(syncInfo,
             slidingWindow,
             stoppingToken);
     }
