@@ -19,7 +19,7 @@ public class CertificateIssuingContract
     public Technology? Technology { get; set; }
 
     public static CertificateIssuingContract Create(int contractNumber,
-        string gsrn,
+        Gsrn gsrn,
         string gridArea,
         MeteringPointType meteringPointType,
         string meteringPointOwner,
@@ -32,7 +32,7 @@ public class CertificateIssuingContract
         {
             Id = Guid.Empty,
             ContractNumber = contractNumber,
-            GSRN = gsrn,
+            GSRN = gsrn.Value,
             GridArea = gridArea,
             MeteringPointType = meteringPointType,
             MeteringPointOwner = meteringPointOwner,

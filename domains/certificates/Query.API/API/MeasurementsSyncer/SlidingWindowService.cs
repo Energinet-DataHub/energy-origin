@@ -16,12 +16,12 @@ public class SlidingWindowService
         this.measurementSyncMetrics = measurementSyncMetrics;
     }
 
-    public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(string gsrn, UnixTimestamp synchronizationPoint)
+    public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(Gsrn gsrn, UnixTimestamp synchronizationPoint)
     {
         return MeteringPointTimeSeriesSlidingWindow.Create(gsrn, synchronizationPoint);
     }
 
-    public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(string gsrn, UnixTimestamp synchronizationPoint,
+    public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(Gsrn gsrn, UnixTimestamp synchronizationPoint,
         List<MeasurementInterval> missingMeasurements)
     {
         return MeteringPointTimeSeriesSlidingWindow.Create(gsrn, synchronizationPoint, missingMeasurements);
