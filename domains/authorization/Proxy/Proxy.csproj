@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="EnergyOrigin.Setup" Version="4.4.6" />
+      <PackageReference Include="EnergyOrigin.Setup" Version="5.0.2" />
       <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.6.8" />
     </ItemGroup>
     <ItemGroup>

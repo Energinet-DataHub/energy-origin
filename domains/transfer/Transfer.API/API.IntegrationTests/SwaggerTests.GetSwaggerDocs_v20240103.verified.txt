@@ -13,7 +13,7 @@
         ],
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -74,7 +74,7 @@
         ],
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -101,7 +101,7 @@
         ],
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -146,7 +146,7 @@
         "summary": "Get CVR registered company information for multiple CVR numbers",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -210,7 +210,7 @@
         "summary": "Create TransferAgreementProposal",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -288,7 +288,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -344,7 +344,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -372,7 +372,7 @@
         "summary": "Add a new Transfer Agreement",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -457,7 +457,7 @@
         ],
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -507,7 +507,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -558,7 +558,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -661,7 +661,7 @@
         ],
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,

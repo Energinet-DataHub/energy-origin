@@ -20,7 +20,7 @@ grant_type={{grantType}}
 POST https://demo.energytrackandtrace.dk/api/authorization/Admin/Client
 Authorization: bearer {{accessToken}}
 Content-Type: application/json
-Eo_api_version: 20230101
+X-API-Version: 20230101
 
 {
   "idpClientId": "f75da90c-3429-4454-b6d8-603159b1805d",

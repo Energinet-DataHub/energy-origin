@@ -23,7 +23,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         var client = CreateClientWithOrgIds(new() { Guid.NewGuid().ToString() });
 
         // Act
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240515);
+        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240515);
         var response = await client.GetAsync($"/wallet-api/wallets?organizationId={Guid.NewGuid()}");
 
         // Assert
@@ -54,7 +54,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
             );
 
         var client = CreateUnauthenticatedClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240515);
+        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240515);
 
         // Act
         var response = await client.PostAsync(endpoint, new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
@@ -180,7 +180,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
             );
 
         var client = CreateClientWithOrgIds(orgIds);
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240515);
+        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240515);
 
         // Act
         var response = await client.GetAsync($"{endpoint}?organizationId={orgIds[0]}{queryParameters}");
@@ -281,7 +281,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         var client = CreateClientWithOrgIds(orgIds);
 
         // Act
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240515);
+        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240515);
         var response = await client.PostAsync($"/wallet-api{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
         var responseContent = await response.Content.ReadAsStringAsync();
 
