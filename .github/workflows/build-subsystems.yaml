@@ -113,9 +113,20 @@ jobs:
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
 
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # Specify your Node.js version here
+
+      - name: Install redocly-cli
+        run: npm install -g @redocly/cli
+
       - name: Bundle OpenAPI Specifications
-        run: |
-          # Use a tool like swagger-cli to bundle the specs
-          # This is a placeholder command. Replace with actual bundling command
-          swagger-cli bundle -o bundled-openapi.yaml ${{ env.GITHUB_WORKSPACE }}/proxy.yaml ${{ env.GITHUB_WORKSPACE }}/contracts.yaml
+        run: redocly bundle -o bundled-openapi.yaml ${{ env.GITHUB_WORKSPACE }}/proxy.yaml ${{ env.GITHUB_WORKSPACE }}/contracts.yaml
         shell: bash
+
+      - name: Upload Bundled OpenAPI Spec
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundled-openapi-spec
+          path: bundled-openapi.yaml
