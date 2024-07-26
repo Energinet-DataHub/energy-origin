@@ -97,7 +97,7 @@ internal class ContractServiceImpl : IContractService
 
             var issuingContract = CertificateIssuingContract.Create(
                 contractNumber,
-                contract.GSRN,
+                new Gsrn(contract.GSRN),
                 matchingMeteringPoint.GridArea,
                 Map(matchingMeteringPoint.Type),
                 meteringPointOwnerId.ToString(),

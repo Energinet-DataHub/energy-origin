@@ -7,6 +7,7 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using Measurements.V1;
 using NSubstitute;
+using Testing.Helpers;
 using Xunit;
 
 namespace API.UnitTests.MeasurementsSyncer;
@@ -14,7 +15,7 @@ namespace API.UnitTests.MeasurementsSyncer;
 public class SlidingWindowServiceTest
 {
     private readonly SlidingWindowService sut;
-    private readonly string GSRN = "123456789123456789";
+    private readonly Gsrn GSRN = new Gsrn(GsrnHelper.GenerateRandom());
     private readonly UnixTimestamp now = UnixTimestamp.Now();
 
     public SlidingWindowServiceTest()
@@ -331,13 +332,13 @@ public class SlidingWindowServiceTest
         Assert.Equal(newSynchronizationPoint, window.MissingMeasurements.Intervals[0].To);
     }
 
-    private Measurement CreateMeasurement(string gsrn, long from, long to, long quantity, bool quantityMissing)
+    private Measurement CreateMeasurement(Gsrn gsrn, long from, long to, long quantity, bool quantityMissing)
     {
         return new Measurement
         {
             DateFrom = from,
             DateTo = to,
-            Gsrn = gsrn,
+            Gsrn = gsrn.Value,
             Quantity = quantity,
             QuantityMissing = quantityMissing
         };

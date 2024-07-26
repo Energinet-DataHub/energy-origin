@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using Testing.Helpers;
 using Xunit;
 using Technology = DataContext.ValueObjects.Technology;
 
@@ -21,7 +22,7 @@ namespace API.UnitTests.MeasurementsSyncer;
 public class MeasurementsSyncerWorkerTest
 {
     private readonly MeteringPointSyncInfo syncInfo = new(
-        GSRN: "gsrn",
+        Gsrn: new Gsrn(GsrnHelper.GenerateRandom()),
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
         MeteringPointOwner: "meteringPointOwner",
         MeteringPointType.Production,

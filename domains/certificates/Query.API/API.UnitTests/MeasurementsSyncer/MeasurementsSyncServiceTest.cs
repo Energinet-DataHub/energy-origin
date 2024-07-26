@@ -12,8 +12,8 @@ using MassTransit;
 using Measurements.V1;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using NSubstitute.ReceivedExtensions;
 using Testing.Extensions;
+using Testing.Helpers;
 using Xunit;
 using Technology = DataContext.ValueObjects.Technology;
 
@@ -22,7 +22,7 @@ namespace API.UnitTests.MeasurementsSyncer;
 public class MeasurementsSyncServiceTest
 {
     private readonly MeteringPointSyncInfo syncInfo = new(
-        GSRN: "gsrn",
+        Gsrn: new Gsrn(GsrnHelper.GenerateRandom()),
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
         MeteringPointOwner: "meteringPointOwner",
         MeteringPointType.Production,
@@ -48,7 +48,7 @@ public class MeasurementsSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_BeforeContractStartDate_NoDataFetched()
     {
-        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(string.Empty, UnixTimestamp.Now().Add(TimeSpan.FromDays(1)));
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(new Gsrn(GsrnHelper.GenerateRandom()), UnixTimestamp.Now().Add(TimeSpan.FromDays(1)));
         var response = await service.FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, UnixTimestamp.Now(), CancellationToken.None);
 
         response.Should().BeEmpty();
@@ -58,7 +58,7 @@ public class MeasurementsSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_MeasurementsReceived_SyncPositionUpdated()
     {
-        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(syncInfo.StartSyncDate));
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, UnixTimestamp.Create(syncInfo.StartSyncDate));
 
         var dateTo = UnixTimestamp.Now().RoundToLatestHour().Seconds;
         var mockedResponse = new GetMeasurementsResponse
@@ -67,7 +67,7 @@ public class MeasurementsSyncServiceTest
             {
                 new Measurement
                 {
-                    Gsrn = syncInfo.GSRN,
+                    Gsrn = syncInfo.Gsrn.Value,
                     DateFrom = slidingWindow.SynchronizationPoint.Seconds,
                     DateTo = dateTo,
                     Quantity = 5,
@@ -88,7 +88,7 @@ public class MeasurementsSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_NoMeasurementsReceived_SlidingWindowIsNotUpdated()
     {
-        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(syncInfo.StartSyncDate));
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, UnixTimestamp.Create(syncInfo.StartSyncDate));
 
         var mockedResponse = new GetMeasurementsResponse();
 
