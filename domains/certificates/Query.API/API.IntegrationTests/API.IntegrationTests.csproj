@@ -41,6 +41,7 @@
 
     <ItemGroup>
         <None Update="Query.API/API.IntegrationTests/SwaggerTests.swagger.json.verified.txt">
+            <link>swagger.json</link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>

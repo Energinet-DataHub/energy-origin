@@ -30,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
       - uses: ./.github/actions/dotnet-build
         with:
           solution: domains/authorization/Autorization.sln
