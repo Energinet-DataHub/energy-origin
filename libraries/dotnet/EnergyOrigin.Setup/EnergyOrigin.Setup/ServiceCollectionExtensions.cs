@@ -31,7 +31,7 @@ public static class ServiceCollectionExtensions
             {
                 options.AssumeDefaultVersionWhenUnspecified = false;
                 options.ReportApiVersions = true;
-                options.ApiVersionReader = new HeaderApiVersionReader("EO_API_VERSION");
+                options.ApiVersionReader = new HeaderApiVersionReader("X-API-Version");
             })
             .AddMvc()
             .AddApiExplorer();
