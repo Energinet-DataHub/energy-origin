@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
@@ -108,7 +109,7 @@ public class Program
             var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
             var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
             File.WriteAllText(
-                Path.Combine(builder.Environment.ContentRootPath, "proxy.yaml"),
+                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "proxy.yaml"),
                 swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
             );
         }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using API.ContractService;
 using API.Query.API;
 using Microsoft.AspNetCore.Builder;
@@ -137,7 +138,7 @@ public class Program
             var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
 
             File.WriteAllText(
-                Path.Combine(builder.Environment.ContentRootPath, "contracts.yaml"),
+                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "contracts.yaml"),
                 swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
             );
         }
