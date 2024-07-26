@@ -25,7 +25,8 @@ jobs:
           project: domains/certificates/Query.API/API/API.csproj
           configuration: domains/certificates/Query.API/configuration.yaml
           migrations: domains/certificates/migrations/API.sql
-          dry-run: ${{ inputs.dry-run }}
+          dry-run: ${{ inputs.dry-run }}'
+      - run: find -name swagger.json
 
   update:
     runs-on: ubuntu-latest
