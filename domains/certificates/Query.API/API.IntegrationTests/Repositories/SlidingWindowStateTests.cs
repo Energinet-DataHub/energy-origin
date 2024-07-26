@@ -28,9 +28,9 @@ public class SlidingWindowStateTests
         dbContext.Database.EnsureCreated();
     }
 
-    private static MeteringPointSyncInfo CreateSyncInfo(string gsrn) =>
+    private static MeteringPointSyncInfo CreateSyncInfo(Gsrn gsrn) =>
         new(
-            Gsrn: new Gsrn(gsrn),
+            Gsrn: gsrn,
             StartSyncDate: DateTimeOffset.Now.AddDays(-1),
             MeteringPointOwner: "SomeMeteringPointOwner",
             MeteringPointType.Production,
@@ -41,7 +41,7 @@ public class SlidingWindowStateTests
     [Fact]
     public async Task GetSlidingWindowStartTime_NoDataInStore_ReturnsContractStartDate()
     {
-        var info = CreateSyncInfo(GsrnHelper.GenerateRandom());
+        var info = CreateSyncInfo(new Gsrn(GsrnHelper.GenerateRandom()));
 
         await using var dbContext = new ApplicationDbContext(options);
         var syncState = new SlidingWindowState(dbContext);
@@ -54,7 +54,7 @@ public class SlidingWindowStateTests
     [Fact]
     public async Task GetSlidingWindowStartTime_SlidingWindowInStore_ReturnsNewestDate()
     {
-        var info = CreateSyncInfo(GsrnHelper.GenerateRandom());
+        var info = CreateSyncInfo(new Gsrn(GsrnHelper.GenerateRandom()));
 
         var position = MeteringPointTimeSeriesSlidingWindow.Create(info.Gsrn, UnixTimestamp.Create(DateTimeOffset.Now.ToUnixTimeSeconds()));
 
@@ -75,7 +75,7 @@ public class SlidingWindowStateTests
     [Fact]
     public async Task GetSlidingWindowStartTime_SlidingWindowInStoreButIsBeforeContractStartDate_ReturnsContractStartDate()
     {
-        var info = CreateSyncInfo(GsrnHelper.GenerateRandom());
+        var info = CreateSyncInfo(new Gsrn(GsrnHelper.GenerateRandom()));
 
         var position = MeteringPointTimeSeriesSlidingWindow.Create(info.Gsrn, UnixTimestamp.Create(DateTimeOffset.Now.AddDays(-2).ToUnixTimeSeconds()));
 
