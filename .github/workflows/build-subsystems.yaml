@@ -122,7 +122,7 @@ jobs:
         run: npm install -g @redocly/cli
 
       - name: Bundle OpenAPI Specifications
-        run: redocly bundle -o bundled-openapi.yaml ${{ env.GITHUB_WORKSPACE }}/proxy.yaml ${{ env.GITHUB_WORKSPACE }}/contracts.yaml
+        run: redocly bundle -o bundled-openapi.yaml domains/authorization/Proxy/proxy.yaml domains/certificates/Query.API/contracts.yaml
         shell: bash
 
       - name: Upload Bundled OpenAPI Spec
