@@ -31,7 +31,7 @@ sequenceDiagram
         participant auth as Authentication
         participant api as API
     end
-    
+
     client->>auth: Client credentials
     auth->>client: Access token
     client->>api: API request (token)
@@ -77,7 +77,7 @@ sequenceDiagram
     box rgb(70, 70, 70) Energy Track & Trace
         participant ett as Website
     end
-    
+
     client->>user: Redirect browser <br> (ETT Website)
     user->>ett: Login
     user->>ett: Grant consent
@@ -88,7 +88,7 @@ In order to start the grant consent user flow, redirect the user to the followin
 
 ## API usage
 
-All API endpoints in ETT are versioned using a header based versioning scheme. A request must contain an `EO_API_VERSION` header with a value matching the desired version of the endpoint to use.
+All API endpoints in ETT are versioned using a header based versioning scheme. A request must contain an `X-API-Version` header with a value matching the desired version of the endpoint to use.
 
 ### C# example: API request
 
@@ -99,7 +99,7 @@ var organizationId = "<organization-id>"; // Id of organization to act on behalf
 using var httpClient = new HttpClient();
 using var request = new HttpRequestMessage(HttpMethod.Get, $"https://demo.energytrackandtrace.dk/wallet-api/wallets?organizationId={organizationId}");
 request.Headers.Authorization = new AuthenticationHeaderValue("bearer", token);
-request.Headers.Add("EO_API_VERSION", "20250101");
+request.Headers.Add("X-API-Version", "20250101");
 var response = await httpClient.SendAsync(request);
 ```
 
@@ -115,7 +115,7 @@ var token = "<access-token>"; // Access token obtained with client-credentials
 using var httpClient = new HttpClient();
 using var request = new HttpRequestMessage(HttpMethod.Get, "https://demo.energytrackandtrace.dk/api/authorization/client/consents");
 request.Headers.Authorization = new AuthenticationHeaderValue("bearer", token);
-request.Headers.Add("EO_API_VERSION", "20230101");
+request.Headers.Add("X-API-Version", "20230101");
 var response = await httpClient.SendAsync(request);
 ```
 

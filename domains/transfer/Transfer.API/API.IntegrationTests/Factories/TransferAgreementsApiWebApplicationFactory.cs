@@ -165,7 +165,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", "20240103");
+        client.DefaultRequestHeaders.Add("X-API-Version", "20240103");
         return client;
     }
 
@@ -183,7 +183,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString()));
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+        client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
 
         return client;
     }
@@ -193,7 +193,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     {
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor, cpn: cpn));
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+        client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
 
         return client;
     }

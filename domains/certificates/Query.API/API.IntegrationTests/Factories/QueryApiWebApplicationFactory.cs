@@ -177,7 +177,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateSelfSignedToken(sub: sub, tin: tin, name: name, actor: actor));
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+        client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
 
         return client;
     }
@@ -188,7 +188,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString()));
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+        client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
 
         return client;
     }
