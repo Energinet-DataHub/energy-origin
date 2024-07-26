@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
+using DataContext.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -35,7 +36,7 @@ public class ContractState : IContractState
                 {
                     var oldestContract = g.OrderBy(c => c.StartDate).First();
                     var gsrn = g.Key;
-                    return new MeteringPointSyncInfo(gsrn, oldestContract.StartDate, oldestContract.MeteringPointOwner,
+                    return new MeteringPointSyncInfo(new Gsrn(gsrn), oldestContract.StartDate, oldestContract.MeteringPointOwner,
                         oldestContract.MeteringPointType, oldestContract.GridArea, oldestContract.RecipientId,
                         oldestContract.Technology);
                 })

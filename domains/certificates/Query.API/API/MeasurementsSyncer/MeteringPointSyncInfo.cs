@@ -3,7 +3,7 @@ using DataContext.ValueObjects;
 
 namespace API.MeasurementsSyncer;
 
-public record MeteringPointSyncInfo(string GSRN,
+public record MeteringPointSyncInfo(Gsrn Gsrn,
     DateTimeOffset StartSyncDate,
     string MeteringPointOwner,
     MeteringPointType MeteringPointType,

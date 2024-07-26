@@ -38,7 +38,7 @@ public class Program
                 options.AssumeDefaultVersionWhenUnspecified = false;
                 options.ReportApiVersions = true;
                 options.ApiVersionReader = ApiVersionReader.Combine(
-                    new HeaderApiVersionReader("EO_API_VERSION"),
+                    new HeaderApiVersionReader("X-API-Version"),
                     new UrlSegmentApiVersionReader()
                 );
             })

@@ -25,14 +25,14 @@ public class MeteringPointTimeSeriesSlidingWindow
         MissingMeasurements = new MissingMeasurements(missingMeasurements);
     }
 
-    public static MeteringPointTimeSeriesSlidingWindow Create(string gsrn, UnixTimestamp synchronizationPoint)
+    public static MeteringPointTimeSeriesSlidingWindow Create(Gsrn gsrn, UnixTimestamp synchronizationPoint)
     {
         return Create(gsrn, synchronizationPoint, new List<MeasurementInterval>());
     }
 
-    public static MeteringPointTimeSeriesSlidingWindow Create(string gsrn, UnixTimestamp synchronizationPoint, List<MeasurementInterval> missingMeasurements)
+    public static MeteringPointTimeSeriesSlidingWindow Create(Gsrn gsrn, UnixTimestamp synchronizationPoint, List<MeasurementInterval> missingMeasurements)
     {
-        return new MeteringPointTimeSeriesSlidingWindow(gsrn, synchronizationPoint, missingMeasurements);
+        return new MeteringPointTimeSeriesSlidingWindow(gsrn.Value, synchronizationPoint, missingMeasurements);
     }
 
     public void UpdateTo(UnixTimestamp to)

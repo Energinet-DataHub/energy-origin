@@ -22,7 +22,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
