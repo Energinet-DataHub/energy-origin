@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger && ls -al
+      - run: dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger && ls -al domains/certificates/Query.API/API
       - uses: ./.github/actions/dotnet-build
         with:
           solution: domains/certificates/Certificates.sln
