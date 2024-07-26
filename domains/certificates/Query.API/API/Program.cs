@@ -126,7 +126,7 @@ app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
 
 
 var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
-var swagger = swaggerProvider.GetSwagger("v1");
+var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
 File.WriteAllText(
     Path.Combine(builder.Environment.ContentRootPath, "contracts.yaml"),
     swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)

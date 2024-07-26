@@ -7,6 +7,7 @@ using EnergyOrigin.TokenValidation.Options;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Extensions;
+using Proxy.Controllers;
 using Proxy.Options;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -99,7 +100,7 @@ app.MapControllers();
 app.MapSwagger();
 
 var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
-var swagger = swaggerProvider.GetSwagger("v1");
+var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
 File.WriteAllText(
     Path.Combine(builder.Environment.ContentRootPath, "proxy.yaml"),
     swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
