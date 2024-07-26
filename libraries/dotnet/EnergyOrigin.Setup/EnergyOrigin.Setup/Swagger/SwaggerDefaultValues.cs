@@ -10,8 +10,8 @@ namespace EnergyOrigin.Setup.Swagger;
 
 /*
  * Swagger understands the deprecated mark on controllers and marks these endpoints in swagger as deprecated
- * Sets default value for the EO_API_VERSION paramter to 20230101
- * Sets description for parameters, meaning EO_API_VERSION
+ * Sets default value for the X-API-Version paramter to 20230101
+ * Sets description for parameters, meaning X-API-Version
  */
 public class SwaggerDefaultValues : IOperationFilter
 {
