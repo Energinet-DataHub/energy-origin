@@ -18,7 +18,7 @@ public class SlidingWindowState : ISlidingWindowState
 
     public async Task<MeteringPointTimeSeriesSlidingWindow> GetSlidingWindowStartTime(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken)
     {
-        var existingSlidingWindow = await GetMeteringPointSlidingWindow(syncInfo.GSRN, cancellationToken);
+        var existingSlidingWindow = await GetMeteringPointSlidingWindow(syncInfo.Gsrn, cancellationToken);
 
         if (existingSlidingWindow != null)
         {
@@ -31,21 +31,21 @@ public class SlidingWindowState : ISlidingWindowState
         }
         else
         {
-            existingSlidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.GSRN, UnixTimestamp.Create(syncInfo.StartSyncDate));
+            existingSlidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, UnixTimestamp.Create(syncInfo.StartSyncDate));
         }
 
         return existingSlidingWindow;
     }
 
-    private async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(string gsrn, CancellationToken cancellationToken)
+    private async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(Gsrn gsrn, CancellationToken cancellationToken)
     {
-        var slidingWindow = await dbContext.MeteringPointTimeSeriesSlidingWindows.FindAsync(gsrn);
+        var slidingWindow = await dbContext.MeteringPointTimeSeriesSlidingWindows.FindAsync(gsrn.Value);
         return slidingWindow;
     }
 
     public async Task UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow slidingWindow, CancellationToken cancellationToken)
     {
-        var existingWindow = await GetMeteringPointSlidingWindow(slidingWindow.GSRN, cancellationToken);
+        var existingWindow = await GetMeteringPointSlidingWindow(new Gsrn(slidingWindow.GSRN), cancellationToken);
         if (existingWindow is null)
         {
             dbContext.MeteringPointTimeSeriesSlidingWindows.Add(slidingWindow);

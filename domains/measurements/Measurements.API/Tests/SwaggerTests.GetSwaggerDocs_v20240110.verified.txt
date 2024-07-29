@@ -14,7 +14,7 @@
         "summary": "Get metering points from DataHub2.0",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
