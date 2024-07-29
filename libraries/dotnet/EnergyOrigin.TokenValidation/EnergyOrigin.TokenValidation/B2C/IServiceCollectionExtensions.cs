@@ -1,3 +1,4 @@
+using EnergyOrigin.TokenValidation.B2C;
 using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -59,6 +60,7 @@ public static class IServiceCollectionExtensions
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
                     AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .RequireClaim(ClaimType.SubType, Enum.GetName(SubjectType.User)!, Enum.GetName(SubjectType.User)!.ToLower())
+                .AddRequirements(new TermsRequirement())
                 .Build();
             options.AddPolicy(Policy.B2CSubTypeUserPolicy, b2CSubTypeUserPolicy);
 
@@ -66,6 +68,7 @@ public static class IServiceCollectionExtensions
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .RequireClaim(ClaimType.OrgCvr)
+                .AddRequirements(new TermsRequirement())
                 .Build();
             options.AddPolicy(Policy.B2CCvrClaim, b2CCvrClaimPolicy);
 
@@ -86,5 +89,7 @@ public static class IServiceCollectionExtensions
 
         services.AddScoped<IdentityDescriptor>();
         services.AddScoped<AccessDescriptor>();
+
+        services.AddSingleton<IAuthorizationHandler, TermsRequirementHandler>();
     }
 }

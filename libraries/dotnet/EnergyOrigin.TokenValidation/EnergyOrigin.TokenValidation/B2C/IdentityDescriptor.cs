@@ -31,6 +31,18 @@ public class IdentityDescriptor
 
     public string? OrganizationCvr => GetClaimAsOptionalString(ClaimType.OrgCvr);
 
+    public bool TosAccepted => GetClaimAsBool(ClaimType.TosAccepted);
+    private bool GetClaimAsBool(string claimName)
+    {
+        var claimValue = _user.FindFirstValue(claimName);
+        if (claimValue is not null && bool.TryParse(claimValue, out var result))
+        {
+            return result;
+        }
+
+        return false;
+    }
+
     public IList<Guid> AuthorizedOrganizationIds => GetClaimAsGuidList(ClaimType.OrgIds);
 
     public IList<string> Scope => GetClaimAsStringList(ClaimType.OrgIds);
