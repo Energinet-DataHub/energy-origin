@@ -137,7 +137,7 @@ namespace Tests.Fixtures
             EnsureServer(environment);
 
             var client = _server!.CreateClient();
-            client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240110);
+            client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240110);
             return client;
         }
 
@@ -148,7 +148,7 @@ namespace Tests.Fixtures
             var client = _server!.CreateClient();
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
-            client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+            client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
             return client;
         }
 

@@ -28,5 +28,11 @@ public static class Startup
             var options = sp.GetRequiredService<IOptions<WalletOptions>>().Value;
             client.BaseAddress = new Uri(options.Url);
         });
+
+        services.AddHttpClient<IStampClient, StampClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<StampOptions>>().Value;
+            client.BaseAddress = new Uri(options.Url);
+        });
     }
 }
