@@ -1,4 +1,3 @@
-extern alias registryConnector;
 using System;
 using System.Text;
 using System.Threading.Tasks;

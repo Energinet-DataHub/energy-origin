@@ -51,8 +51,8 @@ public class MeteringPointsClient : IMeteringPointsClient
     private void SetApiVersionHeader()
     {
         var downstreamApiVersion = GetDownstreamApiVersion();
-        httpClient.DefaultRequestHeaders.Remove("EO_API_VERSION");
-        httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", downstreamApiVersion);
+        httpClient.DefaultRequestHeaders.Remove("X-API-Version");
+        httpClient.DefaultRequestHeaders.Add("X-API-Version", downstreamApiVersion);
     }
 
     private string GetDownstreamApiVersion()

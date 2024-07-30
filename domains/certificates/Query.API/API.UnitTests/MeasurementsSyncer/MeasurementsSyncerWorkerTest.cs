@@ -2,25 +2,33 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
+using API.ContractService.Clients;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
+using DataContext.ValueObjects;
 using MassTransit;
 using Measurements.V1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using Testing.Helpers;
 using Xunit;
+using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.UnitTests.MeasurementsSyncer;
 
 public class MeasurementsSyncerWorkerTest
 {
     private readonly MeteringPointSyncInfo syncInfo = new(
-        GSRN: "gsrn",
+        Gsrn: new Gsrn(GsrnHelper.GenerateRandom()),
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
-        MeteringPointOwner: "meteringPointOwner");
+        MeteringPointOwner: "meteringPointOwner",
+        MeteringPointType.Production,
+        "DK1",
+        Guid.NewGuid(),
+        new Technology("T12345", "T54321"));
 
     private readonly Measurements.V1.Measurements.MeasurementsClient fakeClient = Substitute.For<Measurements.V1.Measurements.MeasurementsClient>();
     private readonly ILogger<MeasurementsSyncerWorker> fakeLogger = Substitute.For<ILogger<MeasurementsSyncerWorker>>();
@@ -33,12 +41,13 @@ public class MeasurementsSyncerWorkerTest
     private readonly IBus fakeBus = Substitute.For<IBus>();
     private readonly MeasurementsSyncOptions options = Substitute.For<MeasurementsSyncOptions>();
     private readonly MeasurementsSyncerWorker worker;
+    private readonly IStampClient fakeStampClient = Substitute.For<IStampClient>();
 
     public MeasurementsSyncerWorkerTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         var syncService = new MeasurementsSyncService(syncServiceFakeLogger, fakeSlidingWindowState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics());
+            new MeasurementSyncMetrics(), fakeStampClient);
         scopeFactory.CreateScope().Returns(scope);
         scope.ServiceProvider.Returns(serviceProvider);
         serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);
