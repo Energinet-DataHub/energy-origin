@@ -86,14 +86,12 @@ public class GetConsentForUserTests
     {
         var user = Any.User();
         var organization = Any.Organization(Tin.Create("12345678"));
-        var terms = Terms.Create(1);
-        organization.AcceptTerms(terms);
+        organization.AcceptTerms(dbContext.Terms.First());
         var affiliation = Affiliation.Create(user, organization);
 
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.Terms.AddAsync(terms);
         await dbContext.SaveChangesAsync();
 
         return (user.IdpUserId, organization.Tin, organization.Name);

@@ -101,5 +101,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         modelBuilder.Entity<Terms>().Property(t => t.Version)
             .IsRequired();
+        modelBuilder.Entity<Terms>()
+            .HasData(API.Models.Terms.Create(1));
+        modelBuilder.Entity<Terms>().HasIndex(t => t.Version)
+            .IsUnique();
     }
 }

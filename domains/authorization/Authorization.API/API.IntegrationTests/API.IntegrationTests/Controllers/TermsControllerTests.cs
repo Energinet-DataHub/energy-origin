@@ -27,9 +27,8 @@ public class AcceptTermsTests
     {
         await using var context = new ApplicationDbContext(_options);
 
-        var terms = Terms.Create(1);
+        var terms = context.Terms.First();
         var orgCvr = Tin.Create("12345678");
-        await SeedTerms(terms);
 
         var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: orgCvr.Value);
 
@@ -52,9 +51,8 @@ public class AcceptTermsTests
     {
         await using var context = new ApplicationDbContext(_options);
 
-        var terms = Terms.Create(1);
+        var terms = context.Terms.First();
         var orgCvr = Any.Tin();
-        await SeedTerms(terms);
 
         var organization = Organization.Create(orgCvr, new OrganizationName("Existing Org"));
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
@@ -75,13 +73,6 @@ public class AcceptTermsTests
         updatedOrganization.Should().NotBeNull();
         updatedOrganization!.TermsAccepted.Should().BeTrue();
         updatedOrganization.TermsVersion.Should().Be(terms.Version);
-    }
-
-    private async Task SeedTerms(Terms terms)
-    {
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Terms.AddAsync(terms);
-        await dbContext.SaveChangesAsync();
     }
 
     private async Task SeedOrganizationAndUser(Organization organization, User user)
