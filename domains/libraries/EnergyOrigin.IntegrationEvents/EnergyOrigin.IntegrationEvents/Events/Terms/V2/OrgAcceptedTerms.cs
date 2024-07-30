@@ -1,4 +1,3 @@
-
 namespace EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 public record OrgAcceptedTerms : IntegrationEvent
 {
