@@ -41,7 +41,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-authorization:
     needs: test
     uses: ./.github/workflows/build-authorization.yaml
@@ -49,7 +49,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-certificates:
     needs: test
     uses: ./.github/workflows/build-certificates.yaml
@@ -57,7 +57,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-measurements:
     needs: test
     uses: ./.github/workflows/build-measurements.yaml
@@ -65,7 +65,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-oidc-mock:
     needs: test
     uses: ./.github/workflows/build-oidc-mock.yaml
@@ -73,7 +73,7 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
-  
+
   build-transfer:
     needs: test
     uses: ./.github/workflows/build-transfer.yaml
@@ -105,7 +105,6 @@ jobs:
             domains/authorization/Authorization.API/configuration.yaml
             domains/authorization/Proxy/configuration.yaml
             domains/certificates/Query.API/configuration.yaml
-            domains/certificates/RegistryConnector/configuration.yaml
             domains/measurements/Measurements.API/configuration.yaml
             domains/oidc-mock/API/configuration.yaml
             domains/transfer/Transfer.API/configuration.yaml
