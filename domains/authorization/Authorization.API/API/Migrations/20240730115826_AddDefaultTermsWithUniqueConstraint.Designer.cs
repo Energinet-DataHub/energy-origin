@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240730104826_AddDefaultTerms")]
-    partial class AddDefaultTerms
+    [Migration("20240730115826_AddDefaultTermsWithUniqueConstraint")]
+    partial class AddDefaultTermsWithUniqueConstraint
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -141,7 +141,7 @@ namespace API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("f41d6fb2-240f-4247-a50b-e4163a1abf98"),
+                            Id = new Guid("0ccb0348-3179-4b96-9be0-dc7ab1541771"),
                             Version = 1
                         });
                 });
