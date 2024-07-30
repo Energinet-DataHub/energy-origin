@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240729075147_AddDefaultTermsSeed")]
-    partial class AddDefaultTermsSeed
+    [Migration("20240730083845_AddUniqueTermsVersionConstraint")]
+    partial class AddUniqueTermsVersionConstraint
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -133,14 +133,10 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Terms");
+                    b.HasIndex("Version")
+                        .IsUnique();
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("9d07429a-d98e-443a-834f-7d87b10e7f3a"),
-                            Version = 1
-                        });
+                    b.ToTable("Terms");
                 });
 
             modelBuilder.Entity("API.Models.User", b =>

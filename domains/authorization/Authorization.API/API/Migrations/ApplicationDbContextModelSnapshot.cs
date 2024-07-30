@@ -138,7 +138,7 @@ namespace API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("a2b7a580-fb8c-4ec2-b254-33d07a677369"),
+                            Id = new Guid("f41d6fb2-240f-4247-a50b-e4163a1abf98"),
                             Version = 1
                         });
                 });
