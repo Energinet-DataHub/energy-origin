@@ -22,12 +22,12 @@ jobs:
 
       - name: look folder
         shell: bash
-        run: ls -al && pwd
-        
+        run: ls -al ./domains && pwd
+
       - name: Build and push Docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
-          dockerfile: DockerFile
+          dockerfile: ./domains/DockerFile
           image-name: redoc
           image-tag: latest
           docker-context: .
