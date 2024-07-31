@@ -1,0 +1,16 @@
+# Use the official .NET SDK image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+# Set the working directory
+WORKDIR /app
+
+COPY . ./
+
+# Run the certificates project with --swagger
+RUN dotnet run --project certificates/Query.API/API/API.csproj --swagger
+
+# Run the proxy project with --swagger
+RUN dotnet run --project authorization/Proxy/Proxy.csproj --swagger
+
+# Code file to execute when the docker container starts up (`entrypoint.sh`)
+ENTRYPOINT ["/entrypoint.sh"]

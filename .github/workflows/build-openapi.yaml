@@ -1,0 +1,17 @@
+name: Run .NET Project with Swagger
+
+jobs:
+  run-dotnet-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v
+
+      - name: Build and push Docker image
+        uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
+        with:
+          dockerfile: ../../domains/Dockerfile
+          image-name: redoc
+          image-tag: latest
+          docker-context: .
+          dry-run: false
