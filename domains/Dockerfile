@@ -8,10 +8,10 @@ COPY . ./
 
 RUN ls -al && pwd
 # Run the certificates project with --swagger
-RUN dotnet run --project certificates/Query.API/API/API.csproj --swagger
+RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger
 
 # Run the proxy project with --swagger
-RUN dotnet run --project authorization/Proxy/Proxy.csproj --swagger
+RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
 
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
 ENTRYPOINT ["/entrypoint.sh"]
