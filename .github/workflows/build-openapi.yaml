@@ -19,9 +19,11 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: look folder
         shell: bash
         run: ls -al && pwd
-
+        
       - name: Build and push Docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
