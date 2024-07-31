@@ -119,5 +119,6 @@ jobs:
             domains/transfer/Transfer.API/configuration.yaml
             domains/transfer/ClaimAutomation/configuration.yaml
             domains/transfer/TransferAgreementAutomation/configuration.yaml
+            domains/configuration.yaml
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}

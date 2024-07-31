@@ -20,11 +20,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Resolve image version
+        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
+
+      - name: Resolve image name
+        shell: bash
+        run: echo "name=$(yq '.name' 'domains/configuration.yaml)" | tee -a $GITHUB_ENV
+
       - name: Build and push Docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
           dockerfile: ./domains/Dockerfile
-          image-name: redoc
-          image-tag: latest
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
           docker-context: .
           dry-run: ${{ inputs.dry-run }}
