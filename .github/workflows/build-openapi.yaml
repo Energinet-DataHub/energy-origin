@@ -1,9 +1,16 @@
 name: Run .NET Project with Swagger
 
 on:
-  push:
-    branches:
-      - vcluster/test-pipeline-new
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
 
 jobs:
   run-dotnet-project:
@@ -12,10 +19,6 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: look folder
-        shell: bash
-        run: ls -al ./domains && pwd
 
       - name: Build and push Docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
