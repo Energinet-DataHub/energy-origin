@@ -6,6 +6,7 @@ WORKDIR /app
 
 COPY . ./
 
+RUN ls -al && pwd
 # Run the certificates project with --swagger
 RUN dotnet run --project certificates/Query.API/API/API.csproj --swagger
 
