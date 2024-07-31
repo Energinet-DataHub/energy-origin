@@ -1,16 +1,9 @@
 name: Run .NET Project with Swagger
 
 on:
-  workflow_call:
-    inputs:
-      dry-run:
-        description: "An indication of whether to commit/publish results"
-        required: true
-        type: string
-      is-dependabot:
-        description: "An indication of a dependabot pull request"
-        required: true
-        type: string
+  push:
+    branches:
+      - vcluster/test-pipeline-new
 
 jobs:
   run-dotnet-project:
