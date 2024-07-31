@@ -19,12 +19,12 @@ jobs:
 
       - name: Docker build
         shell: bash
-        run: ls -al domains && pwd && docker build -t redoc -f domains/DockerFile .
+        run: ls -al domains && pwd && docker build -t redoc -f /home/runner/work/energy-origin/energy-origin/domains/Dockerfile .
 
       - name: Build and push Docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
-          dockerfile: ./domains/DockerFile
+          dockerfile: ./domains/Dockerfile
           image-name: redoc
           image-tag: latest
           docker-context: .
