@@ -1,5 +1,17 @@
 name: Run .NET Project with Swagger
 
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
+
 jobs:
   run-dotnet-project:
     runs-on: ubuntu-latest
@@ -14,4 +26,4 @@ jobs:
           image-name: redoc
           image-tag: latest
           docker-context: .
-          dry-run: false
+          dry-run: ${{ inputs.dry-run }}
