@@ -66,6 +66,10 @@ runs:
       shell: bash
       run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/main/Dockerfile.simplified -O Dockerfile
 
+    - name: test dockerfile
+      shell: bash
+      run: ls -al
+
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
 
