@@ -16,13 +16,17 @@ jobs:
   run-dotnet-project:
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch Dockerfile
+        shell: bash
+        run: wget https://raw.githubusercontent.com/Energinet-DataHub/energy-origin/vcluster/test-pipeline-new/domains/Dockerfile -O OpenApiDockerFile
+        
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Build and push Docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
         with:
-          dockerfile: ../../domains/Dockerfile
+          dockerfile: OpenApiDockerFile
           image-name: redoc
           image-tag: latest
           docker-context: .
