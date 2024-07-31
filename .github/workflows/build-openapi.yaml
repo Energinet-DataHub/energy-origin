@@ -25,7 +25,7 @@ jobs:
 
       - name: Resolve image name
         shell: bash
-        run: echo "name=$(yq '.name' 'domains/configuration.yaml)" | tee -a $GITHUB_ENV
+        run: echo "name=$(yq '.name' 'domains/configuration.yaml')" | tee -a $GITHUB_ENV
 
       - name: Build and push Docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
