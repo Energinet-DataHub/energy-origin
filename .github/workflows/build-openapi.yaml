@@ -35,3 +35,10 @@ jobs:
           image-tag: ${{ env.version }}
           docker-context: .
           dry-run: ${{ inputs.dry-run }}
+
+      - name: Scan image
+        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
+        with:
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
