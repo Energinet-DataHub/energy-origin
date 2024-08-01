@@ -8,6 +8,6 @@ COPY . ./
 
 RUN ls -al && pwd
 # Run the certificates project with --swagger
-RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger --no-build
+RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger
 # Run the proxy project with --swagger
-RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger --no-build
+RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
