@@ -135,7 +135,7 @@ public class Program
             var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
 
             File.WriteAllText(
-                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "contracts.yaml"),
+                Path.Combine(builder.Environment.ContentRootPath, "contracts.yaml"),
                 swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
             );
         }

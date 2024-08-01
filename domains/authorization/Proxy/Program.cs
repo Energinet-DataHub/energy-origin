@@ -108,7 +108,7 @@ public class Program
             var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
 
             File.WriteAllText(
-                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "proxy.yaml"),
+                Path.Combine(builder.Environment.ContentRootPath, "proxy.yaml"),
                 swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
             );
         }
