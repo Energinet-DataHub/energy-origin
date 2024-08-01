@@ -6,7 +6,6 @@ WORKDIR /app
 
 COPY . ./
 
-RUN ls -al && pwd
 # Run the certificates project with --swagger
 RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger
 # Run the proxy project with --swagger
