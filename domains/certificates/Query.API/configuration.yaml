@@ -5,5 +5,3 @@ references:
     path: .spec.template.spec.containers[] | select(.name == "certificates-domain-api") | .image
   - file: k8s/energy-origin-apps/certificates/base/api-deployment.yaml
     path: .spec.template.spec.initContainers[] | select(.name == "certificates-init-sql") | .image
-#  - file: k8s/energy-origin-apps/redoc/base/deployment.yaml
-#    path: .spec.template.spec.initContainers[] | select(.name == "copy-certificates-swagger") | .image

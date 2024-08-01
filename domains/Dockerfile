@@ -12,6 +12,3 @@ RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger
 
 # Run the proxy project with --swagger
 RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
-
-# Code file to execute when the docker container starts up (`entrypoint.sh`)
-ENTRYPOINT ["/entrypoint.sh"]
