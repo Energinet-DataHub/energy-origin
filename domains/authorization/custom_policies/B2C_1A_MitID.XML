@@ -109,7 +109,16 @@
                 <DataType>string</DataType>
                 <UserHelpText>Scope claim returned from authorization service</UserHelpText>
             </ClaimType>
-
+            <ClaimType Id="terms_accepted">
+                <DisplayName>The terms_accepted response from the Authorization service</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>Indicates whether the terms of service have been accepted</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="tos_accepted">
+                <DisplayName>Azure B2C claim for terms of service accepted</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>Indicates whether the terms of service have been accepted</UserHelpText>
+            </ClaimType>
             <ClaimType Id="mitIDBearerToken">
                 <DisplayName>MitIDBearerToken</DisplayName>
                 <DataType>string</DataType>
@@ -201,12 +210,6 @@
                 <DataType>boolean</DataType>
                 <UserHelpText/>
             </ClaimType>
-
-            <ClaimType Id="tos_accepted">
-                <DisplayName>Whether ETT terms has been accepted or not</DisplayName>
-                <DataType>boolean</DataType>
-                <UserHelpText/>
-            </ClaimType>
         </ClaimsSchema>
 
         <ClaimsTransformations>
@@ -253,7 +256,14 @@
                     <OutputClaim ClaimTypeReferenceId="org_ids_string" TransformationClaimType="outputClaim"/>
                 </OutputClaims>
             </ClaimsTransformation>
-
+            <ClaimsTransformation Id="MapTermsAcceptedToTosAccepted" TransformationMethod="CopyClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="terms_accepted" TransformationClaimType="inputClaim" />
+                </InputClaims>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="tos_accepted" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
         </ClaimsTransformations>
 
         <ContentDefinitions>
@@ -482,10 +492,11 @@
                         <OutputClaim ClaimTypeReferenceId="org_name"/>
                         <OutputClaim ClaimTypeReferenceId="org_ids"/>
                         <OutputClaim ClaimTypeReferenceId="scope"/>
-                        <OutputClaim ClaimTypeReferenceId="tos_accepted" PartnerClaimType="terms_accepted"/>
+                        <OutputClaim ClaimTypeReferenceId="terms_accepted"/>
                     </OutputClaims>
                     <OutputClaimsTransformations>
                         <OutputClaimsTransformation ReferenceId="OrgIdsAsStringTransformation"/>
+                        <OutputClaimsTransformation ReferenceId="MapTermsAcceptedToTosAccepted" />
                     </OutputClaimsTransformations>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
                 </TechnicalProfile>
@@ -568,8 +579,8 @@
                 <OutputClaim ClaimTypeReferenceId="org_ids_string" PartnerClaimType="org_ids"/>
                 <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="scope"/>
-                <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type"/>
+                <OutputClaim ClaimTypeReferenceId="terms_accepted" PartnerClaimType="tos_accepted" />
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
         </TechnicalProfile>
