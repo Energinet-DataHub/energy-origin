@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -17,17 +15,11 @@ using ProjectOriginClients.Models;
 
 namespace API.ContractService.Clients;
 
-public interface IWalletClient
-{
-    Task<CreateWalletResponse> CreateWallet(string ownerSubject, CancellationToken cancellationToken);
-    Task<ResultList<WalletRecord>> GetWallets(string ownerSubject, CancellationToken cancellationToken);
-    Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, string ownerSubject, CancellationToken cancellationToken);
-}
-
 public class WalletClient : IWalletClient
 {
     private readonly HttpClient client;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private const string WalletOwnerHeader = "wallet-owner";
 
     public WalletClient(HttpClient client, IHttpContextAccessor httpContextAccessor)
     {
@@ -38,7 +30,7 @@ public class WalletClient : IWalletClient
     public async Task<CreateWalletResponse> CreateWallet(string ownerSubject, CancellationToken cancellationToken)
     {
         ValidateHttpContext();
-        SetAuthorizationHeader();
+        SetOwnerHeader(ownerSubject);
         ValidateOwnerAndSubjectMatch(ownerSubject);
 
         var request = new CreateWalletRequest
@@ -47,36 +39,31 @@ public class WalletClient : IWalletClient
         };
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
-
-        var res = await client.PostAsync("v1/wallets", content);
-        res.EnsureSuccessStatusCode();
-
-        if (res == null || res.Content == null)
-            throw new HttpRequestException("Failed to create wallet.");
-
-        return (await res.Content.ReadFromJsonAsync<CreateWalletResponse>())!;
+        var response = await client.PostAsync("v1/wallets", content, cancellationToken);
+        return await ParseResponse<CreateWalletResponse>(response, cancellationToken);
     }
 
     public async Task<ResultList<WalletRecord>> GetWallets(string ownerSubject, CancellationToken cancellationToken)
     {
         ValidateHttpContext();
-        SetAuthorizationHeader();
+        SetOwnerHeader(ownerSubject);
         ValidateOwnerAndSubjectMatch(ownerSubject);
 
-        var response =
-            await client.GetFromJsonAsync<ResultList<WalletRecordDto>>("v1/wallets", cancellationToken);
+        var response = await client.GetAsync("v1/wallets", cancellationToken);
+        var dto = await ParseResponse<ResultList<WalletRecordDto>>(response, cancellationToken);
+        return MapGetWalletsDto(dto);
+    }
 
-        if (response == null)
-            throw new HttpRequestException("Failed to get wallets.");
-
+    private static ResultList<WalletRecord> MapGetWalletsDto(ResultList<WalletRecordDto> dto)
+    {
         var result = new ResultList<WalletRecord>
         {
-            Result = response.Result.Select(r => new WalletRecord
+            Result = dto.Result.Select(r => new WalletRecord
             {
                 Id = r.Id,
                 PublicKey = new Secp256k1Algorithm().ImportHDPublicKey(r.PublicKey)
             }).ToList(),
-            Metadata = response.Metadata
+            Metadata = dto.Metadata
         };
         return result;
     }
@@ -84,35 +71,43 @@ public class WalletClient : IWalletClient
     public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, string ownerSubject, CancellationToken cancellationToken)
     {
         ValidateHttpContext();
-        SetAuthorizationHeader();
+        SetOwnerHeader(ownerSubject);
         ValidateOwnerAndSubjectMatch(ownerSubject);
 
-        var res = await client.PostAsync($"v1/wallets/{walletId}/endpoints", null);
-        res.EnsureSuccessStatusCode();
+        var response = await client.PostAsync($"v1/wallets/{walletId}/endpoints", null, cancellationToken);
+        var dto = await ParseResponse<CreateWalletEndpointResponse>(response, cancellationToken);
+        var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(dto.WalletReference.PublicKey);
+        return new WalletEndpointReference(dto.WalletReference.Version, dto.WalletReference.Endpoint, hdPublicKey);
+    }
 
-        if (res == null || res.Content == null)
-            throw new HttpRequestException("Failed to create wallet endpoint.");
-
-        var response = (await res.Content.ReadFromJsonAsync<CreateWalletEndpointResponse>())!;
-        var hdPublicKey = new Secp256k1Algorithm().ImportHDPublicKey(response.WalletReference.PublicKey);
-        return new WalletEndpointReference(response.WalletReference.Version, response.WalletReference.Endpoint, hdPublicKey);
+    private async Task<T> ParseResponse<T>(HttpResponseMessage responseMessage, CancellationToken cancellationToken)
+    {
+        if (responseMessage.Content is null)
+        {
+            throw new HttpRequestException("Null response");
+        }
+        responseMessage.EnsureSuccessStatusCode();
+        return (await responseMessage.Content.ReadFromJsonAsync<T>(cancellationToken))!;
     }
 
     private void ValidateHttpContext()
     {
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext == null)
+        {
             throw new HttpRequestException($"No HTTP context found. {nameof(WalletClient)} must be used as part of a request");
+        }
     }
 
-    private void SetAuthorizationHeader()
+    private void SetOwnerHeader(string owner)
     {
-        client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext!.Request.Headers.Authorization!);
+        client.DefaultRequestHeaders.Remove(WalletOwnerHeader);
+        client.DefaultRequestHeaders.Add(WalletOwnerHeader, owner);
     }
 
     private void ValidateOwnerAndSubjectMatch(string owner)
     {
-        if (IdentityDescriptor.IsSupported(httpContextAccessor.HttpContext!))
+        if (IsBearerTokenIssuedByB2C())
         {
             var identityDescriptor = new IdentityDescriptor(httpContextAccessor);
             var accessDescriptor = new AccessDescriptor(identityDescriptor);
@@ -126,8 +121,15 @@ public class WalletClient : IWalletClient
             var user = new UserDescriptor(httpContextAccessor.HttpContext!.User);
             var subject = user.Subject.ToString();
             if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+            {
                 throw new HttpRequestException("Owner must match subject");
+            }
         }
+    }
+
+    private bool IsBearerTokenIssuedByB2C()
+    {
+        return IdentityDescriptor.IsSupported(httpContextAccessor.HttpContext!);
     }
 }
 
@@ -159,60 +161,3 @@ public record CreateWalletResponse()
 public record CreateWalletEndpointResponse(WalletEndpointReferenceDto WalletReference);
 public record WalletEndpointReferenceDto(int Version, Uri Endpoint, byte[] PublicKey);
 public record WalletEndpointReference(int Version, Uri Endpoint, IHDPublicKey PublicKey);
-
-/// <summary>
-/// Request to receive a certificate-slice from another wallet.
-/// </summary>
-public record ReceiveRequest()
-{
-    /// <summary>
-    /// The public key of the receiving wallet.
-    /// </summary>
-    public required byte[] PublicKey { get; init; }
-
-    /// <summary>
-    /// The sub-position of the publicKey used on the slice on the registry.
-    /// </summary>
-    public required uint Position { get; init; }
-
-    /// <summary>
-    /// The id of the certificate.
-    /// </summary>
-    public required FederatedStreamId CertificateId { get; init; }
-
-    /// <summary>
-    /// The quantity of the slice.
-    /// </summary>
-    public required uint Quantity { get; init; }
-
-    /// <summary>
-    /// The random R used to generate the pedersen commitment with the quantity.
-    /// </summary>
-    public required byte[] RandomR { get; init; }
-
-    /// <summary>
-    /// List of hashed attributes, their values and salts so the receiver can access the data.
-    /// </summary>
-    public required IEnumerable<HashedAttribute> HashedAttributes { get; init; }
-}
-
-public record HashedAttribute()
-{
-
-    /// <summary>
-    /// The key of the attribute.
-    /// </summary>
-    public required string Key { get; init; }
-
-    /// <summary>
-    /// The value of the attribute.
-    /// </summary>
-    public required string Value { get; init; }
-
-    /// <summary>
-    /// The salt used to hash the attribute.
-    /// </summary>
-    public required byte[] Salt { get; init; }
-}
-
-public record ReceiveResponse() { }

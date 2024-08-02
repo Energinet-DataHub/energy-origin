@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using API.Authorization.Controllers;
 using API.Models;
+using API.Options;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -20,6 +21,7 @@ namespace API.IntegrationTests.Setup;
 public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     internal string ConnectionString { get; set; } = "";
+    internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -35,7 +37,19 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             });
 
             services.EnsureDbCreated<ApplicationDbContext>();
+            services.Configure<RabbitMqOptions>(options =>
+            {
+                options.Host = RabbitMqOptions.Host;
+                options.Port = RabbitMqOptions.Port;
+                options.Username = RabbitMqOptions.Username;
+                options.Password = RabbitMqOptions.Password;
+            });
         });
+    }
+
+    public void SetRabbitMqOptions(RabbitMqOptions options)
+    {
+        RabbitMqOptions = options;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -74,26 +88,26 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
 
-    public Api CreateApi(string sub = "", string name = "", string orgIds = "", string subType = "", string orgCvr = "12345678")
+    public Api CreateApi(string sub = "", string name = "", string orgIds = "", string subType = "", string orgCvr = "12345678", string orgName = "Test Org")
     {
         sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
         name = string.IsNullOrEmpty(name) ? "Test Testesen" : name;
         orgIds = string.IsNullOrEmpty(orgIds) ? Guid.NewGuid().ToString() : orgIds;
         subType = string.IsNullOrEmpty(subType) ? "user" : subType;
 
-        return new Api(CreateAuthenticatedClient(sub, name, orgIds, subType, orgCvr));
+        return new Api(CreateAuthenticatedClient(sub, name, orgIds, subType, orgCvr, orgName));
     }
 
-    private HttpClient CreateAuthenticatedClient(string sub, string name, string orgIds, string subType, string orgCvr)
+    private HttpClient CreateAuthenticatedClient(string sub, string name, string orgIds, string subType, string orgCvr, string orgName)
     {
         var httpClient = CreateClient();
-        var token = GenerateToken(sub, name, orgIds, subType, orgCvr);
+        var token = GenerateToken(sub, name, orgIds, subType, orgCvr, orgName);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        httpClient.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20230101);
+        httpClient.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20230101);
         return httpClient;
     }
 
-    private string GenerateToken(string sub, string name, string orgIds, string subType, string orgCvr)
+    private string GenerateToken(string sub, string name, string orgIds, string subType, string orgCvr, string orgName)
     {
         using RSA rsa = RSA.Create(2048 * 2);
         var req = new CertificateRequest("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -110,7 +124,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             new("name", name),
             new("org_ids", orgIds),
             new("sub_type", subType),
-            new("org_cvr", orgCvr)
+            new("org_cvr", orgCvr),
+            new("org_name", orgName)
         });
         var securityTokenDescriptor = new SecurityTokenDescriptor
         {

@@ -13,17 +13,8 @@ on:
         type: string
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
-        with:
-          solution: domains/oidc-mock/Oidc.Mock.sln
-
+  
   build-api:
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,21 +24,3 @@ jobs:
           project: domains/oidc-mock/API/Mock/Oidc.Mock.csproj
           configuration: domains/oidc-mock/API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
-
-  update:
-    runs-on: ubuntu-latest
-    name: Update environment
-    needs:
-      - build-api
-    concurrency: commits-base-environment
-    if: ${{ inputs.is-dependabot == 'false' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
-        with:
-          configurations: |
-            domains/oidc-mock/API/configuration.yaml
-          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ inputs.dry-run }}

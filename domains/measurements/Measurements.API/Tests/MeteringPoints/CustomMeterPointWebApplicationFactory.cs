@@ -115,7 +115,7 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", ApiVersions.Version20240110);
+        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240110);
         return client;
     }
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
@@ -124,7 +124,7 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+        client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
         return client;
     }
 
@@ -134,7 +134,7 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString()));
-        client.DefaultRequestHeaders.Add("EO_API_VERSION", apiVersion);
+        client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
 
         return client;
     }

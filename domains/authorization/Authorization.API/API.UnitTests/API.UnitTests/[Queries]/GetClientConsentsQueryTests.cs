@@ -18,7 +18,7 @@ public class GetClientConsentsQueryTests
         var client = Client.Create(clientId, new("Loz"), ClientType.Internal, "https://localhost:5001");
 
         var organization = Any.Organization();
-        var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow);
+        Consent.Create(organization, client, DateTimeOffset.UtcNow);
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
 
         // Act
@@ -27,5 +27,6 @@ public class GetClientConsentsQueryTests
 
         // Assert
         result.GetClientConsentsQueryResultItems[0].OrganizationName.Should().Be(organization.Name);
+        result.GetClientConsentsQueryResultItems[0].Tin.Should().Be(organization.Tin);
     }
 }

@@ -1,25 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <NoWarn>1701;1702;1591</NoWarn>
-    <RootNamespace>ClaimAutomation.Worker</RootNamespace>
-    <AssemblyName>ClaimAutomation.Worker</AssemblyName>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <NoWarn>1701;1702;1591</NoWarn>
+        <RootNamespace>ClaimAutomation.Worker</RootNamespace>
+        <AssemblyName>ClaimAutomation.Worker</AssemblyName>
+        <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.1" />
-    <PackageReference Include="EnergyOrigin.Setup" Version="4.4.6" />
-    <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.6.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.1" />
+        <PackageReference Include="EnergyOrigin.Setup" Version="5.0.2" />
+        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.6.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
-    <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
-    <ProjectReference Include="..\..\Transfer.API\API\API.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
+        <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
+        <ProjectReference Include="..\..\Transfer.API\API\API.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="API.IntegrationTests" />
+    </ItemGroup>
+
 </Project>

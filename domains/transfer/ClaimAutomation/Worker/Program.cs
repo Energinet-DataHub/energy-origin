@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using API.ClaimAutomation.Api.Repositories;
 using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Automation;
@@ -25,6 +26,8 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.AddSerilog();
 
+builder.Services.AddOptions<ClaimAutomationOptions>().BindConfiguration(ClaimAutomationOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)

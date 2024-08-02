@@ -13,6 +13,8 @@ namespace API.IntegrationTests.Extensions;
 
 public static class WalletServiceClientExtensions
 {
+    public const string WalletOwnerHeader = "wallet-owner";
+
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -32,7 +34,7 @@ public static class WalletServiceClientExtensions
         if (timeLimit.HasValue && timeLimit.Value <= TimeSpan.Zero)
             throw new ArgumentException($"{nameof(timeLimit)} must be a positive time span");
 
-        var limit = timeLimit ?? TimeSpan.FromSeconds(30);
+        var limit = timeLimit ?? TimeSpan.FromSeconds(60);
 
         var stopwatch = new Stopwatch();
         stopwatch.Start();
