@@ -14,7 +14,7 @@
         "summary": "Create a contract that activates granular certificate generation for a metering point",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -79,7 +79,7 @@
         "summary": "Returns all the user's contracts for issuing granular certificates",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -131,7 +131,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -183,7 +183,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,

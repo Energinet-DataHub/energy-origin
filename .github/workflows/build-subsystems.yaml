@@ -25,45 +25,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: detect auth
-        id: auth
-        uses: ./.github/actions/find-diff-action
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dotnet-test
         with:
-          paths: domains/auth/
-
-      - name: detect authorization
-        id: authorization
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/authorization/
-
-      - name: detect certificates
-        id: certificates
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/certificates/
-
-      - name: detect measurements
-        id: measurements
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/measurements/
-
-      - name: detect oidc-mock
-        id: oidc-mock
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/oidc-mock/
-
-      - name: detect transfer
-        id: transfer
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/transfer/
+          solution: domains/EnergyTrackAndTrace.sln
 
   build-auth:
-    needs: setup
-    if: needs.setup.outputs.auth == 'true'
+    needs: test
     uses: ./.github/workflows/build-auth.yaml
     secrets: inherit
     with:
@@ -71,8 +43,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
-    needs: setup
-    if: needs.setup.outputs.authorization == 'true'
+    needs: test
     uses: ./.github/workflows/build-authorization.yaml
     secrets: inherit
     with:
@@ -80,8 +51,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-certificates:
-    needs: setup
-    if: needs.setup.outputs.certificates == 'true'
+    needs: test
     uses: ./.github/workflows/build-certificates.yaml
     secrets: inherit
     with:
@@ -89,8 +59,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-measurements:
-    needs: setup
-    if: needs.setup.outputs.measurements == 'true'
+    needs: test
     uses: ./.github/workflows/build-measurements.yaml
     secrets: inherit
     with:
@@ -98,8 +67,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-oidc-mock:
-    needs: setup
-    if: needs.setup.outputs.oidc-mock == 'true'
+    needs: test
     uses: ./.github/workflows/build-oidc-mock.yaml
     secrets: inherit
     with:
@@ -107,10 +75,40 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-transfer:
-    needs: setup
-    if: needs.setup.outputs.transfer == 'true'
+    needs: test
     uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
+
+  update:
+    runs-on: ubuntu-latest
+    name: Update environment
+    needs:
+      - build-authorization
+      - build-auth
+      - build-certificates
+      - build-measurements
+      - build-oidc-mock
+      - build-transfer
+    concurrency: commits-base-environment
+    if: ${{ inputs.is-dependabot == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update environment
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+        with:
+          configurations: |
+            domains/auth/Auth.API/configuration.yaml
+            domains/authorization/Authorization.API/configuration.yaml
+            domains/authorization/Proxy/configuration.yaml
+            domains/certificates/Query.API/configuration.yaml
+            domains/measurements/Measurements.API/configuration.yaml
+            domains/oidc-mock/API/configuration.yaml
+            domains/transfer/Transfer.API/configuration.yaml
+            domains/transfer/ClaimAutomation/configuration.yaml
+            domains/transfer/TransferAgreementAutomation/configuration.yaml
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ inputs.dry-run }}

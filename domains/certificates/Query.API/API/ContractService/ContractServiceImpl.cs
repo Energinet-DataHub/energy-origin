@@ -21,17 +21,20 @@ internal class ContractServiceImpl : IContractService
 {
     private readonly IMeteringPointsClient meteringPointsClient;
     private readonly IWalletClient walletClient;
+    private readonly IStampClient stampClient;
     private readonly IUnitOfWork unitOfWork;
     private readonly ILogger<ContractServiceImpl> logger;
 
     public ContractServiceImpl(
         IMeteringPointsClient meteringPointsClient,
         IWalletClient walletClient,
+        IStampClient stampClient,
         IUnitOfWork unitOfWork,
         ILogger<ContractServiceImpl> logger)
     {
         this.meteringPointsClient = meteringPointsClient;
         this.walletClient = walletClient;
+        this.stampClient = stampClient;
         this.unitOfWork = unitOfWork;
         this.logger = logger;
     }
@@ -86,20 +89,21 @@ internal class ContractServiceImpl : IContractService
                 ? contractsGsrn.Max(c => c.ContractNumber) + number + 1
                 : number;
 
-            var walletDepositEndpoint =
+            var walletEndpoint =
                 await walletClient.CreateWalletEndpoint(walletId.Value, meteringPointOwnerId.ToString(),
                     cancellationToken);
 
+            var recipientResponse = await stampClient.CreateRecipient(walletEndpoint, cancellationToken);
+
             var issuingContract = CertificateIssuingContract.Create(
                 contractNumber,
-                contract.GSRN,
+                new Gsrn(contract.GSRN),
                 matchingMeteringPoint.GridArea,
                 Map(matchingMeteringPoint.Type),
                 meteringPointOwnerId.ToString(),
                 startDate,
                 endDate,
-                walletDepositEndpoint.Endpoint.ToString(),
-                walletDepositEndpoint.PublicKey.Export().ToArray(),
+                recipientResponse.Id,
                 Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
 
             newContracts.Add(issuingContract);

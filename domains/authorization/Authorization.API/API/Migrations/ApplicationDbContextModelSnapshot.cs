@@ -130,7 +130,17 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Version")
+                        .IsUnique();
+
                     b.ToTable("Terms");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("0ccb0348-3179-4b96-9be0-dc7ab1541771"),
+                            Version = 1
+                        });
                 });
 
             modelBuilder.Entity("API.Models.User", b =>

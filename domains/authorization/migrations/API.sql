@@ -287,3 +287,30 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240730115826_AddDefaultTermsWithUniqueConstraint') THEN
+    INSERT INTO "Terms" ("Id", "Version")
+    VALUES ('0ccb0348-3179-4b96-9be0-dc7ab1541771', 1);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240730115826_AddDefaultTermsWithUniqueConstraint') THEN
+    CREATE UNIQUE INDEX "IX_Terms_Version" ON "Terms" ("Version");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240730115826_AddDefaultTermsWithUniqueConstraint') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20240730115826_AddDefaultTermsWithUniqueConstraint', '8.0.6');
+    END IF;
+END $EF$;
+COMMIT;
+

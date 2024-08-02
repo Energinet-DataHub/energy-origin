@@ -52,16 +52,11 @@ namespace DataContext.Migrations
                     b.Property<int>("MeteringPointType")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("RecipientId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("StartDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<byte[]>("WalletPublicKey")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("WalletUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -69,51 +64,6 @@ namespace DataContext.Migrations
                         .IsUnique();
 
                     b.ToTable("Contracts");
-                });
-
-            modelBuilder.Entity("DataContext.Models.ConsumptionCertificate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("BlindingValue")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<long>("DateFrom")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("DateTo")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("GridArea")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Gsrn")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("IssuedState")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("MeteringPointOwner")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("Quantity")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("RejectionReason")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Gsrn", "DateFrom", "DateTo")
-                        .IsUnique();
-
-                    b.ToTable("ConsumptionCertificates");
                 });
 
             modelBuilder.Entity("DataContext.Models.MeteringPointTimeSeriesSlidingWindow", b =>
@@ -127,51 +77,6 @@ namespace DataContext.Migrations
                     b.HasKey("GSRN");
 
                     b.ToTable("MeteringPointTimeSeriesSlidingWindows");
-                });
-
-            modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("BlindingValue")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<long>("DateFrom")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("DateTo")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("GridArea")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Gsrn")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("IssuedState")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("MeteringPointOwner")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("Quantity")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("RejectionReason")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Gsrn", "DateFrom", "DateTo")
-                        .IsUnique();
-
-                    b.ToTable("ProductionCertificates");
                 });
 
             modelBuilder.Entity("EnergyOrigin.ActivityLog.DataContext.ActivityLogEntry", b =>
@@ -466,33 +371,6 @@ namespace DataContext.Migrations
                         });
 
                     b.Navigation("MissingMeasurements")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("DataContext.Models.ProductionCertificate", b =>
-                {
-                    b.OwnsOne("DataContext.ValueObjects.Technology", "Technology", b1 =>
-                        {
-                            b1.Property<Guid>("ProductionCertificateId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("FuelCode")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("TechCode")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("ProductionCertificateId");
-
-                            b1.ToTable("ProductionCertificates");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ProductionCertificateId");
-                        });
-
-                    b.Navigation("Technology")
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

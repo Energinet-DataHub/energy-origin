@@ -9,19 +9,6 @@
             Create Client.
             </summary>
         </member>
-        <member name="M:API.Authorization.Controllers.AuthorizationController.GetConsentForUser(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.AuthorizationUserRequest)">
-            Retrieves Authorization Model.
-        </member>
-        <member name="M:API.Authorization.Controllers.ClientController.GetClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ClientResponse},System.Guid)">
-            <summary>
-            Retrieves client.
-            </summary>
-        </member>
-        <member name="M:API.Authorization.Controllers.ClientController.GetClientConsents(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ClientResponse})">
-            <summary>
-            Retrieves clients consents.
-            </summary>
-        </member>
         <member name="M:API.Authorization.Controllers.ConsentController.GrantConsent(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},API.Authorization.Controllers.GrantConsentRequest)">
             <summary>
             Grants consent.
@@ -78,6 +65,18 @@
             <inheritdoc />
         </member>
         <member name="M:API.Migrations.AddTermsWithOutbox.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddDefaultTermsWithUniqueConstraint">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddDefaultTermsWithUniqueConstraint.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddDefaultTermsWithUniqueConstraint.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddDefaultTermsWithUniqueConstraint.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>

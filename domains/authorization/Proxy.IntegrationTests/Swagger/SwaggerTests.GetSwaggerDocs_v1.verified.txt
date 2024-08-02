@@ -59,7 +59,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -159,7 +159,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -238,7 +238,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -275,7 +275,7 @@
         "summary": "Queues a request to claim two certificate for a given quantity.",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -387,7 +387,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -430,7 +430,7 @@
         "description": "This request is used to receive a certificate-slice from another wallet, which is then stored in the local wallet.\r\nThe endpoint is verified to exists within the wallet system, otherwise a 404 will be returned.\r\nThe endpoint will return 202 Accepted was initial validation has succeeded.\r\nThe certificate-slice will further verified with data from the registry in a seperate thread.",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -539,7 +539,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -576,7 +576,7 @@
         "summary": "Transfers a certificate to another wallet.",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -685,7 +685,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -726,7 +726,7 @@
         ],
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -792,7 +792,7 @@
         "summary": "Gets all wallets for the user.",
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -841,7 +841,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -891,7 +891,7 @@
             }
           },
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,
@@ -932,7 +932,7 @@
         ],
         "parameters": [
           {
-            "name": "EO_API_VERSION",
+            "name": "X-API-Version",
             "in": "header",
             "description": "The requested API version",
             "required": true,

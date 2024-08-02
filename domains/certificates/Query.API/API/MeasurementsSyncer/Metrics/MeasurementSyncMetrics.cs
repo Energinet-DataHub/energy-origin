@@ -22,12 +22,12 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
     public MeasurementSyncMetrics()
     {
         var meter = new Meter(MetricName);
-        TimeSinceLastMeasurementSyncerRun = meter.CreateObservableGauge("time_since_last_measurement_syncer_run", () => timeSinceLastMeasurementSyncerRun);
-        TotalMeasurementsFetched = meter.CreateObservableCounter("measurements_fetched_total", () => totalMeasurementsFetched);
-        NumberOfContractsBeingSynced = meter.CreateObservableCounter("contracts_being_synced_total", () => numberOfContractsBeingSynced);
-        TimePeriodForSearchingForAGSRN = meter.CreateObservableGauge("time_period_for_searching_for_gsrn", () => timePeriodForSearchingForAGSRN);
-        MissingMeasurement = meter.CreateObservableCounter("missing_measurement_total", () => missingMeasurement);
-        RecoveredMeasurements = meter.CreateObservableCounter("recovered_measurements_total", () => recoveredMeasurements);
+        TimeSinceLastMeasurementSyncerRun = meter.CreateObservableGauge("ett_certificate_time_since_last_measurement_syncer_run", () => timeSinceLastMeasurementSyncerRun, unit: "s");
+        TotalMeasurementsFetched = meter.CreateObservableCounter("ett_certificate_measurements_fetched", () => totalMeasurementsFetched);
+        NumberOfContractsBeingSynced = meter.CreateObservableCounter("ett_certificate_contracts_being_synced", () => numberOfContractsBeingSynced);
+        TimePeriodForSearchingForAGSRN = meter.CreateObservableGauge("ett_certificate_time_period_for_searching_for_gsrn", () => timePeriodForSearchingForAGSRN);
+        MissingMeasurement = meter.CreateObservableCounter("ett_certificate_missing_measurement", () => missingMeasurement);
+        RecoveredMeasurements = meter.CreateObservableCounter("ett_certificate_recovered_measurements", () => recoveredMeasurements);
     }
 
     public void MeasurementsFetched(long fetchedCount)
