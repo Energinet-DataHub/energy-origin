@@ -54,13 +54,18 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddMassTransit(
     x =>
     {
+        x.AddConfigureEndpointsCallback((name, cfg) =>
+        {
+            if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+                rmq.SetQuorumQueue(3);
+        });
+
         x.SetKebabCaseEndpointNameFormatter();
 
         x.UsingRabbitMq((context, cfg) =>
         {
             var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
             var url = $"rabbitmq://{options.Host}:{options.Port}";
-
             cfg.Host(new Uri(url), h =>
             {
                 h.Username(options.Username);
@@ -75,8 +80,8 @@ builder.Services.AddMassTransit(
         });
     }
 );
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
@@ -115,7 +120,8 @@ var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
 app.UseActivityLog().WithApiVersionSet(activityLogApiVersionSet)
     .HasApiVersion(ApiVersions.Version20240423AsInt)
     .HasApiVersion(ApiVersions.Version20230101AsInt);
-app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet).HasApiVersion(ApiVersions.Version20240515AsInt);
+app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
+    .HasApiVersion(ApiVersions.Version20240515AsInt);
 
 
 app.Run();
