@@ -1,0 +1,44 @@
+name: Run .NET Project with Swagger
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
+
+jobs:
+  build-openapi-specifications:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve image version
+        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
+
+      - name: Resolve image name
+        shell: bash
+        run: echo "name=$(yq '.name' 'domains/configuration.yaml')" | tee -a $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v1
+        with:
+          dockerfile: ./domains/Dockerfile
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          docker-context: .
+          dry-run: ${{ inputs.dry-run }}
+
+      - name: Scan image
+        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
+        with:
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}

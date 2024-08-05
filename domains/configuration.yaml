@@ -1,0 +1,5 @@
+name: eo-redoc-api
+repo: ghcr.io/energinet-datahub
+references:
+  - file: k8s/energy-origin-apps/redoc/base/deployment.yaml
+    path: .spec.template.spec.initContainers[] | select(.name == "copy-openapi") | .image

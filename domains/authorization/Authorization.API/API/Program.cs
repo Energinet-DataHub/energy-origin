@@ -40,11 +40,16 @@ builder.Services.AddOptions<RabbitMqOptions>()
 builder.Services.AddMassTransit(o =>
 {
     o.SetKebabCaseEndpointNameFormatter();
-
+    o.AddConfigureEndpointsCallback((name, cfg) =>
+    {
+        if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+            rmq.SetQuorumQueue(3);
+    });
     o.UsingRabbitMq((context, cfg) =>
     {
         var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
         var url = $"rabbitmq://{options.Host}:{options.Port}";
+
 
         cfg.Host(new Uri(url), h =>
         {
