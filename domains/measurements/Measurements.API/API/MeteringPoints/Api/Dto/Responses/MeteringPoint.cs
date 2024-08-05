@@ -5,7 +5,7 @@ using API.MeteringPoints.Api.Models.Constants;
 
 namespace API.MeteringPoints.Api.Dto.Responses;
 
-public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMeterType SubMeterType, Address Address, Technology Technology, bool CanBeUsedForIssuingCertificates)
+public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMeterType SubMeterType, Address Address, Technology Technology, bool CanBeUsedForIssuingCertificates, string Capacity)
 {
     public static MeteringPoint CreateFrom(Meteringpoint.V1.MeteringPoint result)
     {
@@ -25,7 +25,8 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
                 "DK"
             ),
             GetTechnology(result.AssetType),
-            GetCanBeUsedForIssuingCertificates(result.TypeOfMp, result.AssetType)
+            GetCanBeUsedForIssuingCertificates(result.TypeOfMp, result.AssetType),
+            result.Capacity
         );
     }
 
