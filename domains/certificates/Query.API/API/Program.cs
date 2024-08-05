@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using API.ContractService;
 using API.Query.API;
 using Microsoft.AspNetCore.Builder;
@@ -19,7 +22,11 @@ using Contracts;
 using EnergyOrigin.Setup;
 using MassTransit;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Extensions;
 using OpenTelemetry;
+using Swashbuckle.AspNetCore.Swagger;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +73,7 @@ builder.Services.AddMassTransit(
         {
             var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
             var url = $"rabbitmq://{options.Host}:{options.Port}";
+
             cfg.Host(new Uri(url), h =>
             {
                 h.Username(options.Username);
@@ -80,8 +88,8 @@ builder.Services.AddMassTransit(
         });
     }
 );
-
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
 
@@ -124,7 +132,20 @@ app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
     .HasApiVersion(ApiVersions.Version20240515AsInt);
 
 
-app.Run();
+if (args.Contains("--swagger"))
+{
+    var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
+    var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
+
+    File.WriteAllText(
+        Path.Combine(builder.Environment.ContentRootPath, "contracts.yaml"),
+        swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
+    );
+}
+else
+{
+    app.Run();
+}
 
 public partial class Program
 {

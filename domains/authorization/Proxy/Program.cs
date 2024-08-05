@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
@@ -5,14 +6,17 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Extensions;
+using Proxy.Controllers;
 using Proxy.Options;
+using Swashbuckle.AspNetCore.Swagger;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwagger("Wallet API");
@@ -24,10 +28,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-
 builder.Services.AddApiVersioning(options =>
     {
-
         options.AssumeDefaultVersionWhenUnspecified = false;
         options.ReportApiVersions = true;
         options.ApiVersionReader = ApiVersionReader.Combine(
@@ -58,7 +60,8 @@ builder.Services.AddControllers()
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     });
 
-builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations()
+builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
+    .ValidateDataAnnotations()
     .ValidateOnStart();
 
 var tokenConfiguration = builder.Configuration.GetSection(TokenValidationOptions.Prefix);
@@ -95,10 +98,21 @@ app.MapControllers();
 
 app.MapSwagger();
 
-app.Run();
+if (args.Contains("--swagger"))
+{
+    var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
+    var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
 
+    File.WriteAllText(
+        Path.Combine(builder.Environment.ContentRootPath, "proxy.yaml"),
+        swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
+    );
+}
+else
+{
+    app.Run();
+}
 
 public partial class Program
 {
-
 }

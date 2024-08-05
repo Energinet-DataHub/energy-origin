@@ -82,6 +82,14 @@ jobs:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
+  build-openapi:
+    needs: test
+    uses: ./.github/workflows/build-openapi.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
   update:
     runs-on: ubuntu-latest
     name: Update environment
@@ -92,6 +100,7 @@ jobs:
       - build-measurements
       - build-oidc-mock
       - build-transfer
+      - build-openapi
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
@@ -110,5 +119,6 @@ jobs:
             domains/transfer/Transfer.API/configuration.yaml
             domains/transfer/ClaimAutomation/configuration.yaml
             domains/transfer/TransferAgreementAutomation/configuration.yaml
+            domains/configuration.yaml
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
