@@ -79,7 +79,8 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                     RoomId = "1",
                     CityName = "City",
                     Postcode = "1234",
-                    AssetType = "E17"
+                    AssetType = "E17",
+                    Capacity = "12345678"
                 }
             }
         };
@@ -135,7 +136,8 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                     RoomId = "1",
                     CityName = "City",
                     Postcode = "1234",
-                    AssetType = "E17"
+                    AssetType = "E17",
+                    Capacity = "12345678"
                 },
                 new Meteringpoint.V1.MeteringPoint
                 {
@@ -148,7 +150,8 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                     RoomId = "1",
                     CityName = "City",
                     Postcode = "1234",
-                    AssetType = "E17"
+                    AssetType = "E17",
+                    Capacity = "12345678"
                 }
             }
         };
@@ -212,7 +215,8 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                         RoomId = room,
                         CityName = "City",
                         Postcode = "1234",
-                        AssetType = "E17"
+                        AssetType = "E17",
+                        Capacity = "12345678"
                     }
                 }
             });
