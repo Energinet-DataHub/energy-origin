@@ -64,7 +64,13 @@ public class Program
         builder.Services.AddMassTransit(
             x =>
             {
-                x.SetKebabCaseEndpointNameFormatter();
+                x.AddConfigureEndpointsCallback((name, cfg) =>
+        {
+            if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+                rmq.SetQuorumQueue(3);
+        });
+
+        x.SetKebabCaseEndpointNameFormatter();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {

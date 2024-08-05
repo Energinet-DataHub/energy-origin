@@ -89,6 +89,12 @@ public class Startup
 
             o.AddConsumer<TermsConsumer, TermsConsumerErrorDefinition>();
 
+            o.AddConfigureEndpointsCallback((name, cfg) =>
+            {
+                if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+                    rmq.SetQuorumQueue(3);
+            });
+
             o.UsingRabbitMq((context, cfg) =>
             {
                 var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
