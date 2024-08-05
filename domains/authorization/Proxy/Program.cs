@@ -12,107 +12,107 @@ using Proxy.Controllers;
 using Proxy.Options;
 using Swashbuckle.AspNetCore.Swagger;
 
-public class Program
+
+var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwagger("Wallet API");
+
+builder.Services.AddSwaggerGen(c =>
 {
-    public static void Main(string[] args)
+    c.IgnoreObsoleteActions();
+    c.DocumentFilter<WalletTagDocumentFilter>();
+});
+
+
+builder.Services.AddApiVersioning(options =>
     {
-        var builder = WebApplication.CreateBuilder(args);
+        options.AssumeDefaultVersionWhenUnspecified = false;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = ApiVersionReader.Combine(
+            new HeaderApiVersionReader("X-API-Version"),
+            new UrlSegmentApiVersionReader()
+        );
+    })
+    .AddMvc()
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
 
+var proxyOptions = builder.Configuration.GetSection(ProxyOptions.Prefix).Get<ProxyOptions>()!;
+builder.Services.AddOptions<ProxyOptions>()
+    .BindConfiguration(ProxyOptions.Prefix)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
-        builder.Services.AddControllers();
-        builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpClient("Proxy", options => options.BaseAddress = new Uri(
+    proxyOptions.WalletBaseUrl.AbsoluteUri,
+    UriKind.Absolute));
 
-        builder.Services.AddSwagger("Wallet API");
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+    });
 
-        builder.Services.AddSwaggerGen(c =>
-        {
-            c.IgnoreObsoleteActions();
-            c.DocumentFilter<WalletTagDocumentFilter>();
-        });
+builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
+var tokenConfiguration = builder.Configuration.GetSection(TokenValidationOptions.Prefix);
+var tokenOptions = tokenConfiguration.Get<TokenValidationOptions>()!;
 
-        builder.Services.AddApiVersioning(options =>
-            {
-                options.AssumeDefaultVersionWhenUnspecified = false;
-                options.ReportApiVersions = true;
-                options.ApiVersionReader = ApiVersionReader.Combine(
-                    new HeaderApiVersionReader("X-API-Version"),
-                    new UrlSegmentApiVersionReader()
-                );
-            })
-            .AddMvc()
-            .AddApiExplorer(options =>
-            {
-                options.GroupNameFormat = "VVV";
-                options.SubstituteApiVersionInUrl = true;
-            });
+builder.Services.AttachOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 
-        var proxyOptions = builder.Configuration.GetSection(ProxyOptions.Prefix).Get<ProxyOptions>()!;
-        builder.Services.AddOptions<ProxyOptions>()
-            .BindConfiguration(ProxyOptions.Prefix)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+var b2cConfiguration = builder.Configuration.GetSection(B2COptions.Prefix);
+var b2cOptions = b2cConfiguration.Get<B2COptions>()!;
 
-        builder.Services.AddHttpClient("Proxy", options => options.BaseAddress = new Uri(
-            proxyOptions.WalletBaseUrl.AbsoluteUri,
-            UriKind.Absolute));
+builder.Services.AddB2CAndTokenValidation(b2cOptions, tokenOptions);
 
-        builder.Services.AddControllers()
-            .AddJsonOptions(o =>
-            {
-                o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-            });
+builder.Services.AddHealthChecks();
+builder.Services.AddHttpContextAccessor();
 
-        builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+var app = builder.Build();
 
-        var tokenConfiguration = builder.Configuration.GetSection(TokenValidationOptions.Prefix);
-        var tokenOptions = tokenConfiguration.Get<TokenValidationOptions>()!;
+app.Use(async (context, next) =>
+{
+    context.Request.EnableBuffering();
+    await next();
+});
 
-        builder.Services.AttachOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
-            .ValidateOnStart();
+app.AddSwagger(app.Environment, "wallet-api");
 
-        var b2cConfiguration = builder.Configuration.GetSection(B2COptions.Prefix);
-        var b2cOptions = b2cConfiguration.Get<B2COptions>()!;
+app.MapHealthChecks("/health");
 
-        builder.Services.AddB2CAndTokenValidation(b2cOptions, tokenOptions);
+app.UseHttpsRedirection();
 
-        builder.Services.AddHealthChecks();
-        builder.Services.AddHttpContextAccessor();
+app.UseAuthorization();
 
-        var app = builder.Build();
+app.MapControllers();
 
-        app.Use(async (context, next) =>
-        {
-            context.Request.EnableBuffering();
-            await next();
-        });
+app.MapSwagger();
 
-        app.AddSwagger(app.Environment, "wallet-api");
+if (args.Contains("--swagger"))
+{
+    var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
+    var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
 
-        app.MapHealthChecks("/health");
+    File.WriteAllText(
+        Path.Combine(builder.Environment.ContentRootPath, "proxy.yaml"),
+        swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
+    );
+}
+else
+{
+    app.Run();
+}
 
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
-        app.MapControllers();
-
-        app.MapSwagger();
-        if (args.Contains("--swagger"))
-        {
-            var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
-            var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
-
-            File.WriteAllText(
-                Path.Combine(builder.Environment.ContentRootPath, "proxy.yaml"),
-                swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
-            );
-        }
-        else
-        {
-            app.Run();
-        }
-    }
+public partial class Program
+{
 }
