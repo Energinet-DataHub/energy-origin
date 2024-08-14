@@ -21,7 +21,7 @@ public class GetUserinfoFromMitIdQueryTests
         result.Sub.Should().Be(userinfo.Sub);
         result.Name.Should().Be(userinfo.NemloginName);
         result.Email.Should().Be(userinfo.NemloginEmail);
-        result.OrgCvr.Should().Be(userinfo.NemloginEmail);
+        result.OrgCvr.Should().Be(userinfo.NemloginCvr);
         result.OrgName.Should().Be(userinfo.NemloginOrgName);
     }
 }

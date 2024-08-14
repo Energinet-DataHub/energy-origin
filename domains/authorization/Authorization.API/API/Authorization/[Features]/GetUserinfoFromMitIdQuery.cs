@@ -15,7 +15,7 @@ public class GetUserinfoFromMitIdQueryHandler(IMitIDService MitIdService) : IReq
     {
         var userinfo = await MitIdService.GetUserinfo(request.Bearertoken);
 
-        return new GetUserinfoFromMitIdQueryResult(userinfo.Sub, userinfo.NemloginName, userinfo.NemloginEmail, userinfo.NemloginEmail, userinfo.NemloginOrgName);
+        return new GetUserinfoFromMitIdQueryResult(userinfo.Sub, userinfo.NemloginName, userinfo.NemloginEmail, userinfo.NemloginCvr, userinfo.NemloginOrgName);
     }
 }
 
