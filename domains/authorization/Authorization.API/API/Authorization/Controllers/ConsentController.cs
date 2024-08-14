@@ -15,7 +15,6 @@ namespace API.Authorization.Controllers;
 
 [ApiController]
 [ApiVersion(ApiVersions.Version20230101)]
-[Authorize(Policy.ETT_Frontend_TIN)]
 [Authorize(Policy.Frontend)]
 public class ConsentController(IMediator mediator, IdentityDescriptor identity) : ControllerBase
 {
