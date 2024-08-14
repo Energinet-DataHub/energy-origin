@@ -2,8 +2,8 @@ namespace EnergyOrigin.TokenValidation.b2c;
 
 public static class Policy
 {
-    public const string B2CPolicy = "B2C";
-    public const string B2CCustomPolicyClientPolicy = "B2C-self";
-    public const string B2CSubTypeUserPolicy = "subtype-user";
-    public const string B2CCvrClaim = "cvr-claim";
+    public const string FrontendOr3rdParty = "ett-3rdparty";
+    public const string B2CInternal = "ett-authorization-b2c";
+    public const string Frontend = "ett-frontend"; // Would frontend not always have CVR?
+    public const string ETT_Frontend_TIN = "ett-frontend-tin";
 }

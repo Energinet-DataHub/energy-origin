@@ -1,3 +1,6 @@
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using Asp.Versioning;
@@ -11,11 +14,31 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace API.Authorization.Controllers;
 
 [ApiController]
-[Authorize(Policy = Policy.B2CCustomPolicyClientPolicy)] // B2C does not support adding a version header
+[Authorize(Policy = Policy.B2CInternal)]
 [Route("api/authorization")]
 [ApiVersionNeutral]
 public class AuthorizationController(IMediator mediator) : ControllerBase
 {
+    [HttpPost]
+    [Route("userinfo/")]
+    [SwaggerOperation(
+        Summary = "Retrieves Userinfo from MitID",
+        Description = "This endpoint is only used by Azure B2C"
+    )]
+    public async Task<ActionResult<UserinfoResponse>> GetUserinfo(
+        [FromServices] ILogger<AuthorizationController> logger, [FromBody] UserinfoRequest request)
+    {
+        var queryResult = await mediator.Send(new GetUserinfoFromMitIdQuery(request.MitIDBearerToken));
+
+        return Ok(new UserinfoResponse(
+            queryResult.Sub,
+            queryResult.Name,
+            queryResult.Email,
+            queryResult.OrgCvr,
+            queryResult.OrgName)
+        );
+    }
+
     [HttpPost]
     [Route("client-consent/")]
     [SwaggerOperation(
