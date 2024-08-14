@@ -47,6 +47,7 @@
 
 	<ItemGroup>
 		<Protobuf Include="Protos/measurements.proto" ProtoRoot="Protos" GrpcServices="Client" />
+		<Protobuf Include="Protos\meteringpoint.proto" GrpcServices="Client" />
 	</ItemGroup>
 
 </Project>

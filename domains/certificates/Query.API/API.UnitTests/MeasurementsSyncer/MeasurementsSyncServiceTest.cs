@@ -10,6 +10,7 @@ using DataContext.ValueObjects;
 using FluentAssertions;
 using MassTransit;
 using Measurements.V1;
+using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Testing.Extensions;
@@ -36,13 +37,14 @@ public class MeasurementsSyncServiceTest
     private readonly IBus fakeBus = Substitute.For<IBus>();
     private readonly MeasurementsSyncService service;
     private readonly IStampClient fakeStampClient = Substitute.For<IStampClient>();
+    private readonly IMeteringPointsClient fakeMeteringPointsClient = Substitute.For<IMeteringPointsClient>();
 
 
     public MeasurementsSyncServiceTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         service = new MeasurementsSyncService(fakeLogger, fakeSlidingWindowState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), fakeStampClient);
+            new MeasurementSyncMetrics(), fakeStampClient, fakeMeteringPointsClient);
     }
 
     [Fact]
@@ -76,6 +78,27 @@ public class MeasurementsSyncServiceTest
             }
         };
 
+        var mockedMeteringPointsResponse = new Meteringpoint.V1.MeteringPointsResponse
+        {
+            MeteringPoints =
+            {
+                new Meteringpoint.V1.MeteringPoint
+                {
+                    MeteringPointId = syncInfo.Gsrn.Value,
+                    MeteringPointAlias = "alias",
+                    ConsumerStartDate = "consumerStartDate",
+                    Capacity = "123",
+                    BuildingNumber = "buildingNumber",
+                    CityName = "cityName",
+                    Postcode = "postcode",
+                    StreetName = "streetName",
+                }
+            }
+        };
+
+        fakeMeteringPointsClient.GetMeteringPoints(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(mockedMeteringPointsResponse);
+
         fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
             .Returns(mockedResponse);
 
@@ -90,8 +113,28 @@ public class MeasurementsSyncServiceTest
     {
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, UnixTimestamp.Create(syncInfo.StartSyncDate));
 
-        var mockedResponse = new GetMeasurementsResponse();
+        var mockedMeteringPointsResponse = new Meteringpoint.V1.MeteringPointsResponse
+        {
+            MeteringPoints =
+            {
+                new Meteringpoint.V1.MeteringPoint
+                {
+                    MeteringPointId = syncInfo.Gsrn.Value,
+                    MeteringPointAlias = "alias",
+                    ConsumerStartDate = "consumerStartDate",
+                    Capacity = "123",
+                    BuildingNumber = "buildingNumber",
+                    CityName = "cityName",
+                    Postcode = "postcode",
+                    StreetName = "streetName",
+                }
+            }
+        };
 
+        fakeMeteringPointsClient.GetMeteringPoints(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(mockedMeteringPointsResponse);
+
+        var mockedResponse = new GetMeasurementsResponse();
         fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
             .Returns(mockedResponse);
 

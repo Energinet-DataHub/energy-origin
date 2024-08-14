@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
@@ -10,28 +11,28 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using MassTransit;
 using Measurements.V1;
+using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
 using HashedAttribute = API.ContractService.Clients.HashedAttribute;
+using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.MeasurementsSyncer;
 
 public class MeasurementsSyncService
 {
-    public const string AssetId = "AssetId";
-    public const string TechCode = "TechCode";
-    public const string FuelCode = "FuelCode";
-
     private readonly ISlidingWindowState slidingWindowState;
     private readonly Measurements.V1.Measurements.MeasurementsClient measurementsClient;
     private readonly SlidingWindowService slidingWindowService;
     private readonly IMeasurementSyncMetrics measurementSyncMetrics;
     private readonly IStampClient stampClient;
+    private readonly IMeteringPointsClient meteringPointsClient;
+    private readonly HttpClient httpClient;
     private readonly ILogger<MeasurementsSyncService> logger;
 
     public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISlidingWindowState slidingWindowState,
         Measurements.V1.Measurements.MeasurementsClient measurementsClient, IPublishEndpoint bus, SlidingWindowService slidingWindowService,
-        IMeasurementSyncMetrics measurementSyncMetrics, IStampClient stampClient)
+        IMeasurementSyncMetrics measurementSyncMetrics, IStampClient stampClient, IMeteringPointsClient meteringPointsClient)
     {
         this.logger = logger;
         this.slidingWindowState = slidingWindowState;
@@ -39,6 +40,7 @@ public class MeasurementsSyncService
         this.slidingWindowService = slidingWindowService;
         this.measurementSyncMetrics = measurementSyncMetrics;
         this.stampClient = stampClient;
+        this.meteringPointsClient = meteringPointsClient;
     }
 
     public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo,
@@ -47,6 +49,8 @@ public class MeasurementsSyncService
     {
         var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
         var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, synchronizationPoint, stoppingToken);
+        var meteringPoints = await meteringPointsClient.GetMeteringPoints(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
+        var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
 
         measurementSyncMetrics.MeasurementsFetched(fetchedMeasurements.Count);
 
@@ -56,7 +60,7 @@ public class MeasurementsSyncService
 
             if (measurementsToPublish.Any())
             {
-                await IssueCertificates(measurementsToPublish,
+                await IssueCertificates(measurementsToPublish, meteringPoint,
                     syncInfo,
                     stoppingToken);
             }
@@ -67,7 +71,7 @@ public class MeasurementsSyncService
         }
     }
 
-    private async Task IssueCertificates(List<Measurement> measurements,
+    private async Task IssueCertificates(List<Measurement> measurements, MeteringPoint meteringPoint,
         MeteringPointSyncInfo syncInfo,
         CancellationToken cancellationToken)
     {
@@ -93,10 +97,21 @@ public class MeasurementsSyncService
             var clearTextAttributes = new Dictionary<string, string>();
             if (syncInfo.MeteringPointType == MeteringPointType.Production)
             {
-                clearTextAttributes.Add(FuelCode, syncInfo.Technology!.FuelCode);
-                clearTextAttributes.Add(TechCode, syncInfo.Technology.TechCode);
+                clearTextAttributes.Add(AttributeKeys.FuelCode, syncInfo.Technology!.FuelCode);
+                clearTextAttributes.Add(AttributeKeys.TechCode, syncInfo.Technology.TechCode);
             }
-            clearTextAttributes.Add(AssetId, m.Gsrn);
+            clearTextAttributes.Add(AttributeKeys.AssetId, m.Gsrn);
+            clearTextAttributes.Add(AttributeKeys.MeteringPointCapacity, meteringPoint.Capacity);
+            clearTextAttributes.Add(AttributeKeys.MeteringPointAlias, meteringPoint.MeteringPointAlias);
+            clearTextAttributes.Add(AttributeKeys.ConsumerStartDate, "start date");
+            clearTextAttributes.Add(AttributeKeys.ZipCode, meteringPoint.Postcode);
+            clearTextAttributes.Add(AttributeKeys.StreetName, meteringPoint.StreetName);
+            clearTextAttributes.Add(AttributeKeys.CityName, meteringPoint.CityName);
+            clearTextAttributes.Add(AttributeKeys.BuildingNumber, meteringPoint.BuildingNumber);
+            clearTextAttributes.Add(AttributeKeys.GCIssuer, "Energinet");
+            clearTextAttributes.Add(AttributeKeys.Purpose, "Can be used for documentation of energy origin");
+            clearTextAttributes.Add(AttributeKeys.Conversion, "Has not been converted");
+            clearTextAttributes.Add(AttributeKeys.Configuration, "Config-1");
 
             var certificate = new CertificateDto
             {
@@ -163,4 +178,22 @@ public class MeasurementsSyncService
             slidingWindow,
             stoppingToken);
     }
+}
+
+public static class AttributeKeys
+{
+    public const string AssetId = "AssetId";
+    public const string TechCode = "TechCode";
+    public const string FuelCode = "FuelCode";
+    public const string MeteringPointCapacity = "MeteringPointCapacity";
+    public const string MeteringPointAlias = "MeteringPointAlias";
+    public const string ConsumerStartDate = "ConsumerStartDate";
+    public const string ZipCode = "ZipCode";
+    public const string StreetName = "StreetName";
+    public const string CityName = "CityName";
+    public const string BuildingNumber = "BuildingNumber";
+    public const string GCIssuer = "GC Issuer";
+    public const string Purpose = "Purpose";
+    public const string Conversion = "Conversion";
+    public const string Configuration = "Configuration";
 }
