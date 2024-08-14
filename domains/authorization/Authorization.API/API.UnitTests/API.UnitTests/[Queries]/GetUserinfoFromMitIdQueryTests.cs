@@ -1,4 +1,4 @@
-﻿using API.Authorization._Features_;
+using API.Authorization._Features_;
 using API.Authorization.Controllers;
 using API.Services;
 using FluentAssertions;
