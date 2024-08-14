@@ -37,7 +37,7 @@ public class MeasurementsSyncServiceTest
     private readonly IBus fakeBus = Substitute.For<IBus>();
     private readonly MeasurementsSyncService service;
     private readonly IStampClient fakeStampClient = Substitute.For<IStampClient>();
-    private readonly IMeteringPointsClient fakeMeteringPointsClient = Substitute.For<IMeteringPointsClient>();
+    private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient fakeMeteringPointsClient = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
 
     public MeasurementsSyncServiceTest()
@@ -96,7 +96,7 @@ public class MeasurementsSyncServiceTest
             }
         };
 
-        fakeMeteringPointsClient.GetMeteringPoints(Arg.Any<OwnedMeteringPointsRequest>())
+        fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(mockedMeteringPointsResponse);
 
         fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
@@ -131,7 +131,7 @@ public class MeasurementsSyncServiceTest
             }
         };
 
-        fakeMeteringPointsClient.GetMeteringPoints(Arg.Any<OwnedMeteringPointsRequest>())
+        fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(mockedMeteringPointsResponse);
 
         var mockedResponse = new GetMeasurementsResponse();

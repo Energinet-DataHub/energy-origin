@@ -25,17 +25,10 @@ public class MeteringPointsClient : IMeteringPointsClient
         Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
     };
 
-    public MeteringPointsClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringpointClient)
+    public MeteringPointsClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
     {
         this.httpClient = httpClient;
         this.httpContextAccessor = httpContextAccessor;
-        _meteringpointClient = meteringpointClient;
-    }
-
-    public async Task<Meteringpoint.V1.MeteringPointsResponse> GetMeteringPoints(
-        Meteringpoint.V1.OwnedMeteringPointsRequest request)
-    {
-       return await _meteringpointClient.GetOwnedMeteringPointsAsync(request);
     }
 
     public async Task<MeteringPointsResponse?> GetMeteringPoints(string owner, CancellationToken cancellationToken)

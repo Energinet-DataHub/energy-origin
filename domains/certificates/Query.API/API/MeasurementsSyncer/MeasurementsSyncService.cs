@@ -26,13 +26,13 @@ public class MeasurementsSyncService
     private readonly SlidingWindowService slidingWindowService;
     private readonly IMeasurementSyncMetrics measurementSyncMetrics;
     private readonly IStampClient stampClient;
-    private readonly IMeteringPointsClient meteringPointsClient;
+    private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient;
     private readonly HttpClient httpClient;
     private readonly ILogger<MeasurementsSyncService> logger;
 
     public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISlidingWindowState slidingWindowState,
         Measurements.V1.Measurements.MeasurementsClient measurementsClient, IPublishEndpoint bus, SlidingWindowService slidingWindowService,
-        IMeasurementSyncMetrics measurementSyncMetrics, IStampClient stampClient, IMeteringPointsClient meteringPointsClient)
+        IMeasurementSyncMetrics measurementSyncMetrics, IStampClient stampClient, Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient)
     {
         this.logger = logger;
         this.slidingWindowState = slidingWindowState;
@@ -49,7 +49,7 @@ public class MeasurementsSyncService
     {
         var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
         var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, synchronizationPoint, stoppingToken);
-        var meteringPoints = await meteringPointsClient.GetMeteringPoints(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
+        var meteringPoints = await meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
         var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
 
         measurementSyncMetrics.MeasurementsFetched(fetchedMeasurements.Count);
