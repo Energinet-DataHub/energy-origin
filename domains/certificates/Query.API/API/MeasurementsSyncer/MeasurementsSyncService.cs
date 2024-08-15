@@ -191,7 +191,7 @@ public static class AttributeKeys
     public const string StreetName = "StreetName";
     public const string CityName = "CityName";
     public const string BuildingNumber = "BuildingNumber";
-    public const string GCIssuer = "GC Issuer";
+    public const string GCIssuer = "GCIssuer";
     public const string Purpose = "Purpose";
     public const string Conversion = "Conversion";
     public const string Configuration = "Configuration";

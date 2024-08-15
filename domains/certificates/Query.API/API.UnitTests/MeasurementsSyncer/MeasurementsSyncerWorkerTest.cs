@@ -42,7 +42,7 @@ public class MeasurementsSyncerWorkerTest
     private readonly MeasurementsSyncOptions options = Substitute.For<MeasurementsSyncOptions>();
     private readonly MeasurementsSyncerWorker worker;
     private readonly IStampClient fakeStampClient = Substitute.For<IStampClient>();
-    private readonly IMeteringPointsClient fakeMeteringPointsClient = Substitute.For<IMeteringPointsClient>();
+    private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient fakeMeteringPointsClient = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
     public MeasurementsSyncerWorkerTest()
     {
