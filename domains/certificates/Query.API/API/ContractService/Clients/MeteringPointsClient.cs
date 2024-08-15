@@ -17,7 +17,7 @@ public class MeteringPointsClient : IMeteringPointsClient
 {
     private readonly HttpClient httpClient;
     private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient  _meteringpointClient;
+    private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _meteringpointClient;
 
     private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
