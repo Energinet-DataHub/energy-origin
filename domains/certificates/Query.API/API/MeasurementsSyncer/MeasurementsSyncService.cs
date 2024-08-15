@@ -27,7 +27,6 @@ public class MeasurementsSyncService
     private readonly IMeasurementSyncMetrics measurementSyncMetrics;
     private readonly IStampClient stampClient;
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient;
-    private readonly HttpClient httpClient;
     private readonly ILogger<MeasurementsSyncService> logger;
 
     public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISlidingWindowState slidingWindowState,
