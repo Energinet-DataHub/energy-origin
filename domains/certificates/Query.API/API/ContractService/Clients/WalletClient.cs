@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.TokenValidation.b2c;
@@ -80,12 +81,28 @@ public class WalletClient : IWalletClient
         return new WalletEndpointReference(dto.WalletReference.Version, dto.WalletReference.Endpoint, hdPublicKey);
     }
 
+    public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit,
+        int skip = 0)
+    {
+        SetOwnerHeader(ownerSubject.ToString());
+
+        return await client.GetFromJsonAsync<ResultList<GranularCertificate>?>($"v1/certificates?skip={skip}&limit={limit}&sortBy=end&sort=desc", _jsonSerializerOptions,
+            cancellationToken: cancellationToken);
+    }
+
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
+    };
+
     private async Task<T> ParseResponse<T>(HttpResponseMessage responseMessage, CancellationToken cancellationToken)
     {
         if (responseMessage.Content is null)
         {
             throw new HttpRequestException("Null response");
         }
+
         responseMessage.EnsureSuccessStatusCode();
         return (await responseMessage.Content.ReadFromJsonAsync<T>(cancellationToken))!;
     }
@@ -159,5 +176,7 @@ public record CreateWalletResponse()
 }
 
 public record CreateWalletEndpointResponse(WalletEndpointReferenceDto WalletReference);
+
 public record WalletEndpointReferenceDto(int Version, Uri Endpoint, byte[] PublicKey);
+
 public record WalletEndpointReference(int Version, Uri Endpoint, IHDPublicKey PublicKey);
