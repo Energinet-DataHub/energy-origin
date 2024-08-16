@@ -27,8 +27,7 @@ public class AdminController : ControllerBase
     /// </summary>
     [HttpPost]
     [Route("api/authorization/admin/client")]
-    public async Task<ActionResult> CreateClient(
-        [FromServices] ILogger<AdminController> logger, [FromBody] CreateClientRequest request)
+    public async Task<ActionResult> CreateClient([FromBody] CreateClientRequest request)
     {
         var result = await _mediator.Send(new CreateClientCommand(new IdpClientId(request.IdpClientId), new ClientName(request.Name),
             ClientTypeMapper.MapToDatabaseClientType(request.ClientType), request.RedirectUrl));
