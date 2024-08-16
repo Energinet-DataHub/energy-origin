@@ -17,7 +17,7 @@ namespace API.Authorization.Controllers;
 [Authorize(Policy = Policy.B2CInternal)]
 [Route("api/authorization")]
 [ApiVersionNeutral]
-public class AuthorizationController(IMediator mediator) : ControllerBase
+public class B2CInternalController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     [Route("userinfo/")]
@@ -26,7 +26,7 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
         Description = "This endpoint is only used by Azure B2C"
     )]
     public async Task<ActionResult<UserinfoResponse>> GetUserinfo(
-        [FromServices] ILogger<AuthorizationController> logger, [FromBody] UserinfoRequest request)
+        [FromServices] ILogger<B2CInternalController> logger, [FromBody] UserinfoRequest request)
     {
         var queryResult = await mediator.Send(new GetUserinfoFromMitIdQuery(request.MitIDBearerToken));
 
@@ -46,7 +46,7 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
         Description = "This endpoint is only used by Azure B2C"
     )]
     public async Task<ActionResult<AuthorizationResponse>> GetConsentForClient(
-        [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationClientRequest request)
+        [FromServices] ILogger<B2CInternalController> logger, [FromBody] AuthorizationClientRequest request)
     {
         var queryResult = await mediator.Send(new GetConsentForClientQuery(request.ClientId));
 
@@ -66,7 +66,7 @@ public class AuthorizationController(IMediator mediator) : ControllerBase
         Description = "This endpoint is only used by Azure B2C"
     )]
     public async Task<ActionResult<UserAuthorizationResponse>> GetConsentForUser(
-        [FromServices] ILogger<AuthorizationController> logger, [FromBody] AuthorizationUserRequest request)
+        [FromServices] ILogger<B2CInternalController> logger, [FromBody] AuthorizationUserRequest request)
     {
         var commandResult = await mediator.Send(new GetConsentForUserCommand(
             request.Sub,
