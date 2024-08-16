@@ -99,18 +99,24 @@ public class MeasurementsSyncService
                 clearTextAttributes.Add(AttributeKeys.FuelCode, syncInfo.Technology!.FuelCode);
                 clearTextAttributes.Add(AttributeKeys.TechCode, syncInfo.Technology.TechCode);
             }
+            var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
             clearTextAttributes.Add(AttributeKeys.AssetId, m.Gsrn);
-            clearTextAttributes.Add(AttributeKeys.MeteringPointCapacity, meteringPoint.Capacity);
-            clearTextAttributes.Add(AttributeKeys.MeteringPointAlias, meteringPoint.MeteringPointAlias);
-            clearTextAttributes.Add(AttributeKeys.ConsumerStartDate, "start date");
-            clearTextAttributes.Add(AttributeKeys.ZipCode, meteringPoint.Postcode);
-            clearTextAttributes.Add(AttributeKeys.StreetName, meteringPoint.StreetName);
-            clearTextAttributes.Add(AttributeKeys.CityName, meteringPoint.CityName);
-            clearTextAttributes.Add(AttributeKeys.BuildingNumber, meteringPoint.BuildingNumber);
-            clearTextAttributes.Add(AttributeKeys.GCIssuer, "Energinet");
-            clearTextAttributes.Add(AttributeKeys.Purpose, "Can be used for documentation of energy origin");
-            clearTextAttributes.Add(AttributeKeys.Conversion, "Has not been converted");
-            clearTextAttributes.Add(AttributeKeys.Configuration, "Config-1");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssuer, "Energinet");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssueMarketZone, syncInfo.GridArea);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagCountry, "Denmark");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssuanceDateStamp, DateTimeOffset.Now.ToString("d"));
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionStartingIntervalTimestamp, m.DateFrom.ToString());
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionEndingIntervalTimestamp, m.DateTo.ToString());
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcFaceValue, "Wh");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceUniqueIdentification, m.Gsrn);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergySource, syncInfo.Technology!.FuelCode);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergyTechnology, syncInfo.Technology.TechCode);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagConnectedGridIdentification, syncInfo.GridArea);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceLocation, address);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagEnergyCarrier, "Electricity");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssueDeviceType, "Production");
 
             var certificate = new CertificateDto
             {
@@ -184,15 +190,20 @@ public static class AttributeKeys
     public const string AssetId = "AssetId";
     public const string TechCode = "TechCode";
     public const string FuelCode = "FuelCode";
-    public const string MeteringPointCapacity = "MeteringPointCapacity";
-    public const string MeteringPointAlias = "MeteringPointAlias";
-    public const string ConsumerStartDate = "ConsumerStartDate";
-    public const string ZipCode = "ZipCode";
-    public const string StreetName = "StreetName";
-    public const string CityName = "CityName";
-    public const string BuildingNumber = "BuildingNumber";
-    public const string GCIssuer = "GCIssuer";
-    public const string Purpose = "Purpose";
-    public const string Conversion = "Conversion";
-    public const string Configuration = "Configuration";
+    public const string EnergyTagGcIssuer = "EnergyTag_GcIssuer";
+    public const string EnergyTagGcIssueMarketZone = "EnergyTag_GcIssueMarketZone";
+    public const string EnergyTagCountry = "EnergyTag_Country";
+    public const string EnergyTagGcIssuanceDateStamp = "EnergyTag_GcIssuanceDatestamp";
+    public const string EnergyTagProductionStartingIntervalTimestamp = "EnergyTag_ProductionStartingIntervalTimestamp";
+    public const string EnergyTagProductionEndingIntervalTimestamp = "EnergyTag_ProductionEndingIntervalTimestamp";
+    public const string EnergyTagGcFaceValue = "EnergyTag_GcFaceValue";
+    public const string EnergyTagProductionDeviceUniqueIdentification = "EnergyTag_ProductionDeviceUniqueIdentification";
+    public const string EnergyTagProducedEnergySource = "EnergyTag_ProducedEnergySource";
+    public const string EnergyTagProducedEnergyTechnology = "EnergyTag_ProducedEnergyTechnology";
+    public const string EnergyTagConnectedGridIdentification = "EnergyTag_ConnectedGridIdentification";
+    public const string EnergyTagProductionDeviceLocation = "EnergyTag_ProductionDeviceLocation";
+    public const string EnergyTagProductionDeviceCapacity = "EnergyTag_ProductionDeviceCapacity";
+    public const string EnergyTagProductionDeviceCommercialOperationDate = "EnergyTag_ProductionDeviceCommercialOperationDate";
+    public const string EnergyTagEnergyCarrier = "EnergyTag_EnergyCarrier";
+    public const string EnergyTagGcIssueDeviceType = "EnergyTag_GcIssueDeviceType";
 }
