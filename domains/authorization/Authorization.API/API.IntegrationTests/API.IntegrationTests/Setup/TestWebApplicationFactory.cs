@@ -27,7 +27,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
-        builder.UseSetting($"MitID:URI", "https://pp.netseidbroker.dk/op/connect/userinfo");
+        builder.UseSetting("MitID:URI", "https://pp.netseidbroker.dk/op/connect/userinfo");
 
         builder.ConfigureTestServices(services =>
         {

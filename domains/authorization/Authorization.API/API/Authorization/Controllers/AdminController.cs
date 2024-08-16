@@ -26,7 +26,6 @@ public class AdminController : ControllerBase
     /// Create Client.
     /// </summary>
     [HttpPost]
-    [Authorize(Policy.B2CInternal)]
     [Route("api/authorization/admin/client")]
     public async Task<ActionResult> CreateClient(
         [FromServices] ILogger<AuthorizationController> logger, [FromBody] CreateClientRequest request)
