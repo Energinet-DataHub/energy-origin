@@ -98,6 +98,8 @@ public class MeasurementsSyncService
             {
                 clearTextAttributes.Add(AttributeKeys.FuelCode, syncInfo.Technology!.FuelCode);
                 clearTextAttributes.Add(AttributeKeys.TechCode, syncInfo.Technology.TechCode);
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergySource, syncInfo.Technology!.FuelCode);
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergyTechnology, syncInfo.Technology.TechCode);
             }
             var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
             clearTextAttributes.Add(AttributeKeys.AssetId, m.Gsrn);
@@ -109,8 +111,6 @@ public class MeasurementsSyncService
             clearTextAttributes.Add(AttributeKeys.EnergyTagProductionEndingIntervalTimestamp, m.DateTo.ToString());
             clearTextAttributes.Add(AttributeKeys.EnergyTagGcFaceValue, "Wh");
             clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceUniqueIdentification, m.Gsrn);
-            clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergySource, syncInfo.Technology!.FuelCode);
-            clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergyTechnology, syncInfo.Technology.TechCode);
             clearTextAttributes.Add(AttributeKeys.EnergyTagConnectedGridIdentification, syncInfo.GridArea);
             clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceLocation, address);
             clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity);
