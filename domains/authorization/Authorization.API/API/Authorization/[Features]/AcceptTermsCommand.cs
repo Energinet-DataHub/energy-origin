@@ -35,7 +35,7 @@ public class AcceptTermsCommandHandler(
 
         if (usersAffiliatedOrganization == null)
         {
-            usersAffiliatedOrganization = Organization.Create(usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
+            usersAffiliatedOrganization = Organization.Create(IdpUserId.Create(request.UserId),usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
             await organizationRepository.AddAsync(usersAffiliatedOrganization, cancellationToken);
         }
 

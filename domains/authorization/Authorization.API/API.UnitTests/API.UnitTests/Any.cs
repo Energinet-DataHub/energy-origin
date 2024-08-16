@@ -53,9 +53,9 @@ public class Any
         return API.ValueObjects.OrganizationName.Create("Wind turbines'R'us");
     }
 
-    public static Organization Organization(Tin? tin = null)
+    public static Organization Organization(IdpUserId? idpUserId = null, Tin? tin = null)
     {
-        return API.Models.Organization.Create(tin ?? Tin(), OrganizationName());
+        return API.Models.Organization.Create(idpUserId ?? IdpUserId(), tin ?? Tin(), OrganizationName());
     }
 
     public static IdpClientId IdpClientId()

@@ -34,12 +34,13 @@ public class Organization : IEntity<Guid>
     public ICollection<Consent> Consents { get; init; } = new List<Consent>();
 
     public static Organization Create(
+        IdpUserId idpUserId,
         Tin tin,
         OrganizationName organizationName
     )
     {
         return new Organization(
-            Guid.NewGuid(),
+            idpUserId.Value,
             tin,
             organizationName
         );

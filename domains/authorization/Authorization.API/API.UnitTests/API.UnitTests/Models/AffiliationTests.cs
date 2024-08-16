@@ -9,13 +9,13 @@ public class AffiliationTests
     [Fact]
     public void Affiliation_WithValidData_CreatesSuccessfully()
     {
-        var organizationTin = new Tin("12345678");
-        var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationTin, organizationName);
-
         var idpUserId = IdpUserId.Create(Guid.NewGuid());
         var userName = UserName.Create("Test User");
         var user = User.Create(idpUserId, userName);
+
+        var organizationTin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
+        var organization = Organization.Create(user.IdpUserId, organizationTin, organizationName);
 
         var affiliation = Affiliation.Create(user, organization);
 

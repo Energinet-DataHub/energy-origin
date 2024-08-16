@@ -9,10 +9,11 @@ public class OrganizationTests
     [Fact]
     public void Organization_WithValidData_CreatesSuccessfully()
     {
+        var idpUserId = IdpUserId.Create(new Guid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(idpUserId, tin, organizationName);
 
         organization.Should().NotBeNull();
         organization.Id.Should().NotBeEmpty();
