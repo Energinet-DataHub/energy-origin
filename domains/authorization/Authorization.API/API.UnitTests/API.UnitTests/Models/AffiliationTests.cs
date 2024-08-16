@@ -29,13 +29,14 @@ public class AffiliationTests
     [Fact]
     public void Affiliation_Create_AddsAffiliationToUserAndOrganization()
     {
-        var organizationTin = new Tin("12345678");
-        var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationTin, organizationName);
-
         var idpUserId = IdpUserId.Create(Guid.NewGuid());
         var userName = UserName.Create("Test User");
         var user = User.Create(idpUserId, userName);
+
+        var organizationTin = new Tin("12345678");
+        var organizationName = new OrganizationName("Test Organization");
+        var organization = Organization.Create(user.IdpUserId, organizationTin, organizationName);
+
 
         var affiliation = Affiliation.Create(user, organization);
 
@@ -48,7 +49,7 @@ public class AffiliationTests
     {
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationTin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), organizationTin, organizationName);
 
         Action act = () => Affiliation.Create(null!, organization);
 

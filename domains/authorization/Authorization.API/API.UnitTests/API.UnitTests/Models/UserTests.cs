@@ -40,7 +40,7 @@ public class UserTests
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(organizationTin, organizationName);
+        var organization = Organization.Create(idpUserId, organizationTin, organizationName);
 
         var user = User.Create(idpUserId, name);
         var affiliation = Affiliation.Create(user, organization);

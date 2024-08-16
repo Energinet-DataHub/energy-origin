@@ -11,7 +11,7 @@ public class ConsentTests
     {
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationTin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
         var role = ClientType.External;
@@ -33,7 +33,7 @@ public class ConsentTests
     {
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationTin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), organizationTin, organizationName);
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
         var role = ClientType.External;
@@ -64,7 +64,7 @@ public class ConsentTests
     {
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationTin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), organizationTin, organizationName);
 
         var consentDate = DateTimeOffset.UtcNow;
         Action act = () => Consent.Create(organization, null!, consentDate);

@@ -9,7 +9,7 @@ public class OrganizationTests
     [Fact]
     public void Organization_WithValidData_CreatesSuccessfully()
     {
-        var idpUserId = IdpUserId.Create(new Guid());
+        var idpUserId = IdpUserId.Create(Guid.NewGuid());
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
@@ -26,7 +26,7 @@ public class OrganizationTests
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), tin, organizationName);
 
         organization.Affiliations.Should().NotBeNull().And.BeEmpty();
     }
@@ -37,7 +37,7 @@ public class OrganizationTests
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), tin, organizationName);
 
         organization.Consents.Should().NotBeNull().And.BeEmpty();
     }
@@ -48,7 +48,7 @@ public class OrganizationTests
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), tin, organizationName);
 
         var idpUserId = IdpUserId.Create(Guid.NewGuid());
         var userName = UserName.Create("Test User");
@@ -65,7 +65,7 @@ public class OrganizationTests
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), tin, organizationName);
 
         var idpClientId = new IdpClientId(Guid.NewGuid());
         var role = ClientType.External;
@@ -83,7 +83,7 @@ public class OrganizationTests
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), tin, organizationName);
 
         organization.TermsAccepted.Should().BeFalse();
         organization.TermsVersion.Should().BeNull();
@@ -95,7 +95,7 @@ public class OrganizationTests
     {
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), tin, organizationName);
         var terms = Terms.Create(1);
 
         organization.AcceptTerms(terms);
@@ -110,7 +110,7 @@ public class OrganizationTests
     {
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), tin, organizationName);
         var termsV1 = Terms.Create(1);
         var termsV2 = Terms.Create(2);
 
@@ -126,7 +126,7 @@ public class OrganizationTests
     {
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), tin, organizationName);
         var terms = Terms.Create(1);
 
         organization.AcceptTerms(terms);
@@ -142,7 +142,7 @@ public class OrganizationTests
     {
         var tin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(tin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), tin, organizationName);
 
         organization.InvalidateTerms();
 

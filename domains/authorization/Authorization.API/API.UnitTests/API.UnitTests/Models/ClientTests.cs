@@ -40,7 +40,7 @@ public class ClientTests
         var organizationTin = new Tin("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
-        var organization = Organization.Create(organizationTin, organizationName);
+        var organization = Organization.Create(Any.IdpUserId(), organizationTin, organizationName);
 
         var client = Client.Create(idpClientId, new ClientName("Client"), clientType, "https://redirect.url");
         var consentDate = DateTimeOffset.UtcNow;

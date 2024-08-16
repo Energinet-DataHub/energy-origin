@@ -54,8 +54,8 @@ public class AcceptTermsTests
         var terms = context.Terms.First();
         var orgCvr = Any.Tin();
 
-        var organization = Organization.Create(orgCvr, new OrganizationName("Existing Org"));
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
+        var organization = Organization.Create(user.IdpUserId, orgCvr, new OrganizationName("Existing Org"));
         await SeedOrganizationAndUser(organization, user);
 
         var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin.Value);

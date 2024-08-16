@@ -85,7 +85,7 @@ public class GetConsentForUserTests
     private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext)
     {
         var user = Any.User();
-        var organization = Any.Organization(Tin.Create("12345678"));
+        var organization = Any.Organization(user.IdpUserId, Tin.Create("12345678"));
         organization.AcceptTerms(dbContext.Terms.First());
         var affiliation = Affiliation.Create(user, organization);
 
