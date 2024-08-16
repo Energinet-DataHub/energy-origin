@@ -51,3 +51,35 @@ public record CreateClientResponse(Guid Id, Guid IdpClientId, string Name, Clien
 
 public record UserOrganizationConsentsResponseItem(Guid IdpClientId, string ClientName, long ConsentDate);
 public record UserOrganizationConsentsResponse(IEnumerable<UserOrganizationConsentsResponseItem> Result);
+
+
+public record UserinfoRequest(string MitIDBearerToken);
+
+public record MitIdUserinfoResponse(
+    [property: JsonPropertyName("idp")] string Idp,
+    [property: JsonPropertyName("idp_identity_id")] string IdpIdentityId,
+    [property: JsonPropertyName("loa")] string Loa,
+    [property: JsonPropertyName("ial")] string Ial,
+    [property: JsonPropertyName("nemlogin.persistent_professional_id")] string NemloginPersistentProfessionalId,
+    [property: JsonPropertyName("nemlogin.name")] string NemloginName,
+    [property: JsonPropertyName("nemlogin.ial")] string NemloginIal,
+    [property: JsonPropertyName("nemlogin.org_name")] string NemloginOrgName,
+    [property: JsonPropertyName("nemlogin.cvr")] string NemloginCvr,
+    [property: JsonPropertyName("nemlogin.nemid.rid")] string NemloginNemidRid,
+    [property: JsonPropertyName("nemlogin.given_name")] string NemloginGivenName,
+    [property: JsonPropertyName("nemlogin.family_name")] string NemloginFamilyName,
+    [property: JsonPropertyName("nemlogin.email")] string NemloginEmail,
+    [property: JsonPropertyName("nemlogin.age")] string NemloginAge,
+    [property: JsonPropertyName("nemlogin.cpr_uuid")] string NemloginCprUuid,
+    [property: JsonPropertyName("nemlogin.date_of_birth")] string NemloginDateOfBirth,
+    [property: JsonPropertyName("mitid.has_cpr")] string MitidHasCpr,
+    [property: JsonPropertyName("sub")] string Sub
+);
+
+public record UserinfoResponse(
+    [property: JsonPropertyName("mitid_sub")] string Sub,
+    [property: JsonPropertyName("mitid_name")] string Name,
+    [property: JsonPropertyName("email")] string Email,
+    [property: JsonPropertyName("org_cvr")] string OrgCvr,
+    [property: JsonPropertyName("org_name")] string OrgName
+);

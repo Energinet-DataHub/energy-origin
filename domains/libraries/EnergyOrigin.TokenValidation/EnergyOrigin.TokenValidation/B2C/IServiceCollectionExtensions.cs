@@ -15,7 +15,7 @@ public static class IServiceCollectionExtensions
         tokenValidationParameters.ValidIssuer = validationOptions.Issuer;
         tokenValidationParameters.ValidAudience = validationOptions.Audience;
 
-        services.AddAuthentication(AuthenticationScheme.TokenValidation)
+        services.AddAuthentication(defaultScheme: AuthenticationScheme.TokenValidation)
             .AddJwtBearer(AuthenticationScheme.B2CAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
@@ -51,31 +51,25 @@ public static class IServiceCollectionExtensions
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
                     AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .Build();
-            options.AddPolicy(Policy.B2CPolicy, b2CPolicy);
+            options.AddPolicy(Policy.FrontendOr3rdParty, b2CPolicy);
 
             var b2CSubTypeUserPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(
-                    AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
                     AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .RequireClaim(ClaimType.SubType, Enum.GetName(SubjectType.User)!, Enum.GetName(SubjectType.User)!.ToLower())
-                .Build();
-            options.AddPolicy(Policy.B2CSubTypeUserPolicy, b2CSubTypeUserPolicy);
-
-            var b2CCvrClaimPolicy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .AddAuthenticationSchemes(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
                 .RequireClaim(ClaimType.OrgCvr)
                 .Build();
-            options.AddPolicy(Policy.B2CCvrClaim, b2CCvrClaimPolicy);
+            options.AddPolicy(Policy.Frontend, b2CSubTypeUserPolicy);
 
             var b2CCustomPolicyClientPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AuthenticationScheme.B2CAuthenticationScheme)
                 .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.CustomPolicyClientId }))
                 .Build();
-            options.AddPolicy(Policy.B2CCustomPolicyClientPolicy, b2CCustomPolicyClientPolicy);
+            options.AddPolicy(Policy.B2CInternal, b2CCustomPolicyClientPolicy);
 
+            // TODO: Cleanup after V1 release
             var tokenValidationRequiredCompanyPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AuthenticationScheme.TokenValidation)

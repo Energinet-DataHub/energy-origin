@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace API.Authorization.Controllers;
 
 [ApiController]
-[Authorize(Policy = Policy.B2CCustomPolicyClientPolicy)]
+[Authorize(Policy = Policy.B2CInternal)]
 [ApiVersion(ApiVersions.Version20230101)]
 public class AdminController : ControllerBase
 {
@@ -26,10 +26,8 @@ public class AdminController : ControllerBase
     /// Create Client.
     /// </summary>
     [HttpPost]
-    [Authorize(Policy.B2CCustomPolicyClientPolicy)]
     [Route("api/authorization/admin/client")]
-    public async Task<ActionResult> CreateClient(
-        [FromServices] ILogger<AuthorizationController> logger, [FromBody] CreateClientRequest request)
+    public async Task<ActionResult> CreateClient([FromBody] CreateClientRequest request)
     {
         var result = await _mediator.Send(new CreateClientCommand(new IdpClientId(request.IdpClientId), new ClientName(request.Name),
             ClientTypeMapper.MapToDatabaseClientType(request.ClientType), request.RedirectUrl));

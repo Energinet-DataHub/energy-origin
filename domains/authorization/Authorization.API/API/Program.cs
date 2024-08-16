@@ -5,6 +5,7 @@ using API.Data;
 using API.Models;
 using API.Options;
 using API.Repository;
+using API.Services;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
@@ -17,17 +18,17 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithoutOutboxLogs();
-
 builder.Services.AddOpenTelemetryMetricsAndTracing("Authorization.API", otlpOptions.ReceiverEndpoint);
 
-builder.Services.AddControllersWithEnumsAsStrings();
+builder.AddSerilogWithoutOutboxLogs();
 
-builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
-    .ValidateOnStart();
+builder.Services.AddControllersWithEnumsAsStrings();
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
@@ -65,13 +66,15 @@ builder.Services.AddMassTransit(o =>
     });
 });
 
-var tokenValidationOptions =
-    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
 builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
     .ValidateDataAnnotations().ValidateOnStart();
-var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
+var tokenValidationOptions =
+    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
+
 builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
+var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
+
 builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
 builder.Services.AddHttpContextAccessor();
 
@@ -96,6 +99,14 @@ builder.Services.AddScoped<IConsentRepository, ConsentRepository>();
 builder.Services.AddScoped<ITermsRepository, TermsRepository>();
 
 builder.Services.AddAuthorizationApi();
+builder.Services.AddOptions<MitIDOptions>().BindConfiguration(MitIDOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddHttpClient<IMitIDService, MitIDService>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<MitIDOptions>>().Value;
+    client.BaseAddress = options.URI;
+});
 
 var app = builder.Build();
 
