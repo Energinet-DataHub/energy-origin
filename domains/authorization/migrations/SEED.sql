@@ -1,6 +1,6 @@
 DO $$
 DECLARE
-organizations_empty boolean;
+    organizations_empty boolean;
     users_empty boolean;
     affiliations_empty boolean;
     terms_empty boolean;
