@@ -110,9 +110,6 @@ public sealed class CertificateIssuingTests : TestBase
         var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
         granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            { AttributeKeys.AssetId, gsrn },
-            { AttributeKeys.FuelCode, "F01040100" },
-            { AttributeKeys.TechCode, "T010000" },
             { AttributeKeys.EnergyTagGcIssuer, "Energinet" },
             { AttributeKeys.EnergyTagGcIssueMarketZone, granularCertificate.GridArea },
             { AttributeKeys.EnergyTagCountry, "Denmark" },
