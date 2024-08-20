@@ -14,7 +14,8 @@
         AibTechCode: T070000,
         AibFuelCode: F00000000
       },
-      CanBeUsedForIssuingCertificates: true
+      CanBeUsedForIssuingCertificates: true,
+      Capacity: 12345678
     }
   ],
   Status: Created

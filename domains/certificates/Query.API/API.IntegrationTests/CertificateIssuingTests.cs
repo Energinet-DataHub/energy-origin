@@ -8,11 +8,13 @@ using DataContext.ValueObjects;
 using FluentAssertions;
 using System.Collections.Generic;
 using System.Threading;
+using API.MeasurementsSyncer;
 using NSubstitute;
 using ProjectOriginClients.Models;
 using Testing.Helpers;
 using Xunit;
 using Measurements.V1;
+using Meteringpoint.V1;
 using Testing.Extensions;
 
 namespace API.IntegrationTests;
@@ -63,7 +65,30 @@ public sealed class CertificateIssuingTests : TestBase
                     }
                 }
             });
+
         factory.measurementsClient = measurementClientMock;
+        var meteringpointClientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
+        var meteringPoint = new MeteringPoint
+        {
+            MeteringPointId = gsrn,
+            MeteringPointAlias = "alias",
+            ConsumerStartDate = "consumerStartDate",
+            Capacity = "123",
+            BuildingNumber = "buildingNumber",
+            CityName = "cityName",
+            Postcode = "postcode",
+            StreetName = "streetName",
+        };
+        var mockedMeteringPointsResponse = new MeteringPointsResponse
+        {
+            MeteringPoints = { meteringPoint }
+
+        };
+
+        meteringpointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(mockedMeteringPointsResponse);
+        factory.MeteringpointClient = meteringpointClientMock;
+
         factory.Start();
 
         await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, measurementsWireMock);
@@ -81,12 +106,29 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.Quantity.Should().Be(42);
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
-        //TODO ask Martin Schmidt about hashing the assetId
+        granularCertificate.Attributes.Should().NotBeEmpty();
+        var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
         granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
-            { "assetId", gsrn },
-            { "fuelCode", "F01040100" },
-            { "techCode", "T010000" }
+            { AttributeKeys.AssetId, gsrn },
+            { AttributeKeys.FuelCode, "F01040100" },
+            { AttributeKeys.TechCode, "T010000" },
+            { AttributeKeys.EnergyTagGcIssuer, "Energinet" },
+            { AttributeKeys.EnergyTagGcIssueMarketZone, granularCertificate.GridArea },
+            { AttributeKeys.EnergyTagCountry, "Denmark" },
+            { AttributeKeys.EnergyTagGcIssuanceDateStamp, DateTimeOffset.Now.ToString("d") },
+            { AttributeKeys.EnergyTagProductionStartingIntervalTimestamp, granularCertificate.Start.ToString() },
+            { AttributeKeys.EnergyTagProductionEndingIntervalTimestamp, granularCertificate.End.ToString() },
+            { AttributeKeys.EnergyTagGcFaceValue, granularCertificate.Quantity.ToString() },
+            { AttributeKeys.EnergyTagProductionDeviceUniqueIdentification, gsrn },
+            { AttributeKeys.EnergyTagProducedEnergySource, "F01040100" },
+            { AttributeKeys.EnergyTagProducedEnergyTechnology, "T010000" },
+            { AttributeKeys.EnergyTagConnectedGridIdentification, granularCertificate.GridArea },
+            { AttributeKeys.EnergyTagProductionDeviceLocation, address },
+            { AttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity },
+            { AttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A" },
+            { AttributeKeys.EnergyTagEnergyCarrier, "Electricity" },
+            { AttributeKeys.EnergyTagGcIssueDeviceType, "Production" }
         });
     }
 }
