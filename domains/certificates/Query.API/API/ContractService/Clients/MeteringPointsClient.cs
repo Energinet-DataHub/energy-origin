@@ -37,7 +37,7 @@ public class MeteringPointsClient : IMeteringPointsClient
         ValidateOwnerAndSubjectMatch(owner);
         SetApiVersionHeader();
 
-        var meteringPointsUrl = IsBearerTokenIssuedByB2C() ? $"/api/measurements/meteringpoints?orgId={owner}" : "/api/measurements/meteringpoints";
+        var meteringPointsUrl = IsBearerTokenIssuedByB2C() ? $"/api/measurements/meteringpoints?organisationId={owner}" : "/api/measurements/meteringpoints";
 
         return await httpClient.GetFromJsonAsync<MeteringPointsResponse>(meteringPointsUrl, jsonSerializerOptions,
             cancellationToken);
