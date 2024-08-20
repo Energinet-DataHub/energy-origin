@@ -96,13 +96,10 @@ public class MeasurementsSyncService
             var clearTextAttributes = new Dictionary<string, string>();
             if (syncInfo.MeteringPointType == MeteringPointType.Production)
             {
-                clearTextAttributes.Add(AttributeKeys.FuelCode, syncInfo.Technology!.FuelCode);
-                clearTextAttributes.Add(AttributeKeys.TechCode, syncInfo.Technology.TechCode);
                 clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergySource, syncInfo.Technology!.FuelCode);
                 clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergyTechnology, syncInfo.Technology.TechCode);
             }
             var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
-            clearTextAttributes.Add(AttributeKeys.AssetId, m.Gsrn);
             clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssuer, "Energinet");
             clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssueMarketZone, syncInfo.GridArea);
             clearTextAttributes.Add(AttributeKeys.EnergyTagCountry, "Denmark");
@@ -187,9 +184,6 @@ public class MeasurementsSyncService
 
 public static class AttributeKeys
 {
-    public const string AssetId = "assetId";
-    public const string TechCode = "techCode";
-    public const string FuelCode = "fuelCode";
     public const string EnergyTagGcIssuer = "energyTag_GcIssuer";
     public const string EnergyTagGcIssueMarketZone = "energyTag_GcIssueMarketZone";
     public const string EnergyTagCountry = "energyTag_Country";
