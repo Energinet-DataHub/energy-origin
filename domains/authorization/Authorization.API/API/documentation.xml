@@ -4,7 +4,7 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="M:API.Authorization.Controllers.AdminController.CreateClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.AuthorizationController},API.Authorization.Controllers.CreateClientRequest)">
+        <member name="M:API.Authorization.Controllers.AdminController.CreateClient(API.Authorization.Controllers.CreateClientRequest)">
             <summary>
             Create Client.
             </summary>
