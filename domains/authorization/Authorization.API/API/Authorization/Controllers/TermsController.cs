@@ -11,7 +11,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace API.Authorization.Controllers;
 
 [ApiController]
-[Authorize(Policy.B2CCvrClaim)]
+[Authorize(Policy.Frontend)]
 [ApiVersion(ApiVersions.Version20230101)]
 public class TermsController(IMediator mediator, IdentityDescriptor identityDescriptor) : ControllerBase
 {

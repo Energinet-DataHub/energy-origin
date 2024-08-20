@@ -1,5 +1,8 @@
+using API.Authorization.Controllers;
 using API.Models;
 using API.ValueObjects;
+using NSubstitute.Core;
+using ClientType = API.Models.ClientType;
 
 namespace API.UnitTests;
 
@@ -72,5 +75,12 @@ public class Any
     {
         return API.Models.Client.Create(IdpClientId(), new ClientName("ClientName"), ClientType.External,
             "https://redirect.url");
+    }
+
+    public static MitIdUserinfoResponse MitIdUserinfoResponse()
+    {
+        return new MitIdUserinfoResponse("idp", "idpId", "loa", "lal", "professionalId", "loginName", "loginLal",
+            "loginOrgName", "loginCvr", "loginNemIdRid", "loginGivenName", "loginFamilyName", "loginEmail", "loginAge",
+            "loginCprUuid", "loginDateOfBirth", "hasCpr", "sub");
     }
 }

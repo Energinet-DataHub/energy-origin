@@ -14,7 +14,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace API.Authorization.Controllers;
 
 [ApiController]
-[Authorize(Policy = Policy.B2CPolicy)]
+[Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiVersion(ApiVersions.Version20230101)]
 public class ClientController : ControllerBase
 {
