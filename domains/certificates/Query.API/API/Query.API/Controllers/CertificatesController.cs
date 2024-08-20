@@ -12,6 +12,7 @@ namespace API.Query.API.Controllers;
 [Authorize]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240423)]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class CertificatesController : ControllerBase
 {
     private readonly CertificatesSpreadsheetExporter _exporter;

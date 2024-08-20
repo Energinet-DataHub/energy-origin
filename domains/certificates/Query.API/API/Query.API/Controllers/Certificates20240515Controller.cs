@@ -12,6 +12,7 @@ namespace API.Query.API.Controllers;
 [Authorize(Policy = Policy.B2CPolicy)]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240515)]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class Certificates20240515Controller : ControllerBase
 {
     private readonly AccessDescriptor _accessDescriptor;
