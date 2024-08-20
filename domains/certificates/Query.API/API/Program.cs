@@ -45,6 +45,8 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
 builder.Services.AddOptions<StampOptions>().BindConfiguration(StampOptions.Stamp).ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddMeteringPointsOptions();
+
 builder.Services.Configure<RabbitMqOptions>(
     builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
 
