@@ -42,12 +42,13 @@ public class MeasurementsSyncerWorkerTest
     private readonly MeasurementsSyncOptions options = Substitute.For<MeasurementsSyncOptions>();
     private readonly MeasurementsSyncerWorker worker;
     private readonly IStampClient fakeStampClient = Substitute.For<IStampClient>();
+    private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient fakeMeteringPointsClient = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
     public MeasurementsSyncerWorkerTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         var syncService = new MeasurementsSyncService(syncServiceFakeLogger, fakeSlidingWindowState, fakeClient, fakeBus, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), fakeStampClient);
+            new MeasurementSyncMetrics(), fakeStampClient, fakeMeteringPointsClient);
         scopeFactory.CreateScope().Returns(scope);
         scope.ServiceProvider.Returns(serviceProvider);
         serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);

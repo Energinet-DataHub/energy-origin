@@ -235,5 +235,89 @@
         <member name="M:Measurements.V1.Measurements.MeasurementsClient.NewInstance(Grpc.Core.ClientBase.ClientBaseConfiguration)">
             <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
         </member>
+        <member name="T:Meteringpoint.V1.MeteringpointReflection">
+            <summary>Holder for reflection information generated from Protos/meteringpoint.proto</summary>
+        </member>
+        <member name="P:Meteringpoint.V1.MeteringpointReflection.Descriptor">
+            <summary>File descriptor for Protos/meteringpoint.proto</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.OwnedMeteringPointsRequest.SubjectFieldNumber">
+            <summary>Field number for the "subject" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.OwnedMeteringPointsRequest.ActorFieldNumber">
+            <summary>Field number for the "actor" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPointsResponse.MeteringPointsFieldNumber">
+            <summary>Field number for the "metering_points" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.MeteringPointIdFieldNumber">
+            <summary>Field number for the "metering_point_id" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.StreetNameFieldNumber">
+            <summary>Field number for the "street_name" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.BuildingNumberFieldNumber">
+            <summary>Field number for the "building_number" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.FloorIdFieldNumber">
+            <summary>Field number for the "floor_id" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.RoomIdFieldNumber">
+            <summary>Field number for the "room_id" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.PostcodeFieldNumber">
+            <summary>Field number for the "postcode" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.CityNameFieldNumber">
+            <summary>Field number for the "city_name" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.WebAccessCodeFieldNumber">
+            <summary>Field number for the "web_access_code" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.TypeOfMpFieldNumber">
+            <summary>Field number for the "type_of_mp" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.SubtypeOfMpFieldNumber">
+            <summary>Field number for the "subtype_of_mp" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.AssetTypeFieldNumber">
+            <summary>Field number for the "asset_type" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.DataAccessCvrFieldNumber">
+            <summary>Field number for the "data_access_cvr" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.CapacityFieldNumber">
+            <summary>Field number for the "capacity" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.ConsumerStartDateFieldNumber">
+            <summary>Field number for the "consumer_start_date" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.MeteringPointAliasFieldNumber">
+            <summary>Field number for the "metering_point_alias" field.</summary>
+        </member>
+        <member name="P:Meteringpoint.V1.Meteringpoint.Descriptor">
+            <summary>Service descriptor</summary>
+        </member>
+        <member name="T:Meteringpoint.V1.Meteringpoint.MeteringpointClient">
+            <summary>Client for Meteringpoint</summary>
+        </member>
+        <member name="M:Meteringpoint.V1.Meteringpoint.MeteringpointClient.#ctor(Grpc.Core.ChannelBase)">
+            <summary>Creates a new client for Meteringpoint</summary>
+            <param name="channel">The channel to use to make remote calls.</param>
+        </member>
+        <member name="M:Meteringpoint.V1.Meteringpoint.MeteringpointClient.#ctor(Grpc.Core.CallInvoker)">
+            <summary>Creates a new client for Meteringpoint that uses a custom <c>CallInvoker</c>.</summary>
+            <param name="callInvoker">The callInvoker to use to make remote calls.</param>
+        </member>
+        <member name="M:Meteringpoint.V1.Meteringpoint.MeteringpointClient.#ctor">
+            <summary>Protected parameterless constructor to allow creation of test doubles.</summary>
+        </member>
+        <member name="M:Meteringpoint.V1.Meteringpoint.MeteringpointClient.#ctor(Grpc.Core.ClientBase.ClientBaseConfiguration)">
+            <summary>Protected constructor to allow creation of configured clients.</summary>
+            <param name="configuration">The client configuration.</param>
+        </member>
+        <member name="M:Meteringpoint.V1.Meteringpoint.MeteringpointClient.NewInstance(Grpc.Core.ClientBase.ClientBaseConfiguration)">
+            <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
+        </member>
     </members>
 </doc>

@@ -47,6 +47,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string RegistryName { get; set; } = "TestRegistry";
     public bool MeasurementsSyncEnabled { get; set; } = false;
     public Measurements.V1.Measurements.MeasurementsClient? measurementsClient { get; set; } = null;
+    public Meteringpoint.V1.Meteringpoint.MeteringpointClient? MeteringpointClient { get; set; } = null;
 
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
@@ -70,6 +71,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Measurements:Url", MeasurementsUrl);
         builder.UseSetting("Measurements:GrpcUrl", "http://foo");
+        builder.UseSetting("MeteringPoint:GrpcUrl", "http://foo");
         builder.UseSetting("MeasurementsSync:Disabled", "false");
         builder.UseSetting("MeasurementsSync:SleepType", "EveryThirdSecond");
         builder.UseSetting("IssuingContractCleanup:SleepTime", "00:00:03");
@@ -118,6 +120,12 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             {
                 services.Remove(services.First(s => s.ServiceType == typeof(Measurements.V1.Measurements.MeasurementsClient)));
                 services.AddSingleton(measurementsClient);
+            }
+
+            if (MeteringpointClient != null)
+            {
+                services.Remove(services.First(s => s.ServiceType == typeof(Meteringpoint.V1.Meteringpoint.MeteringpointClient)));
+                services.AddSingleton(MeteringpointClient);
             }
         });
     }

@@ -16,7 +16,7 @@ public class MitIDService(HttpClient httpClient) : IMitIDService
     public async Task<MitIdUserinfoResponse> GetUserinfo(string bearerToken)
     {
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
-        var response = await httpClient.GetAsync("https://pp.netseidbroker.dk/op/connect/userinfo");
+        var response = await httpClient.GetAsync("/connect/userinfo");
 
         response.EnsureSuccessStatusCode();
 
