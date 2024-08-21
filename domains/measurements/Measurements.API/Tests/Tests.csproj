@@ -18,17 +18,17 @@
         <PackageReference Include="AutoFixture" Version="4.18.1" />
         <PackageReference Include="FluentAssertions" Version="6.12.0" />
         <PackageReference Include="Grpc.Core.Testing" Version="2.46.6" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.6" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.6" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.8" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
         <PackageReference Include="NSubstitute" Version="5.1.0" />
-        <PackageReference Include="Testcontainers" Version="3.8.0" />
-        <PackageReference Include="Testcontainers.PostgreSql" Version="3.8.0" />
-        <PackageReference Include="Testcontainers.RabbitMq" Version="3.8.0" />
-        <PackageReference Include="Verify.Xunit" Version="24.2.0" />
-        <PackageReference Include="xunit" Version="2.8.1" />
+        <PackageReference Include="Testcontainers" Version="3.9.0" />
+        <PackageReference Include="Testcontainers.PostgreSql" Version="3.9.0" />
+        <PackageReference Include="Testcontainers.RabbitMq" Version="3.9.0" />
+        <PackageReference Include="Verify.Xunit" Version="26.2.0" />
+        <PackageReference Include="xunit" Version="2.9.0" />
         <PackageReference Include="xunit.categories" Version="2.0.8" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
