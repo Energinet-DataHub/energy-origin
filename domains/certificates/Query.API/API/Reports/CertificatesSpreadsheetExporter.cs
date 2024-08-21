@@ -24,7 +24,7 @@ public class CertificatesSpreadsheetExporter
     private const string TypeColumnHeader = "Type";
     private const string GridAreaColumnHeader = "GridArea";
 
-    private const string AssetIdAttributes = "assetId";
+    private const string ProductionDeviceUniqueIdentification = "energyTag_ProductionDeviceUniqueIdentification";
     private const string CentralEuropeanTimeZoneIdentifier = "Central Europe Standard Time";
 
     private const string IsoDataTimeFormatString = "yyyy-MM-ddTHH:mm:sszzz";
@@ -102,8 +102,8 @@ public class CertificatesSpreadsheetExporter
         sheetRow.InsertAt(new Cell() { CellValue = new CellValue(certificate.FederatedStreamId.StreamId.ToString()), DataType = CellValues.String },
             1);
         sheetRow.InsertAt(
-            certificate.Attributes.TryGetValue(AssetIdAttributes, out var assetId)
-                ? new Cell() { CellValue = new CellValue(assetId), DataType = CellValues.String }
+            certificate.Attributes.TryGetValue(ProductionDeviceUniqueIdentification, out var productionDeviceUniqueIdentification)
+                ? new Cell() { CellValue = new CellValue(productionDeviceUniqueIdentification), DataType = CellValues.String }
                 : new Cell() { CellValue = new CellValue(""), DataType = CellValues.String }, 2);
         sheetRow.InsertAt(
             new Cell()
