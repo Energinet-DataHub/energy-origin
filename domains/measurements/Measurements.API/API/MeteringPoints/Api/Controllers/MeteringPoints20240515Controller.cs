@@ -40,16 +40,16 @@ public class MeteringPoints20240515Controller : ControllerBase
     /// <response code="200">Successful operation</response>
     [HttpGet]
     [ProducesResponseType(typeof(GetMeteringPointsResponse), 200)]
-    public async Task<ActionResult> GetMeteringPoints([FromQuery] Guid orgId)
+    public async Task<ActionResult> GetMeteringPoints([FromQuery] Guid organizationId)
     {
-        if (!_accessDescriptor.IsAuthorizedToOrganization(orgId))
+        if (!_accessDescriptor.IsAuthorizedToOrganization(organizationId))
         {
             return Forbid();
         }
 
         var request = new OwnedMeteringPointsRequest
         {
-            Subject = orgId.ToString(),
+            Subject = organizationId.ToString(),
             Actor = _identityDescriptor.Subject.ToString()
         };
         var response = await _client.GetOwnedMeteringPointsAsync(request);
@@ -59,7 +59,7 @@ public class MeteringPoints20240515Controller : ControllerBase
             .Select(MeteringPoint.CreateFrom)
             .ToList();
 
-        var relation = _dbContext.Relations.FirstOrDefault(u => u.SubjectId == orgId);
+        var relation = _dbContext.Relations.FirstOrDefault(u => u.SubjectId == organizationId);
         var status = relation?.Status ?? (meteringPoints.Count != 0 ? RelationStatus.Created : RelationStatus.Pending);
 
         return Ok(new GetMeteringPointsResponse(meteringPoints, status));
