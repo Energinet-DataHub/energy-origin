@@ -89,7 +89,7 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var contracts = await response.Content.ReadJson<ContractList>();
@@ -131,7 +131,7 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
@@ -149,13 +149,13 @@ public class ContractsV20240515Tests
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?orgId={orgId}");
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
         var expectedContract = new
         {
@@ -181,13 +181,13 @@ public class ContractsV20240515Tests
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?orgId={orgId}");
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
         createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
@@ -205,13 +205,13 @@ public class ContractsV20240515Tests
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?orgId={orgId}");
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
         createdContract.Should()
             .BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
@@ -232,11 +232,11 @@ public class ContractsV20240515Tests
             { GSRN = gsrn, StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(), EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds() }
         ]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        using var conflictResponse = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var conflictResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
         conflictResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
@@ -261,7 +261,7 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -280,13 +280,13 @@ public class ContractsV20240515Tests
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
 
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?orgId={orgId}");
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
         createdContract?.Technology.Should().BeNull();
     }
@@ -305,13 +305,13 @@ public class ContractsV20240515Tests
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?orgId={orgId}");
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
         var expectedTechnology =
             new DataContext.ValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
@@ -341,10 +341,10 @@ public class ContractsV20240515Tests
         var contract1Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }]);
         var contract2Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }]);
 
-        using var responseContract1 = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", contract1Body);
-        using var responseContract2 = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", contract2Body);
+        using var responseContract1 = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", contract1Body);
+        using var responseContract2 = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", contract2Body);
 
-        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?orgId={orgId}");
+        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}");
 
         contracts!.Result.Should().HaveCount(2);
     }
@@ -371,12 +371,12 @@ public class ContractsV20240515Tests
         var contract1Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }]);
         var contract2Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }]);
 
-        using var responseContract1 = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", contract1Body);
-        using var responseContract2 = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", contract2Body);
+        using var responseContract1 = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", contract1Body);
+        using var responseContract2 = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", contract2Body);
 
         responseContract2.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
-        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?orgId={orgId}");
+        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}");
 
         contracts!.Result.Should().HaveCount(1);
     }
@@ -401,7 +401,7 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -422,7 +422,7 @@ public class ContractsV20240515Tests
         var tenConcurrentRequests = Enumerable
             .Range(1, 10)
             .Select(_ =>
-                client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}",
+                client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}",
                     new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = now, EndDate = futureDate }])));
 
         var responses = await Task.WhenAll(tenConcurrentRequests);
@@ -430,7 +430,7 @@ public class ContractsV20240515Tests
         responses.Where(r => r.StatusCode == HttpStatusCode.Created).Should().HaveCount(1);
         responses.Where(r => !r.IsSuccessStatusCode).Should().HaveCount(9);
 
-        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?orgId={orgId}");
+        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}");
         contracts!.Result.Should().HaveCount(1);
     }
 
@@ -453,9 +453,9 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
-        using var response = await client.GetAsync($"api/certificates/contracts?orgId={orgId}");
+        using var response = await client.GetAsync($"api/certificates/contracts?organizationId={orgId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -466,7 +466,7 @@ public class ContractsV20240515Tests
         var orgId = Guid.NewGuid();
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
 
-        var response = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?orgId={orgId}");
+        var response = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}");
         response!.Result.Should().BeEmpty();
     }
 
@@ -478,7 +478,7 @@ public class ContractsV20240515Tests
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
 
         var contractId = Guid.NewGuid().ToString();
-        using var response = await client.GetAsync($"api/certificates/contracts/{contractId}?orgId={orgId}");
+        using var response = await client.GetAsync($"api/certificates/contracts/{contractId}?organizationId={orgId}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -501,7 +501,7 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        using var response = await client1.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId1}", body);
+        using var response = await client1.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId1}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -512,7 +512,7 @@ public class ContractsV20240515Tests
         var orgId2 = Guid.NewGuid();
         using var client2 = factory.CreateB2CAuthenticatedClient(subject2, orgId2, apiVersion: ApiVersions.Version20240515);
 
-        using var getSpecificContractResponse = await client2.GetAsync($"api/certificates/contracts/{createdContractId}?orgId={orgId2}");
+        using var getSpecificContractResponse = await client2.GetAsync($"api/certificates/contracts/{createdContractId}?organizationId={orgId2}");
         getSpecificContractResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -529,7 +529,7 @@ public class ContractsV20240515Tests
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
@@ -537,9 +537,9 @@ public class ContractsV20240515Tests
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }]);
 
-        using var editResponse = await client.PutAsJsonAsync($"api/certificates/contracts?orgId={orgId}", putBody);
+        using var editResponse = await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody);
 
-        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?orgId={orgId}");
+        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
@@ -558,16 +558,16 @@ public class ContractsV20240515Tests
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
 
         var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = (long?)null }]);
 
-        using var editResponse = await client.PutAsJsonAsync($"api/certificates/contracts?orgId={orgId}", putBody);
+        using var editResponse = await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody);
 
-        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?orgId={orgId}");
+        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
     }
@@ -585,7 +585,7 @@ public class ContractsV20240515Tests
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
@@ -593,9 +593,9 @@ public class ContractsV20240515Tests
         var endDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
         var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }]);
 
-        using var editResponse = await client.PutAsJsonAsync($"api/certificates/contracts?orgId={orgId}", putBody);
+        using var editResponse = await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody);
 
-        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?orgId={orgId}");
+        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
@@ -628,7 +628,7 @@ public class ContractsV20240515Tests
                 StartDate = startDate
             }
         ]);
-        using var createResponse = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var createResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
         var response = await createResponse.Content.ReadJson<ContractList>();
         var id = response!.Result.ToList().Find(c => c.StartDate == startDate)!.Id;
 
@@ -638,7 +638,7 @@ public class ContractsV20240515Tests
             new() { Id = id, EndDate = newEndDate },
         };
 
-        var updateResponse = await client.PutAsJsonAsync($"api/certificates/contracts?orgId={orgId}", new EditContracts(contracts));
+        var updateResponse = await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", new EditContracts(contracts));
         updateResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
@@ -674,7 +674,7 @@ public class ContractsV20240515Tests
                 StartDate = startDate
             }
         ]);
-        using var createResponse = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var createResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
         var createContent = await createResponse.Content.ReadJson<ContractList>();
 
         var id = createContent!.Result.ToList().Find(c => c.StartDate == startDate)!.Id;
@@ -688,11 +688,11 @@ public class ContractsV20240515Tests
             new() { Id = id1, EndDate = newEndDate1 }
         };
 
-        var response = await client.PutAsJsonAsync($"api/certificates/contracts?orgId={orgId}", new EditContracts(contracts));
+        var response = await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", new EditContracts(contracts));
         response.EnsureSuccessStatusCode();
 
-        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{id}?orgId={orgId}");
-        var contract1 = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{id1}?orgId={orgId}");
+        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{id}?organizationId={orgId}");
+        var contract1 = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{id1}?organizationId={orgId}");
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = newEndDate });
         contract1.Should().BeEquivalentTo(new { GSRN = gsrn1, StartDate = startDate1, EndDate = newEndDate1 });
@@ -719,7 +719,7 @@ public class ContractsV20240515Tests
         var nonExistingContractId = Guid.NewGuid();
 
         using var response =
-            await client.PutAsJsonAsync($"api/certificates/contracts?orgId={orgId}", putBody);
+            await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -745,7 +745,7 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
@@ -758,7 +758,7 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        using var editResponse = await client.PutAsJsonAsync($"api/certificates/contracts?orgId={orgId}", putBody);
+        using var editResponse = await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody);
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -784,7 +784,7 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        var response = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
 
@@ -799,7 +799,7 @@ public class ContractsV20240515Tests
             }
         ]);
 
-        using var editResponse = await client2.PutAsJsonAsync($"api/certificates/contracts?orgId={newOrgId}", putBody);
+        using var editResponse = await client2.PutAsJsonAsync($"api/certificates/contracts?organizationId={newOrgId}", putBody);
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -817,7 +817,7 @@ public class ContractsV20240515Tests
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }]);
-        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
         contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Assert activity log entry
@@ -841,7 +841,7 @@ public class ContractsV20240515Tests
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
-        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?orgId={orgId}", body);
+        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
         contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Update end date
@@ -849,7 +849,7 @@ public class ContractsV20240515Tests
         var createdContractId = createdContracts!.Result.First().Id;
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }]);
-        await client.PutAsJsonAsync($"api/certificates/contracts?orgId={orgId}", putBody);
+        await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody);
 
         // Assert activity log entries (created, updated)
         using var oldTokenClient = factory.CreateAuthenticatedClient(orgId.ToString());
