@@ -3,11 +3,6 @@ apiGateway = container "API Gateway" {
     technology "Traefik"
 }
 
-rabbitMqOperator = container "RabbitMQ Message Broker" {
-    description "Cross subsystem message broker"
-    technology "RabbitMQ"
-}
-
 dataHubFacadeSubsystem = group "DataHubFacade Subsystem" {
     dataHubFacadeApi = container "DataHubFacade" {
         description "Facade for DataHub 2.0 and 3.0. Simplifies interaction so clients do not have to handle DataHub certificate, SOAP parsing, pagination and Danish time zone convertion"
