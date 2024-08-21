@@ -96,24 +96,29 @@ public class MeasurementsSyncService
             var clearTextAttributes = new Dictionary<string, string>();
             if (syncInfo.MeteringPointType == MeteringPointType.Production)
             {
+
+                var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
+                clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssuer, "Energinet");
+                clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssueMarketZone, syncInfo.GridArea);
+                clearTextAttributes.Add(AttributeKeys.EnergyTagCountry, "Denmark");
+                clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssuanceDateStamp, DateTimeOffset.Now.ToString("d"));
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProductionStartingIntervalTimestamp, m.DateFrom.ToString());
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProductionEndingIntervalTimestamp, m.DateTo.ToString());
+                clearTextAttributes.Add(AttributeKeys.EnergyTagGcFaceValue, m.Quantity.ToString());
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceUniqueIdentification, m.Gsrn);
+                clearTextAttributes.Add(AttributeKeys.EnergyTagConnectedGridIdentification, syncInfo.GridArea);
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceLocation, address);
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity);
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A");
+                clearTextAttributes.Add(AttributeKeys.EnergyTagEnergyCarrier, "Electricity");
+                clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssueDeviceType, "Production");
                 clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergySource, syncInfo.Technology!.FuelCode);
                 clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergyTechnology, syncInfo.Technology.TechCode);
             }
-            var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
-            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssuer, "Energinet");
-            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssueMarketZone, syncInfo.GridArea);
-            clearTextAttributes.Add(AttributeKeys.EnergyTagCountry, "Denmark");
-            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssuanceDateStamp, DateTimeOffset.Now.ToString("d"));
-            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionStartingIntervalTimestamp, m.DateFrom.ToString());
-            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionEndingIntervalTimestamp, m.DateTo.ToString());
-            clearTextAttributes.Add(AttributeKeys.EnergyTagGcFaceValue, m.Quantity.ToString());
-            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceUniqueIdentification, m.Gsrn);
-            clearTextAttributes.Add(AttributeKeys.EnergyTagConnectedGridIdentification, syncInfo.GridArea);
-            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceLocation, address);
-            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity);
-            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A");
-            clearTextAttributes.Add(AttributeKeys.EnergyTagEnergyCarrier, "Electricity");
-            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssueDeviceType, "Production");
+            else
+            {
+                clearTextAttributes.Add(AttributeKeys.AssetId, m.Gsrn);
+            }
 
             var certificate = new CertificateDto
             {
@@ -184,6 +189,7 @@ public class MeasurementsSyncService
 
 public static class AttributeKeys
 {
+    public const string AssetId = "assetId";
     public const string EnergyTagGcIssuer = "energyTag_GcIssuer";
     public const string EnergyTagGcIssueMarketZone = "energyTag_GcIssueMarketZone";
     public const string EnergyTagCountry = "energyTag_Country";
