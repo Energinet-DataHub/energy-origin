@@ -31,12 +31,12 @@ public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, 
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> CreateContract(
         [FromBody] CreateContracts createContracts,
-        [FromQuery] Guid orgId,
+        [FromQuery] Guid organizationId,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
         {
             return Forbid();
         }
@@ -51,7 +51,7 @@ public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, 
             }
         }
 
-        var result = await service.Create(createContracts, orgId, identityDescriptor.Subject, identityDescriptor.Name,
+        var result = await service.Create(createContracts, organizationId, identityDescriptor.Subject, identityDescriptor.Name,
             identityDescriptor.OrganizationName, identityDescriptor.OrganizationCvr ?? string.Empty, cancellationToken);
 
         return result switch
@@ -73,11 +73,11 @@ public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, 
     [Route("api/certificates/contracts/{id}")]
     public async Task<ActionResult<Contract>> GetContract(
         [FromRoute] Guid id,
-        [FromQuery] Guid orgId,
+        [FromQuery] Guid organizationId,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
         {
             return Forbid();
         }
@@ -96,16 +96,16 @@ public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, 
     [ProducesResponseType(typeof(ContractList), 200)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult<ContractList>> GetAllContracts(
-        [FromQuery] Guid orgId,
+        [FromQuery] Guid organizationId,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
         {
             return Forbid();
         }
 
-        var contracts = await service.GetByOwner(orgId, cancellationToken);
+        var contracts = await service.GetByOwner(organizationId, cancellationToken);
 
         return contracts.Any()
             ? Ok(new ContractList { Result = contracts.Select(Contract.CreateFrom) })
@@ -122,12 +122,12 @@ public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, 
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> UpdateEndDate(
         [FromBody] EditContracts editContracts,
-        [FromQuery] Guid orgId,
+        [FromQuery] Guid organizationId,
         [FromServices] IValidator<EditContractEndDate> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
-        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
         {
             return Forbid();
         }
@@ -144,7 +144,7 @@ public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, 
 
         var result = await service.SetEndDate(
             editContracts,
-            orgId,
+            organizationId,
             identityDescriptor.Subject,
             identityDescriptor.Name,
             identityDescriptor.OrganizationName,

@@ -1,5 +1,7 @@
 using API.Query.API.ApiModels.Requests;
+using API.Query.API.Controllers;
 using API.Query.API.Swagger;
+using API.Reports;
 using EnergyOrigin.Setup;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,5 +21,7 @@ public static class Startup
         services.AddHttpContextAccessor();
 
         services.AddValidatorsFromAssemblyContaining<CreateContractValidator>();
+
+        services.AddScoped<CertificatesSpreadsheetExporter>();
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
@@ -10,28 +11,27 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using MassTransit;
 using Measurements.V1;
+using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
 using HashedAttribute = API.ContractService.Clients.HashedAttribute;
+using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.MeasurementsSyncer;
 
 public class MeasurementsSyncService
 {
-    public const string AssetId = "AssetId";
-    public const string TechCode = "TechCode";
-    public const string FuelCode = "FuelCode";
-
     private readonly ISlidingWindowState slidingWindowState;
     private readonly Measurements.V1.Measurements.MeasurementsClient measurementsClient;
     private readonly SlidingWindowService slidingWindowService;
     private readonly IMeasurementSyncMetrics measurementSyncMetrics;
     private readonly IStampClient stampClient;
+    private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient;
     private readonly ILogger<MeasurementsSyncService> logger;
 
     public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISlidingWindowState slidingWindowState,
         Measurements.V1.Measurements.MeasurementsClient measurementsClient, IPublishEndpoint bus, SlidingWindowService slidingWindowService,
-        IMeasurementSyncMetrics measurementSyncMetrics, IStampClient stampClient)
+        IMeasurementSyncMetrics measurementSyncMetrics, IStampClient stampClient, Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient)
     {
         this.logger = logger;
         this.slidingWindowState = slidingWindowState;
@@ -39,6 +39,7 @@ public class MeasurementsSyncService
         this.slidingWindowService = slidingWindowService;
         this.measurementSyncMetrics = measurementSyncMetrics;
         this.stampClient = stampClient;
+        this.meteringPointsClient = meteringPointsClient;
     }
 
     public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo,
@@ -47,6 +48,8 @@ public class MeasurementsSyncService
     {
         var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
         var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, synchronizationPoint, stoppingToken);
+        var meteringPoints = await meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
+        var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
 
         measurementSyncMetrics.MeasurementsFetched(fetchedMeasurements.Count);
 
@@ -56,7 +59,7 @@ public class MeasurementsSyncService
 
             if (measurementsToPublish.Any())
             {
-                await IssueCertificates(measurementsToPublish,
+                await IssueCertificates(measurementsToPublish, meteringPoint,
                     syncInfo,
                     stoppingToken);
             }
@@ -67,7 +70,7 @@ public class MeasurementsSyncService
         }
     }
 
-    private async Task IssueCertificates(List<Measurement> measurements,
+    private async Task IssueCertificates(List<Measurement> measurements, MeteringPoint meteringPoint,
         MeteringPointSyncInfo syncInfo,
         CancellationToken cancellationToken)
     {
@@ -93,10 +96,24 @@ public class MeasurementsSyncService
             var clearTextAttributes = new Dictionary<string, string>();
             if (syncInfo.MeteringPointType == MeteringPointType.Production)
             {
-                clearTextAttributes.Add(FuelCode, syncInfo.Technology!.FuelCode);
-                clearTextAttributes.Add(TechCode, syncInfo.Technology.TechCode);
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergySource, syncInfo.Technology!.FuelCode);
+                clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergyTechnology, syncInfo.Technology.TechCode);
             }
-            clearTextAttributes.Add(AssetId, m.Gsrn);
+            var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssuer, "Energinet");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssueMarketZone, syncInfo.GridArea);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagCountry, "Denmark");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssuanceDateStamp, DateTimeOffset.Now.ToString("d"));
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionStartingIntervalTimestamp, m.DateFrom.ToString());
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionEndingIntervalTimestamp, m.DateTo.ToString());
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcFaceValue, m.Quantity.ToString());
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceUniqueIdentification, m.Gsrn);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagConnectedGridIdentification, syncInfo.GridArea);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceLocation, address);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity);
+            clearTextAttributes.Add(AttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagEnergyCarrier, "Electricity");
+            clearTextAttributes.Add(AttributeKeys.EnergyTagGcIssueDeviceType, "Production");
 
             var certificate = new CertificateDto
             {
@@ -163,4 +180,24 @@ public class MeasurementsSyncService
             slidingWindow,
             stoppingToken);
     }
+}
+
+public static class AttributeKeys
+{
+    public const string EnergyTagGcIssuer = "energyTag_GcIssuer";
+    public const string EnergyTagGcIssueMarketZone = "energyTag_GcIssueMarketZone";
+    public const string EnergyTagCountry = "energyTag_Country";
+    public const string EnergyTagGcIssuanceDateStamp = "energyTag_GcIssuanceDatestamp";
+    public const string EnergyTagProductionStartingIntervalTimestamp = "energyTag_ProductionStartingIntervalTimestamp";
+    public const string EnergyTagProductionEndingIntervalTimestamp = "energyTag_ProductionEndingIntervalTimestamp";
+    public const string EnergyTagGcFaceValue = "energyTag_GcFaceValue";
+    public const string EnergyTagProductionDeviceUniqueIdentification = "energyTag_ProductionDeviceUniqueIdentification";
+    public const string EnergyTagProducedEnergySource = "energyTag_ProducedEnergySource";
+    public const string EnergyTagProducedEnergyTechnology = "energyTag_ProducedEnergyTechnology";
+    public const string EnergyTagConnectedGridIdentification = "energyTag_ConnectedGridIdentification";
+    public const string EnergyTagProductionDeviceLocation = "energyTag_ProductionDeviceLocation";
+    public const string EnergyTagProductionDeviceCapacity = "energyTag_ProductionDeviceCapacity";
+    public const string EnergyTagProductionDeviceCommercialOperationDate = "energyTag_ProductionDeviceCommercialOperationDate";
+    public const string EnergyTagEnergyCarrier = "energyTag_EnergyCarrier";
+    public const string EnergyTagGcIssueDeviceType = "energyTag_GcIssueDeviceType";
 }

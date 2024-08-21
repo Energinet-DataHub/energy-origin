@@ -38,7 +38,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
     {
         var client = _factory.CreateUnauthenticatedClient();
 
-        var response = await client.GetAsync($"api/measurements/meteringpoints?orgId={Guid.NewGuid()}");
+        var response = await client.GetAsync($"api/measurements/meteringpoints?organizationId={Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -48,7 +48,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
     {
         var client = _factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), apiVersion: ApiVersions.Version20240515);
 
-        var response = await client.GetAsync($"api/measurements/meteringpoints?orgId={Guid.NewGuid()}");
+        var response = await client.GetAsync($"api/measurements/meteringpoints?organizationId={Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -66,7 +66,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?orgId={orgId}");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}");
 
         response.Should().NotBeNull();
         response!.Status.Should().Be(RelationStatus.Pending);
@@ -90,7 +90,8 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
                     RoomId = "1",
                     CityName = "City",
                     Postcode = "1234",
-                    AssetType = "E17"
+                    AssetType = "E17",
+                    Capacity = "12345678"
                 }
             }
         };
@@ -115,7 +116,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         });
         dbContext.SaveChanges();
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?orgId={orgId}");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}");
 
         response.Should().NotBeNull();
         var settings = new VerifySettings();
@@ -147,7 +148,8 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
                     RoomId = "1",
                     CityName = "City",
                     Postcode = "1234",
-                    AssetType = "E17"
+                    AssetType = "E17",
+                    Capacity = "12345678"
                 },
                 new Meteringpoint.V1.MeteringPoint
                 {
@@ -160,7 +162,8 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
                     RoomId = "1",
                     CityName = "City",
                     Postcode = "1234",
-                    AssetType = "E17"
+                    AssetType = "E17",
+                    Capacity = "12345678"
                 }
             }
         };
@@ -173,7 +176,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(subjectId, orgId);
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?orgId={orgId}");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}");
 
         response.Should().NotBeNull();
         var settings = new VerifySettings();
@@ -226,7 +229,8 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
                         RoomId = room,
                         CityName = "City",
                         Postcode = "1234",
-                        AssetType = "E17"
+                        AssetType = "E17",
+                        Capacity = "12345678"
                     }
                 }
             });
@@ -235,7 +239,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(subjectId, orgId);
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?orgId={orgId}");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}");
 
         response.Should().NotBeNull();
 
