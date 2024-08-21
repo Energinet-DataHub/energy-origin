@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -24,7 +25,7 @@ public class CertificatesSpreadsheetExporter
     private const string TypeColumnHeader = "Type";
     private const string GridAreaColumnHeader = "GridArea";
 
-    private const string AssetIdAttributes = "assetId";
+    private const string ProductionDeviceUniqueIdentification = "energyTag_ProductionDeviceUniqueIdentification";
     private const string CentralEuropeanTimeZoneIdentifier = "Central Europe Standard Time";
 
     private const string IsoDataTimeFormatString = "yyyy-MM-ddTHH:mm:sszzz";
@@ -97,13 +98,16 @@ public class CertificatesSpreadsheetExporter
 
     private void AppendCertificateRow(SheetData sheetData, uint rowIndex, GranularCertificate certificate)
     {
+        var gsrn = certificate.Attributes.GetValueOrDefault(ProductionDeviceUniqueIdentification) ??
+                   certificate.Attributes.GetValueOrDefault("assetId");
+
         var sheetRow = new Row { RowIndex = new UInt32Value(rowIndex) };
         sheetRow.InsertAt(new Cell() { CellValue = new CellValue(certificate.FederatedStreamId.Registry), DataType = CellValues.String }, 0);
         sheetRow.InsertAt(new Cell() { CellValue = new CellValue(certificate.FederatedStreamId.StreamId.ToString()), DataType = CellValues.String },
             1);
         sheetRow.InsertAt(
-            certificate.Attributes.TryGetValue(AssetIdAttributes, out var assetId)
-                ? new Cell() { CellValue = new CellValue(assetId), DataType = CellValues.String }
+            gsrn != null
+                ? new Cell() { CellValue = new CellValue(gsrn), DataType = CellValues.String }
                 : new Cell() { CellValue = new CellValue(""), DataType = CellValues.String }, 2);
         sheetRow.InsertAt(
             new Cell()

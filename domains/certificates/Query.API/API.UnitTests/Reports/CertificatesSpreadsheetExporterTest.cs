@@ -22,7 +22,7 @@ public class CertificatesSpreadsheetExporterTest
         var certificates = new List<GranularCertificate>()
         {
             CreateCertificate(start, end, 100, "DK1", CertificateType.Production,
-                new FederatedStreamId { Registry = "energy-origin", StreamId = Guid.NewGuid() }, new Dictionary<string, string> {{"assetId", "57..."}})
+                new FederatedStreamId { Registry = "energy-origin", StreamId = Guid.NewGuid() }, new Dictionary<string, string> {{"energyTag_ProductionDeviceUniqueIdentification", "57..."}})
         };
         var sut = new CertificatesSpreadsheetExporter(new FakeWalletClient(certificates));
 
