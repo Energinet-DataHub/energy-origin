@@ -57,6 +57,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          path: _
+
+      - name: Move files
+        shell: bash
+        run: |
+          sudo chmod -R 777 ./
+          cp -r _/docs ./
 
       - name: Setup node
         uses: actions/setup-node@v4
