@@ -80,7 +80,7 @@ jobs:
           } >> $GITHUB_ENV
 
       - name: Validate project
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v1
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v2
         with:
           dotnet-version: ${{ matrix.build.sdkVersion }}
           pin-version: true
