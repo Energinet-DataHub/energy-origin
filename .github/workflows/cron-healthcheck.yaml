@@ -88,7 +88,7 @@ jobs:
           sql-file: ${{ env.migration }}
 
       - name: Check license
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v1
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v2
         with:
           project-folder: ${{ env.path }}
           license-mapping-file: .mapped-licenses.json
@@ -127,7 +127,7 @@ jobs:
         run: echo '{"sdk":{"rollForward":"disable","version":"${{ env.SDK_VERSION }}"}}' > "${{ env.SOLUTION }}/global.json"
 
       - name: Build library
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-publish-nuget-package@v1
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-publish-nuget-package@v2
         with:
           solution-file-folder: ${{ env.SOLUTION }}
           project-name: ${{ env.PROJECT }}
@@ -137,7 +137,7 @@ jobs:
           upload: false
 
       - name: Check license
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v1
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v2
         with:
           project-folder: ${{ env.SOLUTION }}/${{ env.PROJECT }}
           license-mapping-file: .mapped-licenses.json
@@ -170,7 +170,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Push image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v1
+        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v2
         with:
           dockerfile: ${{ env.docker }}
           image-name: ${{ env.name }}
