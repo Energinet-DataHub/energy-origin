@@ -13,5 +13,5 @@ FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled AS final
 
 WORKDIR /swaggerfiles
 
-COPY --from=build /app/domains/certificates/Query.API/API/bin/Debug/net8.0/swagger.json ./certificates-swagger.json
-COPY --from=build /app/domains/authorization/Proxy/bin/Debug/net8.0/swagger.json ./authorization-swagger.json
+COPY --from=build /app/domains/certificates/Query.API/API/contracts.yaml ./contracts.yaml
+COPY --from=build /app/domains/authorization/Proxy/proxy.yaml ./proxy.yaml
