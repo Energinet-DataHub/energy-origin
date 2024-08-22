@@ -107,7 +107,7 @@ To add a new subsystem workflow, follow these steps:
             - uses: actions/checkout@v4
 
             - name: Update environment
-              uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+              uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
               with:
                 configurations: | # Configuration files for each project
                   domains/new-subsystem/Project1.API/configuration.yaml
