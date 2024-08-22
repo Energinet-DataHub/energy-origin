@@ -1,5 +1,5 @@
 # Use the official .NET SDK image
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-noble-chiseled AS build
 
 # Set the working directory
 WORKDIR /app
