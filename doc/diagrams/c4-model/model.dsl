@@ -3,11 +3,6 @@ apiGateway = container "API Gateway" {
     technology "Traefik"
 }
 
-rabbitMqOperator = container "RabbitMQ Message Broker" {
-    description "Cross subsystem message broker"
-    technology "RabbitMQ"
-}
-
 dataHubFacadeSubsystem = group "DataHubFacade Subsystem" {
     dataHubFacadeApi = container "DataHubFacade" {
         description "Facade for DataHub 2.0 and 3.0. Simplifies interaction so clients do not have to handle DataHub certificate, SOAP parsing, pagination and Danish time zone convertion"
@@ -58,13 +53,6 @@ certificatesSubsystem = group "Certificate Subsystem" {
         description "Storage for contracts and information from the issuance of a certificate"
         technology "Postgres"
     }
-    certRegistryConnector = container "Registry Connector" {
-        description "Handles the issuence flow"
-
-        this -> poRegistry "Sends issued events to"
-        this -> poWallet "Sends slices to"
-        this -> rabbitMqOperator "Produces and consumes messages"
-    }
     certApi = container "Certificate API" {
         description "Contains background workers for fetching measurements and provides an API for queries related to contracts"
         technology ".NET Web Api"
@@ -77,7 +65,7 @@ certificatesSubsystem = group "Certificate Subsystem" {
         measurementsSyncer = component "Measurements Syncer" "Fetches measurements every hour and publishes to the message broker. ONLY NEED UNTIL INTEGRATION EVENT BUS HAS EVENTS FOR MEASUREMENTS." "Hosted background service" {
             tags "MockingComponent"
 
-            this -> rabbitMqOperator "Publishes measurement events to"
+            this -> poStamp "Sends measurements to stamp, which becomes certificates"
             this -> contractService "Reads list of metering points to sync from"
             this -> measurementApi "Pulls measurements from"
         }
