@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           sudo chmod -R 777 ./
-          cp -r _/docs ./
+          cp -r _/doc ./
 
       - name: Setup node
         uses: actions/setup-node@v4
