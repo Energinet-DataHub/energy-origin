@@ -19,6 +19,16 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
     private long recoveredMeasurements = 0;
     private ObservableCounter<long> RecoveredMeasurements { get; }
 
+    private long numberOfMeasurementsQuantityTooLow = 0;
+    private ObservableCounter<long> NumberOfMeasurementsQuantityTooLow { get; }
+
+    private long numberOfMeasurementsQuantityTooHigh = 0;
+    private ObservableCounter<long> NumberOfMeasurementsQuantityTooHigh { get; }
+
+    private long numberOfMeasurementsWrongQuality = 0;
+    private ObservableCounter<long> NumberOfMeasurementsWrongQuality { get; }
+
+
     public MeasurementSyncMetrics()
     {
         var meter = new Meter(MetricName);
@@ -28,6 +38,9 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
         TimePeriodForSearchingForAGSRN = meter.CreateObservableGauge("ett_certificate_time_period_for_searching_for_gsrn", () => timePeriodForSearchingForAGSRN);
         MissingMeasurement = meter.CreateObservableCounter("ett_certificate_missing_measurement", () => missingMeasurement);
         RecoveredMeasurements = meter.CreateObservableCounter("ett_certificate_recovered_measurements", () => recoveredMeasurements);
+        NumberOfMeasurementsQuantityTooLow = meter.CreateObservableCounter("ett_certificate_measurement_quantity_too_low_count", () => numberOfMeasurementsQuantityTooLow);
+        NumberOfMeasurementsQuantityTooHigh = meter.CreateObservableCounter("ett_certificate_measurement_quantity_too_high_count", () => numberOfMeasurementsQuantityTooHigh);
+        NumberOfMeasurementsWrongQuality = meter.CreateObservableCounter("ett_certificate_measurement_wrong_quality_count", () => numberOfMeasurementsWrongQuality);
     }
 
     public void MeasurementsFetched(long fetchedCount)
@@ -58,5 +71,20 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
     public void AddNumberOfRecordsBeingSynced(long numberOfRecordsBeingSynced)
     {
         numberOfContractsBeingSynced += numberOfRecordsBeingSynced;
+    }
+
+    public void AddFilterDueQuantityTooLow(long numberOfMeasurementsQuantityTooLow)
+    {
+        this.numberOfMeasurementsQuantityTooLow += numberOfMeasurementsQuantityTooLow;
+    }
+
+    public void AddFilterDueQuantityTooHigh(long numberOfMeasurementsQuantityTooHigh)
+    {
+        this.numberOfMeasurementsQuantityTooHigh += numberOfMeasurementsQuantityTooHigh;
+    }
+
+    public void AddFilterDueQuality(long numberOfMeasurementsWrongQuality)
+    {
+        this.numberOfMeasurementsWrongQuality += numberOfMeasurementsWrongQuality;
     }
 }

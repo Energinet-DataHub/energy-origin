@@ -8,4 +8,7 @@ public interface IMeasurementSyncMetrics
     void AddMissingMeasurement(long numberOfMissingMeasurements);
     void AddRecoveredMeasurements(long numberOfRecoveredMeasurements);
     void AddNumberOfRecordsBeingSynced(long numberOfRecordsBeingSynced);
+    void AddFilterDueQuantityTooLow(long numberOfMeasurementsQuantityTooLow);
+    void AddFilterDueQuantityTooHigh(long numberOfMeasurementsQuantityTooHigh);
+    void AddFilterDueQuality(long numberOfMeasurementsWrongQuality);
 }

@@ -78,21 +78,6 @@ public class MeasurementsSyncService
 
         foreach (var m in measurements)
         {
-            if (m.Quality != EnergyQuantityValueQuality.Measured && m.Quality != EnergyQuantityValueQuality.Calculated)
-                continue;
-
-            if (m.Quantity <= 0)
-            {
-                logger.LogError("Quantity lower than 0: {0}", m.Quantity);
-                continue;
-            }
-
-            if (m.Quantity > uint.MaxValue)
-            {
-                logger.LogError("Quantity too high for measurement. Quantity: {0}", m.Quantity);
-                continue;
-            }
-
             var clearTextAttributes = new Dictionary<string, string>();
             if (syncInfo.MeteringPointType == MeteringPointType.Production)
             {
