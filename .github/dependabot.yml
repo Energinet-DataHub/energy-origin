@@ -20,13 +20,3 @@ updates:
     allowed_updates:
      - match:
        update_type: security
-  - package-ecosystem: nuget
-    directory: /domains
-    schedule:
-      interval: weekly
-    ignore:
-      - dependency-name: '*'
-        update-types:
-          - version-update:semver-patch
-          - version-update:semver-minor
-
