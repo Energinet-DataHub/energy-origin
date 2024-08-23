@@ -48,7 +48,32 @@ public class SlidingWindowService
                     measurementSyncMetrics.AddRecoveredMeasurements(1);
                 }
                 return isIncludedInMissingInterval;
-            }).ToList();
+            })
+            .Where(m =>
+            {
+                if (m.Quality is EnergyQuantityValueQuality.Measured or EnergyQuantityValueQuality.Calculated)
+                    return true;
+
+                measurementSyncMetrics.AddFilterDueQuality(1);
+                return false;
+            })
+            .Where(m =>
+            {
+                if (m.Quantity > 0)
+                    return true;
+
+                measurementSyncMetrics.AddFilterDueQuantityTooLow(1);
+                return false;
+            })
+            .Where(m =>
+            {
+                if (m.Quantity < uint.MaxValue)
+                    return true;
+
+                measurementSyncMetrics.AddFilterDueQuantityTooHigh(1);
+                return false;
+            })
+            .ToList();
     }
 
     private static bool IsAfterSynchronizationPoint(MeteringPointTimeSeriesSlidingWindow window, UnixTimestamp from)
