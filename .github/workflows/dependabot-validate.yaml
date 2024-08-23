@@ -15,8 +15,6 @@ jobs:
 
       - name: Check for file changes
         uses: CodeReaper/find-diff-action@v3
-        if: github.event_name == 'push'
-        id: changes
         with:
           paths: .github/dependabot.yml
 
