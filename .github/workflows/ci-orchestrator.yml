@@ -32,10 +32,6 @@ jobs:
     uses: ./.github/workflows/check-licenses.yml
     secrets: inherit
 
-  dependabot-update:
-    uses: ./.github/workflows/dependabot-update.yaml
-    secrets: inherit
-
   dependabot-validate:
     uses: ./.github/workflows/dependabot-validate.yaml
     secrets: inherit
@@ -62,7 +58,6 @@ jobs:
         build-subsystems,
         check-licenses,
         dependabot-validate,
-        dependabot-update,
         structurizr-update-pages,
         workflow-validate,
       ]
