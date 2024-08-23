@@ -64,8 +64,8 @@ jobs:
         shell: bash
         run: |
           sudo chmod -R 777 ./
-          echo pwd
-          echo ls
+          echo "pwd"
+          echo "ls"
           cp -r _/doc ./
 
       - name: Setup node
