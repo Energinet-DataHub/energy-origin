@@ -1,16 +1,13 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-noble AS build
+# Use the official .NET SDK image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
+# Set the working directory
 WORKDIR /app
 
 COPY domains/authorization domains/authorization
 COPY domains/certificates domains/certificates
 
+# Run the certificates project with --swagger
 RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger
+# Run the proxy project with --swagger
 RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
-
-FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-noble-chiseled AS final
-
-WORKDIR /app
-
-COPY --from=build /app/domains/authorization/Proxy/proxy.yaml domains/authorization/Proxy/proxy.yaml
-COPY --from=build /app/domains/certificates/Query.API/API/contracts.yaml domains/certificates/Query.API/API/contracts.yaml
