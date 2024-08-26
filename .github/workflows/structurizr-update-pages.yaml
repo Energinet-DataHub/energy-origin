@@ -3,9 +3,6 @@ name: Structurizr - Update pages
 on:
   workflow_call: {}
   workflow_dispatch: {}
-  push:
-    branches:
-      - strukturizr-fix-in-progress-2
 
 jobs:
   setup:
