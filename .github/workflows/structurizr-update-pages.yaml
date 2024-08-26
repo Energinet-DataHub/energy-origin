@@ -41,10 +41,6 @@ jobs:
     needs: setup
     if: ${{ needs.setup.outputs.run == 'true' }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ github.workspace }}/doc/diagrams/c4-model
     env:
       OUTPUT_STRUCTURE: doc/diagrams/c4-model/views/
     services:
@@ -67,18 +63,14 @@ jobs:
         shell: bash
         run: |
           sudo chmod -R 777 ./
-          pwd
-          ls
-          ls _
           cp -r _/doc ./
 
       - name: Setup node
         uses: actions/setup-node@v4
 
       - name: Prepare export-diagrams script
+        shell: bash
         run: |
-          set -e
-          rm -rf */
           npm i puppeteer
           curl https://raw.githubusercontent.com/structurizr/puppeteer/master/export-diagrams.js --output export-diagrams.js
 
