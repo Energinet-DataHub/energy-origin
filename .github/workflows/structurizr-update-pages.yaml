@@ -82,10 +82,6 @@ jobs:
           node export-diagrams.js 'http://localhost:8080/workspace/diagrams' png
           echo '::endgroup::'
 
-          echo '::group::File listing'
-          find . | grep -v node_modules
-          echo '::endgroup::'
-
           output=$(mktemp -d)
           chmod +rx "$output"
           echo "output=$output" >> $GITHUB_ENV
