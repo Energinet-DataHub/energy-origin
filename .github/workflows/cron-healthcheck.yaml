@@ -132,7 +132,6 @@ jobs:
   report:
     needs:
       - test-subsystems
-      - test-nugets
       - test-dockers
     name: Report on failure
     runs-on: ubuntu-latest
