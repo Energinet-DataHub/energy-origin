@@ -8,7 +8,7 @@
 	<ItemGroup>
 		<PackageReference Include="Google.Protobuf" Version="3.27.3" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.62.0" />
-		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.62.0" />
+		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.65.0" />
 		<PackageReference Include="Grpc.Tools" Version="2.62.0" PrivateAssets="all" />
 		<PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="1.0.0" />
 		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="1.1.1" />
