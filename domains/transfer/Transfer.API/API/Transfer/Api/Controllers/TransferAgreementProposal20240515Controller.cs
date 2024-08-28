@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Transfer.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy.B2CCvrClaim)]
+[Authorize(Policy.Frontend)]
 [ApiVersion(ApiVersions.Version20240515)]
 [Route("api/transfer/transfer-agreement-proposals")]
 public class TransferAgreementProposal20240515Controller(

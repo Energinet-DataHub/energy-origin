@@ -18,7 +18,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.6.8" />
         <PackageReference Include="FluentAssertions" Version="6.12.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.8" />
@@ -41,6 +40,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
         <ProjectReference Include="..\..\Testing\Testing.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>

@@ -88,7 +88,7 @@ public class GrantConsentTest
     [Fact]
     public async Task GivenSubTypeNotUser_WhenGrantingConsent_HttpForbiddenIsReturned()
     {
-        var api = _integrationTestFixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString());
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString(), termsAccepted: false);
 
         var response = await api.GrantConsent(Guid.NewGuid());
 
@@ -98,7 +98,7 @@ public class GrantConsentTest
     [Fact]
     public async Task GivenSubTypeNotUser_WhenGettingConsent_HttpForbiddenIsReturned()
     {
-        var api = _integrationTestFixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString());
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString(), termsAccepted: false);
 
         var response = await api.GetConsent(Guid.NewGuid());
 

@@ -7,8 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EnergyOrigin.TokenValidation.b2c;
 
-public static class IServiceCollectionExtensions
+public static class ServiceCollectionExtensions
 {
+    public static readonly List<string> SubTypeUserClaimValues = [Enum.GetName(SubjectType.User)!, Enum.GetName(SubjectType.User)!.ToLower()];
+
+    public static readonly List<string> BooleanTrueClaimValues = ["true", "True"];
+
     public static void AddB2CAndTokenValidation(this IServiceCollection services, B2COptions b2COptions, TokenValidationOptions validationOptions)
     {
         var tokenValidationParameters = new ValidationParameters(validationOptions.PublicKey);
@@ -45,29 +49,38 @@ public static class IServiceCollectionExtensions
 
         services.AddAuthorization(options =>
         {
-            var b2CPolicy = new AuthorizationPolicyBuilder()
+            var frontendOr3rdPartyPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(
                     AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
                     AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
+                .AddRequirements(new TermsAcceptedRequirement())
                 .Build();
-            options.AddPolicy(Policy.FrontendOr3rdParty, b2CPolicy);
+            options.AddPolicy(Policy.FrontendOr3rdParty, frontendOr3rdPartyPolicy);
 
-            var b2CSubTypeUserPolicy = new AuthorizationPolicyBuilder()
+            var frontendPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
-                .AddAuthenticationSchemes(
-                    AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
-                .RequireClaim(ClaimType.SubType, Enum.GetName(SubjectType.User)!, Enum.GetName(SubjectType.User)!.ToLower())
+                .AddAuthenticationSchemes(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
+                .RequireClaim(ClaimType.SubType, SubTypeUserClaimValues)
+                .RequireClaim(ClaimType.OrgCvr)
+                .AddRequirements(new TermsAcceptedRequirement())
+                .Build();
+            options.AddPolicy(Policy.Frontend, frontendPolicy);
+
+            var frontendWithoutTermsAccepted = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme)
+                .RequireClaim(ClaimType.SubType, SubTypeUserClaimValues)
                 .RequireClaim(ClaimType.OrgCvr)
                 .Build();
-            options.AddPolicy(Policy.Frontend, b2CSubTypeUserPolicy);
+            options.AddPolicy(Policy.FrontendWithoutTermsAccepted, frontendWithoutTermsAccepted);
 
-            var b2CCustomPolicyClientPolicy = new AuthorizationPolicyBuilder()
+            var b2CInternalPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AuthenticationScheme.B2CAuthenticationScheme)
                 .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.CustomPolicyClientId }))
                 .Build();
-            options.AddPolicy(Policy.B2CInternal, b2CCustomPolicyClientPolicy);
+            options.AddPolicy(Policy.B2CInternal, b2CInternalPolicy);
 
             // TODO: Cleanup after V1 release
             var tokenValidationRequiredCompanyPolicy = new AuthorizationPolicyBuilder()
@@ -80,5 +93,6 @@ public static class IServiceCollectionExtensions
 
         services.AddScoped<IdentityDescriptor>();
         services.AddScoped<AccessDescriptor>();
+        services.AddSingleton<IAuthorizationHandler, TermsAcceptedRequirementHandler>();
     }
 }

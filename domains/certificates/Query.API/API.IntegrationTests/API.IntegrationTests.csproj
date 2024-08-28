@@ -46,6 +46,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
         <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
         <ProjectReference Include="..\..\Shared\Testing\Testing.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
