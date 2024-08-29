@@ -1,7 +1,7 @@
 # Authorization
 
 * Status: Accepted
-* Deciders: @sahma19 @TopSwagCode @martinhenningjensen @rvplauborg @Sondergaard
+* Deciders: @sahma19, @TopSwagCode, @martinhenningjensen, @rvplauborg, @Sondergaard
 
 * Date: 2024-29-08
 
