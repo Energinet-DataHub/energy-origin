@@ -1,9 +1,9 @@
-# Metric naming convention
+# Wallet proxy
 
 * Status: Accepted
 * Deciders: @tnickelsen, @ckr123, @sahma19, @TopSwagCode, @martinhenningjensen
 
-* Date: 2025-01-01
+* Date: 2024-29-08
 
 ---
 
