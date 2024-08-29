@@ -23,6 +23,8 @@ Auth0 / other cloud / hosted 3rd party solutions. Unknown / long Vetting procces
 
 Hydra / Keyclock / other self hosted solutions. Handling the security aspects of running an identity provider. Having java / golang knownledge to help with customization of these products. Handling backup of data.
 
+Openiddict / Identity server. Dotnet solution for having full control over flow. Openiddict is more a package way of doing it. Identity server is more a full solution with ability to customize.
+
 Azure B2C. Other teams has used this before. Needing to learning custom policies xml to make customizations. Already vetted products that we can start using today.
 
 Below is the actual rating of considered options after :
