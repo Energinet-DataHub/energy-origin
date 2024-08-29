@@ -43,4 +43,4 @@ Below is the actual rating of considered options after :
 | Total                            | 22                | 18                       | 23                           | 29                                 |
 ## Decision Outcome
 
-We have choosen to go with Azure B2C, because it's a vetted secure hosted solution, that is already used within the company and most likely going to be the standard in the future. We had acritect in on this decision and they have scored all the solutions with the team. Azure B2C was the clear winner.
+We have choosen to go with Azure B2C, because it's a vetted secure hosted solution, that is already used within the company and most likely going to be the standard in the future. We had architect in on this decision and they have scored all the solutions with the team. Azure B2C was the clear winner.
