@@ -30,7 +30,7 @@ public class GetConsentForUserTests
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenHttpOkAndCorrectResponseReturned()
     {
         await using var dbContext = new ApplicationDbContext(_options);
-        var (idpUserId, tin, orgName) = await SeedData(dbContext);
+        var (idpUserId, tin, orgName) = await SeedData(dbContext, "12345678");
 
         var request = new AuthorizationUserRequest(
             Sub: idpUserId.Value,
@@ -82,18 +82,37 @@ public class GetConsentForUserTests
         result.TermsAccepted.Should().BeFalse();
     }
 
-    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext)
+    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext, string tin)
     {
         var user = Any.User();
-        var organization = Any.Organization(Tin.Create("12345678"));
+        var organization = Any.Organization(Tin.Create(tin));
         organization.AcceptTerms(dbContext.Terms.First());
-        var affiliation = Affiliation.Create(user, organization);
 
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Affiliations.AddAsync(affiliation);
+
         await dbContext.SaveChangesAsync();
 
         return (user.IdpUserId, organization.Tin, organization.Name);
+    }
+
+    [Fact]
+    public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenAffiliationIsCreated()
+    {
+        await using var dbContext = new ApplicationDbContext(_options);
+        var (idpUserId, tin, orgName) = await SeedData(dbContext, "12345679");
+
+        var request = new AuthorizationUserRequest(
+            Sub: idpUserId.Value,
+            Name: "Test User",
+            OrgCvr: tin.Value,
+            OrgName: orgName.Value
+        );
+
+        var response = await _api.GetConsentForUser(request);
+
+        response.Should().Be200Ok();
+
+        dbContext.Affiliations.ToList().Should().ContainSingle();
     }
 }
