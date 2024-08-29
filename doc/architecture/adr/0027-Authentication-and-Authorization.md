@@ -1,7 +1,7 @@
 # Authorization
 
 * Status: Accepted
-* Deciders: @tnickelsen, @sahma19 @TopSwagCode @martinhenningjensen @rvplauborg @Sondergaard
+* Deciders: @sahma19 @TopSwagCode @martinhenningjensen @rvplauborg @Sondergaard
 
 * Date: 2024-29-08
 
@@ -43,6 +43,7 @@ Below is the actual rating of considered options after :
 | Longevity                        | 2                 | 1                        | 2                            | 3                                  |
 | Notes                            |                   |                          |                              | In preview unfortunately!          |
 | Total                            | 22                | 18                       | 23                           | 29                                 |
+
 ## Decision Outcome
 
 We have choosen to go with Azure B2C, because it's a vetted secure hosted solution, that is already used within the company and most likely going to be the standard in the future. We had architect in on this decision and they have scored all the solutions with the team. Azure B2C was the clear winner.
