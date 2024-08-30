@@ -13,11 +13,11 @@ RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger
 RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
 
 # Use a chiseled Ubuntu image for the final stage
-FROM ubuntu/dotnet/dotnet-aspnet:8.0-24.04_stable AS runtime
+FROM cgr.dev/chainguard/aspnet-runtime:latest-dev AS runtime
 
-# Install necessary BusyBox tools
-COPY --from=busybox:1.36.1-uclibc /bin/sh /bin/sh
-COPY --from=busybox:1.36.1-uclibc /bin/cp /bin/cp
+## Install necessary BusyBox tools
+#COPY --from=busybox:1.36.1-uclibc /bin/sh /bin/sh
+#COPY --from=busybox:1.36.1-uclibc /bin/cp /bin/cp
 
 # Set the working directory
 WORKDIR /app
