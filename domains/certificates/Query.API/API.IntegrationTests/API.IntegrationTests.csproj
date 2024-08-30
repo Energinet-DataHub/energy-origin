@@ -22,8 +22,8 @@
         <PackageReference Include="Testcontainers" Version="3.9.0" />
         <PackageReference Include="Testcontainers.PostgreSql" Version="3.9.0" />
         <PackageReference Include="Testcontainers.RabbitMq" Version="3.9.0" />
-        <PackageReference Include="Verify.Xunit" Version="26.2.0" />
-        <PackageReference Include="WireMock.Net" Version="1.6.0" />
+        <PackageReference Include="Verify.Xunit" Version="26.3.0" />
+        <PackageReference Include="WireMock.Net" Version="1.6.1" />
         <PackageReference Include="xunit" Version="2.9.0" />
         <PackageReference Include="xunit.analyzers" Version="1.15.0">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
