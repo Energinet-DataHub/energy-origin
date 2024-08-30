@@ -1,5 +1,5 @@
 # Use the official .NET SDK image
-FROM cgr.dev/chainguard/dotnet-sdk:latest AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 # Set the working directory
 WORKDIR /app
