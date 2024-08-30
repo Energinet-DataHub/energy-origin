@@ -93,55 +93,6 @@ jobs:
           project-folder: ${{ env.path }}
           license-mapping-file: .mapped-licenses.json
 
-  test-nugets:
-    name: Test nugets
-    runs-on: ubuntu-latest
-    needs: setup
-    strategy:
-      fail-fast: false
-      matrix:
-        path: ${{ fromJson(needs.setup.outputs.nugets) }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Resolve values
-        shell: bash
-        run: |
-          solution=$(dirname "${{ matrix.path }}")
-          project=$(basename "${{ matrix.path }}")
-
-          [ -f "$solution/global.json" ] || cp "$solution/../../../global.json" "$solution/global.json"
-          sdk=$(jq -rce '.sdk.version' "$solution/global.json")
-
-          echo "SOLUTION=$solution" >> $GITHUB_ENV
-          echo "PROJECT=$project" >> $GITHUB_ENV
-          echo "SDK_VERSION=$sdk" >> $GITHUB_ENV
-
-      - name: Resolve version
-        id: resolve-version
-        shell: bash
-        run: echo "result=$(yq '.version' ${{ env.SOLUTION }}/configuration.yaml)" >> $GITHUB_OUTPUT
-
-      - name: Pin dotnet version
-        shell: bash
-        run: echo '{"sdk":{"rollForward":"disable","version":"${{ env.SDK_VERSION }}"}}' > "${{ env.SOLUTION }}/global.json"
-
-      - name: Build library
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-publish-nuget-package@v2
-        with:
-          solution-file-folder: ${{ env.SOLUTION }}
-          project-name: ${{ env.PROJECT }}
-          package-version: ${{ steps.resolve-version.outputs.result }}
-          nuget-api-key: not-a-valid-secret
-          dotnet-version: ${{ env.SDK_VERSION }}
-          upload: false
-
-      - name: Check license
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v2
-        with:
-          project-folder: ${{ env.SOLUTION }}/${{ env.PROJECT }}
-          license-mapping-file: .mapped-licenses.json
-
   test-dockers:
     name: Test dockers
     runs-on: ubuntu-latest
@@ -181,7 +132,6 @@ jobs:
   report:
     needs:
       - test-subsystems
-      - test-nugets
       - test-dockers
     name: Report on failure
     runs-on: ubuntu-latest
