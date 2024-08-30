@@ -64,7 +64,7 @@ runs:
 
     - name: Fetch Dockerfile
       shell: bash
-      run: mv Dockerfile.simplified Dockerfile
+      run: mv Dockerfile.simplified
 
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v2
