@@ -16,8 +16,8 @@ RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-noble-chiseled AS runtime
 
 # Install necessary BusyBox tools
-COPY --from=busybox:1.36 /bin/sh /bin/sh
-COPY --from=busybox:1.36 /bin/cp /bin/cp
+COPY --from=busybox:1.36.1-uclibc /bin/sh /bin/sh
+COPY --from=busybox:1.36.1-uclibc /bin/cp /bin/cp
 
 # Set the working directory
 WORKDIR /app
