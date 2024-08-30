@@ -25,7 +25,7 @@ find libraries/dotnet -type f -name '*.sln' | while read -r slnFile; do
  fi
 
  echo "Dependencies were updated for $slnFile. Incrementing version in configuration.yaml..."
- # Find the configuration.daml file in the same directory as the .sln file
+ # Find the configuration.yaml file in the same directory as the .sln file
  configFile=$(find . -maxdepth 1 -type f -name 'configuration.yaml')
  if [ -n "$configFile" ]; then
     # Read the current version, increment the patch version, and write to a temporary file
