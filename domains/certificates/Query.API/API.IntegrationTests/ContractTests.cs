@@ -753,7 +753,7 @@ public sealed class ContractTests : TestBase
             await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
         activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
-        Assert.Single(activityLog!.ActivityLogEntries.Where(x => x.ActorId.ToString() == actor));
+        Assert.Single(activityLog!.ActivityLogEntries, x => x.ActorId.ToString() == actor);
     }
 
     [Fact]
