@@ -87,6 +87,7 @@ public class ClaimService(
             SetClaimAttempt(consumptionCert.FederatedStreamId.StreamId.ToString());
             SetClaimAttempt(productionCert.FederatedStreamId.StreamId.ToString());
             metrics.AddClaim();
+            logger.LogInformation("Claimed {quantity} from production cert with id {productionCertId} and consumption cert with id {consumptionCertId}", quantity, productionCert.FederatedStreamId.StreamId, consumptionCert.FederatedStreamId.StreamId);
 
             productionCert.Quantity -= quantity;
             consumptionCert.Quantity -= quantity;
