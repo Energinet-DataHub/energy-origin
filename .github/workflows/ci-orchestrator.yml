@@ -1,3 +1,4 @@
+# ci-orchestrator.yaml
 name: CI orchestrator
 
 on:
@@ -18,6 +19,14 @@ jobs:
     steps:
       - name: Setup variables
         run: exit 0
+
+  test-subsystems:
+    needs: setup
+    uses: ./.github/workflows/test-subsystems.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
 
   build-subsystems:
     needs: setup
@@ -56,6 +65,7 @@ jobs:
     needs:
       [
         build-subsystems,
+        test-subsystems,  # Ensure the test-subsystems workflow is successful
         check-licenses,
         dependabot-validate,
         structurizr-update-pages,
@@ -72,4 +82,3 @@ jobs:
           if [[ ! -z "$verification" ]]; then
               echo "Failed"
               exit 1
-          fi

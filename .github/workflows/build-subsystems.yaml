@@ -25,17 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-  test:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
-        with:
-          solution: domains/EnergyTrackAndTrace.sln
-
   build-auth:
-    needs: test
+    needs: setup
     uses: ./.github/workflows/build-auth.yaml
     secrets: inherit
     with:
@@ -43,7 +34,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
-    needs: test
+    needs: setup
     uses: ./.github/workflows/build-authorization.yaml
     secrets: inherit
     with:
@@ -51,7 +42,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-certificates:
-    needs: test
+    needs: setup
     uses: ./.github/workflows/build-certificates.yaml
     secrets: inherit
     with:
@@ -59,7 +50,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-measurements:
-    needs: test
+    needs: setup
     uses: ./.github/workflows/build-measurements.yaml
     secrets: inherit
     with:
@@ -67,7 +58,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-oidc-mock:
-    needs: test
+    needs: setup
     uses: ./.github/workflows/build-oidc-mock.yaml
     secrets: inherit
     with:
@@ -75,7 +66,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-transfer:
-    needs: test
+    needs: setup
     uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
@@ -83,7 +74,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-openapi:
-    needs: test
+    needs: setup
     uses: ./.github/workflows/build-openapi.yaml
     secrets: inherit
     with:
