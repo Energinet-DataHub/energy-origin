@@ -62,9 +62,11 @@ jobs:
 
   deploy-images:
     needs:
-      - setup
-      - build-subsystems
-      - test-subsystems
+      [
+        setup,
+        build-subsystems,
+        test-subsystems,
+      ]
     uses: ./.github/workflows/deploy-images.yaml
     secrets: inherit
     with:
