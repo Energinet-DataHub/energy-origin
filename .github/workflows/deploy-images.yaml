@@ -15,9 +15,8 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    name: Deploy images
     concurrency: commits-base-environment
-    if: ${{ inputs.is-dependabot == 'false' }}
+    if: ${{ inputs.is-dependabot != true }}
     steps:
       - uses: actions/checkout@v4
 
