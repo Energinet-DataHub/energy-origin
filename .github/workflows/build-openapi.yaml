@@ -16,7 +16,6 @@ jobs:
   build-openapi-specifications:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -25,12 +24,12 @@ jobs:
 
       - name: Resolve image name
         shell: bash
-        run: echo "name=$(yq '.name' 'domains/configuration.yaml')" | tee -a $GITHUB_ENV
+        run: echo "name=$(yq '.name' 'domains/redoc/configuration.yaml')" | tee -a $GITHUB_ENV
 
       - name: Build and push Docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v2
         with:
-          dockerfile: ./domains/Dockerfile
+          dockerfile: ./domains/redoc/Dockerfile
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
           docker-context: .
