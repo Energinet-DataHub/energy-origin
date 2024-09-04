@@ -25,9 +25,9 @@ Con:
 * Merge hells, when wallet changes in main repository.
 * Might get out of sync with API endpoints and wallets wouldn't work with other wallet systems.
 
-Make auhtorization proxy for wallet:
+Make authorization proxy for wallet:
 
-Make a new subsystem to protect wallet behind as a proxy having custmo logic.
+Make a new subsystem to protect wallet behind as a proxy having custom logic.
 
 Pro:
 * Avoid merge hell.

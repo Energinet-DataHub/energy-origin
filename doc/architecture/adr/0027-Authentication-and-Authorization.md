@@ -12,8 +12,8 @@
 We need a way to handle authentication and authorization of these use cases:
 
 * A mitid user needs to be able to securely view and do actions on their data.
-* A mitid needs to be able to give 3rd party system access to work on their data.
-* A user needs to be able to give 3rd party mitid user access to work on their data.
+* A mitid user needs to be able to give 3rd party system access to work on their data.
+* A mitid user needs to be able to give 3rd party mitid user access to work on their data.
 
 ---
 
@@ -46,4 +46,4 @@ Below is the actual rating of considered options after :
 
 ## Decision Outcome
 
-We have choosen to go with Azure B2C, because it's a vetted secure hosted solution, that is already used within the company and most likely going to be the standard in the future. We had architect in on this decision and they have scored all the solutions with the team. Azure B2C was the clear winner.
+We have choosen to go with Azure B2C, because it's a vetted secure hosted solution, that is already used within the company and most likely going to be the standard in the future. We included architects in the decision and they have scored all the solutions with the team. Azure B2C was the clear winner.
