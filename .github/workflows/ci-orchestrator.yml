@@ -60,6 +60,17 @@ jobs:
       - name: Lint Actions
         run: find .github/workflows .github/actions -type f \( -iname \*.yaml -o -iname \*.yml \) | xargs -I {} action-validator --verbose {}
 
+  deploy-images:
+    needs:
+      - build-subsystems
+      - test-subsystems
+    uses: ./.github/workflows/deploy-images.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+    if: ${{ needs.test-subsystems.result == 'success' && needs.build-subsystems.result == 'success' }}
+
   allow-merge-ci-orchestrator:
     runs-on: ubuntu-latest
     needs:
@@ -70,6 +81,7 @@ jobs:
         structurizr-update-pages,
         test-subsystems,
         workflow-validate,
+        deploy-images,
       ]
     if: always()
     steps:
