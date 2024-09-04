@@ -65,10 +65,10 @@ jobs:
     needs:
       [
         build-subsystems,
-        test-subsystems,  # Ensure the test-subsystems workflow is successful
         check-licenses,
         dependabot-validate,
         structurizr-update-pages,
+        test-subsystems,
         workflow-validate,
       ]
     if: always()
@@ -82,3 +82,4 @@ jobs:
           if [[ ! -z "$verification" ]]; then
               echo "Failed"
               exit 1
+          fi
