@@ -18,6 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run dotnet tests
-        uses: ./.github/actions/dotnet-test/action.yaml
+        uses: ./.github/actions/dotnet-test
         with:
           solution: domains/EnergyTrackAndTrace.sln
