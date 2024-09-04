@@ -13,11 +13,79 @@ on:
         type: string
 
 jobs:
-  test:
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      transfer: ${{ steps.filter.outputs.transfer }}
+      measurements: ${{ steps.filter.outputs.measurements }}
+      certificates: ${{ steps.filter.outputs.certificates }}
+      authorization: ${{ steps.filter.outputs.authorization }}
+      auth: ${{ steps.filter.outputs.auth }}
+      oidc-mock: ${{ steps.filter.outputs.oidc-mock }}
+      libraries: ${{ steps.filter.outputs.libraries }}
     steps:
       - uses: actions/checkout@v4
-      - name: Run dotnet tests
-        uses: ./.github/actions/dotnet-test
+      - uses: dorny/paths-filter@v2
+        id: filter
         with:
-          solution: domains/EnergyTrackAndTrace.sln
+          filters: |
+            transfer:
+              - 'transfer/**'
+            measurements:
+              - 'measurements/**'
+            certificates:
+              - 'certificates/**'
+            authorization:
+              - 'authorization/**'
+            auth:
+              - 'auth/**'
+            oidc-mock:
+              - 'oidc-mock/**'
+            libraries:
+              - 'libraries/**'
+
+  test:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [
+          { name: 'Transfer', path: 'transfer', changed: '${{ needs.detect-changes.outputs.transfer }}' },
+          { name: 'Measurements', path: 'measurements', changed: '${{ needs.detect-changes.outputs.measurements }}' },
+          { name: 'Certificates', path: 'certificates', changed: '${{ needs.detect-changes.outputs.certificates }}' },
+          { name: 'Authorization', path: 'authorization', changed: '${{ needs.detect-changes.outputs.authorization }}' },
+          { name: 'Auth', path: 'auth', changed: '${{ needs.detect-changes.outputs.auth }}' },
+          { name: 'OIDC-Mock', path: 'oidc-mock', changed: '${{ needs.detect-changes.outputs.oidc-mock }}' },
+          { name: 'Libraries', path: 'libraries', changed: '${{ needs.detect-changes.outputs.libraries }}' }
+        ]
+    if: ${{ matrix.project.changed == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.401'  # adjust this to your .NET version
+      - name: Run tests for ${{ matrix.project.name }}
+        run: |
+          find ${{ matrix.project.path }} -name "*Tests.csproj" -o -name "*Test.csproj" | xargs -I {} dotnet test {} --logger "trx;LogFileName=test-results.trx"
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-${{ matrix.project.name }}
+          path: '**/TestResults/*.trx'
+
+  test-summary:
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v3
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: '**/test-results.trx'
+          reporter: dotnet-trx
+
