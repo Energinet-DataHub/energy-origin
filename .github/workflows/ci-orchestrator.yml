@@ -36,6 +36,14 @@ jobs:
       dry-run: ${{ needs.setup.outputs.dry-run }}
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
 
+  deploy-images:
+    needs: [ test-subsystems, build-subsystems ]
+    uses: ./.github/workflows/deploy-images.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ needs.setup.outputs.dry-run }}
+      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/check-licenses.yml
@@ -59,19 +67,6 @@ jobs:
             action-validator 0.5.1
       - name: Lint Actions
         run: find .github/workflows .github/actions -type f \( -iname \*.yaml -o -iname \*.yml \) | xargs -I {} action-validator --verbose {}
-
-  deploy-images:
-    needs:
-      [
-        setup,
-        build-subsystems,
-        test-subsystems,
-      ]
-    uses: ./.github/workflows/deploy-images.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ needs.setup.outputs.dry-run }}
-      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
 
   allow-merge-ci-orchestrator:
     runs-on: ubuntu-latest
