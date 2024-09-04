@@ -65,14 +65,13 @@ jobs:
       [
         setup,
         build-subsystems,
-        test-subsystems,
+        test-subsystems
       ]
     uses: ./.github/workflows/deploy-images.yaml
     secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
-    if: ${{ needs.test-subsystems.result == 'success' && needs.build-subsystems.result == 'success' }}
 
   allow-merge-ci-orchestrator:
     runs-on: ubuntu-latest
@@ -84,7 +83,7 @@ jobs:
         structurizr-update-pages,
         test-subsystems,
         workflow-validate,
-        deploy-images,
+        deploy-images
       ]
     if: always()
     steps:
