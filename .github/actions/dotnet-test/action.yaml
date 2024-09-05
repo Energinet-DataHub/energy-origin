@@ -19,7 +19,7 @@ runs:
     - name: Load - global.json
       shell: bash
       run: |
-        DIRECTORY=$(dirname '${{ inputs.solution }}')
+        DIRECTORY=$(dirname '${{ inputs.project-folder }}')
         test -f "$DIRECTORY/global.json" || exit 0
         echo "DIRECTORY=$DIRECTORY" >> $GITHUB_ENV
         echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" >> $GITHUB_ENV
