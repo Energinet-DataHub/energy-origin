@@ -13,35 +13,27 @@ on:
         type: string
 
 jobs:
-  setup:
+  update:
     runs-on: ubuntu-latest
+    name: Update environment
+    concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
       - uses: actions/checkout@v4
-    outputs:
-      matrix: |
-        {
-          "service": [
-            {"name": "auth", "config": "domains/auth/Auth.API/configuration.yaml"},
-            {"name": "authorization", "config": "domains/authorization/Authorization.API/configuration.yaml,domains/authorization/Proxy/configuration.yaml"},
-            {"name": "certificates", "config": "domains/certificates/Query.API/configuration.yaml"},
-            {"name": "measurements", "config": "domains/measurements/Measurements.API/configuration.yaml"},
-            {"name": "oidc-mock", "config": "domains/oidc-mock/API/configuration.yaml"},
-            {"name": "transfer", "config": "domains/transfer/Transfer.API/configuration.yaml,domains/transfer/ClaimAutomation/configuration.yaml,domains/transfer/TransferAgreementAutomation/configuration.yaml"},
-            {"name": "openapi", "config": "domains/redoc/configuration.yaml"}
-          ]
-        }
 
-  deploy:
-    needs: setup
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{fromJson(needs.setup.outputs.matrix)}}
-      fail-fast: false
-    steps:
-      - name: Deploy ${{ matrix.service.name }}
+      - name: Update environment
         uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
         with:
-          configurations: ${{ matrix.service.config }}
+          configurations: |
+            domains/auth/Auth.API/configuration.yaml
+            domains/authorization/Authorization.API/configuration.yaml
+            domains/authorization/Proxy/configuration.yaml
+            domains/certificates/Query.API/configuration.yaml
+            domains/measurements/Measurements.API/configuration.yaml
+            domains/oidc-mock/API/configuration.yaml
+            domains/transfer/Transfer.API/configuration.yaml
+            domains/transfer/ClaimAutomation/configuration.yaml
+            domains/transfer/TransferAgreementAutomation/configuration.yaml
+            domains/redoc/configuration.yaml
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ inputs.dry_run }}
+          dry_run: ${{ inputs.dry-run }}
