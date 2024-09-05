@@ -9,7 +9,7 @@ inputs:
 
   dotnet-version:
     description: The version of dotnet to use
-    default: 8.0.x
+    default: 8.0.401
     required: true
 
   pin-version:
@@ -85,12 +85,6 @@ runs:
       run: |
         dotnet tool restore || true
         dotnet restore
-
-    - name: Lint
-      shell: bash
-      env:
-        version: ""
-      run: dotnet format --verify-no-changes -v diag
 
     - name: Test
       shell: bash

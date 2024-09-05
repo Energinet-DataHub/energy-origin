@@ -82,8 +82,19 @@ jobs:
         uses: ./.github/actions/dotnet-validate
         with:
           paths: ${{ matrix.project-data.project }}
-          dotnet-version: 8.0.x
+          dotnet-version: 8.0.401
           sql-file: ${{ matrix.project-data.migrations }}
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint code
+        working-directory: domains
+        shell: bash
+        run: dotnet format --verify-no-changes -v diag
 
 #  build:
 #    needs: find-diff
