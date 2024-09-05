@@ -26,7 +26,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.401'  # Adjust this to your .NET version
+          dotnet-version: '8.0.x'  # Adjust this to your .NET version
 
       - name: Restore .NET tools
         working-directory: ./domains
@@ -34,7 +34,6 @@ jobs:
 
       - name: Find affected projects
         id: affected
-        working-directory: ./domains
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # For pull requests, use the PR base and head
@@ -46,7 +45,7 @@ jobs:
             to_commit=$(git rev-parse HEAD)
           fi
 
-          affected_projects=$(dotnet affected --from $from_commit --to $to_commit --format json --dry-run)
+          affected_projects=$(dotnet-affected --repository-path ${{ github.workspace }} --solution-path ./domains/EnergyTrackAndTrace.sln --from $from_commit --to $to_commit --format json --dry-run)
           echo "projects=$affected_projects" >> $GITHUB_OUTPUT
 
   build:
