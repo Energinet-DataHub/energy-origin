@@ -37,7 +37,9 @@ jobs:
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
 
   deploy-images:
-    needs: [ test-subsystems, build-subsystems ]
+    needs:
+      - test-subsystems
+      - build-subsystems
     uses: ./.github/workflows/deploy-images.yaml
     secrets: inherit
     with:
