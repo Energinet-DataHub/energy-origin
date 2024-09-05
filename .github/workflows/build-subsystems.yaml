@@ -13,72 +13,68 @@ on:
         type: string
 
 jobs:
-  setup:
+  find-diff:
     runs-on: ubuntu-latest
     outputs:
-      auth: ${{ steps.auth.outputs.matches }}
-      authorization: ${{ steps.authorization.outputs.matches }}
-      certificates: ${{ steps.certificates.outputs.matches }}
-      measurements: ${{ steps.measurements.outputs.matches }}
-      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
-      transfer: ${{ steps.transfer.outputs.matches }}
+      projects-to-build: ${{ steps.scan-csproj.outputs.project-list }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  build-auth:
-    needs: setup
-    uses: ./.github/workflows/build-auth.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+      - name: Find changed solution folders using Find Diff Action
+        id: diff
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: |
+            domains/auth/**
+            domains/authorization/**
+            domains/certificates/**
+            domains/measurements/**
+            domains/oidc-mock/**
+            domains/transfer/**
+            domains/openapi/**
 
-  build-authorization:
-    needs: setup
-    uses: ./.github/workflows/build-authorization.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+      - name: Scan directories for .csproj files and configurations
+        id: scan-csproj
+        run: |
+          project_list=()
 
-  build-certificates:
-    needs: setup
-    uses: ./.github/workflows/build-certificates.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          for changed_domain in $(echo "${{ steps.diff.outputs.list }}" | jq -r '.[]'); do
+            if [ -d "$changed_domain" ]; then
+              for csproj in $(find "$changed_domain" -name '*.csproj'); do
+                base_dir=$(dirname "$csproj")
 
-  build-measurements:
-    needs: setup
-    uses: ./.github/workflows/build-measurements.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+                config_file="$base_dir/configuration.yaml"
+                migrations_file="$base_dir/migrations/API.sql"
 
-  build-oidc-mock:
-    needs: setup
-    uses: ./.github/workflows/build-oidc-mock.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+                project_list+=("{\"solution\": \"$changed_domain/$changed_domain.sln\", \"project\": \"$csproj\", \"config\": \"$config_file\", \"migrations\": \"$migrations_file\"}")
+              done
+            fi
+          done
 
-  build-transfer:
-    needs: setup
-    uses: ./.github/workflows/build-transfer.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          if [ ${#project_list[@]} -eq 0 ]; then
+            echo "::set-output name=project-list=[]"
+          else
+            echo "::set-output name=project-list=$(echo ${project_list[@]} | jq -R -s 'split(" ")')"
+          fi
 
-  build-openapi:
-    needs: setup
-    uses: ./.github/workflows/build-openapi.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+  build:
+    needs: find-diff
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project-data: ${{ fromJson(needs.find-diff.outputs.projects-to-build) }}
+      fail-fast: false
 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Build ${{ matrix.project-data.project }}
+        uses: ./.github/actions/dotnet-build
+        with:
+          solution: ${{ matrix.project-data.solution }}
+          project: ${{ matrix.project-data.project }}
+          configuration: ${{ matrix.project-data.config }}
+          migrations: ${{ matrix.project-data.migrations }}
+          dry-run: ${{ inputs.dry-run }}
