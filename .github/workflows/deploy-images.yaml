@@ -6,11 +6,11 @@ on:
       dry-run:
         description: "An indication of whether to commit/publish results"
         required: true
-        type: boolean
+        type: string
       is-dependabot:
         description: "An indication of a dependabot pull request"
         required: true
-        type: boolean
+        type: string
 
 jobs:
   update:
