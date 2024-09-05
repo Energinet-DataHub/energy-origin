@@ -38,6 +38,7 @@ jobs:
 
   deploy-images:
     needs:
+      - setup
       - test-subsystems
       - build-subsystems
     uses: ./.github/workflows/deploy-images.yaml
