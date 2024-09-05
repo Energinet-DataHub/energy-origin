@@ -70,4 +70,4 @@ Scenarios where user-specific resources need to be accessed or user consent is n
 
 ## Decision Outcome
 
-We choose to go with Client Credentials flow, since we fetching data on an organization level and dont need user interaction as part of the process. We don't need fine grained user level permissions. Simplicity if not needing user logins all the time and managing of user sessions / tokens.
+We choose to go with Client Credentials flow, since we are fetching data on an organization level and dont need user interaction as part of the process. We don't need fine grained user level permissions. Simplicity if not needing user logins all the time and managing of user sessions / tokens.
