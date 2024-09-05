@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       projects-to-build: ${{ steps.scan-csproj.outputs.project-list }}
+      has-changes: ${{ steps.diff.outputs.matches }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,7 +49,7 @@ jobs:
                   config_file="$base_dir/configuration.yaml"
                   migrations_file="$base_dir/migrations/API.sql"
 
-                  project_data="{\"solution\": \"$domain_dir/$domain_dir.sln\", \"project\": \"$csproj\", \"config\": \"$config_file\", \"migrations\": \"$migrations_file\"}"
+                  project_data="{\"solution\":\"$domain_dir/$domain_dir.sln\",\"project\":\"$csproj\",\"config\":\"$config_file\",\"migrations\":\"$migrations_file\"}"
                   project_list+=("$project_data")
                 done < <(find "$domain_dir" -name '*.csproj')
               fi
@@ -58,7 +59,7 @@ jobs:
           if [ ${#project_list[@]} -eq 0 ]; then
             echo "project-list=[]" >> $GITHUB_OUTPUT
           else
-            json_array=$(printf '%s\n' "${project_list[@]}" | jq -s '.')
+            json_array=$(printf '%s\n' "${project_list[@]}" | jq -sc .)
             echo "project-list=$json_array" >> $GITHUB_OUTPUT
           fi
 
