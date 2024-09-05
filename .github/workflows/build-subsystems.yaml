@@ -67,6 +67,7 @@ jobs:
           fi
 
   validate:
+    name: Validate ${{ matrix.project-data.project.split('/')[1] }} / ${{ matrix.project-data.project.split('/')[2] }} / ${{ matrix.project-data.project.split('/')[3] }}
     needs: find-diff
     runs-on: ubuntu-latest
     if: ${{ fromJson(needs.find-diff.outputs.projects-to-build)[0] }}
