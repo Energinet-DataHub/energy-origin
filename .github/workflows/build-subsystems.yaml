@@ -35,11 +35,26 @@ jobs:
             domains/transfer/**
             domains/openapi/**
 
-      - name: Scan changed folders
-        id: scan-changes
+      - name: Scan directories for changed domains
+        id: scan-domains
         run: |
-          changed_folders=$(echo "${{ steps.diff.outputs.list }}" | grep -oP 'domains/\K[^/]+' | sort -u | jq -R -s 'split("\n") | map(select(length > 0))')
-          echo "folders=$changed_folders" >> $GITHUB_OUTPUT
+          domain_dirs=()
+
+          while IFS= read -r changed_file; do
+            if [ -n "$changed_file" ]; then
+              domain_dir=$(echo "$changed_file" | cut -d'/' -f1-2)
+              if [ -d "$domain_dir" ] && [[ ! " ${domain_dirs[@]} " =~ " ${domain_dir} " ]]; then
+                domain_dirs+=("$domain_dir")
+              fi
+            fi
+          done <<< "${{ steps.diff.outputs.list }}"
+
+          if [ ${#domain_dirs[@]} -eq 0 ]; then
+            echo "domain-list=[]" >> $GITHUB_OUTPUT
+          else
+            json_array=$(printf '%s\n' "${domain_dirs[@]}" | jq -R . | jq -sc .)
+            echo "domain-list=$json_array" >> $GITHUB_OUTPUT
+          fi
 
 #      - name: Scan directories for .csproj files and configurations
 #        id: scan-csproj
