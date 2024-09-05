@@ -1,4 +1,4 @@
-name: Build Subsystems
+name: Build and Test Subsystems
 
 on:
   workflow_call:
@@ -64,12 +64,11 @@ jobs:
     strategy:
       matrix:
         project-data: ${{ fromJson(needs.find-diff.outputs.projects-to-build) }}
+        dry-run: ${{ inputs.dry-run }}
+        is-dependabot: ${{ inputs.is-dependabot }}
       fail-fast: false
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Build ${{ matrix.project-data.project }}
         uses: ./.github/actions/dotnet-build
         with:
@@ -77,4 +76,18 @@ jobs:
           project: ${{ matrix.project-data.project }}
           configuration: ${{ matrix.project-data.config }}
           migrations: ${{ matrix.project-data.migrations }}
-          dry-run: ${{ inputs.dry-run }}
+          dry-run: ${{ matrix.dry-run }}
+
+  test:
+    needs: find-diff
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project-data: ${{ fromJson(needs.find-diff.outputs.projects-to-build) }}
+      fail-fast: false
+
+    steps:
+      - name: Run dotnet tests for ${{ matrix.project-data.project }}
+        uses: ./.github/actions/dotnet-test
+        with:
+          solution: ${{ matrix.project-data.solution }}
