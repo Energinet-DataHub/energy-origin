@@ -4,7 +4,7 @@ description: Runs the dotnet tests
 inputs:
   solution:
     description: Is the path to a solution file.
-    required: false
+    required: true
   project-folder:
     description: The solution folder to test
     required: true
