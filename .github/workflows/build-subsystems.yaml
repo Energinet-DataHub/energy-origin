@@ -16,7 +16,7 @@ jobs:
   find-diff:
     runs-on: ubuntu-latest
     outputs:
-      projects-to-build: ${{ steps.scan-csproj.outputs.project-list }}
+      domain-list: ${{ steps.scan-domains.outputs.domain-list }}
       has-changes: ${{ steps.diff.outputs.matches }}
     steps:
       - name: Checkout code
@@ -59,10 +59,10 @@ jobs:
   test:
     needs: find-diff
     runs-on: ubuntu-latest
-    if: ${{ fromJson(needs.find-diff.outputs.changed-folders)[0] }}
+    if: ${{ fromJson(needs.find-diff.outputs.domain-list)[0] }}
     strategy:
       matrix:
-        folder: ${{ fromJson(needs.find-diff.outputs.changed-folders) }}
+        folder: ${{ fromJson(needs.find-diff.outputs.domain-list) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -72,6 +72,72 @@ jobs:
         with:
           solution: domains/EnergyTrackAndTrace.sln
           project-folder: ${{ matrix.folder }}
+
+
+  #      - name: Scan directories for .csproj files and configurations
+#        id: scan-csproj
+#        run: |
+#          project_list=()
+#
+#          while IFS= read -r changed_file; do
+#            if [ -n "$changed_file" ]; then
+#              domain_dir=$(echo "$changed_file" | cut -d'/' -f1-2)
+#              if [ -d "$domain_dir" ]; then
+#                while IFS= read -r csproj; do
+#                  base_dir=$(dirname "$csproj")
+#                  config_file="$base_dir/configuration.yaml"
+#                  migrations_file="$base_dir/migrations/API.sql"
+#
+#                  project_data="{\"solution\":\"$domain_dir/$domain_dir.sln\",\"project\":\"$csproj\",\"config\":\"$config_file\",\"migrations\":\"$migrations_file\"}"
+#                  project_list+=("$project_data")
+#                done < <(find "$domain_dir" -name '*.csproj')
+#              fi
+#            fi
+#          done <<< "${{ steps.diff.outputs.list }}"
+#
+#          if [ ${#project_list[@]} -eq 0 ]; then
+#            echo "project-list=[]" >> $GITHUB_OUTPUT
+#          else
+#            json_array=$(printf '%s\n' "${project_list[@]}" | jq -sc .)
+#            echo "project-list=$json_array" >> $GITHUB_OUTPUT
+#          fi
+#
+#  build:
+#    needs: find-diff
+#    runs-on: ubuntu-latest
+#    if: ${{ fromJson(needs.find-diff.outputs.projects-to-build)[0] }}
+#    strategy:
+#      matrix:
+#        project-data: ${{ fromJson(needs.find-diff.outputs.projects-to-build) }}
+#        dry-run: ${{ inputs.dry-run }}
+#        is-dependabot: ${{ inputs.is-dependabot }}
+#      fail-fast: false
+#    steps:
+#      - name: Build ${{ matrix.project-data.project }}
+#        uses: ./.github/actions/dotnet-build
+#        with:
+#          solution: ${{ matrix.project-data.solution }}
+#          project: ${{ matrix.project-data.project }}
+#          configuration: ${{ matrix.project-data.config }}
+#          migrations: ${{ matrix.project-data.migrations }}
+#          dry-run: ${{ matrix.dry-run }}
+
+#  test:
+#    needs: find-diff
+#    runs-on: ubuntu-latest
+#    if: ${{ fromJson(needs.find-diff.outputs.changed-folders)[0] }}
+#    strategy:
+#      matrix:
+#        folder: ${{ fromJson(needs.find-diff.outputs.changed-folders) }}
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Run dotnet tests for ${{ matrix.folder }}
+#        uses: ./.github/actions/dotnet-test
+#        with:
+#          solution: domains/EnergyTrackAndTrace.sln
+#          project-folder: ${{ matrix.folder }}
 
 
 #  deploy-images:
