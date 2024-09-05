@@ -21,5 +21,3 @@ public static partial class OptionsExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 }
-
-//hello
