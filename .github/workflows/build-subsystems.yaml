@@ -67,7 +67,7 @@ jobs:
           fi
 
   validate:
-    name: Validate ${{ matrix.project-data.project.split('/')[1] }} / ${{ matrix.project-data.project.split('/')[2] }} / ${{ matrix.project-data.project.split('/')[3] }}
+    name: Validate ${{ format('{0}/{1}/{2}', matrix.project-data.project.split('/')[1], matrix.project-data.project.split('/')[2], matrix.project-data.project.split('/')[3]) }}
     needs: find-diff
     runs-on: ubuntu-latest
     if: ${{ fromJson(needs.find-diff.outputs.projects-to-build)[0] }}
@@ -85,6 +85,7 @@ jobs:
           paths: ${{ matrix.project-data.project }}
           dotnet-version: 8.0.x
           sql-file: ${{ matrix.project-data.migrations }}
+
 
 #  build:
 #    needs: find-diff
