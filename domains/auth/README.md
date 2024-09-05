@@ -32,3 +32,5 @@ Here is an example of how to generate migrations SQL for the API project:
 ```shell
 dotnet ef migrations script --idempotent --project Auth.API/API/API.csproj --output migrations/API.sql
 ```
+
+#Test Auth
