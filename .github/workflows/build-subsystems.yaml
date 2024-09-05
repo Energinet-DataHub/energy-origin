@@ -91,3 +91,20 @@ jobs:
         uses: ./.github/actions/dotnet-test
         with:
           solution: ${{ matrix.project-data.solution }}
+
+  deploy-images:
+    needs: [ find-diff, build, test ]
+    runs-on: ubuntu-latest
+    concurrency: commits-base-environment
+    if: ${{ inputs.is-dependabot == 'false' && fromJson(needs.find-diff.outputs.projects-to-build)[0] }}
+    strategy:
+      matrix:
+        project-data: ${{ fromJson(needs.find-diff.outputs.projects-to-build) }}
+      fail-fast: false
+    steps:
+      - name: Update environment
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
+        with:
+          configurations: ${{ matrix.project-data.config }}
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ inputs.dry-run }}
