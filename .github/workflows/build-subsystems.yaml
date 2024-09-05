@@ -67,7 +67,7 @@ jobs:
         dry-run: ${{ inputs.dry-run }}
         is-dependabot: ${{ inputs.is-dependabot }}
       fail-fast: false
-
+    if: ${{ needs.find-diff.outputs.projects-to-build != '[]' }}
     steps:
       - name: Build ${{ matrix.project-data.project }}
         uses: ./.github/actions/dotnet-build
@@ -85,7 +85,7 @@ jobs:
       matrix:
         project-data: ${{ fromJson(needs.find-diff.outputs.projects-to-build) }}
       fail-fast: false
-
+    if: ${{ needs.find-diff.outputs.projects-to-build != '[]' }}
     steps:
       - name: Run dotnet tests for ${{ matrix.project-data.project }}
         uses: ./.github/actions/dotnet-test
