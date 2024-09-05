@@ -45,7 +45,7 @@ jobs:
             to_commit=$(git rev-parse HEAD)
           fi
 
-          affected_projects=$(dotnet affected --repository-path ${{ github.workspace }} --solution-path ./domains/EnergyTrackAndTrace.sln --from $from_commit --to $to_commit --format json --dry-run)
+          affected_projects=$(dotnet-affected --repository-path ${{ github.workspace }} --solution-path ./domains/EnergyTrackAndTrace.sln --from $from_commit --to $to_commit --format json --dry-run)
           echo "projects=$affected_projects" >> $GITHUB_OUTPUT
 
   build:
