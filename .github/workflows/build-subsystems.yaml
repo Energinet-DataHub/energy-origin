@@ -67,7 +67,7 @@ jobs:
           fi
 
   validate:
-    name: Validate ${{ format('{0}/{1}/{2}', matrix.project-data.project.split('/')[1], matrix.project-data.project.split('/')[2], matrix.project-data.project.split('/')[3]) }}
+    name: Validate ${{ matrix.project-data.project }}
     needs: find-diff
     runs-on: ubuntu-latest
     if: ${{ fromJson(needs.find-diff.outputs.projects-to-build)[0] }}
@@ -79,7 +79,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run dotnet validate for ${{ matrix.project-data.project }}
+      - name: Set job name
+        id: set-name
+        run: |
+          IFS='/' read -ra ADDR <<< "${{ matrix.project-data.project }}"
+          echo "job_name=${ADDR[1]}/${ADDR[3]}" >> $GITHUB_OUTPUT
+
+      - name: Run dotnet validate for ${{ steps.set-name.outputs.job_name }}
         uses: ./.github/actions/dotnet-validate
         with:
           paths: ${{ matrix.project-data.project }}
