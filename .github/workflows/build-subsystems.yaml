@@ -38,7 +38,7 @@ jobs:
       - name: Scan changed folders
         id: scan-changes
         run: |
-          changed_folders=$(echo "${{ steps.diff.outputs.list }}" | grep -oP 'domains/\K[^/]+' | sort -u | jq -R . | jq -s .)
+          changed_folders=$(echo "${{ steps.diff.outputs.list }}" | grep -oP 'domains/\K[^/]+' | sort -u | jq -R -s 'split("\n") | map(select(length > 0))')
           echo "folders=$changed_folders" >> $GITHUB_OUTPUT
 
 #      - name: Scan directories for .csproj files and configurations
