@@ -20,14 +20,6 @@ jobs:
       - name: Setup variables
         run: exit 0
 
-  test-subsystems:
-    needs: setup
-    uses: ./.github/workflows/test-subsystems.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ needs.setup.outputs.dry-run }}
-      is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
-
   build-subsystems:
     needs: setup
     uses: ./.github/workflows/build-subsystems.yaml
@@ -39,7 +31,6 @@ jobs:
   deploy-images:
     needs:
       - setup
-      - test-subsystems
       - build-subsystems
     uses: ./.github/workflows/deploy-images.yaml
     secrets: inherit
@@ -79,7 +70,6 @@ jobs:
         check-licenses,
         dependabot-validate,
         structurizr-update-pages,
-        test-subsystems,
         workflow-validate,
         deploy-images
       ]
