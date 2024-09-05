@@ -40,7 +40,7 @@ runs:
     - name: Test
       uses: ./.github/actions/dotnet-validate-solution
       with:
-        path: ${{ inputs.project-folder }}
+        path: ${{ env.DIRECTORY }}
         dotnet-version: ${{ env.SDK }}
         pin-version: true
         project-folder: ${{ inputs.project-folder }}
