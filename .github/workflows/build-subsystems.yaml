@@ -92,7 +92,6 @@ jobs:
           dotnet-version: 8.0.x
           sql-file: ${{ matrix.project-data.migrations }}
 
-
 #  build:
 #    needs: find-diff
 #    runs-on: ubuntu-latest
