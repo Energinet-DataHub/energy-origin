@@ -45,15 +45,8 @@ jobs:
               domain_dir=$(echo "$changed_file" | cut -d'/' -f1-2)
               if [ -d "$domain_dir" ]; then
                 while IFS= read -r csproj; do
-                  # Handle special case for certificates folder
-                  if [[ "$domain_dir" == "domains/certificates" ]]; then
-                    project_name="Query.API"
-                  else
-                    project_name="$(basename "$domain_dir").API"
-                  fi
-
-                  # Check if the project matches the API naming
-                  if [[ "$csproj" == *"$project_name.csproj" ]]; then
+                  # Check if the project is a test project by name or references
+                  if [[ "$csproj" == *".Tests.csproj" ]] || grep -q 'Microsoft.NET.Test.Sdk' "$csproj"; then
                     base_dir=$(dirname "$csproj")
                     config_file="$base_dir/configuration.yaml"
                     migrations_file="$base_dir/migrations/API.sql"
