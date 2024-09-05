@@ -21,12 +21,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for all branches and tags
+          fetch-depth: 0  # We need the full history to compare commits
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.401'
+          dotnet-version: '8.0.401'  # Adjust this to your .NET version
 
       - name: Restore .NET tools
         working-directory: ./domains
@@ -36,7 +36,17 @@ jobs:
         id: affected
         working-directory: ./domains
         run: |
-          affected_projects=$(dotnet affected --base origin/main --format json)
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For pull requests, use the PR base and head
+            from_commit="${{ github.event.pull_request.base.sha }}"
+            to_commit="${{ github.event.pull_request.head.sha }}"
+          else
+            # For subsequent commits, use the last pushed commit and current HEAD
+            from_commit=$(git rev-parse HEAD~1)
+            to_commit=$(git rev-parse HEAD)
+          fi
+
+          affected_projects=$(dotnet affected --from $from_commit --to $to_commit --format json --dry-run)
           echo "projects=$affected_projects" >> $GITHUB_OUTPUT
 
   build:
