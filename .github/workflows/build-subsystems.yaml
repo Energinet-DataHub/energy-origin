@@ -26,7 +26,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.401'  # Adjust this to your .NET version
+          dotnet-version: '8.0.x'  # Adjust this to your .NET version
 
       - name: Restore .NET tools
         working-directory: ./domains
