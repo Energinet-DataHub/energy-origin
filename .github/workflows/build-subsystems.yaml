@@ -16,7 +16,7 @@ jobs:
   find-diff:
     runs-on: ubuntu-latest
     outputs:
-      affected-projects: ${{ steps.dotnet_affected.outputs.affected }}
+      affected-projects: ${{ steps.affected.outputs.projects }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,53 +26,114 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'  # Adjust this to your .NET version
+          dotnet-version: '8.0.401'  # Adjust this to your .NET version
 
-      - name: Run dotnet-affected
-        uses: leonardochaia/dotnet-affected-action@v1
-        id: dotnet_affected
-        with:
-          from: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || 'origin/main' }}
-          to: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - name: Restore .NET tools
+        working-directory: ./domains
+        run: dotnet tool restore
 
-      - name: Debug output
+      - name: Find affected projects
+        id: affected
         run: |
-          echo "Affected projects: ${{ steps.dotnet_affected.outputs.affected }}"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For pull requests, use the PR base and head
+            from_commit="${{ github.event.pull_request.base.sha }}"
+            to_commit="${{ github.event.pull_request.head.sha }}"
+          else
+            # For subsequent commits, use the last pushed commit and current HEAD
+            from_commit=$(git rev-parse HEAD~1)
+            to_commit=$(git rev-parse HEAD)
+          fi
+
+          affected_projects=$(dotnet dotnet-affected --repository-path ${{ github.workspace }} --solution-path ./domains/EnergyTrackAndTrace.sln --from $from_commit --to $to_commit --format json --dry-run)
+          echo "projects=$affected_projects" >> $GITHUB_OUTPUT
 
   build:
     needs: find-diff
     runs-on: ubuntu-latest
-    if: ${{ needs.find-diff.outputs.affected-projects != '' }}
+    if: ${{ fromJson(needs.find-diff.outputs.affected-projects).length > 0 }}
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.find-diff.outputs.affected-projects) }}
+      fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build affected projects
-        run: dotnet build --configuration Release affected.proj
+      - name: Prepare build inputs
+        id: prepare
+        run: |
+          project_path="domains/${{ matrix.project }}/${{ matrix.project }}.csproj"
+          solution_path="domains/${{ matrix.project }}/${{ matrix.project }}.sln"
+          config_path="domains/${{ matrix.project }}/configuration.yaml"
+          migrations_path="domains/${{ matrix.project }}/migrations/API.sql"
+
+          echo "project=$project_path" >> $GITHUB_OUTPUT
+          echo "solution=$solution_path" >> $GITHUB_OUTPUT
+          echo "config=$config_path" >> $GITHUB_OUTPUT
+
+          if [ -f "$migrations_path" ]; then
+            echo "migrations=$migrations_path" >> $GITHUB_OUTPUT
+          else
+            echo "migrations=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build ${{ matrix.project }}
+        uses: ./.github/actions/dotnet-build
+        with:
+          solution: ${{ steps.prepare.outputs.solution }}
+          project: ${{ steps.prepare.outputs.project }}
+          configuration: ${{ steps.prepare.outputs.config }}
+          migrations: ${{ steps.prepare.outputs.migrations }}
+          dry-run: ${{ inputs.dry-run }}
+
 
   test:
     needs: find-diff
     runs-on: ubuntu-latest
-    if: ${{ needs.find-diff.outputs.affected-projects != '' }}
+    if: ${{ fromJson(needs.find-diff.outputs.affected-projects).length > 0 }}
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.find-diff.outputs.affected-projects) }}
+      fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Test affected projects
-        run: dotnet test --no-restore --verbosity normal affected.proj
+      - name: Prepare test inputs
+        id: prepare
+        run: |
+          solution_path="domains/${{ matrix.project }}/${{ matrix.project }}.sln"
+          echo "solution=$solution_path" >> $GITHUB_OUTPUT
+
+      - name: Run dotnet tests for ${{ matrix.project }}
+        uses: ./.github/actions/dotnet-test
+        with:
+          solution: ${{ steps.prepare.outputs.solution }}
+
 
   deploy-images:
-    needs: [find-diff, build, test]
+    needs: [ find-diff, build, test ]
     runs-on: ubuntu-latest
     concurrency: commits-base-environment
-    if: ${{ inputs.is-dependabot == 'false' && needs.find-diff.outputs.affected-projects != '' }}
+    if: ${{ inputs.is-dependabot == 'false' && fromJson(needs.find-diff.outputs.affected-projects).length > 0 }}
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.find-diff.outputs.affected-projects) }}
+      fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Prepare deploy inputs
+        id: prepare
+        run: |
+          config_path="domains/${{ matrix.project }}/configuration.yaml"
+          echo "config=$config_path" >> $GITHUB_OUTPUT
 
       - name: Update environment
         uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
         with:
-          configurations: affected.proj
+          configurations: ${{ steps.prepare.outputs.config }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
