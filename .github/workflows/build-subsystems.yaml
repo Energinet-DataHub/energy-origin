@@ -39,23 +39,25 @@ jobs:
         run: |
           project_list=()
 
-          for changed_domain in $(echo "${{ steps.diff.outputs.list }}" | jq -r '.[]'); do
-            if [ -d "$changed_domain" ]; then
-              for csproj in $(find "$changed_domain" -name '*.csproj'); do
-                base_dir=$(dirname "$csproj")
+          while IFS= read -r changed_file; do
+            if [ -n "$changed_file" ]; then
+              domain_dir=$(echo "$changed_file" | cut -d'/' -f1-2)
+              if [ -d "$domain_dir" ]; then
+                for csproj in $(find "$domain_dir" -name '*.csproj'); do
+                  base_dir=$(dirname "$csproj")
+                  config_file="$base_dir/configuration.yaml"
+                  migrations_file="$base_dir/migrations/API.sql"
 
-                config_file="$base_dir/configuration.yaml"
-                migrations_file="$base_dir/migrations/API.sql"
-
-                project_list+=("{\"solution\": \"$changed_domain/$changed_domain.sln\", \"project\": \"$csproj\", \"config\": \"$config_file\", \"migrations\": \"$migrations_file\"}")
-              done
+                  project_list+=("{\"solution\": \"$domain_dir/$domain_dir.sln\", \"project\": \"$csproj\", \"config\": \"$config_file\", \"migrations\": \"$migrations_file\"}")
+                done
+              fi
             fi
-          done
+          done <<< "${{ steps.diff.outputs.list }}"
 
           if [ ${#project_list[@]} -eq 0 ]; then
             echo "project-list=[]" >> $GITHUB_OUTPUT
           else
-            echo "project-list=$(echo ${project_list[@]} | jq -R -s 'split(" ")')" >> $GITHUB_OUTPUT
+            echo "project-list=$(echo "${project_list[@]}" | jq -R -s 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
           fi
 
   build:
