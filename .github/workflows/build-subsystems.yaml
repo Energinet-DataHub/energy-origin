@@ -1,4 +1,4 @@
-name: Build and Test Subsystems
+name: Build Subsystems
 
 on:
   workflow_call:
@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       projects-to-build: ${{ steps.scan-csproj.outputs.project-list }}
+      has-changes: ${{ steps.check-changes.outputs.has-changes }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -53,21 +54,30 @@ jobs:
           done
 
           if [ ${#project_list[@]} -eq 0 ]; then
-            echo "::set-output name=project-list=[]"
+            echo "project-list=[]" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=project-list=$(echo ${project_list[@]} | jq -R -s 'split(" ")')"
+            echo "project-list=$(echo ${project_list[@]} | jq -R -s 'split(" ")')" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if there are changes
+        id: check-changes
+        run: |
+          if [ "${{ steps.scan-csproj.outputs.project-list }}" == "[]" ]; then
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has-changes=true" >> $GITHUB_OUTPUT
           fi
 
   build:
     needs: find-diff
     runs-on: ubuntu-latest
+    if: ${{ needs.find-diff.outputs.has-changes == 'true' }}
     strategy:
       matrix:
         project-data: ${{ fromJson(needs.find-diff.outputs.projects-to-build) }}
         dry-run: ${{ inputs.dry-run }}
         is-dependabot: ${{ inputs.is-dependabot }}
       fail-fast: false
-    if: ${{ needs.find-diff.outputs.projects-to-build != '[]' }}
     steps:
       - name: Build ${{ matrix.project-data.project }}
         uses: ./.github/actions/dotnet-build
@@ -81,13 +91,21 @@ jobs:
   test:
     needs: find-diff
     runs-on: ubuntu-latest
+    if: ${{ needs.find-diff.outputs.has-changes == 'true' }}
     strategy:
       matrix:
         project-data: ${{ fromJson(needs.find-diff.outputs.projects-to-build) }}
       fail-fast: false
-    if: ${{ needs.find-diff.outputs.projects-to-build != '[]' }}
     steps:
       - name: Run dotnet tests for ${{ matrix.project-data.project }}
         uses: ./.github/actions/dotnet-test
         with:
           solution: ${{ matrix.project-data.solution }}
+
+  no-changes:
+    needs: find-diff
+    runs-on: ubuntu-latest
+    if: ${{ needs.find-diff.outputs.has-changes == 'false' }}
+    steps:
+      - name: No changes detected
+        run: echo "No changes detected in the specified directories. Skipping build and test."

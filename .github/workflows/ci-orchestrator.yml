@@ -1,4 +1,3 @@
-# ci-orchestrator.yaml
 name: CI orchestrator
 
 on:
