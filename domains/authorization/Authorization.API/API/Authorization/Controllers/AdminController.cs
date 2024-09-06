@@ -6,7 +6,6 @@ using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace API.Authorization.Controllers;
 

@@ -30,7 +30,7 @@ public class AcceptTermsTests
         var terms = context.Terms.First();
         var orgCvr = Tin.Create("12345678");
 
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: orgCvr.Value);
+        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: orgCvr.Value, termsAccepted: false);
 
         var response = await userApi.AcceptTerms();
 
@@ -58,7 +58,8 @@ public class AcceptTermsTests
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
         await SeedOrganizationAndUser(organization, user);
 
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin.Value);
+        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin.Value,
+            termsAccepted: false);
 
         var response = await userApi.AcceptTerms();
 

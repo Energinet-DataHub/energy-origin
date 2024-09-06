@@ -21,6 +21,7 @@ using NSubstitute;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace Tests.MeteringPoints;
+
 public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
 {
     public string ConnectionString { get; set; } = "";
@@ -62,10 +63,7 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
 
         MeteringPointClientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
-        builder.ConfigureTestServices(x =>
-        {
-            x.AddSingleton(MeteringPointClientMock);
-        });
+        builder.ConfigureTestServices(x => { x.AddSingleton(MeteringPointClientMock); });
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -118,8 +116,9 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
         client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240110);
         return client;
     }
+
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-            string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20240110)
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20240110)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
@@ -129,11 +128,12 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
     }
 
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
-        string apiVersion = ApiVersions.Version20240515)
+        string apiVersion = ApiVersions.Version20240515, bool termsAccepted = true)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString()));
+            new AuthenticationHeaderValue("Bearer",
+                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted));
         client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
 
         return client;
@@ -150,23 +150,23 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
         string audience = "Users")
     {
         var claims = new Dictionary<string, object>()
-            {
-                { UserClaimName.Scope, scope },
-                { UserClaimName.ActorLegacy, actor },
-                { UserClaimName.Actor, actor },
-                { UserClaimName.Tin, tin },
-                { UserClaimName.OrganizationName, cpn },
-                { JwtRegisteredClaimNames.Name, name },
-                { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
-                { UserClaimName.AllowCprLookup, "false"},
-                { UserClaimName.AccessToken, ""},
-                { UserClaimName.IdentityToken, ""},
-                { UserClaimName.ProviderKeys, ""},
-                { UserClaimName.OrganizationId, sub},
-                { UserClaimName.MatchedRoles, ""},
-                { UserClaimName.Roles, ""},
-                { UserClaimName.AssignedRoles, ""}
-            };
+        {
+            { UserClaimName.Scope, scope },
+            { UserClaimName.ActorLegacy, actor },
+            { UserClaimName.Actor, actor },
+            { UserClaimName.Tin, tin },
+            { UserClaimName.OrganizationName, cpn },
+            { JwtRegisteredClaimNames.Name, name },
+            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString() },
+            { UserClaimName.AllowCprLookup, "false" },
+            { UserClaimName.AccessToken, "" },
+            { UserClaimName.IdentityToken, "" },
+            { UserClaimName.ProviderKeys, "" },
+            { UserClaimName.OrganizationId, sub },
+            { UserClaimName.MatchedRoles, "" },
+            { UserClaimName.Roles, "" },
+            { UserClaimName.AssignedRoles, "" }
+        };
 
         var signedJwtToken = new TokenSigner(PrivateKey).Sign(
             sub,
@@ -189,7 +189,8 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
         string name = "Peter Producent",
         string issuer = "demo.energioprindelse.dk",
         string audience = "Users",
-        string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7")
+        string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
+        bool termsAccepted = true)
     {
         var claims = new Dictionary<string, object>()
         {
@@ -199,6 +200,7 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
             { ClaimType.OrgCvr, tin },
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },
+            { ClaimType.TermsAccepted, termsAccepted.ToString() },
             { UserClaimName.AccessToken, "" },
             { UserClaimName.IdentityToken, "" },
             { UserClaimName.ProviderKeys, "" },
