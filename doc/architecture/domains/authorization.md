@@ -6,8 +6,8 @@
 
 ## API Specifications
 
-- [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20Proxy%20v20230101).
-- [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization%20v20230101#/).
+- [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization+v20230101).
+- [Authorization Proxy API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Wallet+v20240515).
 
 ## Consent
 
@@ -316,14 +316,15 @@ Make sure to copy the secret value and store it somewhere safe. Use client id an
 
 ## Links
 
+[Signaturgruppen technical documentation](https://signaturgruppen-a-s.github.io/signaturgruppen-broker-documentation/)
+
 [MitID test user tool](https://pp.mitid.dk/test-tool/frontend/#/view-identity)
 
-[MitID admin tool](https://pp.netseidbroker.dk/admin#/clients/e9d55f7d-03b6-4ec8-be83-f2804f32f9d0)
+[MitID admin tool](https://pp.netseidbroker.dk/admin#/clients/e9d55f7d-03b6-4ec8-be83-f2804f32f9d0) (User: energinet-test-admin and use mitid login, not erhverv)
 
-[MitID test clients](https://broker.signaturgruppen.dk/en/technical-documentation/open-oidc-clients)
+[MitID test clients](https://signaturgruppen-a-s.github.io/signaturgruppen-broker-documentation/test-clients.html)
 
-
-[Confluence: MitID test brugere](https://energinet.atlassian.net/wiki/spaces/ElOverblik/pages/678133811)
+[Confluence: MitID test brugere](https://energinet.atlassian.net/wiki/spaces/ElOverblik/pages/678133811) (We currently use Sylvester68903ErhvervEO as test user)
 
 [Confluence: Driftinfo hos Netsbroker](https://energinet.atlassian.net/wiki/spaces/ElOverblik/pages/307232769)
 
@@ -344,7 +345,3 @@ Set up ngrok to forward traffic to netcat
 This section describes the first version of Authorization Proxy in Energy Origin. Authorization Proxy is built to handle authentication and authorization for opensource Wallet project. Since Wallet is opensource and needs to be generic, we have to have a wrapper (Authorization Proxy) to secure all calls against it. The way this is handled is by having 1 to 1 mapping between Wallet API's and the Authorization Proxy API. We then have extra requirements for providing OrganizationID, that we can check if client's request has access to, before forwarding the request towards Wallet API.
 
 Authorization Proxy is made backwards compaitble allowing old self signed tokens, aswell as the new Azure B2C tokens, to ensure we can use this new proxy service without breaking old code. The proxy is simple and only needs B2C, TokenValidation and WalletBaseUrl in enviroment variables.
-
-# TODO:
-We need to align on what documentation to keep, delete dead documents and update authorization documentation.
-https://app.zenhub.com/workspaces/team-atlas-633199659e255a37cd1d144f/issues/gh/energinet-datahub/energy-origin-issues/2909
