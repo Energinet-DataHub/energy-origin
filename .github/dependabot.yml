@@ -17,8 +17,4 @@ updates:
     directory: /domains
     schedule:
       interval: daily
-    groups:
-      all:
-        applies-to: security-updates
-        patterns:
-          - "*"
+    security-updates-only: true
