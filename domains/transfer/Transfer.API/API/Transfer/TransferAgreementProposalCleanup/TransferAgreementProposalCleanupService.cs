@@ -32,7 +32,15 @@ public class TransferAgreementProposalCleanupService(
 
             try
             {
-                await DeleteOldTransferAgreementProposals(DateTimeOffset.UtcNow.AddDays(-14), stoppingToken);
+                await using var dbContext = await contextFactory.CreateDbContextAsync(stoppingToken);
+                if (await IsWaitingForMigrations(dbContext, stoppingToken))
+                {
+                    logger.LogInformation("Waiting for EF migrations");
+                }
+                else
+                {
+                    await DeleteOldTransferAgreementProposals(DateTimeOffset.UtcNow.AddDays(-14), stoppingToken);
+                }
             }
             catch (Exception e)
             {
@@ -71,5 +79,11 @@ public class TransferAgreementProposalCleanupService(
         {
             logger.LogInformation("Sleep was cancelled");
         }
+    }
+
+    private async Task<bool> IsWaitingForMigrations(DbContext dbContext, CancellationToken cancellationToken)
+    {
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
+        return pendingMigrations is null || pendingMigrations.Any();
     }
 }

@@ -102,7 +102,7 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
         return client;
     }
 
-    private string GenerateToken(string sub, string name = "Default Name", List<string>? orgIds = null, string subType = "Default SubType")
+    private string GenerateToken(string sub, string name = "Default Name", List<string>? orgIds = null, string subType = "Default SubType", bool termsAccepted = true)
     {
         using RSA rsa = RSA.Create(2048);
         var req = new CertificateRequest("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -120,6 +120,7 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
             new("name", name),
             new("org_ids", orgIdsString),
             new("sub_type", subType),
+            new("tos_accepted", termsAccepted.ToString())
         });
 
         var securityTokenDescriptor = new SecurityTokenDescriptor

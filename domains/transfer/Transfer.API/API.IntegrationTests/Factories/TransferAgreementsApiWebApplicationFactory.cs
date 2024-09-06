@@ -178,11 +178,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     }
 
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
-        string apiVersion = ApiVersions.Version20240515)
+        string apiVersion = ApiVersions.Version20240515, bool termsAccepted = true)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString()));
+            new AuthenticationHeaderValue("Bearer",
+                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted));
         client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
 
         return client;
@@ -208,7 +209,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string issuer = "demo.energioprindelse.dk",
         string audience = "Users")
     {
-
         var claims = new Dictionary<string, object>()
         {
             { UserClaimName.Scope, scope },
@@ -217,15 +217,15 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             { UserClaimName.Tin, tin },
             { UserClaimName.OrganizationName, cpn },
             { JwtRegisteredClaimNames.Name, name },
-            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
-            { UserClaimName.AllowCprLookup, "false"},
-            { UserClaimName.AccessToken, ""},
-            { UserClaimName.IdentityToken, ""},
-            { UserClaimName.ProviderKeys, ""},
-            { UserClaimName.OrganizationId, sub},
-            { UserClaimName.MatchedRoles, ""},
-            { UserClaimName.Roles, ""},
-            { UserClaimName.AssignedRoles, ""}
+            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString() },
+            { UserClaimName.AllowCprLookup, "false" },
+            { UserClaimName.AccessToken, "" },
+            { UserClaimName.IdentityToken, "" },
+            { UserClaimName.ProviderKeys, "" },
+            { UserClaimName.OrganizationId, sub },
+            { UserClaimName.MatchedRoles, "" },
+            { UserClaimName.Roles, "" },
+            { UserClaimName.AssignedRoles, "" }
         };
 
         var signedJwtToken = new TokenSigner(PrivateKey).Sign(
@@ -249,7 +249,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string name = "Peter Producent",
         string issuer = "demo.energioprindelse.dk",
         string audience = "Users",
-        string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7")
+        string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
+        bool termsAccepted = true)
     {
         var claims = new Dictionary<string, object>()
         {
@@ -259,6 +260,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             { ClaimType.OrgCvr, tin },
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },
+            { ClaimType.TermsAccepted, termsAccepted.ToString() },
             { UserClaimName.AccessToken, "" },
             { UserClaimName.IdentityToken, "" },
             { UserClaimName.ProviderKeys, "" },

@@ -26,7 +26,7 @@ public class RequestStatusController : ProxyBase
     [HttpGet]
     [Route("v1/request-status/{requestId}")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.B2CPolicy)]
+    [Authorize(policy: Policy.FrontendOr3rdParty)]
     [ApiVersion(ApiVersions.Version20240515)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]

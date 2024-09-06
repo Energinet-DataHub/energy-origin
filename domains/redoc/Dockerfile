@@ -3,6 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0.401-noble AS builder
 WORKDIR /app
 COPY domains/authorization domains/authorization
 COPY domains/certificates domains/certificates
+COPY domains/libraries domains/libraries
 
 RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger
 RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger

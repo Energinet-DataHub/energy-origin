@@ -16,7 +16,7 @@ using static API.ContractService.SetEndDateResult;
 
 namespace API.Query.API.Controllers;
 
-[Authorize(Policy = Policy.B2CPolicy)]
+[Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240515)]
 public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
