@@ -10,7 +10,6 @@
 
 ## Domains
 
-- [Auth](./doc/api/auth.md)
 - [Authorization](./doc/architecture/domains/authorization.md)
 - [DataSync](./doc/api/datasync.md)
 - [Measurements](./doc/api/measurements.md)
