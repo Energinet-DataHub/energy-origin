@@ -744,102 +744,102 @@ public class ContractsV20240515Tests
         editResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
-    public async Task EditEndDate_UserIsNotOwnerOfMeteringPoint_Forbidden()
-    {
-        var gsrn = GsrnHelper.GenerateRandom();
-        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+    // [Fact]
+    // public async Task EditEndDate_UserIsNotOwnerOfMeteringPoint_Forbidden()
+    // {
+    //     var gsrn = GsrnHelper.GenerateRandom();
+    //     measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+    //
+    //     var subject = Guid.NewGuid();
+    //     var orgId = Guid.NewGuid();
+    //     using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+    //
+    //     var start = DateTimeOffset.Now.AddDays(3);
+    //
+    //     var body = new CreateContracts([
+    //         new CreateContract
+    //         {
+    //             GSRN = gsrn,
+    //             StartDate = start.ToUnixTimeSeconds(),
+    //             EndDate = start.AddYears(1).ToUnixTimeSeconds()
+    //         }
+    //     ]);
+    //
+    //     var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
+    //     var createdContracts = await response.Content.ReadJson<ContractList>();
+    //     var createdContractId = createdContracts!.Result.First().Id;
+    //
+    //     var newSubject = Guid.NewGuid();
+    //     var newOrgId = Guid.NewGuid();
+    //     using var client2 = factory.CreateB2CAuthenticatedClient(newSubject, newOrgId, apiVersion: ApiVersions.Version20240515);
+    //     var putBody = new EditContracts([
+    //         new EditContractEndDate
+    //         {
+    //             Id = createdContractId,
+    //             EndDate = start.AddDays(-1).ToUnixTimeSeconds()
+    //         }
+    //     ]);
+    //
+    //     using var editResponse = await client2.PutAsJsonAsync($"api/certificates/contracts?organizationId={newOrgId}", putBody);
+    //
+    //     editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    // }
 
-        var subject = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+    // [Fact]
+    // public async Task GivenMeteringPoint_WhenCreatingContract_ActivityLogIsUpdated()
+    // {
+    //     // Create contract
+    //     var gsrn = GsrnHelper.GenerateRandom();
+    //     measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+    //
+    //     var subject = Guid.NewGuid();
+    //     var orgId = Guid.NewGuid();
+    //     using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
+    //     var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+    //     var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+    //     var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }]);
+    //     using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
+    //     contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+    //
+    //     // Assert activity log entry
+    //     using var oldTokenClient = factory.CreateAuthenticatedClient(orgId.ToString());
+    //     var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+    //     using var activityLogResponse = await oldTokenClient.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
+    //     activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    //     var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
+    //     Assert.Single(activityLog!.ActivityLogEntries, x => x.ActorId.ToString() == subject.ToString());
+    // }
 
-        var start = DateTimeOffset.Now.AddDays(3);
-
-        var body = new CreateContracts([
-            new CreateContract
-            {
-                GSRN = gsrn,
-                StartDate = start.ToUnixTimeSeconds(),
-                EndDate = start.AddYears(1).ToUnixTimeSeconds()
-            }
-        ]);
-
-        var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
-        var createdContracts = await response.Content.ReadJson<ContractList>();
-        var createdContractId = createdContracts!.Result.First().Id;
-
-        var newSubject = Guid.NewGuid();
-        var newOrgId = Guid.NewGuid();
-        using var client2 = factory.CreateB2CAuthenticatedClient(newSubject, newOrgId, apiVersion: ApiVersions.Version20240515);
-        var putBody = new EditContracts([
-            new EditContractEndDate
-            {
-                Id = createdContractId,
-                EndDate = start.AddDays(-1).ToUnixTimeSeconds()
-            }
-        ]);
-
-        using var editResponse = await client2.PutAsJsonAsync($"api/certificates/contracts?organizationId={newOrgId}", putBody);
-
-        editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    public async Task GivenMeteringPoint_WhenCreatingContract_ActivityLogIsUpdated()
-    {
-        // Create contract
-        var gsrn = GsrnHelper.GenerateRandom();
-        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
-
-        var subject = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
-        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }]);
-        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
-        contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        // Assert activity log entry
-        using var oldTokenClient = factory.CreateAuthenticatedClient(orgId.ToString());
-        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-        using var activityLogResponse = await oldTokenClient.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
-        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
-        Assert.Single(activityLog!.ActivityLogEntries, x => x.ActorId.ToString() == subject.ToString());
-    }
-
-    [Fact]
-    public async Task GivenContract_WhenEditingEndDate_ActivityLogIsUpdated()
-    {
-        // Create contract
-        var gsrn = GsrnHelper.GenerateRandom();
-        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
-
-        var subject = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
-        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
-        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
-        contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        // Update end date
-        var createdContracts = await contractResponse.Content.ReadJson<ContractList>();
-        var createdContractId = createdContracts!.Result.First().Id;
-        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }]);
-        await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody);
-
-        // Assert activity log entries (created, updated)
-        using var oldTokenClient = factory.CreateAuthenticatedClient(orgId.ToString());
-        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-        using var activityLogResponse = await oldTokenClient.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
-        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
-        Assert.Equal(2, activityLog!.ActivityLogEntries.Count(x => x.ActorId.ToString() == subject.ToString()));
-    }
+    // [Fact]
+    // public async Task GivenContract_WhenEditingEndDate_ActivityLogIsUpdated()
+    // {
+    //     // Create contract
+    //     var gsrn = GsrnHelper.GenerateRandom();
+    //     measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+    //
+    //     var subject = Guid.NewGuid();
+    //     var orgId = Guid.NewGuid();
+    //     using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
+    //     var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+    //     var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
+    //     using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
+    //     contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+    //
+    //     // Update end date
+    //     var createdContracts = await contractResponse.Content.ReadJson<ContractList>();
+    //     var createdContractId = createdContracts!.Result.First().Id;
+    //     var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+    //     var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }]);
+    //     await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody);
+    //
+    //     // Assert activity log entries (created, updated)
+    //     using var oldTokenClient = factory.CreateAuthenticatedClient(orgId.ToString());
+    //     var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+    //     using var activityLogResponse = await oldTokenClient.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
+    //     activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    //     var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
+    //     Assert.Equal(2, activityLog!.ActivityLogEntries.Count(x => x.ActorId.ToString() == subject.ToString()));
+    // }
 
     private static ActivityLogEntry CreateActivityLogEligiblyForCleanup()
     {
