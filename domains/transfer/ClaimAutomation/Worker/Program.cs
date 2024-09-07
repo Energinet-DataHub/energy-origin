@@ -34,8 +34,6 @@ builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOri
     .ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
-    .ValidateDataAnnotations().ValidateOnStart();
 
 builder.Services.AddDbContext<ApplicationDbContext>(
     (sp, options) => options.UseNpgsql(
