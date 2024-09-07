@@ -16,7 +16,6 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      auth: ${{ steps.auth.outputs.matches }}
       authorization: ${{ steps.authorization.outputs.matches }}
       certificates: ${{ steps.certificates.outputs.matches }}
       measurements: ${{ steps.measurements.outputs.matches }}
