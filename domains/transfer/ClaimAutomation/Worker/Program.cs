@@ -1,5 +1,4 @@
 using System;
-using System.Security.Claims;
 using API.ClaimAutomation.Api.Repositories;
 using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Automation;
@@ -7,7 +6,6 @@ using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using DataContext;
 using EnergyOrigin.Setup;
-using EnergyOrigin.TokenValidation.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

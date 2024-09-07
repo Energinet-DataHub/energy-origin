@@ -133,15 +133,6 @@ public class WalletClient : IWalletClient
                 throw new HttpRequestException("Owner must match subject");
             }
         }
-        else
-        {
-            var user = new UserDescriptor(httpContextAccessor.HttpContext!.User);
-            var subject = user.Subject.ToString();
-            if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new HttpRequestException("Owner must match subject");
-            }
-        }
     }
 
     private bool IsBearerTokenIssuedByB2C()
