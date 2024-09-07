@@ -61,9 +61,6 @@ builder.Services.AttachOptions<TokenValidationOptions>().BindConfiguration(Token
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-var tokenConfiguration = builder.Configuration.GetSection(TokenValidationOptions.Prefix);
-var tokenOptions = tokenConfiguration.Get<TokenValidationOptions>()!;
-
 builder.Services.AttachOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 

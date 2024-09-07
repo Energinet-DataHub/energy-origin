@@ -82,13 +82,6 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
         return client;
     }
 
-    public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
-    {
-        using var scope = Services.CreateScope();
-        var provider = scope.ServiceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
-        await withAction(provider);
-    }
-
     public HttpClient CreateAuthenticatedClient(string sub = "", string name = "", List<string>? orgIds = null, string subType = "")
     {
         sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
