@@ -34,14 +34,6 @@ jobs:
         with:
           solution: domains/EnergyTrackAndTrace.sln
 
-  build-auth:
-    needs: test
-    uses: ./.github/workflows/build-auth.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
   build-authorization:
     needs: test
     uses: ./.github/workflows/build-authorization.yaml
