@@ -36,25 +36,6 @@ public class ContractsV20240515Tests
     }
 
     [Fact]
-    public async Task GivenTokenValidationToken_WhenUsingNewEndpoint_RequestIsUnauthenticated()
-    {
-        var subject = Guid.NewGuid().ToString();
-        using var client = factory.CreateAuthenticatedClient(subject, apiVersion: ApiVersions.Version20240515);
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts", new CreateContracts(new List<CreateContract>()));
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task GivenB2CToken_WhenUsingOldEndpoint_RequestIsUnauthenticated()
-    {
-        var subject = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240423);
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts", new CreateContracts(new List<CreateContract>()));
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
     public async Task CreateMultipleContract_ActivateWithEndDate_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
@@ -858,29 +839,6 @@ public class ContractsV20240515Tests
         activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
         Assert.Equal(2, activityLog!.ActivityLogEntries.Count(x => x.ActorId.ToString() == subject.ToString()));
-    }
-
-    [Fact]
-    public async Task GivenOldActivityLog_WhenCleaningUp_ActivityLogIsRemoved()
-    {
-        using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
-        var activityLogEntry = CreateActivityLogEligiblyForCleanup();
-        dbContext.ActivityLogs.Add(activityLogEntry);
-        await dbContext.SaveChangesAsync();
-
-        var orgId = Guid.NewGuid();
-        using var oldTokenClient = factory.CreateAuthenticatedClient(orgId.ToString());
-
-        // Wait for activity log entries to be cleaned up
-        await WaitForCondition(TimeSpan.FromSeconds(10), async ctx =>
-        {
-            var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-            var activityLogResponse = await oldTokenClient.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
-            activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
-            return activityLog!.ActivityLogEntries.Where(al => al.ActorId == activityLogEntry.ActorId).Count() == 0;
-        });
     }
 
     private static ActivityLogEntry CreateActivityLogEligiblyForCleanup()

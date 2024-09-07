@@ -180,7 +180,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     }
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20230101)
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20240515)
     {
         client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
@@ -303,7 +303,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     {
         measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
 
-        var client = CreateAuthenticatedClient(subject);
+        var client = CreateB2CAuthenticatedClient(Guid.Parse(subject), Guid.NewGuid());
         var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };
         var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);

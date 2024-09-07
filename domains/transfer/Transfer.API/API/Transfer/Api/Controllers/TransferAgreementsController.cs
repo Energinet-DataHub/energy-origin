@@ -9,8 +9,7 @@ using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Values;
+using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,44 +18,47 @@ using ProjectOriginClients;
 
 namespace API.Transfer.Api.Controllers;
 
-[Authorize]
+[Authorize(Policy.Frontend)]
 [ApiController]
-[ApiVersion(ApiVersions.Version20240103)]
+[ApiVersion(ApiVersions.Version20240515)]
 [Route("api/transfer/transfer-agreements")]
 public class TransferAgreementsController(
     IProjectOriginWalletClient walletClient,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    IdentityDescriptor identityDescriptor,
+    AccessDescriptor accessDescriptor
 ) : ControllerBase
 {
     /// <summary>
     /// Add a new Transfer Agreement
     /// </summary>
     /// <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
+    /// <param name="organizationId"></param>
     /// <response code="201">Successful operation</response>
     /// <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
     /// <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
-    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpPost]
     [ProducesResponseType(typeof(TransferAgreement), 201)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 409)]
-    public async Task<ActionResult> Create(CreateTransferAgreement request)
+    public async Task<ActionResult> Create(CreateTransferAgreement request, [FromQuery] Guid organizationId)
     {
         if (request.TransferAgreementProposalId == Guid.Empty)
         {
             return ValidationProblem("Must set TransferAgreementProposalId");
         }
 
-        var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
+        var proposal =
+            await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposalAsNoTracking(request.TransferAgreementProposalId);
         if (proposal == null)
         {
             return NotFound();
         }
 
-        var user = new UserDescriptor(HttpContext.User);
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin != user.Organization!.Tin)
+        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin != identityDescriptor.OrganizationCvr)
         {
             return ValidationProblem("Only the receiver company can accept this Transfer Agreement Proposal");
         }
@@ -66,7 +68,7 @@ public class TransferAgreementsController(
             return ValidationProblem("This proposal has run out");
         }
 
-        proposal.ReceiverCompanyTin ??= user.Organization!.Tin;
+        proposal.ReceiverCompanyTin ??= identityDescriptor.OrganizationCvr!;
 
         var taRepo = unitOfWork.TransferAgreementRepo;
 
@@ -77,13 +79,13 @@ public class TransferAgreementsController(
                 statusCode: 409);
         }
 
-        var subject = user.Subject;
+        var subject = identityDescriptor.Subject;
         var wallets = await walletClient.GetWallets(subject, CancellationToken.None);
 
         var walletId = wallets.Result.FirstOrDefault()?.Id;
         if (walletId == null)
         {
-            var createWalletResponse = await walletClient.CreateWallet(user.Subject, CancellationToken.None);
+            var createWalletResponse = await walletClient.CreateWallet(identityDescriptor.Subject, CancellationToken.None);
 
             if (createWalletResponse == null)
                 throw new ApplicationException("Failed to create wallet.");
@@ -93,7 +95,8 @@ public class TransferAgreementsController(
 
         var walletEndpoint = await walletClient.CreateWalletEndpoint(subject, walletId.Value, CancellationToken.None);
 
-        var externalEndpoint = await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId, walletEndpoint, proposal.ReceiverCompanyTin, CancellationToken.None);
+        var externalEndpoint =
+            await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId, walletEndpoint, proposal.ReceiverCompanyTin, CancellationToken.None);
 
         var transferAgreement = new TransferAgreement
         {
@@ -102,7 +105,7 @@ public class TransferAgreementsController(
             SenderId = proposal.SenderCompanyId,
             SenderName = proposal.SenderCompanyName,
             SenderTin = proposal.SenderCompanyTin,
-            ReceiverName = user.Organization!.Name,
+            ReceiverName = identityDescriptor.OrganizationName,
             ReceiverTin = proposal.ReceiverCompanyTin,
             ReceiverReference = externalEndpoint.ReceiverId
         };
@@ -112,7 +115,7 @@ public class TransferAgreementsController(
             var result = await taRepo.AddTransferAgreementAndDeleteProposal(transferAgreement,
                 request.TransferAgreementProposalId);
 
-            await AppendProposalAcceptedToActivityLog(user, result, proposal);
+            await AppendProposalAcceptedToActivityLog(identityDescriptor, result, proposal);
 
             await unitOfWork.SaveAsync();
 
@@ -124,15 +127,15 @@ public class TransferAgreementsController(
         }
     }
 
-    private async Task AppendProposalAcceptedToActivityLog(UserDescriptor user, TransferAgreement result, TransferAgreementProposal proposal)
+    private async Task AppendProposalAcceptedToActivityLog(IdentityDescriptor identity, TransferAgreement result, TransferAgreementProposal proposal)
     {
         // Receiver entry
         await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: user.Subject,
+            actorId: identity.Subject,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: user.Name,
-            organizationTin: user.Organization!.Tin,
-            organizationName: user.Organization.Name,
+            actorName: identity.Name,
+            organizationTin: identity.OrganizationCvr!,
+            organizationName: identity.OrganizationName,
             otherOrganizationTin: proposal.SenderCompanyTin,
             otherOrganizationName: proposal.SenderCompanyName,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
@@ -155,15 +158,14 @@ public class TransferAgreementsController(
         );
     }
 
-    [Authorize(Policy = PolicyName.RequiresCompany)]
+    [HttpGet("{id}")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    [HttpGet("{id}")]
-    public async Task<ActionResult> Get([FromRoute] Guid id)
+    public async Task<ActionResult> Get([FromRoute] Guid id, [FromQuery] Guid organizationId)
     {
-        var user = new UserDescriptor(User);
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        var result = await unitOfWork.TransferAgreementRepo.GetTransferAgreement(id, user.Subject.ToString(), user.Organization!.Tin);
+        var result = await unitOfWork.TransferAgreementRepo.GetTransferAgreement(id, organizationId.ToString(), identityDescriptor.OrganizationCvr!);
 
         if (result == null)
         {
@@ -173,14 +175,13 @@ public class TransferAgreementsController(
         return Ok(ToTransferAgreementDto(result));
     }
 
-    [Authorize(Policy = PolicyName.RequiresCompany)]
-    [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
     [HttpGet]
-    public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements()
+    [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
+    public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements([FromQuery] Guid organizationId)
     {
-        var user = new UserDescriptor(User);
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        var transferAgreements = await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(user.Subject, user.Organization!.Tin);
+        var transferAgreements = await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(organizationId, identityDescriptor.OrganizationCvr!);
 
         if (!transferAgreements.Any())
         {
@@ -193,15 +194,14 @@ public class TransferAgreementsController(
         return Ok(new TransferAgreementsResponse(listResponse));
     }
 
-    [Authorize(Policy = PolicyName.RequiresCompany)]
+    [HttpPut("{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 409)]
-    [HttpPut("{id}")]
-    public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate(Guid id, [FromBody] EditTransferAgreementEndDate request)
+    public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate([FromRoute] Guid id, [FromBody] EditTransferAgreementEndDate request, [FromQuery] Guid organizationId)
     {
-        var user = new UserDescriptor(User);
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
         var validator = new EditTransferAgreementEndDateValidator();
 
@@ -217,9 +217,9 @@ public class TransferAgreementsController(
             : (DateTimeOffset?)null;
 
         var taRepo = unitOfWork.TransferAgreementRepo;
-        var transferAgreement = await taRepo.GetTransferAgreement(id, user.Subject.ToString(), user.Organization!.Tin);
+        var transferAgreement = await taRepo.GetTransferAgreement(id, organizationId.ToString(), identityDescriptor.OrganizationCvr!);
 
-        if (transferAgreement == null || transferAgreement.SenderId != user.Subject)
+        if (transferAgreement == null || transferAgreement.SenderId != organizationId)
         {
             return NotFound();
         }
@@ -251,24 +251,24 @@ public class TransferAgreementsController(
             SenderTin: transferAgreement.SenderTin,
             ReceiverTin: transferAgreement.ReceiverTin);
 
-        await AppendAgreementEndDateChangedToActivityLog(user, transferAgreement);
+        await AppendAgreementEndDateChangedToActivityLog(identityDescriptor, transferAgreement);
 
         await unitOfWork.SaveAsync();
 
         return Ok(response);
     }
 
-    private async Task AppendAgreementEndDateChangedToActivityLog(UserDescriptor user, TransferAgreement result)
+    private async Task AppendAgreementEndDateChangedToActivityLog(IdentityDescriptor identity, TransferAgreement result)
     {
         // Receiver entry
         await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: user.Subject,
+            actorId: identity.Subject,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: String.Empty,
             organizationTin: result.ReceiverTin,
             organizationName: result.ReceiverName,
-            otherOrganizationTin: user.Organization!.Tin,
-            otherOrganizationName: user.Organization.Name,
+            otherOrganizationTin: identity.OrganizationCvr!,
+            otherOrganizationName: identity.OrganizationName,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
             entityId: result.Id.ToString())
@@ -276,11 +276,11 @@ public class TransferAgreementsController(
 
         // Sender entry
         await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: user.Subject,
+            actorId: identity.Subject,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: user.Name,
-            organizationTin: user.Organization!.Tin,
-            organizationName: user.Organization.Name,
+            actorName: identity.Name,
+            organizationTin: identity.OrganizationCvr!,
+            organizationName: identity.OrganizationName,
             otherOrganizationTin: result.ReceiverTin,
             otherOrganizationName: result.ReceiverName,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
@@ -299,15 +299,14 @@ public class TransferAgreementsController(
             ReceiverTin: transferAgreement.ReceiverTin
         );
 
-    [Authorize(Policy = PolicyName.RequiresCompany)]
-    [ProducesResponseType(typeof(TransferAgreementProposalOverviewResponse), 200)]
     [HttpGet("overview")]
-    public async Task<ActionResult<TransferAgreementProposalOverviewResponse>> GetTransferAgreementProposal()
+    [ProducesResponseType(typeof(TransferAgreementProposalOverviewResponse), 200)]
+    public async Task<ActionResult<TransferAgreementProposalOverviewResponse>> GetTransferAgreementProposal([FromQuery] Guid organizationId)
     {
-        var user = new UserDescriptor(User);
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        var transferAgreements = await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(user.Subject, user.Organization!.Tin);
-        var transferAgreementProposals = await unitOfWork.TransferAgreementRepo.GetTransferAgreementProposals(user.Subject);
+        var transferAgreements = await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(organizationId, identityDescriptor.OrganizationCvr!);
+        var transferAgreementProposals = await unitOfWork.TransferAgreementRepo.GetTransferAgreementProposals(organizationId);
 
         if (!transferAgreementProposals.Any() && !transferAgreements.Any())
         {
@@ -315,11 +314,13 @@ public class TransferAgreementsController(
         }
 
         var transferAgreementDtos = transferAgreements
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.SenderName, x.SenderTin, x.ReceiverTin, GetTransferAgreementStatusFromAgreement(x)))
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.SenderName,
+                x.SenderTin, x.ReceiverTin, GetTransferAgreementStatusFromAgreement(x)))
             .ToList();
 
         var transferAgreementProposalDtos = transferAgreementProposals
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), string.Empty, string.Empty, x.ReceiverCompanyTin, GetTransferAgreementStatusFromProposal(x)))
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), string.Empty,
+                string.Empty, x.ReceiverCompanyTin, GetTransferAgreementStatusFromProposal(x)))
             .ToList();
 
         transferAgreementProposalDtos.AddRange(transferAgreementDtos);

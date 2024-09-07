@@ -6,6 +6,7 @@ using API.Transfer.Api.Controllers;
 using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
+using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
@@ -14,21 +15,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.ClaimAutomation.Api.Controllers;
 
-[Authorize]
 [ApiController]
-[ApiVersion(ApiVersions.Version20240103)]
+[Authorize(Policy.Frontend)]
+[ApiVersion(ApiVersions.Version20240515)]
 [Route("api/claim-automation")]
-public class ClaimAutomationController(IUnitOfWork UnitOfWork) : ControllerBase
+public class ClaimAutomationController(IUnitOfWork unitOfWork, AccessDescriptor accessDescriptor) : ControllerBase
 {
-    [Authorize(Policy = PolicyName.RequiresCompany)]
     [HttpPost("start")]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 201)]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
-    public async Task<ActionResult> StartClaimAutomation()
+    public async Task<ActionResult> StartClaimAutomation([FromQuery] Guid organizationId)
     {
-        var user = new UserDescriptor(User);
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
+        {
+            return Forbid();
+        }
 
-        var claim = await UnitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+        var claim = await unitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(organizationId);
 
         if (claim != null)
         {
@@ -37,51 +40,57 @@ public class ClaimAutomationController(IUnitOfWork UnitOfWork) : ControllerBase
             return Ok(claimAutomationArgumentDto);
         }
 
-        var claimAutomationArgument = new ClaimAutomationArgument(user.Subject, DateTimeOffset.UtcNow);
+        var claimAutomationArgument = new ClaimAutomationArgument(organizationId, DateTimeOffset.UtcNow);
 
         try
         {
-            claim = await UnitOfWork.ClaimAutomationRepository.AddClaimAutomationArgument(claimAutomationArgument);
+            claim = await unitOfWork.ClaimAutomationRepository.AddClaimAutomationArgument(claimAutomationArgument);
             var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt.ToUnixTimeSeconds());
 
             return CreatedAtAction(nameof(GetClaimAutomation), null, claimAutomationArgumentDto);
         }
         catch (DbUpdateException)
         {
-            var claimAutomation = await UnitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+            var claimAutomation = await unitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(organizationId);
 
             var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claimAutomation!.CreatedAt.ToUnixTimeSeconds());
             return Ok(claimAutomationArgumentDto);
         }
     }
-    [Authorize(Policy = PolicyName.RequiresCompany)]
+
     [HttpDelete("stop")]
     [ProducesResponseType(204)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> StopClaimAutomation()
+    public async Task<ActionResult> StopClaimAutomation([FromQuery] Guid organizationId)
     {
-        var user = new UserDescriptor(User);
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
+        {
+            return Forbid();
+        }
 
-        var claim = await UnitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+        var claim = await unitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(organizationId);
 
         if (claim == null)
         {
             return NotFound();
         }
 
-        await UnitOfWork.ClaimAutomationRepository.DeleteClaimAutomationArgument(claim);
+        await unitOfWork.ClaimAutomationRepository.DeleteClaimAutomationArgument(claim);
         return NoContent();
     }
 
-    [Authorize(Policy = PolicyName.RequiresCompany)]
+
     [HttpGet]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(ClaimAutomationArgumentDto), 200)]
-    public async Task<ActionResult<ClaimAutomationArgumentDto>> GetClaimAutomation()
+    public async Task<ActionResult<ClaimAutomationArgumentDto>> GetClaimAutomation([FromQuery] Guid organizationId)
     {
-        var user = new UserDescriptor(User);
+        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
+        {
+            return Forbid();
+        }
 
-        var claim = await UnitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(user.Subject);
+        var claim = await unitOfWork.ClaimAutomationRepository.GetClaimAutomationArgument(organizationId);
 
         if (claim == null)
         {

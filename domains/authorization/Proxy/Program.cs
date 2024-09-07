@@ -1,17 +1,14 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Options;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Extensions;
 using Proxy.Controllers;
 using Proxy.Options;
 using Swashbuckle.AspNetCore.Swagger;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,7 +70,7 @@ builder.Services.AttachOptions<B2COptions>().BindConfiguration(B2COptions.Prefix
 var b2cConfiguration = builder.Configuration.GetSection(B2COptions.Prefix);
 var b2cOptions = b2cConfiguration.Get<B2COptions>()!;
 
-builder.Services.AddB2CAndTokenValidation(b2cOptions, tokenOptions);
+builder.Services.AddB2C(b2cOptions);
 
 builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();

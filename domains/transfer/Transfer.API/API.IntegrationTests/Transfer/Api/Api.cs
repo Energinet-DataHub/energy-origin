@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using EnergyOrigin.ActivityLog.API;
@@ -21,7 +22,7 @@ public class Api
     private readonly string tin;
     private readonly string cpn;
     private readonly HttpClient authenticatedClient;
-    private readonly string apiVersion = "20240103";
+    private readonly string apiVersion = ApiVersions.Version20240515;
 
     public Api(TransferAgreementsApiWebApplicationFactory factory, ITestOutputHelper output)
     {

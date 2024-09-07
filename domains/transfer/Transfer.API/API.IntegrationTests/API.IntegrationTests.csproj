@@ -55,7 +55,7 @@
         <None Update="Cvr\Api\Controllers\CvrControllerTests.empty_cvr_response.json">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Update="Cvr\Api\Controllers\CvrController20240515Tests.GetCvrCompanies_WhenCorrectCvrNumbers_ShouldReturnCvrInfo.verified.txt">
+        <None Update="Cvr\Api\Controllers\CvrControllerTests.GetCvrCompanies_WhenCorrectCvrNumbers_ShouldReturnCvrInfo.verified.txt">
           <ParentFile>CvrControllerTests</ParentFile>
           <DependentUpon>CvrController20240515Tests.cs</DependentUpon>
         </None>

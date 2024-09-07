@@ -10,6 +10,9 @@ namespace API.IntegrationTests.ClaimAutomation.Api.Controllers;
 [Collection(IntegrationTestCollection.CollectionName)]
 public class ClaimAutomationControllerTest
 {
+    private readonly Guid sub = Guid.NewGuid();
+    private readonly Guid orgId = Guid.NewGuid();
+
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
     public ClaimAutomationControllerTest(IntegrationTestFixture integrationTestFixture)
@@ -22,64 +25,58 @@ public class ClaimAutomationControllerTest
     {
         var subject = Guid.NewGuid();
 
-        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
-        await client.PostAsync("api/claim-automation/start", null);
-        var result = await client.DeleteAsync("api/claim-automation/stop");
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
+        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        var result = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}");
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
     public async Task StopProcess_WhenNoClaimProcessExists_ReturnsNotFound()
     {
-        var subject = Guid.NewGuid();
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
-
-        var result = await client.DeleteAsync("api/claim-automation/stop");
+        var result = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}");
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task StartProcess_WhenNoClaimProcessHasStarted_ReturnsCreatedAt()
     {
-        var subject = Guid.NewGuid();
-        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var result = await client.PostAsync("api/claim-automation/start", null);
+        var result = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
         result.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     [Fact]
     public async Task StartProcess_WhenClaimProcessAlreadyStarted_ReturnsOk()
     {
-        var subject = Guid.NewGuid();
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
-        await client.PostAsync("api/claim-automation/start", null);
+        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
 
-        var result = await client.PostAsync("api/claim-automation/start", null);
+        var result = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
         result.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetClaimAutomationArguments_WhenClaimAutomationArgumentsExists_ReturnsOK()
     {
-        var subject = Guid.NewGuid();
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
-        await client.PostAsync("api/claim-automation/start", null);
+        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
 
-        var result = await client.GetAsync("api/claim-automation/");
+        var result = await client.GetAsync($"api/claim-automation?organizationId={orgId}");
         result.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetClaimAutomationArguments_WhenClaimAutomationArgumentsDoesNotExists_ReturnsNotFound()
     {
-        var subject = Guid.NewGuid();
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var client = factory.CreateAuthenticatedClient(sub: subject.ToString());
-        var result = await client.GetAsync("api/claim-automation/");
+        var result = await client.GetAsync($"api/claim-automation?organizationId={orgId}");
 
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
