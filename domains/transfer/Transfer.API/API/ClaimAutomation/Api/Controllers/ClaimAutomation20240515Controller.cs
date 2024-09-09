@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 namespace API.ClaimAutomation.Api.Controllers;
 
 [ApiController]
-[Authorize(Policy.B2CCvrClaim)]
+[Authorize(Policy.Frontend)]
 [ApiVersion(ApiVersions.Version20240515)]
 [Route("api/claim-automation")]
 public class ClaimAutomation20240515Controller(IUnitOfWork unitOfWork, AccessDescriptor accessDescriptor) : ControllerBase

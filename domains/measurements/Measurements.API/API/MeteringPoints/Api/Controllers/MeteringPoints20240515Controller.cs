@@ -13,7 +13,7 @@ using MeteringPoint = API.MeteringPoints.Api.Dto.Responses.MeteringPoint;
 
 namespace API.MeteringPoints.Api.Controllers;
 
-[Authorize(Policy.B2CPolicy)]
+[Authorize(Policy.FrontendOr3rdParty)]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240515)]
 [Route("api/measurements/meteringpoints")]

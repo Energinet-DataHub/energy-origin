@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Query.API.Controllers;
 
-[Authorize(Policy = Policy.B2CPolicy)]
+[Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240515)]
 [ApiExplorerSettings(IgnoreApi = true)]

@@ -28,7 +28,15 @@ public class TransferAgreementCleanupWorker(
 
             try
             {
-                await DeleteExpiredTransferAgreements(stoppingToken);
+                await using var dbContext = await contextFactory.CreateDbContextAsync(stoppingToken);
+                if (await IsWaitingForMigrations(dbContext, stoppingToken))
+                {
+                    logger.LogInformation("Waiting for EF migrations");
+                }
+                else
+                {
+                    await DeleteExpiredTransferAgreements(stoppingToken);
+                }
             }
             catch (Exception e)
             {
@@ -71,5 +79,11 @@ public class TransferAgreementCleanupWorker(
         {
             logger.LogInformation("Sleep was cancelled");
         }
+    }
+
+    private async Task<bool> IsWaitingForMigrations(DbContext dbContext, CancellationToken cancellationToken)
+    {
+        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
+        return pendingMigrations is null || pendingMigrations.Any();
     }
 }

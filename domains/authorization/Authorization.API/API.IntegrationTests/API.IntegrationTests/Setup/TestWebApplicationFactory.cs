@@ -32,10 +32,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         builder.ConfigureTestServices(services =>
         {
             services.RemoveDbContext<ApplicationDbContext>();
-            services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseNpgsql(ConnectionString);
-            });
+            services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(ConnectionString); });
 
             services.EnsureDbCreated<ApplicationDbContext>();
             services.Configure<RabbitMqOptions>(options =>
@@ -89,26 +86,28 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
 
-    public Api CreateApi(string sub = "", string name = "", string orgIds = "", string subType = "", string orgCvr = "12345678", string orgName = "Test Org")
+    public Api CreateApi(string sub = "", string name = "", string orgIds = "", string subType = "", string orgCvr = "12345678",
+        string orgName = "Test Org", bool termsAccepted = true)
     {
         sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
         name = string.IsNullOrEmpty(name) ? "Test Testesen" : name;
         orgIds = string.IsNullOrEmpty(orgIds) ? Guid.NewGuid().ToString() : orgIds;
         subType = string.IsNullOrEmpty(subType) ? "user" : subType;
 
-        return new Api(CreateAuthenticatedClient(sub, name, orgIds, subType, orgCvr, orgName));
+        return new Api(CreateAuthenticatedClient(sub, name, orgIds, subType, orgCvr, orgName, termsAccepted));
     }
 
-    private HttpClient CreateAuthenticatedClient(string sub, string name, string orgIds, string subType, string orgCvr, string orgName)
+    private HttpClient CreateAuthenticatedClient(string sub, string name, string orgIds, string subType, string orgCvr, string orgName,
+        bool termsAccepted)
     {
         var httpClient = CreateClient();
-        var token = GenerateToken(sub, name, orgIds, subType, orgCvr, orgName);
+        var token = GenerateToken(sub, name, orgIds, subType, orgCvr, orgName, termsAccepted);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         httpClient.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20230101);
         return httpClient;
     }
 
-    private string GenerateToken(string sub, string name, string orgIds, string subType, string orgCvr, string orgName)
+    private string GenerateToken(string sub, string name, string orgIds, string subType, string orgCvr, string orgName, bool termsAccepted)
     {
         using RSA rsa = RSA.Create(2048 * 2);
         var req = new CertificateRequest("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -119,15 +118,20 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
         var signingCredentials = new SigningCredentials(new X509SecurityKey(cert), SecurityAlgorithms.RsaSha256);
         var tokenHandler = new JwtSecurityTokenHandler();
-        var identity = new ClaimsIdentity(new List<Claim>
+        var claims = new List<Claim>
         {
             new("sub", sub),
             new("name", name),
             new("org_ids", orgIds),
             new("sub_type", subType),
             new("org_cvr", orgCvr),
-            new("org_name", orgName)
-        });
+            new("org_name", orgName),
+        };
+        if (termsAccepted)
+        {
+            claims.Add(new("tos_accepted", true.ToString()));
+        }
+        var identity = new ClaimsIdentity(claims);
         var securityTokenDescriptor = new SecurityTokenDescriptor
         {
             Audience = "audience",

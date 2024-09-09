@@ -43,7 +43,7 @@ public static class ActivityLogExtensions
                 })
             .WithTags("Activity log")
             .ExcludeFromDescription()
-            .RequireAuthorization(Policy.B2CCvrClaim);
+            .RequireAuthorization(Policy.Frontend);
     }
 
     public static RouteHandlerBuilder UseActivityLog(this IEndpointRouteBuilder builder)

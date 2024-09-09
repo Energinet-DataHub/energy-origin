@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Cvr.Api.Controllers;
 
-[Authorize(Policy.B2CPolicy)]
+[Authorize(Policy.Frontend)]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240515)]
 [Route("api/transfer/cvr")]
