@@ -2,13 +2,25 @@ namespace API.MeasurementsSyncer.Metrics;
 
 public interface IMeasurementSyncMetrics
 {
-    void MeasurementsFetched(long fetchedCount);
+    void UpdateGauges();
+
+    void AddNumberOfMeasurementsFetched(long numberOfMeasurementsFetched);
+
+    void AddNumberOfMeasurementsPublished(long numberOfMeasurementsPublished);
+
     void UpdateTimeSinceLastMeasurementSyncerRun(long epochTimeInSeconds);
+
     void UpdateTimePeriodForSearchingForGSRN(long epochTimeInSeconds);
-    void AddMissingMeasurement(long numberOfMissingMeasurements);
-    void AddRecoveredMeasurements(long numberOfRecoveredMeasurements);
-    void AddNumberOfRecordsBeingSynced(long numberOfRecordsBeingSynced);
+
+    void AddNumberOfMissingMeasurement(long numberOfMissingMeasurements);
+
+    void AddNumberOfRecoveredMeasurements(long numberOfRecoveredMeasurements);
+
+    void AddNumberOfContractsBeingSynced(long numberOfContractsBeingSynced);
+
     void AddFilterDueQuantityTooLow(long numberOfMeasurementsQuantityTooLow);
+
     void AddFilterDueQuantityTooHigh(long numberOfMeasurementsQuantityTooHigh);
+
     void AddFilterDueQuality(long numberOfMeasurementsWrongQuality);
 }
