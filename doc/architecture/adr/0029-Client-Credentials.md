@@ -32,6 +32,7 @@ __How it Works__:
 
 __Advantages__:
 * Simpler: No user interaction, no need for user login.
+* No need to store/refresh long lived user tokens.
 * Secure for Server-to-Server: Well-suited for applications processing data autonomously (e.g., processing data for an organization at scheduled intervals).
 * Efficiency: No redirects or user involvement, which makes it efficient for backend services.
 
@@ -65,7 +66,7 @@ __Disadvantages__:
 
 __Best for__:
 
-Scenarios where user-specific resources need to be accessed or user consent is necessary.
+Scenarios where user-specific resources need to be accessed or user consent is necessary. Suitable for interactive applications (web, app)
 
 
 ## Decision Outcome
