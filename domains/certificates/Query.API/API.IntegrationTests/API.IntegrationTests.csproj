@@ -17,13 +17,13 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
         <PackageReference Include="Microsoft.CodeAnalysis" Version="4.11.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
         <PackageReference Include="NSubstitute" Version="5.1.0" />
         <PackageReference Include="Testcontainers" Version="3.10.0" />
         <PackageReference Include="Testcontainers.PostgreSql" Version="3.10.0" />
-        <PackageReference Include="Testcontainers.RabbitMq" Version="3.9.0" />
-        <PackageReference Include="Verify.Xunit" Version="26.3.1" />
-        <PackageReference Include="WireMock.Net" Version="1.6.1" />
+        <PackageReference Include="Testcontainers.RabbitMq" Version="3.10.0" />
+        <PackageReference Include="Verify.Xunit" Version="26.4.0" />
+        <PackageReference Include="WireMock.Net" Version="1.6.2" />
         <PackageReference Include="xunit" Version="2.9.0" />
         <PackageReference Include="xunit.analyzers" Version="1.16.0">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -46,6 +46,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
         <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
         <ProjectReference Include="..\..\Shared\Testing\Testing.csproj" />
         <ProjectReference Include="..\API\API.csproj" />

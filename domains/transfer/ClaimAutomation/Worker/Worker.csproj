@@ -13,7 +13,6 @@
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
     <PackageReference Include="EnergyOrigin.Setup" Version="5.0.2" />
-    <PackageReference Include="EnergyOrigin.TokenValidation" Version="3.6.8" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
   </ItemGroup>
 

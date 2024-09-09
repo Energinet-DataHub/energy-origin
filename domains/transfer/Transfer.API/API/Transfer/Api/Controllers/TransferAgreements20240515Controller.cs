@@ -18,7 +18,7 @@ using ProjectOriginClients;
 
 namespace API.Transfer.Api.Controllers;
 
-[Authorize(Policy.B2CCvrClaim)]
+[Authorize(Policy.Frontend)]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240515)]
 [Route("api/transfer/transfer-agreements")]
