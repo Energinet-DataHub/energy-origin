@@ -4,10 +4,10 @@
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
         PolicySchemaVersion="0.3.0.0"
-        TenantId="datahubeouenerginet.onmicrosoft.com"
+        TenantId="datahubeopenerginet.onmicrosoft.com"
         PolicyId="B2C_1A_MitID"
-        PublicPolicyUri="http://datahubeouenerginet.onmicrosoft.com/B2C_1A_MitID"
-        DeploymentMode="Development"
+        PublicPolicyUri="http://datahubeopenerginet.onmicrosoft.com/B2C_1A_MitID"
+        DeploymentMode="Production"
         UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
 
     <BuildingBlocks>
@@ -108,11 +108,6 @@
                 <DisplayName>Scope</DisplayName>
                 <DataType>string</DataType>
                 <UserHelpText>Scope claim returned from authorization service</UserHelpText>
-            </ClaimType>
-            <ClaimType Id="terms_accepted">
-                <DisplayName>The terms_accepted response from the Authorization service</DisplayName>
-                <DataType>boolean</DataType>
-                <UserHelpText>Indicates whether the terms of service have been accepted</UserHelpText>
             </ClaimType>
             <ClaimType Id="tos_accepted">
                 <DisplayName>Azure B2C claim for terms of service accepted</DisplayName>
@@ -256,14 +251,6 @@
                     <OutputClaim ClaimTypeReferenceId="org_ids_string" TransformationClaimType="outputClaim"/>
                 </OutputClaims>
             </ClaimsTransformation>
-            <ClaimsTransformation Id="MapTermsAcceptedToTosAccepted" TransformationMethod="CopyClaim">
-                <InputClaims>
-                    <InputClaim ClaimTypeReferenceId="terms_accepted" TransformationClaimType="inputClaim" />
-                </InputClaims>
-                <OutputClaims>
-                    <OutputClaim ClaimTypeReferenceId="tos_accepted" TransformationClaimType="outputClaim" />
-                </OutputClaims>
-            </ClaimsTransformation>
         </ClaimsTransformations>
 
         <ContentDefinitions>
@@ -288,7 +275,7 @@
                     <Protocol Name="None"/>
                     <OutputTokenFormat>JWT</OutputTokenFormat>
                     <Metadata>
-                        <Item Key="client_id">{service:te}</Item>
+                        <Item Key="client_id">{service:te}</Item> <!-- ETT: This field is not a variable we should change  -->
                         <Item Key="issuer_refresh_token_user_identity_claim_type">sub</Item>
                         <Item Key="SendTokenResponseBodyWithJsonNumbers">true</Item>
                     </Metadata>
@@ -382,17 +369,16 @@
                     <DisplayName>MitID</DisplayName>
                     <Protocol Name="OpenIdConnect"/>
                     <Metadata>
-                        <Item Key="METADATA">https://pp.netseidbroker.dk/op/.well-known/openid-configuration</Item>
-                        <Item Key="client_id">627f6de4-a1fc-43ef-b811-d88391075f24</Item>
+                        <Item Key="METADATA">https://netseidbroker.dk/op/.well-known/openid-configuration</Item>
+                        <Item Key="client_id">d6425b7d-2a24-4f36-8ac6-4baee32bea9d</Item> <!-- MitID client id -->
                         <Item Key="response_types">code</Item>
                         <Item Key="scope">openid ssn mitid nemlogin userinfo_token</Item>
                         <Item Key="response_mode">query</Item>
                         <Item Key="UsePolicyInRedirectUri">false</Item>
                         <Item Key="HttpBinding">POST</Item>
-                        <Item Key="ClaimsEndpoint">https://pp.netseidbroker.dk/op/connect/userinfo</Item>
                     </Metadata>
                     <CryptographicKeys>
-                        <Key Id="client_secret" StorageReferenceId="B2C_1A_MitIDSecretTestClient"/>
+                        <Key Id="client_secret" StorageReferenceId="B2C_1A_MitIDSecret"/>
                     </CryptographicKeys>
                     <InputClaims/>
                     <OutputClaims>
@@ -418,47 +404,23 @@
                     <Protocol Name="Proprietary"
                               Handler="Web.TPEngine.SSO.NoopSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
                 </TechnicalProfile>
-                <TechnicalProfile Id="restMethod">
-                    <DisplayName>Check that the user has entered a valid access code by using Claims Transformations</DisplayName>
-                    <Protocol Name="Proprietary"
-                              Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
-                    <Metadata>
-                        <Item Key="ServiceUrl">https://eo-alerts-apim.azure-api.net/mitid_userinfo_token/op/connect/userinfo</Item>
-                        <Item Key="AuthenticationType">Bearer</Item>
-                        <Item Key="UseClaimAsBearerToken">mitIDBearerToken</Item>
-                        <Item Key="DebugMode">true</Item>
-                        <Item Key="AllowInsecureAuthInProduction">true</Item>
-                        <Item Key="DefaultUserMessageIfRequestFailed">User info request failed.</Item>
-                        <Item Key="SendClaimsIn">QueryString</Item>
-                    </Metadata>
-                    <InputClaims>
-                        <InputClaim ClaimTypeReferenceId="mitIDBearerToken"/>
-                    </InputClaims>
-                    <OutputClaims>
-                        <OutputClaim ClaimTypeReferenceId="mitid_sub" PartnerClaimType="sub"/>
-                        <OutputClaim ClaimTypeReferenceId="mitid_name" PartnerClaimType="nemlogin_name"/>
-                        <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="nemlogin_email"/>
-                        <OutputClaim ClaimTypeReferenceId="org_cvr" PartnerClaimType="nemlogin_cvr"/>
-                        <OutputClaim ClaimTypeReferenceId="org_name" PartnerClaimType="nemlogin_org_name"/>
-                    </OutputClaims>
-                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
-                </TechnicalProfile>
 
                 <TechnicalProfile Id="clientCredentialsMethod">
                     <DisplayName>Check that the user has entered a valid access code by using Claims Transformations</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
-                        <Item Key="ServiceUrl">https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/oauth2/v2.0/token</Item>
+                        <Item Key="ServiceUrl">https://login.microsoftonline.com/d44e264e-0b26-4428-b114-7db4e2d0ac95/oauth2/v2.0/token</Item> <!-- ETT: d44e264e-0b26-4428-b114-7db4e2d0ac95 change this to your TenantID  -->
                         <Item Key="SendClaimsIn">Form</Item>
                         <Item Key="AuthenticationType">None</Item>
                         <Item Key="DebugMode">true</Item>
+                        <Item Key="AllowInsecureAuthInProduction">true</Item>
                         <Item Key="DefaultUserMessageIfRequestFailed">Failed to obtain authorization information.</Item>
                     </Metadata>
                     <InputClaims>
                         <InputClaim ClaimTypeReferenceId="self_grant_type" PartnerClaimType="grant_type" DefaultValue="client_credentials"/>
-                        <InputClaim ClaimTypeReferenceId="self_client_id" PartnerClaimType="client_id" DefaultValue="f00b9b4d-3c59-4c40-b209-2ef87e509f54"/>
-                        <InputClaim ClaimTypeReferenceId="self_client_secret" PartnerClaimType="client_secret" DefaultValue="HLW..."/>
-                        <InputClaim ClaimTypeReferenceId="self_scope" PartnerClaimType="scope" DefaultValue="https://datahubeouenerginet.onmicrosoft.com/energy-origin/.default"/>
+                        <InputClaim ClaimTypeReferenceId="self_client_id" PartnerClaimType="client_id" DefaultValue="44d0d03c-bd3f-47a9-97b2-c13eb8d8e901"/> <!-- ett: ett-authorization-b2c client id: 44d0d03c-bd3f-47a9-97b2-c13eb8d8e901 -->
+                        <InputClaim ClaimTypeReferenceId="self_client_secret" PartnerClaimType="client_secret" DefaultValue="bTn..."/> <!-- ett: ett-authorization-b2c client secret: bTn...  -->
+                        <InputClaim ClaimTypeReferenceId="self_scope" PartnerClaimType="scope" DefaultValue="https://datahubeopenerginet.onmicrosoft.com/energy-origin/.default"/>
                     </InputClaims>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="self_access_token" PartnerClaimType="access_token"/>
@@ -466,11 +428,37 @@
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
                 </TechnicalProfile>
 
+                <TechnicalProfile Id="userinfo">
+                    <DisplayName>Check that the user has entered a valid access code by using Claims Transformations</DisplayName>
+                    <Protocol Name="Proprietary"
+                              Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://energytrackandtrace.dk/api/authorization/userinfo</Item>
+                        <Item Key="AuthenticationType">Bearer</Item>
+                        <Item Key="UseClaimAsBearerToken">self_access_token</Item>
+                        <Item Key="DebugMode">true</Item>
+                        <Item Key="AllowInsecureAuthInProduction">false</Item>
+                        <Item Key="DefaultUserMessageIfRequestFailed">User info request failed.</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="self_access_token"/>
+                        <InputClaim ClaimTypeReferenceId="mitIDBearerToken"/>
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="mitid_sub" />
+                        <OutputClaim ClaimTypeReferenceId="mitid_name" />
+                        <OutputClaim ClaimTypeReferenceId="email" />
+                        <OutputClaim ClaimTypeReferenceId="org_cvr" />
+                        <OutputClaim ClaimTypeReferenceId="org_name" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
+                </TechnicalProfile>
+
                 <TechnicalProfile Id="authorizationMethod">
                     <DisplayName>Check that the user has entered a valid access code by using Claims Transformations</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
-                        <Item Key="ServiceUrl">https://demo.energytrackandtrace.dk/api/authorization/user-consent</Item>
+                        <Item Key="ServiceUrl">https://energytrackandtrace.dk/api/authorization/user-consent</Item>
                         <Item Key="SendClaimsIn">Body</Item>
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="UseClaimAsBearerToken">self_access_token</Item>
@@ -487,16 +475,14 @@
                     </InputClaims>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
-                        <OutputClaim ClaimTypeReferenceId="mapped_name" PartnerClaimType="name"/>
                         <OutputClaim ClaimTypeReferenceId="sub_type"/>
                         <OutputClaim ClaimTypeReferenceId="org_name"/>
                         <OutputClaim ClaimTypeReferenceId="org_ids"/>
                         <OutputClaim ClaimTypeReferenceId="scope"/>
-                        <OutputClaim ClaimTypeReferenceId="terms_accepted"/>
+                        <OutputClaim ClaimTypeReferenceId="tos_accepted" PartnerClaimType="terms_accepted"/>
                     </OutputClaims>
                     <OutputClaimsTransformations>
                         <OutputClaimsTransformation ReferenceId="OrgIdsAsStringTransformation"/>
-                        <OutputClaimsTransformation ReferenceId="MapTermsAcceptedToTosAccepted" />
                     </OutputClaimsTransformations>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
                 </TechnicalProfile>
@@ -541,13 +527,13 @@
 
                 <OrchestrationStep Order="5" Type="ClaimsExchange">
                     <ClaimsExchanges>
-                        <ClaimsExchange Id="RestMethodExample" TechnicalProfileReferenceId="restMethod"/>
+                        <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="6" Type="ClaimsExchange">
                     <ClaimsExchanges>
-                        <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
+                        <ClaimsExchange Id="userinfoExample" TechnicalProfileReferenceId="userinfo"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
@@ -565,14 +551,13 @@
     <RelyingParty>
         <DefaultUserJourney ReferenceId="MitIdJourney"/>
         <UserJourneyBehaviors>
-            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="126..." DeveloperMode="true"
-                             ClientEnabled="true" ServerEnabled="true" TelemetryVersion="1.0.0"/>
+            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="126..." DeveloperMode="true" ClientEnabled="true" ServerEnabled="true" TelemetryVersion="1.0.0"/> <!-- ett: 126... change this to your ApplicationInsights InstrumentationKey -->
         </UserJourneyBehaviors>
-        <TechnicalProfile Id="HelloWorldPolicyProfile">
-            <DisplayName>Hello World Policy Profile</DisplayName>
+        <TechnicalProfile Id="ProductionPolicyProfile">
+            <DisplayName>Production Policy Profile</DisplayName>
             <Protocol Name="OpenIdConnect"/>
             <OutputClaims>
-                <OutputClaim ClaimTypeReferenceId="mapped_name" PartnerClaimType="name"/>
+                <OutputClaim ClaimTypeReferenceId="mitid_name" PartnerClaimType="name"/>
                 <OutputClaim ClaimTypeReferenceId="email"/>
                 <OutputClaim ClaimTypeReferenceId="org_cvr"/>
                 <OutputClaim ClaimTypeReferenceId="org_name"/>
@@ -580,7 +565,7 @@
                 <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="scope"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type"/>
-                <OutputClaim ClaimTypeReferenceId="terms_accepted" PartnerClaimType="tos_accepted" />
+                <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
         </TechnicalProfile>
