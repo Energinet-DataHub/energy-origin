@@ -46,7 +46,7 @@ to get into overview of client secrets.
 
 ![client secrtes](client_secrets.png)
 
-Here we can click on "New Client Secret", to create a a new client :P secret description, isn't that important and we will stick with default 6 months expire date for now.
+Here we can click on "New Client Secret", to create a a new client secret. The description isn't that important and we will stick with default 6 months expire date for now.
 
 ![save secret](save_secret.png)
 
