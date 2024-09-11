@@ -94,7 +94,7 @@ app.MapSwagger();
 
 if (args.Contains("--swagger"))
 {
-    app.BuildSwaggerYamlFile(builder.Environment, "proxy.yaml"); // TODO: Maybe move this in start of setup so we don't check database and all other settings are correct.
+    app.BuildSwaggerYamlFile(builder.Environment, "proxy.yaml");
 }
 else
 {
