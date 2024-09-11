@@ -22,11 +22,11 @@ using Xunit;
 
 namespace Tests.MeteringPoints.Api.Consumer;
 
-public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Startup>>, IClassFixture<PostgresContainer>
+public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Program>>, IClassFixture<PostgresContainer>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
+    private readonly CustomWebApplicationFactory<Program> _factory;
 
-    public TermsConsumerTest(CustomWebApplicationFactory<Startup> factory, PostgresContainer postgresContainer)
+    public TermsConsumerTest(CustomWebApplicationFactory<Program> factory, PostgresContainer postgresContainer)
     {
         factory.ConnectionString = postgresContainer.ConnectionString;
         _factory = factory;

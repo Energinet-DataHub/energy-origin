@@ -9,14 +9,14 @@ using Xunit;
 
 namespace Tests;
 
-public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
+public class MeasurementsTestBase : IClassFixture<TestServerFixture<Program>>
 {
-    protected readonly TestServerFixture<Startup> _serverFixture;
+    protected readonly TestServerFixture<Program> _serverFixture;
     public string DataHubFacadeUrl { get; set; } = "http://someurl.com";
     public string otlpEndpoint { get; set; } = "http://someurl";
 
 
-    public MeasurementsTestBase(TestServerFixture<Startup> serverFixture, RabbitMqOptions? rabbitMqOptions = null, string connectionString = "")
+    public MeasurementsTestBase(TestServerFixture<Program> serverFixture, RabbitMqOptions? rabbitMqOptions = null, string connectionString = "")
     {
         _serverFixture = serverFixture;
 

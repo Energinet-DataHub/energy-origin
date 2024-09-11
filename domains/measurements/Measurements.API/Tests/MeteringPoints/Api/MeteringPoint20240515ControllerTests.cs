@@ -21,12 +21,12 @@ using Xunit;
 
 namespace Tests.MeteringPoints.Api;
 
-public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>,
+public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Program>>,
     IClassFixture<PostgresContainer>
 {
-    private readonly CustomMeterPointWebApplicationFactory<Startup> _factory;
+    private readonly CustomMeterPointWebApplicationFactory<Program> _factory;
 
-    public MeteringPoint20240515ControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory,
+    public MeteringPoint20240515ControllerTests(CustomMeterPointWebApplicationFactory<Program> factory,
         PostgresContainer postgresContainer)
 
     {

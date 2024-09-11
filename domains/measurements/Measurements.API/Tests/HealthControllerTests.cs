@@ -10,7 +10,7 @@ namespace Tests;
 
 public class HealthControllerTests : MeasurementsTestBase, IClassFixture<RabbitMqContainer>, IClassFixture<PostgresContainer>
 {
-    public HealthControllerTests(TestServerFixture<Startup> serverFixture, RabbitMqContainer rabbitMqContainer, PostgresContainer postgresContainer)
+    public HealthControllerTests(TestServerFixture<Program> serverFixture, RabbitMqContainer rabbitMqContainer, PostgresContainer postgresContainer)
         : base(serverFixture, rabbitMqContainer.Options, postgresContainer.ConnectionString)
     {
     }
