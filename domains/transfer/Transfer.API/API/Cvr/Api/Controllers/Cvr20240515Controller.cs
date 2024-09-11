@@ -7,6 +7,8 @@ using API.Cvr.Api.Dto.Responses;
 using API.Cvr.Api.Models;
 using API.Transfer.Api.Controllers;
 using Asp.Versioning;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -14,6 +14,8 @@ using API.Transfer.TransferAgreementProposalCleanup;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.HostedService;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;

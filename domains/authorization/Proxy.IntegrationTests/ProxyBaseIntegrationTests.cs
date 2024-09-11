@@ -1,4 +1,6 @@
 using System.Net;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using Proxy.Controllers;
 using Proxy.IntegrationTests.Setup;

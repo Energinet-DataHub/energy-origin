@@ -6,6 +6,8 @@ using API.Transfer.Api.Controllers;
 using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;

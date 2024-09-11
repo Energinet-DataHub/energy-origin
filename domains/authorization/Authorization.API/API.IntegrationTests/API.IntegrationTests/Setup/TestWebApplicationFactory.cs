@@ -6,6 +6,8 @@ using System.Security.Cryptography.X509Certificates;
 using API.Authorization.Controllers;
 using API.Models;
 using API.Options;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;

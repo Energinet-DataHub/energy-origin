@@ -2,6 +2,8 @@ using System.Collections;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using Proxy.Controllers;
 using Proxy.IntegrationTests.Setup;

@@ -5,6 +5,8 @@ using API.MeteringPoints.Api.Dto.Responses;
 using API.MeteringPoints.Api.Dto.Responses.Enums;
 using API.MeteringPoints.Api.Models;
 using Asp.Versioning;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using Meteringpoint.V1;
 using Microsoft.AspNetCore.Authorization;
