@@ -1,4 +1,4 @@
-﻿namespace EnergyOrigin.Setup;
+namespace EnergyOrigin.Setup;
 
 public static class ApiVersions
 {
@@ -12,8 +12,4 @@ public static class ApiVersions
     public const int Version20240423AsInt = 20240423;
     public const int Version20240515AsInt = 20240515;
     public const int Version20240103AsInt = 20240103;
-    
-
 }
-
-
