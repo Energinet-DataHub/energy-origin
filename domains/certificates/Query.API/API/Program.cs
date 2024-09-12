@@ -14,14 +14,12 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.b2c;
 using API.IssuingContractCleanup;
 using API.MeasurementsSyncer.Metrics;
-using API.Query.API.Controllers;
 using API.UnitOfWork;
 using Contracts;
 using EnergyOrigin.Setup;
 using MassTransit;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
-using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
