@@ -38,7 +38,7 @@ public class ProjectOriginStack : RegistryFixture
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/wallet-server:1.5.5")
+                .WithImage("ghcr.io/project-origin/wallet-server:1.5.6")
                 .WithNetwork(Network)
                 .WithPortBinding(hostPort, WalletHttpPort)
                 .WithCommand("--serve", "--migrate")
