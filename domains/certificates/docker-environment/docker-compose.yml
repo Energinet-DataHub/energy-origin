@@ -39,6 +39,12 @@ services:
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml
       - prometheus:/prometheus
+    environment:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/tmp/prometheus/metrics
+      - --web.enable-remote-write-receiver
+      - --enable-feature=otlp-write-receiver
+      - --enable-feature=exemplar-storage
     ports:
       - "9090:9090"
 
@@ -48,10 +54,14 @@ services:
     user: root
     environment:
       - COLLECTOR_OTLP_ENABLED=true
-      - SPAN_STORAGE_TYPE=badger
-      - BADGER_EPHEMERAL=false
-      - BADGER_DIRECTORY_VALUE=/badger/data
-      - BADGER_DIRECTORY_KEY=/badger/key
+      - SPAN_STORAGE_TYPE=memory
+      - JAEGER_DISABLED=false
+      - COLLECTOR_OTLP_ENABLED=true
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
+      - PROMETHEUS_QUERY_SUPPORT_SPANMETRICS_CONNECTOR=true
+      - PROMETHEUS_QUERY_NORMALIZE_CALLS=true
+      - PROMETHEUS_QUERY_NORMALIZE_DURATION=true
     ports:
       - "16686:16686"
       - "4317"
@@ -59,7 +69,7 @@ services:
       - jaeger:/badger
 
   collector:
-    image: otel/opentelemetry-collector-contrib:0.91.0
+    image: otel/opentelemetry-collector-contrib:0.94.0
     container_name: collector
     command: [ "--config=/conf/collector-config.yaml" ]
     volumes:
