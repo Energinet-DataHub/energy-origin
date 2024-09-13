@@ -17,6 +17,8 @@ try
 
     if (args.Contains("--swagger"))
     {
+        // Test without
+        
         app.BuildSwaggerYamlFile(app.Environment, "measurements.yaml");
     }
     else
