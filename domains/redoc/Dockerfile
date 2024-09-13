@@ -13,9 +13,11 @@ RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
 FROM redocly/cli AS packager
 
 WORKDIR /app
-RUN ls ./
+RUN ls /app/domains/authorization/Proxy/
+RUN ls /app/domains/certificates/Query.API/API/
 COPY --from=builder /app/domains/authorization/Proxy/proxy.yaml .
 COPY --from=builder /app/domains/certificates/Query.API/API/contracts.yaml .
+RUN ls ./
 #COPY --from=builder /app/domains/authorization/Authorization.API/API/authorization.yaml .
 #COPY --from=builder /app/domains/measurements/Measurements.API/API/measurements.yaml .
 COPY domains/redoc/api-info.yaml .
