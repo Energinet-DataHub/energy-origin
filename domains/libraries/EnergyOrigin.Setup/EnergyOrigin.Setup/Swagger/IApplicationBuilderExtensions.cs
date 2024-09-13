@@ -32,9 +32,9 @@ public static class SwaggerApplicationBuilderExtensions
         }
     }
 
-    public static void BuildSwaggerYamlFile(this IApplicationBuilder app, IWebHostEnvironment env, string filename, string apiVersion = ApiVersions.Version20240515)
+    public static void BuildSwaggerYamlFile(this WebApplication app, IWebHostEnvironment env, string filename, string apiVersion = ApiVersions.Version20240515)
     {
-        var swaggerProvider = app.ApplicationServices.GetRequiredService<ISwaggerProvider>();
+        var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
         var swagger = swaggerProvider.GetSwagger(apiVersion);
 
         File.WriteAllText(
