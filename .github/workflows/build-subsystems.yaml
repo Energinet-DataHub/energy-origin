@@ -17,55 +17,72 @@ jobs:
     name: Setup
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ env.matrix }}
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
 
     steps:
+      - uses: actions/checkout@v4
+
       - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
           paths: domains/*/
 
-      - name: Set default matrix
-        shell: bash
-        run: |
-          echo "matrix=[]" >> "$GITHUB_ENV"
-
       - name: Build relevant matrix
+        id: build-matrix
         if: ${{ steps.diff.outputs.list != '' }}
         shell: bash
         env:
           LIST: ${{ steps.diff.outputs.list }}
         run: |
-          while read domain; do
+          # Initialize an array to hold project entries
+          project_entries=()
+
+          while read -r domain; do
             [ -d "$domain" ] || continue
+            # Copy global.json if not present
             [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
+            # Load settings from global.json
             settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
             sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
             runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
-            csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
-            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$runtime"; done <<< $csprojects | jq -sc '.')
-            printf '{"projects":%s}\n' "$projects"
-          done <<< $LIST > /tmp/json
+            # Find csproj directories excluding Shared and Tests
+            csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | grep -Ev '/Shared/|/Tests$')
+            # Process each project
+            while read -r project; do
+              configuration="$(dirname "$project")/configuration.yaml"
+              project_data=$(jq -n \
+                --arg path "$project" \
+                --arg configuration "$configuration" \
+                --arg sdkVersion "$sdk" \
+                --arg runtimeVersion "$runtime" \
+                '{path: $path, configuration: $configuration, sdkVersion: $sdkVersion, runtimeVersion: $runtimeVersion}')
+              project_entries+=("$project_data")
+            done <<< "$csprojects"
+          done <<< "${LIST}"
 
-          if [ ! -s /tmp/json ]; then
+          if [ ${#project_entries[@]} -eq 0 ]; then
+            echo "No projects found to process."
+            echo "matrix=[]" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          matrix=$(jq -sc '.' < /tmp/json)
+          # Combine all project entries into a JSON array
+          matrix=$(printf '%s\n' "${project_entries[@]}" | jq -s '.')
+
           echo '::group::Matrix'
-          echo "$matrix" | jq -r '.'
+          echo "$matrix" | jq '.'
           echo '::endgroup::'
 
-          projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
-          echo "matrix=$projects" >> "$GITHUB_ENV"
+          # Set the matrix as a step output
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
       - name: Matrix
+        if: always()
         shell: bash
         run: |
-          echo '::group::Raw'
-          printf '${{ env.matrix }}\n'
+          echo '::group::Raw Matrix Output'
+          echo "${{ steps.build-matrix.outputs.matrix }}" | jq '.'
           echo '::endgroup::'
-          printf '${{ env.matrix }}' | jq -r '.'
 
   build-projects:
     name: Build projects
