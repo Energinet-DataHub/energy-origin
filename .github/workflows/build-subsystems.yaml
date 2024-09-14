@@ -88,50 +88,63 @@ jobs:
 
               # Find main projects in the domain
               while IFS= read -r -d '' csproj_file; do
-                CONFIG_FILE="${csproj_file%/*}/configuration.yaml"
-                if [ -f "$CONFIG_FILE" ]; then
-                  # Create temporary solution for this main project
-                  MAIN_PROJECT_NAME=$(basename "${csproj_file%.*}")
-                  TEMP_SOLUTION="${MAIN_PROJECT_NAME}_temp.sln"
-                  TEMP_SOLUTION_PATH="$DOMAIN_PATH/$TEMP_SOLUTION"
-
-                  dotnet new sln -n "$MAIN_PROJECT_NAME" -o "$DOMAIN_PATH"
-
-                  # Add the main project to the solution
-                  dotnet sln "$TEMP_SOLUTION_PATH" add "$csproj_file"
-
-                  # Find migration file if exists
-                  MIGRATION_FILE="${csproj_file%/*}/migrations/API.sql"
-                  if [ -f "$MIGRATION_FILE" ]; then
-                    MIGRATION_FILE_PATH="$MIGRATION_FILE"
-                  else
-                    MIGRATION_FILE_PATH=""
+                # Try to find configuration.yaml in the same directory or parent directories
+                CONFIG_FILE=""
+                CURRENT_DIR="${csproj_file%/*}"
+                while [ "$CURRENT_DIR" != "$DOMAIN_PATH" ]; do
+                  if [ -f "$CURRENT_DIR/configuration.yaml" ]; then
+                    CONFIG_FILE="$CURRENT_DIR/configuration.yaml"
+                    break
                   fi
-
-                  # Prepare entry for test matrix
-                  TEST_MATRIX_ENTRY=$(jq -n \
-                    --arg domain "$DOMAIN" \
-                    --arg main_project "$csproj_file" \
-                    --arg solution_path "$TEMP_SOLUTION_PATH" \
-                    --arg sdk_version "$SDK_VERSION" \
-                    '{domain: $domain, main_project: $main_project, solution_path: $solution_path, sdk_version: $sdk_version}')
-                  TEST_MATRIX_ENTRIES+=("$TEST_MATRIX_ENTRY")
-
-                  # Prepare entry for Docker build matrix
-                  DOCKER_BUILD_MATRIX_ENTRY=$(jq -n \
-                    --arg domain "$DOMAIN" \
-                    --arg main_project "$csproj_file" \
-                    --arg solution_path "$TEMP_SOLUTION_PATH" \
-                    --arg config_file "$CONFIG_FILE" \
-                    --arg sdk_version "$SDK_VERSION" \
-                    --arg runtime_version "$RUNTIME_VERSION" \
-                    --arg migration_file "$MIGRATION_FILE_PATH" \
-                    '{domain: $domain, main_project: $main_project, solution_path: $solution_path, config_file: $config_file, sdk_version: $sdk_version, runtime_version: $runtime_version, migration_file: $migration_file}')
-                  DOCKER_BUILD_MATRIX_ENTRIES+=("$DOCKER_BUILD_MATRIX_ENTRY")
-
-                  # Collect configuration files
-                  CONFIGURATION_FILES+=("$CONFIG_FILE")
+                  CURRENT_DIR=$(dirname "$CURRENT_DIR")
+                done
+                if [ -z "$CONFIG_FILE" ]; then
+                  echo "No configuration.yaml found for $csproj_file, skipping."
+                  continue
                 fi
+
+                # Proceed to process the main project
+                MAIN_PROJECT_NAME=$(basename "${csproj_file%.*}")
+                TEMP_SOLUTION="${MAIN_PROJECT_NAME}_temp.sln"
+                TEMP_SOLUTION_PATH="$DOMAIN_PATH/$TEMP_SOLUTION"
+
+                dotnet new sln -n "$MAIN_PROJECT_NAME" -o "$DOMAIN_PATH"
+
+                # Add the main project to the solution
+                dotnet sln "$TEMP_SOLUTION_PATH" add "$csproj_file"
+
+                # Find migration file if exists
+                MIGRATION_FILE="${csproj_file%/*}/migrations/API.sql"
+                if [ -f "$MIGRATION_FILE" ]; then
+                  MIGRATION_FILE_PATH="$MIGRATION_FILE"
+                else
+                  MIGRATION_FILE_PATH=""
+                fi
+
+                # Prepare entry for test matrix
+                TEST_MATRIX_ENTRY=$(jq -n \
+                  --arg domain "$DOMAIN" \
+                  --arg main_project "$csproj_file" \
+                  --arg solution_path "$TEMP_SOLUTION_PATH" \
+                  --arg sdk_version "$SDK_VERSION" \
+                  '{domain: $domain, main_project: $main_project, solution_path: $solution_path, sdk_version: $sdk_version}')
+                TEST_MATRIX_ENTRIES+=("$TEST_MATRIX_ENTRY")
+
+                # Prepare entry for Docker build matrix
+                DOCKER_BUILD_MATRIX_ENTRY=$(jq -n \
+                  --arg domain "$DOMAIN" \
+                  --arg main_project "$csproj_file" \
+                  --arg solution_path "$TEMP_SOLUTION_PATH" \
+                  --arg config_file "$CONFIG_FILE" \
+                  --arg sdk_version "$SDK_VERSION" \
+                  --arg runtime_version "$RUNTIME_VERSION" \
+                  --arg migration_file "$MIGRATION_FILE_PATH" \
+                  '{domain: $domain, main_project: $main_project, solution_path: $solution_path, config_file: $config_file, sdk_version: $sdk_version, runtime_version: $runtime_version, migration_file: $migration_file}')
+                DOCKER_BUILD_MATRIX_ENTRIES+=("$DOCKER_BUILD_MATRIX_ENTRY")
+
+                # Collect configuration files
+                CONFIGURATION_FILES+=("$CONFIG_FILE")
+
               done < <(find "$DOMAIN_PATH" -type f -name "*.csproj" -print0)
             done
 
@@ -146,7 +159,7 @@ jobs:
 
             # Concatenate configuration file paths into a newline-separated list
             if [ ${#CONFIGURATION_FILES[@]} -gt 0 ]; then
-              CONFIGURATIONS=$(printf '%s\n' "${CONFIGURATION_FILES[@]}")
+              CONFIGURATIONS=$(printf '%s\n' "${CONFIGURATION_FILES[@]}" | sort | uniq)
             fi
           fi
 
