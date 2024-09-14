@@ -50,25 +50,29 @@ jobs:
           else
             echo "Changed domains: ${DOMAINS_CHANGED[@]}"
             changed_domains_str=$(printf '%s\n' "${DOMAINS_CHANGED[@]}")
-            echo "changed_domains=$changed_domains_str" >> $GITHUB_ENV
+            echo "changed_domains<<EOF" >> $GITHUB_ENV
+            echo "$changed_domains_str" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
           fi
 
       - name: Create matrices and collect configurations
         id: set_outputs
         run: |
+          set -e
+          set -x
           echo "::group::Create matrices"
           TEST_MATRIX_JSON="[]"
           DOCKER_BUILD_MATRIX_JSON="[]"
           CONFIGURATIONS=""
 
-          if [ -z "${{ env.changed_domains }}" ]; then
+          if [ -z "$changed_domains" ]; then
             echo "No domains to process."
           else
             declare -a TEST_MATRIX_ENTRIES
             declare -a DOCKER_BUILD_MATRIX_ENTRIES
             declare -a CONFIGURATION_FILES
 
-            IFS=$'\n' read -r -d '' -a CHANGED_DOMAINS_ARRAY <<< "${{ env.changed_domains }}"
+            IFS=$'\n' read -r -a CHANGED_DOMAINS_ARRAY <<< "$changed_domains"
 
             for DOMAIN in "${CHANGED_DOMAINS_ARRAY[@]}"; do
               DOMAIN_PATH="domains/$DOMAIN"
