@@ -1,4 +1,4 @@
-name: Build Subsystems
+name: Build subsystems
 
 on:
   workflow_call:
@@ -14,213 +14,194 @@ on:
 
 jobs:
   setup:
+    name: Setup
     runs-on: ubuntu-latest
     outputs:
-      test_matrix: ${{ steps.set_outputs.outputs.test_matrix }}
-      docker_build_matrix: ${{ steps.set_outputs.outputs.docker_build_matrix }}
-      configurations: ${{ steps.set_outputs.outputs.configurations }}
+      matrix: ${{ env.matrix }}
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Get changed domains
-        id: get_changed_domains
+      - name: Validate required domain structure
+        shell: bash
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1 || true
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
-          echo "Changed files: $CHANGED_FILES"
+          function required_folder {
+            [ -d "$1" ] || { printf '::error title=Missing folder::%s\n' "$1"; exit 1; }
+          }
 
-          # Get list of all domains dynamically
-          DOMAINS=$(find domains -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
-          echo "All domains: $DOMAINS"
+          function required_file {
+            [ -f "$1" ] || { printf '::error title=Missing file::%s\n' "$1"; exit 1; }
+          }
 
-          # Determine changed domains
-          DOMAINS_CHANGED=()
-          for DOMAIN in $DOMAINS; do
-            if echo "$CHANGED_FILES" | grep -q "^domains/$DOMAIN/"; then
-              DOMAINS_CHANGED+=("$DOMAIN")
-            fi
+          find domains -mindepth 1 -maxdepth 1 -type d | while read domain; do
+            required_folder "$domain/.devcontainer"
+            required_file "$domain/.devcontainer/Dockerfile"
+            required_file "$domain/.devcontainer/devcontainer.json"
+            required_file "$domain"/*.sln
           done
 
-          if [ ${#DOMAINS_CHANGED[@]} -eq 0 ]; then
-            echo "No domains have changed."
-            echo "changed_domains=" >> $GITHUB_ENV
-          else
-            echo "Changed domains: ${DOMAINS_CHANGED[@]}"
-            changed_domains_str=$(printf '%s\n' "${DOMAINS_CHANGED[@]}")
-            echo "changed_domains<<EOF" >> $GITHUB_ENV
-            echo "$changed_domains_str" >> $GITHUB_ENV
-            echo "EOF" >> $GITHUB_ENV
-          fi
+      - uses: CodeReaper/find-diff-action@v3
+        id: diff
+        with:
+          paths: domains/*/
 
-      - name: Create matrices and collect configurations
-        id: set_outputs
+      - name: Set default matrix
+        shell: bash
         run: |
-          set -e
-          set -x
-          echo "::group::Create matrices"
-          TEST_MATRIX_JSON="[]"
-          DOCKER_BUILD_MATRIX_JSON="[]"
-          CONFIGURATIONS=""
+          echo "matrix=[]" >> "$GITHUB_ENV"
 
-          if [ -z "$changed_domains" ]; then
-            echo "No domains to process."
-          else
-            declare -a TEST_MATRIX_ENTRIES
-            declare -a DOCKER_BUILD_MATRIX_ENTRIES
-            declare -a CONFIGURATION_FILES
+      - name: Build relevant matrix
+        if: ${{ steps.diff.outputs.list != '' }}
+        shell: bash
+        env:
+          LIST: ${{ steps.diff.outputs.list }}
+        run: |
+          while read domain; do
+            [ -d "$domain" ] || continue
+            [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
+            settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
+            sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
+            runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
+            csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
+            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$runtime"; done <<< $csprojects | jq -sc '.')
+            printf '{"projects":%s}\n' "$projects"
+          done <<< $LIST > /tmp/json
 
-            IFS=$'\n' read -r -a CHANGED_DOMAINS_ARRAY <<< "$changed_domains"
-
-            for DOMAIN in "${CHANGED_DOMAINS_ARRAY[@]}"; do
-              DOMAIN_PATH="domains/$DOMAIN"
-              # Extract SDK and runtime versions from global.json
-              GLOBAL_JSON="$DOMAIN_PATH/global.json"
-              if [ -f "$GLOBAL_JSON" ]; then
-                SDK_VERSION=$(jq -r '.sdk.version' "$GLOBAL_JSON")
-                RUNTIME_VERSION=$(jq -r '.runtime.version' "$GLOBAL_JSON")
-              else
-                SDK_VERSION="latest"
-                RUNTIME_VERSION="latest"
-              fi
-
-              # Find main projects in the domain
-              while IFS= read -r -d '' csproj_file; do
-                # Try to find configuration.yaml in the same directory or parent directories
-                CONFIG_FILE=""
-                CURRENT_DIR="${csproj_file%/*}"
-                while [ "$CURRENT_DIR" != "$DOMAIN_PATH" ]; do
-                  if [ -f "$CURRENT_DIR/configuration.yaml" ]; then
-                    CONFIG_FILE="$CURRENT_DIR/configuration.yaml"
-                    break
-                  fi
-                  CURRENT_DIR=$(dirname "$CURRENT_DIR")
-                done
-                if [ -z "$CONFIG_FILE" ]; then
-                  echo "No configuration.yaml found for $csproj_file, skipping."
-                  continue
-                fi
-
-                # Proceed to process the main project
-                MAIN_PROJECT_NAME=$(basename "${csproj_file%.*}")
-                TEMP_SOLUTION="${MAIN_PROJECT_NAME}_temp.sln"
-                TEMP_SOLUTION_PATH="$DOMAIN_PATH/$TEMP_SOLUTION"
-
-                dotnet new sln -n "$MAIN_PROJECT_NAME" -o "$DOMAIN_PATH"
-
-                # Add the main project to the solution
-                dotnet sln "$TEMP_SOLUTION_PATH" add "$csproj_file"
-
-                # Find migration file if exists
-                MIGRATION_FILE="${csproj_file%/*}/migrations/API.sql"
-                if [ -f "$MIGRATION_FILE" ]; then
-                  MIGRATION_FILE_PATH="$MIGRATION_FILE"
-                else
-                  MIGRATION_FILE_PATH=""
-                fi
-
-                # Prepare entry for test matrix
-                TEST_MATRIX_ENTRY=$(jq -n \
-                  --arg domain "$DOMAIN" \
-                  --arg main_project "$csproj_file" \
-                  --arg solution_path "$TEMP_SOLUTION_PATH" \
-                  --arg sdk_version "$SDK_VERSION" \
-                  '{domain: $domain, main_project: $main_project, solution_path: $solution_path, sdk_version: $sdk_version}')
-                TEST_MATRIX_ENTRIES+=("$TEST_MATRIX_ENTRY")
-
-                # Prepare entry for Docker build matrix
-                DOCKER_BUILD_MATRIX_ENTRY=$(jq -n \
-                  --arg domain "$DOMAIN" \
-                  --arg main_project "$csproj_file" \
-                  --arg solution_path "$TEMP_SOLUTION_PATH" \
-                  --arg config_file "$CONFIG_FILE" \
-                  --arg sdk_version "$SDK_VERSION" \
-                  --arg runtime_version "$RUNTIME_VERSION" \
-                  --arg migration_file "$MIGRATION_FILE_PATH" \
-                  '{domain: $domain, main_project: $main_project, solution_path: $solution_path, config_file: $config_file, sdk_version: $sdk_version, runtime_version: $runtime_version, migration_file: $migration_file}')
-                DOCKER_BUILD_MATRIX_ENTRIES+=("$DOCKER_BUILD_MATRIX_ENTRY")
-
-                # Collect configuration files
-                CONFIGURATION_FILES+=("$CONFIG_FILE")
-
-              done < <(find "$DOMAIN_PATH" -type f -name "*.csproj" -print0)
-            done
-
-            # Build JSON arrays from entries
-            if [ ${#TEST_MATRIX_ENTRIES[@]} -gt 0 ]; then
-              TEST_MATRIX_JSON=$(printf '%s\n' "${TEST_MATRIX_ENTRIES[@]}" | jq -s '.')
-            fi
-
-            if [ ${#DOCKER_BUILD_MATRIX_ENTRIES[@]} -gt 0 ]; then
-              DOCKER_BUILD_MATRIX_JSON=$(printf '%s\n' "${DOCKER_BUILD_MATRIX_ENTRIES[@]}" | jq -s '.')
-            fi
-
-            # Concatenate configuration file paths into a newline-separated list
-            if [ ${#CONFIGURATION_FILES[@]} -gt 0 ]; then
-              CONFIGURATIONS=$(printf '%s\n' "${CONFIGURATION_FILES[@]}" | sort | uniq)
-            fi
+          if [ ! -s /tmp/json ]; then
+            exit 0
           fi
 
-          # Set outputs
-          echo "test_matrix=$TEST_MATRIX_JSON" >> $GITHUB_OUTPUT
-          echo "docker_build_matrix=$DOCKER_BUILD_MATRIX_JSON" >> $GITHUB_OUTPUT
-          echo "configurations<<EOF" >> $GITHUB_OUTPUT
-          echo "$CONFIGURATIONS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "::endgroup::"
+          matrix=$(jq -sc '.' < /tmp/json)
+          echo '::group::Matrix'
+          echo "$matrix" | jq -r '.'
+          echo '::endgroup::'
 
-  test:
-    needs: setup
-    strategy:
-      fail-fast: false
-      matrix:
-        main_project: ${{ fromJson(needs.setup.outputs.test_matrix) }}
+          projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
+          echo "matrix=$projects" >> "$GITHUB_ENV"
+
+      - name: Matrix
+        shell: bash
+        run: |
+          echo '::group::Raw'
+          printf '${{ env.matrix }}\n'
+          echo '::endgroup::'
+          printf '${{ env.matrix }}' | jq -r '.'
+
+  build-projects:
+    name: Build projects
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Test main project ${{ matrix.main_project.main_project }}
-        uses: ./.github/actions/dotnet-test
-        with:
-          solution: ${{ matrix.main_project.solution_path }}
-          sdk-version: ${{ matrix.main_project.sdk_version }}
-
-  build:
     needs: setup
+    if: ${{ needs.setup.outputs.matrix != '[]' }}
     strategy:
-      fail-fast: false
       matrix:
-        main_project: ${{ fromJson(needs.setup.outputs.docker_build_matrix) }}
-    runs-on: ubuntu-latest
+        build: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Build Docker image for ${{ matrix.main_project.main_project }}
-        uses: ./.github/actions/dotnet-build
+      - name: Resolve version
+        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v2
+
+      - name: Resolve
+        shell: bash
+        env:
+          PROJECT: ${{ matrix.build.path }}
+          CONFIGURATION: ${{ matrix.build.configuration }}
+        run: |
+          projects=$(dirname "$PROJECT")
+          domain=$(dirname "$projects")
+          name=$(yq '.name' "$CONFIGURATION")
+          service=${PROJECT#"$domain"}
+          path=$(find "$PROJECT" -name "*.csproj" | head -n1)
+          paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
+          migration="$domain/migrations/$(basename "$PROJECT").sql"
+          if [ ! -f "$migration" ]; then
+            migration=""
+          fi
+
+          EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
+          {
+            printf "paths<<%s\n" "$EOF"
+            printf "%s\n" "$paths"
+            printf "%s\n" "$EOF"
+            echo "migration=${migration}"
+            echo "service=${service}"
+            echo "domain=${domain}"
+            echo "name=${name}"
+            echo "path=${path}"
+          } >> $GITHUB_ENV
+
+      - name: Validate project
+        if: ${{ (github.event_name == 'push' && github.ref_name == 'main') }} == false
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v2
         with:
-          solution: ${{ matrix.main_project.solution_path }}
-          project: ${{ matrix.main_project.main_project }}
-          configuration: ${{ matrix.main_project.config_file }}
-          migrations: ${{ matrix.main_project.migration_file }}
-          sdk-version: ${{ matrix.main_project.sdk_version }}
-          runtime-version: ${{ matrix.main_project.runtime_version }}
+          dotnet-version: ${{ matrix.build.sdkVersion }}
+          pin-version: true
+          paths: ${{ env.paths }}
+          sql-file: ${{ env.migration }}
+
+      - name: Ensure files and folders exists
+        shell: bash
+        run: mkdir "${{ env.domain }}/migrations" || true
+
+      - name: Enforce assembly name
+        shell: bash
+        run: |
+          set +e
+          grep -q "<AssemblyName>" "${{ env.path }}"
+          if [ $? -eq 0 ]; then
+            sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+          else
+            sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          repository: "Energinet-DataHub/acorn-actions"
+          sparse-checkout: Dockerfile
+          path: acorn-actions
+
+      - name: Copy dockerfile to root path
+        run: cp acorn-actions/Dockerfile .
+
+      - name: Build image
+        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v2
+        with:
+          dockerfile: Dockerfile
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          docker-context: .
           dry-run: ${{ inputs.dry-run }}
-          is-dependabot: ${{ inputs.is-dependabot }}
+          build-args: |
+            SUBSYSTEM=${{ env.domain }}
+            PROJECT=${{ env.service }}
+            SDK_VERSION=${{ matrix.build.sdkVersion }}
+            RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
 
-  update:
-    needs: [setup, build, test]
+      - name: Scan image
+        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v2
+        with:
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+  update-environment:
+    name: Update environment
     runs-on: ubuntu-latest
-    if: ${{ inputs.is-dependabot == 'false' && needs.setup.outputs.configurations != '' }}
+    needs:
+      - setup
+      - build-projects
+    concurrency: commits-base-environment
+    strategy:
+      max-parallel: 1
+      matrix:
+        build: ${{ fromJson(needs.setup.outputs.matrix) }}
+    if: ${{ inputs.is-dependabot == 'false' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Update environment
         uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
         with:
-          configurations: ${{ needs.setup.outputs.configurations }}
+          configuration: ${{ matrix.build.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
