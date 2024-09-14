@@ -1,4 +1,4 @@
-name: Build domain
+name: Build Subsystems
 
 on:
   workflow_call:
@@ -14,194 +14,171 @@ on:
 
 jobs:
   setup:
-    name: Setup
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.build-matrix.outputs.matrix }}
-
+      auth: ${{ steps.auth.outputs.matches }}
+      authorization: ${{ steps.authorization.outputs.matches }}
+      certificates: ${{ steps.certificates.outputs.matches }}
+      measurements: ${{ steps.measurements.outputs.matches }}
+      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
+      transfer: ${{ steps.transfer.outputs.matches }}
     steps:
       - uses: actions/checkout@v4
 
-      - uses: CodeReaper/find-diff-action@v3
-        id: diff
-        with:
-          paths: domains/*/
-
-      - name: Build relevant matrix
-        id: build-matrix
-        if: ${{ steps.diff.outputs.list != '' }}
-        shell: bash
-        env:
-          LIST: ${{ steps.diff.outputs.list }}
-        run: |
-          # Initialize an array to hold project entries
-          project_entries=()
-
-          while read -r domain; do
-            [ -d "$domain" ] || continue
-            # Copy global.json if not present
-            [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
-            # Load settings from global.json
-            settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
-            sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
-            runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
-            # Find csproj directories excluding Shared and Tests
-            csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | grep -Ev '/Shared/|/Tests$')
-            # Process each project
-            while read -r project; do
-              configuration="$(dirname "$project")/configuration.yaml"
-              project_data=$(jq -n \
-                --arg path "$project" \
-                --arg configuration "$configuration" \
-                --arg sdkVersion "$sdk" \
-                --arg runtimeVersion "$runtime" \
-                '{path: $path, configuration: $configuration, sdkVersion: $sdkVersion, runtimeVersion: $runtimeVersion}')
-              project_entries+=("$project_data")
-            done <<< "$csprojects"
-          done <<< "${LIST}"
-
-          if [ ${#project_entries[@]} -eq 0 ]; then
-            echo "No projects found to process."
-            echo "matrix=[]" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Combine all project entries into a JSON array
-          matrix=$(printf '%s\n' "${project_entries[@]}" | jq -s '.')
-
-          echo '::group::Matrix'
-          echo "$matrix" | jq '.'
-          echo '::endgroup::'
-
-          # Set the matrix as a step output using multiline syntax
-          echo "matrix<<EOF" >> $GITHUB_OUTPUT
-          echo "$matrix" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Matrix
-        if: always()
-        shell: bash
-        run: |
-          echo '::group::Raw Matrix Output'
-          echo "${{ steps.build-matrix.outputs.matrix }}" | jq '.'
-          echo '::endgroup::'
-
-
-  build-projects:
-    name: Build projects
+  test:
+    name: "Build & Test"
     runs-on: ubuntu-latest
-    needs: setup
-    if: ${{ needs.setup.outputs.matrix != '[]' }}
-    strategy:
-      matrix:
-        build: ${{ fromJson(needs.setup.outputs.matrix) }}
+
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Resolve version
-        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
-
-      - name: Resolve
-        shell: bash
-        env:
-          PROJECT: ${{ matrix.build.path }}
-          CONFIGURATION: ${{ matrix.build.configuration }}
-        run: |
-          projects=$(dirname "$PROJECT")
-          domain=$(dirname "$projects")
-          name=$(yq '.name' "$CONFIGURATION")
-          service=${PROJECT#"$domain"}
-          path=$(find "$PROJECT" -name "*.csproj" | head -n1)
-          paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
-          migration="$domain/migrations/$(basename "$PROJECT").sql"
-          if [ ! -f "$migration" ]; then
-            migration=""
-          fi
-
-          EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
-          {
-            printf "paths<<%s\n" "$EOF"
-            printf "%s\n" "$paths"
-            printf "%s\n" "$EOF"
-            echo "migration=${migration}"
-            echo "service=${service}"
-            echo "domain=${domain}"
-            echo "name=${name}"
-            echo "path=${path}"
-          } >> $GITHUB_ENV
-
-      - name: Validate project
-        if: ${{ (github.event_name == 'push' && github.ref_name == 'main') }} == false
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v1
+      - name: Check out the code
+        uses: actions/checkout@v4
         with:
-          dotnet-version: ${{ matrix.build.sdkVersion }}
-          pin-version: true
-          paths: ${{ env.paths }}
-          sql-file: ${{ env.migration }}
+          fetch-depth: 0
 
-      - name: Ensure files and folders exists
-        shell: bash
-        run: mkdir "${{ env.domain }}/migrations" || true
-
-      - name: Enforce assembly name
-        shell: bash
-        run: |
-          set +e
-          grep -q "<AssemblyName>" "${{ env.path }}"
-          if [ $? -eq 0 ]; then
-            sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
-          else
-            sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
-          fi
-
-      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          repository: "Energinet-DataHub/acorn-actions"
-          sparse-checkout: Dockerfile
-          path: acorn-actions
+          dotnet-version: 8.0.401
 
-      - name: Copy dockerfile to root path
-        run: cp acorn-actions/Dockerfile .
+      - name: "Restore/Build/Test"
+        run: dotnet test ./domains/EnergyTrackAndTrace.sln --configuration Release --verbosity normal --logger trx --collect:"XPlat Code Coverage"
 
-      - name: Build image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v1
+      - name: Combine Coverage Reports
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
         with:
-          dockerfile: Dockerfile
-          image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
-          docker-context: .
-          dry-run: ${{ inputs.dry-run }}
-          build-args: |
-            SUBSYSTEM=${{ env.domain }}
-            PROJECT=${{ env.service }}
-            SDK_VERSION=${{ matrix.build.sdkVersion }}
-            RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
+          reports: "**/*.cobertura.xml"
+          targetdir: "${{ github.workspace }}"
+          reporttypes: "Cobertura"
+          verbosity: "Info"
+          title: "Code Coverage"
+          tag: "${{ github.run_number }}_${{ github.run_id }}"
+          customSettings: ""
+          toolpath: "reportgeneratortool"
 
-      - name: Scan image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
+      - name: Upload Combined Coverage XML
+        uses: actions/upload-artifact@v4
         with:
-          image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
-          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          name: coverage
+          path: ${{ github.workspace }}/Cobertura.xml
+          retention-days: 5
 
-  update-environment:
+      - name: Publish Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: "Cobertura.xml"
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: false
+          indicators: true
+          output: both
+          thresholds: "10 30"
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: code-coverage-results.md
+
+      - name: Upload Test Result Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ${{ github.workspace }}/**/TestResults/**/*
+          retention-days: 5
+
+      - name: Publish Test Results
+        if: ${{ always() }}
+        uses: EnricoMi/publish-unit-test-result-action@v2.16.1
+        with:
+          trx_files: "${{ github.workspace }}/**/*.trx"
+
+  build-auth:
+    needs: test
+    uses: ./.github/workflows/build-auth.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-authorization:
+    needs: test
+    uses: ./.github/workflows/build-authorization.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-certificates:
+    needs: test
+    uses: ./.github/workflows/build-certificates.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-measurements:
+    needs: test
+    uses: ./.github/workflows/build-measurements.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-oidc-mock:
+    needs: test
+    uses: ./.github/workflows/build-oidc-mock.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-transfer:
+    needs: test
+    uses: ./.github/workflows/build-transfer.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-openapi:
+    needs: test
+    uses: ./.github/workflows/build-openapi.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  update:
+    runs-on: ubuntu-latest
     name: Update environment
-    runs-on: ubuntu-latest
     needs:
-      - setup
-      - build-projects
+      - build-authorization
+      - build-auth
+      - build-certificates
+      - build-measurements
+      - build-oidc-mock
+      - build-transfer
+      - build-openapi
     concurrency: commits-base-environment
-    strategy:
-      max-parallel: 1
-      matrix:
-        build: ${{ fromJson(needs.setup.outputs.matrix) }}
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
         with:
-          configuration: ${{ matrix.build.configuration }}
+          configurations: |
+            domains/auth/Auth.API/configuration.yaml
+            domains/authorization/Authorization.API/configuration.yaml
+            domains/authorization/Proxy/configuration.yaml
+            domains/certificates/Query.API/configuration.yaml
+            domains/measurements/Measurements.API/configuration.yaml
+            domains/oidc-mock/API/configuration.yaml
+            domains/transfer/Transfer.API/configuration.yaml
+            domains/transfer/ClaimAutomation/configuration.yaml
+            domains/transfer/TransferAgreementAutomation/configuration.yaml
+            domains/redoc/configuration.yaml
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
