@@ -116,19 +116,39 @@ jobs:
           migrations: ${{ matrix.project-data.migrations }}
           dry-run: ${{ matrix.dry-run }}
 
-#  deploy-images:
-#    needs: [ find-diff, build, test ]
-#    runs-on: ubuntu-latest
-#    concurrency: commits-base-environment
-#    if: ${{ inputs.is-dependabot == 'false' && fromJson(needs.find-diff.outputs.projects-to-build)[0] }}
-#    strategy:
-#      matrix:
-#        project-data: ${{ fromJson(needs.find-diff.outputs.projects-to-build) }}
-#      fail-fast: false
-#    steps:
-#      - name: Update environment
-#        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
-#        with:
-#          configurations: ${{ matrix.project-data.config }}
-#          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-#          dry_run: ${{ inputs.dry-run }}
+  update-environment:
+    name: Update environment
+    runs-on: ubuntu-latest
+    needs:
+      - find-diff
+      - build
+      - lint
+      - validate
+    if: ${{ inputs.is-dependabot == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Collect configurations
+        id: collect-configurations
+        shell: bash
+        run: |
+          echo "Collecting configurations from projects-to-build"
+          configs=$(echo '${{ needs.find-diff.outputs.projects-to-build }}' | jq -r '.[].config' | sort | uniq)
+          if [ -z "$configs" ]; then
+            echo "No configurations to update."
+            echo "configurations=" >> $GITHUB_OUTPUT
+          else
+            echo "Configurations:"
+            echo "$configs"
+            echo "configurations<<EOF" >> $GITHUB_OUTPUT
+            echo "$configs" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update environment
+        if: ${{ steps.collect-configurations.outputs.configurations != '' }}
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+        with:
+          configuration: ${{ steps.collect-configurations.outputs.configurations }}
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ inputs.dry-run }}
