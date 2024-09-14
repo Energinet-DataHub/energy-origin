@@ -1,4 +1,4 @@
-name: Build subsystems
+name: Build Subsystems
 
 on:
   workflow_call:
