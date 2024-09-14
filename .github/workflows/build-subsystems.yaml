@@ -6,7 +6,10 @@ on:
       dry-run:
         description: "An indication of whether to commit/publish results"
         required: false
-        default: "false"
+        type: string
+      is-dependabot:
+        description: "An indication of whether the workflow was triggered by dependabot"
+        required: false
         type: string
 
 jobs:
