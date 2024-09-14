@@ -1,4 +1,4 @@
-name: Build Subsystems
+name: Build domain
 
 on:
   workflow_call:
@@ -14,111 +14,174 @@ on:
 
 jobs:
   setup:
+    name: Setup
     runs-on: ubuntu-latest
     outputs:
-      auth: ${{ steps.auth.outputs.matches }}
-      authorization: ${{ steps.authorization.outputs.matches }}
-      certificates: ${{ steps.certificates.outputs.matches }}
-      measurements: ${{ steps.measurements.outputs.matches }}
-      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
-      transfer: ${{ steps.transfer.outputs.matches }}
-    steps:
-      - uses: actions/checkout@v4
+      matrix: ${{ env.matrix }}
 
-  test:
-    needs: setup
-    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
+      - uses: CodeReaper/find-diff-action@v3
+        id: diff
         with:
-          solution: domains/EnergyTrackAndTrace.sln
+          paths: domains/*/
 
-  build-auth:
-    needs: test
-    uses: ./.github/workflows/build-auth.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+      - name: Set default matrix
+        shell: bash
+        run: |
+          echo "matrix=[]" >> "$GITHUB_ENV"
 
-  build-authorization:
-    needs: test
-    uses: ./.github/workflows/build-authorization.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+      - name: Build relevant matrix
+        if: ${{ steps.diff.outputs.list != '' }}
+        shell: bash
+        env:
+          LIST: ${{ steps.diff.outputs.list }}
+        run: |
+          while read domain; do
+            [ -d "$domain" ] || continue
+            [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
+            settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
+            sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
+            runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
+            csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
+            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$runtime"; done <<< $csprojects | jq -sc '.')
+            printf '{"projects":%s}\n' "$projects"
+          done <<< $LIST > /tmp/json
 
-  build-certificates:
-    needs: test
-    uses: ./.github/workflows/build-certificates.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          if [ ! -s /tmp/json ]; then
+            exit 0
+          fi
 
-  build-measurements:
-    needs: test
-    uses: ./.github/workflows/build-measurements.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          matrix=$(jq -sc '.' < /tmp/json)
+          echo '::group::Matrix'
+          echo "$matrix" | jq -r '.'
+          echo '::endgroup::'
 
-  build-oidc-mock:
-    needs: test
-    uses: ./.github/workflows/build-oidc-mock.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
+          echo "matrix=$projects" >> "$GITHUB_ENV"
 
-  build-transfer:
-    needs: test
-    uses: ./.github/workflows/build-transfer.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+      - name: Matrix
+        shell: bash
+        run: |
+          echo '::group::Raw'
+          printf '${{ env.matrix }}\n'
+          echo '::endgroup::'
+          printf '${{ env.matrix }}' | jq -r '.'
 
-  build-openapi:
-    needs: test
-    uses: ./.github/workflows/build-openapi.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  update:
+  build-projects:
+    name: Build projects
     runs-on: ubuntu-latest
+    needs: setup
+    if: ${{ needs.setup.outputs.matrix != '[]' }}
+    strategy:
+      matrix:
+        build: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1
+
+      - name: Resolve
+        shell: bash
+        env:
+          PROJECT: ${{ matrix.build.path }}
+          CONFIGURATION: ${{ matrix.build.configuration }}
+        run: |
+          projects=$(dirname "$PROJECT")
+          domain=$(dirname "$projects")
+          name=$(yq '.name' "$CONFIGURATION")
+          service=${PROJECT#"$domain"}
+          path=$(find "$PROJECT" -name "*.csproj" | head -n1)
+          paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
+          migration="$domain/migrations/$(basename "$PROJECT").sql"
+          if [ ! -f "$migration" ]; then
+            migration=""
+          fi
+
+          EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
+          {
+            printf "paths<<%s\n" "$EOF"
+            printf "%s\n" "$paths"
+            printf "%s\n" "$EOF"
+            echo "migration=${migration}"
+            echo "service=${service}"
+            echo "domain=${domain}"
+            echo "name=${name}"
+            echo "path=${path}"
+          } >> $GITHUB_ENV
+
+      - name: Validate project
+        if: ${{ (github.event_name == 'push' && github.ref_name == 'main') }} == false
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v1
+        with:
+          dotnet-version: ${{ matrix.build.sdkVersion }}
+          pin-version: true
+          paths: ${{ env.paths }}
+          sql-file: ${{ env.migration }}
+
+      - name: Ensure files and folders exists
+        shell: bash
+        run: mkdir "${{ env.domain }}/migrations" || true
+
+      - name: Enforce assembly name
+        shell: bash
+        run: |
+          set +e
+          grep -q "<AssemblyName>" "${{ env.path }}"
+          if [ $? -eq 0 ]; then
+            sed -i "${{ env.path }}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+          else
+            sed -i "${{ env.path }}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          repository: "Energinet-DataHub/acorn-actions"
+          sparse-checkout: Dockerfile
+          path: acorn-actions
+
+      - name: Copy dockerfile to root path
+        run: cp acorn-actions/Dockerfile .
+
+      - name: Build image
+        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v1
+        with:
+          dockerfile: Dockerfile
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          docker-context: .
+          dry-run: ${{ inputs.dry-run }}
+          build-args: |
+            SUBSYSTEM=${{ env.domain }}
+            PROJECT=${{ env.service }}
+            SDK_VERSION=${{ matrix.build.sdkVersion }}
+            RUNTIME_VERSION=${{ matrix.build.runtimeVersion }}
+
+      - name: Scan image
+        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v1
+        with:
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+  update-environment:
     name: Update environment
+    runs-on: ubuntu-latest
     needs:
-      - build-authorization
-      - build-auth
-      - build-certificates
-      - build-measurements
-      - build-oidc-mock
-      - build-transfer
-      - build-openapi
+      - setup
+      - build-projects
     concurrency: commits-base-environment
+    strategy:
+      max-parallel: 1
+      matrix:
+        build: ${{ fromJson(needs.setup.outputs.matrix) }}
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
         with:
-          configurations: |
-            domains/auth/Auth.API/configuration.yaml
-            domains/authorization/Authorization.API/configuration.yaml
-            domains/authorization/Proxy/configuration.yaml
-            domains/certificates/Query.API/configuration.yaml
-            domains/measurements/Measurements.API/configuration.yaml
-            domains/oidc-mock/API/configuration.yaml
-            domains/transfer/Transfer.API/configuration.yaml
-            domains/transfer/ClaimAutomation/configuration.yaml
-            domains/transfer/TransferAgreementAutomation/configuration.yaml
-            domains/redoc/configuration.yaml
+          configuration: ${{ matrix.build.configuration }}
           deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
