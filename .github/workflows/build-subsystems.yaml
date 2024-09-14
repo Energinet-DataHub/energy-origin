@@ -18,6 +18,7 @@ jobs:
     outputs:
       test_matrix: ${{ steps.set_outputs.outputs.test_matrix }}
       docker_build_matrix: ${{ steps.set_outputs.outputs.docker_build_matrix }}
+      configurations: ${{ steps.set_outputs.outputs.configurations }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -48,19 +49,27 @@ jobs:
             echo "changed_domains=" >> $GITHUB_ENV
           else
             echo "Changed domains: ${DOMAINS_CHANGED[@]}"
-            echo "changed_domains=${DOMAINS_CHANGED[*]}" >> $GITHUB_ENV
+            changed_domains_str=$(printf '%s\n' "${DOMAINS_CHANGED[@]}")
+            echo "changed_domains=$changed_domains_str" >> $GITHUB_ENV
           fi
 
-      - name: Create matrices
+      - name: Create matrices and collect configurations
         id: set_outputs
         run: |
-          declare -a TEST_MATRIX
-          declare -a DOCKER_BUILD_MATRIX
+          echo "::group::Create matrices"
+          TEST_MATRIX_JSON="[]"
+          DOCKER_BUILD_MATRIX_JSON="[]"
+          CONFIGURATIONS=""
 
           if [ -z "${{ env.changed_domains }}" ]; then
             echo "No domains to process."
           else
-            IFS=' ' read -r -a CHANGED_DOMAINS_ARRAY <<< "${{ env.changed_domains }}"
+            declare -a TEST_MATRIX_ENTRIES
+            declare -a DOCKER_BUILD_MATRIX_ENTRIES
+            declare -a CONFIGURATION_FILES
+
+            IFS=$'\n' read -r -d '' -a CHANGED_DOMAINS_ARRAY <<< "${{ env.changed_domains }}"
+
             for DOMAIN in "${CHANGED_DOMAINS_ARRAY[@]}"; do
               DOMAIN_PATH="domains/$DOMAIN"
               # Extract SDK and runtime versions from global.json
@@ -96,74 +105,105 @@ jobs:
                   fi
 
                   # Prepare entry for test matrix
-                  TEST_MATRIX+=("{\"domain\":\"$DOMAIN\",\"main_project\":\"$csproj_file\",\"solution_path\":\"$TEMP_SOLUTION_PATH\",\"sdk_version\":\"$SDK_VERSION\"}")
+                  TEST_MATRIX_ENTRY=$(jq -n \
+                    --arg domain "$DOMAIN" \
+                    --arg main_project "$csproj_file" \
+                    --arg solution_path "$TEMP_SOLUTION_PATH" \
+                    --arg sdk_version "$SDK_VERSION" \
+                    '{domain: $domain, main_project: $main_project, solution_path: $solution_path, sdk_version: $sdk_version}')
+                  TEST_MATRIX_ENTRIES+=("$TEST_MATRIX_ENTRY")
 
                   # Prepare entry for Docker build matrix
-                  DOCKER_BUILD_MATRIX+=("{\"domain\":\"$DOMAIN\",\"main_project\":\"$csproj_file\",\"solution_path\":\"$TEMP_SOLUTION_PATH\",\"config_file\":\"$CONFIG_FILE\",\"sdk_version\":\"$SDK_VERSION\",\"runtime_version\":\"$RUNTIME_VERSION\",\"migration_file\":\"$MIGRATION_FILE_PATH\"}")
+                  DOCKER_BUILD_MATRIX_ENTRY=$(jq -n \
+                    --arg domain "$DOMAIN" \
+                    --arg main_project "$csproj_file" \
+                    --arg solution_path "$TEMP_SOLUTION_PATH" \
+                    --arg config_file "$CONFIG_FILE" \
+                    --arg sdk_version "$SDK_VERSION" \
+                    --arg runtime_version "$RUNTIME_VERSION" \
+                    --arg migration_file "$MIGRATION_FILE_PATH" \
+                    '{domain: $domain, main_project: $main_project, solution_path: $solution_path, config_file: $config_file, sdk_version: $sdk_version, runtime_version: $runtime_version, migration_file: $migration_file}')
+                  DOCKER_BUILD_MATRIX_ENTRIES+=("$DOCKER_BUILD_MATRIX_ENTRY")
+
+                  # Collect configuration files
+                  CONFIGURATION_FILES+=("$CONFIG_FILE")
                 fi
               done < <(find "$DOMAIN_PATH" -type f -name "*.csproj" -print0)
             done
 
-            if [ ${#TEST_MATRIX[@]} -eq 0 ]; then
-              echo "No main projects to test."
-              echo "test_matrix=[]" >> $GITHUB_OUTPUT
-            else
-              TEST_MATRIX_JSON=$(printf '%s\n' "${TEST_MATRIX[@]}" | jq -s '.')
-              echo "test_matrix=$TEST_MATRIX_JSON" >> $GITHUB_OUTPUT
+            # Build JSON arrays from entries
+            if [ ${#TEST_MATRIX_ENTRIES[@]} -gt 0 ]; then
+              TEST_MATRIX_JSON=$(printf '%s\n' "${TEST_MATRIX_ENTRIES[@]}" | jq -s '.')
             fi
 
-            if [ ${#DOCKER_BUILD_MATRIX[@]} -eq 0 ]; then
-              echo "No main projects to build."
-              echo "docker_build_matrix=[]" >> $GITHUB_OUTPUT
-            else
-              DOCKER_BUILD_MATRIX_JSON=$(printf '%s\n' "${DOCKER_BUILD_MATRIX[@]}" | jq -s '.')
-              echo "docker_build_matrix=$DOCKER_BUILD_MATRIX_JSON" >> $GITHUB_OUTPUT
+            if [ ${#DOCKER_BUILD_MATRIX_ENTRIES[@]} -gt 0 ]; then
+              DOCKER_BUILD_MATRIX_JSON=$(printf '%s\n' "${DOCKER_BUILD_MATRIX_ENTRIES[@]}" | jq -s '.')
+            fi
+
+            # Concatenate configuration file paths into a newline-separated list
+            if [ ${#CONFIGURATION_FILES[@]} -gt 0 ]; then
+              CONFIGURATIONS=$(printf '%s\n' "${CONFIGURATION_FILES[@]}")
             fi
           fi
 
-  test_job:
+          # Set outputs
+          echo "test_matrix=$TEST_MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "docker_build_matrix=$DOCKER_BUILD_MATRIX_JSON" >> $GITHUB_OUTPUT
+          echo "configurations<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONFIGURATIONS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "::endgroup::"
+
+  test:
     needs: setup
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.setup.outputs.test_matrix) }}
+        main_project: ${{ fromJson(needs.setup.outputs.test_matrix) }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Test main project ${{ matrix.main_project }}
+      - name: Test main project ${{ matrix.main_project.main_project }}
         uses: ./.github/actions/dotnet-test
         with:
-          solution: ${{ matrix.solution_path }}
-          sdk-version: ${{ matrix.sdk_version }}
+          solution: ${{ matrix.main_project.solution_path }}
+          sdk-version: ${{ matrix.main_project.sdk_version }}
 
-  docker_build_job:
+  build:
     needs: setup
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.setup.outputs.docker_build_matrix) }}
+        main_project: ${{ fromJson(needs.setup.outputs.docker_build_matrix) }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Docker image for ${{ matrix.main_project }}
+      - name: Build Docker image for ${{ matrix.main_project.main_project }}
         uses: ./.github/actions/dotnet-build
         with:
-          solution: ${{ matrix.solution_path }}
-          project: ${{ matrix.main_project }}
-          configuration: ${{ matrix.config_file }}
-          migrations: ${{ matrix.migration_file }}
-          sdk-version: ${{ matrix.sdk_version }}
-          runtime-version: ${{ matrix.runtime_version }}
+          solution: ${{ matrix.main_project.solution_path }}
+          project: ${{ matrix.main_project.main_project }}
+          configuration: ${{ matrix.main_project.config_file }}
+          migrations: ${{ matrix.main_project.migration_file }}
+          sdk-version: ${{ matrix.main_project.sdk_version }}
+          runtime-version: ${{ matrix.main_project.runtime_version }}
           dry-run: ${{ inputs.dry-run }}
           is-dependabot: ${{ inputs.is-dependabot }}
 
-  final_echo:
-    needs: [test_job, docker_build_job]
+  update:
+    needs: [setup, build, test]
     runs-on: ubuntu-latest
+    if: ${{ inputs.is-dependabot == 'false' && needs.setup.outputs.configurations != '' }}
     steps:
-      - name: Echo completion message
-        run: echo "Completed building and testing all main projects."
+      - uses: actions/checkout@v3
+
+      - name: Update environment
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
+        with:
+          configurations: ${{ needs.setup.outputs.configurations }}
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ inputs.dry-run }}
