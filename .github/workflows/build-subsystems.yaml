@@ -1,158 +1,124 @@
-name: Build and Test Main Projects
+name: Build Subsystems
 
 on:
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      test_matrix: ${{ steps.set_outputs.outputs.test_matrix }}
-      docker_build_matrix: ${{ steps.set_outputs.outputs.docker_build_matrix }}
+      auth: ${{ steps.auth.outputs.matches }}
+      authorization: ${{ steps.authorization.outputs.matches }}
+      certificates: ${{ steps.certificates.outputs.matches }}
+      measurements: ${{ steps.measurements.outputs.matches }}
+      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
+      transfer: ${{ steps.transfer.outputs.matches }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Get changed domains
-        id: get_changed_domains
-        run: |
-          git fetch origin ${{ github.base_ref }} --depth=1 || true
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
-          echo "Changed files: $CHANGED_FILES"
-
-          # Get list of all domains dynamically
-          DOMAINS=$(find domains -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
-          echo "All domains: $DOMAINS"
-
-          # Determine changed domains
-          DOMAINS_CHANGED=()
-          for DOMAIN in $DOMAINS; do
-            if echo "$CHANGED_FILES" | grep -q "^domains/$DOMAIN/"; then
-              DOMAINS_CHANGED+=("$DOMAIN")
-            fi
-          done
-
-          if [ ${#DOMAINS_CHANGED[@]} -eq 0 ]; then
-            echo "No domains have changed."
-            echo "changed_domains=" >> $GITHUB_ENV
-          else
-            echo "Changed domains: ${DOMAINS_CHANGED[@]}"
-            echo "changed_domains=${DOMAINS_CHANGED[*]}" >> $GITHUB_ENV
-          fi
-
-      - name: Create matrices
-        id: set_outputs
-        run: |
-          declare -a TEST_MATRIX
-          declare -a DOCKER_BUILD_MATRIX
-
-          if [ -z "${{ env.changed_domains }}" ]; then
-            echo "No domains to process."
-          else
-            IFS=' ' read -r -a CHANGED_DOMAINS_ARRAY <<< "${{ env.changed_domains }}"
-            for DOMAIN in "${CHANGED_DOMAINS_ARRAY[@]}"; do
-              DOMAIN_PATH="domains/$DOMAIN"
-              # Extract SDK and runtime versions from global.json
-              GLOBAL_JSON="$DOMAIN_PATH/global.json"
-              if [ -f "$GLOBAL_JSON" ]; then
-                SDK_VERSION=$(jq -r '.sdk.version' "$GLOBAL_JSON")
-                RUNTIME_VERSION=$(jq -r '.runtime.version' "$GLOBAL_JSON")
-              else
-                SDK_VERSION="latest"
-                RUNTIME_VERSION="latest"
-              fi
-
-              # Find main projects in the domain
-              while IFS= read -r -d '' csproj_file; do
-                CONFIG_FILE="${csproj_file%/*}/configuration.yaml"
-                if [ -f "$CONFIG_FILE" ]; then
-                  # Create temporary solution for this main project
-                  MAIN_PROJECT_NAME=$(basename "${csproj_file%.*}")
-                  TEMP_SOLUTION="${MAIN_PROJECT_NAME}_temp.sln"
-                  TEMP_SOLUTION_PATH="$DOMAIN_PATH/$TEMP_SOLUTION"
-
-                  dotnet new sln -n "$MAIN_PROJECT_NAME" -o "$DOMAIN_PATH"
-
-                  # Add the main project to the solution
-                  dotnet sln "$TEMP_SOLUTION_PATH" add "$csproj_file"
-
-                  # Find migration file if exists
-                  MIGRATION_FILE="${csproj_file%/*}/migrations/API.sql"
-                  if [ -f "$MIGRATION_FILE" ]; then
-                    MIGRATION_FILE_PATH="$MIGRATION_FILE"
-                  else
-                    MIGRATION_FILE_PATH=""
-                  fi
-
-                  # Prepare entry for test matrix
-                  TEST_MATRIX+=("{\"domain\":\"$DOMAIN\",\"main_project\":\"$csproj_file\",\"solution_path\":\"$TEMP_SOLUTION_PATH\",\"sdk_version\":\"$SDK_VERSION\"}")
-
-                  # Prepare entry for Docker build matrix
-                  DOCKER_BUILD_MATRIX+=("{\"domain\":\"$DOMAIN\",\"main_project\":\"$csproj_file\",\"solution_path\":\"$TEMP_SOLUTION_PATH\",\"config_file\":\"$CONFIG_FILE\",\"sdk_version\":\"$SDK_VERSION\",\"runtime_version\":\"$RUNTIME_VERSION\",\"migration_file\":\"$MIGRATION_FILE_PATH\"}")
-                fi
-              done < <(find "$DOMAIN_PATH" -type f -name "*.csproj" -print0)
-            done
-
-            if [ ${#TEST_MATRIX[@]} -eq 0 ]; then
-              echo "No main projects to test."
-              echo "test_matrix=[]" >> $GITHUB_OUTPUT
-            else
-              TEST_MATRIX_JSON=$(printf '%s\n' "${TEST_MATRIX[@]}" | jq -s '.')
-              echo "test_matrix=$TEST_MATRIX_JSON" >> $GITHUB_OUTPUT
-            fi
-
-            if [ ${#DOCKER_BUILD_MATRIX[@]} -eq 0 ]; then
-              echo "No main projects to build."
-              echo "docker_build_matrix=[]" >> $GITHUB_OUTPUT
-            else
-              DOCKER_BUILD_MATRIX_JSON=$(printf '%s\n' "${DOCKER_BUILD_MATRIX[@]}" | jq -s '.')
-              echo "docker_build_matrix=$DOCKER_BUILD_MATRIX_JSON" >> $GITHUB_OUTPUT
-            fi
-          fi
-
-  test_job:
+  test:
     needs: setup
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJson(needs.setup.outputs.test_matrix) }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Test main project ${{ matrix.main_project }}
-        uses: ./path/to/dotnet-test-action  # Replace with the actual path or repository
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dotnet-test
         with:
-          solution: ${{ matrix.solution_path }}
-          sdk-version: ${{ matrix.sdk_version }}
+          solution: domains/EnergyTrackAndTrace.sln
 
-  docker_build_job:
-    needs: setup
+  build-auth:
+    needs: test
+    uses: ./.github/workflows/build-auth.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-authorization:
+    needs: test
+    uses: ./.github/workflows/build-authorization.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-certificates:
+    needs: test
+    uses: ./.github/workflows/build-certificates.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-measurements:
+    needs: test
+    uses: ./.github/workflows/build-measurements.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-oidc-mock:
+    needs: test
+    uses: ./.github/workflows/build-oidc-mock.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-transfer:
+    needs: test
+    uses: ./.github/workflows/build-transfer.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-openapi:
+    needs: test
+    uses: ./.github/workflows/build-openapi.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  update:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJson(needs.setup.outputs.docker_build_matrix) }}
+    name: Update environment
+    needs:
+      - build-authorization
+      - build-auth
+      - build-certificates
+      - build-measurements
+      - build-oidc-mock
+      - build-transfer
+      - build-openapi
+    concurrency: commits-base-environment
+    if: ${{ inputs.is-dependabot == 'false' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Build Docker image for ${{ matrix.main_project }}
-        uses: ./path/to/dotnet-build-action  # Replace with the actual path or repository
+      - name: Update environment
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v2
         with:
-          solution: ${{ matrix.solution_path }}
-          project: ${{ matrix.main_project }}
-          configuration: ${{ matrix.config_file }}
-          migrations: ${{ matrix.migration_file }}
-          sdk-version: ${{ matrix.sdk_version }}
-          runtime-version: ${{ matrix.runtime_version }}
-
-  final_echo:
-    needs: [test_job, docker_build_job]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Echo completion message
-        run: echo "Completed building and testing all main projects."
+          configurations: |
+            domains/auth/Auth.API/configuration.yaml
+            domains/authorization/Authorization.API/configuration.yaml
+            domains/authorization/Proxy/configuration.yaml
+            domains/certificates/Query.API/configuration.yaml
+            domains/measurements/Measurements.API/configuration.yaml
+            domains/oidc-mock/API/configuration.yaml
+            domains/transfer/Transfer.API/configuration.yaml
+            domains/transfer/ClaimAutomation/configuration.yaml
+            domains/transfer/TransferAgreementAutomation/configuration.yaml
+            domains/redoc/configuration.yaml
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ inputs.dry-run }}

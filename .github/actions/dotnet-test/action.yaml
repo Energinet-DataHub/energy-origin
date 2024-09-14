@@ -1,93 +1,42 @@
-name: Dotnet Validate
-
-description: Lints and tests a domain.
+name: Dotnet - Test
+description: Runs the dotnet tests
 
 inputs:
-  paths:
-    description: The paths of all projects and tests to validate. Note that the first path given is expected to be the project defining the database schema, if any is defined.
+  solution:
+    description: Is the path to a solution file.
     required: true
 
-  dotnet-version:
-    description: The version of dotnet to use
-    default: 8.0.401
-    required: true
-
-  pin-version:
-    description: Pin dotnet version
-    default: "false"
+  sdk-version:
+    description: Is a complete sdk version in format x.y.zzz
     required: false
-
-  sql-file:
-    description: The path of a commited sql file, that needs must be validated against.
     default: ""
-    required: false
 
 runs:
   using: composite
-
   steps:
-    - name: Setup dotnet
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ inputs.dotnet-version }}
-
-    - name: Cache NuGet packages
-      uses: actions/cache@v4
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget-
-
-    - name: Create solution
+    - name: Load - global.json
       shell: bash
-      env:
-        PATHS: ${{ inputs.paths }}
       run: |
-        rm -f *.sln || true
-        dotnet new sln
-        echo "$PATHS" | while read item; do
-          [ -z "$item" ] && continue
-          dotnet sln add "$item"
-        done
-
-    - name: Apply .config
+        DIRECTORY=$(dirname '${{ inputs.solution }}')
+        test -f "$DIRECTORY/global.json" || exit 0
+        echo "DIRECTORY=$DIRECTORY" | tee -a $GITHUB_ENV
+        echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
+    - name: Overwrite - if given optional input
       shell: bash
-      env:
-        PATHS: ${{ inputs.paths }}
       run: |
-        WORKSPACE=$(pwd)
-        cd "$(dirname "$(echo "$PATHS" | head -n1)")"
-        while [ ! -d .config ] && [ ! "$(pwd)" = '/' ]; do
-          cd ..
-        done
-        if [ "$(pwd)" != "$WORKSPACE" ]; then
-          test -d .config && cp -rv .config "$WORKSPACE/.config"
+        if [ ! -z "${{ inputs.sdk-version }}" ]; then
+          echo "SDK=${{ inputs.sdk-version }}" | tee -a $GITHUB_ENV
         fi
 
-    - name: Pin version
+    - name: Fail - if sdk-version is not present
       shell: bash
-      if: ${{ inputs.pin-version == 'true' }}
-      run: printf '{"sdk":{"rollForward":"disable","version":"%s"}}' "${{ inputs.dotnet-version }}" > global.json
-
-    - name: Print dotnet version
-      shell: bash
-      run: dotnet --version
-
-    - name: Print dotnet information
-      shell: bash
-      run: dotnet --info
-
-    - name: Restore
-      shell: bash
-      env:
-        version: ""
       run: |
-        dotnet tool restore || true
-        dotnet restore
+        set +e
+        ! test -z "${{ env.SDK }}"
 
     - name: Test
-      shell: bash
-      env:
-        version: ""
-      run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal"
+      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@v2
+      with:
+        path: ${{ env.DIRECTORY }}
+        dotnet-version: ${{ env.SDK }}
+        pin-version: true

@@ -1,0 +1,54 @@
+name: Build Transfer
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
+
+jobs:
+ 
+  build-api:
+    name: Build Transfer.API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dotnet-build
+        with:
+          solution: domains/transfer/Transfer.sln
+          project: domains/transfer/Transfer.API/API/API.csproj
+          configuration: domains/transfer/Transfer.API/configuration.yaml
+          migrations: domains/transfer/migrations/API.sql
+          dry-run: ${{ inputs.dry-run }}
+
+  build-claim-automation:
+    name: Build ClaimAutomation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dotnet-build
+        with:
+          solution: domains/transfer/Transfer.sln
+          project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
+          configuration: domains/transfer/ClaimAutomation/configuration.yaml
+          migrations: domains/transfer/migrations/API.sql
+          dry-run: ${{ inputs.dry-run }}
+
+  build-transfer-automation:
+    name: Build TransferAutomation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dotnet-build
+        with:
+          solution: domains/transfer/Transfer.sln
+          project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
+          configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
+          migrations: domains/transfer/migrations/API.sql
+          dry-run: ${{ inputs.dry-run }}
