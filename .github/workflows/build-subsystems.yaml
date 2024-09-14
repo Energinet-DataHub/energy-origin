@@ -73,8 +73,10 @@ jobs:
           echo "$matrix" | jq '.'
           echo '::endgroup::'
 
-          # Set the matrix as a step output
-          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          # Set the matrix as a step output using multiline syntax
+          echo "matrix<<EOF" >> $GITHUB_OUTPUT
+          echo "$matrix" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Matrix
         if: always()
@@ -83,6 +85,7 @@ jobs:
           echo '::group::Raw Matrix Output'
           echo "${{ steps.build-matrix.outputs.matrix }}" | jq '.'
           echo '::endgroup::'
+
 
   build-projects:
     name: Build projects
