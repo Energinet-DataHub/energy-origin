@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document contains a getting-started guide on how to use the Energy Track & Trace APIs. The intended audience for this guide is developers and technical personal.
+This document contains a getting-started guide on how to use the Energy Track & Trace APIs. The intended audience for this guide is developers and technical personal, when needing to onboard a new 3rd party client.
 
 In this document code examples are shown in `C#`, and all request target the demo environment <https://demo.energytrackandtrace.dk>. Client systems in production must target the production environment <https://energytrackandtrace.dk>.
 
