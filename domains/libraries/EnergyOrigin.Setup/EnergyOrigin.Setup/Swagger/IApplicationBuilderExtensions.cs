@@ -38,7 +38,7 @@ public static class SwaggerApplicationBuilderExtensions
         var swagger = swaggerProvider.GetSwagger(apiVersion);
 
         File.WriteAllText(
-            Path.Combine(env.ContentRootPath, "proxy.yaml"),
+            Path.Combine(env.ContentRootPath, filename),
             swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
         );
     }
