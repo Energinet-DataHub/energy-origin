@@ -11,9 +11,7 @@ public class AddAuthorizationTagDocumentFilter : IDocumentFilter
         {
             Name = "Authorization",
             Description = """
-                          Authorization in Energy Track & Trace provides endpoints for getting organization permissions for 3rd party clients and logged in users.
-                          Its also the service that is used a user can grant consent to a 3rd party client to access their data.
-                          Finally it also internal API endpoints for returning access rights that populates JWT Tokens during login.
+                          Authorization in Energy Track & Trace provides endpoints for getting organization permissions for 3rd party clients.
                           """
         });
     }
