@@ -11,8 +11,8 @@
         Country: DK
       },
       Technology: {
-        AibTechCode: T070000,
-        AibFuelCode: F00000000
+        FuelCode: T070000,
+        TechCode: F00000000
       },
       CanBeUsedForIssuingCertificates: true,
       Capacity: 12345678

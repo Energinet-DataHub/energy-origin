@@ -159,7 +159,7 @@ internal class ContractServiceImpl : IContractService
     {
         if (meterType == MeterType.Production)
         {
-            return new Technology(technology.AibFuelCode, technology.AibTechCode);
+            return new Technology(technology.FuelCode, technology.TechCode);
         }
 
         return null;

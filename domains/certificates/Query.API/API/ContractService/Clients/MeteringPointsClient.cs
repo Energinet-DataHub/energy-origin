@@ -118,7 +118,7 @@ public enum MeterType
     Child
 }
 
-public record Technology(string AibFuelCode, string AibTechCode);
+public record Technology(string FuelCode, string TechCode);
 
 public record Address(
     string Address1,

@@ -1,3 +1,3 @@
 namespace API.MeteringPoints.Api.Dto.Responses;
 
-public record Technology(string AibTechCode, string AibFuelCode);
+public record Technology(string FuelCode, string TechCode);

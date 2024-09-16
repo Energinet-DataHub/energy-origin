@@ -245,7 +245,7 @@ public sealed class ContractTests : TestBase
     public async Task CreateContract_WithConsumptionMeteringPoint_TechnologyNull()
     {
         var gsrn = GsrnHelper.GenerateRandom();
-        var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
+        var technology = new Technology(FuelCode: "F01040100", TechCode: "T010000");
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Consumption, technology);
 
         var subject = Guid.NewGuid().ToString();
@@ -268,7 +268,7 @@ public sealed class ContractTests : TestBase
     public async Task CreateContract_WithProductionMeteringPoint_TechnologyExists()
     {
         var gsrn = GsrnHelper.GenerateRandom();
-        var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
+        var technology = new Technology(FuelCode: "F01040100", TechCode: "T010000");
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, technology);
 
         var subject = Guid.NewGuid().ToString();
@@ -285,7 +285,7 @@ public sealed class ContractTests : TestBase
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
         var expectedTechnology =
-            new DataContext.ValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
+            new DataContext.ValueObjects.Technology(technology.FuelCode, technology.TechCode);
 
         createdContract!.Technology.Should().Be(expectedTechnology);
     }
