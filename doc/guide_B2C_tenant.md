@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document contains a step-by-step guide on how to configure the ETT B2C production tenant in Azure.
+This document contains a step-by-step guide on how to configure the ETT B2C production tenant in Azure. This is needed in case we need to configure Azure B2C again, if someone deletes it by accident. Can also be used by other teams, who needs a similar setup.
 
 ### Prerequisites
 
