@@ -15,6 +15,7 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [Authorize(Policy = Policy.FrontendWithoutTermsAccepted)]
 [ApiVersion(ApiVersions.Version20230101)]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class TermsController(IMediator mediator, IdentityDescriptor identityDescriptor) : ControllerBase
 {
     [HttpPost]

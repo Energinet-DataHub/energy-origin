@@ -14,6 +14,7 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [Authorize(Policy = Policy.B2CInternal)]
 [ApiVersion(ApiVersions.Version20230101)]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class AdminController : ControllerBase
 {
     private readonly IMediator _mediator;

@@ -30,18 +30,6 @@ public class ClientController : ControllerBase
     }
 
     [HttpGet]
-    [Route("api/authorization/client/{idpClientId}")]
-    [SwaggerOperation(
-        Summary = "Retrieves Client",
-        Description = "Retrieves info for client with id idpClientId"
-    )]
-    public async Task<ActionResult<ClientResponse>> GetClient([FromServices] ILogger<ClientResponse> logger, [FromRoute] Guid idpClientId)
-    {
-        var queryResult = await _mediator.Send(new GetClientQuery(new IdpClientId(idpClientId)));
-        return Ok(new ClientResponse(queryResult.IdpClientId.Value, queryResult.Name.Value, queryResult.RedirectUrl));
-    }
-
-    [HttpGet]
     [Route("api/authorization/client/consents")]
     [SwaggerOperation(
         Summary = "Retrieves granted consents for client",

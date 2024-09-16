@@ -18,6 +18,7 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [ApiVersion(ApiVersions.Version20230101)]
 [Authorize(Policy.Frontend)]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class ConsentController(IMediator mediator, IdentityDescriptor identity) : ControllerBase
 {
     /// <summary>
