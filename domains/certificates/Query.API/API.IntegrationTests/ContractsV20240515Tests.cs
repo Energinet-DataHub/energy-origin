@@ -36,25 +36,6 @@ public class ContractsV20240515Tests
     }
 
     [Fact]
-    public async Task GivenTokenValidationToken_WhenUsingNewEndpoint_RequestIsUnauthenticated()
-    {
-        var subject = Guid.NewGuid().ToString();
-        using var client = factory.CreateAuthenticatedClient(subject, apiVersion: ApiVersions.Version20240515);
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts", new CreateContracts(new List<CreateContract>()));
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async Task GivenB2CToken_WhenUsingOldEndpoint_RequestIsUnauthenticated()
-    {
-        var subject = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240423);
-        using var response = await client.PostAsJsonAsync($"api/certificates/contracts", new CreateContracts(new List<CreateContract>()));
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
     public async Task CreateMultipleContract_ActivateWithEndDate_Created()
     {
         var gsrn = GsrnHelper.GenerateRandom();
@@ -821,9 +802,8 @@ public class ContractsV20240515Tests
         contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Assert activity log entry
-        using var oldTokenClient = factory.CreateAuthenticatedClient(orgId.ToString());
         var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-        using var activityLogResponse = await oldTokenClient.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
+        using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
         activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
         Assert.Single(activityLog!.ActivityLogEntries, x => x.ActorId.ToString() == subject.ToString());
@@ -852,9 +832,8 @@ public class ContractsV20240515Tests
         await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody);
 
         // Assert activity log entries (created, updated)
-        using var oldTokenClient = factory.CreateAuthenticatedClient(orgId.ToString());
         var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-        using var activityLogResponse = await oldTokenClient.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
+        using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
         activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
         Assert.Equal(2, activityLog!.ActivityLogEntries.Count(x => x.ActorId.ToString() == subject.ToString()));
@@ -869,14 +848,15 @@ public class ContractsV20240515Tests
         dbContext.ActivityLogs.Add(activityLogEntry);
         await dbContext.SaveChangesAsync();
 
+        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var oldTokenClient = factory.CreateAuthenticatedClient(orgId.ToString());
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
 
         // Wait for activity log entries to be cleaned up
         await WaitForCondition(TimeSpan.FromSeconds(10), async ctx =>
         {
             var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-            var activityLogResponse = await oldTokenClient.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
+            var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
             activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
             return activityLog!.ActivityLogEntries.Where(al => al.ActorId == activityLogEntry.ActorId).Count() == 0;

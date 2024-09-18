@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
+using API.Query.API.ApiModels.Requests;
 using API.Query.API.Controllers;
 using Asp.Versioning.ApiExplorer;
 using Contracts;
@@ -56,17 +57,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        var privateKeyPem = Encoding.UTF8.GetString(PrivateKey);
-        string publicKeyPem;
-
-        using (RSA rsa = RSA.Create())
-        {
-            rsa.ImportFromPem(privateKeyPem);
-            publicKeyPem = rsa.ExportRSAPublicKeyPem();
-        }
-
-        var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
-
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Measurements:Url", MeasurementsUrl);
@@ -82,9 +72,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
         builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
-        builder.UseSetting("TokenValidation:PublicKey", publicKeyBase64);
-        builder.UseSetting("TokenValidation:Issuer", "demo.energioprindelse.dk");
-        builder.UseSetting("TokenValidation:Audience", "Users");
 
         builder.UseSetting("B2C:B2CWellKnownUrl",
             "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration");
@@ -127,7 +114,15 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(services.First(s => s.ServiceType == typeof(Meteringpoint.V1.Meteringpoint.MeteringpointClient)));
                 services.AddSingleton(MeteringpointClient);
             }
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = AuthenticationScheme.B2CAuthenticationScheme;
+                options.DefaultChallengeScheme = AuthenticationScheme.B2CAuthenticationScheme;
+                options.DefaultForbidScheme = AuthenticationScheme.B2CAuthenticationScheme;
+            });
         });
+
     }
 
     public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
@@ -179,17 +174,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
 
-    public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20230101)
-    {
-        client = CreateClient();
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", GenerateSelfSignedToken(sub: sub, tin: tin, name: name, actor: actor));
-        client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
-
-        return client;
-    }
-
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
         string apiVersion = ApiVersions.Version20240515, bool termsAccepted = true)
     {
@@ -202,59 +186,16 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return client;
     }
 
-    public HttpClient CreateWalletClient(string subject)
+    public HttpClient CreateWalletClient(string orgId)
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
         client.DefaultRequestHeaders.Remove(WalletServiceClientExtensions.WalletOwnerHeader);
-        client.DefaultRequestHeaders.Add(WalletServiceClientExtensions.WalletOwnerHeader, subject);
+        client.DefaultRequestHeaders.Add(WalletServiceClientExtensions.WalletOwnerHeader, orgId);
         return client;
     }
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
-
-    private string GenerateSelfSignedToken(
-        string scope = "",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
-        string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
-        string tin = "11223344",
-        string cpn = "Producent A/S",
-        string name = "Peter Producent",
-        string issuer = "demo.energioprindelse.dk",
-        string audience = "Users",
-        string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7")
-    {
-        var claims = new Dictionary<string, object>()
-        {
-            { UserClaimName.Scope, scope },
-            { UserClaimName.ActorLegacy, actor },
-            { UserClaimName.Actor, actor },
-            { UserClaimName.Tin, tin },
-            { UserClaimName.OrganizationName, cpn },
-            { JwtRegisteredClaimNames.Name, name },
-            { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString() },
-            { UserClaimName.AllowCprLookup, "false" },
-            { UserClaimName.AccessToken, "" },
-            { UserClaimName.IdentityToken, "" },
-            { UserClaimName.ProviderKeys, "" },
-            { UserClaimName.OrganizationId, sub },
-            { UserClaimName.MatchedRoles, "" },
-            { UserClaimName.Roles, "" },
-            { UserClaimName.AssignedRoles, "" }
-        };
-
-        var signedJwtToken = new TokenSigner(PrivateKey).Sign(
-            sub,
-            name,
-            issuer,
-            audience,
-            null,
-            60,
-            claims
-        );
-
-        return signedJwtToken;
-    }
 
     private string GenerateB2CDummyToken(
         string scope = "",
@@ -295,6 +236,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     }
 
     public async Task AddContract(string subject,
+        string orgId,
         string gsrn,
         DateTimeOffset startDate,
         MeteringPointType meteringPointType,
@@ -302,10 +244,15 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         Technology technology = null!)
     {
         measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
-
-        var client = CreateAuthenticatedClient(subject);
-        var body = new { gsrn, startDate = startDate.ToUnixTimeSeconds() };
-        var response = await client.PostAsJsonAsync("api/certificates/contracts", body);
+        var client = CreateB2CAuthenticatedClient(Guid.Parse(subject), Guid.Parse(orgId),  apiVersion: ApiVersions.Version20240515);
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrn,
+                StartDate = startDate.ToUnixTimeSeconds()
+            }
+        ]);
+        var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
