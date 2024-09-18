@@ -1,4 +1,4 @@
-﻿namespace API.Query.API.ApiModels.Responses;
+namespace API.Query.API.ApiModels.Responses;
 
 public enum MeteringPointTypeResponse
 {

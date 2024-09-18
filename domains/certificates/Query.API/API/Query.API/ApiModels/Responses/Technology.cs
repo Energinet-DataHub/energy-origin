@@ -1,4 +1,4 @@
-﻿namespace API.Query.API.ApiModels.Responses;
+namespace API.Query.API.ApiModels.Responses;
 
 public class Technology
 {
@@ -10,6 +10,6 @@ public class Technology
         this.AibFuelCode = AibFuelCode;
         this.AibTechCode = AibTechCode;
     }
-    
+
     public static Technology? From(DataContext.ValueObjects.Technology? technology) => technology == null ? null : new(technology.FuelCode, technology.TechCode);
 };
