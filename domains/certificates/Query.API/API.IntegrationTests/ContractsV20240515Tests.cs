@@ -315,15 +315,8 @@ public class ContractsV20240515Tests
         var createdContractId = createdContracts!.Result.First().Id;
         var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
-        if (createdContract?.Technology == null)
-        {
-            Assert.Fail("Technology is null. Expected Technology to be not null.");
-        }
-        else
-        {
-            createdContract!.Technology.AibFuelCode.Should().Be(technology.AibFuelCode);
-            createdContract!.Technology.AibTechCode.Should().Be(technology.AibTechCode);
-        }
+        createdContract!.Technology!.AibFuelCode.Should().Be(technology.AibFuelCode);
+        createdContract!.Technology!.AibTechCode.Should().Be(technology.AibTechCode);
     }
 
     [Fact]
