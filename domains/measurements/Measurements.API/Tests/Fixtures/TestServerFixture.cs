@@ -18,12 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using API.MeteringPoints.Api;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Values;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -40,14 +36,13 @@ namespace Tests.Fixtures
 
     public class TestServerFixture<TStartup> : IDisposable where TStartup : class
     {
-        public byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
         private TestServer? _server;
         private IHost? _host;
         private HttpMessageHandler? _handler;
         private GrpcChannel? _channel;
         private Dictionary<string, string?>? _configurationDictionary;
-        private bool _disposed = false;
+        private bool _disposed;
         public event Action<IServiceCollection>? ConfigureTestServices;
 
         public event LogMessage? LoggedMessage;
@@ -137,61 +132,8 @@ namespace Tests.Fixtures
             EnsureServer(environment);
 
             var client = _server!.CreateClient();
-            client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240110);
+            client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240515);
             return client;
-        }
-
-        public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-            string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string apiVersion = ApiVersions.Version20240110, string environment = "Development")
-        {
-            EnsureServer(environment);
-            var client = _server!.CreateClient();
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", GenerateToken(sub: sub, tin: tin, name: name, actor: actor));
-            client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
-            return client;
-        }
-
-        private string GenerateToken(
-            string scope = "",
-            string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f",
-            string sub = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
-            string tin = "11223344",
-            string cpn = "Producent A/S",
-            string name = "Peter Producent",
-            string issuer = "demo.energioprindelse.dk",
-            string audience = "Users")
-        {
-            var claims = new Dictionary<string, object>()
-            {
-                { UserClaimName.Scope, scope },
-                { UserClaimName.ActorLegacy, actor },
-                { UserClaimName.Actor, actor },
-                { UserClaimName.Tin, tin },
-                { UserClaimName.OrganizationName, cpn },
-                { JwtRegisteredClaimNames.Name, name },
-                { UserClaimName.ProviderType, ProviderType.MitIdProfessional.ToString()},
-                { UserClaimName.AllowCprLookup, "false"},
-                { UserClaimName.AccessToken, ""},
-                { UserClaimName.IdentityToken, ""},
-                { UserClaimName.ProviderKeys, ""},
-                { UserClaimName.OrganizationId, sub},
-                { UserClaimName.MatchedRoles, ""},
-                { UserClaimName.Roles, ""},
-                { UserClaimName.AssignedRoles, ""}
-            };
-
-            var signedJwtToken = new TokenSigner(PrivateKey).Sign(
-                sub,
-                name,
-                issuer,
-                audience,
-                null,
-                60,
-                claims
-            );
-
-            return signedJwtToken;
         }
 
         protected virtual void Dispose(bool disposing)
