@@ -1,7 +1,0 @@
-name: eo-auth
-repo: ghcr.io/energinet-datahub
-references:
-  - file: k8s/energy-origin-apps/auth/base/deployment.yaml
-    path: .spec.template.spec.containers[] | select(.name == "auth-api") | .image
-  - file: k8s/energy-origin-apps/auth/base/deployment.yaml
-    path: .spec.template.spec.initContainers[] | select(.name == "auth-api-init-sql") | .image
