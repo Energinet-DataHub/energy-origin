@@ -102,7 +102,7 @@ public class MeasurementsSyncService
             }
             else
             {
-                clearTextAttributes.Add(AttributeKeys.AssetId, m.Gsrn);
+                //clearTextAttributes.Add(AttributeKeys.AssetId, m.Gsrn);
             }
 
             var certificate = new CertificateDto
@@ -114,7 +114,10 @@ public class MeasurementsSyncService
                 Type = syncInfo.MeteringPointType.MapToCertificateType(),
                 GridArea = syncInfo.GridArea,
                 ClearTextAttributes = clearTextAttributes,
-                HashedAttributes = new List<HashedAttribute>()
+                HashedAttributes = new List<HashedAttribute>
+                {
+                    new() { Key = AttributeKeys.AssetId, Value = m.Gsrn } 
+                }
             };
 
             await stampClient.IssueCertificate(syncInfo.RecipientId, m.Gsrn, certificate, cancellationToken);
