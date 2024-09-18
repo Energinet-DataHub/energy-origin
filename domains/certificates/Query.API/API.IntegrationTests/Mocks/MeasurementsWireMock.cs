@@ -16,8 +16,8 @@ public sealed class MeasurementsWireMock : IDisposable
     private readonly WireMockServer server;
 
     private readonly Technology defaultTechnology = new Technology(
-        FuelCode: "F01040100",
-        TechCode: "T010000"
+        AibFuelCode: "F01040100",
+        AibTechCode: "T010000"
     );
 
     public MeasurementsWireMock() => server = WireMockServer.Start();
