@@ -1,14 +1,13 @@
 using System.Text.Json.Serialization;
-using System;
 using API.Cvr;
 using API.Shared.Options;
 using API.Transfer;
+using API.Transfer.Api.Controllers;
 using API.UnitOfWork;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.TokenValidation.Options;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Json;
@@ -16,7 +15,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using API.Transfer.Api.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +48,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(API.Program).Assembly);
 
 builder.Services.AddActivityLog(options => options.ServiceName = "transfer");
 
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
@@ -63,11 +62,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-var tokenValidationOptions = builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
 builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
+builder.Services.AddB2C(b2COptions);
 
 var app = builder.Build();
 
@@ -82,7 +79,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
-app.UseActivityLog().WithApiVersionSet(activityLogApiVersionSet).HasApiVersion(ApiVersions.Version20240103AsInt);
 app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet).HasApiVersion(ApiVersions.Version20240515AsInt);
 
 app.Run();

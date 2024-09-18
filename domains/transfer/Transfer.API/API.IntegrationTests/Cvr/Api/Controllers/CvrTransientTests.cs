@@ -47,8 +47,7 @@ public class CvrTransientTests
                 .WithStatusCode(HttpStatusCode.OK)
                 .WithBodyFromFile("Cvr/Api/Controllers/CvrControllerTests.cvr_response.json"));
 
-        using var client = factory.CreateAuthenticatedClient(sub: Guid.NewGuid().ToString(),
-            apiVersion: ApiVersions.Version20240103);
+        using var client = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), Guid.NewGuid());
 
         using var response = await client.PostAsJsonAsync("api/transfer/cvr", cvrNumbers);
 

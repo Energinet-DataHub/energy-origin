@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using API.IntegrationTests.Factories;
-using API.IntegrationTests.Testcontainers;
 using DataContext;
 using DataContext.Models;
 using Microsoft.EntityFrameworkCore;
