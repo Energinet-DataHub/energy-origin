@@ -100,10 +100,6 @@ public class MeasurementsSyncService
                 clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergySource, syncInfo.Technology!.FuelCode);
                 clearTextAttributes.Add(AttributeKeys.EnergyTagProducedEnergyTechnology, syncInfo.Technology.TechCode);
             }
-            else
-            {
-                //clearTextAttributes.Add(AttributeKeys.AssetId, m.Gsrn);
-            }
 
             var certificate = new CertificateDto
             {
@@ -116,7 +112,7 @@ public class MeasurementsSyncService
                 ClearTextAttributes = clearTextAttributes,
                 HashedAttributes = new List<HashedAttribute>
                 {
-                    new() { Key = AttributeKeys.AssetId, Value = m.Gsrn } 
+                    new() { Key = AttributeKeys.AssetId, Value = m.Gsrn }
                 }
             };
 
