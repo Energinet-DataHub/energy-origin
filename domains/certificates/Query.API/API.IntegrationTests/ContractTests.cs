@@ -284,9 +284,15 @@ public sealed class ContractTests : TestBase
         var createdContractUri = response.Headers.Location;
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        createdContract!.Technology.AibFuelCode.Should().Be(technology.AibFuelCode);
-        createdContract!.Technology.AibTechCode.Should().Be(technology.AibTechCode);
-
+        if (createdContract?.Technology == null)
+        {
+            Assert.Fail("Technology is null. Expected Technology to be not null.");
+        }
+        else
+        {
+            createdContract!.Technology.AibFuelCode.Should().Be(technology.AibFuelCode);
+            createdContract!.Technology.AibTechCode.Should().Be(technology.AibTechCode);
+        }
     }
 
     [Fact]
