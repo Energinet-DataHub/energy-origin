@@ -244,7 +244,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         Technology technology = null!)
     {
         measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
-        var client = CreateB2CAuthenticatedClient(Guid.Parse(subject), Guid.Parse(orgId),  apiVersion: ApiVersions.Version20240515);
+        var client = CreateB2CAuthenticatedClient(Guid.Parse(subject), Guid.Parse(orgId), apiVersion: ApiVersions.Version20240515);
         var body = new CreateContracts([
             new CreateContract
             {
