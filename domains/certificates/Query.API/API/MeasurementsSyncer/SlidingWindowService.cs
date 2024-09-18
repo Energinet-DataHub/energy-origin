@@ -45,7 +45,7 @@ public class SlidingWindowService
                 var isIncludedInMissingInterval = IsIncludedInMissingInterval(window, interval);
                 if (isIncludedInMissingInterval)
                 {
-                    measurementSyncMetrics.AddRecoveredMeasurements(1);
+                    measurementSyncMetrics.AddNumberOfRecoveredMeasurements(1);
                 }
                 return isIncludedInMissingInterval;
             })
@@ -113,7 +113,7 @@ public class SlidingWindowService
             var secondsOfMissingInterval = missingInterval.To.Seconds - missingInterval.From.Seconds;
             var numberOfMissingIntervals = secondsOfMissingInterval / UnixTimestamp.SecondsPerHour;
 
-            measurementSyncMetrics.AddMissingMeasurement(numberOfMissingIntervals);
+            measurementSyncMetrics.AddNumberOfMissingMeasurement(numberOfMissingIntervals);
         }
     }
 

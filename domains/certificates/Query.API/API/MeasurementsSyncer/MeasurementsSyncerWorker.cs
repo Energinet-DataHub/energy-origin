@@ -50,6 +50,7 @@ public class MeasurementsSyncerWorker : BackgroundService
 
     private async Task PerformPeriodicTask(CancellationToken stoppingToken)
     {
+        IMeasurementSyncMetrics? measurementSyncMetrics = null;
         try
         {
             var syncInfos = await contractState.GetSyncInfos(stoppingToken);
@@ -61,13 +62,13 @@ public class MeasurementsSyncerWorker : BackgroundService
             }
 
             using var outerScope = scopeFactory.CreateScope();
-            var measurementSyncMetrics = outerScope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
+            measurementSyncMetrics = outerScope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
             measurementSyncMetrics.UpdateTimeSinceLastMeasurementSyncerRun(UnixTimestamp.Now().Seconds);
 
             var oldestSyncDate = syncInfos.Min(x => x.StartSyncDate);
 
             measurementSyncMetrics.UpdateTimePeriodForSearchingForGSRN(UnixTimestamp.Create(oldestSyncDate).Seconds);
-            measurementSyncMetrics.AddNumberOfRecordsBeingSynced(syncInfos.Count);
+            measurementSyncMetrics.AddNumberOfContractsBeingSynced(syncInfos.Count);
 
             foreach (var syncInfo in syncInfos)
             {
@@ -79,6 +80,10 @@ public class MeasurementsSyncerWorker : BackgroundService
         catch (Exception e)
         {
             logger.LogError(e, "Error in MeasurementSyncer periodic task");
+        }
+        finally
+        {
+            measurementSyncMetrics?.UpdateGauges();
         }
     }
 
