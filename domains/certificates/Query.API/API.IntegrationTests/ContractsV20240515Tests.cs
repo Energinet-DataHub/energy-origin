@@ -314,7 +314,7 @@ public class ContractsV20240515Tests
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
         var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
-        
+
         if (createdContract?.Technology == null)
         {
             Assert.Fail("Technology is null. Expected Technology to be not null.");
