@@ -47,8 +47,6 @@ public class GetConsentForUserQueryHandler(
             .OrderByDescending(t => t.Version)
             .FirstOrDefaultAsync(cancellationToken);
 
-
-
         if (organization == null || latestTerms == null)
         {
             return new GetConsentForUserCommandResult(
@@ -91,8 +89,6 @@ public class GetConsentForUserQueryHandler(
         if (organization.Affiliations.All(a => a.UserId != user.Id))
         {
             _ = Affiliation.Create(user, organization);
-            organizationRepository.Update(organization);
-            userRepository.Update(user);
         }
 
         await unitOfWork.CommitAsync();

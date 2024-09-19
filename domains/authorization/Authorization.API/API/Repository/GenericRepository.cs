@@ -34,7 +34,7 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     public void Update(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
-        Context.Entry(entity).State = EntityState.Modified;
+        Context.Set<T>().Update(entity);
     }
 
     public IQueryable<T> Query()
