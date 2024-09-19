@@ -20,17 +20,6 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
     {
         _serverFixture = serverFixture;
 
-        var privateKeyPem = Encoding.UTF8.GetString(serverFixture.PrivateKey);
-        string publicKeyPem;
-
-        using (RSA rsa = RSA.Create())
-        {
-            rsa.ImportFromPem(privateKeyPem);
-            publicKeyPem = rsa.ExportRSAPublicKeyPem();
-        }
-
-        var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
-
         var config = new Dictionary<string, string?>()
         {
             { "B2C:B2CWellKnownUrl", "https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/v2.0/.well-known/openid-configuration" },
@@ -45,9 +34,6 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
             { "B2C:Audience", "f00b9b4d-3c59-4c40-b209-2ef87e509f54" },
             { "B2C:CustomPolicyClientId", "a701d13c-2570-46fa-9aa2-8d81f0d8d60b" },
             { "Otlp:ReceiverEndpoint", otlpEndpoint },
-            { "TokenValidation:PublicKey", publicKeyBase64 },
-            { "TokenValidation:Issuer", "demo.energioprindelse.dk" },
-            { "TokenValidation:Audience", "Users" },
             { "DataHubFacade:Url", DataHubFacadeUrl },
             { "DataSync:Endpoint", "https://example.com" },
             { "RabbitMq:Host", "localhost" },

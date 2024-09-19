@@ -143,11 +143,9 @@ public class Startup
 
         services.AddVersioningToApi();
 
-        var tokenValidationOptions = _configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-        services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
         var b2COptions = _configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
         services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
-        services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
+        services.AddB2C(b2COptions);
 
         services.AddGrpc();
     }

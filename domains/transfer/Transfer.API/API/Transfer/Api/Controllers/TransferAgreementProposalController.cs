@@ -7,9 +7,7 @@ using Asp.Versioning;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Values;
+using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -17,30 +15,32 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Transfer.Api.Controllers;
 
-[Authorize]
 [ApiController]
-[ApiVersion(ApiVersions.Version20240103)]
+[Authorize(Policy.Frontend)]
+[ApiVersion(ApiVersions.Version20240515)]
 [Route("api/transfer/transfer-agreement-proposals")]
 public class TransferAgreementProposalController(
     IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IdentityDescriptor identityDescriptor,
+    AccessDescriptor accessDescriptor)
     : ControllerBase
 {
     /// <summary>
     /// Create TransferAgreementProposal
     /// </summary>
+    /// <param name="organizationId">Sender organization id</param>
     /// <param name="request">The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.</param>
     /// <response code="201">Created</response>
     /// <response code="400">Bad request</response>
     /// <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
-    [Authorize(Policy = PolicyName.RequiresCompany)]
+    [HttpPost]
     [ProducesResponseType(typeof(TransferAgreementProposalResponse), 201)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 409)]
-    [HttpPost]
-    public async Task<ActionResult> CreateTransferAgreementProposal(CreateTransferAgreementProposal request)
+    public async Task<ActionResult> CreateTransferAgreementProposal([FromQuery] Guid organizationId, CreateTransferAgreementProposal request)
     {
-        var user = new UserDescriptor(User);
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
         var validateResult = await createTransferAgreementProposalValidator.ValidateAsync(request);
         if (!validateResult.IsValid)
@@ -51,9 +51,9 @@ public class TransferAgreementProposalController(
 
         var newProposal = new TransferAgreementProposal
         {
-            SenderCompanyId = user.Subject,
-            SenderCompanyTin = user.Organization!.Tin,
-            SenderCompanyName = user.Organization.Name,
+            SenderCompanyId = organizationId,
+            SenderCompanyTin = identityDescriptor.OrganizationCvr!,
+            SenderCompanyName = identityDescriptor.OrganizationName,
             Id = Guid.NewGuid(),
             ReceiverCompanyTin = request.ReceiverTin,
             StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
@@ -62,8 +62,14 @@ public class TransferAgreementProposalController(
 
         if (request.ReceiverTin != null)
         {
-            var hasConflict = await unitOfWork.TransferAgreementRepo.HasDateOverlap(newProposal);
+            if (request.ReceiverTin.Equals(identityDescriptor.OrganizationCvr))
+            {
+                return ValidationProblem(
+                    "ReceiverTin cannot be the same as SenderTin.",
+                    statusCode: 400);
+            }
 
+            var hasConflict = await unitOfWork.TransferAgreementRepo.HasDateOverlap(newProposal);
             if (hasConflict)
             {
                 return ValidationProblem(
@@ -74,7 +80,7 @@ public class TransferAgreementProposalController(
 
         await unitOfWork.TransferAgreementProposalRepo.AddTransferAgreementProposal(newProposal);
 
-        await AppendToActivityLog(user, newProposal, ActivityLogEntry.ActionTypeEnum.Created);
+        await AppendToActivityLog(identityDescriptor, newProposal, ActivityLogEntry.ActionTypeEnum.Created);
 
         await unitOfWork.SaveAsync();
 
@@ -88,18 +94,20 @@ public class TransferAgreementProposalController(
         return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = newProposal.Id }, response);
     }
 
+
+
     /// <summary>
     /// Get TransferAgreementProposal by Id
     /// </summary>
     /// <param name="id">Id of TransferAgreementProposal</param>
+    /// <param name="organizationId"></param>
     /// <response code="200">Successful operation</response>
     /// <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
-    [Authorize(Policy = PolicyName.RequiresCompany)]
+    [HttpGet("{id}")]
     [ProducesResponseType(typeof(TransferAgreementProposalResponse), 200)]
     [ProducesResponseType(typeof(void), 400)]
     [ProducesResponseType(typeof(void), 404)]
-    [HttpGet("{id}")]
-    public async Task<ActionResult<TransferAgreementProposalResponse>> GetTransferAgreementProposal(Guid id)
+    public async Task<ActionResult<TransferAgreementProposalResponse>> GetTransferAgreementProposal([FromRoute] Guid id, [FromQuery] Guid organizationId)
     {
         var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposal(id);
 
@@ -108,14 +116,14 @@ public class TransferAgreementProposalController(
             return NotFound();
         }
 
-        var user = new UserDescriptor(User);
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        if (user.Subject == proposal.SenderCompanyId)
+        if (organizationId == proposal.SenderCompanyId)
         {
             return ValidationProblem("You cannot Accept/Deny your own TransferAgreementProposal");
         }
 
-        if (proposal.ReceiverCompanyTin != null && user.Organization!.Tin != proposal.ReceiverCompanyTin)
+        if (proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr != proposal.ReceiverCompanyTin)
         {
             return ValidationProblem("You cannot Accept/Deny a TransferAgreementProposal for another company");
         }
@@ -139,11 +147,12 @@ public class TransferAgreementProposalController(
     /// Delete TransferAgreementProposal
     /// </summary>
     /// <param name="id">Id of TransferAgreementProposal</param>
+    /// <param name="organizationId"></param>
     /// <response code="204">Successful operation</response>
+    [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), 204)]
     [ProducesResponseType(typeof(void), 404)]
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteTransferAgreementProposal(Guid id)
+    public async Task<ActionResult> DeleteTransferAgreementProposal([FromRoute] Guid id, [FromQuery] Guid organizationId)
     {
         var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposal(id);
 
@@ -152,29 +161,29 @@ public class TransferAgreementProposalController(
             return NotFound();
         }
 
-        var user = new UserDescriptor(User);
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        if (proposal.ReceiverCompanyTin != null && user.Organization!.Tin != proposal.ReceiverCompanyTin)
+        if (proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr != proposal.ReceiverCompanyTin)
         {
             return ValidationProblem("You cannot Deny a TransferAgreementProposal for another company");
         }
 
         await unitOfWork.TransferAgreementProposalRepo.DeleteTransferAgreementProposal(id);
-        await AppendToActivityLog(user, proposal, ActivityLogEntry.ActionTypeEnum.Declined);
+        await AppendToActivityLog(identityDescriptor, proposal, ActivityLogEntry.ActionTypeEnum.Declined);
 
         await unitOfWork.SaveAsync();
 
         return NoContent();
     }
 
-    private async Task AppendToActivityLog(UserDescriptor user, TransferAgreementProposal proposal, ActivityLogEntry.ActionTypeEnum actionType)
+    private async Task AppendToActivityLog(IdentityDescriptor identity, TransferAgreementProposal proposal, ActivityLogEntry.ActionTypeEnum actionType)
     {
         await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-           actorId: user.Subject,
+           actorId: identity.Subject,
            actorType: ActivityLogEntry.ActorTypeEnum.User,
-           actorName: user.Name,
-           organizationTin: user.Organization!.Tin,
-           organizationName: user.Organization!.Name,
+           actorName: identity.Name,
+           organizationTin: identity.OrganizationCvr!,
+           organizationName: identity.OrganizationName,
            otherOrganizationTin: proposal.ReceiverCompanyTin ?? string.Empty,
            otherOrganizationName: string.Empty,
            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,

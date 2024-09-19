@@ -21,7 +21,7 @@ namespace API.Query.API.Controllers;
 [Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiController]
 [ApiVersion(ApiVersions.Version20240515)]
-public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
+public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
 {
     /// <summary>
     /// Create contracts that activates granular certificate generation for a metering point
@@ -62,7 +62,7 @@ public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, 
             ContractAlreadyExists => ValidationProblem(statusCode: 409),
             CreateContractResult.Success(var createdContracts) => Created("",
                 new ContractList { Result = createdContracts.Select(Contract.CreateFrom).ToList() }),
-            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(Contracts20240515Controller)}")
         };
     }
 
@@ -160,7 +160,7 @@ public class Contracts20250515Controller(IdentityDescriptor identityDescriptor, 
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
             OverlappingContract => ValidationProblem(statusCode: 409),
             SetEndDateResult.Success => Ok(),
-            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(Contracts20240515Controller)}")
         };
     }
 }

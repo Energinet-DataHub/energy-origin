@@ -5,9 +5,9 @@ using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Dto.Requests;
 
-public class CreateTransferAgreementProposal20240515ValidatorTest
+public class CreateTransferAgreementProposalValidatorTest
 {
-    private CreateTransferAgreementProposal20240515Validator sut = new();
+    private CreateTransferAgreementProposalValidator sut = new();
 
     [Theory]
     [InlineData("")]
@@ -16,7 +16,7 @@ public class CreateTransferAgreementProposal20240515ValidatorTest
     [InlineData("ABCDEFG")]
     public void Create_ShouldFail_WhenReceiverTinInvalid(string receiverTin)
     {
-        var request = new CreateTransferAgreementProposal20240515(
+        var request = new CreateTransferAgreementProposal(
             StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
             ReceiverTin: receiverTin

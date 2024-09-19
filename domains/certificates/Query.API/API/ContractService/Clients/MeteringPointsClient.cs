@@ -8,7 +8,6 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
 
 namespace API.ContractService.Clients;
@@ -80,15 +79,6 @@ public class MeteringPointsClient : IMeteringPointsClient
             var identityDescriptor = new IdentityDescriptor(httpContextAccessor);
             var accessDescriptor = new AccessDescriptor(identityDescriptor);
             if (!accessDescriptor.IsAuthorizedToOrganization(Guid.Parse(owner)))
-            {
-                throw new HttpRequestException("Owner must match subject");
-            }
-        }
-        else
-        {
-            var user = new UserDescriptor(httpContextAccessor.HttpContext!.User);
-            var subject = user.Subject.ToString();
-            if (!owner.Equals(subject, StringComparison.InvariantCultureIgnoreCase))
             {
                 throw new HttpRequestException("Owner must match subject");
             }

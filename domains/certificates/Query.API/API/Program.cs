@@ -95,14 +95,11 @@ builder.Services.AddMeasurementsSyncer();
 builder.Services.AddIssuingContractCleanup();
 builder.Services.AddVersioningToApi();
 
-var tokenValidationOptions =
-    builder.Configuration.GetSection(TokenValidationOptions.Prefix).Get<TokenValidationOptions>()!;
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
-    .ValidateDataAnnotations().ValidateOnStart();
+
 var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
 builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddB2CAndTokenValidation(b2COptions, tokenValidationOptions);
+builder.Services.AddB2C(b2COptions);
 
 
 var app = builder.Build();
@@ -119,9 +116,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
-app.UseActivityLog().WithApiVersionSet(activityLogApiVersionSet)
-    .HasApiVersion(ApiVersions.Version20240423AsInt)
-    .HasApiVersion(ApiVersions.Version20230101AsInt);
 app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
     .HasApiVersion(ApiVersions.Version20240515AsInt);
 
