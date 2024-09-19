@@ -1,17 +1,17 @@
-using Microsoft.AspNetCore.Builder;
-using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using Asp.Versioning.ApiExplorer;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Extensions;
+using Swashbuckle.AspNetCore.Swagger;
 
-namespace EnergyOrigin.Setup;
+namespace EnergyOrigin.Setup.Swagger;
 
-public static class IApplicationBuilderExtensions
+public static class SwaggerApplicationBuilderExtensions
 {
     public static void AddSwagger(this IApplicationBuilder app, IWebHostEnvironment env, string subsystemName)
     {
@@ -30,5 +30,16 @@ public static class IApplicationBuilderExtensions
                     }
                 });
         }
+    }
+
+    public static void BuildSwaggerYamlFile(this WebApplication app, IWebHostEnvironment env, string filename, string apiVersion = ApiVersions.Version20240515)
+    {
+        var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
+        var swagger = swaggerProvider.GetSwagger(apiVersion);
+
+        File.WriteAllText(
+            Path.Combine(env.ContentRootPath, filename),
+            swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
+        );
     }
 }

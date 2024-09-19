@@ -15,6 +15,8 @@ using DataContext;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Testing.Helpers;
@@ -294,10 +296,8 @@ public class ContractsV20240515Tests
         var createdContractId = createdContracts!.Result.First().Id;
         var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}");
 
-        var expectedTechnology =
-            new DataContext.ValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
-
-        createdContract!.Technology.Should().Be(expectedTechnology);
+        createdContract!.Technology!.AibFuelCode.Should().Be(technology.AibFuelCode);
+        createdContract!.Technology!.AibTechCode.Should().Be(technology.AibTechCode);
     }
 
     [Fact]

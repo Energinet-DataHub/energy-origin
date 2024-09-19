@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using API.Authorization;
 using API.Authorization.Exceptions;
 using API.Data;
@@ -7,6 +8,7 @@ using API.Options;
 using API.Repository;
 using API.Services;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
@@ -113,7 +115,15 @@ app.MapControllers();
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 
-app.Run();
+if (args.Contains("--swagger"))
+{
+    app.BuildSwaggerYamlFile(builder.Environment, "authorization.yaml", ApiVersions.Version20230101);
+}
+else
+{
+    app.Run();
+}
+
 
 namespace API
 {
