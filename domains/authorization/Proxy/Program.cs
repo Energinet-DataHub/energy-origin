@@ -2,13 +2,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
 using Proxy;
-using Proxy.Controllers;
 using Proxy.Options;
-using Swashbuckle.AspNetCore.Swagger;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,13 +88,7 @@ app.MapSwagger();
 
 if (args.Contains("--swagger"))
 {
-    var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
-    var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
-
-    File.WriteAllText(
-        Path.Combine(builder.Environment.ContentRootPath, "proxy.yaml"),
-        swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
-    );
+    app.BuildSwaggerYamlFile(builder.Environment, "proxy.yaml");
 }
 else
 {

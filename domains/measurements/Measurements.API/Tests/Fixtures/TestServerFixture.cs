@@ -19,7 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using API.MeteringPoints.Api;
+using EnergyOrigin.Setup;
 using Grpc.Net.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;

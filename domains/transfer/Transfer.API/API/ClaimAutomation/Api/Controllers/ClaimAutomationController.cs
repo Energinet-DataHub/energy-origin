@@ -1,14 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using API.ClaimAutomation.Api.Dto.Response;
-using API.ClaimAutomation.Api.Repositories;
-using API.Transfer.Api.Controllers;
 using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
+using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.TokenValidation.Utilities;
-using EnergyOrigin.TokenValidation.Values;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
