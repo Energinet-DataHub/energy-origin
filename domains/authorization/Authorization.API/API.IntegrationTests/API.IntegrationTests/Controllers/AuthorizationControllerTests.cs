@@ -11,13 +11,13 @@ using ClientType = API.Models.ClientType;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetConsentForUserTests
+public class AuthorizationControllerTests
 {
     private readonly Api _api;
     private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetConsentForUserTests(IntegrationTestFixture integrationTestFixture)
+    public AuthorizationControllerTests(IntegrationTestFixture integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
@@ -30,7 +30,7 @@ public class GetConsentForUserTests
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenHttpOkAndCorrectResponseReturned()
     {
         await using var dbContext = new ApplicationDbContext(_options);
-        var (idpUserId, tin, orgName) = await SeedData(dbContext, "12345678");
+        var (idpUserId, tin, orgName) = await SeedData(dbContext);
 
         var request = new AuthorizationUserRequest(
             Sub: idpUserId.Value,
@@ -82,10 +82,10 @@ public class GetConsentForUserTests
         result.TermsAccepted.Should().BeFalse();
     }
 
-    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext, string tin)
+    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext)
     {
         var user = Any.User();
-        var organization = Any.Organization(Tin.Create(tin));
+        var organization = Any.Organization(Any.Tin());
         organization.AcceptTerms(dbContext.Terms.First());
 
         await dbContext.Users.AddAsync(user);
@@ -100,7 +100,7 @@ public class GetConsentForUserTests
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenAffiliationIsCreated()
     {
         await using var dbContext = new ApplicationDbContext(_options);
-        var (idpUserId, tin, orgName) = await SeedData(dbContext, "12345679");
+        var (idpUserId, tin, orgName) = await SeedData(dbContext);
 
         var request = new AuthorizationUserRequest(
             Sub: idpUserId.Value,
@@ -113,6 +113,6 @@ public class GetConsentForUserTests
 
         response.Should().Be200Ok();
 
-        dbContext.Affiliations.ToList().Should().ContainSingle();
+        dbContext.Affiliations.Where(x => x.Organization.Tin == tin).ToList().Should().ContainSingle();
     }
 }
