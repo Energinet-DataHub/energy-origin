@@ -24,11 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\libraries\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents.csproj" />
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
     <ProjectReference Include="..\..\Shared\Contracts\Contracts.csproj" />
     <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
-    <ProjectReference Include="..\..\Shared\MeasurementEvents\MeasurementEvents.csproj" />
     <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
   </ItemGroup>
 

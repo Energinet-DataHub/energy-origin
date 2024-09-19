@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Http;
 
@@ -16,6 +17,7 @@ public class MeteringPointsClient : IMeteringPointsClient
 {
     private readonly HttpClient httpClient;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private const string DownstreamApiVersion = ApiVersions.Version20240515;
 
     private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
@@ -36,31 +38,22 @@ public class MeteringPointsClient : IMeteringPointsClient
         ValidateOwnerAndSubjectMatch(owner);
         SetApiVersionHeader();
 
-        var meteringPointsUrl = IsBearerTokenIssuedByB2C() ? $"/api/measurements/meteringpoints?organizationId={owner}" : "/api/measurements/meteringpoints";
+        var meteringPointsUrl = $"/api/measurements/meteringpoints?organizationId={owner}";
 
-        return await httpClient.GetFromJsonAsync<MeteringPointsResponse>(meteringPointsUrl, jsonSerializerOptions,
-            cancellationToken);
+        return await httpClient.GetFromJsonAsync<MeteringPointsResponse>(meteringPointsUrl, jsonSerializerOptions, cancellationToken);
     }
 
     private void SetAuthorizationHeader()
     {
-        httpClient.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext!.Request.Headers.Authorization!);
+        httpClient.DefaultRequestHeaders.Authorization =
+            AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext!.Request.Headers.Authorization!);
     }
 
     private void SetApiVersionHeader()
     {
-        var downstreamApiVersion = GetDownstreamApiVersion();
+        var downstreamApiVersion = DownstreamApiVersion;
         httpClient.DefaultRequestHeaders.Remove("X-API-Version");
         httpClient.DefaultRequestHeaders.Add("X-API-Version", downstreamApiVersion);
-    }
-
-    private string GetDownstreamApiVersion()
-    {
-        if (IsBearerTokenIssuedByB2C())
-        {
-            return "20240515";
-        }
-        return "20240110";
     }
 
     private void ValidateHttpContext()

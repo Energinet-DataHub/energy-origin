@@ -60,6 +60,8 @@ builder.Services.AddMassTransit(
                 rmq.SetQuorumQueue(3);
         });
 
+        x.AddConsumer<EnergyMeasuredIntegrationEventHandler, EnergyMeasuredIntegrationEventHandlerDefinition>();
+
         x.SetKebabCaseEndpointNameFormatter();
 
         x.UsingRabbitMq((context, cfg) =>

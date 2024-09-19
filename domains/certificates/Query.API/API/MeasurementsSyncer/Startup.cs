@@ -18,6 +18,8 @@ public static class Startup
         services.AddScoped<MeasurementsSyncService>();
         services.AddScoped<SlidingWindowService>();
         services.AddScoped<ISlidingWindowState, SlidingWindowState>();
+        services.AddScoped<IMeasurementSyncPublisher, MeasurementSyncPublisher>();
+        services.AddScoped<EnergyMeasuredIntegrationEventMapper>();
         services.AddSingleton<IContractState, ContractState>();
 
         services.AddSingleton<IMeasurementSyncMetrics, MeasurementSyncMetrics>();
