@@ -30,7 +30,7 @@ public class AuthorizationControllerTests
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenHttpOkAndCorrectResponseReturned()
     {
         await using var dbContext = new ApplicationDbContext(_options);
-        var (idpUserId, tin, orgName) = await SeedData(dbContext, "12345678");
+        var (idpUserId, tin, orgName) = await SeedData(dbContext);
 
         var request = new AuthorizationUserRequest(
             Sub: idpUserId.Value,
@@ -82,10 +82,10 @@ public class AuthorizationControllerTests
         result.TermsAccepted.Should().BeFalse();
     }
 
-    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext, string tin)
+    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext)
     {
         var user = Any.User();
-        var organization = Any.Organization(Tin.Create(tin));
+        var organization = Any.Organization(Any.Tin());
         organization.AcceptTerms(dbContext.Terms.First());
 
         await dbContext.Users.AddAsync(user);
@@ -100,7 +100,7 @@ public class AuthorizationControllerTests
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenAffiliationIsCreated()
     {
         await using var dbContext = new ApplicationDbContext(_options);
-        var (idpUserId, tin, orgName) = await SeedData(dbContext, "12345679");
+        var (idpUserId, tin, orgName) = await SeedData(dbContext);
 
         var request = new AuthorizationUserRequest(
             Sub: idpUserId.Value,
@@ -113,6 +113,6 @@ public class AuthorizationControllerTests
 
         response.Should().Be200Ok();
 
-        dbContext.Affiliations.ToList().Should().ContainSingle();
+        dbContext.Affiliations.Where(x => x.Organization.Tin == tin).ToList().Should().ContainSingle();
     }
 }

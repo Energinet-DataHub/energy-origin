@@ -84,11 +84,13 @@ public class GetConsentForUserQueryHandler(
         {
             user = User.Create(IdpUserId.Create(command.Sub), UserName.Create(command.Name));
             await userRepository.AddAsync(user, cancellationToken);
+            _ = Affiliation.Create(user, organization);
         }
-
-        if (organization.Affiliations.All(a => a.UserId != user.Id))
+        else if (organization.Affiliations.All(a => a.UserId != user.Id))
         {
             _ = Affiliation.Create(user, organization);
+            organizationRepository.Update(organization);
+            userRepository.Update(user);
         }
 
         await unitOfWork.CommitAsync();
