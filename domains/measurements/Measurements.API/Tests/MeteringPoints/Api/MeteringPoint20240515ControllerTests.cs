@@ -46,16 +46,6 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
     }
 
     [Fact]
-    public async Task GivenOldToken_WhenRequestingAPI_RequestIsUnauthorized()
-    {
-        var client = _factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), apiVersion: ApiVersions.Version20240515);
-
-        var response = await client.GetAsync($"api/measurements/meteringpoints?organizationId={Guid.NewGuid()}");
-
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
     public async Task NoMeteringPointsReturnsPendingRelation()
     {
         var mockedResponse = new Meteringpoint.V1.MeteringPointsResponse();

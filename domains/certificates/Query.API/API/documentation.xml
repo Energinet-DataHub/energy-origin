@@ -119,52 +119,22 @@
             Metering point type of the contract. Can be Production or Consumption
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.Contracts20250515Controller.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.Contracts20240515Controller.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Create contracts that activates granular certificate generation for a metering point
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.Contracts20250515Controller.GetContract(System.Guid,System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.Contracts20240515Controller.GetContract(System.Guid,System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Returns contract based on the id
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.Contracts20250515Controller.GetAllContracts(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.Contracts20240515Controller.GetAllContracts(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Returns all the user's contracts for issuing granular certificates
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.Contracts20250515Controller.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
-            <summary>
-            Edit the end date for multiple contracts
-            </summary>
-        </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContract,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
-            <summary>
-            Create a contract that activates granular certificate generation for a metering point
-            </summary>
-        </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
-            <summary>
-            Create contracts that activates granular certificate generation for a metering point
-            </summary>
-        </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.GetContract(System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
-            <summary>
-            Returns contract based on the id
-            </summary>
-        </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.GetAllContracts(API.ContractService.IContractService,System.Threading.CancellationToken)">
-            <summary>
-            Returns all the user's contracts for issuing granular certificates
-            </summary>
-        </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(System.Guid,API.Query.API.ApiModels.Requests.EditContractEndDate20230101,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate20230101},API.ContractService.IContractService,System.Threading.CancellationToken)">
-            <summary>
-            Edit the end date for contract
-            </summary>
-        </member>
-        <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.Contracts20240515Controller.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Edit the end date for multiple contracts
             </summary>

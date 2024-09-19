@@ -11,13 +11,6 @@
             <response code="200">Successful operation</response>
             <response code="400">Bad request</response>
         </member>
-        <member name="M:API.Cvr.Api.Controllers.CvrController.GetCvrCompanies(API.Cvr.Api.Dto.Requests.CvrRequestDto)">
-            <summary>
-            Get CVR registered company information for multiple CVR numbers
-            </summary>
-            <response code="200">Successful operation</response>
-            <response code="400">Bad request</response>
-        </member>
         <member name="P:API.Cvr.Api.Dto.Responses.CvrCompanyDto.CompanyCvr">
             <summary>
             Company CVR number
@@ -33,7 +26,7 @@
             Company address
             </summary>
         </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposal20240515Controller.CreateTransferAgreementProposal(System.Guid,API.Transfer.Api.Dto.Requests.CreateTransferAgreementProposal20240515)">
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.CreateTransferAgreementProposal(System.Guid,API.Transfer.Api.Dto.Requests.CreateTransferAgreementProposal)">
             <summary>
             Create TransferAgreementProposal
             </summary>
@@ -43,7 +36,7 @@
             <response code="400">Bad request</response>
             <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
         </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposal20240515Controller.GetTransferAgreementProposal(System.Guid,System.Guid)">
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.GetTransferAgreementProposal(System.Guid,System.Guid)">
             <summary>
             Get TransferAgreementProposal by Id
             </summary>
@@ -52,7 +45,7 @@
             <response code="200">Successful operation</response>
             <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
         </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposal20240515Controller.DeleteTransferAgreementProposal(System.Guid,System.Guid)">
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.DeleteTransferAgreementProposal(System.Guid,System.Guid)">
             <summary>
             Delete TransferAgreementProposal
             </summary>
@@ -60,45 +53,12 @@
             <param name="organizationId"></param>
             <response code="204">Successful operation</response>
         </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.CreateTransferAgreementProposal(API.Transfer.Api.Dto.Requests.CreateTransferAgreementProposal)">
-            <summary>
-            Create TransferAgreementProposal
-            </summary>
-            <param name="request">The request object containing the StartDate, EndDate and ReceiverTin needed for creating the Transfer Agreement.</param>
-            <response code="201">Created</response>
-            <response code="400">Bad request</response>
-            <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
-        </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.GetTransferAgreementProposal(System.Guid)">
-            <summary>
-            Get TransferAgreementProposal by Id
-            </summary>
-            <param name="id">Id of TransferAgreementProposal</param>
-            <response code="200">Successful operation</response>
-            <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
-        </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.DeleteTransferAgreementProposal(System.Guid)">
-            <summary>
-            Delete TransferAgreementProposal
-            </summary>
-            <param name="id">Id of TransferAgreementProposal</param>
-            <response code="204">Successful operation</response>
-        </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreements20240515Controller.Create(API.Transfer.Api.Dto.Requests.CreateTransferAgreement,System.Guid)">
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementsController.Create(API.Transfer.Api.Dto.Requests.CreateTransferAgreement,System.Guid)">
             <summary>
             Add a new Transfer Agreement
             </summary>
             <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
             <param name="organizationId"></param>
-            <response code="201">Successful operation</response>
-            <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
-            <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
-        </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementsController.Create(API.Transfer.Api.Dto.Requests.CreateTransferAgreement)">
-            <summary>
-            Add a new Transfer Agreement
-            </summary>
-            <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
             <response code="201">Successful operation</response>
             <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
             <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>

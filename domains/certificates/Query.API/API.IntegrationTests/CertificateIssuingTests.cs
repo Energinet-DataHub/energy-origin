@@ -36,6 +36,7 @@ public sealed class CertificateIssuingTests : TestBase
     {
         var gsrn = GsrnHelper.GenerateRandom();
         var subject = Guid.NewGuid().ToString();
+        var orgId = Guid.NewGuid().ToString();
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
@@ -91,9 +92,9 @@ public sealed class CertificateIssuingTests : TestBase
 
         factory.Start();
 
-        await factory.AddContract(subject, gsrn, utcMidnight, MeteringPointType.Production, measurementsWireMock);
+        await factory.AddContract(subject, orgId, gsrn, utcMidnight, MeteringPointType.Production, measurementsWireMock);
 
-        var client = factory.CreateWalletClient(subject);
+        var client = factory.CreateWalletClient(orgId);
 
         var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Any());
 

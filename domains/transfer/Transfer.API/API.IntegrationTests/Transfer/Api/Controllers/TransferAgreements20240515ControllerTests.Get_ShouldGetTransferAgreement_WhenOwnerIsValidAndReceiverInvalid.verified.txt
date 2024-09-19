@@ -1,8 +1,0 @@
-﻿{
-  Id: Guid_1,
-  StartDate: {Scrubbed},
-  EndDate: {Scrubbed},
-  SenderName: nrgi A/S,
-  SenderTin: 44332211,
-  ReceiverTin: 87654321
-}

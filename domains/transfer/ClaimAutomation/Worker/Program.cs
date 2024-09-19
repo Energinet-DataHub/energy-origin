@@ -1,5 +1,4 @@
 using System;
-using System.Security.Claims;
 using API.ClaimAutomation.Api.Repositories;
 using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Automation;
@@ -7,7 +6,6 @@ using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using DataContext;
 using EnergyOrigin.Setup;
-using EnergyOrigin.TokenValidation.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -34,8 +32,6 @@ builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOri
     .ValidateDataAnnotations().ValidateOnStart();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddOptions<TokenValidationOptions>().BindConfiguration(TokenValidationOptions.Prefix)
-    .ValidateDataAnnotations().ValidateOnStart();
 
 builder.Services.AddDbContext<ApplicationDbContext>(
     (sp, options) => options.UseNpgsql(
