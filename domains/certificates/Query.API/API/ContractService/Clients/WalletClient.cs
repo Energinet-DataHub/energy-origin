@@ -124,20 +124,12 @@ public class WalletClient : IWalletClient
 
     private void ValidateOwnerAndSubjectMatch(string owner)
     {
-        if (IsBearerTokenIssuedByB2C())
+        var identityDescriptor = new IdentityDescriptor(httpContextAccessor);
+        var accessDescriptor = new AccessDescriptor(identityDescriptor);
+        if (!accessDescriptor.IsAuthorizedToOrganization(Guid.Parse(owner)))
         {
-            var identityDescriptor = new IdentityDescriptor(httpContextAccessor);
-            var accessDescriptor = new AccessDescriptor(identityDescriptor);
-            if (!accessDescriptor.IsAuthorizedToOrganization(Guid.Parse(owner)))
-            {
-                throw new HttpRequestException("Owner must match subject");
-            }
+            throw new HttpRequestException("Owner must match subject");
         }
-    }
-
-    private bool IsBearerTokenIssuedByB2C()
-    {
-        return IdentityDescriptor.IsSupported(httpContextAccessor.HttpContext!);
     }
 }
 
