@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using API.Extensions;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using Microsoft.AspNetCore.Builder;
 using Serilog;
 
@@ -13,8 +15,15 @@ try
     Log.Information("Starting server.");
     WebApplication app = configuration.BuildApp(args);
 
-    await app.RunAsync();
-    Log.Information("Server stopped.");
+    if (args.Contains("--swagger"))
+    {
+        app.BuildSwaggerYamlFile(app.Environment, "measurements.yaml"); // Lets build
+    }
+    else
+    {
+        await app.RunAsync();
+        Log.Information("Server stopped.");
+    }
 }
 catch (Exception ex)
 {

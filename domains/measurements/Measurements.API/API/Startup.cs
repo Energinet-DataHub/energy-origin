@@ -8,6 +8,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Contracts;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using MassTransit;
@@ -16,7 +17,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API;
 
@@ -72,7 +75,10 @@ public class Startup
         services.AddEndpointsApiExplorer();
 
         services.AddSwagger("measurements");
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(c =>
+        {
+            c.DocumentFilter<AddMeasurementsTagDocumentFilter>();
+        });
 
         services.AddLogging();
 
@@ -160,6 +166,27 @@ public class Startup
             endpoints.MapGrpcService<API.Measurements.gRPC.V1.Services.MeasurementsService>();
             endpoints.MapControllers();
             endpoints.MapHealthChecks("/health");
+        });
+    }
+}
+
+public class AddMeasurementsTagDocumentFilter : IDocumentFilter
+{
+    public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+    {
+        swaggerDoc.Tags.Add(new OpenApiTag
+        {
+            Name = "Measurements",
+            Description = """
+                          Measurements in Energy Track & Trace provides endpoint for getting measurements and status for syncronization status.
+                          The status can either be:
+
+                          Pending,
+                          Created
+
+                          Pending is the state when a company has accepted terms and relation between down stream system is being made.
+                          Once the down stream system has accepted the relation the status will change to Created. First then we will start fetching data for an organization. This process is automated and should take no more than few minutes.
+                          """
         });
     }
 }

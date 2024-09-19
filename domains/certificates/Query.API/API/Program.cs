@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using API.ContractService;
 using API.Query.API;
 using Microsoft.AspNetCore.Builder;
@@ -16,17 +14,13 @@ using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.b2c;
 using API.IssuingContractCleanup;
 using API.MeasurementsSyncer.Metrics;
-using API.Query.API.Controllers;
 using API.UnitOfWork;
 using Contracts;
 using EnergyOrigin.Setup;
 using MassTransit;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
 using OpenTelemetry;
-using Swashbuckle.AspNetCore.Swagger;
-
+using EnergyOrigin.Setup.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -134,13 +128,7 @@ app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
 
 if (args.Contains("--swagger"))
 {
-    var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
-    var swagger = swaggerProvider.GetSwagger(ApiVersions.Version20240515);
-
-    File.WriteAllText(
-        Path.Combine(builder.Environment.ContentRootPath, "contracts.yaml"),
-        swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
-    );
+    app.BuildSwaggerYamlFile(builder.Environment, "contracts.yaml");
 }
 else
 {

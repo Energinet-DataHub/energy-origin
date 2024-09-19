@@ -1,7 +1,5 @@
 using System;
 using System.Text.Json.Serialization;
-using DataContext.Models;
-using DataContext.ValueObjects;
 
 namespace API.Query.API.ApiModels.Responses;
 
@@ -34,11 +32,11 @@ public class Contract
     /// Metering point type of the contract. Can be Production or Consumption
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public MeteringPointType MeteringPointType { get; set; }
+    public MeteringPointTypeResponse MeteringPointType { get; set; }
 
     public Technology? Technology { get; set; }
 
-    public static Contract CreateFrom(CertificateIssuingContract contract) =>
+    public static Contract CreateFrom(DataContext.Models.CertificateIssuingContract contract) =>
         new()
         {
             Id = contract.Id,
@@ -46,7 +44,7 @@ public class Contract
             StartDate = contract.StartDate.ToUnixTimeSeconds(),
             EndDate = contract.EndDate?.ToUnixTimeSeconds(),
             Created = contract.Created.ToUnixTimeSeconds(),
-            MeteringPointType = contract.MeteringPointType,
-            Technology = contract.Technology
+            MeteringPointType = contract.MeteringPointType.ToMeteringPointTypeResponse(),
+            Technology = Technology.From(contract.Technology)
         };
 }

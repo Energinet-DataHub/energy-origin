@@ -15,6 +15,8 @@ using DataContext;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Testing.Helpers;
@@ -282,10 +284,8 @@ public sealed class ContractTests : TestBase
         var createdContractUri = response.Headers.Location;
         var createdContract = await client.GetFromJsonAsync<Contract>(createdContractUri);
 
-        var expectedTechnology =
-            new DataContext.ValueObjects.Technology(technology.AibFuelCode, technology.AibTechCode);
-
-        createdContract!.Technology.Should().Be(expectedTechnology);
+        createdContract!.Technology!.AibFuelCode.Should().Be(technology.AibFuelCode);
+        createdContract!.Technology!.AibTechCode.Should().Be(technology.AibTechCode);
     }
 
     [Fact]

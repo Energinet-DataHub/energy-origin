@@ -7,6 +7,8 @@ using API;
 using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Dto.Responses;
 using API.MeteringPoints.Api.Models;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

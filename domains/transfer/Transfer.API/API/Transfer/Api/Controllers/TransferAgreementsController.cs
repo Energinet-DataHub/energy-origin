@@ -9,6 +9,8 @@ using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using FluentValidation.AspNetCore;

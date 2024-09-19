@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using Asp.Versioning;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +15,7 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [Authorize(Policy = Policy.FrontendWithoutTermsAccepted)]
 [ApiVersion(ApiVersions.Version20230101)]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class TermsController(IMediator mediator, IdentityDescriptor identityDescriptor) : ControllerBase
 {
     [HttpPost]

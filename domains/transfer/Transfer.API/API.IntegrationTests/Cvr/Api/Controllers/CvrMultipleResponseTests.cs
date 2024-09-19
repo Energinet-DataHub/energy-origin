@@ -7,6 +7,8 @@ using API.Cvr.Api.Dto.Requests;
 using API.Cvr.Api.Dto.Responses;
 using API.IntegrationTests.Factories;
 using API.Transfer.Api.Controllers;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using VerifyTests;
 using VerifyXunit;

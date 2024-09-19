@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using API.Transfer.Api.Controllers;
+using EnergyOrigin.Setup.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 

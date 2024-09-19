@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using API.Authorization._Features_;
 using API.ValueObjects;
 using Asp.Versioning;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -16,6 +18,7 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [ApiVersion(ApiVersions.Version20230101)]
 [Authorize(Policy.Frontend)]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class ConsentController(IMediator mediator, IdentityDescriptor identity) : ControllerBase
 {
     /// <summary>

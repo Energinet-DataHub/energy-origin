@@ -10,6 +10,8 @@ using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
