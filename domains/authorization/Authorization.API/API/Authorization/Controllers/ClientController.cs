@@ -42,4 +42,17 @@ public class ClientController : ControllerBase
         return Ok(new ClientConsentsResponse(queryResult.GetClientConsentsQueryResultItems.Select(x =>
             new ClientConsentsResponseItem(x.OrganizationId, x.OrganizationName.Value, x.Tin.Value))));
     }
+
+    [HttpGet]
+    [Route("api/authorization/client/{idpClientId}")]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [SwaggerOperation(
+        Summary = "Retrieves Client",
+        Description = "Retrieves info for client with id idpClientId"
+    )]
+    public async Task<ActionResult<ClientResponse>> GetClient([FromServices] ILogger<ClientResponse> logger, [FromRoute] Guid idpClientId)
+    {
+        var queryResult = await _mediator.Send(new GetClientQuery(new IdpClientId(idpClientId)));
+        return Ok(new ClientResponse(queryResult.IdpClientId.Value, queryResult.Name.Value, queryResult.RedirectUrl));
+    }
 }
