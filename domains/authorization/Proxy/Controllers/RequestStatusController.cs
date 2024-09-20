@@ -30,7 +30,7 @@ public class RequestStatusController : ProxyBase
     [Produces("application/json")]
     [Authorize(policy: Policy.FrontendOr3rdParty)]
     [ApiVersion(ApiVersions.Version1)]
-[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
+    [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
