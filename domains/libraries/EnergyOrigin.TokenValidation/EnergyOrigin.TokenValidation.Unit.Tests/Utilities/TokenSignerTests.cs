@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using EnergyOrigin.TokenValidation.Utilities;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 namespace EnergyOrigin.TokenValidation.Unit.Tests.Utilities;
 

@@ -1,3 +1,5 @@
+using System;
+
 namespace EnergyOrigin.TokenValidation.b2c;
 
 public class AccessDescriptor
