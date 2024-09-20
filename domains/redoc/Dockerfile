@@ -23,7 +23,7 @@ COPY domains/redoc/redoc-template.hbs .
 
 WORKDIR /html
 RUN redocly join /app/api-info.yaml /app/authorization.yaml /app/measurements.yaml /app/contracts.yaml /app/proxy.yaml -o /app/openapi.yaml
-RUN redocly build-docs /app/openapi.yaml -t redoc-template.hbs --output=/html/index.html
+RUN redocly build-docs /app/openapi.yaml -t /app/redoc-template.hbs --output=/html/index.html
 
 FROM nginxinc/nginx-unprivileged:alpine AS final
 
