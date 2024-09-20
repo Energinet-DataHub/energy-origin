@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentation</title>
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
+    />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        code {
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 8px;
+            border-radius: 8px;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="markdown-content"></div>
+    <script>
+      // Fetch and render the Markdown content
+      fetch("./guide_3rd_party.md")
+        .then((response) => response.text())
+        .then((text) => {
+          const markdownContent = document.getElementById("markdown-content");
+          markdownContent.innerHTML = marked.parse(text);
+          hljs.highlightAll(); // Manually trigger highlighting
+
+          // Manually add 'hljs' class to 'language-mermaid' blocks
+          document
+            .querySelectorAll("code.language-mermaid")
+            .forEach((block) => {
+              block.classList.add("hljs");
+            });
+        })
+        .catch((error) =>
+          console.error("Error loading Markdown content:", error)
+        );
+    </script>
+  </body>
+</html>
