@@ -10,7 +10,6 @@ using API.Configurations;
 using API.MeasurementsSyncer;
 using DataContext;
 using EnergyOrigin.ActivityLog;
-using EnergyOrigin.TokenValidation.Options;
 using EnergyOrigin.TokenValidation.b2c;
 using API.IssuingContractCleanup;
 using API.MeasurementsSyncer.Metrics;

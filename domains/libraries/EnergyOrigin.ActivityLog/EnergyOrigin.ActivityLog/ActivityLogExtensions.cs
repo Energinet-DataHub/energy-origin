@@ -46,27 +46,6 @@ public static class ActivityLogExtensions
             .RequireAuthorization(Policy.Frontend);
     }
 
-    public static RouteHandlerBuilder UseActivityLog(this IEndpointRouteBuilder builder)
-    {
-        var options = builder.ServiceProvider.GetRequiredService<IOptions<ActivityLogOptions>>();
-        var serviceName = options.Value.ServiceName;
-
-        ArgumentException.ThrowIfNullOrEmpty(serviceName);
-
-        return builder.MapPost(
-                $"api/{serviceName}/activity-log",
-                async (ActivityLogEntryFilterRequest request, [FromServices] IHttpContextAccessor HttpContextAccessor,
-                        [FromServices] IActivityLogEntryRepository activityLogEntryRepository)
-                    =>
-                {
-                    var user = new UserDescriptor(HttpContextAccessor.HttpContext!.User);
-                    return await GetActivityLogFromCvr(activityLogEntryRepository, user.Organization!.Tin, request);
-                })
-            .WithTags("Activity log")
-            .ExcludeFromDescription()
-            .RequireAuthorization();
-    }
-
     private static async Task<ActivityLogListEntryResponse> GetActivityLogFromCvr(IActivityLogEntryRepository activityLogEntryRepository, string cvr,
         ActivityLogEntryFilterRequest request)
     {

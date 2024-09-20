@@ -6,21 +6,17 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
 using API.Query.API.ApiModels.Requests;
-using API.Query.API.Controllers;
 using Asp.Versioning.ApiExplorer;
 using Contracts;
 using DataContext;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -54,7 +50,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
-    private byte[] PrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
     private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

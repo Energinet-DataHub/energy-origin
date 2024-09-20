@@ -1,22 +1,22 @@
 using System;
-using API.Options;
-using EnergyOrigin.TokenValidation.Options;
-using Microsoft.Extensions.Options;
+using API.Measurements.gRPC.V1.Services;
 using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
-using FluentValidation;
-using FluentValidation.AspNetCore;
+using API.Options;
 using Contracts;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.TokenValidation.Utilities;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using MassTransit;
+using Metertimeseries.V1;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -129,7 +129,7 @@ public class Startup
             var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
             o.Address = new Uri(options.Url);
         });
-        services.AddGrpcClient<Metertimeseries.V1.MeterTimeSeries.MeterTimeSeriesClient>((sp, o) =>
+        services.AddGrpcClient<MeterTimeSeries.MeterTimeSeriesClient>((sp, o) =>
         {
             var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
             o.Address = new Uri(options.Url);
@@ -161,7 +161,7 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapGrpcService<API.Measurements.gRPC.V1.Services.MeasurementsService>();
+            endpoints.MapGrpcService<MeasurementsService>();
             endpoints.MapControllers();
             endpoints.MapHealthChecks("/health");
         });
