@@ -52,7 +52,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -93,7 +93,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -126,7 +126,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -158,7 +158,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -183,7 +183,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
@@ -208,7 +208,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -233,7 +233,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -258,7 +258,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
@@ -283,7 +283,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
@@ -309,7 +309,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var now = DateTimeOffset.Now;
 
@@ -339,7 +339,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var now = DateTimeOffset.Now;
 
@@ -371,7 +371,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -395,7 +395,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var now = DateTimeOffset.Now.ToUnixTimeSeconds();
         var futureDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -423,7 +423,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -445,7 +445,7 @@ public class ContractsV20240515Tests
     {
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var response = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}");
         response!.Result.Should().BeEmpty();
@@ -456,7 +456,7 @@ public class ContractsV20240515Tests
     {
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var contractId = Guid.NewGuid().ToString();
         using var response = await client.GetAsync($"api/certificates/contracts/{contractId}?organizationId={orgId}");
@@ -471,7 +471,7 @@ public class ContractsV20240515Tests
 
         var subject1 = Guid.NewGuid();
         var orgId1 = Guid.NewGuid();
-        using var client1 = factory.CreateB2CAuthenticatedClient(subject1, orgId1, apiVersion: ApiVersions.Version20240515);
+        using var client1 = factory.CreateB2CAuthenticatedClient(subject1, orgId1, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -491,7 +491,7 @@ public class ContractsV20240515Tests
 
         var subject2 = Guid.NewGuid();
         var orgId2 = Guid.NewGuid();
-        using var client2 = factory.CreateB2CAuthenticatedClient(subject2, orgId2, apiVersion: ApiVersions.Version20240515);
+        using var client2 = factory.CreateB2CAuthenticatedClient(subject2, orgId2, apiVersion: ApiVersions.Version1);
 
         using var getSpecificContractResponse = await client2.GetAsync($"api/certificates/contracts/{createdContractId}?organizationId={orgId2}");
         getSpecificContractResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -505,7 +505,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
@@ -533,7 +533,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -561,7 +561,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
@@ -589,7 +589,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(1).ToUnixTimeSeconds();
         var endDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(3).ToUnixTimeSeconds();
@@ -637,7 +637,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(1).ToUnixTimeSeconds();
         var startDate1 = UnixTimestamp.Now().ToDateTimeOffset().AddDays(2).ToUnixTimeSeconds();
@@ -687,7 +687,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var putBody = new EditContracts([
             new EditContractEndDate
@@ -713,7 +713,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var start = DateTimeOffset.Now.AddDays(3);
 
@@ -752,7 +752,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version20240515);
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var start = DateTimeOffset.Now.AddDays(3);
 
@@ -771,7 +771,7 @@ public class ContractsV20240515Tests
 
         var newSubject = Guid.NewGuid();
         var newOrgId = Guid.NewGuid();
-        using var client2 = factory.CreateB2CAuthenticatedClient(newSubject, newOrgId, apiVersion: ApiVersions.Version20240515);
+        using var client2 = factory.CreateB2CAuthenticatedClient(newSubject, newOrgId, apiVersion: ApiVersions.Version1);
         var putBody = new EditContracts([
             new EditContractEndDate
             {
