@@ -1,24 +1,24 @@
 <html>
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>Energy Track & Trace™ - Developer</title>
     <meta
-            name="description"
-            content="Energy Track & Trace™ is your reliable source for tracking and certification of green power. We prove where your power comes from."
+      name="description"
+      content="Energy Track & Trace™ is your reliable source for tracking and certification of green power. We prove where your power comes from."
     />
     <meta
-            name="keywords"
-            content="green power, green energy, tracking, certification, granular certificates, Energy Track & Trace, sustainable energy, renewable energy"
+      name="keywords"
+      content="green power, green energy, tracking, certification, granular certificates, Energy Track & Trace, sustainable energy, renewable energy"
     />
     <meta name="author" content="Energy Track & Trace™" />
     <meta property="og:title" content="Energy Track & Trace™" />
     <meta
-            property="og:description"
-            content="Energy Track & Trace™ is your reliable source for tracking and certification of green power. We prove where your power comes from."
+      property="og:description"
+      content="Energy Track & Trace™ is your reliable source for tracking and certification of green power. We prove where your power comes from."
     />
     <meta
-            property="og:image"
-            content="https://energytrackandtrace.dk/assets/landing-page/linkedin-poster.jpg"
+      property="og:image"
+      content="https://energytrackandtrace.dk/assets/landing-page/linkedin-poster.jpg"
     />
     <meta property="og:url" content="https://energytrackandtrace.dk/developer" />
 
@@ -31,36 +31,18 @@
     <link rel="manifest" href="/assets/favicon/site.webmanifest" />
 
     <style>
-        body { padding: 0; margin: 0; }
-        .version-switcher {
-            position: fixed;
-            top: 10px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .version-switcher select {
-            padding: 10px;
-            font-size: 16px;
-        }
+      body { padding: 0; margin: 0; }
     </style>
     {{{redocHead}}}
     {{#unless disableGoogleFont}}<link
-            href='https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700'
-            rel='stylesheet'
-    />{{/unless}}
+        href='https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700'
+        rel='stylesheet'
+      />{{/unless}}
 
     <!-- Cookie information -->
     <script id="CookieConsent" src="https://policy.app.cookieinformation.com/uc.js" data-culture="EN" data-gcm-version="2.0" type="text/javascript"></script>
-</head>
-<body>
-<div class="version-switcher">
-    <label for="versionSelect">Select API Version: </label>
-    <select id="versionSelect" disabled>
-        <option value="1" selected>Version 1 (Current)</option>
-    </select>
-</div>
-
-{{{redocHTML}}}
-</body>
+  </head>
+  <body>
+    {{{redocHTML}}}
+  </body>
 </html>
