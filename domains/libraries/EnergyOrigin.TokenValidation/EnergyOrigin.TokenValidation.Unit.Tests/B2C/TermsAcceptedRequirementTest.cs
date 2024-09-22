@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;

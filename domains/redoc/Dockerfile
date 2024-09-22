@@ -19,10 +19,11 @@ COPY --from=builder /app/domains/certificates/Query.API/API/contracts.yaml .
 COPY --from=builder /app/domains/authorization/Authorization.API/API/authorization.yaml .
 COPY --from=builder /app/domains/measurements/Measurements.API/API/measurements.yaml .
 COPY domains/redoc/api-info.yaml .
+COPY domains/redoc/redoc-template.hbs .
 
 WORKDIR /html
 RUN redocly join /app/api-info.yaml /app/authorization.yaml /app/measurements.yaml /app/contracts.yaml /app/proxy.yaml -o /app/openapi.yaml
-RUN redocly build-docs /app/openapi.yaml --output=/html/index.html
+RUN redocly build-docs /app/openapi.yaml -t /app/redoc-template.hbs --output=/html/index.html
 
 FROM nginxinc/nginx-unprivileged:alpine AS final
 
