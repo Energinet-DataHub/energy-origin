@@ -1,5 +1,3 @@
-using System.Web;
-
 namespace Oidc.Mock;
 
 public class RequestLoggerMiddleware
@@ -17,24 +15,14 @@ public class RequestLoggerMiddleware
             return;
         }
 
-        // Sanitize all necessary parts of the request
-        var sanitizedScheme = HttpUtility.UrlEncode(req.Scheme);
-        var sanitizedHost = HttpUtility.UrlEncode(req.Host.Value);
-        var sanitizedMethod = HttpUtility.UrlEncode(req.Method);
-        var sanitizedPathBase = HttpUtility.UrlEncode(req.PathBase.Value);
-        var sanitizedPath = HttpUtility.UrlEncode(req.Path.Value);
-        var sanitizedQueryString = HttpUtility.UrlEncode(req.QueryString.Value);
-
-        // Log the sanitized request data
-        logger.LogDebug("Request - (Scheme: {Scheme} Host: {Host}) {Method} (PathBase: {PathBase}) {Location}",
-            sanitizedScheme,
-            sanitizedHost,
-            sanitizedMethod,
-            sanitizedPathBase,
-            $"{sanitizedPath}{sanitizedQueryString}");
-
+        var sanitizedPathBase = req.PathBase.Value!.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+        var sanitizedPath = req.Path.Value!.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+        var sanitizedQueryString = req.QueryString.Value!.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+        var sanitizedScheme = req.Scheme.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+        var sanitizedHost = req.Host.Value!.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+        var sanitizedMethod = req.Method.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+        logger.LogDebug("Request - (Scheme: {Scheme} Host: {Host}) {Method} (PathBase: {PathBase}) {Location}", sanitizedScheme, sanitizedHost, sanitizedMethod, sanitizedPathBase, $"{sanitizedPath}{sanitizedQueryString}");
         await next(httpContext);
-
         logger.LogDebug("Response - {StatusCode}", httpContext.Response.StatusCode);
     }
 }
