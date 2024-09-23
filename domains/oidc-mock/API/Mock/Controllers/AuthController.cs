@@ -65,8 +65,9 @@ public class AuthController : Controller
 
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
-            logger.LogDebug($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
-            return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
+            var sanitizedGrantType = Request.Method.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+            logger.LogDebug($"Invalid grant_type. Must be 'authorization_code', but was '{sanitizedGrantType}'");
+            return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{sanitizedGrantType}'");
         }
 
         var (isValid, validationError) = clientCollection.Validate(client_id, client_secret, redirect_uri);
