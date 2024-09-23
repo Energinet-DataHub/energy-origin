@@ -33,7 +33,30 @@ Say you want to create a new api version. The following steps are taken:
       [ApiVersion("1", Deprecated = true)] // <--- Append flag to the annotation
       [Route("api/claim-automation")]
       ```
-3. **Example of Versioned Endpoints:**
+3. **Sunsetting Deprecated Versions:**
+   - Deprecated API versions should be scheduled for removal by adding a sunset policy.
+   - We use a default notice period of 6 months from the date the version is deprecated.
+   - When a version is marked as deprecated, configure the sunset policy using the following code to the `ApiVersioningOptions` configuration, assuming the deprecated version is `1`:
+
+```csharp
+    public static void AddVersioningToApi(this IServiceCollection services)
+    {
+        services.AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = false;
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new HeaderApiVersionReader("X-API-Version");
+
+                options.Policies.Sunset(int.Parse(ApiVersions.Version1)) // <--- Sunset policy for deprecated version 1
+                    .Effective(new DateTimeOffset(2025, 03, 23, 0, 0, 0, TimeSpan.Zero));
+
+            })
+            .AddMvc()
+            .AddApiExplorer();
+    }
+```
+
+4. **Example of Versioned Endpoints:**
 
 ```csharp
     [Authorize]
