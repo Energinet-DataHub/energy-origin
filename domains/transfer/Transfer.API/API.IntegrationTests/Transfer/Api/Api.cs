@@ -22,7 +22,7 @@ public class Api
     private readonly string tin;
     private readonly string cpn;
     private readonly HttpClient authenticatedClient;
-    private readonly string apiVersion = ApiVersions.Version20240515;
+    private readonly string apiVersion = ApiVersions.Version1;
 
     public Api(TransferAgreementsApiWebApplicationFactory factory, ITestOutputHelper output)
     {

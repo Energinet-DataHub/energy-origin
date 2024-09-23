@@ -13,7 +13,8 @@ namespace API.Authorization.Controllers;
 
 [ApiController]
 [Authorize(Policy = Policy.B2CInternal)]
-[ApiVersion(ApiVersions.Version20230101)]
+[ApiVersion(ApiVersions.Version1)]
+[ApiVersion(ApiVersions.Version20230101, Deprecated = true)]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class AdminController : ControllerBase
 {

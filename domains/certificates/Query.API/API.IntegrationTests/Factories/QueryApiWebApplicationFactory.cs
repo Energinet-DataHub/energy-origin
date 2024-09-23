@@ -172,7 +172,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     }
 
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
-        string apiVersion = ApiVersions.Version20240515, bool termsAccepted = true)
+        string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
     {
         client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
@@ -241,7 +241,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         Technology technology = null!)
     {
         measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
-        var client = CreateB2CAuthenticatedClient(Guid.Parse(subject), Guid.Parse(orgId), apiVersion: ApiVersions.Version20240515);
+        var client = CreateB2CAuthenticatedClient(Guid.Parse(subject), Guid.Parse(orgId), apiVersion: ApiVersions.Version1);
         var body = new CreateContracts([
             new CreateContract
             {

@@ -29,7 +29,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var organizationId = orgIds[0];
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
-        request.Headers.Add("X-API-Version", ApiVersions.Version20240515);
+        request.Headers.Add("X-API-Version", ApiVersions.Version1);
 
         var response = await client.SendAsync(request);
 
@@ -44,7 +44,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var organizationId = orgIds[0];
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/unknown/path?organizationId={organizationId}");
-        request.Headers.Add("X-API-Version", ApiVersions.Version20240515);
+        request.Headers.Add("X-API-Version", ApiVersions.Version1);
 
         var response = await client.SendAsync(request);
 
@@ -106,7 +106,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var organizationId = orgIds[0];
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
-        request.Headers.Add("X-API-Version", ApiVersions.Version20240515);
+        request.Headers.Add("X-API-Version", ApiVersions.Version1);
 
         var response = await client.SendAsync(request);
 

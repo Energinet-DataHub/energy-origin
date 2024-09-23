@@ -17,7 +17,8 @@ namespace API.Transfer.Api.Controllers;
 
 [ApiController]
 [Authorize(Policy.Frontend)]
-[ApiVersion(ApiVersions.Version20240515)]
+[ApiVersion(ApiVersions.Version1)]
+[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [Route("api/transfer/transfer-agreement-proposals")]
 public class TransferAgreementProposalController(
     IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
