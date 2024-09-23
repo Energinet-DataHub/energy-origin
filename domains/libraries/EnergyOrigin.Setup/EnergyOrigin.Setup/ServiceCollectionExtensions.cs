@@ -33,11 +33,11 @@ public static class ServiceCollectionExtensions
                 options.ReportApiVersions = true;
                 options.ApiVersionReader = new HeaderApiVersionReader("X-API-Version");
 
-                options.Policies.Sunset(ApiVersions.Version20230101)
-                    .Effective(2025, 03, 23);
+                options.Policies.Sunset(int.Parse(ApiVersions.Version20230101))
+                    .Effective(new DateTimeOffset(2025, 03, 23, 0, 0 ,0, TimeSpan.Zero));
 
-                options.Policies.Sunset(ApiVersions.Version20240515)
-                    .Effective(2025, 03, 23);
+                options.Policies.Sunset(int.Parse(ApiVersions.Version20240515))
+                    .Effective(new DateTimeOffset(2025, 03, 23, 0, 0 ,0, TimeSpan.Zero));
             })
             .AddMvc()
             .AddApiExplorer();
