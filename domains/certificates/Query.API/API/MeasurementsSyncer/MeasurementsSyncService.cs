@@ -168,7 +168,7 @@ public class MeasurementsSyncService
         }
         catch (Exception e)
         {
-            logger.LogError(e, "An error occured: {error}, no measurements were published, MeteringPoint: {gsrn}", e.Message, syncInfo.Gsrn);
+            logger.LogWarning(e, "An error occured: {error}, no measurements were published, MeteringPoint: {gsrn}", e.Message, syncInfo.Gsrn);
         }
     }
 }
