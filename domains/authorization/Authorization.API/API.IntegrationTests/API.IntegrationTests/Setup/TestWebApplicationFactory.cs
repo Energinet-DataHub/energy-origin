@@ -105,7 +105,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         var httpClient = CreateClient();
         var token = GenerateToken(sub, name, orgIds, subType, orgCvr, orgName, termsAccepted);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        httpClient.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20230101);
+        httpClient.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
         return httpClient;
     }
 

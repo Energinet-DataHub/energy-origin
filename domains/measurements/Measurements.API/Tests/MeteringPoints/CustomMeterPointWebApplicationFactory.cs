@@ -96,12 +96,12 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240515);
+        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
         return client;
     }
 
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
-        string apiVersion = ApiVersions.Version20240515, bool termsAccepted = true)
+        string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =

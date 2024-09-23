@@ -132,7 +132,7 @@ namespace Tests.Fixtures
             EnsureServer(environment);
 
             var client = _server!.CreateClient();
-            client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240515);
+            client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
             return client;
         }
 

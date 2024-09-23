@@ -117,7 +117,7 @@ app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 if (args.Contains("--swagger"))
 {
-    app.BuildSwaggerYamlFile(builder.Environment, "authorization.yaml", ApiVersions.Version20230101);
+    app.BuildSwaggerYamlFile(builder.Environment, "authorization.yaml", ApiVersions.Version1);
 }
 else
 {

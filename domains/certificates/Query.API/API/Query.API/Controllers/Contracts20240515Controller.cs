@@ -20,7 +20,8 @@ namespace API.Query.API.Controllers;
 
 [Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiController]
-[ApiVersion(ApiVersions.Version20240515)]
+[ApiVersion(ApiVersions.Version1)]
+[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
 {
     /// <summary>

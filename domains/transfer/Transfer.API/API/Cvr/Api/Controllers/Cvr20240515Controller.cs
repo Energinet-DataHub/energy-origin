@@ -17,7 +17,8 @@ namespace API.Cvr.Api.Controllers;
 
 [Authorize(Policy.Frontend)]
 [ApiController]
-[ApiVersion(ApiVersions.Version20240515)]
+[ApiVersion(ApiVersions.Version1)]
+[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [Route("api/transfer/cvr")]
 public class Cvr20240515Controller(CvrClient client) : Controller
 {
