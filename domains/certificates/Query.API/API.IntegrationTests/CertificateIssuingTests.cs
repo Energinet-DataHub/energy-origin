@@ -83,7 +83,6 @@ public sealed class CertificateIssuingTests : TestBase
         var mockedMeteringPointsResponse = new MeteringPointsResponse
         {
             MeteringPoints = { meteringPoint }
-
         };
 
         meteringpointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
