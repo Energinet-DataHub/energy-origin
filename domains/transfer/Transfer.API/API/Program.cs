@@ -79,7 +79,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
-app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet).HasApiVersion(ApiVersions.Version1AsInt);
+app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
+    .HasApiVersion(ApiVersions.Version1AsInt)
+    .HasApiVersion(ApiVersions.Version20240515AsInt);
 
 app.Run();
 
