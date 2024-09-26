@@ -25,7 +25,7 @@ WORKDIR /html
 RUN redocly join /app/api-info.yaml /app/authorization.yaml /app/measurements.yaml /app/contracts.yaml /app/proxy.yaml -o /app/openapi.yaml
 RUN redocly build-docs /app/openapi.yaml -t /app/redoc-template.hbs --output=/html/index.html
 
-FROM nginxinc/nginx-unprivileged:alpine AS final
+FROM nginxinc/nginx-unprivileged:alpine-slim AS final
 
 COPY domains/redoc/health.html /usr/share/nginx/html/health/index.html
 COPY domains/redoc/nginx.conf /etc/nginx/conf.d/default.conf

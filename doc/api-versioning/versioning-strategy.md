@@ -13,14 +13,14 @@ Say you want to create a new api version. The following steps are taken:
     - Necessary modifications are then applied to these duplicates, to incorporate the required changes.
     - The new endpoint is then versioned by appending the new version number to the `ApiVersion` annotation. An example is shown below:
       ```csharp
-      [ApiVersion("20240101")] // <--- Append new version number to the annotation
+      [ApiVersion("2")] // <--- Append new version number to the annotation
       [Route("api/claim-automation")]
       ```
     - Since a new API version has been created, the other endpoints, that are not affected by the breaking change, need to be have their versions updated. This is done in the controller class's `ApiVersion` annotation. An example is shown below:
       ```csharp
       [Authorize]
       [ApiController]
-      [ApiVersion("20230101")] // <--- Update version number to the annotation
+      [ApiVersion("2")] // <--- Update version number to the annotation
       [Route("api/claim-automation")]
       ```
 
@@ -30,22 +30,45 @@ Say you want to create a new api version. The following steps are taken:
       ```csharp
       [Authorize]
       [ApiController]
-      [ApiVersion("20230101", Deprecated = true)] // <--- Append flag to the annotation
+      [ApiVersion("1", Deprecated = true)] // <--- Append flag to the annotation
       [Route("api/claim-automation")]
       ```
-3. **Example of Versioned Endpoints:**
+3. **Sunsetting Deprecated Versions:**
+   - Deprecated API versions should be scheduled for removal by adding a sunset policy.
+   - We use a default notice period of 6 months from the date the version is deprecated.
+   - When a version is marked as deprecated, configure the sunset policy using the following code to the `ApiVersioningOptions` configuration, assuming the deprecated version is `1`:
+
+```csharp
+    public static void AddVersioningToApi(this IServiceCollection services)
+    {
+        services.AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = false;
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new HeaderApiVersionReader("X-API-Version");
+
+                options.Policies.Sunset(int.Parse(ApiVersions.Version1)) // <--- Sunset policy for deprecated version 1
+                    .Effective(new DateTimeOffset(2025, 03, 23, 0, 0, 0, TimeSpan.Zero));
+
+            })
+            .AddMvc()
+            .AddApiExplorer();
+    }
+```
+
+4. **Example of Versioned Endpoints:**
 
 ```csharp
     [Authorize]
     [ApiController]
-    [ApiVersion("20230101", Deprecated = true)] // <--- Old Version remains the same, but is marked as deprecated.
-    [ApiVersion("20240101")] // <--- New version added, to indicate controller has endppoints for this version as well.
+    [ApiVersion("1", Deprecated = true)] // <--- Old Version remains the same, but is marked as deprecated.
+    [ApiVersion("2")] // <--- New version added, to indicate controller has endppoints for this version as well.
     [Route("api/claim-automation")]
     public class ClaimAutomationController : ControllerBase
     {
 
     // Old GET endpoint, available only in the deprecated version.
-    [ApiVersion("20230101")] // <--- Explicitly state that the old GET endpoint, is to only appear in the old version
+    [ApiVersion("1")] // <--- Explicitly state that the old GET endpoint, is to only appear in the old version
     [HttpGet]
     public async Task<> GetClaimAutomationsOldVersion()
     {
@@ -53,7 +76,7 @@ Say you want to create a new api version. The following steps are taken:
     }
 
     // New GET endpoint, available only in the new version.
-    [ApiVersion("20240101")] // <--- Explicitly state that the new GET endpoint, is to only appear in the new version
+    [ApiVersion("2")] // <--- Explicitly state that the new GET endpoint, is to only appear in the new version
     [HttpGet]
     public async Task<ActionResult> GetClaimAutomationsNewVersion()
     {

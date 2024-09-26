@@ -13,7 +13,8 @@ namespace API.Query.API.Controllers;
 
 [Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiController]
-[ApiVersion(ApiVersions.Version20240515)]
+[ApiVersion(ApiVersions.Version1)]
+[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class Certificates20240515Controller : ControllerBase
 {

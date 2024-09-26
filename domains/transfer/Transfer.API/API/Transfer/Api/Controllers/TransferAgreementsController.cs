@@ -21,7 +21,8 @@ namespace API.Transfer.Api.Controllers;
 
 [Authorize(Policy.Frontend)]
 [ApiController]
-[ApiVersion(ApiVersions.Version20240515)]
+[ApiVersion(ApiVersions.Version1)]
+[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [Route("api/transfer/transfer-agreements")]
 public class TransferAgreementsController(
     IProjectOriginWalletClient walletClient,

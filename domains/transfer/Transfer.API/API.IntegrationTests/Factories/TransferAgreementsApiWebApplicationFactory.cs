@@ -148,12 +148,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public HttpClient CreateUnauthenticatedClient()
     {
         var client = CreateClient();
-        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240515);
+        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
         return client;
     }
 
     public HttpClient CreateAuthenticatedClient(string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Producent A/S", string apiVersion = ApiVersions.Version20240515)
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Producent A/S", string apiVersion = ApiVersions.Version1)
     {
         var client = CreateClient();
         AuthenticateHttpClient(client, sub: sub, tin: tin, name, actor, cpn, apiVersion: apiVersion);
@@ -162,7 +162,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
 
     private HttpClient AuthenticateHttpClient(HttpClient client, string sub, string tin = "11223344", string name = "Peter Producent",
-        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Producent A/S", string apiVersion = ApiVersions.Version20240515)
+        string actor = "d4f32241-442c-4043-8795-a4e6bf574e7f", string cpn = "Producent A/S", string apiVersion = ApiVersions.Version1)
     {
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", GenerateB2CDummyToken(sub: sub, tin: tin, name: name, cpn: cpn));
@@ -172,13 +172,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     }
 
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
-        string apiVersion = ApiVersions.Version20240515, bool termsAccepted = true)
+        string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer",
                 GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted));
-        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version20240515);
+        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
 
         return client;
     }

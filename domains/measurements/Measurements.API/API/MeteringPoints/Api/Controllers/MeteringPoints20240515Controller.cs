@@ -17,7 +17,8 @@ namespace API.MeteringPoints.Api.Controllers;
 
 [Authorize(Policy.FrontendOr3rdParty)]
 [ApiController]
-[ApiVersion(ApiVersions.Version20240515)]
+[ApiVersion(ApiVersions.Version1)]
+[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [Route("api/measurements/meteringpoints")]
 public class MeteringPoints20240515Controller : ControllerBase
 {
