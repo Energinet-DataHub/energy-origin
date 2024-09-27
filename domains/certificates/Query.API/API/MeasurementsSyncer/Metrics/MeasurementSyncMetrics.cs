@@ -18,9 +18,6 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
     private long _numberOfMeasurementsPublishedGauge;
     private ObservableGauge<long> NumberOfMeasurementsPublishedGauge { get; }
 
-    private long _timeSinceLastMeasurementSyncerRun;
-    private ObservableGauge<long> TimeSinceLastMeasurementSyncerRun { get; }
-
     private long _numberOfContractsBeingSynced;
     private long _numberOfContractsBeingSyncedCounter;
     private ObservableCounter<long> NumberOfContractsBeingSyncedCounter { get; }
@@ -38,6 +35,18 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
     private ObservableCounter<long> NumberOfRecoveredMeasurementsCounter { get; }
     private long _numberOfRecoveredMeasurementsGauge;
     private ObservableGauge<long> NumberOfRecoveredMeasurementsGauge { get; }
+
+    private long _numberOfDuplicateMeasurements;
+    private long _numberOfDuplicateMeasurementsCounter;
+    private ObservableCounter<long> NumberOfDuplicateMeasurementsCounter { get; }
+    private long _numberOfDuplicateMeasurementsGauge;
+    private ObservableGauge<long> NumberOfDuplicateMeasurementsGauge { get; }
+
+    private long _numberOfMeasurementsQuantityMissingFlag;
+    private long _numberOfMeasurementsQuantityMissingFlagCounter;
+    private ObservableCounter<long> NumberOfMeasurementsQuantityMissingFlagCounter { get; }
+    private long _numberOfMeasurementsQuantityMissingFlagGauge;
+    private ObservableGauge<long> NumberOfMeasurementsQuantityMissingFlagGauge { get; }
 
     private long _numberOfMeasurementsQuantityTooLow;
     private long _numberOfMeasurementsQuantityTooLowCounter;
@@ -60,7 +69,6 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
     public MeasurementSyncMetrics()
     {
         var meter = new Meter(MetricName);
-        TimeSinceLastMeasurementSyncerRun = meter.CreateObservableGauge("ett_certificate_time_since_last_measurement_syncer_run", () => _timeSinceLastMeasurementSyncerRun, unit: "s");
 
         NumberOfMeasurementsFetchedCounter = meter.CreateObservableCounter("ett_certificate_measurements_fetched", () => _numberOfMeasurementsFetchedCounter);
         NumberOfMeasurementsFetchedGauge = meter.CreateObservableGauge("ett_certificate_measurements_fetched_gauge", () => _numberOfMeasurementsFetchedGauge);
@@ -76,6 +84,12 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
 
         NumberOfRecoveredMeasurementsCounter = meter.CreateObservableCounter("ett_certificate_recovered_measurements", () => _numberOfRecoveredMeasurementsCounter);
         NumberOfRecoveredMeasurementsGauge = meter.CreateObservableGauge("ett_certificate_recovered_measurements_gauge", () => _numberOfRecoveredMeasurementsGauge);
+
+        NumberOfDuplicateMeasurementsCounter = meter.CreateObservableCounter("ett_certificate_duplicate_measurements", () => _numberOfDuplicateMeasurementsCounter);
+        NumberOfDuplicateMeasurementsGauge = meter.CreateObservableGauge("ett_certificate_duplicate_measurements_gauge", () => _numberOfDuplicateMeasurementsGauge);
+
+        NumberOfMeasurementsQuantityMissingFlagCounter = meter.CreateObservableCounter("ett_certificate_measurement_quantity_missing_flag_count", () => _numberOfMeasurementsQuantityMissingFlagCounter);
+        NumberOfMeasurementsQuantityMissingFlagGauge = meter.CreateObservableGauge("ett_certificate_measurement_quantity_missing_flag_gauge", () => _numberOfMeasurementsQuantityMissingFlagGauge);
 
         NumberOfMeasurementsQuantityTooLowCounter = meter.CreateObservableCounter("ett_certificate_measurement_quantity_too_low_count", () => _numberOfMeasurementsQuantityTooLowCounter);
         NumberOfMeasurementsQuantityTooLowGauge = meter.CreateObservableGauge("ett_certificate_measurement_quantity_too_low_gauge", () => _numberOfMeasurementsQuantityTooLowGauge);
@@ -104,6 +118,12 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
         _numberOfRecoveredMeasurementsGauge = _numberOfRecoveredMeasurementsCounter - _numberOfRecoveredMeasurements;
         _numberOfRecoveredMeasurements = _numberOfRecoveredMeasurementsCounter;
 
+        _numberOfDuplicateMeasurementsGauge = _numberOfDuplicateMeasurementsCounter - _numberOfDuplicateMeasurements;
+        _numberOfDuplicateMeasurements = _numberOfDuplicateMeasurementsCounter;
+
+        _numberOfMeasurementsQuantityMissingFlagGauge = _numberOfMeasurementsQuantityMissingFlagCounter - _numberOfMeasurementsQuantityMissingFlag;
+        _numberOfMeasurementsQuantityMissingFlag = _numberOfMeasurementsQuantityMissingFlagCounter;
+
         _numberOfMeasurementsQuantityTooLowGauge = _numberOfMeasurementsQuantityTooLowCounter - _numberOfMeasurementsQuantityTooLow;
         _numberOfMeasurementsQuantityTooLow = _numberOfMeasurementsQuantityTooLowCounter;
 
@@ -124,16 +144,6 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
         _numberOfMeasurementsPublishedCounter += numberOfMeasurementsPublished;
     }
 
-    public void UpdateTimeSinceLastMeasurementSyncerRun(long epochTimeInSeconds)
-    {
-        _timeSinceLastMeasurementSyncerRun = epochTimeInSeconds;
-    }
-
-    public void UpdateTimePeriodForSearchingForGSRN(long epochTimeInSeconds)
-    {
-        _timeSinceLastMeasurementSyncerRun = epochTimeInSeconds;
-    }
-
     public void AddNumberOfMissingMeasurement(long numberOfMissingMeasurements)
     {
         _numberOfMissingMeasurementsCounter += numberOfMissingMeasurements;
@@ -144,9 +154,19 @@ public class MeasurementSyncMetrics : IMeasurementSyncMetrics
         _numberOfRecoveredMeasurementsCounter += numberOfRecoveredMeasurements;
     }
 
+    public void AddNumberOfDuplicateMeasurements(long numberOfDuplicateMeasurements)
+    {
+        _numberOfDuplicateMeasurementsCounter += numberOfDuplicateMeasurements;
+    }
+
     public void AddNumberOfContractsBeingSynced(long numberOfContractsBeingSynced)
     {
         _numberOfContractsBeingSyncedCounter += numberOfContractsBeingSynced;
+    }
+
+    public void AddFilterDueQuantityMissingFlag(long numberOfMeasurementsQuantityMissingFlag)
+    {
+        _numberOfMeasurementsQuantityMissingFlagCounter += numberOfMeasurementsQuantityMissingFlag;
     }
 
     public void AddFilterDueQuantityTooLow(long numberOfMeasurementsQuantityTooLow)

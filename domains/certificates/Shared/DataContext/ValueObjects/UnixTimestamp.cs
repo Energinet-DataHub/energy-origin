@@ -30,6 +30,11 @@ public class UnixTimestamp : ValueObject
         return new UnixTimestamp(Seconds - Seconds % SecondsPerHour);
     }
 
+    public UnixTimestamp RoundToNextHour()
+    {
+        return Seconds % SecondsPerHour > 0 ? new UnixTimestamp(Seconds + (3600 - Seconds % SecondsPerHour)) : this;
+    }
+
     public TimeSpan TimeUntilNextHour()
     {
         var lastHour = RoundToLatestHour();
@@ -50,6 +55,11 @@ public class UnixTimestamp : ValueObject
     public static UnixTimestamp Create(DateTimeOffset timestamp)
     {
         return new UnixTimestamp(timestamp.ToUnixTimeSeconds());
+    }
+
+    public static UnixTimestamp Max(UnixTimestamp a, UnixTimestamp b)
+    {
+        return a.Seconds > b.Seconds ? a : b;
     }
 
     public static UnixTimestamp Empty()

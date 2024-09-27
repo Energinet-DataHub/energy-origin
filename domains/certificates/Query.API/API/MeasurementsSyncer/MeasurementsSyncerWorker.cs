@@ -15,10 +15,10 @@ namespace API.MeasurementsSyncer;
 
 public class MeasurementsSyncerWorker : BackgroundService
 {
-    private readonly IContractState contractState;
-    private readonly ILogger<MeasurementsSyncerWorker> logger;
-    private readonly IServiceScopeFactory scopeFactory;
-    private readonly MeasurementsSyncOptions options;
+    private readonly IContractState _contractState;
+    private readonly ILogger<MeasurementsSyncerWorker> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly MeasurementsSyncOptions _options;
 
     public MeasurementsSyncerWorker(
         ILogger<MeasurementsSyncerWorker> logger,
@@ -26,23 +26,23 @@ public class MeasurementsSyncerWorker : BackgroundService
         IOptions<MeasurementsSyncOptions> options,
         IServiceScopeFactory scopeFactory)
     {
-        this.contractState = contractState;
-        this.logger = logger;
-        this.scopeFactory = scopeFactory;
-        this.options = options.Value;
+        _contractState = contractState;
+        _logger = logger;
+        _scopeFactory = scopeFactory;
+        _options = options.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (options.Disabled)
+        if (_options.Disabled)
         {
-            logger.LogInformation("MeasurementSyncer is disabled!");
+            _logger.LogInformation("MeasurementSyncer is disabled!");
             return;
         }
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            logger.LogInformation("MeasurementSyncer running job");
+            _logger.LogInformation("MeasurementSyncer running job");
             await PerformPeriodicTask(stoppingToken);
             await Sleep(stoppingToken);
         }
@@ -50,56 +50,63 @@ public class MeasurementsSyncerWorker : BackgroundService
 
     private async Task PerformPeriodicTask(CancellationToken stoppingToken)
     {
-        IMeasurementSyncMetrics? measurementSyncMetrics = null;
         try
         {
-            var syncInfos = await contractState.GetSyncInfos(stoppingToken);
+            var syncInfos = await _contractState.GetSyncInfos(stoppingToken);
 
             if (!syncInfos.Any())
             {
-                logger.LogInformation("No sync infos found. Skipping sync");
+                _logger.LogInformation("No sync infos found. Skipping sync");
                 return;
             }
 
-            using var outerScope = scopeFactory.CreateScope();
-            measurementSyncMetrics = outerScope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
-            measurementSyncMetrics.UpdateTimeSinceLastMeasurementSyncerRun(UnixTimestamp.Now().Seconds);
-
-            var oldestSyncDate = syncInfos.Min(x => x.StartSyncDate);
-
-            measurementSyncMetrics.UpdateTimePeriodForSearchingForGSRN(UnixTimestamp.Create(oldestSyncDate).Seconds);
-            measurementSyncMetrics.AddNumberOfContractsBeingSynced(syncInfos.Count);
-
-            foreach (var syncInfo in syncInfos)
+            try
             {
-                using var scope = scopeFactory.CreateScope();
-                var scopedSyncService = scope.ServiceProvider.GetService<MeasurementsSyncService>()!;
-                await scopedSyncService.HandleSingleSyncInfo(syncInfo, stoppingToken);
+                foreach (var syncInfo in syncInfos)
+                {
+                    await HandleMeteringPoint(stoppingToken, syncInfo);
+                }
+            }
+            finally
+            {
+                UpdateGauges();
             }
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error in MeasurementSyncer periodic task");
+            _logger.LogError(e, "Error in MeasurementSyncer periodic task");
         }
-        finally
-        {
-            measurementSyncMetrics?.UpdateGauges();
-        }
+    }
+
+    private async Task HandleMeteringPoint(CancellationToken stoppingToken, MeteringPointSyncInfo syncInfo)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var measurementSyncMetrics = scope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
+        measurementSyncMetrics.AddNumberOfContractsBeingSynced(1);
+        var scopedSyncService = scope.ServiceProvider.GetService<MeasurementsSyncService>()!;
+        await scopedSyncService.HandleMeteringPoint(syncInfo, stoppingToken);
+    }
+
+    private void UpdateGauges()
+    {
+        using var outerScope = _scopeFactory.CreateScope();
+        var measurementSyncMetrics = outerScope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
+        measurementSyncMetrics.UpdateGauges();
     }
 
     private async Task Sleep(CancellationToken cancellationToken)
     {
-        if (options.SleepType == MeasurementsSyncerSleepType.Hourly)
+        if (_options.SleepType == MeasurementsSyncerSleepType.Hourly)
         {
             await SleepToNearestHour(cancellationToken);
         }
-        else if (options.SleepType == MeasurementsSyncerSleepType.EveryThirdSecond)
+        else if (_options.SleepType == MeasurementsSyncerSleepType.EveryThirdSecond)
         {
             await Task.Delay(3000, cancellationToken);
         }
         else
         {
-            throw new ArgumentOutOfRangeException(nameof(options.SleepType), options.SleepType, "Unknown sleep type");
+            throw new InvalidOperationException($"Sleep option {nameof(_options.SleepType)} has invalid value {_options.SleepType}");
         }
     }
 
@@ -108,12 +115,12 @@ public class MeasurementsSyncerWorker : BackgroundService
         try
         {
             var timeUntilNextHour = UnixTimestamp.Now().TimeUntilNextHour();
-            logger.LogInformation("Sleeping until next full hour {TimeToNextHour}", timeUntilNextHour);
+            _logger.LogInformation("Sleeping until next full hour {TimeToNextHour}", timeUntilNextHour);
             await Task.Delay(timeUntilNextHour, cancellationToken);
         }
         catch (TaskCanceledException)
         {
-            // Sleep interrupted
+            // Ignore
         }
     }
 }

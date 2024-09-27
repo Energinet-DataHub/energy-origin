@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext;
@@ -9,55 +8,58 @@ namespace API.MeasurementsSyncer.Persistence;
 
 public class SlidingWindowState : ISlidingWindowState
 {
-    private readonly ApplicationDbContext dbContext;
+    private readonly ApplicationDbContext _dbContext;
 
     public SlidingWindowState(ApplicationDbContext dbContext)
     {
-        this.dbContext = dbContext;
+        _dbContext = dbContext;
     }
 
-    public async Task<MeteringPointTimeSeriesSlidingWindow> GetSlidingWindowStartTime(MeteringPointSyncInfo syncInfo, CancellationToken cancellationToken)
+    public async Task<MeteringPointTimeSeriesSlidingWindow> GetSlidingWindowStartTime(MeteringPointSyncInfo syncInfo,
+        CancellationToken cancellationToken)
     {
         var existingSlidingWindow = await GetMeteringPointSlidingWindow(syncInfo.Gsrn, cancellationToken);
+        var contractStartTime = UnixTimestamp.Create(syncInfo.StartSyncDate).RoundToNextHour();
 
-        if (existingSlidingWindow != null)
+        if (existingSlidingWindow is not null)
         {
-            var pos = Math.Max(existingSlidingWindow.SynchronizationPoint.Seconds, UnixTimestamp.Create(syncInfo.StartSyncDate).Seconds);
+            var pos = UnixTimestamp.Max(existingSlidingWindow.SynchronizationPoint, contractStartTime);
 
-            if (pos > existingSlidingWindow.SynchronizationPoint.Seconds)
+            if (pos > existingSlidingWindow.SynchronizationPoint)
             {
-                existingSlidingWindow.UpdateTo(UnixTimestamp.Create(pos));
+                existingSlidingWindow.UpdateTo(pos);
             }
-        }
-        else
-        {
-            existingSlidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, UnixTimestamp.Create(syncInfo.StartSyncDate));
+
+            return existingSlidingWindow;
         }
 
-        return existingSlidingWindow;
+        return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStartTime);
     }
 
     private async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(Gsrn gsrn, CancellationToken cancellationToken)
     {
-        var slidingWindow = await dbContext.MeteringPointTimeSeriesSlidingWindows.FindAsync(gsrn.Value);
-        return slidingWindow;
+        return await _dbContext.MeteringPointTimeSeriesSlidingWindows.FindAsync(gsrn.Value, cancellationToken);
     }
 
-    public async Task UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow slidingWindow, CancellationToken cancellationToken)
+    public async Task UpsertSlidingWindow(MeteringPointTimeSeriesSlidingWindow slidingWindow, CancellationToken cancellationToken)
     {
-        var existingWindow = await GetMeteringPointSlidingWindow(new Gsrn(slidingWindow.GSRN), cancellationToken);
-        if (existingWindow is null)
+        if (IsTracked(slidingWindow))
         {
-            dbContext.MeteringPointTimeSeriesSlidingWindows.Add(slidingWindow);
+            _dbContext.Update(slidingWindow);
         }
         else
         {
-            dbContext.MeteringPointTimeSeriesSlidingWindows.Update(slidingWindow);
+            await _dbContext.MeteringPointTimeSeriesSlidingWindows.AddAsync(slidingWindow, cancellationToken);
         }
+    }
+
+    private bool IsTracked(MeteringPointTimeSeriesSlidingWindow slidingWindow)
+    {
+        return _dbContext.Set<MeteringPointTimeSeriesSlidingWindow>().Local.Contains(slidingWindow);
     }
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

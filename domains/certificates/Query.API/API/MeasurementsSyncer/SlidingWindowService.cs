@@ -9,11 +9,11 @@ namespace API.MeasurementsSyncer;
 
 public class SlidingWindowService
 {
-    private readonly IMeasurementSyncMetrics measurementSyncMetrics;
+    private readonly IMeasurementSyncMetrics _measurementSyncMetrics;
 
     public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics)
     {
-        this.measurementSyncMetrics = measurementSyncMetrics;
+        _measurementSyncMetrics = measurementSyncMetrics;
     }
 
     public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(Gsrn gsrn, UnixTimestamp synchronizationPoint)
@@ -31,7 +31,14 @@ public class SlidingWindowService
     {
         return measurements
             .Where(m => m.Gsrn == window.GSRN)
-            .Where(m => !m.QuantityMissing)
+            .Where(m =>
+            {
+                if (m.QuantityMissing)
+                {
+                    _measurementSyncMetrics.AddFilterDueQuantityMissingFlag(1);
+                }
+                return !m.QuantityMissing;
+            })
             .Where(m =>
             {
                 var from = UnixTimestamp.Create(m.DateFrom);
@@ -45,7 +52,11 @@ public class SlidingWindowService
                 var isIncludedInMissingInterval = IsIncludedInMissingInterval(window, interval);
                 if (isIncludedInMissingInterval)
                 {
-                    measurementSyncMetrics.AddNumberOfRecoveredMeasurements(1);
+                    _measurementSyncMetrics.AddNumberOfRecoveredMeasurements(1);
+                }
+                else
+                {
+                    _measurementSyncMetrics.AddNumberOfDuplicateMeasurements(1);
                 }
                 return isIncludedInMissingInterval;
             })
@@ -54,7 +65,7 @@ public class SlidingWindowService
                 if (m.Quality is EnergyQuantityValueQuality.Measured or EnergyQuantityValueQuality.Calculated)
                     return true;
 
-                measurementSyncMetrics.AddFilterDueQuality(1);
+                _measurementSyncMetrics.AddFilterDueQuality(1);
                 return false;
             })
             .Where(m =>
@@ -62,7 +73,7 @@ public class SlidingWindowService
                 if (m.Quantity > 0)
                     return true;
 
-                measurementSyncMetrics.AddFilterDueQuantityTooLow(1);
+                _measurementSyncMetrics.AddFilterDueQuantityTooLow(1);
                 return false;
             })
             .Where(m =>
@@ -70,7 +81,7 @@ public class SlidingWindowService
                 if (m.Quantity < uint.MaxValue)
                     return true;
 
-                measurementSyncMetrics.AddFilterDueQuantityTooHigh(1);
+                _measurementSyncMetrics.AddFilterDueQuantityTooHigh(1);
                 return false;
             })
             .ToList();
@@ -113,7 +124,7 @@ public class SlidingWindowService
             var secondsOfMissingInterval = missingInterval.To.Seconds - missingInterval.From.Seconds;
             var numberOfMissingIntervals = secondsOfMissingInterval / UnixTimestamp.SecondsPerHour;
 
-            measurementSyncMetrics.AddNumberOfMissingMeasurement(numberOfMissingIntervals);
+            _measurementSyncMetrics.AddNumberOfMissingMeasurement(numberOfMissingIntervals);
         }
     }
 

@@ -8,15 +8,15 @@ public interface IMeasurementSyncMetrics
 
     void AddNumberOfMeasurementsPublished(long numberOfMeasurementsPublished);
 
-    void UpdateTimeSinceLastMeasurementSyncerRun(long epochTimeInSeconds);
-
-    void UpdateTimePeriodForSearchingForGSRN(long epochTimeInSeconds);
-
     void AddNumberOfMissingMeasurement(long numberOfMissingMeasurements);
 
     void AddNumberOfRecoveredMeasurements(long numberOfRecoveredMeasurements);
 
+    void AddNumberOfDuplicateMeasurements(long numberOfDuplicateMeasurements);
+
     void AddNumberOfContractsBeingSynced(long numberOfContractsBeingSynced);
+
+    void AddFilterDueQuantityMissingFlag(long numberOfMeasurementsQuantityMissingFlag);
 
     void AddFilterDueQuantityTooLow(long numberOfMeasurementsQuantityTooLow);
 

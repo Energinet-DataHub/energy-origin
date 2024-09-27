@@ -41,11 +41,25 @@ public class UnixTimestampTest
     }
 
     [Fact]
-    public void RoundToLatestHour()
+    public void RoundToLatestHourExamples()
     {
         var now = DateTimeOffset.Now;
         var latestHour = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, 0, 0, now.Offset);
         Assert.Equal(UnixTimestamp.Create(latestHour), UnixTimestamp.Create(now).RoundToLatestHour());
+
+        var alignedHour = new DateTimeOffset(2024, 2, 24, 12, 0, 0, TimeSpan.Zero);
+        Assert.Equal(UnixTimestamp.Create(alignedHour), UnixTimestamp.Create(alignedHour).RoundToLatestHour());
+    }
+
+    [Fact]
+    public void RoundToNextHourExamples()
+    {
+        var now = DateTimeOffset.Now;
+        var nextHour = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, now.Offset);
+        Assert.Equal(UnixTimestamp.Create(nextHour), UnixTimestamp.Create(now).RoundToNextHour());
+
+        var alignedHour = new DateTimeOffset(2024, 2, 24, 12, 0, 0, TimeSpan.Zero);
+        Assert.Equal(UnixTimestamp.Create(alignedHour), UnixTimestamp.Create(alignedHour).RoundToNextHour());
     }
 
     [Fact]
