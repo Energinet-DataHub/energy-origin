@@ -205,6 +205,12 @@
                 <DataType>boolean</DataType>
                 <UserHelpText/>
             </ClaimType>
+
+            <!-- Used to force re-authentication -->
+            <ClaimType Id="prompt">
+                <DisplayName>Prompt</DisplayName>
+                <DataType>string</DataType>
+            </ClaimType>
         </ClaimsSchema>
 
         <ClaimsTransformations>
@@ -380,7 +386,10 @@
                     <CryptographicKeys>
                         <Key Id="client_secret" StorageReferenceId="B2C_1A_MitIDSecret"/>
                     </CryptographicKeys>
-                    <InputClaims/>
+                    <!-- Used to force re-authentication -->
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="prompt" DefaultValue="login" />
+                    </InputClaims>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="sub"/>
                         <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="first_name"/>
