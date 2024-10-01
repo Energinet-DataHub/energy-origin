@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Test\EnergyTrackAndTrace.Test.csproj" />
+    <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Testing\EnergyTrackAndTrace.Testing.csproj" />
     <ProjectReference Include="..\ProjectOriginClients\ProjectOriginClients.csproj" />
     <ProjectReference Include="..\Testing\Testing.csproj" />
   </ItemGroup>

@@ -119,9 +119,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOrigin.TokenValidatio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOrigin.TokenValidation.Unit.Tests", "libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.Unit.Tests\EnergyOrigin.TokenValidation.Unit.Tests.csproj", "{EFA7D21E-9DA2-46B0-A8E8-88ACDF7E5459}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{8C93BA05-8438-492E-AD6C-04263D6D77AD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{8C93BA05-8438-492E-AD6C-04263D6D77AD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyTrackAndTrace.Test", "libraries\EnergyTrackAndTrace.Test\EnergyTrackAndTrace.Test.csproj", "{44ADA49D-95C5-427C-9826-7B99581BFE6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyTrackAndTrace.Testing", "libraries\EnergyTrackAndTrace.Testing\EnergyTrackAndTrace.Testing.csproj", "{44ADA49D-95C5-427C-9826-7B99581BFE6B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing", "transfer\Shared\Testing\Testing.csproj", "{41E98E7E-20DE-4636-9133-BDCE13C8A79F}"
 EndProject

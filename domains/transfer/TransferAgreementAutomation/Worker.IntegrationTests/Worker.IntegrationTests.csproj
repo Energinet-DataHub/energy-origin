@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Test\EnergyTrackAndTrace.Test.csproj" />
+        <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Testing\EnergyTrackAndTrace.Testing.csproj" />
         <ProjectReference Include="..\..\Shared\Testing\Testing.csproj" />
         <ProjectReference Include="..\Worker\Worker.csproj" />
     </ItemGroup>
