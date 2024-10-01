@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
-using API.IntegrationTests.Testcontainers;
+using EnergyTrackAndTrace.Test.Testcontainers;
 using Testing.Testcontainers;
 using Xunit;
 
@@ -18,7 +18,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     public QueryApiWebApplicationFactory WebApplicationFactory { get; private set; }
     public PostgresContainer PostgresContainer { get; private set; }
     private ProjectOriginStack ProjectOriginStack { get; set; }
-    private RabbitMqContainer RabbitMqContainer { get; set; }
+    private RabbitContainer RabbitMqContainer { get; set; }
     public MeasurementsWireMock MeasurementsMock { get; private set; }
 
     public IntegrationTestFixture()
@@ -26,7 +26,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         WebApplicationFactory = new QueryApiWebApplicationFactory();
         PostgresContainer = new PostgresContainer();
         ProjectOriginStack = new ProjectOriginStack();
-        RabbitMqContainer = new RabbitMqContainer();
+        RabbitMqContainer = new RabbitContainer();
         MeasurementsMock = new MeasurementsWireMock();
     }
 
@@ -38,7 +38,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         ProjectOriginStack = new ProjectOriginStack();
         await ProjectOriginStack.InitializeAsync();
 
-        RabbitMqContainer = new RabbitMqContainer();
+        RabbitMqContainer = new RabbitContainer();
         await RabbitMqContainer.InitializeAsync();
 
         MeasurementsMock = new MeasurementsWireMock();

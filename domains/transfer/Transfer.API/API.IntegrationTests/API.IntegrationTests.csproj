@@ -28,7 +28,6 @@
         <PackageReference Include="Verify.Xunit" Version="26.4.0" />
         <PackageReference Include="WireMock.Net" Version="1.6.3" />
         <PackageReference Include="Microsoft.CodeAnalysis" Version="4.11.0" />
-        <PackageReference Include="xunit" Version="2.9.0" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -41,7 +40,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
-        <ProjectReference Include="..\..\Testing\Testing.csproj" />
+        <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Test\EnergyTrackAndTrace.Test.csproj" />
+        <ProjectReference Include="..\..\Shared\Testing\Testing.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>
 

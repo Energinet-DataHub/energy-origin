@@ -2,9 +2,9 @@ using System;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
+using EnergyTrackAndTrace.Test.Testcontainers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Testing.Testcontainers;
 using Xunit;
 
 namespace API.IntegrationTests.ClaimAutomation.Api.Repository;
