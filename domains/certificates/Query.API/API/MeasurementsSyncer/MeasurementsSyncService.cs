@@ -49,75 +49,75 @@ public class MeasurementsSyncService
         }
     }
 
-public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo, MeteringPointTimeSeriesSlidingWindow slidingWindow,
-    CancellationToken stoppingToken)
-{
-    var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
-    var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
-    var synchronizationPointSeconds = synchronizationPoint.Seconds;
-
-    // Early exit if there's no data to fetch
-    if (dateFrom >= synchronizationPointSeconds)
+    public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo, MeteringPointTimeSeriesSlidingWindow slidingWindow,
+        CancellationToken stoppingToken)
     {
-        _logger.LogInformation("No measurements to fetch for GSRN {GSRN} as dateFrom {DateFrom} is not less than synchronizationPoint {SynchronizationPoint}",
-            slidingWindow.GSRN, dateFrom, synchronizationPointSeconds);
-        return;
-    }
+        var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
+        var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
+        var synchronizationPointSeconds = synchronizationPoint.Seconds;
 
-    const long batchSize = UnixTimestamp.SecondsPerHour; // One hour in seconds
-    var currentDateFrom = dateFrom;
-
-    var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(
-        new OwnedMeteringPointsRequest { Subject = syncInfo.MeteringPointOwner });
-
-    var meteringPoint = meteringPoints.MeteringPoints.FirstOrDefault(mp => mp.MeteringPointId == slidingWindow.GSRN);
-
-    if (meteringPoint == null)
-    {
-        _logger.LogWarning("Metering point {GSRN} not found for owner {Owner}", slidingWindow.GSRN, syncInfo.MeteringPointOwner);
-        return;
-    }
-
-    var anyMeasurementsProcessed = false;
-
-    while (currentDateFrom < synchronizationPointSeconds)
-    {
-        var currentDateTo = Math.Min(currentDateFrom + batchSize, synchronizationPointSeconds);
-
-        var measurements = await FetchMeasurementsBatch(slidingWindow.GSRN, syncInfo.MeteringPointOwner, currentDateFrom, currentDateTo, stoppingToken);
-
-        _measurementSyncMetrics.AddNumberOfMeasurementsFetched(measurements.Count);
-
-        if (measurements.Count > 0)
+        // Early exit if there's no data to fetch
+        if (dateFrom >= synchronizationPointSeconds)
         {
-            var measurementsToPublish = _slidingWindowService.FilterMeasurements(slidingWindow, measurements);
-
-            _logger.LogInformation(
-                "Publishing {NumberOfMeasurementsLeft} of total {NumberOfMeasurements} measurements fetched for GSRN {GSRN}",
-                measurementsToPublish.Count,
-                measurements.Count,
-                slidingWindow.GSRN);
-
-            if (measurementsToPublish.Count != 0)
-            {
-                await _measurementSyncPublisher.PublishIntegrationEvents(meteringPoint, syncInfo, measurementsToPublish, stoppingToken);
-            }
-
-            _slidingWindowService.UpdateSlidingWindow(slidingWindow, measurements, synchronizationPoint);
-
-            anyMeasurementsProcessed = true;
+            _logger.LogInformation("No measurements to fetch for GSRN {GSRN} as dateFrom {DateFrom} is not less than synchronizationPoint {SynchronizationPoint}",
+                slidingWindow.GSRN, dateFrom, synchronizationPointSeconds);
+            return;
         }
 
-        currentDateFrom = currentDateTo;
-    }
+        const long batchSize = UnixTimestamp.SecondsPerHour; // One hour in seconds
+        var currentDateFrom = dateFrom;
 
-    // Persist the sliding window if it was updated
-    if (anyMeasurementsProcessed)
-    {
-        await _slidingWindowState.UpsertSlidingWindow(slidingWindow, stoppingToken);
-        await _slidingWindowState.SaveChangesAsync(stoppingToken);
+        var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(
+            new OwnedMeteringPointsRequest { Subject = syncInfo.MeteringPointOwner });
+
+        var meteringPoint = meteringPoints.MeteringPoints.FirstOrDefault(mp => mp.MeteringPointId == slidingWindow.GSRN);
+
+        if (meteringPoint == null)
+        {
+            _logger.LogWarning("Metering point {GSRN} not found for owner {Owner}", slidingWindow.GSRN, syncInfo.MeteringPointOwner);
+            return;
+        }
+
+        var anyMeasurementsProcessed = false;
+
+        while (currentDateFrom < synchronizationPointSeconds)
+        {
+            var currentDateTo = Math.Min(currentDateFrom + batchSize, synchronizationPointSeconds);
+
+            var measurements = await FetchMeasurementsBatch(slidingWindow.GSRN, syncInfo.MeteringPointOwner, currentDateFrom, currentDateTo, stoppingToken);
+
+            _measurementSyncMetrics.AddNumberOfMeasurementsFetched(measurements.Count);
+
+            if (measurements.Count > 0)
+            {
+                var measurementsToPublish = _slidingWindowService.FilterMeasurements(slidingWindow, measurements);
+
+                _logger.LogInformation(
+                    "Publishing {NumberOfMeasurementsLeft} of total {NumberOfMeasurements} measurements fetched for GSRN {GSRN}",
+                    measurementsToPublish.Count,
+                    measurements.Count,
+                    slidingWindow.GSRN);
+
+                if (measurementsToPublish.Count != 0)
+                {
+                    await _measurementSyncPublisher.PublishIntegrationEvents(meteringPoint, syncInfo, measurementsToPublish, stoppingToken);
+                }
+
+                _slidingWindowService.UpdateSlidingWindow(slidingWindow, measurements, synchronizationPoint);
+
+                anyMeasurementsProcessed = true;
+            }
+
+            currentDateFrom = currentDateTo;
+        }
+
+        // Persist the sliding window if it was updated
+        if (anyMeasurementsProcessed)
+        {
+            await _slidingWindowState.UpsertSlidingWindow(slidingWindow, stoppingToken);
+            await _slidingWindowState.SaveChangesAsync(stoppingToken);
+        }
     }
-}
 
 
     private async Task<List<Measurement>> FetchMeasurementsBatch(string gsrn, string meteringPointOwner, long dateFrom, long dateTo, CancellationToken cancellationToken)
