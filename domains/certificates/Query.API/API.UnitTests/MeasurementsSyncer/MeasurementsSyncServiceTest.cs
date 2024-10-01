@@ -48,38 +48,34 @@ public class MeasurementsSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_BeforeContractStartDate_NoDataFetched()
     {
-        // Given synchronization point
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(Any.Gsrn(), UnixTimestamp.Now().Add(TimeSpan.FromDays(1)));
 
-        // When fetching measurements
-        var response = await _service.FetchMeasurements(slidingWindow, _syncInfo.MeteringPointOwner, UnixTimestamp.Now(), CancellationToken.None);
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
-        // Metering point is skipped
-        response.Should().BeEmpty();
-        _ = _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
     }
 
     [Fact]
     public async Task FetchMeasurements_MeasurementsReceived_SyncPositionUpdated()
     {
-        // Given synchronization point
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, UnixTimestamp.Create(_syncInfo.StartSyncDate));
 
-        // When measurement is received
-        var dateTo = UnixTimestamp.Now().RoundToLatestHour().Seconds;
+        var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
+        var dateTo = synchronizationPoint.Seconds;
         var measurement = Any.Measurement(_syncInfo.Gsrn, slidingWindow.SynchronizationPoint.Seconds, 5);
         var mockedResponse = new GetMeasurementsResponse { Measurements = { measurement } };
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
         _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(mockedResponse);
+
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
-        // Then sliding window is updated
         await _fakeSlidingWindowState.Received(1)
             .UpsertSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.Seconds == dateTo), CancellationToken.None);
-        await _fakeSlidingWindowState.Received().SaveChangesAsync(CancellationToken.None);
+        await _fakeSlidingWindowState.Received(1).SaveChangesAsync(CancellationToken.None);
     }
+
 
     [Fact]
     public async Task FetchMeasurements_NoMeasurementsReceived_SlidingWindowIsNotUpdated()

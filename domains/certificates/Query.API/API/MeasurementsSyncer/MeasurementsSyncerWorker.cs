@@ -60,17 +60,24 @@ public class MeasurementsSyncerWorker : BackgroundService
                 return;
             }
 
-            try
+            var maxDegreeOfParallelism = 10; // Adjust based on performance testing
+            var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
+
+            var tasks = syncInfos.Select(async syncInfo =>
             {
-                foreach (var syncInfo in syncInfos)
+                await semaphore.WaitAsync(stoppingToken);
+                try
                 {
                     await HandleMeteringPoint(stoppingToken, syncInfo);
                 }
-            }
-            finally
-            {
-                UpdateGauges();
-            }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+
+            await Task.WhenAll(tasks);
+            UpdateGauges();
         }
         catch (Exception e)
         {

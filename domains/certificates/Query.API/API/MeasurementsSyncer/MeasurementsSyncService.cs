@@ -36,68 +36,6 @@ public class MeasurementsSyncService
         _meteringPointsClient = meteringPointsClient;
     }
 
-    public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo, MeteringPointTimeSeriesSlidingWindow slidingWindow,
-        CancellationToken stoppingToken)
-    {
-        var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
-        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, synchronizationPoint, stoppingToken);
-        var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
-        var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
-
-        _measurementSyncMetrics.AddNumberOfMeasurementsFetched(fetchedMeasurements.Count);
-
-        if (fetchedMeasurements.Count > 0)
-        {
-            var measurementsToPublish = _slidingWindowService.FilterMeasurements(slidingWindow, fetchedMeasurements);
-
-            _logger.LogInformation(
-                "Publishing {numberOfMeasurementsLeft} of total {numberOfMeasurements} measurements fetched for GSRN {GSRN}",
-                measurementsToPublish.Count,
-                fetchedMeasurements.Count,
-                slidingWindow.GSRN);
-
-            if (measurementsToPublish.Any())
-            {
-                await _measurementSyncPublisher.PublishIntegrationEvents(meteringPoint, syncInfo, measurementsToPublish, stoppingToken);
-            }
-
-            _slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, synchronizationPoint);
-            await _slidingWindowState.UpsertSlidingWindow(slidingWindow, stoppingToken);
-            await _slidingWindowState.SaveChangesAsync(stoppingToken);
-        }
-    }
-
-    public async Task<List<Measurement>> FetchMeasurements(MeteringPointTimeSeriesSlidingWindow slidingWindow, string meteringPointOwner,
-        UnixTimestamp synchronizationPoint, CancellationToken cancellationToken)
-    {
-        var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
-        var synchronizationPointSeconds = synchronizationPoint.Seconds;
-
-        if (dateFrom < synchronizationPointSeconds)
-        {
-            var request = new GetMeasurementsRequest
-            {
-                DateFrom = dateFrom,
-                DateTo = synchronizationPointSeconds,
-                Gsrn = slidingWindow.GSRN,
-                Subject = meteringPointOwner,
-                Actor = Guid.NewGuid().ToString()
-            };
-            var res = await _measurementsClient.GetMeasurementsAsync(request, cancellationToken: cancellationToken);
-
-            _logger.LogInformation(
-                "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
-                res.Measurements.Count,
-                slidingWindow.GSRN,
-                DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
-                DateTimeOffset.FromUnixTimeSeconds(synchronizationPointSeconds).ToString("o"));
-
-            return res.Measurements.ToList();
-        }
-
-        return new();
-    }
-
     public async Task HandleMeteringPoint(MeteringPointSyncInfo syncInfo, CancellationToken stoppingToken)
     {
         try
@@ -107,7 +45,84 @@ public class MeasurementsSyncService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "An error occured: {error}, no measurements were published, MeteringPoint: {gsrn}", e.Message, syncInfo.Gsrn);
+            _logger.LogError(e, "An error occurred: {error}, no measurements were published, MeteringPoint: {gsrn}", e.Message, syncInfo.Gsrn.Value);
         }
+    }
+
+public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo, MeteringPointTimeSeriesSlidingWindow slidingWindow,
+    CancellationToken stoppingToken)
+{
+    var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
+    var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
+    var synchronizationPointSeconds = synchronizationPoint.Seconds;
+    var batchSize = (long)TimeSpan.FromHours(1).TotalSeconds;
+    var currentDateFrom = dateFrom;
+
+    var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest { Subject = syncInfo.MeteringPointOwner });
+    var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
+
+    var anyMeasurementsProcessed = false;
+
+    while (currentDateFrom < synchronizationPointSeconds)
+    {
+        var currentDateTo = Math.Min(currentDateFrom + batchSize, synchronizationPointSeconds);
+
+        var measurements = await FetchMeasurementsBatch(slidingWindow.GSRN, syncInfo.MeteringPointOwner, currentDateFrom, currentDateTo, stoppingToken);
+
+        _measurementSyncMetrics.AddNumberOfMeasurementsFetched(measurements.Count);
+
+        if (measurements.Count > 0)
+        {
+            var measurementsToPublish = _slidingWindowService.FilterMeasurements(slidingWindow, measurements);
+
+            _logger.LogInformation(
+                "Publishing {numberOfMeasurementsLeft} of total {numberOfMeasurements} measurements fetched for GSRN {GSRN}",
+                measurementsToPublish.Count,
+                measurements.Count,
+                slidingWindow.GSRN);
+
+            if (measurementsToPublish.Count != 0)
+            {
+                await _measurementSyncPublisher.PublishIntegrationEvents(meteringPoint, syncInfo, measurementsToPublish, stoppingToken);
+            }
+
+            _slidingWindowService.UpdateSlidingWindow(slidingWindow, measurements, synchronizationPoint);
+
+            anyMeasurementsProcessed = true;
+        }
+
+        currentDateFrom = currentDateTo;
+    }
+
+    // Persist the sliding window if it was updated
+    if (anyMeasurementsProcessed)
+    {
+        await _slidingWindowState.UpsertSlidingWindow(slidingWindow, stoppingToken);
+        await _slidingWindowState.SaveChangesAsync(stoppingToken);
+    }
+}
+
+
+    private async Task<List<Measurement>> FetchMeasurementsBatch(string gsrn, string meteringPointOwner, long dateFrom, long dateTo, CancellationToken cancellationToken)
+    {
+        var request = new GetMeasurementsRequest
+        {
+            DateFrom = dateFrom,
+            DateTo = dateTo,
+            Gsrn = gsrn,
+            Subject = meteringPointOwner,
+            Actor = Guid.NewGuid().ToString()
+        };
+
+        var res = await _measurementsClient.GetMeasurementsAsync(request, cancellationToken: cancellationToken);
+
+        _logger.LogInformation(
+            "Fetched {numberOfMeasurements} measurements for GSRN {GSRN} from {from} to {to}",
+            res.Measurements.Count,
+            gsrn,
+            DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
+            DateTimeOffset.FromUnixTimeSeconds(dateTo).ToString("o"));
+
+        return res.Measurements.ToList();
     }
 }
