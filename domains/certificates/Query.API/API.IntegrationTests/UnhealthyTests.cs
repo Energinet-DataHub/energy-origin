@@ -1,7 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using EnergyTrackAndTrace.Test.Testcontainers;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Xunit;
 

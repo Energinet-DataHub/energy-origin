@@ -2,7 +2,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using EnergyTrackAndTrace.Test.Testcontainers;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;

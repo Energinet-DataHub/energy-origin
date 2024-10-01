@@ -6,14 +6,14 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Images;
 using DotNet.Testcontainers.Networks;
-using EnergyTrackAndTrace.Test.Extensions;
+using EnergyTrackAndTrace.Testing.Extensions;
 using ProjectOrigin.HierarchicalDeterministicKeys;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 using Xunit;
 
-namespace EnergyTrackAndTrace.Test.Testcontainers;
+namespace EnergyTrackAndTrace.Testing.Testcontainers;
 
 public class RegistryFixture : IAsyncLifetime
 {
@@ -29,7 +29,7 @@ public class RegistryFixture : IAsyncLifetime
 
     private readonly IContainer registryContainer;
     private readonly IContainer verifierContainer;
-    private readonly global::Testcontainers.RabbitMq.RabbitMqContainer rabbitMqContainer;
+    private readonly RabbitMqContainer rabbitMqContainer;
     private readonly PostgreSqlContainer registryPostgresContainer;
     protected readonly INetwork Network;
     private readonly IFutureDockerImage rabbitMqImage;

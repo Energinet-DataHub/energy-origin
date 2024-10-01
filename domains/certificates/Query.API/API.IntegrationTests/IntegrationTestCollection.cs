@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
-using EnergyTrackAndTrace.Test.Testcontainers;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using Testing.Testcontainers;
 using Xunit;
 

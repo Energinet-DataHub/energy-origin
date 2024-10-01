@@ -5,7 +5,7 @@ using API.IntegrationTests.Extensions;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
-using EnergyTrackAndTrace.Test.Testcontainers;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

@@ -7,7 +7,7 @@ using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Testcontainers.PostgreSql;
 
-namespace EnergyTrackAndTrace.Test.Extensions;
+namespace EnergyTrackAndTrace.Testing.Extensions;
 
 public static class ContainerExtensions
 {

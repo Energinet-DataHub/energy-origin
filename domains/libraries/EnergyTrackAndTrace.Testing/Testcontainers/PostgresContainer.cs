@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace EnergyTrackAndTrace.Test.Testcontainers;
+namespace EnergyTrackAndTrace.Testing.Testcontainers;
 
 public class PostgresContainer : IAsyncLifetime
 {

@@ -7,7 +7,7 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Testcontainers.PostgreSql;
 
-namespace EnergyTrackAndTrace.Test.Testcontainers;
+namespace EnergyTrackAndTrace.Testing.Testcontainers;
 
 public class ProjectOriginStack : RegistryFixture
 {
