@@ -55,11 +55,28 @@ public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo, Me
     var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
     var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
     var synchronizationPointSeconds = synchronizationPoint.Seconds;
-    var batchSize = (long)TimeSpan.FromHours(1).TotalSeconds;
+
+    // Early exit if there's no data to fetch
+    if (dateFrom >= synchronizationPointSeconds)
+    {
+        _logger.LogInformation("No measurements to fetch for GSRN {GSRN} as dateFrom {DateFrom} is not less than synchronizationPoint {SynchronizationPoint}",
+            slidingWindow.GSRN, dateFrom, synchronizationPointSeconds);
+        return;
+    }
+
+    const long batchSize = UnixTimestamp.SecondsPerHour; // One hour in seconds
     var currentDateFrom = dateFrom;
 
-    var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest { Subject = syncInfo.MeteringPointOwner });
-    var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
+    var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(
+        new OwnedMeteringPointsRequest { Subject = syncInfo.MeteringPointOwner });
+
+    var meteringPoint = meteringPoints.MeteringPoints.FirstOrDefault(mp => mp.MeteringPointId == slidingWindow.GSRN);
+
+    if (meteringPoint == null)
+    {
+        _logger.LogWarning("Metering point {GSRN} not found for owner {Owner}", slidingWindow.GSRN, syncInfo.MeteringPointOwner);
+        return;
+    }
 
     var anyMeasurementsProcessed = false;
 
@@ -76,7 +93,7 @@ public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo, Me
             var measurementsToPublish = _slidingWindowService.FilterMeasurements(slidingWindow, measurements);
 
             _logger.LogInformation(
-                "Publishing {numberOfMeasurementsLeft} of total {numberOfMeasurements} measurements fetched for GSRN {GSRN}",
+                "Publishing {NumberOfMeasurementsLeft} of total {NumberOfMeasurements} measurements fetched for GSRN {GSRN}",
                 measurementsToPublish.Count,
                 measurements.Count,
                 slidingWindow.GSRN);
