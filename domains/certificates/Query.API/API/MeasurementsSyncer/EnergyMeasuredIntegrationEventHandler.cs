@@ -19,7 +19,8 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics;
     private readonly ILogger<EnergyMeasuredIntegrationEventHandler> _logger;
 
-    public EnergyMeasuredIntegrationEventHandler(IStampClient stampClient, IMeasurementSyncMetrics measurementSyncMetrics, ILogger<EnergyMeasuredIntegrationEventHandler> logger)
+    public EnergyMeasuredIntegrationEventHandler(IStampClient stampClient, IMeasurementSyncMetrics measurementSyncMetrics,
+        ILogger<EnergyMeasuredIntegrationEventHandler> logger)
     {
         _stampClient = stampClient;
         _measurementSyncMetrics = measurementSyncMetrics;
@@ -48,9 +49,15 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
     private CertificateDto CreateCertificate(EnergyMeasuredIntegrationEvent measurementEvent)
     {
         var clearTextAttributes = new Dictionary<string, string>();
+        var hashedAttributes = new List<HashedAttribute>();
+
         if (measurementEvent.MeterType == MeterType.Production)
         {
             var address = measurementEvent.Address;
+            hashedAttributes.Add(new HashedAttribute
+            { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceUniqueIdentification, Value = measurementEvent.GSRN });
+            hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, Value = address });
+
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, measurementEvent.GridArea);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagCountry, "Denmark");
@@ -58,9 +65,7 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionStartingIntervalTimestamp, measurementEvent.DateFrom.ToString());
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionEndingIntervalTimestamp, measurementEvent.DateTo.ToString());
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcFaceValue, measurementEvent.Quantity.ToString());
-            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionDeviceUniqueIdentification, measurementEvent.GSRN);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagConnectedGridIdentification, measurementEvent.GridArea);
-            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, address);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, measurementEvent.Capacity);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagEnergyCarrier, "Electricity");
@@ -70,7 +75,7 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
         }
         else
         {
-            clearTextAttributes.Add(EnergyTagAttributeKeys.AssetId, measurementEvent.GSRN);
+            hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.AssetId, Value = measurementEvent.GSRN });
         }
 
         var certificate = new CertificateDto
@@ -82,7 +87,7 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             Type = MapMeterType(measurementEvent.MeterType),
             GridArea = measurementEvent.GridArea,
             ClearTextAttributes = clearTextAttributes,
-            HashedAttributes = new List<HashedAttribute>()
+            HashedAttributes = hashedAttributes
         };
         return certificate;
     }
