@@ -2,6 +2,7 @@ using API.ClaimAutomation.Api.Repositories;
 using ClaimAutomation.Worker;
 using ClaimAutomation.Worker.Automation;
 using ClaimAutomation.Worker.Metrics;
+using ClaimAutomation.Worker.Options;
 using DataContext.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -20,14 +21,13 @@ public class ClaimServiceTests
     private readonly IProjectOriginWalletClient walletClient = Substitute.For<IProjectOriginWalletClient>();
     private readonly IClaimAutomationMetrics metricsMock = Substitute.For<IClaimAutomationMetrics>();
     private readonly AutomationCache cacheMock = Substitute.For<AutomationCache>();
-
-    private readonly int batchSize = 2;
+    private readonly ClaimAutomationOptions _claimAutomationOptions = new() { CertificateFetchBachSize = 2 };
 
     private readonly ClaimService claimService;
+
     public ClaimServiceTests()
     {
-        claimService = new ClaimService(logger, claimRepository, walletClient, new Shuffler(1), metricsMock, cacheMock)
-        { BatchSize = batchSize };
+        claimService = new ClaimService(logger, claimRepository, walletClient, new Shuffler(1), metricsMock, cacheMock, _claimAutomationOptions);
     }
 
     [Fact]
@@ -61,7 +61,8 @@ public class ClaimServiceTests
             }
         };
 
-        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>()).Returns(certs).AndDoes(_ => cts.Cancel());
+        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>()).Returns(certs)
+            .AndDoes(_ => cts.Cancel());
 
 
         var act = async () => await claimService.Run(cts.Token);
@@ -102,13 +103,16 @@ public class ClaimServiceTests
 
         claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
 
-        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>()).Returns(certs).AndDoes(_ => cts.Cancel());
+        walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>()).Returns(certs)
+            .AndDoes(_ => cts.Cancel());
 
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await walletClient.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, consumptionQuantity);
-        await walletClient.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate1, productionCertificate, productionQuantity - consumptionQuantity);
+        await walletClient.Received(1)
+            .ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, consumptionQuantity);
+        await walletClient.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate1, productionCertificate,
+            productionQuantity - consumptionQuantity);
     }
 
     [Theory]
@@ -129,20 +133,27 @@ public class ClaimServiceTests
         {
             results.Add(new ResultList<GranularCertificate>()
             {
-                Metadata = new PageInfo() { Offset = 0, Count = 0, Limit = batchSize, Total = 0 },
+                Metadata = new PageInfo() { Offset = 0, Count = 0, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 0 },
                 Result = []
             });
         }
         else
         {
-            decimal nn2 = Decimal.Divide(numberOfCertificates, batchSize);
+            decimal nn2 = Decimal.Divide(numberOfCertificates, _claimAutomationOptions.CertificateFetchBachSize);
             var nn3 = (int)Math.Ceiling(nn2);
             for (int i = 0; i < nn3; i++)
             {
                 results.Add(new ResultList<GranularCertificate>()
                 {
-                    Metadata = new PageInfo() { Offset = 0, Count = certs.Skip(i * batchSize).Take(batchSize).Count(), Limit = batchSize, Total = certs.Count },
-                    Result = certs.Skip(i * batchSize).Take(batchSize)
+                    Metadata = new PageInfo()
+                    {
+                        Offset = 0,
+                        Count = certs.Skip(i * _claimAutomationOptions.CertificateFetchBachSize)
+                            .Take(_claimAutomationOptions.CertificateFetchBachSize).Count(),
+                        Limit = _claimAutomationOptions.CertificateFetchBachSize,
+                        Total = certs.Count
+                    },
+                    Result = certs.Skip(i * _claimAutomationOptions.CertificateFetchBachSize).Take(_claimAutomationOptions.CertificateFetchBachSize)
                 });
             }
         }
@@ -155,7 +166,8 @@ public class ClaimServiceTests
         await act.Should().ThrowAsync<TaskCanceledException>();
 
         var numberOfCertificatesUsedPrClaim = 2;
-        await walletClient.Received(numberOfCertificates / numberOfCertificatesUsedPrClaim).ClaimCertificates(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>());
+        await walletClient.Received(numberOfCertificates / numberOfCertificatesUsedPrClaim).ClaimCertificates(claimAutomationArgument.SubjectId,
+            Arg.Any<GranularCertificate>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>());
     }
 
     [Fact]
@@ -171,12 +183,13 @@ public class ClaimServiceTests
         walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
             {
-                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = certs.Count },
+                Metadata =
+                        new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = certs.Count },
                 Result = certs.Take(2)
             },
                 new ResultList<GranularCertificate>()
                 {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 3 },
+                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 3 },
                     Result = certs.Skip(2).Take(1)
                 })
             .AndDoes(_ => cts.Cancel());
@@ -184,7 +197,8 @@ public class ClaimServiceTests
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await walletClient.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>());
+        await walletClient.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(),
+            Arg.Any<GranularCertificate>(), Arg.Any<uint>());
     }
 
     [Fact]
@@ -200,17 +214,17 @@ public class ClaimServiceTests
         walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
             {
-                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 4 },
+                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 4 },
                 Result = certs.Take(2)
             },
                 new ResultList<GranularCertificate>()
                 {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 5 },
+                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 5 },
                     Result = certs.Skip(2).Take(2)
                 },
                 new ResultList<GranularCertificate>()
                 {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = batchSize, Total = 5 },
+                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 5 },
                     Result = certs.Skip(4).Take(1)
                 })
             .AndDoes(_ => cts.Cancel());
@@ -218,7 +232,8 @@ public class ClaimServiceTests
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await walletClient.Received(2).ClaimCertificates(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>());
+        await walletClient.Received(2).ClaimCertificates(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(),
+            Arg.Any<GranularCertificate>(), Arg.Any<uint>());
     }
 
     private List<GranularCertificate> BuildGranularCertificates(int count)
@@ -226,7 +241,8 @@ public class ClaimServiceTests
         var certs = new List<GranularCertificate>();
         for (var i = 0; i < count; i++)
         {
-            certs.Add(BuildCertificate(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1), i % 2 == 0 ? CertificateType.Production : CertificateType.Consumption, 123));
+            certs.Add(BuildCertificate(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1),
+                i % 2 == 0 ? CertificateType.Production : CertificateType.Consumption, 123));
         }
 
         return certs;
@@ -248,7 +264,8 @@ public class ClaimServiceTests
             },
             Start = start.ToUnixTimeSeconds(),
             End = end.ToUnixTimeSeconds(),
-            Attributes = new Dictionary<string, string>() {
+            Attributes = new Dictionary<string, string>()
+            {
                 { "assetId", Some.Gsrn() }
             }
         };

@@ -8,4 +8,6 @@ public class ClaimAutomationOptions
 
     [Required]
     public bool Enabled { get; set; }
+
+    public int CertificateFetchBachSize { get; set; } = 1000;
 }
