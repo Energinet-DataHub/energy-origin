@@ -4,7 +4,8 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-        <ServerGarbageCollection>false</ServerGarbageCollection>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

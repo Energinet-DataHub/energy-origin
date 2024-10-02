@@ -8,7 +8,8 @@
         <DocumentationFile>documentation.xml</DocumentationFile>
         <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
         <NoWarn>1573;1701;1702;1591</NoWarn>
-        <ServerGarbageCollection>false</ServerGarbageCollection>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>
     </PropertyGroup>
     <ItemGroup>
         <None Update="documentation.xml">

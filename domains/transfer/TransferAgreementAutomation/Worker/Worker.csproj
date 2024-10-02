@@ -10,7 +10,8 @@
     <RootNamespace>TransferAgreementAutomation.Worker</RootNamespace>
     <AssemblyName>TransferAgreementAutomation.Worker</AssemblyName>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-      <ServerGarbageCollection>false</ServerGarbageCollection>
+      <ServerGarbageCollection>true</ServerGarbageCollection>
+      <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>
   </PropertyGroup>
 
   <ItemGroup>
