@@ -9,6 +9,7 @@
         <NoWarn>1701;1702;1591</NoWarn>
         <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
     </PropertyGroup>
 
     <ItemGroup>

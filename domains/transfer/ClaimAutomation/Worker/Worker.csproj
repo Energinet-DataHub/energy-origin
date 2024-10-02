@@ -8,6 +8,7 @@
     <RootNamespace>ClaimAutomation.Worker</RootNamespace>
     <AssemblyName>ClaimAutomation.Worker</AssemblyName>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+      <ServerGarbageCollection>false</ServerGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>
