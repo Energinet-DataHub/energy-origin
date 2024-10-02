@@ -8,6 +8,7 @@ using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ProjectOriginClients;
 using ProjectOriginClients.Models;
 
@@ -20,7 +21,7 @@ public class ClaimService(
     IShuffler shuffle,
     IClaimAutomationMetrics metrics,
     AutomationCache cache,
-    ClaimAutomationOptions claimAutomationOptions)
+    IOptions<ClaimAutomationOptions> options)
     : IClaimService
 {
     public async Task Run(CancellationToken stoppingToken)
@@ -69,7 +70,7 @@ public class ClaimService(
         while (hasMoreCertificates)
         {
             var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken,
-                limit: claimAutomationOptions.CertificateFetchBachSize, skip: certificates.Count);
+                limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
 
             if (response == null)
             {

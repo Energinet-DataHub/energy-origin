@@ -6,6 +6,7 @@ using ClaimAutomation.Worker.Options;
 using DataContext.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using ProjectOriginClients;
 using ProjectOriginClients.Models;
@@ -21,7 +22,9 @@ public class ClaimServiceTests
     private readonly IProjectOriginWalletClient walletClient = Substitute.For<IProjectOriginWalletClient>();
     private readonly IClaimAutomationMetrics metricsMock = Substitute.For<IClaimAutomationMetrics>();
     private readonly AutomationCache cacheMock = Substitute.For<AutomationCache>();
-    private readonly ClaimAutomationOptions _claimAutomationOptions = new() { CertificateFetchBachSize = 2 };
+
+    private readonly IOptions<ClaimAutomationOptions> _claimAutomationOptions =
+        new OptionsWrapper<ClaimAutomationOptions>(new ClaimAutomationOptions() { CertificateFetchBachSize = 2 });
 
     private readonly ClaimService claimService;
 
@@ -133,13 +136,13 @@ public class ClaimServiceTests
         {
             results.Add(new ResultList<GranularCertificate>()
             {
-                Metadata = new PageInfo() { Offset = 0, Count = 0, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 0 },
+                Metadata = new PageInfo() { Offset = 0, Count = 0, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = 0 },
                 Result = []
             });
         }
         else
         {
-            decimal nn2 = Decimal.Divide(numberOfCertificates, _claimAutomationOptions.CertificateFetchBachSize);
+            decimal nn2 = Decimal.Divide(numberOfCertificates, _claimAutomationOptions.Value.CertificateFetchBachSize);
             var nn3 = (int)Math.Ceiling(nn2);
             for (int i = 0; i < nn3; i++)
             {
@@ -148,12 +151,13 @@ public class ClaimServiceTests
                     Metadata = new PageInfo()
                     {
                         Offset = 0,
-                        Count = certs.Skip(i * _claimAutomationOptions.CertificateFetchBachSize)
-                            .Take(_claimAutomationOptions.CertificateFetchBachSize).Count(),
-                        Limit = _claimAutomationOptions.CertificateFetchBachSize,
+                        Count = certs.Skip(i * _claimAutomationOptions.Value.CertificateFetchBachSize)
+                            .Take(_claimAutomationOptions.Value.CertificateFetchBachSize).Count(),
+                        Limit = _claimAutomationOptions.Value.CertificateFetchBachSize,
                         Total = certs.Count
                     },
-                    Result = certs.Skip(i * _claimAutomationOptions.CertificateFetchBachSize).Take(_claimAutomationOptions.CertificateFetchBachSize)
+                    Result = certs.Skip(i * _claimAutomationOptions.Value.CertificateFetchBachSize)
+                        .Take(_claimAutomationOptions.Value.CertificateFetchBachSize)
                 });
             }
         }
@@ -184,12 +188,12 @@ public class ClaimServiceTests
             .Returns(new ResultList<GranularCertificate>()
             {
                 Metadata =
-                        new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = certs.Count },
+                        new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = certs.Count },
                 Result = certs.Take(2)
             },
                 new ResultList<GranularCertificate>()
                 {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 3 },
+                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = 3 },
                     Result = certs.Skip(2).Take(1)
                 })
             .AndDoes(_ => cts.Cancel());
@@ -214,17 +218,17 @@ public class ClaimServiceTests
         walletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
             {
-                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 4 },
+                Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = 4 },
                 Result = certs.Take(2)
             },
                 new ResultList<GranularCertificate>()
                 {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 5 },
+                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = 5 },
                     Result = certs.Skip(2).Take(2)
                 },
                 new ResultList<GranularCertificate>()
                 {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.CertificateFetchBachSize, Total = 5 },
+                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = 5 },
                     Result = certs.Skip(4).Take(1)
                 })
             .AndDoes(_ => cts.Cancel());
