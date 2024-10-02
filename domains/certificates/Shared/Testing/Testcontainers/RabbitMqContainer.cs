@@ -5,14 +5,14 @@ using Xunit;
 
 namespace Testing.Testcontainers;
 
-public partial class RabbitMqContainer : IAsyncLifetime
+public partial class RabbitContainer : IAsyncLifetime
 {
     private readonly global::Testcontainers.RabbitMq.RabbitMqContainer testContainer;
 
     [GeneratedRegex(@"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:(\d+)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
     private static partial Regex IpAndPortRegex();
 
-    public RabbitMqContainer() =>
+    public RabbitContainer() =>
         testContainer = new RabbitMqBuilder()
             .WithUsername("guest")
             .WithPassword("guest")

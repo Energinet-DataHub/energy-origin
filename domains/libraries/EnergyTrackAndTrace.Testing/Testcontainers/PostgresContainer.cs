@@ -1,8 +1,10 @@
+using System;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace Testing.Testcontainers;
+namespace EnergyTrackAndTrace.Testing.Testcontainers;
 
 public class PostgresContainer : IAsyncLifetime
 {

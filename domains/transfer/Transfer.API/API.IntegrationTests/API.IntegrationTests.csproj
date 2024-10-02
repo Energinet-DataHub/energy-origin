@@ -41,7 +41,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
-        <ProjectReference Include="..\..\Testing\Testing.csproj" />
+        <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Testing\EnergyTrackAndTrace.Testing.csproj" />
+        <ProjectReference Include="..\..\Shared\Testing\Testing.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>
 
