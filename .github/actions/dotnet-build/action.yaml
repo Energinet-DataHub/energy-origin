@@ -64,7 +64,14 @@ runs:
 
     - name: Fetch Dockerfile
       shell: bash
-      run: ./Dockerfile.simplified -O Dockerfile
+      run: |
+        if [ -f "Dockerfile.simplified" ]; then
+          cp Dockerfile.simplified Dockerfile
+        else
+          echo "Dockerfile.simplified not found in the repository root"
+          exit 1
+        fi
+
 
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v2
