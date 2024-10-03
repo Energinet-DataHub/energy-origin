@@ -26,10 +26,12 @@ if [ ! -z ${MIGRATIONS} ]; then
 fi
 EOR
 
-RUN wget -qO- https://github.com/grafana/pyroscope-dotnet/releases/download/v0.8.20-pyroscope/pyroscope.0.8.20-glibc-x86_64.tar.gz | tar xvz -C /tmp \
+RUN <<EOR
+wget -qO- https://github.com/grafana/pyroscope-dotnet/releases/download/v0.8.20-pyroscope/pyroscope.0.8.20-glibc-x86_64.tar.gz | tar xvz -C /tmp \
     Pyroscope.Profiler.Native.so \
-    Pyroscope.Linux.ApiWrapper.x64.so \
-    && mv /tmp/Pyroscope.Profiler.Native.so /tmp/Pyroscope.Linux.ApiWrapper.x64.so /app/publish/
+    Pyroscope.Linux.ApiWrapper.x64.so
+mv /tmp/Pyroscope.Profiler.Native.so /tmp/Pyroscope.Linux.ApiWrapper.x64.so /app/publish/
+EOR
 
 FROM base AS final
 WORKDIR /app
