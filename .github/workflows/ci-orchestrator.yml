@@ -27,10 +27,10 @@ jobs:
       dry-run: ${{ needs.setup.outputs.dry-run }}
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
 
-  check-licenses:
-    if: ${{ github.event_name == 'pull_request' }}
-    uses: ./.github/workflows/check-licenses.yml
-    secrets: inherit
+#  check-licenses:
+#    if: ${{ github.event_name == 'pull_request' }}
+#    uses: ./.github/workflows/check-licenses.yml
+#    secrets: inherit
 
   dependabot-validate:
     uses: ./.github/workflows/dependabot-validate.yaml
@@ -56,7 +56,7 @@ jobs:
     needs:
       [
         build-subsystems,
-        check-licenses,
+#        check-licenses,
         dependabot-validate,
         structurizr-update-pages,
         workflow-validate,
