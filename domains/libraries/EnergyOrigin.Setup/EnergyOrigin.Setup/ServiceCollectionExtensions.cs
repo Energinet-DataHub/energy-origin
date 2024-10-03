@@ -13,6 +13,7 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Pyroscope.OpenTelemetry;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EnergyOrigin.Setup;
@@ -72,7 +73,8 @@ public static class ServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddNpgsql()
-                    .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
+                    .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint)
+                    .AddProcessor(new PyroscopeSpanProcessor()));
     }
 
     public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracingWithGrpc(this IServiceCollection services, string serviceName,
