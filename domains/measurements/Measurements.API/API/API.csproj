@@ -40,8 +40,8 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.8" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
-		<PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.3" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
+		<PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.4" />
 		<PackageReference Include="OpenTelemetry" Version="1.9.0" />
 	</ItemGroup>
 	<ItemGroup>
