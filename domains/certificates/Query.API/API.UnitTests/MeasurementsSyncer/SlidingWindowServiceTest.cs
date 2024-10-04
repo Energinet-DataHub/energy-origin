@@ -206,12 +206,12 @@ public class SlidingWindowServiceTest
 
         // Assert updated sliding window contains 3 missing intervals
         Assert.Equal(3, window.MissingMeasurements.Intervals.Count);
-        Assert.Single(window.MissingMeasurements.Intervals.Where(m =>
-            Equals(m.From, synchronizationPoint.Add(TimeSpan.FromHours(1))) && Equals(m.To, synchronizationPoint.Add(TimeSpan.FromHours(4)))));
-        Assert.Single(window.MissingMeasurements.Intervals.Where(m =>
-            Equals(m.From, synchronizationPoint.Add(TimeSpan.FromHours(6))) && Equals(m.To, synchronizationPoint.Add(TimeSpan.FromHours(7)))));
-        Assert.Single(window.MissingMeasurements.Intervals.Where(m =>
-            Equals(m.From, synchronizationPoint.Add(TimeSpan.FromHours(8))) && Equals(m.To, newSynchronizationPoint)));
+        Assert.Single(window.MissingMeasurements.Intervals, m =>
+            Equals(m.From, synchronizationPoint.Add(TimeSpan.FromHours(1))) && Equals(m.To, synchronizationPoint.Add(TimeSpan.FromHours(4))));
+        Assert.Single(window.MissingMeasurements.Intervals, m =>
+            Equals(m.From, synchronizationPoint.Add(TimeSpan.FromHours(6))) && Equals(m.To, synchronizationPoint.Add(TimeSpan.FromHours(7))));
+        Assert.Single(window.MissingMeasurements.Intervals, m =>
+            Equals(m.From, synchronizationPoint.Add(TimeSpan.FromHours(8))) && Equals(m.To, newSynchronizationPoint));
     }
 
     // Fetched: [---------] - = measurements marked as missing

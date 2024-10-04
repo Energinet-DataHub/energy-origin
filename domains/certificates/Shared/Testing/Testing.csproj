@@ -10,7 +10,7 @@
     <PackageReference Include="Grpc.Core.Testing" Version="2.46.6" />
     <PackageReference Include="NSubstitute" Version="5.1.0" />
     <PackageReference Include="Testcontainers.RabbitMq" Version="3.10.0" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.9.0" />
+    <PackageReference Include="xunit.extensibility.core" Version="2.9.2" />
   </ItemGroup>
 
   <ItemGroup>
