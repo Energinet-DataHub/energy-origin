@@ -19,7 +19,7 @@ jobs:
       - name: Build subsystems matrix
         shell: bash
         run: |
-          for subsystem in $(find domains/ -mindepth 1 -maxdepth 1 -type d); do
+          for subsystem in $(find domains/ -mindepth 1 -maxdepth 1 -type d | egrep -v '/redoc$'); do
             [ -f "$subsystem/global.json" ] || cp "$subsystem/../../global.json" "$subsystem/global.json"
             settings=$(jq -srec '.[0] | .path=$path' --arg path "$subsystem" "$subsystem/global.json")
             sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
