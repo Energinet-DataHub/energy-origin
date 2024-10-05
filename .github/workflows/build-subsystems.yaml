@@ -16,7 +16,6 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      auth: ${{ steps.auth.outputs.matches }}
       authorization: ${{ steps.authorization.outputs.matches }}
       certificates: ${{ steps.certificates.outputs.matches }}
       measurements: ${{ steps.measurements.outputs.matches }}
@@ -24,12 +23,6 @@ jobs:
       transfer: ${{ steps.transfer.outputs.matches }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: detect auth
-        id: auth
-        uses: ./.github/actions/find-diff-action
-        with:
-          paths: domains/auth/
 
       - name: detect authorization
         id: authorization
@@ -60,15 +53,6 @@ jobs:
         uses: ./.github/actions/find-diff-action
         with:
           paths: domains/transfer/
-
-  build-auth:
-    needs: setup
-    if: needs.setup.outputs.auth == 'true'
-    uses: ./.github/workflows/build-auth.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
     needs: setup
@@ -106,14 +90,14 @@ jobs:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
-  build-open-api:
-    needs: setup
-    if: needs.setup.outputs.open-api == 'true'
-    uses: ./.github/workflows/build-open-api.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+#  build-open-api:
+#    needs: setup
+#    if: needs.setup.outputs.open-api == 'true'
+#    uses: ./.github/workflows/build-open-api.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-transfer:
     needs: setup
