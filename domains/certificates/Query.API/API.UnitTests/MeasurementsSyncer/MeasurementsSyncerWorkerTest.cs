@@ -10,6 +10,7 @@ using Measurements.V1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Xunit;
 using Technology = DataContext.ValueObjects.Technology;
@@ -43,32 +44,33 @@ public class MeasurementsSyncerWorkerTest
     public MeasurementsSyncerWorkerTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
+        var fakeTimeProvider = new FakeTimeProvider();
         var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics),
             new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient);
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
         _serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);
-        _worker = new MeasurementsSyncerWorker(_fakeLogger, _fakeContractState, Options.Create(_options), _scopeFactory);
+        _worker = new MeasurementsSyncerWorker(_fakeLogger, _fakeContractState, Options.Create(_options), _scopeFactory, fakeTimeProvider);
     }
 
     [Fact]
     public async Task FetchMeasurements_NoPeriodStartTimeInSyncState_NoDataFetched()
     {
-        CancellationTokenSource tokenSource = new CancellationTokenSource();
+        var fakeTimeProvider = new FakeTimeProvider();
+        var tokenSource = new CancellationTokenSource();
 
-        // Contract starting yesterday
-        var contractStartDate = DateTimeOffset.Now.AddDays(-1);
+        var contractStartDate = fakeTimeProvider.GetUtcNow().AddDays(-1);
         var info = _syncInfo with { StartSyncDate = contractStartDate };
 
         _fakeContractState.GetSyncInfos(Arg.Any<CancellationToken>())
             .Returns(new[] { info }).AndDoes(_ => tokenSource.Cancel());
 
-        // Run worker and wait for completion or timeout
         var workerTask = _worker.StartAsync(tokenSource.Token);
-        await Task.WhenAny(workerTask, Task.Delay(TimeSpan.FromMinutes(2)));
 
-        // Assert no timeout and no data fetched
-        Assert.True(workerTask.IsCompleted);
-        _ = _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        fakeTimeProvider.Advance(TimeSpan.FromMinutes(2));
+
+        await workerTask;
+
+        _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
     }
 }
