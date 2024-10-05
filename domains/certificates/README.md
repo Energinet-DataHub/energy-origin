@@ -22,7 +22,7 @@ When shutting down, run:
 ```
 docker-compose down --volumes
 ```
-
+why no trigger?
 ## Working with Entity Framework
 
 We use EF Core with code-first approach. This means that the entities added to the `DbContext` is changed first and database migrations is generated afterwards.
