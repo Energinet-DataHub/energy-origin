@@ -13,15 +13,53 @@ on:
         type: string
 
 jobs:
-  
-  build-api:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Create dynamic solution file for Measurements
+        shell: bash
+        run: |
+          rm -f EnergyTrackAndTrace.sln
+          dotnet new sln -n Measurements
+          find domains/measurements -name '*.csproj' | while read project; do
+            dotnet sln Measurements.sln add "$project"
+          done
+
+      - uses: ./.github/actions/dotnet-test
+        with:
+          solution: Measurements.sln
+
+  build-api:
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/measurements/Measurements.sln
+          solution: Measurements.sln
           project: domains/measurements/Measurements.API/API/API.csproj
           configuration: domains/measurements/Measurements.API/configuration.yaml
           migrations: domains/measurements/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}
+
+  update:
+    runs-on: ubuntu-latest
+    name: Update environment
+    needs:
+      - build-api
+    concurrency: commits-base-environment
+    if: ${{ inputs.is-dependabot == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update environment
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+        with:
+          configurations: |
+            domains/measurements/Measurements.API/configuration.yaml
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ inputs.dry-run }}

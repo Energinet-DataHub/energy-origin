@@ -13,15 +13,35 @@ on:
         type: string
 
 jobs:
- 
+  test:
+    name: Test Transfer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create dynamic solution file for Transfer
+        shell: bash
+        run: |
+          rm -f EnergyTrackAndTrace.sln
+          dotnet new sln -n Transfer
+          find domains/transfer -name '*.csproj' | while read project; do
+            dotnet sln Transfer.sln add "$project"
+          done
+
+      - uses: ./.github/actions/dotnet-test
+        with:
+          solution: domains/transfer/Transfer.sln
+
   build-api:
     name: Build Transfer.API
+    needs:
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/transfer/Transfer.sln
+          solution: Transfer.sln
           project: domains/transfer/Transfer.API/API/API.csproj
           configuration: domains/transfer/Transfer.API/configuration.yaml
           migrations: domains/transfer/migrations/API.sql
@@ -29,12 +49,14 @@ jobs:
 
   build-claim-automation:
     name: Build ClaimAutomation
+    needs:
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/transfer/Transfer.sln
+          solution: Transfer.sln
           project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
           configuration: domains/transfer/ClaimAutomation/configuration.yaml
           migrations: domains/transfer/migrations/API.sql
@@ -42,13 +64,37 @@ jobs:
 
   build-transfer-automation:
     name: Build TransferAutomation
+    needs:
+      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/transfer/Transfer.sln
+          solution: Transfer.sln
           project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
           configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
           migrations: domains/transfer/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}
+
+  update-transfer:
+    runs-on: ubuntu-latest
+    name: Update environment
+    needs:
+      - build-api
+      - build-claim-automation
+      - build-transfer-automation
+    concurrency: commits-base-environment
+    if: ${{ inputs.is-dependabot == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update environment
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+        with:
+          configurations: |
+            domains/transfer/Transfer.API/configuration.yaml
+            domains/transfer/ClaimAutomation/configuration.yaml
+            domains/transfer/TransferAgreementAutomation/configuration.yaml
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ inputs.dry-run }}
