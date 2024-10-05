@@ -128,7 +128,7 @@ public class MeasurementsSyncServiceTest
     [Fact]
     public async Task FetchMeasurements_OldEnoughMeasurement_ForAllMinimumAgesBetweenZeroAndOneHundredSixtyEight_ArePublished()
     {
-        for (var minimumAgeBeforeIssuingInHours = 1; minimumAgeBeforeIssuingInHours <= 168; minimumAgeBeforeIssuingInHours++)
+        for (var minimumAgeBeforeIssuingInHours = 0; minimumAgeBeforeIssuingInHours <= 168; minimumAgeBeforeIssuingInHours++)
         {
             _options.MinimumAgeBeforeIssuingInHours = minimumAgeBeforeIssuingInHours;
 
