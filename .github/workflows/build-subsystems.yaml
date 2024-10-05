@@ -107,3 +107,34 @@ jobs:
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
+
+  update:
+    runs-on: ubuntu-latest
+    name: Update environment
+    needs:
+      - build-authorization
+      - build-auth
+      - build-certificates
+      - build-measurements
+      - build-oidc-mock
+      - build-transfer
+    concurrency: commits-base-environment
+    if: ${{ inputs.is-dependabot == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update environment
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
+        with:
+          configurations: |
+            domains/auth/Auth.API/configuration.yaml
+            domains/authorization/Authorization.API/configuration.yaml
+            domains/authorization/Proxy/configuration.yaml
+            domains/certificates/Query.API/configuration.yaml
+            domains/measurements/Measurements.API/configuration.yaml
+            domains/oidc-mock/API/configuration.yaml
+            domains/transfer/Transfer.API/configuration.yaml
+            domains/transfer/ClaimAutomation/configuration.yaml
+            domains/transfer/TransferAgreementAutomation/configuration.yaml
+          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
+          dry_run: ${{ inputs.dry-run }}

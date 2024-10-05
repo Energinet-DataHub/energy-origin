@@ -63,23 +63,3 @@ jobs:
           project: domains/authorization/Proxy/Proxy.csproj
           configuration: domains/authorization/Proxy/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
-
-  update:
-    runs-on: ubuntu-latest
-    name: Update environment
-    needs:
-      - build-api
-      - build-proxy
-    concurrency: commits-base-environment
-    if: ${{ inputs.is-dependabot == 'false' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
-        with:
-          configurations: |
-            domains/authorization/Authorization.API/configuration.yaml
-            domains/authorization/Proxy/configuration.yaml
-          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
-          dry_run: ${{ inputs.dry-run }}
