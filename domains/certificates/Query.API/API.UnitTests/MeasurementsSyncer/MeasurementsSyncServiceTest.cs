@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Configurations;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
@@ -11,6 +12,7 @@ using FluentAssertions;
 using Measurements.V1;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using Testing.Extensions;
 using Xunit;
@@ -22,7 +24,7 @@ public class MeasurementsSyncServiceTest
 {
     private readonly MeteringPointSyncInfo _syncInfo = new(
         Gsrn: Any.Gsrn(),
-        StartSyncDate: DateTimeOffset.Now.AddDays(-1),
+        StartSyncDate: DateTimeOffset.Now.AddDays(-8),
         MeteringPointOwner: "meteringPointOwner",
         MeteringPointType.Production,
         "DK1",
@@ -33,6 +35,7 @@ public class MeasurementsSyncServiceTest
     private readonly ILogger<MeasurementsSyncService> _fakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly ISlidingWindowState _fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
     private readonly IMeasurementSyncPublisher _fakeMeasurementPublisher = Substitute.For<IMeasurementSyncPublisher>();
+    private readonly MeasurementsSyncOptions _options = Substitute.For<MeasurementsSyncOptions>();
     private readonly MeasurementsSyncService _service;
 
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient =
@@ -42,7 +45,7 @@ public class MeasurementsSyncServiceTest
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         _service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient);
+            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options));
     }
 
     [Fact]
@@ -120,5 +123,49 @@ public class MeasurementsSyncServiceTest
         // Then 2 measurements are published
         await _fakeMeasurementPublisher.Received().PublishIntegrationEvents(Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Is<List<Measurement>>(measurements => measurements.Count == 2), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FetchAndPublishMeasurements_MeasurementsYoungerThanMinimumAge_AreNotPublished()
+    {
+        var minimumAge = 168;
+        _options.MinimumAgeBeforeIssuingInHours = minimumAge;
+
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, UnixTimestamp.Create(_syncInfo.StartSyncDate));
+        var dateFrom = UnixTimestamp.Now().Add(TimeSpan.FromHours(-100)).Seconds;
+        var measurement = Any.Measurement(_syncInfo.Gsrn, dateFrom, 5);
+
+        var mockedResponse = new GetMeasurementsResponse { Measurements = { measurement } };
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(mockedResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        await _fakeMeasurementPublisher.Received(0).PublishIntegrationEvents(Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FetchAndPublishMeasurements_MeasurementsOlderThanMinimumAge_ArePublished()
+    {
+        var minimumAge = 168;
+        _options.MinimumAgeBeforeIssuingInHours = minimumAge;
+
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, UnixTimestamp.Create(_syncInfo.StartSyncDate));
+        var dateFrom = UnixTimestamp.Now().Add(TimeSpan.FromHours(-169)).Seconds;
+        var measurement = Any.Measurement(_syncInfo.Gsrn, dateFrom, 5);
+
+        var mockedResponse = new GetMeasurementsResponse { Measurements = { measurement } };
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(mockedResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
     }
 }

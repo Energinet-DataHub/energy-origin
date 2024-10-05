@@ -42,9 +42,11 @@ public class MeasurementsSyncerWorkerTest
 
     public MeasurementsSyncerWorkerTest()
     {
+        _options.MinimumAgeBeforeIssuingInHours = 0;
+
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient);
+            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options));
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
         _serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);

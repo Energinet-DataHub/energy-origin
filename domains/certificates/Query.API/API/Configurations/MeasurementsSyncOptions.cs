@@ -17,6 +17,9 @@ public class MeasurementsSyncOptions
 
     [Required]
     public MeasurementsSyncerSleepType SleepType { get; set; }
+
+    [Required]
+    public int MinimumAgeBeforeIssuingInHours { get; set; }
 }
 
 public static partial class OptionsExtensions
