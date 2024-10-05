@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-test
         with:
-          solution: domains/authorization/Autorization.sln
+          solution: Autorization.sln
 
   build-api:
     needs:
@@ -27,9 +27,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Create dynamic solution file for Authorization
+        shell: bash
+        run: |
+          rm -f EnergyTrackAndTrace.sln
+          dotnet new sln -n Authorization
+          find domains/authorization -name '*.csproj' | while read project; do
+            dotnet sln Authorization.sln add "$project"
+          done
+
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/authorization/Autorization.sln
+          solution: Authorization.sln
           project: domains/authorization/Authorization.API/API/API.csproj
           migrations: domains/authorization/migrations/API.sql
           configuration: domains/authorization/Authorization.API/configuration.yaml
@@ -43,7 +53,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/authorization/Autorization.sln
+          solution: Authorization.sln
           project: domains/authorization/Proxy/Proxy.csproj
           configuration: domains/authorization/Proxy/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
