@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using API.MeasurementsSyncer.Metrics;
@@ -20,30 +21,38 @@ public class SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics
         return MeteringPointTimeSeriesSlidingWindow.Create(gsrn, synchronizationPoint, missingMeasurements);
     }
 
-public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, int minimumAgeInHours)
+public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, int minimumAgeBeforeIssuingInHours)
 {
-    var currentTime = UnixTimestamp.Now().Seconds;
-    var minimumAgeInSeconds = minimumAgeInHours * UnixTimestamp.SecondsPerHour;
+    var threshold = UnixTimestamp.Now().Add(-TimeSpan.FromHours(minimumAgeBeforeIssuingInHours));
 
     return measurements
         .Where(m => m.Gsrn == window.GSRN)
         .Where(m =>
         {
+            if (m.QuantityMissing)
+            {
+                measurementSyncMetrics.AddFilterDueQuantityMissingFlag(1);
+            }
+            return !m.QuantityMissing;
+        })
+        .Where(m =>
+        {
+            var dateTo = UnixTimestamp.Create(m.DateTo);
+            if (dateTo <= threshold)
+                return true;
+
+            return false;
+        })
+        .Where(m =>
+        {
             var from = UnixTimestamp.Create(m.DateFrom);
             var to = UnixTimestamp.Create(m.DateTo);
-
-            var measurementAgeInSeconds = currentTime - to.Seconds;
-            if (measurementAgeInSeconds < minimumAgeInSeconds)
-            {
-                return false;
-            }
+            var interval = MeasurementInterval.Create(from, to);
 
             if (IsAfterSynchronizationPoint(window, from))
             {
                 return true;
             }
-
-            var interval = MeasurementInterval.Create(from, to);
             var isIncludedInMissingInterval = IsIncludedInMissingInterval(window, interval);
             if (isIncludedInMissingInterval)
             {
@@ -54,15 +63,6 @@ public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow
                 measurementSyncMetrics.AddNumberOfDuplicateMeasurements(1);
             }
             return isIncludedInMissingInterval;
-        })
-        .Where(m =>
-        {
-            if (m.QuantityMissing)
-            {
-                measurementSyncMetrics.AddFilterDueQuantityMissingFlag(1);
-                return false;
-            }
-            return true;
         })
         .Where(m =>
         {

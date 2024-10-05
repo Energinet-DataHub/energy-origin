@@ -119,7 +119,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, _now.Add(TimeSpan.FromHours(-5)).Seconds, _now.Add(TimeSpan.FromHours(-4)).Seconds, 10, quantityMissing,
                 EnergyQuantityValueQuality.Measured)
         };
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeInHours: 0);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeBeforeIssuingInHours: 0);
 
         // Assert all measurements after synchronization point should be published
         Assert.Equal(publishedCount, measurementsToPublish.Count());
@@ -144,7 +144,7 @@ public class SlidingWindowServiceTest
                     EnergyQuantityValueQuality.Measured))
             .ToList();
 
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeInHours: 0);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeBeforeIssuingInHours: 0);
 
         // Assert all measurements after synchronization point should be published
         Assert.Equal(publishedCount, measurementsToPublish.Count);
@@ -331,7 +331,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(105)).Seconds,
                 synchronizationPoint.Add(TimeSpan.FromMinutes(120)).Seconds, 10, false, EnergyQuantityValueQuality.Calculated)
         };
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeInHours: 0);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeBeforeIssuingInHours: 0);
 
         // Assert updated sliding window contains 3 missing intervals
         Assert.Equal(4, measurementsToPublish.Count);
@@ -355,7 +355,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).Seconds,
                 synchronizationPoint.Add(TimeSpan.FromMinutes(105)).Seconds, 10, false, EnergyQuantityValueQuality.Calculated),
         };
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeInHours: 0);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeBeforeIssuingInHours: 0);
 
         measurementsToPublish.Count.Should().Be(2);
     }
@@ -378,7 +378,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).Seconds,
                 synchronizationPoint.Add(TimeSpan.FromMinutes(105)).Seconds, uint.MaxValue, false, EnergyQuantityValueQuality.Calculated),
         };
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeInHours: 0);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, minimumAgeBeforeIssuingInHours: 0);
 
         measurementsToPublish.Count.Should().Be(1);
     }
