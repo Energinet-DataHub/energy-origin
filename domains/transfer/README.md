@@ -58,4 +58,4 @@ This is the command for generating the migration SQL script for the API project:
 ```shell
 dotnet ef migrations script --idempotent --project Transfer.API/API --output migrations/API.sql
 ```
-trigger transfer
+

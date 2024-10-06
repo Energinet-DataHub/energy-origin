@@ -17,7 +17,10 @@ jobs:
     name: Test Authorization Subsystem
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Download subsystem artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: authorization-files
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -27,7 +30,6 @@ jobs:
       - name: Create dynamic solution file for Authorization
         shell: bash
         run: |
-          rm -f EnergyTrackAndTrace.sln
           dotnet new sln -n Authorization
           find domains/authorization -name '*.csproj' | while read project; do
             dotnet sln Authorization.sln add "$project"
@@ -41,7 +43,10 @@ jobs:
     name: Build Authorization.API
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Download subsystem artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: authorization-files
 
       - uses: ./.github/actions/dotnet-build
         with:
@@ -55,7 +60,11 @@ jobs:
     name: Build Authorization.Proxy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Download subsystem artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: authorization-files
+
       - uses: ./.github/actions/dotnet-build
         with:
           solution: Authorization.sln
