@@ -77,27 +77,25 @@ jobs:
     if: ${{ needs.detect.outputs.matrix != '[]' }}
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        domain: ${{ fromJson(needs.detect.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
       fail-fast: false
     steps:
       - name: Prepare workspace for artifact upload
         run: |
-          find domains/ -mindepth 1 -maxdepth 1 -type d ! -name "${{ matrix.domain.name }}" ! -name "libraries" -exec rm -rf {} +
+          find domains/ -mindepth 1 -maxdepth 1 -type d ! -name "${{ matrix.name }}" ! -name "libraries" -exec rm -rf {} +
 
       - name: Upload subsystem and libraries
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.domain.name }}-files
+          name: ${{ matrix.name }}-files
           path: domains/
 
       - name: Trigger the corresponding build workflow
         uses: ./.github/actions/workflow-dispatch-action@v1
         with:
-          workflow: ${{ matrix.domain.workflow }}
+          workflow: ${{ matrix.workflow }}
           dry-run: ${{ inputs.dry-run }}
           is-dependabot: ${{ inputs.is-dependabot }}
-
 
   update:
     runs-on: ubuntu-latest
