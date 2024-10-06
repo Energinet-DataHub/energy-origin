@@ -13,7 +13,7 @@ on:
         type: string
 
 jobs:
-  detecy:
+  setup:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -70,11 +70,11 @@ jobs:
           echo "matrix=$matrix" >> "$GITHUB_ENV"
 
   test:
-    needs: detect
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        domain: ${{ fromJson(needs.detect.outputs.matrix) }}
+        domain: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -99,11 +99,11 @@ jobs:
           solution: ${{ matrix.domain.name }}.sln
 
   build:
-    needs: detect
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: ${{ fromJson(needs.detect.outputs.matrix) }}
+        project: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
