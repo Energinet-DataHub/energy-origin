@@ -13,60 +13,110 @@ on:
         type: string
 
 jobs:
-  detect:
+  setup:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        subsystem:
-          - { name: "authorization", path: "domains/authorization", workflow: ".github/workflows/build-authorization.yaml" }
-          - { name: "certificates", path: "domains/certificates", workflow: ".github/workflows/build-certificates.yaml" }
-          - { name: "measurements", path: "domains/measurements", workflow: ".github/workflows/build-measurements.yaml" }
-          - { name: "oidc-mock", path: "domains/oidc-mock", workflow: ".github/workflows/build-oidc-mock.yaml" }
-          - { name: "transfer", path: "domains/transfer", workflow: ".github/workflows/build-transfer.yaml" }
-      fail-fast: false
+    outputs:
+      authorization: ${{ steps.authorization.outputs.matches }}
+      certificates: ${{ steps.certificates.outputs.matches }}
+      measurements: ${{ steps.measurements.outputs.matches }}
+      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
+      transfer: ${{ steps.transfer.outputs.matches }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for changes in ${{ matrix.subsystem.name }}
-        id: check-changes
+      - name: detect authorization
+        id: authorization
         uses: ./.github/actions/find-diff-action
         with:
-          paths: ${{ matrix.subsystem.path }}
+          paths: domains/authorization/
 
-      - name: Set output if changes detected
-        if: ${{ steps.check-changes.outputs.matches == 'true' }}
-        run: echo "subsystem=${{ matrix.subsystem.name }}" >> $GITHUB_ENV
-
-  build:
-    needs: detect
-    runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{ fromJson(needs.detect.outputs.subsystem) }}
-      fail-fast: false
-    steps:
-      - name: Prepare workspace for artifact upload
-        run: |
-          # Remove all subsystem folders except the one detected by the matrix
-          find domains/ -mindepth 1 -maxdepth 1 -type d ! -name "${{ matrix.name }}" ! -name "libraries" -exec rm -rf {} +
-
-      - name: Upload subsystem and libraries
-        uses: actions/upload-artifact@v4
+      - name: detect certificates
+        id: certificates
+        uses: ./.github/actions/find-diff-action
         with:
-          name: ${{ matrix.name }}-files
-          path: domains/
+          paths: domains/certificates/
 
-      - name: Trigger the corresponding build workflow
-        uses: ./.github/actions/workflow-dispatch-action@v1
+      - name: detect measurements
+        id: measurements
+        uses: ./.github/actions/find-diff-action
         with:
-          workflow: ${{ matrix.workflow }}
-          dry-run: ${{ inputs.dry-run }}
-          is-dependabot: ${{ inputs.is-dependabot }}
+          paths: domains/measurements/
+
+      - name: detect oidc-mock
+        id: oidc-mock
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: domains/oidc-mock/
+
+      - name: detect transfer
+        id: transfer
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: domains/transfer/
+
+  build-authorization:
+    needs: setup
+    if: needs.setup.outputs.authorization == 'true'
+    uses: ./.github/workflows/build-authorization.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-certificates:
+    needs: setup
+    if: needs.setup.outputs.certificates == 'true'
+    uses: ./.github/workflows/build-certificates.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-measurements:
+    needs: setup
+    if: needs.setup.outputs.measurements == 'true'
+    uses: ./.github/workflows/build-measurements.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-oidc-mock:
+    needs: setup
+    if: needs.setup.outputs.oidc-mock == 'true'
+    uses: ./.github/workflows/build-oidc-mock.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+#  build-open-api:
+#    needs: setup
+#    if: needs.setup.outputs.open-api == 'true'
+#    uses: ./.github/workflows/build-open-api.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-transfer:
+    needs: setup
+    if: needs.setup.outputs.transfer == 'true'
+    uses: ./.github/workflows/build-transfer.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   update:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-      - build
+      - build-authorization
+      - build-certificates
+      - build-measurements
+      - build-oidc-mock
+      - build-transfer
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
