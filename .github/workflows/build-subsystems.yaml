@@ -81,7 +81,6 @@ jobs:
         domain: ${{ fromJson(needs.detect.outputs.matrix) }}
       fail-fast: false
     steps:
-
       - uses: actions/checkout@v4
 
       - name: Prepare workspace for artifact upload
@@ -95,12 +94,56 @@ jobs:
           path: domains/
 
       - name: Trigger the corresponding build workflow
-        uses: ./.github/actions/workflow-dispatch-action@v1
+        uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: ${{ matrix.domain.workflow }}
-          dry-run: ${{ inputs.dry-run }}
-          is-dependabot: ${{ inputs.is-dependabot }}
+          inputs: '{ "dry-run": "${{ inputs.dry-run }}", "is-dependabot": "${{ inputs.is-dependabot }}" }'
+          ref: ${{ github.ref }}
 
+#  build-authorization:
+#    needs: setup
+#    if: ${{ needs.detect.outputs.matrix.name == '[authorization]' }}
+#    uses: ./.github/workflows/build-authorization.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-certificates:
+#    needs: setup
+#    if: ${{ needs.detect.outputs.matrix.name == '[certificates]' }}
+#    uses: ./.github/workflows/build-certificates.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-measurements:
+#    needs: setup
+#    if: ${{ needs.detect.outputs.matrix.name == '[measurements]' }}
+#    uses: ./.github/workflows/build-measurements.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-oidc-mock:
+#    needs: setup
+#    if: ${{ needs.detect.outputs.matrix.name == '[oidc-mock]' }}
+#    uses: ./.github/workflows/build-oidc-mock.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-transfer:
+#    needs: setup
+#    if: ${{ needs.detect.outputs.matrix.name == '[transfer]' }}
+#    uses: ./.github/workflows/build-authorization.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
 
   update:
     runs-on: ubuntu-latest
