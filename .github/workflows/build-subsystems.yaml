@@ -81,9 +81,6 @@ jobs:
         domain: ${{ fromJson(needs.detect.outputs.matrix) }}
       fail-fast: false
     steps:
-
-      - uses: actions/checkout@v4
-
       - name: Prepare workspace for artifact upload
         run: |
           find domains/ -mindepth 1 -maxdepth 1 -type d ! -name "${{ matrix.domain.name }}" ! -name "libraries" -exec rm -rf {} +
