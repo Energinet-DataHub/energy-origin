@@ -15,22 +15,18 @@ on:
 jobs:
   detect:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build_matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
-
       - name: Detect changes
         id: diff
         uses: ./.github/actions/find-diff-action
         with:
           paths: domains/*/
 
-      - name: Set default matrix
-        shell: bash
-        run: |
-          echo "matrix=[]" >> "$GITHUB_ENV"
-
-      - name: Build relevant matrix
+      - name: Create matrix
         if: ${{ steps.diff.outputs.list != '' }}
+        id: build_matrix
         shell: bash
         env:
           LIST: ${{ steps.diff.outputs.list }}
@@ -43,6 +39,8 @@ jobs:
             ["transfer"]=".github/workflows/build-transfer.yaml"
           )
 
+          matrix='[]'
+
           while read domain; do
             subsystem=$(basename "$domain")
             if [[ -n "${workflows[$subsystem]}" ]]; then
@@ -50,18 +48,19 @@ jobs:
             fi
           done <<< "$LIST"
 
-          echo "matrix=$matrix" >> "$GITHUB_ENV"
+          if [ -z "$matrix" ] || [ "$matrix" = "[]" ]; then
+            echo "No matching subsystems found. Setting an empty matrix."
+            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+          else
+            echo "matrix={\"include\":$matrix}" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Print Matrix Content
+      - name: Output Matrix
         shell: bash
-        env:
-          matrix: ${{ steps.detect.outputs.matrix }}
         run: |
           echo '::group::Matrix Content'
-          echo "$matrix" | jq .
+          echo "${{ steps.build_matrix.outputs.matrix }}" | jq .
           echo '::endgroup::'
-
-
 
   build:
     needs: detect
@@ -86,6 +85,7 @@ jobs:
           workflow: ${{ matrix.workflow }}
           dry-run: ${{ inputs.dry-run }}
           is-dependabot: ${{ inputs.is-dependabot }}
+
 
   update:
     runs-on: ubuntu-latest
