@@ -113,7 +113,6 @@ jobs:
     name: Update environment
     needs:
       - build-authorization
-      - build-auth
       - build-certificates
       - build-measurements
       - build-oidc-mock
@@ -127,7 +126,6 @@ jobs:
         uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v1
         with:
           configurations: |
-            domains/auth/Auth.API/configuration.yaml
             domains/authorization/Authorization.API/configuration.yaml
             domains/authorization/Proxy/configuration.yaml
             domains/certificates/Query.API/configuration.yaml
