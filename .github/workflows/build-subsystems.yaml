@@ -77,7 +77,8 @@ jobs:
         domain: ${{ fromJson(needs.detect.outputs.matrix) }}
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -106,7 +107,13 @@ jobs:
         project: ${{ fromJson(needs.detect.outputs.matrix) }}
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.402'
 
       - name: Build ${{ matrix.project.name }}
         uses: ./.github/actions/dotnet-build
