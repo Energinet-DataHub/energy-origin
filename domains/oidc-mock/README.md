@@ -21,3 +21,4 @@ The only supported flow is Authorization Code Flow. The endpoints and pages are 
 ## Development
 
 When running the application in development mode, users are available along with a client (containing client id, secret and redirect uri). To start the authorization flow in development mode, navigate to https://localhost:7124/Connect/Authorize?client_id=energy-origin&redirect_uri=https://localhost:7124&response_type=code&scope=openid%20nemid%20mitid%20ssn%20userinfo_token&state=c6770cf5939c4db9bd293b189c2d0107&response_mode=query
+
