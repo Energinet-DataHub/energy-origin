@@ -43,6 +43,7 @@ jobs:
             ["transfer"]=".github/workflows/build-transfer.yaml"
           )
 
+          # Loop through the subsystems and match with the workflows
           while read domain; do
             subsystem=$(basename "$domain")
             if [[ -n "${workflows[$subsystem]}" ]]; then
@@ -50,17 +51,15 @@ jobs:
             fi
           done <<< "$LIST"
 
+          # Store matrix in the GITHUB_ENV for further use
           echo "matrix=$matrix" >> "$GITHUB_ENV"
 
-      - name: Print Matrix Content
+      - name: Output Matrix
         shell: bash
-        env:
-          matrix: ${{ steps.detect.outputs.matrix }}
         run: |
           echo '::group::Matrix Content'
-          echo "$matrix" | jq .
+          echo "${{ env.matrix }}" | jq .
           echo '::endgroup::'
-
 
 
   build:
