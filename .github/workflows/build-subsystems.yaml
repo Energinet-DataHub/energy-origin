@@ -15,56 +15,54 @@ on:
 jobs:
   detect:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        subsystem:
-          - name: "authorization"
-            path: "domains/authorization"
-            workflow: ".github/workflows/build-authorization.yaml"
-          - name: "certificates"
-            path: "domains/certificates"
-            workflow: ".github/workflows/build-certificates.yaml"
-          - name: "measurements"
-            path: "domains/measurements"
-            workflow: ".github/workflows/build-measurements.yaml"
-          - name: "oidc-mock"
-            path: "domains/oidc-mock"
-            workflow: ".github/workflows/build-oidc-mock.yaml"
-          - name: "transfer"
-            path: "domains/transfer"
-            workflow: ".github/workflows/build-transfer.yaml"
-      fail-fast: false
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for changes in ${{ matrix.subsystem.name }}
-        id: check-changes
-        uses: ./.github/actions/find-diff-action
+      - name: Detect changes across all subsystems
+        id: diff
+        uses: CodeReaper/find-diff-action@v3
         with:
-          paths: ${{ matrix.subsystem.path }}
+          paths: domains/*/
 
-      - name: Set output if changes detected
-        if: ${{ steps.check-changes.outputs.matches == 'true' }}
-        run: echo "subsystem=[\"${{ matrix.subsystem.name }}\"]" >> $GITHUB_ENV
-
-      - name: Set default output if no changes detected
-        if: ${{ steps.check-changes.outputs.matches != 'true' }}
-        run: echo "subsystem=[]" >> $GITHUB_ENV
-
-      - name: Log subsystem output
+      - name: Set default matrix
+        shell: bash
         run: |
-          echo "Subsystem output: ${{ fromJson(needs.detect.outputs.subsystem) }}"
+          echo "matrix=[]" >> "$GITHUB_ENV"
+
+      - name: Build relevant matrix
+        if: ${{ steps.diff.outputs.list != '' }}
+        shell: bash
+        env:
+          LIST: ${{ steps.diff.outputs.list }}
+        run: |
+          declare -A workflows=(
+            ["authorization"]=".github/workflows/build-authorization.yaml"
+            ["certificates"]=".github/workflows/build-certificates.yaml"
+            ["measurements"]=".github/workflows/build-measurements.yaml"
+            ["oidc-mock"]=".github/workflows/build-oidc-mock.yaml"
+            ["transfer"]=".github/workflows/build-transfer.yaml"
+          )
+
+          while read domain; do
+            subsystem=$(basename "$domain")
+            if [[ -n "${workflows[$subsystem]}" ]]; then
+              matrix=$(echo "$matrix" | jq -c --arg subsystem "$subsystem" --arg path "$domain" --arg workflow "${workflows[$subsystem]}" '. += [{"name": $subsystem, "path": $path, "workflow": $workflow}]')
+            fi
+          done <<< "$LIST"
+
+          echo "::set-output name=matrix::$matrix"
 
   build:
     needs: detect
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.detect.outputs.subsystem) }}
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
       fail-fast: false
     steps:
       - name: Prepare workspace for artifact upload
         run: |
-          # Remove all subsystem folders except the one detected by the matrix
           find domains/ -mindepth 1 -maxdepth 1 -type d ! -name "${{ matrix.name }}" ! -name "libraries" -exec rm -rf {} +
 
       - name: Upload subsystem and libraries
