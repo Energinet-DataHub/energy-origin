@@ -1,7 +1,7 @@
 name: Build Certificates
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       dry-run:
         description: "An indication of whether to commit/publish results"
