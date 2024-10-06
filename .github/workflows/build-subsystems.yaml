@@ -16,7 +16,7 @@ jobs:
   detect:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.build_matrix.outputs.matrix }}
+      matrix: ${{ env.matrix }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +28,6 @@ jobs:
 
       - name: Create matrix
         if: ${{ steps.diff.outputs.list != '' }}
-        id: build_matrix
         shell: bash
         env:
           LIST: ${{ steps.diff.outputs.list }}
@@ -43,29 +42,30 @@ jobs:
 
           matrix='[]'
 
-          while read domain; do
+          while read -r domain; do
             subsystem=$(basename "$domain")
             if [[ -n "${workflows[$subsystem]}" ]]; then
-              matrix=$(echo "$matrix" | jq -c --arg subsystem "$subsystem" --arg path "$domain" --arg workflow "${workflows[$subsystem]}" '. += [{"name": $subsystem, "path": $path, "workflow": $workflow}]')
+              item=$(jq -n \
+                --arg name "$subsystem" \
+                --arg path "$domain" \
+                --arg workflow "${workflows[$subsystem]}" \
+                '{name: $name, path: $path, workflow: $workflow}')
+              matrix=$(echo "$matrix" | jq -c '. += [$ARGS.named]' --args --argjson named "$item")
             fi
           done <<< "$LIST"
 
-          if [ -z "$matrix" ] || [ "$matrix" = "[]" ]; then
-            echo "No matching subsystems found. Setting an empty matrix."
-            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
-          else
-            echo "matrix={\"include\":$matrix}" >> $GITHUB_OUTPUT
-          fi
+          echo "matrix=$matrix" >> "$GITHUB_ENV"
 
       - name: Output Matrix
         shell: bash
         run: |
           echo '::group::Matrix Content'
-          echo "${{ steps.build_matrix.outputs.matrix }}" | jq .
+          echo "${{ env.matrix }}" | jq .
           echo '::endgroup::'
 
   build:
     needs: detect
+    if: ${{ needs.detect.outputs.matrix != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
@@ -87,7 +87,6 @@ jobs:
           workflow: ${{ matrix.workflow }}
           dry-run: ${{ inputs.dry-run }}
           is-dependabot: ${{ inputs.is-dependabot }}
-
 
   update:
     runs-on: ubuntu-latest
