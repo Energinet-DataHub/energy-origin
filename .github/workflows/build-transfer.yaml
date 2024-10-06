@@ -35,7 +35,7 @@ jobs:
 
       - uses: ./.github/actions/dotnet-test
         with:
-          solution: domains/transfer/Transfer.sln
+          solution: Transfer.sln
 
   build-api:
     name: Build Transfer.API
