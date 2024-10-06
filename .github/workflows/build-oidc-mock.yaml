@@ -1,7 +1,7 @@
 name: Build OIDC-Mock
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       dry-run:
         description: "An indication of whether to commit/publish results"
