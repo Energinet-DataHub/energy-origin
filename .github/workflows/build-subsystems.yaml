@@ -50,7 +50,7 @@ jobs:
                 --arg path "$domain" \
                 --arg workflow "${workflows[$subsystem]}" \
                 '{name: $name, path: $path, workflow: $workflow}')
-              matrix=$(echo "$matrix" | jq -c '. += [$ARGS.named]' --args --argjson named "$item")
+              matrix=$(echo "$matrix" | jq -c --argjson item "$item" '. += [$item]')
             fi
           done <<< "$LIST"
 
