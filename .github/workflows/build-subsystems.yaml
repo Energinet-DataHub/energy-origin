@@ -13,110 +13,177 @@ on:
         type: string
 
 jobs:
-  setup:
+  detecy:
     runs-on: ubuntu-latest
     outputs:
-      authorization: ${{ steps.authorization.outputs.matches }}
-      certificates: ${{ steps.certificates.outputs.matches }}
-      measurements: ${{ steps.measurements.outputs.matches }}
-      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
-      transfer: ${{ steps.transfer.outputs.matches }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: detect authorization
-        id: authorization
-        uses: ./.github/actions/find-diff-action
+      - uses: CodeReaper/find-diff-action@v3
+        id: diff
         with:
-          paths: domains/authorization/
+          paths: domains/*/
 
-      - name: detect certificates
-        id: certificates
-        uses: ./.github/actions/find-diff-action
+      - name: Set default matrix
+        shell: bash
+        run: |
+          echo "matrix=[]" >> "$GITHUB_ENV"
+
+      - name: Build relevant matrix
+        id: set-matrix
+        shell: bash
+        env:
+          LIST: ${{ steps.diff.outputs.list }}
+        run: |
+          while read domain; do
+            [ -d "$domain" ] || continue
+            [ -f "$domain/global.json" ] || cp "$domain/../../global.json" "$domain/global.json"
+            settings=$(jq -srec '.[0] | .path=$path' --arg path "$domain" "$domain/global.json")
+            sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
+            runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
+            csprojects=$(find "$domain" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \;)
+
+            projects=$(while read project; do
+              config_file="$(dirname $project)/configuration.yaml"
+              migration_file="$(dirname $project)/migrations/API.sql"
+              has_migration="false"
+              if [ -f "$migration_file" ]; then
+                has_migration="true"
+              fi
+              if [ -f "$config_file" ]; then
+                printf '{"name":"%s","projectPath":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s","hasMigration":"%s","migration":"%s"}\n' \
+                "$(basename $domain)" "$project" "$config_file" "$sdk" "$runtime" "$has_migration" "$migration_file"
+              fi
+            done <<< "$csprojects" | jq -sc '.')
+          done <<< "$LIST" > /tmp/json
+
+          if [ ! -s /tmp/json ]; then
+            exit 0
+          fi
+
+          matrix=$(jq -sc '.' < /tmp/json)
+          echo '::group::Matrix'
+          echo "$matrix" | jq -r '.'
+          echo '::endgroup::'
+
+          echo "matrix=$matrix" >> "$GITHUB_ENV"
+
+  test:
+    needs: detect
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        domain: ${{ fromJson(needs.detect.outputs.matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
         with:
-          paths: domains/certificates/
+          dotnet-version: '8.0.402'
 
-      - name: detect measurements
-        id: measurements
-        uses: ./.github/actions/find-diff-action
+      - name: Create dynamic solution file for ${{ matrix.domain.name }}
+        shell: bash
+        run: |
+          rm -f EnergyTrackAndTrace.sln
+          dotnet new sln -n ${{ matrix.domain.name }}
+          find domains/${{ matrix.domain.name }} -name '*.csproj' | while read project; do
+            dotnet sln ${{ matrix.domain.name }}.sln add "$project"
+          done
+
+      - name: Run tests for ${{ matrix.domain.name }}
+        uses: ./.github/actions/dotnet-test
         with:
-          paths: domains/measurements/
+          solution: ${{ matrix.domain.name }}.sln
 
-      - name: detect oidc-mock
-        id: oidc-mock
-        uses: ./.github/actions/find-diff-action
+  build:
+    needs: detect
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.detect.outputs.matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
         with:
-          paths: domains/oidc-mock/
+          dotnet-version: '8.0.402'
 
-      - name: detect transfer
-        id: transfer
-        uses: ./.github/actions/find-diff-action
+      - name: Build ${{ matrix.project.name }}
+        uses: ./.github/actions/dotnet-build
         with:
-          paths: domains/transfer/
+          solution: ${{ matrix.domain.name }}.sln
+          project: ${{ matrix.project.projectPath }}
+          configuration: ${{ matrix.project.configuration }}
+          migrations: ${{ matrix.project.migration }}
+          dry-run: ${{ inputs.dry-run }}
 
-  build-authorization:
-    needs: setup
-    if: needs.setup.outputs.authorization == 'true'
-    uses: ./.github/workflows/build-authorization.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-certificates:
-    needs: setup
-    if: needs.setup.outputs.certificates == 'true'
-    uses: ./.github/workflows/build-certificates.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-measurements:
-    needs: setup
-    if: needs.setup.outputs.measurements == 'true'
-    uses: ./.github/workflows/build-measurements.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-oidc-mock:
-    needs: setup
-    if: needs.setup.outputs.oidc-mock == 'true'
-    uses: ./.github/workflows/build-oidc-mock.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-#  build-open-api:
+#  build-authorization:
 #    needs: setup
-#    if: needs.setup.outputs.open-api == 'true'
-#    uses: ./.github/workflows/build-open-api.yaml
+#    if: needs.setup.outputs.authorization == 'true'
+#    uses: ./.github/workflows/build-authorization.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-certificates:
+#    needs: setup
+#    if: needs.setup.outputs.certificates == 'true'
+#    uses: ./.github/workflows/build-certificates.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-measurements:
+#    needs: setup
+#    if: needs.setup.outputs.measurements == 'true'
+#    uses: ./.github/workflows/build-measurements.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-oidc-mock:
+#    needs: setup
+#    if: needs.setup.outputs.oidc-mock == 'true'
+#    uses: ./.github/workflows/build-oidc-mock.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+##  build-open-api:
+##    needs: setup
+##    if: needs.setup.outputs.open-api == 'true'
+##    uses: ./.github/workflows/build-open-api.yaml
+##    secrets: inherit
+##    with:
+##      dry-run: ${{ inputs.dry-run }}
+##      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-transfer:
+#    needs: setup
+#    if: needs.setup.outputs.transfer == 'true'
+#    uses: ./.github/workflows/build-transfer.yaml
 #    secrets: inherit
 #    with:
 #      dry-run: ${{ inputs.dry-run }}
 #      is-dependabot: ${{ inputs.is-dependabot }}
 
-  build-transfer:
-    needs: setup
-    if: needs.setup.outputs.transfer == 'true'
-    uses: ./.github/workflows/build-transfer.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
   update:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-      - build-authorization
-      - build-certificates
-      - build-measurements
-      - build-oidc-mock
-      - build-transfer
+      - test
+      - build
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
