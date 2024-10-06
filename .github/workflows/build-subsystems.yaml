@@ -67,16 +67,7 @@ jobs:
           echo "$matrix" | jq -r '.'
           echo '::endgroup::'
 
-          projects=$(printf "$matrix" | jq '.[].projects[]' | jq -scr '. | unique')
           echo "matrix=$matrix" >> "$GITHUB_ENV"
-
-      - name: Matrix
-        shell: bash
-        run: |
-          echo '::group::Raw'
-          printf '${{ env.matrix }}\n'
-          echo '::endgroup::'
-          printf '${{ env.matrix }}' | jq -r '.'
 
   test:
     needs: setup
