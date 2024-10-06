@@ -45,15 +45,7 @@ jobs:
 
       - name: Set output if changes detected
         if: ${{ steps.check-changes.outputs.matches == 'true' }}
-        run: echo "subsystem=[\"${{ matrix.subsystem.name }}\"]" >> $GITHUB_ENV
-
-      - name: Set default output if no changes detected
-        if: ${{ steps.check-changes.outputs.matches != 'true' }}
-        run: echo "subsystem=[]" >> $GITHUB_ENV
-
-      - name: Log subsystem output
-        run: |
-          echo "Subsystem output: ${{ fromJson(needs.detect.outputs.subsystem) }}"
+        run: echo "subsystem=${{ matrix.subsystem.name }}" >> $GITHUB_ENV
 
   build:
     needs: detect
