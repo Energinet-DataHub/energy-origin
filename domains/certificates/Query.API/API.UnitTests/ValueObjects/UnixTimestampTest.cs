@@ -51,6 +51,7 @@ public class UnixTimestampTest
         Assert.Equal(UnixTimestamp.Create(alignedHour), UnixTimestamp.Create(alignedHour).RoundToLatestHour());
     }
 
+    // This test is potentially flaky
     [Fact]
     public void RoundToNextHourExamples()
     {
