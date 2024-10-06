@@ -17,21 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ env.matrix }}
-
     steps:
       - uses: actions/checkout@v4
 
-      - uses: CodeReaper/find-diff-action@v3
+      - name: Detect changes
         id: diff
+        uses: ./.github/actions/find-diff-action
         with:
           paths: domains/*/
 
-      - name: Set default matrix
-        shell: bash
-        run: |
-          echo "matrix=[]" >> "$GITHUB_ENV"
-
-      - name: Build relevant matrix
+      - name: Create matrix
         if: ${{ steps.diff.outputs.list != '' }}
         shell: bash
         env:
@@ -45,13 +40,19 @@ jobs:
             ["transfer"]=".github/workflows/build-transfer.yaml"
           )
 
-          while read domain; do
-            name=$(basename $domain)
-            workflow=${workflows[$name]}
-            if [ -n "$workflow" ]; then
-              printf '{"name":"%s","workflow":"%s"}\n' "$name" "$workflow"
+          matrix='[]'
+
+          while read -r domain; do
+            subsystem=$(basename "$domain")
+            if [[ -n "${workflows[$subsystem]}" ]]; then
+              item=$(jq -n \
+                --arg name "$subsystem" \
+                --arg path "$domain" \
+                --arg workflow "${workflows[$subsystem]}" \
+                '{name: $name, path: $path, workflow: $workflow}')
+              matrix=$(echo "$matrix" | jq -c --argjson item "$item" '. += [$item]')
             fi
-          done <<< $LIST > /tmp/json
+          done <<< "$LIST" > tmp/json
 
           if [ ! -s /tmp/json ]; then
             exit 0
@@ -64,13 +65,16 @@ jobs:
 
           echo "matrix=$matrix" >> "$GITHUB_ENV"
 
-      - name: Matrix
+      - name: Output Matrix
         shell: bash
         run: |
-          echo '::group::Raw'
-          printf '${{ env.matrix }}\n'
+          echo '::group::Matrix Content'
+          echo "Matrix size: ${#env.matrix[@]}"
+          echo "First element:"
+          echo "${env.matrix[0]}" | jq -r '.name // empty'
+          echo "Last element:"
+          echo "${env.matrix[-1]}" | jq -r '.workflow // empty'
           echo '::endgroup::'
-          printf '${{ env.matrix }}' | jq -r '.'
 
   build:
     needs: detect
