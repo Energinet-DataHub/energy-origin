@@ -98,7 +98,7 @@ jobs:
         with:
           workflow: ${{ matrix.domain.workflow }}
           inputs: '{ "dry-run": "${{ inputs.dry-run }}", "is-dependabot": "${{ inputs.is-dependabot }}" }'
-          ref: ${{ github.ref }}
+          ref: ${{ github.head_ref }}
 
 #  build-authorization:
 #    needs: setup
