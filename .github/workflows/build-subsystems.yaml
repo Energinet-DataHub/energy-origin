@@ -52,7 +52,16 @@ jobs:
                 '{name: $name, path: $path, workflow: $workflow}')
               matrix=$(echo "$matrix" | jq -c --argjson item "$item" '. += [$item]')
             fi
-          done <<< "$LIST"
+          done <<< "$LIST" > tmp/json
+
+          if [ ! -s /tmp/json ]; then
+            exit 0
+          fi
+
+          matrix=$(jq -sc '.' < /tmp/json)
+          echo '::group::Matrix'
+          echo "$matrix" | jq -r '.'
+          echo '::endgroup::'
 
           echo "matrix=$matrix" >> "$GITHUB_ENV"
 
@@ -60,7 +69,11 @@ jobs:
         shell: bash
         run: |
           echo '::group::Matrix Content'
-          echo "${{ env.matrix }}" | jq .
+          echo "Matrix size: ${#env.matrix[@]}"
+          echo "First element:"
+          echo "${env.matrix[0]}" | jq -r '.name // empty'
+          echo "Last element:"
+          echo "${env.matrix[-1]}" | jq -r '.workflow // empty'
           echo '::endgroup::'
 
   build:
