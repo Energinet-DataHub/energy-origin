@@ -18,21 +18,11 @@ jobs:
     strategy:
       matrix:
         subsystem:
-          - name: "authorization"
-            path: "domains/authorization"
-            workflow: ".github/workflows/build-authorization.yaml"
-          - name: "certificates"
-            path: "domains/certificates"
-            workflow: ".github/workflows/build-certificates.yaml"
-          - name: "measurements"
-            path: "domains/measurements"
-            workflow: ".github/workflows/build-measurements.yaml"
-          - name: "oidc-mock"
-            path: "domains/oidc-mock"
-            workflow: ".github/workflows/build-oidc-mock.yaml"
-          - name: "transfer"
-            path: "domains/transfer"
-            workflow: ".github/workflows/build-transfer.yaml"
+          - { name: "authorization", path: "domains/authorization", workflow: ".github/workflows/build-authorization.yaml" }
+          - { name: "certificates", path: "domains/certificates", workflow: ".github/workflows/build-certificates.yaml" }
+          - { name: "measurements", path: "domains/measurements", workflow: ".github/workflows/build-measurements.yaml" }
+          - { name: "oidc-mock", path: "domains/oidc-mock", workflow: ".github/workflows/build-oidc-mock.yaml" }
+          - { name: "transfer", path: "domains/transfer", workflow: ".github/workflows/build-transfer.yaml" }
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
