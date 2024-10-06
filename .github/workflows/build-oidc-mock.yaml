@@ -14,6 +14,7 @@ on:
 
 jobs:
   test:
+    name: Test Oidc.Mock Subsystem
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +38,7 @@ jobs:
           solution: Oidc.Mock.sln
 
   build-api:
+    name: Build Oidc.Mock
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

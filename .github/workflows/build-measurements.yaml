@@ -14,6 +14,7 @@ on:
 
 jobs:
   test:
+    name: Test Measurements Subsystem
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +38,7 @@ jobs:
           solution: Measurements.sln
 
   build-api:
+    name: Build Measurements.API
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

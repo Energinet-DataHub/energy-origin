@@ -14,7 +14,7 @@ on:
 
 jobs:
   test:
-    name: Test Transfer
+    name: Test Transfer Subsystem
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,7 +51,7 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-claim-automation:
-    name: Build ClaimAutomation
+    name: Build ClaimAutomation.Worker
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-transfer-automation:
-    name: Build TransferAutomation
+    name: Build TransferAutomation.Worker
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
