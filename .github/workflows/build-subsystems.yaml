@@ -18,6 +18,8 @@ jobs:
     outputs:
       matrix: ${{ steps.build_matrix.outputs.matrix }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Detect changes
         id: diff
         uses: ./.github/actions/find-diff-action
