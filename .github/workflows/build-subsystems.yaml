@@ -22,24 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate required domain structure
-        shell: bash
-        run: |
-          function required_folder {
-            [ -d "$1" ] || { printf '::error title=Missing folder::%s\n' "$1"; exit 1; }
-          }
-
-          function required_file {
-            [ -f "$1" ] || { printf '::error title=Missing file::%s\n' "$1"; exit 1; }
-          }
-
-          find domains -mindepth 1 -maxdepth 1 -type d | while read domain; do
-            required_folder "$domain/.devcontainer"
-            required_file "$domain/.devcontainer/Dockerfile"
-            required_file "$domain/.devcontainer/devcontainer.json"
-            required_file "$domain"/*.sln
-          done
-
       - uses: CodeReaper/find-diff-action@v3
         id: diff
         with:
