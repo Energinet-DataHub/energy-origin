@@ -37,8 +37,6 @@ jobs:
           solution: Certificates.sln
 
   build-api:
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

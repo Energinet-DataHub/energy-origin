@@ -37,8 +37,6 @@ jobs:
           solution: Authorization.sln
 
   build-api:
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,8 +50,6 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-proxy:
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

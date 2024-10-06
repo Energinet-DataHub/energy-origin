@@ -39,8 +39,6 @@ jobs:
 
   build-api:
     name: Build Transfer.API
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,8 +52,6 @@ jobs:
 
   build-claim-automation:
     name: Build ClaimAutomation
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,8 +65,6 @@ jobs:
 
   build-transfer-automation:
     name: Build TransferAutomation
-    needs:
-      - test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
