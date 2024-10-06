@@ -15,14 +15,12 @@ on:
 jobs:
   detect:
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.build-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Detect changes across all subsystems
+      - name: Detect changes
         id: diff
-        uses: CodeReaper/find-diff-action@v3
+        uses: ./.github/actions/find-diff-action
         with:
           paths: domains/*/
 
@@ -45,6 +43,7 @@ jobs:
             ["transfer"]=".github/workflows/build-transfer.yaml"
           )
 
+          # Loop through the subsystems and match with the workflows
           while read domain; do
             subsystem=$(basename "$domain")
             if [[ -n "${workflows[$subsystem]}" ]]; then
@@ -52,7 +51,16 @@ jobs:
             fi
           done <<< "$LIST"
 
-          echo "::set-output name=matrix::$matrix"
+          # Store matrix in the GITHUB_ENV for further use
+          echo "matrix=$matrix" >> "$GITHUB_ENV"
+
+      - name: Output Matrix
+        shell: bash
+        run: |
+          echo '::group::Matrix Content'
+          echo "${{ env.matrix }}" | jq .
+          echo '::endgroup::'
+
 
   build:
     needs: detect
