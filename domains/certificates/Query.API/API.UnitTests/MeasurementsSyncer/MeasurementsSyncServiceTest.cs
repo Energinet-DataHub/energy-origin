@@ -100,8 +100,6 @@ public class MeasurementsSyncServiceTest
         await _fakeSlidingWindowState.DidNotReceive().SaveChangesAsync(CancellationToken.None);
     }
 
-    // This test is not needed
-
     [Fact]
     public async Task FetchMeasurements_MeasurementsReceived_MeasurementEventsArePublished()
     {
