@@ -10,4 +10,8 @@ public class ClaimAutomationOptions
     public bool Enabled { get; set; }
 
     public int CertificateFetchBachSize { get; set; } = 1000;
+
+    public ScheduleInterval ScheduleInterval { get; set; } = ScheduleInterval.EveryHourHalfPast;
 }
+
+public enum ScheduleInterval { EveryHourHalfPast, Every5Seconds }
