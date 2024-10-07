@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using API.Configurations;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
@@ -19,9 +20,11 @@ public class SlidingWindowServiceTest
     private readonly Gsrn _gsrn = new Gsrn(GsrnHelper.GenerateRandom());
     private readonly UnixTimestamp _now = UnixTimestamp.Now();
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+    private readonly MeasurementsSyncOptions _options;
 
     public SlidingWindowServiceTest()
     {
+        _options = new MeasurementsSyncOptions();
         _sut = new SlidingWindowService(_measurementSyncMetrics);
     }
 
@@ -479,6 +482,85 @@ public class SlidingWindowServiceTest
 
         var advancedSyncPoint = synchronizationPoint.Add(TimeSpan.FromHours(1));
         _sut.UpdateSlidingWindow(window, [measurement], advancedSyncPoint);
+
+        Assert.Empty(window.MissingMeasurements.Intervals);
+    }
+
+    [Fact]
+    public void GivenMeasurementOnDay4_WhenMinimumAgeChangesFrom7To3_ThenMeasurementBecomesEligibleForPublishing()
+    {
+        var initialMinimumAgeBeforeIssuingInDays = 7;
+        var newMinimumAgeBeforeIssuingInDays = 3;
+
+        var synchronizationPoint = _now.RoundToLatestHour().Add(TimeSpan.FromDays(-5)); // Synced up to day -5
+        var newSynchronizationPoint = synchronizationPoint.Add(TimeSpan.FromHours(1));
+
+        var measurementOnDay4 = CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromDays(4)).Seconds,
+            synchronizationPoint.Add(TimeSpan.FromDays(4)).Add(TimeSpan.FromHours(1)).Seconds,
+            10, false, EnergyQuantityValueQuality.Measured);
+
+        var window = _sut.CreateSlidingWindow(_gsrn, synchronizationPoint);
+
+        _options.MinimumAgeBeforeIssuingInHours = initialMinimumAgeBeforeIssuingInDays * 24;
+
+        var filteredMeasurements = _sut.FilterMeasurements(window, new List<Measurement> { measurementOnDay4 });
+
+        _options.MinimumAgeBeforeIssuingInHours = newMinimumAgeBeforeIssuingInDays * 24;
+        _sut.UpdateSlidingWindow(window, new List<Measurement> { measurementOnDay4 }, newSynchronizationPoint);
+
+        Assert.Single(filteredMeasurements);
+        Assert.Equal(measurementOnDay4, filteredMeasurements.First());
+        Assert.Single(window.MissingMeasurements.Intervals);
+    }
+
+    [Fact]
+    public void GivenMinimumAgeIncreases_WhenMinimumAgeIsIncreased_MeasurementsAreStillPublishedWhenReady()
+    {
+        var initialMinAge = 72;
+        var increasedMinAge = 168;
+        _options.MinimumAgeBeforeIssuingInHours = initialMinAge;
+
+        var syncPoint = _now.RoundToLatestHour().Add(TimeSpan.FromDays(-4));
+        var newSyncPoint = syncPoint.Add(TimeSpan.FromHours(1));
+
+        var (missingInterval, measurement) = CreateMissingIntervalAndMeasurement(syncPoint, _gsrn, true, EnergyQuantityValueQuality.Measured);
+        var window = _sut.CreateSlidingWindow(_gsrn, syncPoint, new List<MeasurementInterval> { missingInterval });
+
+        measurement.QuantityMissing = true;
+        _sut.UpdateSlidingWindow(window, new List<Measurement> { measurement }, newSyncPoint);
+
+        Assert.Single(window.MissingMeasurements.Intervals);
+
+        _options.MinimumAgeBeforeIssuingInHours = increasedMinAge;
+        var futureSyncPoint = syncPoint.Add(TimeSpan.FromHours(1));
+        measurement.QuantityMissing = false;
+        _sut.UpdateSlidingWindow(window, new List<Measurement> { measurement }, futureSyncPoint);
+
+        Assert.Empty(window.MissingMeasurements.Intervals);
+    }
+
+    [Fact]
+    public void GivenMinimumAgeDecreases_WhenMinimumAgeIsDecreased_MeasurementsArePublishedEarlier()
+    {
+        var initialMinAge = 168;
+        var decreasedMinAge = 72;
+        _options.MinimumAgeBeforeIssuingInHours = initialMinAge;
+
+        var syncPoint = _now.RoundToLatestHour().Add(TimeSpan.FromDays(-7));
+        var newSyncPoint = syncPoint.Add(TimeSpan.FromHours(1));
+
+        var (missingInterval, measurement) = CreateMissingIntervalAndMeasurement(syncPoint, _gsrn, true, EnergyQuantityValueQuality.Measured);
+        var window = _sut.CreateSlidingWindow(_gsrn, syncPoint, new List<MeasurementInterval> { missingInterval });
+
+        measurement.QuantityMissing = true;
+        _sut.UpdateSlidingWindow(window, new List<Measurement> { measurement }, newSyncPoint);
+
+        Assert.Single(window.MissingMeasurements.Intervals);
+
+        _options.MinimumAgeBeforeIssuingInHours = decreasedMinAge;
+        var futureSyncPoint = syncPoint.Add(TimeSpan.FromHours(1));
+        measurement.QuantityMissing = false;
+        _sut.UpdateSlidingWindow(window, new List<Measurement> { measurement }, futureSyncPoint);
 
         Assert.Empty(window.MissingMeasurements.Intervals);
     }
