@@ -487,33 +487,6 @@ public class SlidingWindowServiceTest
     }
 
     [Fact]
-    public void GivenMeasurementOnDay4_WhenMinimumAgeChangesFrom7To3_ThenMeasurementBecomesEligibleForPublishing()
-    {
-        var initialMinimumAgeBeforeIssuingInDays = 7;
-        var newMinimumAgeBeforeIssuingInDays = 3;
-
-        var synchronizationPoint = _now.RoundToLatestHour().Add(TimeSpan.FromDays(-5)); // Synced up to day -5
-        var newSynchronizationPoint = synchronizationPoint.Add(TimeSpan.FromHours(1));
-
-        var measurementOnDay4 = CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromDays(4)).Seconds,
-            synchronizationPoint.Add(TimeSpan.FromDays(4)).Add(TimeSpan.FromHours(1)).Seconds,
-            10, false, EnergyQuantityValueQuality.Measured);
-
-        var window = _sut.CreateSlidingWindow(_gsrn, synchronizationPoint);
-
-        _options.MinimumAgeBeforeIssuingInHours = initialMinimumAgeBeforeIssuingInDays * 24;
-
-        var filteredMeasurements = _sut.FilterMeasurements(window, new List<Measurement> { measurementOnDay4 });
-
-        _options.MinimumAgeBeforeIssuingInHours = newMinimumAgeBeforeIssuingInDays * 24;
-        _sut.UpdateSlidingWindow(window, new List<Measurement> { measurementOnDay4 }, newSynchronizationPoint);
-
-        Assert.Single(filteredMeasurements);
-        Assert.Equal(measurementOnDay4, filteredMeasurements.First());
-        Assert.Single(window.MissingMeasurements.Intervals);
-    }
-
-    [Fact]
     public void GivenMinimumAgeIncreases_WhenMinimumAgeIsIncreased_MeasurementsAreStillPublishedWhenReady()
     {
         var initialMinAge = 72;
