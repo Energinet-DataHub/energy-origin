@@ -39,7 +39,7 @@ public class MeasurementsSyncService(
 
         if (fetchedMeasurements.Count > 0)
         {
-            var measurementsToPublish = slidingWindowService.FilterMeasurements(slidingWindow, fetchedMeasurements, _options.MinimumAgeBeforeIssuingInHours);
+            var measurementsToPublish = slidingWindowService.FilterMeasurements(slidingWindow, fetchedMeasurements);
 
             logger.LogInformation(
                 "Publishing {numberOfMeasurementsLeft} of total {numberOfMeasurements} measurements fetched for GSRN {GSRN}",
@@ -64,7 +64,9 @@ public class MeasurementsSyncService(
         var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
         var synchronizationPointSeconds = synchronizationPoint.Seconds;
 
-        if (dateFrom < synchronizationPointSeconds)
+        var threshold = UnixTimestamp.Now().Add(-TimeSpan.FromHours(_options.MinimumAgeBeforeIssuingInHours)).Seconds;
+
+        if (dateFrom < synchronizationPointSeconds && synchronizationPointSeconds <= threshold)
         {
             var request = new GetMeasurementsRequest
             {

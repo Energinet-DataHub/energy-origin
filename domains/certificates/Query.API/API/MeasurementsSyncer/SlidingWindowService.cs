@@ -21,10 +21,8 @@ public class SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics
         return MeteringPointTimeSeriesSlidingWindow.Create(gsrn, synchronizationPoint, missingMeasurements);
     }
 
-    public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, int minimumAgeBeforeIssuingInHours)
+    public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements)
     {
-        var threshold = UnixTimestamp.Now().Add(-TimeSpan.FromHours(minimumAgeBeforeIssuingInHours));
-
         return measurements
             .Where(m => m.Gsrn == window.GSRN)
             .Where(m =>
@@ -34,14 +32,6 @@ public class SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics
                     measurementSyncMetrics.AddFilterDueQuantityMissingFlag(1);
                 }
                 return !m.QuantityMissing;
-            })
-            .Where(m =>
-            {
-                var dateTo = UnixTimestamp.Create(m.DateTo);
-                if (dateTo <= threshold)
-                    return true;
-
-                return false;
             })
             .Where(m =>
             {
