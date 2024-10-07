@@ -73,6 +73,6 @@ public class MeasurementsSyncerWorkerTest
 
         await workerTask;
 
-        _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        await _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
     }
 }
