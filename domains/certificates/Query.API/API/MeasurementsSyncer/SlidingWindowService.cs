@@ -21,75 +21,75 @@ public class SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics
         return MeteringPointTimeSeriesSlidingWindow.Create(gsrn, synchronizationPoint, missingMeasurements);
     }
 
-public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, int minimumAgeBeforeIssuingInHours)
-{
-    var threshold = UnixTimestamp.Now().Add(-TimeSpan.FromHours(minimumAgeBeforeIssuingInHours));
+    public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, int minimumAgeBeforeIssuingInHours)
+    {
+        var threshold = UnixTimestamp.Now().Add(-TimeSpan.FromHours(minimumAgeBeforeIssuingInHours));
 
-    return measurements
-        .Where(m => m.Gsrn == window.GSRN)
-        .Where(m =>
-        {
-            if (m.QuantityMissing)
+        return measurements
+            .Where(m => m.Gsrn == window.GSRN)
+            .Where(m =>
             {
-                measurementSyncMetrics.AddFilterDueQuantityMissingFlag(1);
-            }
-            return !m.QuantityMissing;
-        })
-        .Where(m =>
-        {
-            var dateTo = UnixTimestamp.Create(m.DateTo);
-            if (dateTo <= threshold)
-                return true;
-
-            return false;
-        })
-        .Where(m =>
-        {
-            var from = UnixTimestamp.Create(m.DateFrom);
-            var to = UnixTimestamp.Create(m.DateTo);
-            var interval = MeasurementInterval.Create(from, to);
-
-            if (IsAfterSynchronizationPoint(window, from))
+                if (m.QuantityMissing)
+                {
+                    measurementSyncMetrics.AddFilterDueQuantityMissingFlag(1);
+                }
+                return !m.QuantityMissing;
+            })
+            .Where(m =>
             {
-                return true;
-            }
-            var isIncludedInMissingInterval = IsIncludedInMissingInterval(window, interval);
-            if (isIncludedInMissingInterval)
+                var dateTo = UnixTimestamp.Create(m.DateTo);
+                if (dateTo <= threshold)
+                    return true;
+
+                return false;
+            })
+            .Where(m =>
             {
-                measurementSyncMetrics.AddNumberOfRecoveredMeasurements(1);
-            }
-            else
+                var from = UnixTimestamp.Create(m.DateFrom);
+                var to = UnixTimestamp.Create(m.DateTo);
+                var interval = MeasurementInterval.Create(from, to);
+
+                if (IsAfterSynchronizationPoint(window, from))
+                {
+                    return true;
+                }
+                var isIncludedInMissingInterval = IsIncludedInMissingInterval(window, interval);
+                if (isIncludedInMissingInterval)
+                {
+                    measurementSyncMetrics.AddNumberOfRecoveredMeasurements(1);
+                }
+                else
+                {
+                    measurementSyncMetrics.AddNumberOfDuplicateMeasurements(1);
+                }
+                return isIncludedInMissingInterval;
+            })
+            .Where(m =>
             {
-                measurementSyncMetrics.AddNumberOfDuplicateMeasurements(1);
-            }
-            return isIncludedInMissingInterval;
-        })
-        .Where(m =>
-        {
-            if (m.Quality is EnergyQuantityValueQuality.Measured or EnergyQuantityValueQuality.Calculated)
-                return true;
+                if (m.Quality is EnergyQuantityValueQuality.Measured or EnergyQuantityValueQuality.Calculated)
+                    return true;
 
-            measurementSyncMetrics.AddFilterDueQuality(1);
-            return false;
-        })
-        .Where(m =>
-        {
-            if (m.Quantity > 0)
-                return true;
+                measurementSyncMetrics.AddFilterDueQuality(1);
+                return false;
+            })
+            .Where(m =>
+            {
+                if (m.Quantity > 0)
+                    return true;
 
-            measurementSyncMetrics.AddFilterDueQuantityTooLow(1);
-            return false;
-        })
-        .Where(m =>
-        {
-            if (m.Quantity < uint.MaxValue)
-                return true;
+                measurementSyncMetrics.AddFilterDueQuantityTooLow(1);
+                return false;
+            })
+            .Where(m =>
+            {
+                if (m.Quantity < uint.MaxValue)
+                    return true;
 
-            measurementSyncMetrics.AddFilterDueQuantityTooHigh(1);
-            return false;
-        })
-        .ToList();
-}
+                measurementSyncMetrics.AddFilterDueQuantityTooHigh(1);
+                return false;
+            })
+            .ToList();
+    }
 
     private static bool IsAfterSynchronizationPoint(MeteringPointTimeSeriesSlidingWindow window, UnixTimestamp from)
     {
