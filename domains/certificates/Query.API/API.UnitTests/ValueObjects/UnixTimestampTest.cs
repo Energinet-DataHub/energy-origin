@@ -54,7 +54,7 @@ public class UnixTimestampTest
     [Fact]
     public void RoundToNextHourExamples()
     {
-        var now = DateTimeOffset.Now;
+        var now = DateTimeOffset.UtcNow;
         var nextHour = now.Hour == 23
             ? new DateTimeOffset(now.Year, now.Month, now.Day + 1, 0, 0, 0, now.Offset)
             : new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, now.Offset);
