@@ -46,15 +46,22 @@ public class Any
         return new Technology("T12345", "T54321");
     }
 
-    public static Measurement Measurement(Gsrn gsrn, long dateFrom, long value)
+    public static Measurement Measurement(
+        Gsrn gsrn,
+        long dateFrom,
+        long quantity,
+        bool quantityMissing = false,
+        EnergyQuantityValueQuality quality = EnergyQuantityValueQuality.Measured
+        )
     {
         return new Measurement
         {
             Gsrn = gsrn.Value,
             DateFrom = dateFrom,
             DateTo = dateFrom + 3600,
-            Quantity = value,
-            Quality = EnergyQuantityValueQuality.Measured
+            Quantity = quantity,
+            Quality = quality,
+            QuantityMissing = quantityMissing
         };
     }
 }
