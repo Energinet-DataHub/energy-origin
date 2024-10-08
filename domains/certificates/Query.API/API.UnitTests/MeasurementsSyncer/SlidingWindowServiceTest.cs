@@ -538,6 +538,230 @@ public class SlidingWindowServiceTest
         Assert.Empty(window.MissingMeasurements.Intervals);
     }
 
+    [Fact]
+    public void IncreasingMinimumAgeRequirement_ShouldNotRePublishExistingMeasurements()
+    {
+        // Arrange
+        var initialMinAge = 72; // 72 hours (3 days)
+        var increasedMinAge = 168; // 168 hours (7 days)
+        var options = new MeasurementsSyncOptions { MinimumAgeBeforeIssuingInHours = initialMinAge };
+        var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+        var syncPoint = _now.RoundToLatestHour().Add(TimeSpan.FromHours(-initialMinAge - 1)); // Set sync point before initial min age
+
+        var window = slidingWindowService.CreateSlidingWindow(_gsrn, syncPoint);
+
+        // Simulate initial fetch and publish
+        var initialMeasurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, syncPoint.Seconds, syncPoint.Add(TimeSpan.FromHours(1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, syncPoint.Add(TimeSpan.FromHours(1)));
+
+        // Act
+        // Increase the minimum age requirement
+        options.MinimumAgeBeforeIssuingInHours = increasedMinAge;
+
+        // Attempt to fetch and publish measurements again
+        var measurementsAfterIncrease = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, syncPoint.Seconds, syncPoint.Add(TimeSpan.FromHours(1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        var measurementsToPublish = slidingWindowService.FilterMeasurements(window, measurementsAfterIncrease);
+
+        // Assert
+        measurementsToPublish.Should().BeEmpty("because measurements already published should not be re-published after increasing min age requirement");
+    }
+
+    [Fact]
+    public void IncreasingMinimumAgeRequirement_ShouldNotAdvanceSynchronizationPointBeyondCutoffTime()
+    {
+        var initialMinAgeHours = 72; // 3 days
+        var increasedMinAgeHours = 168; // 7 days
+        var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+
+        var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
+        var increasedCutoffTime = _now.Add(-TimeSpan.FromHours(increasedMinAgeHours)).RoundToLatestHour();
+
+        var synchronizationPoint = initialCutoffTime.Add(-TimeSpan.FromHours(10));
+        var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
+
+        var measurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, synchronizationPoint.Add(TimeSpan.FromHours(1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured),
+            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(1)).Seconds, initialCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+
+        slidingWindowService.UpdateSlidingWindow(window, measurements, initialCutoffTime);
+
+        slidingWindowService.UpdateSlidingWindow(window, new List<Measurement>(), increasedCutoffTime);
+
+        Assert.Equal(increasedCutoffTime, window.SynchronizationPoint);
+
+        Assert.Empty(window.MissingMeasurements.Intervals);
+    }
+
+    [Fact]
+    public void DecreasingMinimumAgeRequirement_ShouldAdvanceSynchronizationPointToNewCutoffTime()
+    {
+        // Arrange
+        var initialMinAgeHours = 168; // 7 days
+        var decreasedMinAgeHours = 72; // 3 days
+        var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+
+        var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
+        var decreasedCutoffTime = _now.Add(-TimeSpan.FromHours(decreasedMinAgeHours)).RoundToLatestHour();
+
+        var synchronizationPoint = initialCutoffTime.Add(-TimeSpan.FromHours(10));
+        var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
+
+        // Simulate no measurements fetched due to initial minimum age
+        var initialMeasurements = new List<Measurement>();
+        slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
+
+        // Act
+        // Decrease the minimum age requirement
+        // Simulate fetching new measurements up to the new decreased cutoff time
+        var newMeasurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, decreasedCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        slidingWindowService.UpdateSlidingWindow(window, newMeasurements, decreasedCutoffTime);
+
+        // Assert
+        // Synchronization point should advance to the decreased cutoff time
+        Assert.Equal(decreasedCutoffTime, window.SynchronizationPoint);
+
+        // No missing intervals should be present
+        Assert.Empty(window.MissingMeasurements.Intervals);
+    }
+
+
+    [Fact]
+    public void RemovingMinimumAgeRequirement_ShouldAdvanceSynchronizationPointAndFetchAllAvailableMeasurements()
+    {
+        // Arrange
+        var initialMinAgeHours = 72; // 3 days
+        var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+
+        var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
+
+        var synchronizationPoint = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
+        var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
+
+        // Simulate fetching measurements up to initial cutoff time
+        var initialMeasurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, initialCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
+
+        // Act
+        // Remove the minimum age requirement by setting the cutoff time to now
+        var newCutoffTime = _now.RoundToLatestHour();
+        var newMeasurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, initialCutoffTime.Seconds, newCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        slidingWindowService.UpdateSlidingWindow(window, newMeasurements, newCutoffTime);
+
+        // Assert
+        // Synchronization point should advance to the new cutoff time (now)
+        Assert.Equal(newCutoffTime, window.SynchronizationPoint);
+
+        // No missing intervals should be present
+        Assert.Empty(window.MissingMeasurements.Intervals);
+    }
+
+
+    [Fact]
+    public void AddingMinimumAgeRequirement_ShouldRestrictSynchronizationPointToNewCutoffTime()
+    {
+        // Arrange
+        var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+
+        // No initial minimum age requirement; cutoff time is now
+        var initialCutoffTime = _now.RoundToLatestHour();
+
+        var synchronizationPoint = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
+        var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
+
+        // Simulate fetching all measurements up to now
+        var initialMeasurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, initialCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
+
+        // Act
+        var newMinAgeHours = 72; // 3 days
+        var newCutoffTime = _now.Add(-TimeSpan.FromHours(newMinAgeHours)).RoundToLatestHour();
+        slidingWindowService.UpdateSlidingWindow(window, new List<Measurement>(), newCutoffTime);
+
+        // Assert
+        // Synchronization point should be adjusted back to the new cutoff time
+        Assert.Equal(newCutoffTime, window.SynchronizationPoint);
+
+        // Missing intervals should reflect the gap between the previous synchronization point and the new cutoff time
+        Assert.Empty(window.MissingMeasurements.Intervals);
+    }
+
+
+    [Fact]
+public void SynchronizationPoint_ShouldAlwaysRespectCurrentMinimumAgeRequirement()
+{
+    // Arrange
+    var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+    var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+
+    var initialMinAgeHours = 72; // 3 days
+    var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
+
+    var synchronizationPoint = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
+    var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
+
+    // Simulate fetching measurements up to initial cutoff time
+    var initialMeasurements = new List<Measurement>
+    {
+        CreateMeasurement(_gsrn, synchronizationPoint.Seconds, initialCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+    };
+    slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
+
+    // Act
+    // Decrease the minimum age requirement
+    var decreasedMinAgeHours = 24; // 1 day
+    var decreasedCutoffTime = _now.Add(-TimeSpan.FromHours(decreasedMinAgeHours)).RoundToLatestHour();
+
+    // Simulate fetching new measurements up to the decreased cutoff time
+    var newMeasurements = new List<Measurement>
+    {
+        CreateMeasurement(_gsrn, initialCutoffTime.Seconds, decreasedCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+    };
+    slidingWindowService.UpdateSlidingWindow(window, newMeasurements, decreasedCutoffTime);
+
+    // Assert
+    // Synchronization point should advance to the decreased cutoff time
+    Assert.Equal(decreasedCutoffTime, window.SynchronizationPoint);
+
+    // Act
+    // Increase the minimum age requirement
+    var increasedMinAgeHours = 168; // 7 days
+    var increasedCutoffTime = _now.Add(-TimeSpan.FromHours(increasedMinAgeHours)).RoundToLatestHour();
+
+    slidingWindowService.UpdateSlidingWindow(window, new List<Measurement>(), increasedCutoffTime);
+
+    // Assert
+    // Synchronization point should adjust back to the increased cutoff time
+    Assert.Equal(increasedCutoffTime, window.SynchronizationPoint);
+}
+
+
+
+
     private Measurement CreateMeasurement(Gsrn gsrn, long from, long to, long quantity, bool quantityMissing, EnergyQuantityValueQuality quality)
     {
         return new Measurement
