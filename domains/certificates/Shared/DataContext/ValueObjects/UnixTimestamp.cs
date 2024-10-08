@@ -20,6 +20,11 @@ public class UnixTimestamp : ValueObject, IComparable<UnixTimestamp>
         Seconds = seconds;
     }
 
+    public static UnixTimestamp Now(TimeProvider timeProvider)
+    {
+        return new UnixTimestamp(timeProvider.GetUtcNow().ToUnixTimeSeconds());
+    }
+
     public static UnixTimestamp Now()
     {
         return new UnixTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds());

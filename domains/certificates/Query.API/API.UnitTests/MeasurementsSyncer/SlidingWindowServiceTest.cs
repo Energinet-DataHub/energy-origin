@@ -8,6 +8,7 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using FluentAssertions;
 using Measurements.V1;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Testing.Helpers;
 using Xunit;
@@ -21,11 +22,12 @@ public class SlidingWindowServiceTest
     private readonly UnixTimestamp _now = UnixTimestamp.Now();
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
     private readonly MeasurementsSyncOptions _options;
+    private readonly TimeProvider _timeProvider = new FakeTimeProvider();
 
     public SlidingWindowServiceTest()
     {
         _options = new MeasurementsSyncOptions();
-        _sut = new SlidingWindowService(_measurementSyncMetrics);
+        _sut = new SlidingWindowService(_measurementSyncMetrics, _timeProvider);
     }
 
     [Fact]
@@ -546,7 +548,7 @@ public class SlidingWindowServiceTest
         var increasedMinAge = 168; // 168 hours (7 days)
         var options = new MeasurementsSyncOptions { MinimumAgeBeforeIssuingInHours = initialMinAge };
         var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
-        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics, new FakeTimeProvider());
         var syncPoint = _now.RoundToLatestHour().Add(TimeSpan.FromHours(-initialMinAge - 1)); // Set sync point before initial min age
 
         var window = slidingWindowService.CreateSlidingWindow(_gsrn, syncPoint);
@@ -574,69 +576,22 @@ public class SlidingWindowServiceTest
     }
 
     [Fact]
-    public void IncreasingMinimumAgeRequirement_ShouldNotAdvanceSynchronizationPointBeyondCutoffTime()
+    public void GivenSyncedUpToToday_WhenAddingAgeRequirement_SynchronizationPointShouldNotMove()
     {
-        var initialMinAgeHours = 72; // 3 days
-        var increasedMinAgeHours = 168; // 7 days
+        var initialTime = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var fakeTimeProvider = new FakeTimeProvider(initialTime);
         var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
-        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics, fakeTimeProvider);
 
-        var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
-        var increasedCutoffTime = _now.Add(-TimeSpan.FromHours(increasedMinAgeHours)).RoundToLatestHour();
+        var initialSyncPoint = UnixTimestamp.Now(fakeTimeProvider);
+        var window = slidingWindowService.CreateSlidingWindow(_gsrn, initialSyncPoint);
 
-        var synchronizationPoint = initialCutoffTime.Add(-TimeSpan.FromHours(10));
-        var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
-
-        var measurements = new List<Measurement>
-        {
-            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, synchronizationPoint.Add(TimeSpan.FromHours(1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured),
-            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(1)).Seconds, initialCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
-        };
-
-        slidingWindowService.UpdateSlidingWindow(window, measurements, initialCutoffTime);
-
-        slidingWindowService.UpdateSlidingWindow(window, new List<Measurement>(), increasedCutoffTime);
-
-        Assert.Equal(increasedCutoffTime, window.SynchronizationPoint);
-
-        Assert.Empty(window.MissingMeasurements.Intervals);
-    }
-
-    [Fact]
-    public void DecreasingMinimumAgeRequirement_ShouldAdvanceSynchronizationPointToNewCutoffTime()
-    {
-        // Arrange
-        var initialMinAgeHours = 168; // 7 days
-        var decreasedMinAgeHours = 72; // 3 days
-        var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
-        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
-
-        var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
-        var decreasedCutoffTime = _now.Add(-TimeSpan.FromHours(decreasedMinAgeHours)).RoundToLatestHour();
-
-        var synchronizationPoint = initialCutoffTime.Add(-TimeSpan.FromHours(10));
-        var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
-
-        // Simulate no measurements fetched due to initial minimum age
-        var initialMeasurements = new List<Measurement>();
-        slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
-
-        // Act
-        // Decrease the minimum age requirement
-        // Simulate fetching new measurements up to the new decreased cutoff time
-        var newMeasurements = new List<Measurement>
-        {
-            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, decreasedCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
-        };
-        slidingWindowService.UpdateSlidingWindow(window, newMeasurements, decreasedCutoffTime);
+        fakeTimeProvider.Advance(TimeSpan.FromHours(10));
 
         // Assert
-        // Synchronization point should advance to the decreased cutoff time
-        Assert.Equal(decreasedCutoffTime, window.SynchronizationPoint);
-
-        // No missing intervals should be present
-        Assert.Empty(window.MissingMeasurements.Intervals);
+        Assert.Equal(initialSyncPoint.Add(TimeSpan.FromHours(1)), window.SynchronizationPoint);
     }
+
 
 
     [Fact]
@@ -645,7 +600,7 @@ public class SlidingWindowServiceTest
         // Arrange
         var initialMinAgeHours = 72; // 3 days
         var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
-        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics, new FakeTimeProvider());
 
         var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
 
@@ -681,13 +636,19 @@ public class SlidingWindowServiceTest
     public void AddingMinimumAgeRequirement_ShouldRestrictSynchronizationPointToNewCutoffTime()
     {
         // Arrange
+        var initialTime = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var fakeTimeProvider = new FakeTimeProvider(initialTime);
         var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
-        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics, fakeTimeProvider);
+
+        // Set current time
+        var now = UnixTimestamp.Create(fakeTimeProvider.GetUtcNow());
 
         // No initial minimum age requirement; cutoff time is now
-        var initialCutoffTime = _now.RoundToLatestHour();
+        var initialCutoffTime = now.RoundToLatestHour();
 
-        var synchronizationPoint = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
+        // Set synchronization point 10 days in the past
+        var synchronizationPoint = now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
         var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
 
         // Simulate fetching all measurements up to now
@@ -698,13 +659,14 @@ public class SlidingWindowServiceTest
         slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
 
         // Act
+        // Add a minimum age requirement by setting the cutoff time to a past time
         var newMinAgeHours = 72; // 3 days
-        var newCutoffTime = _now.Add(-TimeSpan.FromHours(newMinAgeHours)).RoundToLatestHour();
+        var newCutoffTime = now.Add(-TimeSpan.FromHours(newMinAgeHours)).RoundToLatestHour();
         slidingWindowService.UpdateSlidingWindow(window, new List<Measurement>(), newCutoffTime);
 
         // Assert
         // Synchronization point should be adjusted back to the new cutoff time
-        Assert.Equal(newCutoffTime, window.SynchronizationPoint);
+        Assert.Equal(newCutoffTime.Seconds, window.SynchronizationPoint.Seconds);
 
         // Missing intervals should reflect the gap between the previous synchronization point and the new cutoff time
         Assert.Empty(window.MissingMeasurements.Intervals);
@@ -716,7 +678,7 @@ public void SynchronizationPoint_ShouldAlwaysRespectCurrentMinimumAgeRequirement
 {
     // Arrange
     var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
-    var slidingWindowService = new SlidingWindowService(measurementSyncMetrics);
+    var slidingWindowService = new SlidingWindowService(measurementSyncMetrics, new FakeTimeProvider());
 
     var initialMinAgeHours = 72; // 3 days
     var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();

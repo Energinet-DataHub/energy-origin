@@ -8,7 +8,7 @@ using Measurements.V1;
 
 namespace API.MeasurementsSyncer;
 
-public class SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics)
+public class SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics, TimeProvider timeProvider)
 {
     public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(Gsrn gsrn, UnixTimestamp synchronizationPoint)
     {

@@ -47,7 +47,7 @@ public class MeasurementsSyncerWorkerTest
 
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         var fakeTimeProvider = new FakeTimeProvider();
-        var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics),
+        var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics, new FakeTimeProvider()),
             new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options));
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
