@@ -76,6 +76,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             commandResult.Sub,
             commandResult.SubType,
             commandResult.OrgName,
+            commandResult.OrgId,
             commandResult.OrgIds,
             commandResult.Scope,
             commandResult.TermsAccepted));
