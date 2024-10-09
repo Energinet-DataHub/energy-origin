@@ -520,29 +520,38 @@ public void GivenMinimumAgeIncreases_WhenMinimumAgeIsIncreased_MeasurementsAreSt
     // 168h <----------------[x]--------------------> 72h <------------------------------------> now
 
     [Fact]
-    public void GivenMinimumAgeDecreases_WhenMinimumAgeIsDecreased_MeasurementsArePublishedEarlier()
+    public void GivenMinimumAgeDecreases_WhenMinimumAgeIsRemoved_OneMissingIntervalRemains()
     {
-        var initialMinAge = 168;
-        var decreasedMinAge = 72;
+        // Arrange
+        var initialMinAge = 168; // 7 days in hours
         _options.MinimumAgeBeforeIssuingInHours = initialMinAge;
 
+        // Set the sync point to now minus 7 days
         var syncPoint = _now.RoundToLatestHour().Add(TimeSpan.FromDays(-7));
-        var newSyncPoint = syncPoint.Add(TimeSpan.FromHours(1));
 
-        var (missingInterval, measurement) = CreateMissingIntervalAndMeasurement(syncPoint, _gsrn, true, EnergyQuantityValueQuality.Measured);
+        // Create the missing interval 4 days ago (1 hour missing)
+        var missingInterval = MeasurementInterval.Create(syncPoint.Add(TimeSpan.FromHours(76)).RoundToLatestHour(), syncPoint.Add(TimeSpan.FromHours(77)).RoundToLatestHour());
         var window = _sut.CreateSlidingWindow(_gsrn, syncPoint, new List<MeasurementInterval> { missingInterval });
 
-        measurement.QuantityMissing = true;
-        _sut.UpdateSlidingWindow(window, new List<Measurement> { measurement }, newSyncPoint);
+        // Create measurements to cover all other time intervals except the missing one
+        var measurements = Enumerable.Range(1, 6 * 24) // 6 days of measurements (hourly)
+            .Select(i =>
+                CreateMeasurement(_gsrn, syncPoint.Add(TimeSpan.FromHours(i)).Seconds, syncPoint.Add(TimeSpan.FromHours(i + 1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured))
+            .ToList();
 
+        // Update sliding window to add all measurements except the missing one
+        _sut.UpdateSlidingWindow(window, measurements, _now.RoundToLatestHour());
+
+        // Act
+        // Now remove the minimum age restriction
+        _options.MinimumAgeBeforeIssuingInHours = 0;
+
+        // Try to update the sync position to the current timestamp
+        _sut.UpdateSlidingWindow(window, measurements, _now.RoundToLatestHour());
+
+        // Assert
+        // There should be only 1 missing interval left
         Assert.Single(window.MissingMeasurements.Intervals);
-
-        _options.MinimumAgeBeforeIssuingInHours = decreasedMinAge;
-        var futureSyncPoint = syncPoint.Add(TimeSpan.FromHours(1));
-        measurement.QuantityMissing = false;
-        _sut.UpdateSlidingWindow(window, new List<Measurement> { measurement }, futureSyncPoint);
-
-        Assert.Empty(window.MissingMeasurements.Intervals);
     }
 
 //     [Fact]
