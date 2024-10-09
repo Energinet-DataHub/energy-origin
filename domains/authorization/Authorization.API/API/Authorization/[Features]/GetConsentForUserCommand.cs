@@ -20,6 +20,7 @@ public record GetConsentForUserCommandResult(
     string Name,
     string SubType,
     string OrgName,
+    Guid OrgId,
     IEnumerable<Guid> OrgIds,
     string Scope,
     bool TermsAccepted);
@@ -54,6 +55,7 @@ public class GetConsentForUserQueryHandler(
                 command.Name,
                 subType,
                 command.OrgName,
+                Guid.Empty,
                 new List<Guid>(),
                 scope,
                 false
@@ -69,6 +71,7 @@ public class GetConsentForUserQueryHandler(
                 command.Name,
                 subType,
                 command.OrgName,
+                organization.Id,
                 new List<Guid> { organization.Id },
                 scope,
                 false
@@ -100,6 +103,7 @@ public class GetConsentForUserQueryHandler(
             command.Name,
             subType,
             command.OrgName,
+            organization.Id,
             new List<Guid> { organization.Id },
             scope,
             true
