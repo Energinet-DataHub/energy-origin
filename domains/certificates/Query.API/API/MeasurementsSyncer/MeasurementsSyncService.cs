@@ -64,9 +64,7 @@ public class MeasurementsSyncService(
         var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
         var synchronizationPointSeconds = synchronizationPoint.Seconds;
 
-        var threshold = UnixTimestamp.Now().Add(-TimeSpan.FromHours(_options.MinimumAgeBeforeIssuingInHours)).Seconds;
-
-        if (dateFrom < synchronizationPointSeconds && synchronizationPointSeconds <= threshold)
+        if (dateFrom < synchronizationPointSeconds)
         {
             var request = new GetMeasurementsRequest
             {

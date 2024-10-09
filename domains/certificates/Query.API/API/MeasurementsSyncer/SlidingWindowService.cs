@@ -1,15 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using Measurements.V1;
+using Microsoft.Extensions.Options;
 
 namespace API.MeasurementsSyncer;
 
-public class SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics, TimeProvider timeProvider)
+public class SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics, IOptions<MeasurementsSyncOptions> measurementSyncOptions)
 {
+    private readonly MeasurementsSyncOptions _options = measurementSyncOptions.Value;
+    public int _minimumAgeBeforeIssuingInHours => _options.MinimumAgeBeforeIssuingInHours;
     public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(Gsrn gsrn, UnixTimestamp synchronizationPoint)
     {
         return MeteringPointTimeSeriesSlidingWindow.Create(gsrn, synchronizationPoint);
@@ -94,13 +98,27 @@ public class SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics
     public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements,
         UnixTimestamp newSynchronizationPoint)
     {
+        var minimumAgeTimestamp = UnixTimestamp.Create(UnixTimestamp.Now().RoundToLatestHour().Seconds - (_options.MinimumAgeBeforeIssuingInHours * UnixTimestamp.SecondsPerHour));
+
+        // Adjust the newSynchronizationPoint if it's before the minimum age requirement
+        if (newSynchronizationPoint < minimumAgeTimestamp)
+        {
+            newSynchronizationPoint = minimumAgeTimestamp;
+        }
+
+        // If no measurements are fetched and the synchronization point is already up to date, do nothing
+        if (NoMeasurementsFetched(measurements) && window.SynchronizationPoint >= newSynchronizationPoint)
+        {
+            return;
+        }
+
         if (NoMeasurementsFetched(measurements))
         {
             var interval = MeasurementInterval.Create(window.SynchronizationPoint, newSynchronizationPoint);
 
-            UpdateMissingMeasurementMetric([interval]);
+            UpdateMissingMeasurementMetric(new List<MeasurementInterval> { interval });
 
-            window.UpdateSlidingWindow(newSynchronizationPoint, [interval]);
+            window.UpdateSlidingWindow(newSynchronizationPoint, new List<MeasurementInterval> { interval });
             return;
         }
 

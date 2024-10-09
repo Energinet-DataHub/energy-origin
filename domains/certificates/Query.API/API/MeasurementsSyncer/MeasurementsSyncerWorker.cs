@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
+using DataContext.ValueObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,56 +13,38 @@ using Microsoft.Extensions.Options;
 
 namespace API.MeasurementsSyncer;
 
-public class MeasurementsSyncerWorker(
-    ILogger<MeasurementsSyncerWorker> logger,
-    IContractState contractState,
-    IOptions<MeasurementsSyncOptions> options,
-    IServiceScopeFactory scopeFactory,
-    TimeProvider timeProvider)
-    : BackgroundService
+public class MeasurementsSyncerWorker : BackgroundService
 {
-    private readonly MeasurementsSyncOptions _options = options.Value;
-    private ITimer? _timer;
+    private readonly IContractState _contractState;
+    private readonly ILogger<MeasurementsSyncerWorker> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly MeasurementsSyncOptions _options;
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    public MeasurementsSyncerWorker(
+        ILogger<MeasurementsSyncerWorker> logger,
+        IContractState contractState,
+        IOptions<MeasurementsSyncOptions> options,
+        IServiceScopeFactory scopeFactory)
+    {
+        _contractState = contractState;
+        _logger = logger;
+        _scopeFactory = scopeFactory;
+        _options = options.Value;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         if (_options.Disabled)
         {
-            logger.LogInformation("MeasurementSyncer is disabled!");
-            return Task.CompletedTask;
+            _logger.LogInformation("MeasurementSyncer is disabled!");
+            return;
         }
 
-        _timer = timeProvider.CreateTimer(
-            callback: TimerCallback,
-            state: this,
-            dueTime: TimeSpan.Zero,
-            period: GetTimerPeriod()
-        );
-
-        return Task.CompletedTask;
-    }
-
-    private TimeSpan GetTimerPeriod()
-    {
-        return _options.SleepType switch
+        while (!stoppingToken.IsCancellationRequested)
         {
-            MeasurementsSyncerSleepType.Hourly => TimeSpan.FromHours(1),
-            MeasurementsSyncerSleepType.EveryThirdSecond => TimeSpan.FromSeconds(3),
-            _ => throw new InvalidOperationException($"Sleep option {_options.SleepType} has invalid value")
-        };
-    }
-
-    private async void TimerCallback(object? state)
-    {
-        var worker = (MeasurementsSyncerWorker)state!;
-
-        try
-        {
-            await worker.PerformPeriodicTask(CancellationToken.None);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Error occurred in MeasurementSyncer task");
+            _logger.LogInformation("MeasurementSyncer running job");
+            await PerformPeriodicTask(stoppingToken);
+            await Sleep(stoppingToken);
         }
     }
 
@@ -69,30 +52,35 @@ public class MeasurementsSyncerWorker(
     {
         try
         {
-            var syncInfos = await contractState.GetSyncInfos(stoppingToken);
+            var syncInfos = await _contractState.GetSyncInfos(stoppingToken);
 
             if (!syncInfos.Any())
             {
-                logger.LogInformation("No sync infos found. Skipping sync");
+                _logger.LogInformation("No sync infos found. Skipping sync");
                 return;
             }
 
-            foreach (var syncInfo in syncInfos)
+            try
             {
-                await HandleMeteringPoint(stoppingToken, syncInfo);
+                foreach (var syncInfo in syncInfos)
+                {
+                    await HandleMeteringPoint(stoppingToken, syncInfo);
+                }
             }
-
-            UpdateGauges();
+            finally
+            {
+                UpdateGauges();
+            }
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Error in MeasurementSyncer periodic task");
+            _logger.LogError(e, "Error in MeasurementSyncer periodic task");
         }
     }
 
     private async Task HandleMeteringPoint(CancellationToken stoppingToken, MeteringPointSyncInfo syncInfo)
     {
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var measurementSyncMetrics = scope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
         measurementSyncMetrics.AddNumberOfContractsBeingSynced(1);
         var scopedSyncService = scope.ServiceProvider.GetService<MeasurementsSyncService>()!;
@@ -101,18 +89,38 @@ public class MeasurementsSyncerWorker(
 
     private void UpdateGauges()
     {
-        using var scope = scopeFactory.CreateScope();
-        var measurementSyncMetrics = scope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
+        using var outerScope = _scopeFactory.CreateScope();
+        var measurementSyncMetrics = outerScope.ServiceProvider.GetRequiredService<IMeasurementSyncMetrics>();
         measurementSyncMetrics.UpdateGauges();
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken)
+    private async Task Sleep(CancellationToken cancellationToken)
     {
-        if (_timer != null)
+        if (_options.SleepType == MeasurementsSyncerSleepType.Hourly)
         {
-            await _timer.DisposeAsync();
+            await SleepToNearestHour(cancellationToken);
         }
+        else if (_options.SleepType == MeasurementsSyncerSleepType.EveryThirdSecond)
+        {
+            await Task.Delay(3000, cancellationToken);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Sleep option {nameof(_options.SleepType)} has invalid value {_options.SleepType}");
+        }
+    }
 
-        await base.StopAsync(cancellationToken);
+    private async Task SleepToNearestHour(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var timeUntilNextHour = UnixTimestamp.Now().TimeUntilNextHour();
+            _logger.LogInformation("Sleeping until next full hour {TimeToNextHour}", timeUntilNextHour);
+            await Task.Delay(timeUntilNextHour, cancellationToken);
+        }
+        catch (TaskCanceledException)
+        {
+            // Ignore
+        }
     }
 }
