@@ -4,7 +4,7 @@
 
 This document contains a getting-started guide on how to use the Energy Track & Trace APIs. The intended audience for this guide is developers and technical personal, when needing to onboard a new 3rd party client.
 
-In this document code examples are shown in `C#`, and all request target the demo environment <https://demo.energytrackandtrace.dk>. Client systems in production must target the production environment <https://energytrackandtrace.dk>.
+In this document code examples are shown in `C#`, and all requests target the demo environment <https://demo.energytrackandtrace.dk>. Client systems in production must target the production environment <https://energytrackandtrace.dk>.
 
 ### Prerequisites
 
@@ -127,3 +127,59 @@ The result should look something lige the `JSON` response below. A list of organ
     { "organizationId":"645ca01a-7ddd-4d27-ba67-7abc550ce5e3", "organizationName":"Producent A/S"}]
 }
 ```
+
+Use the `organization id` for the corresponding organization when making request.
+
+## Get Metering Points
+
+Obtain a list of metering points owned by an organization by using the <https://demo.energytrackandtrace.dk/developer#tag/MeteringPoints/paths/~1api~1measurements~1meteringpoints/get> endpoint.
+
+## Create Contract
+
+To enable certificates to be generated for a metering point, the metering point needs to be activated. Creating a contract on the metering point activates it. Use the <https://demo.energytrackandtrace.dk/developer#tag/Contracts/paths/~1api~1certificates~1contracts/post> endpoint.
+
+Use a GSRN number from the response described in [Get Metering Points](#get-metering-points). Certificates will be issued while a contract is active, make sure to specify appropriate start and end dates. End date may be `null` to create an open-ended contract.
+
+If the metering point owner does not already have a wallet, a new wallet will be created as part of the request. For both production and consumption certificates a contract is needed.
+
+## Get Wallet
+
+Certificates issued will be transferred the the organizations wallet. To obtain wallet information use the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1wallets/get> endpoint.
+
+## Create Wallet Endpoint
+
+In order to transfer certificates to another wallet. The receiving wallet owner will need to create a wallet endpoint.
+
+Create wallet endpoint using the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1wallets~1%7BwalletId%7D~1endpoints/post> endpoint. Use `Wallet id` from [](#get-wallet) and `organization id` from consent. see [Authorization](#authorization) for information about how to obtain `organization id`.
+
+## Create External Endpoint
+
+The sender wallet owner will need to create an wallet external endpoint.
+
+Use `Version`, `Endpoint` and `PublicKey` from the wallet endpoint response in [Wallet endpoint](#create-wallet-endpoint) to create a wallet external endpoint. Use the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1external-endpoints/post> endpoint.
+
+The response will include the `received id` to use when transferring certifates.
+
+See <https://github.com/project-origin/wallet/blob/main/doc/concepts/wallet.md> for more information about the wallet system.
+
+## Get Certificates
+
+Sender wallet owner will need to identify which certificates to transfer. To get a list of certificates available to transfer use the <https://demo.energytrackandtrace.dk/developer#tag/Certificates/paths/~1wallet-api~1certificates/get> endpoint.
+
+## Transfer Certificate
+
+Given a certificate identification `federatedStreamId` from the response in [Get Certificates](#get-certificates), the certificate can be transferred to the other wallet.
+
+Use the <https://demo.energytrackandtrace.dk/developer#tag/Transfers/paths/~1wallet-api~1transfers/post> endpoint to transfer a slice of the certificate to the receiving wallet. The `receiver id` from [Create External Endpoint](#create-external-endpoint) should be used as `receiver id` in the request.
+
+Specify the amount to transfer to the receiver wallet. If needed the certificate will be sliced to match the amount to transfer.
+
+By default hashed attributes are not included in the transfer. Make sure to include any hashed attributes, in the transfer request, the receiver wallet owner should be able to see.
+
+## Claim Energy
+
+Given a production certificate and a consumption certificate in a wallet, it is possible to claim the produced energy. Use the <https://demo.energytrackandtrace.dk/developer#tag/Claims/paths/~1wallet-api~1claims/post> endpoint to claim two certificates. If needed to certificates will  be sliced automatically to match the amount of quantity that should be claimed.
+
+## Get Claims
+
+Claimed certificates will not be returned in lists of available certificates. To get claimed certificates, use the <https://demo.energytrackandtrace.dk/developer#tag/Claims/paths/~1wallet-api~1claims~1cursor/get> endpoint.
