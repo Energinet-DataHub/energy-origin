@@ -46,6 +46,7 @@ public class GetConsentForUserQueryHandlerTests
             command.Name,
             SubType,
             command.OrgName,
+            Guid.Empty,
             new List<Guid>(),
             Scope,
             false
@@ -71,6 +72,7 @@ public class GetConsentForUserQueryHandlerTests
             command.Name,
             SubType,
             command.OrgName,
+            organization.Id,
             new List<Guid> { organization.Id },
             Scope,
             false

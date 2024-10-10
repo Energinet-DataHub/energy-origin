@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using Asp.Versioning;
@@ -52,6 +53,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             queryResult.Sub,
             queryResult.SubType,
             queryResult.OrgName,
+            queryResult.OrgId,
             queryResult.OrgIds,
             queryResult.Scope)
         );
@@ -76,6 +78,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             commandResult.Sub,
             commandResult.SubType,
             commandResult.OrgName,
+            commandResult.OrgId,
             commandResult.OrgIds,
             commandResult.Scope,
             commandResult.TermsAccepted));

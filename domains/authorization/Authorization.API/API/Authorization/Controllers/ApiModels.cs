@@ -19,6 +19,7 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("sub")] Guid Sub,
     [property: JsonPropertyName("sub_type")] string SubType,
     [property: JsonPropertyName("org_name")] string OrgName,
+    [property: JsonPropertyName("org_id")] Guid OrgId,
     [property: JsonPropertyName("org_ids")] IEnumerable<Guid> OrgIds,
     [property: JsonPropertyName("scope")] string Scope
     );
@@ -27,6 +28,7 @@ public record UserAuthorizationResponse(
     [property: JsonPropertyName("sub")] Guid Sub,
     [property: JsonPropertyName("sub_type")] string SubType,
     [property: JsonPropertyName("org_name")] string OrgName,
+    [property: JsonPropertyName("org_id")] Guid OrgId,
     [property: JsonPropertyName("org_ids")] IEnumerable<Guid> OrgIds,
     [property: JsonPropertyName("scope")] string Scope,
     [property: JsonPropertyName("terms_accepted")] bool TermsAccepted
