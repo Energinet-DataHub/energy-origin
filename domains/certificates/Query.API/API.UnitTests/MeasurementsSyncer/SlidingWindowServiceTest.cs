@@ -485,6 +485,7 @@ public class SlidingWindowServiceTest
         _sut.UpdateSlidingWindow(window, [measurement], advancedSyncPoint);
 
         Assert.Empty(window.MissingMeasurements.Intervals);
+        Assert.Equal( advancedSyncPoint, window.SynchronizationPoint);
     }
 
     [Fact]
@@ -539,19 +540,23 @@ public class SlidingWindowServiceTest
                 CreateMeasurement(_gsrn, syncPoint.Add(TimeSpan.FromHours(i)).Seconds, syncPoint.Add(TimeSpan.FromHours(i + 1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured))
             .ToList();
 
-        // Update sliding window to add all measurements except the missing one
-        _sut.UpdateSlidingWindow(window, measurements, _now.RoundToLatestHour());
-
-        // Act
         // Now remove the minimum age restriction
         _options.MinimumAgeBeforeIssuingInHours = 0;
 
         // Try to update the sync position to the current timestamp
         _sut.UpdateSlidingWindow(window, measurements, _now.RoundToLatestHour());
 
-        // Assert
         // There should be only 1 missing interval left
         Assert.Single(window.MissingMeasurements.Intervals);
+
+        //fill the missing interval
+        measurements.Add(CreateMeasurement(_gsrn, missingInterval.From.Seconds, missingInterval.To.Seconds, 10, false, EnergyQuantityValueQuality.Measured));
+
+        // Try to update the sync position to the current timestamp
+        _sut.UpdateSlidingWindow(window, measurements, _now.RoundToLatestHour());
+
+        // Assert no missing intervals
+        Assert.Empty(window.MissingMeasurements.Intervals);
     }
 
     //     [Fact]
