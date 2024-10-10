@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DataContext.ValueObjects;
 
-public class UnixTimestamp : ValueObject
+public class UnixTimestamp : ValueObject, IComparable<UnixTimestamp>
 {
     public const long SecondsPerDay = 86400;
     public const long SecondsPerHour = 3600;
@@ -18,6 +18,11 @@ public class UnixTimestamp : ValueObject
     private UnixTimestamp(long seconds)
     {
         Seconds = seconds;
+    }
+
+    public static UnixTimestamp Now(TimeProvider timeProvider)
+    {
+        return new UnixTimestamp(timeProvider.GetUtcNow().ToUnixTimeSeconds());
     }
 
     public static UnixTimestamp Now()
@@ -75,6 +80,12 @@ public class UnixTimestamp : ValueObject
     public UnixTimestamp Add(TimeSpan timespan)
     {
         return new UnixTimestamp(this.Seconds + (long)timespan.TotalSeconds);
+    }
+
+    public int CompareTo(UnixTimestamp? other)
+    {
+        if (other == null) return 1; // By convention, any object compares greater than null
+        return Seconds.CompareTo(other.Seconds);
     }
 
     public static bool operator >=(UnixTimestamp t1, UnixTimestamp t2)
