@@ -4,6 +4,12 @@ on:
   workflow_dispatch: {}
   schedule:
     - cron: "30 5,17 * * *"
+  push:
+    paths:
+      - 'domains/**'   # Trigger workflow only for changes in domains folder
+  pull_request:
+    paths:
+      - 'domains/**'
 
 jobs:
   setup:
@@ -14,13 +20,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build matrix
-        shell: bash
+      - name: Find affected domains
+        id: find_changes
         run: |
-          matrix=$({
-            find domains/ -mindepth 1 -maxdepth 1 -type d
-            find libraries/dotnet/ -mindepth 1 -maxdepth 1 -type d
-          } | jq -nRc '[inputs]')
+          # Find directories with changes in the domains folder
+          changed_dirs=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^domains/' | cut -d/ -f1-2 | sort -u)
+
+          # If there are no changed directories, set to an empty JSON array
+          if [[ -z "$changed_dirs" ]]; then
+            matrix="[]"
+          else
+            matrix=$(printf '%s\n' $changed_dirs | jq -nRc '[inputs]')
+          fi
 
           echo '::group::Matrix'
           echo "$matrix" | jq -r '.'
@@ -28,7 +39,7 @@ jobs:
 
           echo "matrix=$matrix" >> "$GITHUB_ENV"
 
-      - name: Matrix
+      - name: Output matrix
         shell: bash
         run: |
           echo '::group::Raw'
@@ -47,6 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Use sparse checkout for the affected domain directories
           sparse-checkout: ${{ matrix.path }}
 
       - name: Replace global.json
