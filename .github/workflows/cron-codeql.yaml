@@ -1,0 +1,66 @@
+﻿name: CodeQL Analysis
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "30 5,17 * * *"
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ env.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build matrix
+        shell: bash
+        run: |
+          matrix=$({
+            find domains/ -mindepth 1 -maxdepth 1 -type d
+            find libraries/dotnet/ -mindepth 1 -maxdepth 1 -type d
+          } | jq -nRc '[inputs]')
+
+          echo '::group::Matrix'
+          echo "$matrix" | jq -r '.'
+          echo '::endgroup::'
+
+          echo "matrix=$matrix" >> "$GITHUB_ENV"
+
+      - name: Matrix
+        shell: bash
+        run: |
+          echo '::group::Raw'
+          printf '${{ env.matrix }}\n'
+          echo '::endgroup::'
+          printf '${{ env.matrix }}' | jq -r '.'
+
+  run-csharp-codeql:
+    name: Run codeql
+    runs-on: ubuntu-latest
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        path: ${{ fromJson(needs.setup.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: ${{ matrix.path }}
+
+      - name: Replace global.json
+        run: cp "${{ matrix.path }}/global.json" "./global.json" || true
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:csharp"
