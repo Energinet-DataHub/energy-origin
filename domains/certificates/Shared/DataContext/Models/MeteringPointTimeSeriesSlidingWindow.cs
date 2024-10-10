@@ -32,6 +32,11 @@ public class MeteringPointTimeSeriesSlidingWindow
 
     public static MeteringPointTimeSeriesSlidingWindow Create(Gsrn gsrn, UnixTimestamp synchronizationPoint, List<MeasurementInterval> missingMeasurements)
     {
+        if (missingMeasurements.Any(interval => interval.To > synchronizationPoint))
+        {
+            throw new ArgumentException("A missing interval cannot extend later than the synchronization point.");
+        }
+
         return new MeteringPointTimeSeriesSlidingWindow(gsrn.Value, synchronizationPoint, missingMeasurements);
     }
 

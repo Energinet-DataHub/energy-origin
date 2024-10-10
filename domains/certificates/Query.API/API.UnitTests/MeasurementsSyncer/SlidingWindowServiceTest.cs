@@ -25,7 +25,10 @@ public class SlidingWindowServiceTest
 
     public SlidingWindowServiceTest()
     {
-        _options = new MeasurementsSyncOptions();
+        _options = new MeasurementsSyncOptions
+        {
+            MinimumAgeBeforeIssuingInHours = 0
+        };
         _sut = new SlidingWindowService(_measurementSyncMetrics, Options.Create(_options));
     }
 
@@ -315,26 +318,34 @@ public class SlidingWindowServiceTest
     [Fact]
     public void GivenMissingMeasurementHour_WhenFetchingQuarters_QuarterValuesShouldBePublished()
     {
+        // Arrange: Set synchronization point to 5 hours ago
         var synchronizationPoint = _now.RoundToLatestHour().Add(TimeSpan.FromHours(-5));
+
+        // Create missing interval that does not overlap the synchronization point
         var missingMeasurements = new List<MeasurementInterval>
-            { MeasurementInterval.Create(synchronizationPoint.Add(TimeSpan.FromHours(1)), synchronizationPoint.Add(TimeSpan.FromHours(2))) };
+        {
+            MeasurementInterval.Create(synchronizationPoint.Add(TimeSpan.FromHours(-4)), synchronizationPoint.Add(TimeSpan.FromHours(-3)))
+        };
+
         var window = _sut.CreateSlidingWindow(_gsrn, synchronizationPoint, missingMeasurements);
 
-        // Fake fetched measurements
+        // Fake fetched measurements within this interval
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(60)).Seconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(75)).Seconds, 10, false, EnergyQuantityValueQuality.Measured),
-            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(75)).Seconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(90)).Seconds, 10, false, EnergyQuantityValueQuality.Calculated),
-            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).Seconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(105)).Seconds, 10, false, EnergyQuantityValueQuality.Measured),
-            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(105)).Seconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(120)).Seconds, 10, false, EnergyQuantityValueQuality.Calculated)
+            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(-240)).Seconds,
+                synchronizationPoint.Add(TimeSpan.FromMinutes(-225)).Seconds, 10, false, EnergyQuantityValueQuality.Measured),
+            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(-225)).Seconds,
+                synchronizationPoint.Add(TimeSpan.FromMinutes(-210)).Seconds, 10, false, EnergyQuantityValueQuality.Calculated),
+            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(-210)).Seconds,
+                synchronizationPoint.Add(TimeSpan.FromMinutes(-195)).Seconds, 10, false, EnergyQuantityValueQuality.Measured),
+            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(-195)).Seconds,
+                synchronizationPoint.Add(TimeSpan.FromMinutes(-180)).Seconds, 10, false, EnergyQuantityValueQuality.Calculated)
         };
+
+        // Act: Filter measurements for publishing
         var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
 
-        // Assert updated sliding window contains 3 missing intervals
+        // Assert: 4 measurements should be published
         Assert.Equal(4, measurementsToPublish.Count);
     }
 
@@ -342,8 +353,13 @@ public class SlidingWindowServiceTest
     public void GivenMeasurementsWithDifferentQuality_FilterReturnsMeasuredAndCalculated()
     {
         var synchronizationPoint = _now.RoundToLatestHour().Add(TimeSpan.FromHours(-5));
+
+        // Adjust the missing interval to be entirely within the synchronization point
         var missingMeasurements = new List<MeasurementInterval>
-            { MeasurementInterval.Create(synchronizationPoint.Add(TimeSpan.FromHours(1)), synchronizationPoint.Add(TimeSpan.FromHours(2))) };
+        {
+            MeasurementInterval.Create(synchronizationPoint.Add(TimeSpan.FromHours(-2)), synchronizationPoint.Add(TimeSpan.FromHours(-1))) // Adjusted
+        };
+
         var window = _sut.CreateSlidingWindow(_gsrn, synchronizationPoint, missingMeasurements);
 
         // Fake fetched measurements
@@ -356,6 +372,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).Seconds,
                 synchronizationPoint.Add(TimeSpan.FromMinutes(105)).Seconds, 10, false, EnergyQuantityValueQuality.Calculated),
         };
+
         var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
 
         measurementsToPublish.Count.Should().Be(2);
@@ -365,8 +382,13 @@ public class SlidingWindowServiceTest
     public void GivenMeasurementsWithDifferentQuantity_FilterReturnsMeasurementsAboveZero()
     {
         var synchronizationPoint = _now.RoundToLatestHour().Add(TimeSpan.FromHours(-5));
+
+        // Adjust the missing interval to be before or at the synchronization point
         var missingMeasurements = new List<MeasurementInterval>
-            { MeasurementInterval.Create(synchronizationPoint.Add(TimeSpan.FromHours(1)), synchronizationPoint.Add(TimeSpan.FromHours(2))) };
+        {
+            MeasurementInterval.Create(synchronizationPoint.Add(TimeSpan.FromHours(-2)), synchronizationPoint.Add(TimeSpan.FromHours(-1))) // Adjusted
+        };
+
         var window = _sut.CreateSlidingWindow(_gsrn, synchronizationPoint, missingMeasurements);
 
         // Fake fetched measurements
@@ -379,29 +401,38 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).Seconds,
                 synchronizationPoint.Add(TimeSpan.FromMinutes(105)).Seconds, uint.MaxValue, false, EnergyQuantityValueQuality.Calculated),
         };
+
         var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
 
+        // Verify that only the measurements above zero are published
         measurementsToPublish.Count.Should().Be(1);
     }
 
     [Fact]
     public void GivenMissingMeasurementInQuarterResolution_WhenUpdatingSlidingWindow_QuarterIntervalsAreCreated()
     {
+        // Arrange: Set synchronization point to 5 hours ago and new synchronization point 3 hours later
         var synchronizationPoint = _now.RoundToLatestHour().Add(TimeSpan.FromHours(-5));
         var newSynchronizationPoint = synchronizationPoint.Add(TimeSpan.FromHours(3));
+
+        // Adjust the missing interval to lie completely before the synchronization point
         var missingMeasurements = new List<MeasurementInterval>
-            { MeasurementInterval.Create(synchronizationPoint.Add(TimeSpan.FromHours(1)), synchronizationPoint.Add(TimeSpan.FromHours(2))) };
+        {
+            MeasurementInterval.Create(synchronizationPoint.Add(TimeSpan.FromHours(-1)), synchronizationPoint.Add(TimeSpan.FromMinutes(-30))) // Missing interval before sync point
+        };
+
         var window = _sut.CreateSlidingWindow(_gsrn, synchronizationPoint, missingMeasurements);
 
-        // Fake fetched measurements
+        // Fake fetched measurement for the first 15 minutes of the missing interval
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, synchronizationPoint.Add(TimeSpan.FromMinutes(15)).Seconds, 10, false,
-                EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, synchronizationPoint.Add(TimeSpan.FromMinutes(15)).Seconds, 10, false, EnergyQuantityValueQuality.Measured)
         };
+
+        // Act: Update the sliding window with the new synchronization point and fetched measurements
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
 
-        // Assert updated sliding window contains 3 missing intervals
+        // Assert: Ensure only one missing interval remains, starting after the 15-minute mark
         Assert.Single(window.MissingMeasurements.Intervals);
         Assert.Equal(synchronizationPoint.Add(TimeSpan.FromMinutes(15)), window.MissingMeasurements.Intervals[0].From);
         Assert.Equal(newSynchronizationPoint, window.MissingMeasurements.Intervals[0].To);
@@ -528,17 +559,15 @@ public class SlidingWindowServiceTest
         _options.MinimumAgeBeforeIssuingInHours = initialMinAge;
 
         // Set the sync point to now minus 7 days
-        var syncPoint = _now.RoundToLatestHour().Add(TimeSpan.FromDays(-7));
+        var syncPoint = _now.RoundToLatestHour().Add(TimeSpan.FromHours(-initialMinAge));
 
-        // Create the missing interval 4 days ago (1 hour missing)
-        var missingInterval = MeasurementInterval.Create(syncPoint.Add(TimeSpan.FromHours(76)).RoundToLatestHour(), syncPoint.Add(TimeSpan.FromHours(77)).RoundToLatestHour());
-        var window = _sut.CreateSlidingWindow(_gsrn, syncPoint, new List<MeasurementInterval> { missingInterval });
-
-        // Create measurements to cover all other time intervals except the missing one
+        // Create measurements where some in the future have QuantityMissing = true
         var measurements = Enumerable.Range(1, 6 * 24) // 6 days of measurements (hourly)
             .Select(i =>
-                CreateMeasurement(_gsrn, syncPoint.Add(TimeSpan.FromHours(i)).Seconds, syncPoint.Add(TimeSpan.FromHours(i + 1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured))
+                CreateMeasurement(_gsrn, syncPoint.Add(TimeSpan.FromHours(i)).Seconds, syncPoint.Add(TimeSpan.FromHours(i + 1)).Seconds, 10, i >= 48 && i <= 49, EnergyQuantityValueQuality.Measured)) // Future measurement with QuantityMissing
             .ToList();
+
+        var window = _sut.CreateSlidingWindow(_gsrn, syncPoint, new List<MeasurementInterval>());
 
         // Now remove the minimum age restriction
         _options.MinimumAgeBeforeIssuingInHours = 0;
@@ -549,14 +578,41 @@ public class SlidingWindowServiceTest
         // There should be only 1 missing interval left
         Assert.Single(window.MissingMeasurements.Intervals);
 
-        //fill the missing interval
-        measurements.Add(CreateMeasurement(_gsrn, missingInterval.From.Seconds, missingInterval.To.Seconds, 10, false, EnergyQuantityValueQuality.Measured));
+        // Fill the missing interval (in the past)
+        measurements.Add(CreateMeasurement(_gsrn, syncPoint.Add(TimeSpan.FromHours(48)).Seconds, syncPoint.Add(TimeSpan.FromHours(49)).Seconds, 10, false, EnergyQuantityValueQuality.Measured));
 
         // Try to update the sync position to the current timestamp
         _sut.UpdateSlidingWindow(window, measurements, _now.RoundToLatestHour());
 
         // Assert no missing intervals
         Assert.Empty(window.MissingMeasurements.Intervals);
+    }
+
+    [Fact]
+    public void Given10HourMissingIntervalWithFoundMeasurement_ShouldCreateTwoMissingIntervals()
+    {
+        // Arrange: A 10-hour missing interval with a measurement found between hour 5 and hour 6
+        var syncPoint = _now.Add(TimeSpan.FromHours(-10));
+        var newSyncPoint = _now;
+
+        var measurements = new List<Measurement>
+        {
+            // Found valid measurement between hour 5 and 6
+            CreateMeasurement(_gsrn, syncPoint.Add(TimeSpan.FromHours(5)).Seconds, syncPoint.Add(TimeSpan.FromHours(6)).Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+
+        var window = _sut.CreateSlidingWindow(_gsrn, syncPoint);
+
+        // Act: Update the sliding window and check missing intervals
+        _sut.UpdateSlidingWindow(window, measurements, newSyncPoint);
+
+        // Assert: Two missing intervals (0-5 and 6-10)
+        Assert.Equal(2, window.MissingMeasurements.Intervals.Count);
+        Assert.Equal(syncPoint, window.MissingMeasurements.Intervals[0].From);
+        Assert.Equal(syncPoint.Add(TimeSpan.FromHours(5)), window.MissingMeasurements.Intervals[0].To);
+
+        Assert.Equal(syncPoint.Add(TimeSpan.FromHours(6)), window.MissingMeasurements.Intervals[1].From);
+        Assert.Equal(newSyncPoint, window.MissingMeasurements.Intervals[1].To);
     }
 
     //     [Fact]
@@ -612,42 +668,43 @@ public class SlidingWindowServiceTest
     //
     //
     //
-    //     [Fact]
-    //     public void RemovingMinimumAgeRequirement_ShouldAdvanceSynchronizationPointAndFetchAllAvailableMeasurements()
-    //     {
-    //         // Arrange
-    //         var initialMinAgeHours = 72; // 3 days
-    //         var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
-    //         var slidingWindowService = new SlidingWindowService(measurementSyncMetrics, new FakeTimeProvider());
-    //
-    //         var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
-    //
-    //         var synchronizationPoint = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
-    //         var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
-    //
-    //         // Simulate fetching measurements up to initial cutoff time
-    //         var initialMeasurements = new List<Measurement>
-    //         {
-    //             CreateMeasurement(_gsrn, synchronizationPoint.Seconds, initialCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
-    //         };
-    //         slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
-    //
-    //         // Act
-    //         // Remove the minimum age requirement by setting the cutoff time to now
-    //         var newCutoffTime = _now.RoundToLatestHour();
-    //         var newMeasurements = new List<Measurement>
-    //         {
-    //             CreateMeasurement(_gsrn, initialCutoffTime.Seconds, newCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
-    //         };
-    //         slidingWindowService.UpdateSlidingWindow(window, newMeasurements, newCutoffTime);
-    //
-    //         // Assert
-    //         // Synchronization point should advance to the new cutoff time (now)
-    //         Assert.Equal(newCutoffTime, window.SynchronizationPoint);
-    //
-    //         // No missing intervals should be present
-    //         Assert.Empty(window.MissingMeasurements.Intervals);
-    //     }
+    [Fact]
+    public void RemovingMinimumAgeRequirement_ShouldAdvanceSynchronizationPointAndFetchAllAvailableMeasurements()
+    {
+        // Arrange
+        var initialMinAgeHours = 72; // 3 days
+        var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics, Options.Create(_options));
+        _options.MinimumAgeBeforeIssuingInHours = initialMinAgeHours;
+
+        var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
+
+        var synchronizationPoint = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
+        var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
+
+        // Simulate fetching measurements up to initial cutoff time
+        var initialMeasurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, initialCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
+
+        // Act
+        // Remove the minimum age requirement by setting the cutoff time to now
+        var newCutoffTime = _now.RoundToLatestHour();
+        var newMeasurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, initialCutoffTime.Seconds, newCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        slidingWindowService.UpdateSlidingWindow(window, newMeasurements, newCutoffTime);
+
+        // Assert
+        // Synchronization point should advance to the new cutoff time (now)
+        Assert.Equal(newCutoffTime, window.SynchronizationPoint);
+
+        // No missing intervals should be present
+        Assert.Empty(window.MissingMeasurements.Intervals);
+    }
     //
     //
     //     [Fact]
