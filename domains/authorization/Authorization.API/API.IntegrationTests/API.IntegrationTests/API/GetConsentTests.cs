@@ -88,7 +88,7 @@ public class GetConsentTests
 
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin.Value);
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
         response.Should().Be200Ok();
@@ -155,6 +155,6 @@ public class GetConsentTests
         await dbContext.Consents.AddAsync(consent);
 
         await dbContext.SaveChangesAsync();
-        return (user.IdpUserId, organization.Tin);
+        return (user.IdpUserId, organization.Tin!);
     }
 }

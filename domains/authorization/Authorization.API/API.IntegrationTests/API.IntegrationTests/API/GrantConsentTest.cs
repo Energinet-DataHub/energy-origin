@@ -48,7 +48,7 @@ public class GrantConsentTest
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response = await api.GrantConsent(client.IdpClientId.Value);
         response.Should().Be200Ok();
     }

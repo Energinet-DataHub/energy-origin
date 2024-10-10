@@ -28,4 +28,4 @@ public record GetClientConsentsQuery(IdpClientId IdpClientId) : IRequest<GetClie
 
 public record GetClientConsentsQueryResult(List<GetClientConsentsQueryResultItem> GetClientConsentsQueryResultItems);
 
-public record GetClientConsentsQueryResultItem(Guid OrganizationId, OrganizationName OrganizationName, Tin Tin);
+public record GetClientConsentsQueryResultItem(Guid OrganizationId, OrganizationName OrganizationName, Tin? Tin);

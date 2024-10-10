@@ -42,7 +42,7 @@ public class DeleteConsentTests
         await dbContext.Consents.AddAsync(consent);
         await dbContext.SaveChangesAsync();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
 
         var response = await userClient.DeleteConsent(client.IdpClientId.Value);
 
@@ -67,7 +67,7 @@ public class DeleteConsentTests
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
 
         var randomGuidClientId = Guid.NewGuid();
 
@@ -105,7 +105,7 @@ public class DeleteConsentTests
 
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin.Value);
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
 
         var response = await userClient.DeleteConsent(client2.IdpClientId.Value);
 
@@ -129,7 +129,7 @@ public class DeleteConsentTests
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var consentListResponse = await userClient.GetUserOrganizationConsents();
         consentListResponse.Should().Be200Ok();
         var consentList = await consentListResponse.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();

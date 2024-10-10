@@ -41,7 +41,7 @@ public class ClientController : ControllerBase
         var queryResult = await _mediator.Send(new GetClientConsentsQuery(new IdpClientId(_identityDescriptor.Subject)));
 
         return Ok(new ClientConsentsResponse(queryResult.GetClientConsentsQueryResultItems.Select(x =>
-            new ClientConsentsResponseItem(x.OrganizationId, x.OrganizationName.Value, x.Tin.Value))));
+            new ClientConsentsResponseItem(x.OrganizationId, x.OrganizationName.Value, x.Tin?.Value))));
     }
 
     [HttpGet]
