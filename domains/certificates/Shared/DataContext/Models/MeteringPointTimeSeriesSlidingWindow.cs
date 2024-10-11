@@ -40,9 +40,9 @@ public class MeteringPointTimeSeriesSlidingWindow
         return new MeteringPointTimeSeriesSlidingWindow(meteringPointGsrn.Value, pointInTimeItShouldSyncUpTo, intervalsWithMeasurementsMissing);
     }
 
-    public void UpdateTo(UnixTimestamp to)
+    public void UpdateTo(UnixTimestamp pointInTimeItShouldSyncUpTo)
     {
-        SynchronizationPoint = to;
+        SynchronizationPoint = pointInTimeItShouldSyncUpTo;
     }
 
     public UnixTimestamp GetFetchIntervalStart()
