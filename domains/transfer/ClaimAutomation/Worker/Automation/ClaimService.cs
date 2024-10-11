@@ -59,7 +59,7 @@ public class ClaimService(
                 logger.LogError("Something went wrong with the ClaimService: {exception}", e);
             }
 
-            await SleepAnHour(stoppingToken);
+            await Sleep(stoppingToken);
         }
     }
 
@@ -130,11 +130,18 @@ public class ClaimService(
         }
     }
 
-    private async Task SleepAnHour(CancellationToken cancellationToken)
+    private async Task Sleep(CancellationToken cancellationToken)
     {
-        var minutesToNextHalfHour = TimeSpanHelper.GetMinutesToNextHalfHour(DateTimeOffset.Now.Minute);
-
-        logger.LogInformation("Sleeping until next half past {minutesToNextHalfHour}", minutesToNextHalfHour);
-        await Task.Delay(TimeSpan.FromMinutes(minutesToNextHalfHour), cancellationToken);
+        if (options.Value.ScheduleInterval == ScheduleInterval.EveryHourHalfPast)
+        {
+            var minutesToNextHalfHour = TimeSpanHelper.GetMinutesToNextHalfHour(DateTimeOffset.Now.Minute);
+            logger.LogInformation("Sleeping until next half past {minutesToNextHalfHour}", minutesToNextHalfHour);
+            await Task.Delay(TimeSpan.FromMinutes(minutesToNextHalfHour), cancellationToken);
+        }
+        else
+        {
+            logger.LogInformation("Sleeping 5 seconds");
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+        }
     }
 }
