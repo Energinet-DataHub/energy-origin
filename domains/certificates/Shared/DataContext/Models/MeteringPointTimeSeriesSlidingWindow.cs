@@ -25,19 +25,24 @@ public class MeteringPointTimeSeriesSlidingWindow
         MissingMeasurements = new MissingMeasurements(missingMeasurements);
     }
 
-    public static MeteringPointTimeSeriesSlidingWindow Create(Gsrn gsrn, UnixTimestamp synchronizationPoint)
+    public static MeteringPointTimeSeriesSlidingWindow Create(Gsrn meteringPointGsrn, UnixTimestamp pointInTimeItShouldSyncUpTo)
     {
-        return Create(gsrn, synchronizationPoint, new List<MeasurementInterval>());
+        return Create(meteringPointGsrn, pointInTimeItShouldSyncUpTo, new List<MeasurementInterval>());
     }
 
-    public static MeteringPointTimeSeriesSlidingWindow Create(Gsrn gsrn, UnixTimestamp synchronizationPoint, List<MeasurementInterval> missingMeasurements)
+    public static MeteringPointTimeSeriesSlidingWindow Create(Gsrn meteringPointGsrn, UnixTimestamp pointInTimeItShouldSyncUpTo, List<MeasurementInterval> intervalsWithMeasurementsMissing)
     {
-        return new MeteringPointTimeSeriesSlidingWindow(gsrn.Value, synchronizationPoint, missingMeasurements);
+        if (intervalsWithMeasurementsMissing.Any(missingInterval => missingInterval.To > pointInTimeItShouldSyncUpTo))
+        {
+            throw new ArgumentException("A missing interval cannot extend later than the synchronization point.");
+        }
+
+        return new MeteringPointTimeSeriesSlidingWindow(meteringPointGsrn.Value, pointInTimeItShouldSyncUpTo, intervalsWithMeasurementsMissing);
     }
 
-    public void UpdateTo(UnixTimestamp to)
+    public void UpdateTo(UnixTimestamp pointInTimeItShouldSyncUpTo)
     {
-        SynchronizationPoint = to;
+        SynchronizationPoint = pointInTimeItShouldSyncUpTo;
     }
 
     public UnixTimestamp GetFetchIntervalStart()
