@@ -29,15 +29,16 @@ public class SlidingWindowState : ISlidingWindowState
         if (existingSlidingWindow is not null)
         {
             var pos = UnixTimestamp.Max(existingSlidingWindow.SynchronizationPoint, contractStartTime);
-            existingSlidingWindow.UpdateTo(pos);
+
+            if (pos > existingSlidingWindow.SynchronizationPoint)
+            {
+                existingSlidingWindow.UpdateTo(pos);
+            }
+
             return existingSlidingWindow;
         }
 
-        var minimumAgeInHours = _measurementsSyncOptions.Value.MinimumAgeInHours;
-        var initialSynchronizationPoint = UnixTimestamp.Now().Add(TimeSpan.FromHours(-minimumAgeInHours)).RoundToLatestHour();
-        initialSynchronizationPoint = UnixTimestamp.Max(contractStartTime, initialSynchronizationPoint);
-
-        return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, initialSynchronizationPoint);
+        return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStartTime);
     }
 
     private async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(Gsrn gsrn, CancellationToken cancellationToken)

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
