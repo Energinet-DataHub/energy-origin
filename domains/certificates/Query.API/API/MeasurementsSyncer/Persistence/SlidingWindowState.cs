@@ -1,17 +1,22 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Configurations;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using Microsoft.Extensions.Options;
 
 namespace API.MeasurementsSyncer.Persistence;
 
 public class SlidingWindowState : ISlidingWindowState
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IOptions<MeasurementsSyncOptions> _measurementsSyncOptions;
 
     public SlidingWindowState(ApplicationDbContext dbContext)
     {
+        _measurementsSyncOptions = Options.Create(new MeasurementsSyncOptions());
         _dbContext = dbContext;
     }
 
@@ -24,16 +29,15 @@ public class SlidingWindowState : ISlidingWindowState
         if (existingSlidingWindow is not null)
         {
             var pos = UnixTimestamp.Max(existingSlidingWindow.SynchronizationPoint, contractStartTime);
-
-            if (pos > existingSlidingWindow.SynchronizationPoint)
-            {
-                existingSlidingWindow.UpdateTo(pos);
-            }
-
+            existingSlidingWindow.UpdateTo(pos);
             return existingSlidingWindow;
         }
 
-        return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStartTime);
+        var minimumAgeInHours = _measurementsSyncOptions.Value.MinimumAgeInHours;
+        var initialSynchronizationPoint = UnixTimestamp.Now().Add(TimeSpan.FromHours(-minimumAgeInHours)).RoundToLatestHour();
+        initialSynchronizationPoint = UnixTimestamp.Max(contractStartTime, initialSynchronizationPoint);
+
+        return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, initialSynchronizationPoint);
     }
 
     private async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(Gsrn gsrn, CancellationToken cancellationToken)

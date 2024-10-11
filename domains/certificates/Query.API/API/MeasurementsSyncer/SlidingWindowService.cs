@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
@@ -100,6 +101,12 @@ public class SlidingWindowService
     public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements,
         UnixTimestamp newSynchronizationPoint)
     {
+
+        if (newSynchronizationPoint <= window.SynchronizationPoint)
+        {
+            return;
+        }
+
         if (NoMeasurementsFetched(measurements))
         {
             var interval = MeasurementInterval.Create(window.SynchronizationPoint, newSynchronizationPoint);

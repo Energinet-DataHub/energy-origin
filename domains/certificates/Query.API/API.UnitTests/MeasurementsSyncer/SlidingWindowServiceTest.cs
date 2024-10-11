@@ -459,6 +459,52 @@ public class SlidingWindowServiceTest
         Assert.Empty(window.MissingMeasurements.Intervals);
     }
 
+    [Fact]
+    public void UpdateSlidingWindow_WithNewSynchronizationPoint_EarlierThanCurrent_DoesNotShiftItsPosition()
+    {
+        var gsrn = Any.Gsrn();
+        var currentSyncPoint = UnixTimestamp.Now().Add(TimeSpan.FromHours(-2)).RoundToLatestHour();
+        var createSyncPointEarlierInTime = currentSyncPoint.Add(TimeSpan.FromHours(-1)).RoundToLatestHour();
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(gsrn, currentSyncPoint);
+
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), createSyncPointEarlierInTime);
+
+        slidingWindow.SynchronizationPoint.Should().Be(currentSyncPoint);
+    }
+
+    [Fact]
+    public void UpdateSlidingWindow_WithNoMeasurements_AddsMissingInterval()
+    {
+        var gsrn = Any.Gsrn();
+        var currentSyncPoint = UnixTimestamp.Now().Add(TimeSpan.FromHours(-5)).RoundToLatestHour();
+        var newSyncPoint = currentSyncPoint.Add(TimeSpan.FromHours(2)).RoundToLatestHour();
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(gsrn, currentSyncPoint);
+
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPoint);
+
+        slidingWindow.SynchronizationPoint.Should().Be(newSyncPoint);
+        slidingWindow.MissingMeasurements.Intervals.Should().ContainSingle(interval =>
+            interval.From == currentSyncPoint && interval.To == newSyncPoint);
+    }
+
+    [Fact]
+    public void UpdateSlidingWindow_WithMeasurements_DoesNotAddMissingIntervals()
+    {
+        var gsrn = Any.Gsrn();
+        var currentSyncPoint = UnixTimestamp.Now().Add(TimeSpan.FromHours(-5)).RoundToLatestHour();
+        var newSyncPoint = currentSyncPoint.Add(TimeSpan.FromHours(1)).RoundToLatestHour();
+        var measurements = new List<Measurement>
+        {
+            Any.Measurement(gsrn, currentSyncPoint.Seconds, 10)
+        };
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(gsrn, currentSyncPoint);
+
+        _sut.UpdateSlidingWindow(slidingWindow, measurements, newSyncPoint);
+
+        slidingWindow.SynchronizationPoint.Should().Be(newSyncPoint);
+        slidingWindow.MissingMeasurements.Intervals.Should().BeEmpty();
+    }
+
     private Measurement CreateMeasurement(Gsrn gsrn, long from, long to, long quantity, bool quantityMissing, EnergyQuantityValueQuality quality)
     {
         return new Measurement
