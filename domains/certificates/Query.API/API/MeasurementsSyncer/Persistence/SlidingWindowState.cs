@@ -1,22 +1,17 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Configurations;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
-using Microsoft.Extensions.Options;
 
 namespace API.MeasurementsSyncer.Persistence;
 
 public class SlidingWindowState : ISlidingWindowState
 {
     private readonly ApplicationDbContext _dbContext;
-    private readonly IOptions<MeasurementsSyncOptions> _measurementsSyncOptions;
 
     public SlidingWindowState(ApplicationDbContext dbContext)
     {
-        _measurementsSyncOptions = Options.Create(new MeasurementsSyncOptions());
         _dbContext = dbContext;
     }
 
