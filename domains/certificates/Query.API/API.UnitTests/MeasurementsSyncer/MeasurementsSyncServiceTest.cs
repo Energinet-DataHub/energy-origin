@@ -289,7 +289,7 @@ public class MeasurementsSyncServiceTest
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
-        _fakeClient.Received(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        await _fakeClient.Received(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
         await _fakeMeasurementPublisher.DidNotReceive().PublishIntegrationEvents(
             Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
@@ -304,7 +304,7 @@ public class MeasurementsSyncServiceTest
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
-        _fakeClient.Received(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        await _fakeClient.Received(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
             Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
