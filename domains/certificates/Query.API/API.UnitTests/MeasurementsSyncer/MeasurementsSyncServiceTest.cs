@@ -36,24 +36,15 @@ public class MeasurementsSyncServiceTest
     private readonly ISlidingWindowState _fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
     private readonly IMeasurementSyncPublisher _fakeMeasurementPublisher = Substitute.For<IMeasurementSyncPublisher>();
     private readonly MeasurementsSyncService _service;
-    private int _minimumAgeThresholdHours = 0;
-    private readonly IOptions<MeasurementsSyncOptions> _options;
+    private readonly MeasurementsSyncOptions _options = new();
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient =
         Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
     public MeasurementsSyncServiceTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
-        _service = new MeasurementsSyncService(
-            _fakeLogger,
-            _fakeSlidingWindowState,
-            _fakeClient,
-            new SlidingWindowService(measurementSyncMetrics, _options = Options.Create(new MeasurementsSyncOptions { MinimumAgeThresholdHours = _minimumAgeThresholdHours })),
-            new MeasurementSyncMetrics()
-            , _fakeMeasurementPublisher,
-            _fakeMeteringPointsClient,
-            _options
-            );
+        _service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics, Options.Create(_options)),
+            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options));
     }
 
     [Fact]
@@ -131,5 +122,233 @@ public class MeasurementsSyncServiceTest
         // Then 2 measurements are published
         await _fakeMeasurementPublisher.Received().PublishIntegrationEvents(Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Is<List<Measurement>>(measurements => measurements.Count == 2), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AddingAgeRequirement_DoesNotFetchAlreadyFetchedMeasurements_UnlessInMissingIntervalWithinMinimumAgeBoundary()
+    {
+        var now = UnixTimestamp.Now().RoundToLatestHour();
+
+        var syncPoint = now.Add(TimeSpan.FromHours(1)).RoundToLatestHour();
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint);
+
+        var missingIntervalWhichWillAppear = MeasurementInterval.Create(syncPoint.Add(TimeSpan.FromHours(-200)).RoundToLatestHour(), syncPoint.RoundToLatestHour());
+        slidingWindow.MissingMeasurements.Intervals.Add(missingIntervalWhichWillAppear);
+
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(meteringPointsResponse);
+
+        var measurementResponse = new GetMeasurementsResponse
+        {
+            Measurements = { Any.Measurement(_syncInfo.Gsrn, missingIntervalWhichWillAppear.From.Seconds, 5) }
+        };
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AddingAgeRequirement_DoesNotPublishMeasurementOutsideOfMinimumAgeBoundaryInNextRun()
+    {
+        _options.MinimumAgeThresholdHours = 150;
+
+        var now = UnixTimestamp.Now().RoundToLatestHour();
+
+        var syncPoint = now.Add(TimeSpan.FromHours(1)).RoundToLatestHour();
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint);
+
+        var missingIntervalWhichWillAppear = MeasurementInterval.Create(syncPoint.Add(TimeSpan.FromHours(-200)).RoundToLatestHour(), syncPoint.RoundToLatestHour());
+        slidingWindow.MissingMeasurements.Intervals.Add(missingIntervalWhichWillAppear);
+
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(meteringPointsResponse);
+
+        var measurementResponse = new GetMeasurementsResponse
+        {
+            Measurements =
+            {
+                Any.Measurement(_syncInfo.Gsrn, missingIntervalWhichWillAppear.From.Seconds, 5),
+                Any.Measurement(_syncInfo.Gsrn, missingIntervalWhichWillAppear.From.Add(TimeSpan.FromHours(-200)).Seconds, 7)
+            }
+        };
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task AddingAgeRequirement_DoesNotPublishAlreadyPublishedMeasurements()
+    {
+        _options.MinimumAgeThresholdHours = 2;
+        var now = UnixTimestamp.Now().RoundToLatestHour();
+        var slidingWindowSyncPoint = now.Add(TimeSpan.FromHours(-4)).RoundToLatestHour();
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, slidingWindowSyncPoint);
+
+        var measurement = Any.Measurement(_syncInfo.Gsrn, slidingWindowSyncPoint.Seconds, 5);
+        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
+
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(meteringPointsResponse);
+
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
+
+        _fakeMeasurementPublisher.ClearReceivedCalls();
+
+        _options.MinimumAgeThresholdHours = 20;
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        await _fakeMeasurementPublisher.DidNotReceive().PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RemovingMinimumAgeRestriction_AllowsFetchingOfMeasurementsPreviouslyExcludedByHigherAgeRestriction()
+    {
+        _options.MinimumAgeThresholdHours = 5;
+        var now = UnixTimestamp.Now().RoundToLatestHour();
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-10)).RoundToLatestHour());
+
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(meteringPointsResponse);
+
+        var initialResponse = new GetMeasurementsResponse();
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(initialResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        _options.MinimumAgeThresholdHours = 0;
+        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-4)).RoundToLatestHour().Seconds, 10);
+        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ApplyingMinimumAgeRestriction_DoesNotFetchPreviouslyFetchedMeasurementsWithinAgeRange()
+    {
+        var now = UnixTimestamp.Now().RoundToLatestHour();
+
+        var syncPoint = now.Add(TimeSpan.FromHours(1)).RoundToLatestHour();
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint);
+
+        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-2)).RoundToLatestHour().Seconds, 10);
+        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
+            .Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        _options.MinimumAgeThresholdHours = 150;
+
+        var response = await _service.FetchMeasurements(slidingWindow, _syncInfo.MeteringPointOwner, now.Add(TimeSpan.FromHours(-150)).RoundToLatestHour(), CancellationToken.None);
+
+        response.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DecreasingMinimumAge_AllowsFetchingOfMeasurementsPreviouslyExcludedByHigherAgeRestriction()
+    {
+        _options.MinimumAgeThresholdHours = 5;
+        var now = UnixTimestamp.Now().RoundToLatestHour();
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-10)).RoundToLatestHour());
+
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
+
+        var emptyMeasurementResponse = new GetMeasurementsResponse();
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(emptyMeasurementResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        _fakeClient.ReceivedWithAnyArgs(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        await _fakeMeasurementPublisher.DidNotReceive().PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
+
+        _fakeClient.ClearReceivedCalls();
+        _fakeMeasurementPublisher.ClearReceivedCalls();
+
+        _options.MinimumAgeThresholdHours = 2;
+        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-3)).RoundToLatestHour().Seconds, 10);
+        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        _fakeClient.ReceivedWithAnyArgs(1).GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
+    }
+
+
+    [Fact]
+    public async Task ExistingMissingIntervals_AdheresToNewlyAddedAgeRestriction()
+    {
+        // Step 1: Set the contract's start date to 14 days ago
+        var syncInfo = new MeteringPointSyncInfo(
+            Gsrn: Any.Gsrn(),
+            StartSyncDate: DateTimeOffset.Now.AddDays(-14), // 14 days ago
+            MeteringPointOwner: "meteringPointOwner",
+            MeteringPointType.Production,
+            "DK1",
+            Guid.NewGuid(),
+            new Technology("T12345", "T54321"));
+
+        var slidingWindow =
+            MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, UnixTimestamp.Create(syncInfo.StartSyncDate));
+
+        var dateFrom = slidingWindow.SynchronizationPoint.Seconds;
+        var measurement1 = Any.Measurement(syncInfo.Gsrn, dateFrom, 5);
+        var measurement2 = Any.Measurement(syncInfo.Gsrn, dateFrom - TimeSpan.FromHours(200).Seconds, 7);
+        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement1, measurement2 } };
+        var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
+
+        _options.MinimumAgeThresholdHours = 168; // 7-day age restriction
+
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
+
+        // Verify that only measurements within the age restriction are published (measurement2 should be published)
+        await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(),
+            Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Do<List<Measurement>>(measurements =>
+            {
+                measurements.Should().HaveCount(1);
+                measurements[0].Should().BeEquivalentTo(measurement2);
+            }),
+            Arg.Any<CancellationToken>());
     }
 }
