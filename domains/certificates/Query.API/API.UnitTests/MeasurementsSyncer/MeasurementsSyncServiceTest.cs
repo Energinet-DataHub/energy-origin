@@ -13,6 +13,7 @@ using Measurements.V1;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Testing.Extensions;
 using Xunit;
@@ -48,7 +49,7 @@ public class MeasurementsSyncServiceTest
             _fakeLogger,
             _fakeSlidingWindowState,
             _fakeClient,
-            new SlidingWindowService(measurementSyncMetrics, _options = Options.Create(new MeasurementsSyncOptions { MinimumAgeThresholdHours = _minimumAgeThresholdHours })),
+            new SlidingWindowService(measurementSyncMetrics, _options = Options.Create(new MeasurementsSyncOptions { MinimumAgeThresholdHours = _minimumAgeThresholdHours }), new FakeTimeProvider()),
             new MeasurementSyncMetrics()
             , _fakeMeasurementPublisher,
             _fakeMeteringPointsClient,

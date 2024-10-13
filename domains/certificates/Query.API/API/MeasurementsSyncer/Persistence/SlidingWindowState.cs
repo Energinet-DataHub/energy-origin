@@ -33,7 +33,12 @@ public class SlidingWindowState : ISlidingWindowState
             return existingSlidingWindow;
         }
 
-        return MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStartTime);
+        var newSlidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(
+            syncInfo.Gsrn,
+            UnixTimestamp.Max(contractStartTime, UnixTimestamp.Now().RoundToLatestHour())
+        );
+
+        return newSlidingWindow;
     }
 
     private async Task<MeteringPointTimeSeriesSlidingWindow?> GetMeteringPointSlidingWindow(Gsrn gsrn, CancellationToken cancellationToken)

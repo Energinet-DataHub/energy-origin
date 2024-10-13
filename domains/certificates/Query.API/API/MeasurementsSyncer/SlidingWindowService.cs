@@ -14,11 +14,13 @@ public class SlidingWindowService
 {
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics;
     private readonly MeasurementsSyncOptions _options;
+    private readonly TimeProvider _timeProvider;
 
-    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics, IOptions<MeasurementsSyncOptions> options)
+    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics, IOptions<MeasurementsSyncOptions> options, TimeProvider timeProvider)
     {
         _measurementSyncMetrics = measurementSyncMetrics;
         _options = options.Value;
+        _timeProvider = timeProvider;
     }
 
     public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(Gsrn gsrn, UnixTimestamp synchronizationPoint)
@@ -107,16 +109,24 @@ public class SlidingWindowService
     {
         var minimumAgeThreshold = CalculateMinimumAgeThreshold(newSynchronizationPoint);
 
-        if (newSynchronizationPoint < window.SynchronizationPoint)
+        if (_options.MinimumAgeThresholdHours >= 0)
         {
-            return;
+            if (newSynchronizationPoint > minimumAgeThreshold)
+            {
+                // Allow moving forward if we're within the threshold, but never move backward
+                if (newSynchronizationPoint >= window.SynchronizationPoint)
+                {
+                    // Sync up to the threshold, but don't let it move beyond
+                    newSynchronizationPoint = minimumAgeThreshold;
+                }
+            }
         }
 
         if (NoMeasurementsFetched(measurements))
         {
             var interval = MeasurementInterval.Create(window.SynchronizationPoint, newSynchronizationPoint);
-            UpdateMissingMeasurementMetric([interval]);
-            window.UpdateSlidingWindow(newSynchronizationPoint, [interval], minimumAgeThreshold);
+            UpdateMissingMeasurementMetric(new List<MeasurementInterval> { interval });
+            window.UpdateSlidingWindow(newSynchronizationPoint, new List<MeasurementInterval> { interval }, minimumAgeThreshold);
             return;
         }
 
@@ -248,6 +258,6 @@ public class SlidingWindowService
 
     private UnixTimestamp CalculateMinimumAgeThreshold(UnixTimestamp synchronizationPoint)
     {
-        return synchronizationPoint.Add(TimeSpan.FromHours(- _options.MinimumAgeThresholdHours));
+        return UnixTimestamp.Now().Add(TimeSpan.FromHours(- _options.MinimumAgeThresholdHours)).RoundToLatestHour();
     }
 }

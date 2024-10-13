@@ -10,6 +10,7 @@ using Measurements.V1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Xunit;
 using Technology = DataContext.ValueObjects.Technology;
@@ -43,7 +44,7 @@ public class MeasurementsSyncerWorkerTest
     public MeasurementsSyncerWorkerTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
-        var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics, Options.Create(_options)),
+        var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics, Options.Create(_options), new FakeTimeProvider()),
             new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options));
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
