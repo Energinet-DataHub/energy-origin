@@ -1,18 +1,22 @@
 using System.Collections.Generic;
 using System.Linq;
+using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using Measurements.V1;
+using Microsoft.Extensions.Options;
 
 namespace API.MeasurementsSyncer;
 
 public class SlidingWindowService
 {
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics;
+    private readonly IOptions<MeasurementsSyncOptions> _measurementsSyncOptions;
 
-    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics)
+    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics, IOptions<MeasurementsSyncOptions> measurementsSyncOptions)
     {
+        _measurementsSyncOptions = measurementsSyncOptions;
         _measurementSyncMetrics = measurementSyncMetrics;
     }
 
