@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Configurations;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
@@ -11,6 +12,7 @@ using FluentAssertions;
 using Measurements.V1;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using Testing.Extensions;
 using Xunit;
@@ -34,15 +36,25 @@ public class MeasurementsSyncServiceTest
     private readonly ISlidingWindowState _fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
     private readonly IMeasurementSyncPublisher _fakeMeasurementPublisher = Substitute.For<IMeasurementSyncPublisher>();
     private readonly MeasurementsSyncService _service;
-
+    private int _minimumAgeThresholdHours = 0;
+    private readonly IOptions<MeasurementsSyncOptions> _options;
+    private UnixTimestamp _minimumAgeThreshold => UnixTimestamp.Now().Add(TimeSpan.FromHours(-_minimumAgeThresholdHours));
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient =
         Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
     public MeasurementsSyncServiceTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
-        _service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient);
+        _service = new MeasurementsSyncService(
+            _fakeLogger,
+            _fakeSlidingWindowState,
+            _fakeClient,
+            new SlidingWindowService(measurementSyncMetrics, _options = Options.Create(new MeasurementsSyncOptions { MinimumAgeThresholdHours = _minimumAgeThresholdHours })),
+            new MeasurementSyncMetrics()
+            , _fakeMeasurementPublisher,
+            _fakeMeteringPointsClient,
+            _options
+            );
     }
 
     [Fact]

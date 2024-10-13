@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using API.Configurations;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using FluentAssertions;
 using Measurements.V1;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using Testing.Helpers;
 using Xunit;
@@ -19,10 +21,11 @@ public class SlidingWindowServiceTest
     private readonly Gsrn _gsrn = new Gsrn(GsrnHelper.GenerateRandom());
     private readonly UnixTimestamp _now = UnixTimestamp.Now();
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+    private readonly MeasurementsSyncOptions _options = new();
 
     public SlidingWindowServiceTest()
     {
-        _sut = new SlidingWindowService(_measurementSyncMetrics);
+        _sut = new SlidingWindowService(_measurementSyncMetrics, Options.Create(_options));
     }
 
     [Fact]
