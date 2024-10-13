@@ -462,6 +462,57 @@ public class SlidingWindowServiceTest
         Assert.Empty(window.MissingMeasurements.Intervals);
     }
 
+    [Fact]
+    public void GivenAgeThreshold_WhenStartingNewSyncInterval_MinimumAgeThresholdEqualsInitialStartPosition()
+    {
+        _options.MinimumAgeThresholdHours = 120;
+        var initialStartSyncPosition = _now.RoundToLatestHour();
+
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(initialStartSyncPosition);
+    }
+
+    [Fact]
+    public void GivenNoAgeThreshold_WhenStartingNewSyncInterval_SyncPositionEqualsInitialStartPosition()
+    {
+        _options.MinimumAgeThresholdHours = 0;
+        var initialStartSyncPosition = _now.RoundToLatestHour();
+
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(initialStartSyncPosition);
+    }
+
+    [Fact]
+    public void GivenAgeThreshold_WhenUpdatingSyncPosition_SyncPositionIsDelayedByThreshold()
+    {
+        _options.MinimumAgeThresholdHours = 120;
+        var initialStartSyncPosition = _now.RoundToLatestHour();
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
+        var newSyncPosition = initialStartSyncPosition.Add(TimeSpan.FromHours(1));
+
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(initialStartSyncPosition);
+    }
+
+    [Fact]
+    public void GivenAgeThreshold_WhenSyncPositionIsWithinThreshold_SyncPositionMovesForward()
+    {
+        // Arrange
+        _options.MinimumAgeThresholdHours = 120;
+        var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours -1)).RoundToLatestHour(); // Use RoundToLatestHour
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
+        var newSyncPosition = initialStartSyncPosition.Add(TimeSpan.FromHours(1)).RoundToLatestHour(); // Round here as well
+
+        // Act
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
+
+        // Assert
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(newSyncPosition);
+    }
+
     private Measurement CreateMeasurement(Gsrn gsrn, long from, long to, long quantity, bool quantityMissing, EnergyQuantityValueQuality quality)
     {
         return new Measurement

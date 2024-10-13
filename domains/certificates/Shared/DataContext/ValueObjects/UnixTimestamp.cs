@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DataContext.ValueObjects;
 
-public class UnixTimestamp : ValueObject
+public class UnixTimestamp : ValueObject, IComparable<UnixTimestamp>
 {
     public const long SecondsPerDay = 86400;
     public const long SecondsPerHour = 3600;
@@ -105,6 +105,12 @@ public class UnixTimestamp : ValueObject
     protected override IEnumerable<object> GetEqualityComponents()
     {
         return new object[] { Seconds };
+    }
+
+    public int CompareTo(UnixTimestamp? other)
+    {
+        if (other == null) return 1; // By convention, any object compares greater than null
+        return Seconds.CompareTo(other.Seconds);
     }
 
     public override string ToString()

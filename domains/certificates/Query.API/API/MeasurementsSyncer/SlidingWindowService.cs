@@ -106,7 +106,11 @@ public class SlidingWindowService
         UnixTimestamp newSynchronizationPoint)
     {
         var minimumAgeThreshold = CalculateMinimumAgeThreshold(newSynchronizationPoint);
-        newSynchronizationPoint = UnixTimestamp.Min(newSynchronizationPoint, minimumAgeThreshold);
+
+        if (newSynchronizationPoint < window.SynchronizationPoint)
+        {
+            return;
+        }
 
         if (NoMeasurementsFetched(measurements))
         {

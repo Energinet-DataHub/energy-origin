@@ -53,10 +53,12 @@ public class MeteringPointTimeSeriesSlidingWindow
 
     public void UpdateSlidingWindow(UnixTimestamp newSynchronizationPoint, List<MeasurementInterval> missingMeasurements, UnixTimestamp minimumAgeThreshold)
     {
-        if (newSynchronizationPoint > minimumAgeThreshold)
-        {
-            return;
-        }
+        // Apply the minimum age threshold
+        // if (newSynchronizationPoint > minimumAgeThreshold)
+        // {
+        //     return;
+        // }
+
         SynchronizationPoint = newSynchronizationPoint;
         MissingMeasurements = new MissingMeasurements(missingMeasurements);
     }

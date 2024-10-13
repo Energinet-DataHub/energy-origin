@@ -38,7 +38,6 @@ public class MeasurementsSyncServiceTest
     private readonly MeasurementsSyncService _service;
     private int _minimumAgeThresholdHours = 0;
     private readonly IOptions<MeasurementsSyncOptions> _options;
-    private UnixTimestamp _minimumAgeThreshold => UnixTimestamp.Now().Add(TimeSpan.FromHours(-_minimumAgeThresholdHours));
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient =
         Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
