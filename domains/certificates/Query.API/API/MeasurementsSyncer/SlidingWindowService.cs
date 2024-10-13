@@ -1,19 +1,24 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using Measurements.V1;
+using Microsoft.Extensions.Options;
 
 namespace API.MeasurementsSyncer;
 
 public class SlidingWindowService
 {
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics;
+    private readonly MeasurementsSyncOptions _options;
 
-    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics)
+    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics, IOptions<MeasurementsSyncOptions> options)
     {
         _measurementSyncMetrics = measurementSyncMetrics;
+        _options = options.Value;
     }
 
     public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(Gsrn gsrn, UnixTimestamp synchronizationPoint)
@@ -97,24 +102,36 @@ public class SlidingWindowService
         return window.MissingMeasurements.Intervals.Any(missingInterval => missingInterval.Contains(interval));
     }
 
-    public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements,
-        UnixTimestamp newSynchronizationPoint)
+    public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, UnixTimestamp newSynchronizationPoint)
     {
+        var minimumAgeThreshold = CalculateMinimumAgeThreshold(newSynchronizationPoint);
+
+        // Apply age threshold logic
+        if (_options.MinimumAgeThresholdHours > 0)
+        {
+            if (newSynchronizationPoint > minimumAgeThreshold)
+            {
+                // If sync point is beyond the threshold, it must not advance
+                newSynchronizationPoint = window.SynchronizationPoint;
+            }
+        }
+
         if (NoMeasurementsFetched(measurements))
         {
             var interval = MeasurementInterval.Create(window.SynchronizationPoint, newSynchronizationPoint);
-
-            UpdateMissingMeasurementMetric([interval]);
-
-            window.UpdateSlidingWindow(newSynchronizationPoint, [interval]);
+            UpdateMissingMeasurementMetric(new List<MeasurementInterval> { interval });
+            window.UpdateSlidingWindow(newSynchronizationPoint, new List<MeasurementInterval> { interval });
             return;
         }
 
         var missingIntervals = FindMissingIntervals(window, measurements, newSynchronizationPoint);
-
         UpdateMissingMeasurementMetric(missingIntervals);
-
         window.UpdateSlidingWindow(newSynchronizationPoint, missingIntervals);
+    }
+
+    private UnixTimestamp CalculateMinimumAgeThreshold(UnixTimestamp synchronizationPoint)
+    {
+        return UnixTimestamp.Now().Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)).RoundToLatestHour();
     }
 
     private void UpdateMissingMeasurementMetric(List<MeasurementInterval> missingIntervals)
