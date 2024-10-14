@@ -47,6 +47,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: define-matrix
     if: ${{ needs.define-matrix.outputs.matrix != '[]' }}
+    env:
+      DOTNET_INSTALL_DIR: ${{ runner.workspace }}/.dotnet
     strategy:
       matrix:
         projects: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
@@ -58,4 +60,3 @@ jobs:
         with:
           project-folder: ${{ matrix.projects.project }}
           license-mapping-file: .mapped-licenses.json
-          DOTNET_INSTALL_DIR: "./.dotnet"
