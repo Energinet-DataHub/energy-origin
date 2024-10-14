@@ -5,10 +5,7 @@ on:
 
 jobs:
   define-matrix:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write
+    runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ env.matrix }}
 
