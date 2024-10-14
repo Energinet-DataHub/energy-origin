@@ -66,3 +66,4 @@ This is the commands for generating the migration SQL script for the API project
 ```shell
 dotnet ef migrations script --idempotent --project Query.API/API --output migrations/API.sql
 ```
+add diff

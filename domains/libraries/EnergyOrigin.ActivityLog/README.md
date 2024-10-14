@@ -57,3 +57,4 @@ IActivityLogEntryRepository activityLogEntryRepository
 var activityLog = ActivityLogEntry.Create(...);
 activityLogEntryRepository.AddActivityLogEntryAsync(activityLog);
 ```
+add diff

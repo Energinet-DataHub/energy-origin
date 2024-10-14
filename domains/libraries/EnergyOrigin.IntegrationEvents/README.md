@@ -20,3 +20,4 @@ adding their own properties, as needed.
 ### Integration guides for various message brokers:
 
 - [RabbitMQ using MassTransit's Transactional Outbox Pattern](./doc/specific-integration-guides/masstransit-rabbitmq.md)
+add diff
