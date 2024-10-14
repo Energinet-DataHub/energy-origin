@@ -20,7 +20,7 @@ public class OrganizationConsent : IEntity<Guid>
         var consent = new OrganizationConsent
         {
             Id = Guid.NewGuid(),
-            ConsentDate = DateTimeOffset.Now,
+            ConsentDate = consentDate,
             ConsentReceiverOrganizationId = organizationReceiverId,
             ConsentGiverOrganizationId = organizationGiverId,
         };

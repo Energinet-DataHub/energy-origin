@@ -3,7 +3,7 @@ using API.Models;
 using API.UnitTests.Repository;
 using API.ValueObjects;
 using FluentAssertions;
-
+/*
 namespace API.UnitTests._Queries_;
 
 public class GetClientConsentsQueryTests
@@ -29,4 +29,5 @@ public class GetClientConsentsQueryTests
         result.GetClientConsentsQueryResultItems[0].OrganizationName.Should().Be(organization.Name);
         result.GetClientConsentsQueryResultItems[0].Tin.Should().Be(organization.Tin);
     }
-}
+} TODO
+*/

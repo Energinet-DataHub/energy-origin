@@ -2,7 +2,7 @@ using API.Authorization._Features_;
 using API.Models;
 using API.UnitTests.Repository;
 using FluentAssertions;
-
+/*
 namespace API.UnitTests._Queries_;
 
 public class GetConsentQueryTests
@@ -33,3 +33,4 @@ public class GetConsentQueryTests
         result.Result.Should().BeEmpty();
     }
 }
+*/

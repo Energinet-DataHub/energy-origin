@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
 using Asp.Versioning;
@@ -52,7 +54,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             queryResult.Sub,
             queryResult.SubType,
             queryResult.OrgName,
-            queryResult.OrgIds,
+            queryResult.OrgIds ?? new List<Guid>(),
             queryResult.Scope)
         );
     }

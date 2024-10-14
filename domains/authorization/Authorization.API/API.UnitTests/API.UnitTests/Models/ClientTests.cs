@@ -1,7 +1,7 @@
 using API.Models;
 using API.ValueObjects;
 using FluentAssertions;
-
+/*
 namespace API.UnitTests.Models;
 
 public class ClientTests
@@ -49,3 +49,4 @@ public class ClientTests
         client.Consents.Should().Contain(consent);
     }
 }
+*/

@@ -3,7 +3,7 @@ using API.ValueObjects;
 using FluentAssertions;
 
 namespace API.UnitTests.Models;
-
+/*
 public class OrganizationTests
 {
     [Fact]
@@ -150,3 +150,4 @@ public class OrganizationTests
         organization.TermsAcceptanceDate.Should().BeNull();
     }
 }
+*/

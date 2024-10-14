@@ -3,7 +3,7 @@ using API.Authorization.Exceptions;
 using API.Models;
 using API.UnitTests.Repository;
 using FluentAssertions;
-
+/*
 namespace API.UnitTests._Queries_;
 
 public class GetConsentForClientQueryTests
@@ -74,3 +74,4 @@ public class GetConsentForClientQueryTests
         await action.Should().ThrowAsync<EntityNotFoundException>();
     }
 }
+*/

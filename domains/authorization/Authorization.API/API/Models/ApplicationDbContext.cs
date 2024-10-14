@@ -12,7 +12,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<User> Users { get; set; }
     public DbSet<Affiliation> Affiliations { get; set; }
     public DbSet<Client> Clients { get; set; }
-    public DbSet<Consent> Consents { get; set; }
     public DbSet<OrganizationConsent> OrganizationConsents { get; set; }
     public DbSet<Terms> Terms { get; set; }
 
@@ -22,7 +21,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         ConfigureOrganizationTable(modelBuilder);
         ConfigureAffiliationTable(modelBuilder);
-        ConfigureConsentTable(modelBuilder);
         ConfigureOrganizationConsentTable(modelBuilder);
         ConfigureClientTable(modelBuilder);
         ConfigureUserTable(modelBuilder);
@@ -90,18 +88,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Affiliation>().HasKey(a => new { a.UserId, a.OrganizationId });
     }
 
-    private static void ConfigureConsentTable(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Consent>().HasOne(it => it.Organization);
-        modelBuilder.Entity<Consent>().HasOne(it => it.Client);
-
-        modelBuilder.Entity<Consent>().HasKey(c => new { c.ClientId, c.OrganizationId });
-
-        modelBuilder.Entity<Consent>()
-            .HasIndex(c => new { c.ClientId, c.OrganizationId })
-            .IsUnique();
-    }
-
     private static void ConfigureOrganizationConsentTable(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<OrganizationConsent>()
@@ -116,6 +102,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(x => x.ConsentReceiverOrganization)
             .WithMany(x => x.OrganizationReceivedConsents)
             .HasForeignKey(x => x.ConsentReceiverOrganizationId);
+
+        // TODO Add unique constraint that we have only 1.
 
     }
 

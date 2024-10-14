@@ -41,7 +41,6 @@ public class AddOrganizationConsentTests
         var organizations = await dbContext.Organizations.ToListAsync();
         var organizationConsents = await dbContext.OrganizationConsents.ToListAsync();
         var client = await dbContext.Clients.ToListAsync();
-        var consents = await dbContext.Consents.ToListAsync();
 
         organizations.Should().NotBeEmpty();
         // TODO Real asserts

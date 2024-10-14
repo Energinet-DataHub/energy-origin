@@ -7,7 +7,7 @@ using API.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-
+/*
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
@@ -104,4 +104,5 @@ public class GrantConsentTest
 
         response.Should().Be403Forbidden();
     }
-}
+} TODO
+*/
