@@ -138,7 +138,7 @@ public class DeleteConsentTests
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var consentListResponse = await userClient.GetUserOrganizationConsents();
         consentListResponse.Should().Be200Ok();
-        var test = await consentListResponse.Content.ReadAsStringAsync();
+
         var consentList = await consentListResponse.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>();
         consentList!.Result.Should().NotBeEmpty();
 

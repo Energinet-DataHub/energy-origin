@@ -22,8 +22,8 @@ public class GetClientConsentsQueryTests
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
 
         // Act
-        var handler = new GetClientConsentsQueryHandler(_fakeOrganizationRepository);
-        var result = await handler.Handle(new GetClientConsentsQuery(client.IdpClientId), CancellationToken.None);
+        var handler = new GetClientGrantedConsentsQueryHandler(_fakeOrganizationRepository);
+        var result = await handler.Handle(new GetClientGrantedConsentsQuery(client.IdpClientId), CancellationToken.None);
 
         // Assert
         result.GetClientConsentsQueryResultItems[0].OrganizationName.Should().Be(organization.Name);

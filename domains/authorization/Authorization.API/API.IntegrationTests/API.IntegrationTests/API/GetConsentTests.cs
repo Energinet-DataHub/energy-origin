@@ -7,7 +7,7 @@ using API.UnitTests;
 using API.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-/*
+
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
@@ -67,22 +67,21 @@ public class GetConsentTests
         var organization1 = Any.Organization();
         var organization2 = Any.Organization();
 
-        var client1 = Any.Client();
-        var client2 = Any.Client();
+        var organizationWithClient1 = Any.OrganizationWithClient();
+        var organizationWithClient2 = Any.OrganizationWithClient();
 
-        var consent1 = Consent.Create(organization1, client1, DateTimeOffset.UtcNow);
-        var consent2 = Consent.Create(organization2, client2, DateTimeOffset.UtcNow);
+        var consent1 = OrganizationConsent.Create(organization1.Id, organizationWithClient1.Id, DateTimeOffset.UtcNow);
+        var consent2 = OrganizationConsent.Create(organization2.Id, organizationWithClient2.Id, DateTimeOffset.UtcNow);
 
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddRangeAsync([organization1, organization2]);
-        await dbContext.Clients.AddRangeAsync([client1, client2]);
+        await dbContext.Organizations.AddRangeAsync([organization1, organization2,organizationWithClient1, organizationWithClient2]);
 
         var affiliation1 = Affiliation.Create(user, organization1);
         var affiliation2 = Affiliation.Create(user, organization2);
 
         await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
-        await dbContext.Consents.AddRangeAsync([consent1, consent2]);
+        await dbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
 
         await dbContext.SaveChangesAsync();
 
@@ -97,8 +96,8 @@ public class GetConsentTests
 
         result!.Result.Count.Should().Be(1);
         var firstResult = result.Result.First();
-        firstResult.IdpClientId.Should().Be(client1.IdpClientId.Value);
-        firstResult.ClientName.Should().Be(client1.Name.Value);
+        firstResult.IdpClientId.Should().Be(organizationWithClient1.Clients.First().IdpClientId.Value);
+        firstResult.ClientName.Should().Be(organizationWithClient1.Clients.First().Name.Value);
     }
 
     [Fact]
@@ -107,20 +106,20 @@ public class GetConsentTests
         var user1 = Any.User();
         var user2 = Any.User();
         var organization = Any.Organization();
-        var client = Any.Client();
+        var organizationWithClient = Any.OrganizationWithClient();
 
-        var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow);
+        var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddRangeAsync(user1, user2);
         await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Clients.AddAsync(client);
+        await dbContext.Organizations.AddAsync(organizationWithClient);
 
         var affiliation1 = Affiliation.Create(user1, organization);
         var affiliation2 = Affiliation.Create(user2, organization);
 
         await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
-        await dbContext.Consents.AddAsync(consent);
+        await dbContext.OrganizationConsents.AddAsync(consent);
 
         await dbContext.SaveChangesAsync();
 
@@ -144,18 +143,17 @@ public class GetConsentTests
         var user = Any.User();
         var organization = Any.Organization();
         var affiliation = Affiliation.Create(user, organization);
-        var client = Any.Client();
-        var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow);
+        var organizationWithClient = Any.OrganizationWithClient();
+        var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.Clients.AddAsync(client);
-        await dbContext.Consents.AddAsync(consent);
+        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await dbContext.OrganizationConsents.AddAsync(consent);
 
         await dbContext.SaveChangesAsync();
         return (user.IdpUserId, organization.Tin!);
     }
-} TODO
-*/
+}

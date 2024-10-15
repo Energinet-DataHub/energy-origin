@@ -72,11 +72,11 @@ public class Any
             "https://redirect.url");
     }
 
-    public static Organization OrganizationWithClient(Tin? tin = null)
+    public static Organization OrganizationWithClient(Tin? tin = null, Client? client = null)
     {
         var organization = Organization(tin);
 
-        organization.Clients.Add(Client());
+        organization.Clients.Add(client ?? Client());
 
         return organization;
     }

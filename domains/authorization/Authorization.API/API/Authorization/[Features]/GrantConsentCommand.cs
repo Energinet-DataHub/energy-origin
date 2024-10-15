@@ -7,6 +7,7 @@ using API.Data;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
+using Google.Protobuf.WellKnownTypes;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
