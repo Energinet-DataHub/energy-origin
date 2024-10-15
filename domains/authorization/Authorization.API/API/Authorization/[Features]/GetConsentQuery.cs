@@ -20,7 +20,7 @@ public class GetConsentQueryHandler(IClientRepository clientRepository)
         var consents = await clientRepository
             .Query()
             .Where(client => client.IdpClientId == idpClientId)
-            .SelectMany(x => x.Organization!.OrganizationGivenConsents.Select(y => new GetConsentQueryResultItem(x.IdpClientId, x.Organization.Name, x.RedirectUrl)))
+            .SelectMany(x => x.Organization!.OrganizationReceivedConsents.Select(y => new GetConsentQueryResultItem(x.IdpClientId, x.Organization.Name, x.RedirectUrl)))
             .ToListAsync();
 
         return new GetConsentsQueryResult(consents);
