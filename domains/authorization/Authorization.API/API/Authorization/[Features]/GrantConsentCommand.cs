@@ -33,11 +33,9 @@ public class GrantConsentCommandHandler(
             .Select(x => x.OrganizationId)
             .FirstOrDefaultAsync(cancellationToken);
 
-        // ??
         if (clientOrganizationId == null)
         {
             throw new EntityNotFoundException(command.IdpClientId.Value.ToString(), nameof(Organization));
-            //throw new Exception("noooo"); // TODO Maybe make this a guard call something something.
         }
 
         var affiliatedOrganization = await userRepository.Query()
