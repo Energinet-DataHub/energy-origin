@@ -14,8 +14,15 @@ public class OrganizationConsent : IEntity<Guid>
 
     public static OrganizationConsent Create(Guid organizationGiverId, Guid organizationReceiverId, DateTimeOffset consentDate)
     {
-        ArgumentNullException.ThrowIfNull(organizationGiverId);
-        ArgumentNullException.ThrowIfNull(organizationReceiverId);
+
+        if (organizationGiverId == Guid.Empty)
+        {
+            throw new ArgumentException("organizationGiverId cannot be empty", nameof(organizationGiverId));
+        }
+        if (organizationReceiverId == Guid.Empty)
+        {
+            throw new ArgumentException("organizationReceiverId cannot be empty", nameof(organizationReceiverId));
+        }
 
         var consent = new OrganizationConsent
         {
