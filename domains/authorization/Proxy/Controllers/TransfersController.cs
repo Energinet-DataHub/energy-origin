@@ -25,15 +25,15 @@ public class TransfersController : ProxyBase
     [HttpGet]
     [Route("transfers/cursor")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.Frontend)]
+    [Authorize(policy: Policy.FrontendOr3rdParty)]
     [ApiVersion(ApiVersions.Version1)]
     [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer, PageInfoCursor>), StatusCodes.Status200OK)]
-    public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param)
+    public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param, [FromQuery] string? organizationId)
     {
-        await ProxyTokenValidationRequest("v1/transfers/cursor");
+        await ProxyClientCredentialsRequest("v1/transfers/cursor", organizationId);
     }
 
     /// <summary>

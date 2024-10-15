@@ -86,6 +86,12 @@
                 <UserHelpText>Organization name</UserHelpText>
             </ClaimType>
 
+            <ClaimType Id="org_id">
+                <DisplayName>org_id</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Id of users own organization</UserHelpText>
+            </ClaimType>
+
             <ClaimType Id="org_ids">
                 <DisplayName>org_ids</DisplayName>
                 <DataType>string</DataType>
@@ -195,6 +201,13 @@
                 <DataType>boolean</DataType>
                 <UserHelpText/>
             </ClaimType>
+
+            <ClaimType Id="tos_accepted">
+                <DisplayName>Azure B2C claim for terms of service accepted</DisplayName>
+                <DataType>boolean</DataType>
+                <UserHelpText>Indicates whether the terms of service have been accepted</UserHelpText>
+            </ClaimType>
+
         </ClaimsSchema>
 
         <ClaimsTransformations>
@@ -274,10 +287,11 @@
                         <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="first_name"/>
                         <OutputClaim ClaimTypeReferenceId="mitIDBearerToken" PartnerClaimType="{oauth2:access_token}"/>
                         <OutputClaim ClaimTypeReferenceId="identityProvider" PartnerClaimType="iss"/>
-                        
+
                         <OutputClaim ClaimTypeReferenceId="name" />
                         <OutputClaim ClaimTypeReferenceId="org_cvr" />
                         <OutputClaim ClaimTypeReferenceId="org_name"/>
+                        <OutputClaim ClaimTypeReferenceId="org_id" />
                         <OutputClaim ClaimTypeReferenceId="org_ids"/>
                         <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                     </OutputClaims>
@@ -320,10 +334,12 @@
                 <OutputClaim ClaimTypeReferenceId="name"/>
                 <OutputClaim ClaimTypeReferenceId="org_cvr" />
                 <OutputClaim ClaimTypeReferenceId="org_name"/>
+                <OutputClaim ClaimTypeReferenceId="org_id"/>
                 <OutputClaim ClaimTypeReferenceId="org_ids"/>
                 <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
+                <OutputClaim ClaimTypeReferenceId="tos_accepted" DefaultValue="true" />
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
         </TechnicalProfile>

@@ -86,6 +86,12 @@
                 <UserHelpText>Organization name</UserHelpText>
             </ClaimType>
 
+            <ClaimType Id="org_id">
+                <DisplayName>org_id</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Id of users own organization</UserHelpText>
+            </ClaimType>
+            
             <ClaimType Id="org_ids">
                 <DisplayName>org_ids</DisplayName>
                 <DataType>stringCollection</DataType>
@@ -486,6 +492,7 @@
                         <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                         <OutputClaim ClaimTypeReferenceId="sub_type"/>
                         <OutputClaim ClaimTypeReferenceId="org_name"/>
+                        <OutputClaim ClaimTypeReferenceId="org_id" />
                         <OutputClaim ClaimTypeReferenceId="org_ids"/>
                         <OutputClaim ClaimTypeReferenceId="scope"/>
                         <OutputClaim ClaimTypeReferenceId="tos_accepted" PartnerClaimType="terms_accepted"/>
@@ -570,6 +577,7 @@
                 <OutputClaim ClaimTypeReferenceId="email"/>
                 <OutputClaim ClaimTypeReferenceId="org_cvr"/>
                 <OutputClaim ClaimTypeReferenceId="org_name"/>
+                <OutputClaim ClaimTypeReferenceId="org_id"/>
                 <OutputClaim ClaimTypeReferenceId="org_ids_string" PartnerClaimType="org_ids"/>
                 <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="scope"/>

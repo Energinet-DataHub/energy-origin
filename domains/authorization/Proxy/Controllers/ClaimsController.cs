@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,15 +24,15 @@ public class ClaimsController : ProxyBase
     [HttpGet]
     [Route("claims/cursor")]
     [Produces("application/json")]
-    [Authorize(policy: Policy.Frontend)]
+    [Authorize(policy: Policy.FrontendOr3rdParty)]
     [ApiVersion(ApiVersions.Version1)]
     [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Claim, PageInfoCursor>), StatusCodes.Status200OK)]
-    public async Task GetClaimsCursor([FromQuery] GetClaimsQueryParametersCursor param)
+    public async Task GetClaimsCursor([FromQuery] GetClaimsQueryParametersCursor param, [FromQuery] string? organizationId)
     {
-        await ProxyTokenValidationRequest("v1/claims/cursor");
+        await ProxyClientCredentialsRequest("v1/claims/cursor", organizationId);
     }
 
     /// <summary>

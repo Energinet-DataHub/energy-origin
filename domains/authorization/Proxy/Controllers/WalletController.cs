@@ -158,7 +158,7 @@ public class WalletController : ProxyBase
     [Obsolete]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(WalletRecord), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreateWalletEndpointResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public async Task CreateWalletEndpointLegacy([FromRoute] Guid walletId)
     {
@@ -173,7 +173,7 @@ public class WalletController : ProxyBase
     [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(WalletRecord), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreateWalletEndpointResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public async Task CreateWalletEndpoint([FromRoute] Guid walletId, [FromQuery] string? organizationId)
     {
