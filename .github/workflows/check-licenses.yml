@@ -58,3 +58,4 @@ jobs:
         with:
           project-folder: ${{ matrix.projects.project }}
           license-mapping-file: .mapped-licenses.json
+          license-ignore-file: .ignored-licenses.json
