@@ -7,6 +7,7 @@ using API.Data;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
+using Google.Protobuf.WellKnownTypes;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ public class GrantConsentCommandHandler(
     IClientRepository clientRepository,
     IOrganizationRepository organizationRepository,
     IUserRepository userRepository,
+    IOrganizationConsentRepository organizationConsentRepository,
     IUnitOfWork unitOfWork)
     : IRequestHandler<GrantConsentCommand>
 {
@@ -26,9 +28,15 @@ public class GrantConsentCommandHandler(
         var idpUserId = IdpUserId.Create(command.UserId);
         var organizationTin = Tin.Create(command.OrganizationCvr);
 
-        var client = clientRepository.Query()
-                         .FirstOrDefault(it => it.IdpClientId == command.IdpClientId)
-                     ?? throw new EntityNotFoundException(command.IdpClientId.Value.ToString(), nameof(Client));
+        var clientOrganizationId = await clientRepository.Query()
+            .Where(it => it.IdpClientId == command.IdpClientId)
+            .Select(x => x.OrganizationId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (clientOrganizationId == null)
+        {
+            throw new EntityNotFoundException(command.IdpClientId.Value.ToString(), nameof(Organization));
+        }
 
         var affiliatedOrganization = await userRepository.Query()
             .Where(u => u.IdpUserId == idpUserId)
@@ -42,15 +50,15 @@ public class GrantConsentCommandHandler(
             throw new UserNotAffiliatedWithOrganizationCommandException();
         }
 
-        var existingConsent = organizationRepository.Query().Where(o => o == affiliatedOrganization && o.Consents.Any(c => c.Client == client))
-            .SelectMany(o => o.Consents)
-            .FirstOrDefault();
+        var existingConsent = organizationRepository
+            .Query()
+            .Where(o => o.Id == affiliatedOrganization.Id && o.OrganizationReceivedConsents.Any(c =>
+                c.ConsentReceiverOrganization.Clients.Any(x => x.IdpClientId == command.IdpClientId)));
 
-        if (existingConsent is null)
+        if (!await existingConsent.AnyAsync(cancellationToken))
         {
-            _ = Consent.Create(affiliatedOrganization, client, DateTimeOffset.UtcNow);
-            clientRepository.Update(client);
-            organizationRepository.Update(affiliatedOrganization);
+            var organizationConsent = OrganizationConsent.Create(affiliatedOrganization.Id, clientOrganizationId.Value, DateTimeOffset.UtcNow);
+            await organizationConsentRepository.AddAsync(organizationConsent, cancellationToken);
         }
 
         await unitOfWork.CommitAsync();

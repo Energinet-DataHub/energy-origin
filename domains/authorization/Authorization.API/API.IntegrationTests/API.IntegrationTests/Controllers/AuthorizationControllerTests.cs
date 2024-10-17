@@ -84,6 +84,12 @@ public class AuthorizationControllerTests
 
     private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext)
     {
+        if (!dbContext.Terms.Any())
+        {
+            dbContext.Terms.Add(Terms.Create(1));
+            dbContext.SaveChanges();
+        }
+
         var user = Any.User();
         var organization = Any.Organization(Any.Tin());
         organization.AcceptTerms(dbContext.Terms.First());
@@ -93,7 +99,7 @@ public class AuthorizationControllerTests
 
         await dbContext.SaveChangesAsync();
 
-        return (user.IdpUserId, organization.Tin, organization.Name);
+        return (user.IdpUserId, organization.Tin!, organization.Name);
     }
 
     [Fact]

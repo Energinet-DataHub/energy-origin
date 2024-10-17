@@ -12,7 +12,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<User> Users { get; set; }
     public DbSet<Affiliation> Affiliations { get; set; }
     public DbSet<Client> Clients { get; set; }
-    public DbSet<Consent> Consents { get; set; }
+    public DbSet<OrganizationConsent> OrganizationConsents { get; set; }
     public DbSet<Terms> Terms { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         ConfigureOrganizationTable(modelBuilder);
         ConfigureAffiliationTable(modelBuilder);
-        ConfigureConsentTable(modelBuilder);
+        ConfigureOrganizationConsentTable(modelBuilder);
         ConfigureClientTable(modelBuilder);
         ConfigureUserTable(modelBuilder);
         ConfigureTermsTable(modelBuilder);
@@ -35,9 +35,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasConversion(new ValueConverter<OrganizationName, string>(v => v.Value, v => new OrganizationName(v)))
             .IsRequired();
 
-        modelBuilder.Entity<Organization>().Property(o => o.Tin)
-            .HasConversion(new ValueConverter<Tin, string>(v => v.Value, v => new Tin(v)))
-            .IsRequired();
+        modelBuilder.Entity<Organization>().Property(o => o.Tin).HasConversion(new ValueConverter<Tin?, string>(v => v != null ? v.Value : "", v => new Tin(v)));
 
         modelBuilder.Entity<Organization>().HasIndex(o => o.Tin).IsUnique();
 
@@ -63,6 +61,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .IsRequired();
 
         modelBuilder.Entity<Client>().HasIndex(c => c.IdpClientId).IsUnique();
+
+        modelBuilder.Entity<Client>()
+            .HasOne(x => x.Organization)
+            .WithMany(x => x.Clients)
+            .HasForeignKey(x => x.OrganizationId);
     }
 
     private static void ConfigureUserTable(ModelBuilder modelBuilder)
@@ -85,24 +88,29 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Affiliation>().HasKey(a => new { a.UserId, a.OrganizationId });
     }
 
-    private static void ConfigureConsentTable(ModelBuilder modelBuilder)
+    private static void ConfigureOrganizationConsentTable(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Consent>().HasOne(it => it.Organization);
-        modelBuilder.Entity<Consent>().HasOne(it => it.Client);
+        modelBuilder.Entity<OrganizationConsent>()
+            .HasKey(x => x.Id);
 
-        modelBuilder.Entity<Consent>().HasKey(c => new { c.ClientId, c.OrganizationId });
+        modelBuilder.Entity<OrganizationConsent>()
+            .HasOne(x => x.ConsentGiverOrganization)
+            .WithMany(x => x.OrganizationGivenConsents)
+            .HasForeignKey(x => x.ConsentGiverOrganizationId);
 
-        modelBuilder.Entity<Consent>()
-            .HasIndex(c => new { c.ClientId, c.OrganizationId })
-            .IsUnique();
+        modelBuilder.Entity<OrganizationConsent>()
+            .HasOne(x => x.ConsentReceiverOrganization)
+            .WithMany(x => x.OrganizationReceivedConsents)
+            .HasForeignKey(x => x.ConsentReceiverOrganizationId);
+
+        // TODO Add unique constraint that we have only 1.
+
     }
 
     private static void ConfigureTermsTable(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Terms>().Property(t => t.Version)
             .IsRequired();
-        modelBuilder.Entity<Terms>()
-            .HasData(API.Models.Terms.Create(1));
         modelBuilder.Entity<Terms>().HasIndex(t => t.Version)
             .IsUnique();
     }

@@ -17,13 +17,13 @@ public class GetConsentQueryHandler(IClientRepository clientRepository)
     {
         var idpClientId = new IdpClientId(request.IdpClientId);
 
-        var consent = await clientRepository.Query()
+        var consents = await clientRepository
+            .Query()
             .Where(client => client.IdpClientId == idpClientId)
-            .SelectMany(client => client.Consents.Select(consent =>
-                new GetConsentQueryResultItem(client.IdpClientId, consent.Organization.Name, client.RedirectUrl)))
-            .ToListAsync(cancellationToken);
+            .SelectMany(x => x.Organization!.OrganizationReceivedConsents.Select(y => new GetConsentQueryResultItem(x.IdpClientId, x.Organization.Name, x.RedirectUrl)))
+            .ToListAsync();
 
-        return new GetConsentsQueryResult(consent);
+        return new GetConsentsQueryResult(consents);
     }
 }
 

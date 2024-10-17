@@ -38,7 +38,7 @@ public record GrantConsentRequest(Guid IdpClientId);
 
 public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
 
-public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName, string Tin);
+public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName, string? Tin);
 public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Result);
 
 public enum ClientType
