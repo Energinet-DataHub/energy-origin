@@ -67,7 +67,7 @@ runs:
       run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/main/Dockerfile.simplified -O Dockerfile
 
     - name: Resolve image version
-      uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v2
+      uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v3
 
     - name: Resolve image name
       shell: bash
@@ -75,7 +75,7 @@ runs:
 
     - name: Verify migrations if present
       if: inputs.migrations != ''
-      uses: Energinet-Datahub/acorn-actions/actions/dotnet-verify-migrations@v2
+      uses: Energinet-Datahub/acorn-actions/actions/dotnet-verify-migrations@v3
       with:
         path: ${{ env.DIRECTORY }}
         project: ${{ inputs.project }}
@@ -84,7 +84,7 @@ runs:
         pin-version: true
 
     - name: Build image
-      uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v2
+      uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v3
       with:
         dockerfile: Dockerfile
         image-name: ${{ env.name }}
@@ -98,7 +98,7 @@ runs:
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
     - name: Scan image
-      uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v2
+      uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v3
       with:
         image-name: ${{ env.name }}
         image-tag: ${{ env.version }}

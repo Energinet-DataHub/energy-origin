@@ -80,7 +80,7 @@ jobs:
           } >> $GITHUB_ENV
 
       - name: Validate project
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v2
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v3
         with:
           dotnet-version: ${{ matrix.build.sdkVersion }}
           pin-version: true
@@ -88,7 +88,7 @@ jobs:
           sql-file: ${{ env.migration }}
 
       - name: Check license
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@update-check-license-action
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v3
         with:
           project-folder: ${{ env.path }}
           license-mapping-file: .mapped-licenses.json
@@ -122,7 +122,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Push image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v2
+        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v3
         with:
           dockerfile: ${{ env.docker }}
           image-name: ${{ env.name }}
