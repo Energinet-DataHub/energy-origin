@@ -4,10 +4,9 @@ on:
   workflow_call: {}
 
 jobs:
-  define-matrix:
+  check-licenses:
+    name: Check Licenses
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ env.matrix }}
 
     steps:
       - uses: CodeReaper/find-diff-action@v3
@@ -15,47 +14,18 @@ jobs:
         with:
           paths: domains/*/ libraries/*/*/
 
-      - name: Set default matrix
-        shell: bash
-        run: |
-          echo "matrix=[]" >> "$GITHUB_ENV"
-
       - uses: actions/checkout@v4
         if: ${{ steps.diff.outputs.pattern != '' }}
 
       - name: Build relevant project matrix
         if: ${{ steps.diff.outputs.pattern != '' }}
         shell: bash
-        env:
-          PATTERN: ${{ steps.diff.outputs.pattern }}
-        run: |
-          # TODO: re-enable checking Tests projects
-          find domains libraries/dotnet -name "*.csproj" -exec dirname {} \; | egrep "$PATTERN" | egrep -v 'ests$' > /tmp/list || true
-
-          if [ ! -s /tmp/list ]; then
-            exit 0
-          fi
-
-          matrix=$(cat /tmp/list | while read directory; do printf '{"project": "%s"}' "$directory"; done | jq -sc '.')
-          echo "matrix=$matrix" >> "$GITHUB_ENV"
-
-          echo '::group::Matrix'
-          echo "$matrix" | jq -r '.'
-          echo '::endgroup::'
-
-  check-licenses:
-    runs-on: ubuntu-latest
-    needs: define-matrix
-    if: ${{ needs.define-matrix.outputs.matrix != '[]' }}
-    strategy:
-      matrix:
-        projects: ${{ fromJson(needs.define-matrix.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
+        run: echo "solution=$(find domains -maxdepth 1 -name "*.sln")" | tee -a "$GITHUB_ENV"
 
       - name: Check license
+        if: ${{ steps.diff.outputs.pattern != '' }}
         uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v3
         with:
-          project-folder: ${{ matrix.projects.project }}
+          project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json
           license-ignore-file: .ignored-licenses.json
