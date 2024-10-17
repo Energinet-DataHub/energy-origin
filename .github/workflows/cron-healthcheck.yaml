@@ -46,7 +46,7 @@ jobs:
         run: echo "solution=$(find domains -maxdepth 1 -name "*.sln")" | tee -a "$GITHUB_ENV"
 
       - name: Check license
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v3
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@solutions-require-restore
         with:
           project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json
