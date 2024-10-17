@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization._Features_;
 using API.IntegrationTests.Setup;
@@ -46,7 +47,7 @@ public class DeleteConsentTests
 
         var response = await userClient.DeleteConsent(client.IdpClientId.Value);
 
-        response.Should().Be204NoContent();
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var deletedConsent = await dbContext.Consents
             .FirstOrDefaultAsync(c => c.ClientId == client.Id && c.OrganizationId == organization.Id);
@@ -73,7 +74,7 @@ public class DeleteConsentTests
 
         var response = await userClient.DeleteConsent(randomGuidClientId);
 
-        response.Should().Be404NotFound();
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -109,7 +110,7 @@ public class DeleteConsentTests
 
         var response = await userClient.DeleteConsent(client2.IdpClientId.Value);
 
-        response.Should().Be404NotFound();
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -131,15 +132,15 @@ public class DeleteConsentTests
 
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
         var consentListResponse = await userClient.GetUserOrganizationConsents();
-        consentListResponse.Should().Be200Ok();
+        consentListResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var consentList = await consentListResponse.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
         consentList!.Result.Should().NotBeEmpty();
 
         var deleteResponse = await userClient.DeleteConsent(client.IdpClientId.Value);
-        deleteResponse.Should().Be204NoContent();
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var consentListResponseAfterDeletion = await userClient.GetUserOrganizationConsents();
-        consentListResponseAfterDeletion.Should().Be200Ok();
+        consentListResponseAfterDeletion.StatusCode.Should().Be(HttpStatusCode.OK);
         var consentListAfterDeletion = await consentListResponseAfterDeletion.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
         consentListAfterDeletion!.Result.Should().BeEmpty();
     }

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
@@ -25,7 +26,7 @@ public class GetClientQueryTest
         await dbContext.Clients.AddAsync(client);
         await dbContext.SaveChangesAsync();
         var response = await _api.GetClient(client.IdpClientId.Value);
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<ClientResponse>();
         content!.IdpClientId.Should().Be(client.IdpClientId.Value);
         content.Name.Should().Be(client.Name.Value);
@@ -35,6 +36,6 @@ public class GetClientQueryTest
     public async Task GivenUnknownIdpClientId_WhenGettingClient_404NotFound()
     {
         var response = await _api.GetClient(Guid.NewGuid());
-        response.Should().Be404NotFound();
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization._Features_;
 using API.IntegrationTests.Setup;
@@ -31,7 +32,7 @@ public class GrantConsentTest
     {
         var unknownClientId = Guid.NewGuid();
         var response = await _api.GrantConsent(unknownClientId);
-        response.Should().Be404NotFound();
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -50,7 +51,7 @@ public class GrantConsentTest
 
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
         var response = await api.GrantConsent(client.IdpClientId.Value);
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public class GrantConsentTest
 
         var response = await _api.GetConsent(idpClientId.Value);
 
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<GetConsentsQueryResult>();
         result!.Result.Should().NotBeEmpty();
@@ -92,7 +93,7 @@ public class GrantConsentTest
 
         var response = await api.GrantConsent(Guid.NewGuid());
 
-        response.Should().Be403Forbidden();
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -102,6 +103,6 @@ public class GrantConsentTest
 
         var response = await api.GetConsent(Guid.NewGuid());
 
-        response.Should().Be403Forbidden();
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }

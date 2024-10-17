@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
@@ -34,7 +35,7 @@ public class AcceptTermsTests
 
         var response = await userApi.AcceptTerms();
 
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponseDto>();
         result.Should().NotBeNull();
@@ -63,7 +64,7 @@ public class AcceptTermsTests
 
         var response = await userApi.AcceptTerms();
 
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponseDto>();
         result.Should().NotBeNull();

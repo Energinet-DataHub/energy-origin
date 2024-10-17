@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
@@ -41,8 +42,7 @@ public class AuthorizationControllerTests
 
         var response = await _api.GetConsentForUser(request);
 
-        response.Should().Be200Ok();
-
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<UserAuthorizationResponse>();
         result.Should().NotBeNull();
         result!.Sub.Should().Be(request.Sub);
@@ -70,8 +70,7 @@ public class AuthorizationControllerTests
 
         var response = await _api.GetConsentForUser(request);
 
-        response.Should().Be200Ok();
-
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<UserAuthorizationResponse>();
         result.Should().NotBeNull();
         result!.Sub.Should().Be(request.Sub);
@@ -111,7 +110,7 @@ public class AuthorizationControllerTests
 
         var response = await _api.GetConsentForUser(request);
 
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         dbContext.Affiliations.Where(x => x.Organization.Tin == tin).ToList().Should().ContainSingle();
     }

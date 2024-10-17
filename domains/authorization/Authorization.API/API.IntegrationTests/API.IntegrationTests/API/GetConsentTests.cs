@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization._Features_;
 using API.Authorization.Controllers;
@@ -35,7 +36,7 @@ public class GetConsentTests
 
         var response = await userClient.GetUserOrganizationConsents();
 
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
         result!.Result.Should().NotBeEmpty();
@@ -52,7 +53,7 @@ public class GetConsentTests
 
         var response = await _api.GetUserOrganizationConsents();
 
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var deserializedResponse = await response.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>();
 
@@ -91,7 +92,7 @@ public class GetConsentTests
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
 
@@ -130,8 +131,8 @@ public class GetConsentTests
         var userClient2 = _integrationTestFixture.WebAppFactory.CreateApi(sub: user2.IdpUserId.Value.ToString());
         var response2 = await userClient2.GetUserOrganizationConsents();
 
-        response1.Should().Be200Ok();
-        response2.Should().Be200Ok();
+        response1.StatusCode.Should().Be(HttpStatusCode.OK);
+        response2.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result1 = await response1.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
         var result2 = await response2.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();

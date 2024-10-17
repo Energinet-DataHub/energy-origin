@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
@@ -38,7 +39,7 @@ public class CreateClientTest
         var dbClient = await dbContext.Clients.FirstOrDefaultAsync(x => x.IdpClientId == new IdpClientId(idpClientId));
 
         // Then
-        response.Should().Be201Created();
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
         dbClient!.IdpClientId.Value.Should().Be(idpClientId);
         client!.Id.Should().Be(dbClient.Id);
         client.IdpClientId.Should().Be(dbClient.IdpClientId.Value);

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
@@ -49,9 +50,9 @@ public class AuthorizationFlowTests
         var consentResponse2 = await _api.GetConsentForUser(request);
 
         // Then
-        consentResponse1.Should().Be200Ok();
-        termsResponse.Should().Be200Ok();
-        consentResponse2.Should().Be200Ok();
+        consentResponse1.StatusCode.Should().Be(HttpStatusCode.OK);
+        termsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        consentResponse2.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var organization = dbContext.Organizations
             .Include(x => x.Affiliations)
@@ -87,7 +88,7 @@ public class AuthorizationFlowTests
         var consentResponse = await _api.GetConsentForUser(request);
 
         // Then
-        consentResponse.Should().Be200Ok();
+        consentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var organization = dbContext.Organizations
             .Include(x => x.Affiliations)

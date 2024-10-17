@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
@@ -45,7 +46,7 @@ public class GetClientConsentsQueryTest
         var result = await response.Content.ReadFromJsonAsync<ClientConsentsResponse>();
 
         // Assert
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         result!.Result.Count().Should().Be(1);
         result!.Result.First().OrganizationName.Should().Be(organization.Name.Value);
         result!.Result.First().Tin.Should().Be(organization.Tin.Value);
@@ -71,7 +72,7 @@ public class GetClientConsentsQueryTest
         var result = await response.Content.ReadFromJsonAsync<ClientConsentsResponse>();
 
         // Assert
-        response.Should().Be200Ok();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         result!.Result.Should().BeEmpty();
     }
 }
