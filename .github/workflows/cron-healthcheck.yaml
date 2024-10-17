@@ -92,6 +92,7 @@ jobs:
         with:
           project-folder: ${{ env.path }}
           license-mapping-file: .mapped-licenses.json
+          license-ignore-file: .ignored-licenses.json
 
   test-dockers:
     name: Test dockers
