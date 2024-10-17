@@ -24,7 +24,7 @@ jobs:
 
       - name: Check license
         if: ${{ steps.diff.outputs.pattern != '' }}
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v3
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@solutions-require-restore
         with:
           project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json
