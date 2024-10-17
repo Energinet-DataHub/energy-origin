@@ -75,7 +75,7 @@ public class GetConsentTests
 
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddRangeAsync([organization1, organization2,organizationWithClient1, organizationWithClient2]);
+        await dbContext.Organizations.AddRangeAsync([organization1, organization2, organizationWithClient1, organizationWithClient2]);
 
         var affiliation1 = Affiliation.Create(user, organization1);
         var affiliation2 = Affiliation.Create(user, organization2);

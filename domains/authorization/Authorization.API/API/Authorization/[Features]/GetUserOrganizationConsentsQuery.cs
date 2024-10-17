@@ -24,7 +24,7 @@ public class GetUserOrganizationConsentsQueryHandler(IOrganizationConsentReposit
             .Where(consent => consent.ConsentGiverOrganization.Tin == userOrgCvrClaim &&
                               consent.ConsentGiverOrganization.Affiliations
                                   .Any(o => o.User.IdpUserId == userIdpUserIdClaim))
-            .SelectMany(x => x.ConsentReceiverOrganization.Clients.Select( consent =>
+            .SelectMany(x => x.ConsentReceiverOrganization.Clients.Select(consent =>
                 new GetUserOrganizationConsentsQueryResultItem(
                     consent.IdpClientId.Value,
                     consent.Name.Value,
