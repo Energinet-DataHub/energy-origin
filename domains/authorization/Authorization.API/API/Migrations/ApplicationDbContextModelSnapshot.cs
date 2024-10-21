@@ -70,27 +70,6 @@ namespace API.Migrations
                     b.ToTable("Clients");
                 });
 
-            modelBuilder.Entity("API.Models.Consent", b =>
-                {
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("ConsentDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("ClientId", "OrganizationId");
-
-                    b.HasIndex("OrganizationId");
-
-                    b.HasIndex("ClientId", "OrganizationId")
-                        .IsUnique();
-
-                    b.ToTable("Consents");
-                });
-
             modelBuilder.Entity("API.Models.Organization", b =>
                 {
                     b.Property<Guid>("Id")
@@ -383,25 +362,6 @@ namespace API.Migrations
                     b.Navigation("Organization");
                 });
 
-            modelBuilder.Entity("API.Models.Consent", b =>
-                {
-                    b.HasOne("API.Models.Client", "Client")
-                        .WithMany("Consents")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("API.Models.Organization", "Organization")
-                        .WithMany("Consents")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-
-                    b.Navigation("Organization");
-                });
-
             modelBuilder.Entity("API.Models.OrganizationConsent", b =>
                 {
                     b.HasOne("API.Models.Organization", "ConsentGiverOrganization")
@@ -421,18 +381,11 @@ namespace API.Migrations
                     b.Navigation("ConsentReceiverOrganization");
                 });
 
-            modelBuilder.Entity("API.Models.Client", b =>
-                {
-                    b.Navigation("Consents");
-                });
-
             modelBuilder.Entity("API.Models.Organization", b =>
                 {
                     b.Navigation("Affiliations");
 
                     b.Navigation("Clients");
-
-                    b.Navigation("Consents");
 
                     b.Navigation("OrganizationGivenConsents");
 
