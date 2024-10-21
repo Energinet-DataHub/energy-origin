@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
@@ -351,4 +352,155 @@ public class MeasurementsSyncServiceTest
             }),
             Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task MissingMeasurementsOutsideOfAgeThreshold_AreNotProcessed()
+    {
+        _options.MinimumAgeThresholdHours = 96;
+        var now = UnixTimestamp.Now().RoundToLatestHour();
+
+        var syncPoint = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour();
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint);
+
+        var missingIntervalOutsideThreshold = MeasurementInterval.Create(syncPoint.Add(TimeSpan.FromHours(-200)).RoundToLatestHour(), syncPoint.RoundToLatestHour());
+        slidingWindow.MissingMeasurements.Intervals.Add(missingIntervalOutsideThreshold);
+
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
+
+        var measurementResponse = new GetMeasurementsResponse
+        {
+            Measurements = { Any.Measurement(_syncInfo.Gsrn, missingIntervalOutsideThreshold.From.Seconds, 5) }
+        };
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        await _fakeMeasurementPublisher.DidNotReceive().PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(),
+            Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<List<Measurement>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+public async Task GivenSingleMissingIntervalSpanning7Days_WhenApplying4DayThreshold_OnlyMeasurementsWithinThresholdAreProcessed_AndRemainingDaysAreStillMissing()
+{
+    // Arrange
+    _options.MinimumAgeThresholdHours = 96; // 4-day threshold (last 4 days)
+    var now = UnixTimestamp.Now().RoundToLatestHour();
+
+    // Sync point starts 7 days ago
+    var syncStart = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour();
+    var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncStart);
+
+    // Single missing interval spans all 7 days
+    var missingInterval = MeasurementInterval.Create(syncStart, now.RoundToLatestHour());
+    slidingWindow.MissingMeasurements.Intervals.Add(missingInterval);
+
+    var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+    _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
+
+    // Create measurements for the last 4 days (96 hours)
+    var measurementsWithinThreshold = new List<Measurement>();
+    var currentTime = now.Add(TimeSpan.FromHours(-168)); // Start 4 days ago
+    for (int i = 0; i < 168; i++) // Loop for 96 hours (4 days)
+    {
+        measurementsWithinThreshold.Add(Any.Measurement(_syncInfo.Gsrn, currentTime.Seconds, 10));
+    }
+
+    // Mock the GetMeasurementsAsync response for the last 4 days
+    var measurementResponse = new GetMeasurementsResponse { Measurements = { measurementsWithinThreshold } };
+    _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+    // Act
+    await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+    await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
+        Arg.Any<MeteringPoint>(),
+        Arg.Any<MeteringPointSyncInfo>(),
+        Arg.Is<List<Measurement>>(list => list.Count == 96),
+        Arg.Any<CancellationToken>());
+
+    slidingWindow.MissingMeasurements.Intervals.Should().ContainSingle(interval =>
+        interval.From == syncStart && interval.To == now.Add(TimeSpan.FromDays(-4)).RoundToLatestHour());
+}
+
+    [Fact]
+    public async Task
+        Given_That_We_Have_One_Looooooong_MissingInterval_And_We_Place_The_AgeThreshold_In_The_Middle_Of_It_Then_Prove_That_Only_MissingIntervals_From_The_SlidingWindows_StartPosition_And_Until_The_AgeThreshold_Are_Being_Processed_Thus_Leaving_The_MissingIntervals_Spanning_From_AgeThresholds_PointInTime_To_CurrentTimeStamp()
+    {
+        _options.MinimumAgeThresholdHours = 96; // 4-day age restriction
+        var now = UnixTimestamp.Now().RoundToLatestHour();
+        var syncStart = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour(); // Start 7 days ago
+
+        var syncInfo = new MeteringPointSyncInfo(
+            Gsrn: Any.Gsrn(),
+            StartSyncDate: syncStart.ToDateTimeOffset(),
+            MeteringPointOwner: "meteringPointOwner",
+            MeteringPointType.Production,
+            "DK1",
+            Guid.NewGuid(),
+            new Technology("T12345", "T54321"));
+
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, syncStart);
+
+        // Create a single missing interval spanning 7 days
+        var missingInterval = MeasurementInterval.Create(syncStart, now);
+        slidingWindow.MissingMeasurements.Intervals.Add(missingInterval);
+
+        // Create measurements for the first 4 days
+        var measurementsWithinThreshold = new List<Measurement>();
+        var currentTime = syncStart;
+        for (int i = 0; i < 96; i++) // 4 days * 24 hours = 96 hours
+        {
+            measurementsWithinThreshold.Add(Any.Measurement(syncInfo.Gsrn, currentTime.Seconds, 10));
+            currentTime = currentTime.Add(TimeSpan.FromHours(1));
+        }
+
+        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurementsWithinThreshold } };
+        var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
+
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        slidingWindow.MissingMeasurements.Intervals.Should()
+            .NotBeEmpty("because there should still be missing intervals");
+
+        // Act
+        await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
+
+        // Assert
+        await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
+            Arg.Any<MeteringPoint>(),
+            Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Do<List<Measurement>>(publishedMeasurements =>
+            {
+                publishedMeasurements.Should().HaveCount(96);
+                publishedMeasurements.Should().BeEquivalentTo(measurementsWithinThreshold);
+                publishedMeasurements.Should().OnlyContain(m =>
+                    m.DateFrom >= now.Add(TimeSpan.FromDays(-4)).Seconds &&
+                    m.DateTo <= now.Seconds
+                );
+            }),
+            Arg.Any<CancellationToken>());
+
+        // Fact-check the state of missing intervals after processing
+        slidingWindow.MissingMeasurements.Intervals.Should()
+            .NotBeEmpty("because there should still be missing intervals");
+
+        if (slidingWindow.MissingMeasurements.Intervals.Any())
+        {
+            var remainingInterval = slidingWindow.MissingMeasurements.Intervals.First();
+            remainingInterval.From.Should().Be(syncStart.Add(TimeSpan.FromDays(4)),
+                "because the first 4 days should be covered");
+            remainingInterval.To.Should().Be(now, "because the end of the interval should remain unchanged");
+        }
+        else
+        {
+            Assert.Fail("The entire missing interval was removed, which was not expected");
+        }
+    }
+
 }

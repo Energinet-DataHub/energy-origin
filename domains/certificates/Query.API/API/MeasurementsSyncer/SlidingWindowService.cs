@@ -106,12 +106,10 @@ public class SlidingWindowService
     {
         var minimumAgeThreshold = CalculateMinimumAgeThreshold(newSynchronizationPoint);
 
-        // Apply age threshold logic
         if (_options.MinimumAgeThresholdHours > 0)
         {
             if (newSynchronizationPoint > minimumAgeThreshold)
             {
-                // If sync point is beyond the threshold, it must not advance
                 newSynchronizationPoint = window.SynchronizationPoint;
             }
         }

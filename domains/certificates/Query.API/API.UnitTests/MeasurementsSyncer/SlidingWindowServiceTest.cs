@@ -514,34 +514,84 @@ public class SlidingWindowServiceTest
     [Fact]
     public void GivenAgeThreshold_WhenSyncPositionIsWithinThreshold_SyncPositionMovesForward()
     {
-        // Arrange
         _options.MinimumAgeThresholdHours = 120;
         var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours - 1)).RoundToLatestHour();
         var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
         var newSyncPosition = slidingWindow.SynchronizationPoint.Add(TimeSpan.FromHours(1)).RoundToLatestHour();
 
-        // Act
         _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
 
-        // Assert
         slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(newSyncPosition);
     }
 
     [Fact]
     public void GivenAgeThreshold_WhenSyncPositionIsAfterThreshold_SyncPositionDoesNotMoveForward()
     {
-        // Arrange
         _options.MinimumAgeThresholdHours = 120;
         var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours - 1)).RoundToLatestHour();
         var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
         var newSyncPosition = _now.RoundToLatestHour(); // New sync position after threshold
 
-        // Act
         _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
 
-        // Assert
         slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(initialStartSyncPosition);
     }
+
+[Fact]
+public void GivenLongMissingInterval_WhenRemovingAgeRestriction_ProcessesAllRemainingMeasurements()
+{
+    // Arrange
+    _options.MinimumAgeThresholdHours = 96; // 4-day threshold initially
+    var now = UnixTimestamp.Now().RoundToLatestHour();
+    var syncStart = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour(); // Start 7 days ago
+
+    var window = _sut.CreateSlidingWindow(_gsrn, syncStart);
+
+    // Create a single missing interval spanning 7 days
+    var missingInterval = MeasurementInterval.Create(syncStart, now);
+    window.MissingMeasurements.Intervals.Add(missingInterval);
+
+    // Create measurements for all 7 days
+    var allMeasurements = new List<Measurement>();
+    var currentTime = syncStart;
+    for (int i = 0; i < 168; i++) // 7 days * 24 hours = 168 hours
+    {
+        allMeasurements.Add(CreateMeasurement(
+            _gsrn,
+            currentTime.Seconds,
+            currentTime.Add(TimeSpan.FromHours(1)).Seconds,
+            10,
+            false, // quantityMissing is false
+            EnergyQuantityValueQuality.Measured
+        ));
+        currentTime = currentTime.Add(TimeSpan.FromHours(1));
+    }
+
+    // Act - First filter and update with age restriction
+    var filteredMeasurements1 = _sut.FilterMeasurements(window, allMeasurements);
+    _sut.UpdateSlidingWindow(window, filteredMeasurements1, now);
+
+    // Assert after first update
+    filteredMeasurements1.Should().HaveCount(96, "because only 96 measurements within the 4-day threshold should be processed initially");
+    window.MissingMeasurements.Intervals.Should().ContainSingle()
+        .Which.Should().Match<MeasurementInterval>(interval =>
+            interval.From == syncStart.Add(TimeSpan.FromDays(4)) &&
+            interval.To == now
+        );
+    window.SynchronizationPoint.Should().Be(syncStart.Add(TimeSpan.FromDays(4)), "because the synchronization point should move to the end of the processed measurements");
+
+    // Remove age restriction
+    _options.MinimumAgeThresholdHours = 0;
+
+    // Act - Second filter and update without age restriction
+    var filteredMeasurements2 = _sut.FilterMeasurements(window, allMeasurements);
+    _sut.UpdateSlidingWindow(window, filteredMeasurements2, now);
+
+    // Assert after second update
+    filteredMeasurements2.Should().HaveCount(72, "because the remaining 72 measurements (3 days) should now be processed");
+    window.MissingMeasurements.Intervals.Should().BeEmpty("because all measurements should now be processed");
+    window.SynchronizationPoint.Should().Be(now, "because the synchronization point should move to the current time");
+}
 
     private Measurement CreateMeasurement(Gsrn gsrn, long from, long to, long quantity, bool quantityMissing, EnergyQuantityValueQuality quality)
     {
