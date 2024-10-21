@@ -34,8 +34,10 @@ public class SlidingWindowService
 
     public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements)
     {
+        var minimumAgeThreshold = CalculateMinimumAgeThreshold();
         return measurements
             .Where(m => m.Gsrn == window.GSRN)
+            .Where(m => UnixTimestamp.Create(m.DateTo) <= minimumAgeThreshold) // Corrected threshold check
             .Where(m =>
             {
                 if (m.QuantityMissing)
@@ -104,7 +106,7 @@ public class SlidingWindowService
 
     public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, UnixTimestamp newSynchronizationPoint)
     {
-        var minimumAgeThreshold = CalculateMinimumAgeThreshold(newSynchronizationPoint);
+        var minimumAgeThreshold = CalculateMinimumAgeThreshold();
 
         if (_options.MinimumAgeThresholdHours > 0)
         {
@@ -127,7 +129,7 @@ public class SlidingWindowService
         window.UpdateSlidingWindow(newSynchronizationPoint, missingIntervals);
     }
 
-    private UnixTimestamp CalculateMinimumAgeThreshold(UnixTimestamp synchronizationPoint)
+    private UnixTimestamp CalculateMinimumAgeThreshold()
     {
         return UnixTimestamp.Now().Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)).RoundToLatestHour();
     }
