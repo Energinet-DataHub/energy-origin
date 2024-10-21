@@ -12,7 +12,7 @@ namespace TransferAgreementAutomation.Worker.Service;
 
 public class ProjectOriginWalletService : IProjectOriginWalletService
 {
-    public int BatchSize { get; init; } = 5000;
+    public int BatchSize { get; init; } = 1000;
 
     private readonly ILogger<ProjectOriginWalletService> logger;
     private readonly IProjectOriginWalletClient walletClient;

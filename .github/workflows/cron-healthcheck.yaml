@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       subsystems: ${{ env.subsystems }}
-      nugets: ${{ env.nugets }}
       dockers: ${{ env.dockers }}
     steps:
       - uses: actions/checkout@v4
@@ -30,13 +29,28 @@ jobs:
           done | jq -sc > /tmp/json
           echo "subsystems=$(jq '.[].projects[]' /tmp/json | jq -scr '. | unique')" >> "$GITHUB_ENV"
 
-      - name: Build nugets matrix
-        shell: bash
-        run: echo "nugets=$(find libraries/dotnet -name "*.csproj" ! -name "*.Tests.csproj" -exec dirname {} \; | jq -nRc '[inputs]')" >> "$GITHUB_ENV"
-
       - name: Build dockers matrix
         shell: bash
         run: echo "dockers=$(find libraries/docker/ -mindepth 1 -maxdepth 1 -type d | jq -nRc '[inputs]')" >> "$GITHUB_ENV"
+
+  test-licenses:
+    name: Test licenses
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve
+        shell: bash
+        run: echo "solution=$(find domains -maxdepth 1 -name "*.sln")" | tee -a "$GITHUB_ENV"
+
+      - name: Check license
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v3
+        with:
+          project-folder: ${{ env.solution }}
+          license-mapping-file: .mapped-licenses.json
+          license-ignore-file: .ignored-licenses.json
 
   test-subsystems:
     name: Test subsystems
@@ -80,18 +94,12 @@ jobs:
           } >> $GITHUB_ENV
 
       - name: Validate project
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v2
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v3
         with:
           dotnet-version: ${{ matrix.build.sdkVersion }}
           pin-version: true
           paths: ${{ env.paths }}
           sql-file: ${{ env.migration }}
-
-      - name: Check license
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v2
-        with:
-          project-folder: ${{ env.path }}
-          license-mapping-file: .mapped-licenses.json
 
   test-dockers:
     name: Test dockers
@@ -121,7 +129,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Push image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v2
+        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v3
         with:
           dockerfile: ${{ env.docker }}
           image-name: ${{ env.name }}
@@ -133,6 +141,7 @@ jobs:
     needs:
       - test-subsystems
       - test-dockers
+      - test-licenses
     name: Report on failure
     runs-on: ubuntu-latest
     if: ${{ always() && contains(join(needs.*.result, ','), 'failure') }}
