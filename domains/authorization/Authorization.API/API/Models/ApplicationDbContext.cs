@@ -35,7 +35,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasConversion(new ValueConverter<OrganizationName, string>(v => v.Value, v => new OrganizationName(v)))
             .IsRequired();
 
-        modelBuilder.Entity<Organization>().Property(o => o.Tin).HasConversion(new ValueConverter<Tin?, string>(v => v != null ? v.Value : "", v => new Tin(v)));
+        modelBuilder.Entity<Organization>().Property(o => o.Tin)
+            .HasConversion(new ValueConverter<Tin?, string>(v => v != null ? v.Value : "", v => new Tin(v)));
 
         modelBuilder.Entity<Organization>().HasIndex(o => o.Tin).IsUnique();
 
@@ -103,8 +104,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany(x => x.OrganizationReceivedConsents)
             .HasForeignKey(x => x.ConsentReceiverOrganizationId);
 
-        // TODO Add unique constraint that we have only 1.
-
+        modelBuilder.Entity<OrganizationConsent>().HasIndex(x => new { x.ConsentReceiverOrganizationId, x.ConsentGiverOrganizationId }).IsUnique();
     }
 
     private static void ConfigureTermsTable(ModelBuilder modelBuilder)

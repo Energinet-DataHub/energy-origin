@@ -1,4 +1,3 @@
-using System.Data;
 using API.IntegrationTests.Setup;
 using API.Models;
 using FluentAssertions;
@@ -23,6 +22,7 @@ public class AddOrganizationConsentTests
     [Fact]
     public async Task AddTerms_Migration_SetsTermsAcceptedToFalseForExistingOrganizations()
     {
+        // Given old client and organization data
         await using var dbContext = new ApplicationDbContext(options);
         var migrator = dbContext.GetService<IMigrator>();
 
@@ -35,15 +35,22 @@ public class AddOrganizationConsentTests
         await InsertOldClient(dbContext, clientId, "Test Client");
         await InsertOldConsent(dbContext, orgId, clientId);
 
-        var applyMigration = () => migrator.MigrateAsync("20241007174608_AddOrganizationConsentInsertOrganizations");
+        // When migrating schema
+        var applyMigration = () => migrator.MigrateAsync("20241021074018_RemoveConsentTable");
         await applyMigration.Should().NotThrowAsync();
 
         var organizations = await dbContext.Organizations.ToListAsync();
         var organizationConsents = await dbContext.OrganizationConsents.ToListAsync();
-        var client = await dbContext.Clients.ToListAsync();
+        var clients = await dbContext.Clients.ToListAsync();
 
-        organizations.Should().NotBeEmpty();
-        // TODO Real asserts
+        // Then organization, client and consent should be migrated
+        clients.Should().ContainSingle(c => c.Name.Value == "Test Client" && c.IdpClientId.Value == clientId);
+        var client = clients.First();
+        organizations.Should().HaveCount(2);
+        organizations.Should().ContainSingle(o => o.Name.Value == "Test Client" && o.Id == client.OrganizationId);
+        organizations.Should().ContainSingle(o => o.Name.Value == "Test Org" && o.Id == orgId);
+        organizationConsents.Should().ContainSingle(orgConsent =>
+            orgConsent.ConsentGiverOrganizationId == orgId && orgConsent.ConsentReceiverOrganizationId == client.OrganizationId);
     }
 
     private static async Task InsertOldOrganization(ApplicationDbContext dbContext, Guid id, string tin, string name)
@@ -75,7 +82,7 @@ public class AddOrganizationConsentTests
             new NpgsqlParameter("IdpClientId", id),
             new NpgsqlParameter("Name", name),
             new NpgsqlParameter("ClientType", clientType),
-        new NpgsqlParameter("RedirectUrl", ""));
+            new NpgsqlParameter("RedirectUrl", ""));
     }
 
     private static async Task InsertOldConsent(ApplicationDbContext dbContext, Guid organizationId, Guid clientId)

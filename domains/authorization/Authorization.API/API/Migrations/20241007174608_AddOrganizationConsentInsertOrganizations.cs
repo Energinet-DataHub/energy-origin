@@ -61,8 +61,6 @@ namespace API.Migrations
                           """;
 
             migrationBuilder.Sql(moreSql);
-
-            // Create new migration to delete consents table and code entirely.
         }
 
         /// <inheritdoc />

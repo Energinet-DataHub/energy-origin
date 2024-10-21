@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Models;
 using API.Repository;
 using API.ValueObjects;
 using MediatR;
@@ -20,7 +19,7 @@ public class GetClientGrantedConsentsQueryHandler(IClientRepository clientReposi
             .Where(x => x.IdpClientId == request.IdpClientId)
             .SelectMany(x => x.Organization!.OrganizationReceivedConsents)
             .Select(x => new GetClientGrantedConsentsQueryResultItem(x.ConsentGiverOrganization.Id, x.ConsentGiverOrganization.Name, x.ConsentGiverOrganization.Tin))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return new GetClientGrantedConsentsQueryResult(queryResultItems);
     }

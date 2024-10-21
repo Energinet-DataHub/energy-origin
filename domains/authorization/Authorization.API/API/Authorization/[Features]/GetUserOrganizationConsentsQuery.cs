@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Models;
 using API.Repository;
 using API.ValueObjects;
 using MediatR;
@@ -31,6 +30,9 @@ public class GetUserOrganizationConsentsQueryHandler(IOrganizationConsentReposit
                     UnixTimestamp.Create(x.ConsentDate).Seconds)
             ))
             .ToListAsync(cancellationToken: cancellationToken);
+
+        // TODO: Include consent to organizations (and not only organizations with clients)
+        // TODO: Include both given and received consents
 
         return new GetUserOrganizationConsentsQueryResult(consents);
     }

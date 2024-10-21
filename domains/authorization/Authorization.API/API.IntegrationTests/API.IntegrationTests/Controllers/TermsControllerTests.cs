@@ -10,12 +10,12 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AcceptTermsTests
+public class TermsControllerTests
 {
     private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AcceptTermsTests(IntegrationTestFixture integrationTestFixture)
+    public TermsControllerTests(IntegrationTestFixture integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;

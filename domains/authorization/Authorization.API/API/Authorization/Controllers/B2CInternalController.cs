@@ -55,7 +55,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             queryResult.SubType,
             queryResult.OrgName,
             queryResult.OrgId,
-            queryResult.OrgIds ?? new List<Guid>(),
+            queryResult.OrgIds,
             queryResult.Scope)
         );
     }

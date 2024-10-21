@@ -121,7 +121,8 @@ namespace API.Migrations
 
                     b.HasIndex("ConsentGiverOrganizationId");
 
-                    b.HasIndex("ConsentReceiverOrganizationId");
+                    b.HasIndex("ConsentReceiverOrganizationId", "ConsentGiverOrganizationId")
+                        .IsUnique();
 
                     b.ToTable("OrganizationConsents");
                 });

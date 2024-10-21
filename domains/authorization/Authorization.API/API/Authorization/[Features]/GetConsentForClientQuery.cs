@@ -55,6 +55,6 @@ public record GetConsentForClientQueryResult(
     Guid Sub,
     string SubType,
     string OrgName,
-    IEnumerable<Guid>? OrgIds,
+    IEnumerable<Guid> OrgIds,
     Guid OrgId,
     string Scope);
