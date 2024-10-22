@@ -1,0 +1,8 @@
+[
+    "jose-jwt",
+    "MockQueryable.NSubstitute",
+    "Microsoft.AspNet.WebApi.Client",
+    "Testcontainers*",
+    "origin/*",
+    "xunit.categories"
+]
