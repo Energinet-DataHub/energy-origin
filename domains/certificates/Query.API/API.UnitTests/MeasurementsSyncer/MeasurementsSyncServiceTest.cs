@@ -419,7 +419,7 @@ public class MeasurementsSyncServiceTest
                     m.DateFrom >= now.Add(TimeSpan.FromDays(-4)).Seconds &&
                     m.DateTo <= now.Seconds
                 );
-            }),Arg.Any<CancellationToken>());
+            }), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -471,6 +471,6 @@ public class MeasurementsSyncServiceTest
                     m.DateFrom >= now.Add(TimeSpan.FromDays(-4)).Seconds &&
                     m.DateTo <= now.Seconds
                 );
-            }),Arg.Any<CancellationToken>());
+            }), Arg.Any<CancellationToken>());
     }
 }

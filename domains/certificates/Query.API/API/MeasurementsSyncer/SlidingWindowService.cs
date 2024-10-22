@@ -144,91 +144,91 @@ public class SlidingWindowService
         }
     }
 
-private List<MeasurementInterval> FindMissingIntervals(
-    MeteringPointTimeSeriesSlidingWindow window,
-    List<Measurement> measurements,
-    UnixTimestamp newSynchronizationPoint)
-{
-    var minimumAgeThreshold = CalculateMinimumAgeThreshold();
-
-    // Adjust newSynchronizationPoint to not exceed the age threshold
-    if (newSynchronizationPoint > minimumAgeThreshold)
+    private List<MeasurementInterval> FindMissingIntervals(
+        MeteringPointTimeSeriesSlidingWindow window,
+        List<Measurement> measurements,
+        UnixTimestamp newSynchronizationPoint)
     {
-        newSynchronizationPoint = minimumAgeThreshold;
+        var minimumAgeThreshold = CalculateMinimumAgeThreshold();
+
+        // Adjust newSynchronizationPoint to not exceed the age threshold
+        if (newSynchronizationPoint > minimumAgeThreshold)
+        {
+            newSynchronizationPoint = minimumAgeThreshold;
+        }
+
+        var sortedMeasurements = SortMeasurementsChronologically(window, measurements);
+        var missingIntervals = new List<MeasurementInterval>();
+        UnixTimestamp? currentMissingIntervalStart = null;
+
+        // Process only within the age threshold
+        for (var currentMeasurementIndex = -1; currentMeasurementIndex < sortedMeasurements.Count + 1; currentMeasurementIndex++)
+        {
+            if (IsIndexBeforeFirstMeasurement(currentMeasurementIndex))
+            {
+                if (ContainsGapBeforeFirstMeasurement(window, sortedMeasurements))
+                {
+                    currentMissingIntervalStart = window.SynchronizationPoint;
+                }
+                continue;
+            }
+
+            if (IsIndexAfterLastMeasurement(currentMeasurementIndex, sortedMeasurements))
+            {
+                var lastMeasurement = sortedMeasurements[currentMeasurementIndex - 1];
+                if (IsCurrentMeasurementIndexInsideMissingInterval(currentMissingIntervalStart))
+                {
+                    AddMissingIntervalUpToThreshold(currentMissingIntervalStart!, newSynchronizationPoint, missingIntervals, minimumAgeThreshold);
+                }
+                else if (ContainsGapAfterLastMeasurement(newSynchronizationPoint, lastMeasurement))
+                {
+                    AddMissingIntervalUpToThreshold(UnixTimestamp.Create(lastMeasurement.DateTo), newSynchronizationPoint, missingIntervals, minimumAgeThreshold);
+                }
+                continue;
+            }
+
+            var currentMeasurement = sortedMeasurements[currentMeasurementIndex];
+            if (IsMeasurementQuantityMissing(currentMeasurement))
+            {
+                if (!IsCurrentMeasurementIndexInsideMissingInterval(currentMissingIntervalStart))
+                {
+                    currentMissingIntervalStart = UnixTimestamp.Create(currentMeasurement.DateFrom);
+                }
+            }
+            else
+            {
+                if (IsCurrentMeasurementIndexInsideMissingInterval(currentMissingIntervalStart))
+                {
+                    AddMissingIntervalUpToThreshold(currentMissingIntervalStart!, UnixTimestamp.Create(currentMeasurement.DateFrom), missingIntervals, minimumAgeThreshold);
+                    currentMissingIntervalStart = null;
+                }
+            }
+        }
+
+        var remainingMissingIntervals = window.MissingMeasurements.Intervals
+            .Where(interval => interval.To > minimumAgeThreshold)
+            .Select(interval => interval.From < minimumAgeThreshold ? MeasurementInterval.Create(minimumAgeThreshold, interval.To) : interval)
+            .ToList();
+
+        missingIntervals.AddRange(remainingMissingIntervals);
+
+        return missingIntervals;
     }
 
-    var sortedMeasurements = SortMeasurementsChronologically(window, measurements);
-    var missingIntervals = new List<MeasurementInterval>();
-    UnixTimestamp? currentMissingIntervalStart = null;
-
-    // Process only within the age threshold
-    for (var currentMeasurementIndex = -1; currentMeasurementIndex < sortedMeasurements.Count + 1; currentMeasurementIndex++)
+    private static void AddMissingIntervalUpToThreshold(UnixTimestamp intervalStart, UnixTimestamp intervalEnd, List<MeasurementInterval> missingIntervals, UnixTimestamp threshold)
     {
-        if (IsIndexBeforeFirstMeasurement(currentMeasurementIndex))
-        {
-            if (ContainsGapBeforeFirstMeasurement(window, sortedMeasurements))
-            {
-                currentMissingIntervalStart = window.SynchronizationPoint;
-            }
-            continue;
-        }
+        if (intervalStart >= threshold)
+            return;
 
-        if (IsIndexAfterLastMeasurement(currentMeasurementIndex, sortedMeasurements))
-        {
-            var lastMeasurement = sortedMeasurements[currentMeasurementIndex - 1];
-            if (IsCurrentMeasurementIndexInsideMissingInterval(currentMissingIntervalStart))
-            {
-                AddMissingIntervalUpToThreshold(currentMissingIntervalStart!, newSynchronizationPoint, missingIntervals, minimumAgeThreshold);
-            }
-            else if (ContainsGapAfterLastMeasurement(newSynchronizationPoint, lastMeasurement))
-            {
-                AddMissingIntervalUpToThreshold(UnixTimestamp.Create(lastMeasurement.DateTo), newSynchronizationPoint, missingIntervals, minimumAgeThreshold);
-            }
-            continue;
-        }
+        var adjustedEnd = intervalEnd > threshold ? threshold : intervalEnd;
 
-        var currentMeasurement = sortedMeasurements[currentMeasurementIndex];
-        if (IsMeasurementQuantityMissing(currentMeasurement))
-        {
-            if (!IsCurrentMeasurementIndexInsideMissingInterval(currentMissingIntervalStart))
-            {
-                currentMissingIntervalStart = UnixTimestamp.Create(currentMeasurement.DateFrom);
-            }
-        }
-        else
-        {
-            if (IsCurrentMeasurementIndexInsideMissingInterval(currentMissingIntervalStart))
-            {
-                AddMissingIntervalUpToThreshold(currentMissingIntervalStart!, UnixTimestamp.Create(currentMeasurement.DateFrom), missingIntervals, minimumAgeThreshold);
-                currentMissingIntervalStart = null;
-            }
-        }
+        if (intervalStart >= adjustedEnd)
+            return;
+
+        var missingMeasurementInterval = MeasurementInterval.Create(intervalStart, adjustedEnd);
+
+        missingIntervals.Add(missingMeasurementInterval);
     }
-
-    var remainingMissingIntervals = window.MissingMeasurements.Intervals
-        .Where(interval => interval.To > minimumAgeThreshold)
-        .Select(interval => interval.From < minimumAgeThreshold ? MeasurementInterval.Create(minimumAgeThreshold, interval.To) : interval)
-        .ToList();
-
-    missingIntervals.AddRange(remainingMissingIntervals);
-
-    return missingIntervals;
-}
-
-private static void AddMissingIntervalUpToThreshold(UnixTimestamp intervalStart, UnixTimestamp intervalEnd, List<MeasurementInterval> missingIntervals, UnixTimestamp threshold)
-{
-    if (intervalStart >= threshold)
-        return;
-
-    var adjustedEnd = intervalEnd > threshold ? threshold : intervalEnd;
-
-    if (intervalStart >= adjustedEnd)
-        return;
-
-    var missingMeasurementInterval = MeasurementInterval.Create(intervalStart, adjustedEnd);
-
-    missingIntervals.Add(missingMeasurementInterval);
-}
 
     private static bool IsMeasurementQuantityMissing(Measurement measurement)
     {
