@@ -9,7 +9,7 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
 
     model {
         #
-        # Energy Origin (extends)
+        # Energy Track and Trace DK (extends)
         #
         !ref energyOrigin {
 
@@ -23,13 +23,13 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
     }
 
     views {
-        systemContext energyOrigin "EnergyOriginSystemContext" {
-            title "[System Context] Energy Origin"
+        systemContext energyOrigin "ETTSystemContext" {
+            title "[System Context] Energy Track and Trace DK"
             include *
             autoLayout
         }
-        container energyOrigin "EnergyOriginContainers" {
-            title "[Container Context] Energy Origin"
+        container energyOrigin "ETTContainers" {
+            title "[Container Context] Energy Track and Trace DK"
             include *
             autoLayout
         }
