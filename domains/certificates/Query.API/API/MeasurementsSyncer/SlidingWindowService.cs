@@ -106,13 +106,9 @@ public class SlidingWindowService
     {
         var minimumAgeThreshold = CalculateMinimumAgeThreshold();
 
-        // If age > 0 and new sync point is further in the future than the age, we halt the syncPoint
-        if (_options.MinimumAgeThresholdHours > 0)
+        if (_options.MinimumAgeThresholdHours > 0 && newSynchronizationPoint > minimumAgeThreshold)
         {
-            if (newSynchronizationPoint > minimumAgeThreshold)
-            {
-                newSynchronizationPoint = window.SynchronizationPoint;
-            }
+            newSynchronizationPoint = window.SynchronizationPoint;
         }
 
         if (NoMeasurementsFetched(measurements))
@@ -151,7 +147,6 @@ public class SlidingWindowService
     {
         var minimumAgeThreshold = CalculateMinimumAgeThreshold();
 
-        // Adjust newSynchronizationPoint to not exceed the age threshold
         if (newSynchronizationPoint > minimumAgeThreshold)
         {
             newSynchronizationPoint = minimumAgeThreshold;
@@ -161,7 +156,6 @@ public class SlidingWindowService
         var missingIntervals = new List<MeasurementInterval>();
         UnixTimestamp? currentMissingIntervalStart = null;
 
-        // Process only within the age threshold
         for (var currentMeasurementIndex = -1; currentMeasurementIndex < sortedMeasurements.Count + 1; currentMeasurementIndex++)
         {
             if (IsIndexBeforeFirstMeasurement(currentMeasurementIndex))

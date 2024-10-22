@@ -464,7 +464,7 @@ public class SlidingWindowServiceTest
     }
 
     [Fact]
-    public void GivenAgeThreshold_WhenStartingNewSyncInterval_MinimumAgeThresholdEqualsInitialStartPosition()
+    public void GivenAgeThreshold_WhenStartingNewSyncInterval_StartingSyncPositionIsNotCreatedBackwardsInTime()
     {
         _options.MinimumAgeThresholdHours = 120;
         var initialStartSyncPosition = _now.RoundToLatestHour();
@@ -486,16 +486,42 @@ public class SlidingWindowServiceTest
     }
 
     [Fact]
-    public void GivenAgeThreshold_WhenUpdatingSyncPosition_SyncPositionMovementIsBlockedByThreshold()
+    public void GivenAgeThreshold_WhenSyncPositionAfterThreshold_SyncPositionIsBlocked()
     {
-        _options.MinimumAgeThresholdHours = 120;
-        var initialStartSyncPosition = _now.RoundToLatestHour();
+        _options.MinimumAgeThresholdHours = 10;
+        var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-9)).RoundToLatestHour();
         var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
         var newSyncPosition = initialStartSyncPosition.Add(TimeSpan.FromHours(1));
 
         _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
 
         slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(initialStartSyncPosition);
+    }
+
+    [Fact]
+    public void GivenAgeThreshold_WhenSyncPositionMatchingThreshold_SyncPositionIsBlocked()
+    {
+        _options.MinimumAgeThresholdHours = 10;
+        var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-10)).RoundToLatestHour();
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
+        var newSyncPosition = initialStartSyncPosition.Add(TimeSpan.FromHours(1));
+
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(initialStartSyncPosition);
+    }
+
+    [Fact]
+    public void GivenAgeThreshold_WhenSyncPositionIsWithinThreshold_SyncPositionMovesForward()
+    {
+        _options.MinimumAgeThresholdHours = 10;
+        var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-11)).RoundToLatestHour();
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
+        var newSyncPosition = initialStartSyncPosition.Add(TimeSpan.FromHours(1));
+
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(newSyncPosition);
     }
 
     [Fact]
@@ -511,31 +537,7 @@ public class SlidingWindowServiceTest
         slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(newSyncPosition);
     }
 
-    [Fact]
-    public void GivenAgeThreshold_WhenSyncPositionIsWithinThreshold_SyncPositionMovesForward()
-    {
-        _options.MinimumAgeThresholdHours = 120;
-        var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours - 1)).RoundToLatestHour();
-        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
-        var newSyncPosition = slidingWindow.SynchronizationPoint.Add(TimeSpan.FromHours(1)).RoundToLatestHour();
 
-        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
-
-        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(newSyncPosition);
-    }
-
-    [Fact]
-    public void GivenAgeThreshold_WhenSyncPositionIsAfterThreshold_SyncPositionDoesNotMoveForward()
-    {
-        _options.MinimumAgeThresholdHours = 120;
-        var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours - 1)).RoundToLatestHour();
-        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
-        var newSyncPosition = _now.RoundToLatestHour();
-
-        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
-
-        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(initialStartSyncPosition);
-    }
 
     [Fact]
     public void GivenEntireMissingIntervalWithAgeThresholdApplied_WhenProcessingIntervals_ThenOnlyProcessPartOfIntervalWithinThreshold()
