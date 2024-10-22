@@ -439,7 +439,7 @@ BEGIN
     INNER JOIN
     	public."Clients" AS cli
     ON
-    	con."ClientId" = cli."Id"
+    	con."ClientId" = cli."Id";
     END IF;
 END $EF$;
 
