@@ -37,19 +37,19 @@ public class GrantConsentTest
     [Fact]
     public async Task GivenKnownClientId_WhenGrantingConsent_200OkReturned()
     {
-        var client = Any.Client();
+        var organizationWithClient = Any.OrganizationWithClient();
         var user = Any.User();
         var organization = Any.Organization();
         var affiliation = Affiliation.Create(user, organization);
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Clients.AddAsync(client);
+        await dbContext.Organizations.AddAsync(organizationWithClient);
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin.Value);
-        var response = await api.GrantConsent(client.IdpClientId.Value);
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var response = await api.GrantConsent(organizationWithClient.Clients.First().IdpClientId.Value);
         response.Should().Be200Ok();
     }
 
@@ -66,23 +66,24 @@ public class GrantConsentTest
         result!.Result.Should().NotBeEmpty();
     }
 
+
     private async Task<IdpClientId> SeedDataAndReturnIdpClientId()
     {
         var user = Any.User();
         var organization = Any.Organization();
         var affiliation = Affiliation.Create(user, organization);
-        var client = Any.Client();
-        var consent = Consent.Create(organization, client, DateTimeOffset.UtcNow);
+        var organizationWithClient = Any.OrganizationWithClient();
+        var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.Clients.AddAsync(client);
-        await dbContext.Consents.AddAsync(consent);
+        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await dbContext.OrganizationConsents.AddAsync(consent);
 
         await dbContext.SaveChangesAsync();
-        return client.IdpClientId;
+        return organizationWithClient.Clients.First().IdpClientId;
     }
 
     [Fact]

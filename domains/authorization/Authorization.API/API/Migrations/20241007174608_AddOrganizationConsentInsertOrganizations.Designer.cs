@@ -3,6 +3,7 @@ using System;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241007174608_AddOrganizationConsentInsertOrganizations")]
+    partial class AddOrganizationConsentInsertOrganizations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,6 +73,27 @@ namespace API.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("API.Models.Consent", b =>
+                {
+                    b.Property<Guid>("ClientId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ConsentDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ClientId", "OrganizationId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("ClientId", "OrganizationId")
+                        .IsUnique();
+
+                    b.ToTable("Consents");
+                });
+
             modelBuilder.Entity("API.Models.Organization", b =>
                 {
                     b.Property<Guid>("Id")
@@ -121,8 +145,7 @@ namespace API.Migrations
 
                     b.HasIndex("ConsentGiverOrganizationId");
 
-                    b.HasIndex("ConsentReceiverOrganizationId", "ConsentGiverOrganizationId")
-                        .IsUnique();
+                    b.HasIndex("ConsentReceiverOrganizationId");
 
                     b.ToTable("OrganizationConsents");
                 });
@@ -363,6 +386,25 @@ namespace API.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("API.Models.Consent", b =>
+                {
+                    b.HasOne("API.Models.Client", "Client")
+                        .WithMany("Consents")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("API.Models.Organization", "Organization")
+                        .WithMany("Consents")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("API.Models.OrganizationConsent", b =>
                 {
                     b.HasOne("API.Models.Organization", "ConsentGiverOrganization")
@@ -382,11 +424,18 @@ namespace API.Migrations
                     b.Navigation("ConsentReceiverOrganization");
                 });
 
+            modelBuilder.Entity("API.Models.Client", b =>
+                {
+                    b.Navigation("Consents");
+                });
+
             modelBuilder.Entity("API.Models.Organization", b =>
                 {
                     b.Navigation("Affiliations");
 
                     b.Navigation("Clients");
+
+                    b.Navigation("Consents");
 
                     b.Navigation("OrganizationGivenConsents");
 

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
-public class GetUserOrganizationConsentsQueryHandler(IConsentRepository consentRepository)
+public class GetUserOrganizationConsentsQueryHandler(IOrganizationConsentRepository organizationConsentRepository)
     : IRequestHandler<GetUserOrganizationConsentsQuery, GetUserOrganizationConsentsQueryResult>
 {
     public async Task<GetUserOrganizationConsentsQueryResult> Handle(GetUserOrganizationConsentsQuery request, CancellationToken cancellationToken)
@@ -18,17 +18,21 @@ public class GetUserOrganizationConsentsQueryHandler(IConsentRepository consentR
         var userIdpUserIdClaim = IdpUserId.Create(Guid.Parse(request.IdpUserId));
         var userOrgCvrClaim = Tin.Create(request.OrgCvr);
 
-        var consents = await consentRepository
+        var consents = await organizationConsentRepository
             .Query()
-            .Where(consent => consent.Organization.Tin == userOrgCvrClaim &&
-                              consent.Organization.Affiliations
+            .Where(consent => consent.ConsentGiverOrganization.Tin == userOrgCvrClaim &&
+                              consent.ConsentGiverOrganization.Affiliations
                                   .Any(o => o.User.IdpUserId == userIdpUserIdClaim))
-            .Select(consent => new GetUserOrganizationConsentsQueryResultItem(
-                consent.Client.IdpClientId.Value,
-                consent.Client.Name.Value,
-                UnixTimestamp.Create(consent.ConsentDate).Seconds
+            .SelectMany(x => x.ConsentReceiverOrganization.Clients.Select(consent =>
+                new GetUserOrganizationConsentsQueryResultItem(
+                    consent.IdpClientId.Value,
+                    consent.Name.Value,
+                    UnixTimestamp.Create(x.ConsentDate).Seconds)
             ))
             .ToListAsync(cancellationToken: cancellationToken);
+
+        // TODO: Include consent to organizations (and not only organizations with clients)
+        // TODO: Include both given and received consents
 
         return new GetUserOrganizationConsentsQueryResult(consents);
     }
