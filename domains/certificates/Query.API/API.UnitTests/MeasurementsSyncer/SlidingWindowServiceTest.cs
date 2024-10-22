@@ -689,6 +689,38 @@ public void Given7DayMissingInterval_WhenAddingMeasurementsAcrossThreshold_Shoul
     _measurementSyncMetrics.Received(1).AddNumberOfMissingMeasurement(72);
 }
 
+[Fact]
+public void RemovingMinimumAgeRequirement_ShouldAdvanceSynchronizationPointAndFetchAllAvailableMeasurements()
+{
+    var initialMinAgeHours = 72;
+    var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+    var slidingWindowService = new SlidingWindowService(measurementSyncMetrics, Options.Create(_options));
+    _options.MinimumAgeThresholdHours = 72;
+
+    var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
+
+    var synchronizationPoint = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
+    var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
+
+    var initialMeasurements = new List<Measurement>
+    {
+        CreateMeasurement(_gsrn, synchronizationPoint.Seconds, initialCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+    };
+    slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
+
+    _options.MinimumAgeThresholdHours = 0;
+    var newCutoffTime = _now.RoundToLatestHour();
+    var newMeasurements = new List<Measurement>
+    {
+        CreateMeasurement(_gsrn, initialCutoffTime.Seconds, newCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+    };
+    slidingWindowService.UpdateSlidingWindow(window, newMeasurements, newCutoffTime);
+
+    Assert.Equal(newCutoffTime, window.SynchronizationPoint);
+
+    Assert.Empty(window.MissingMeasurements.Intervals);
+}
+
 private Measurement CreateMeasurement(Gsrn gsrn, long from, long to, long quantity, bool quantityMissing, EnergyQuantityValueQuality quality)
     {
         return new Measurement

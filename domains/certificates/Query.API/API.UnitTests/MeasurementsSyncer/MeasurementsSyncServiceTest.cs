@@ -313,7 +313,6 @@ public class MeasurementsSyncServiceTest
     [Fact]
     public async Task ExistingMissingIntervals_AdheresToNewlyAddedAgeRestriction()
     {
-        // Step 1: Set the contract's start date to 14 days ago
         var syncInfo = new MeteringPointSyncInfo(
             Gsrn: Any.Gsrn(),
             StartSyncDate: DateTimeOffset.Now.AddDays(-14), // 14 days ago
@@ -340,7 +339,6 @@ public class MeasurementsSyncServiceTest
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
-        // Verify that only measurements within the age restriction are published (measurement2 should be published)
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
             Arg.Any<MeteringPoint>(),
             Arg.Any<MeteringPointSyncInfo>(),
