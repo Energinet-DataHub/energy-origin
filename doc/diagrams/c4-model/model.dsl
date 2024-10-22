@@ -13,13 +13,12 @@ dataHubFacadeSubsystem = group "DataHubFacade Subsystem" {
     }
 }
 
-authSubsystem = group "Auth Subsystem" {
-    authApi = container "Auth Web Api" {
+authSubsystem = group "Authorization Subsystem" {
+    authApi = container "Authorization Web Api" {
         description "API For authentication and authorization"
 
-        this -> mitId "Executes OIDC callbacks"
+        this -> mitId "Gets user info"
         apiGateway -> this "Forwards requests to"
-        this -> dataHubFacadeApi "Creates relations for metering points in"
     }
 
     authDb = container "Database" {
@@ -36,7 +35,6 @@ measurementsSubsystem = group "Measurements Subsystem" {
         description "API for aggregated measurements split into production and consumption"
 
         apiGateway -> this "Forwards requests to"
-
 
         measurementService = component "MeasurementService" "Handles representation of measurements within Energy Track and Trace DK" {
             this -> dataHubFacadeApi "Get measurements from"
