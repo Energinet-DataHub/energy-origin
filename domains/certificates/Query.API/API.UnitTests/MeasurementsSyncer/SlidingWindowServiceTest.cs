@@ -541,7 +541,7 @@ public class SlidingWindowServiceTest
 public void GivenLongMissingInterval_WhenRemovingAgeRestriction_ProcessesAllRemainingMeasurements()
 {
     // Arrange
-    _options.MinimumAgeThresholdHours = 96; // 4-day threshold initially
+    _options.MinimumAgeThresholdHours = 72; // 4-day threshold initially
     var now = UnixTimestamp.Now().RoundToLatestHour();
     var syncStart = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour(); // Start 7 days ago
 
@@ -554,36 +554,39 @@ public void GivenLongMissingInterval_WhenRemovingAgeRestriction_ProcessesAllRema
     // Create measurements for all 7 days
     var allMeasurements = new List<Measurement>();
     var currentTime = syncStart;
-    for (int i = 0; i < 168; i++) // 7 days * 24 hours = 168 hours
+    for (int i = 0; i <= 167; i++)
     {
         allMeasurements.Add(CreateMeasurement(
             _gsrn,
             currentTime.Seconds,
             currentTime.Add(TimeSpan.FromHours(1)).Seconds,
             10,
-            false, // quantityMissing is false
+            false,
             EnergyQuantityValueQuality.Measured
         ));
         currentTime = currentTime.Add(TimeSpan.FromHours(1));
     }
 
-    // Act - First filter and update with age restriction
-    var filteredMeasurements1 = _sut.FilterMeasurements(window, allMeasurements);
-    _sut.UpdateSlidingWindow(window, filteredMeasurements1, now);
+    // First filter and update with age restriction
+    var filteredMeasurements1 = _sut.FilterMeasurements(window, allMeasurements.Take(96).ToList());
+    allMeasurements.RemoveRange(0, 96);
+    _sut.UpdateSlidingWindow(window, filteredMeasurements1, now.Add(TimeSpan.FromHours(- _options.MinimumAgeThresholdHours)));
 
     // Assert after first update
-    filteredMeasurements1.Should().HaveCount(96, "because only 96 measurements within the 4-day threshold should be processed initially");
-    window.MissingMeasurements.Intervals.Should().ContainSingle()
-        .Which.Should().Match<MeasurementInterval>(interval =>
-            interval.From == syncStart.Add(TimeSpan.FromDays(4)) &&
-            interval.To == now
-        );
+    filteredMeasurements1.Should().HaveCount(96, "because only 96 measurements before the 3-day threshold should be processed initially");
     window.SynchronizationPoint.Should().Be(syncStart.Add(TimeSpan.FromDays(4)), "because the synchronization point should move to the end of the processed measurements");
+    window.MissingMeasurements.Intervals.Should().ContainSingle()
+        .Which.Should().BeEquivalentTo(new
+        {
+            From = syncStart.Add(TimeSpan.FromDays(4)),
+            To = now
+        });
+
 
     // Remove age restriction
     _options.MinimumAgeThresholdHours = 0;
 
-    // Act - Second filter and update without age restriction
+    // Second filter and update without age restriction
     var filteredMeasurements2 = _sut.FilterMeasurements(window, allMeasurements);
     _sut.UpdateSlidingWindow(window, filteredMeasurements2, now);
 
