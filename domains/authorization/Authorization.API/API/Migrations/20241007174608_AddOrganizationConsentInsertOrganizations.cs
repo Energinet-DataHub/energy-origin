@@ -57,7 +57,7 @@ namespace API.Migrations
                           INNER JOIN
                           	public."Clients" AS cli
                           ON
-                          	con."ClientId" = cli."Id"
+                          	con."ClientId" = cli."Id";
                           """;
 
             migrationBuilder.Sql(moreSql);
