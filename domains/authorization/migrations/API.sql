@@ -111,7 +111,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240514093230_InitialCreate') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240514093230_InitialCreate', '8.0.6');
+    VALUES ('20240514093230_InitialCreate', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -130,7 +130,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240620115450_AddOrganizationTinUniqueIndex') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240620115450_AddOrganizationTinUniqueIndex', '8.0.6');
+    VALUES ('20240620115450_AddOrganizationTinUniqueIndex', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -282,7 +282,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240711101829_AddTermsWithOutbox') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240711101829_AddTermsWithOutbox', '8.0.6');
+    VALUES ('20240711101829_AddTermsWithOutbox', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -309,7 +309,190 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240730115826_AddDefaultTermsWithUniqueConstraint') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240730115826_AddDefaultTermsWithUniqueConstraint', '8.0.6');
+    VALUES ('20240730115826_AddDefaultTermsWithUniqueConstraint', '8.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007173932_AddOrganizationConsent') THEN
+    ALTER TABLE "Organizations" ALTER COLUMN "Tin" DROP NOT NULL;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007173932_AddOrganizationConsent') THEN
+    ALTER TABLE "Clients" ADD "OrganizationId" uuid;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007173932_AddOrganizationConsent') THEN
+    CREATE TABLE "OrganizationConsents" (
+        "Id" uuid NOT NULL,
+        "ConsentGiverOrganizationId" uuid NOT NULL,
+        "ConsentReceiverOrganizationId" uuid NOT NULL,
+        "ConsentDate" timestamp with time zone NOT NULL,
+        CONSTRAINT "PK_OrganizationConsents" PRIMARY KEY ("Id"),
+        CONSTRAINT "FK_OrganizationConsents_Organizations_ConsentGiverOrganization~" FOREIGN KEY ("ConsentGiverOrganizationId") REFERENCES "Organizations" ("Id") ON DELETE CASCADE,
+        CONSTRAINT "FK_OrganizationConsents_Organizations_ConsentReceiverOrganizat~" FOREIGN KEY ("ConsentReceiverOrganizationId") REFERENCES "Organizations" ("Id") ON DELETE CASCADE
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007173932_AddOrganizationConsent') THEN
+    CREATE INDEX "IX_Clients_OrganizationId" ON "Clients" ("OrganizationId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007173932_AddOrganizationConsent') THEN
+    CREATE INDEX "IX_OrganizationConsents_ConsentGiverOrganizationId" ON "OrganizationConsents" ("ConsentGiverOrganizationId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007173932_AddOrganizationConsent') THEN
+    CREATE INDEX "IX_OrganizationConsents_ConsentReceiverOrganizationId" ON "OrganizationConsents" ("ConsentReceiverOrganizationId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007173932_AddOrganizationConsent') THEN
+    ALTER TABLE "Clients" ADD CONSTRAINT "FK_Clients_Organizations_OrganizationId" FOREIGN KEY ("OrganizationId") REFERENCES "Organizations" ("Id");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007173932_AddOrganizationConsent') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20241007173932_AddOrganizationConsent', '8.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007174608_AddOrganizationConsentInsertOrganizations') THEN
+    DO $$
+    BEGIN
+       IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'uuid-ossp') THEN
+          CREATE EXTENSION "uuid-ossp";
+       END IF;
+    END $$;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007174608_AddOrganizationConsentInsertOrganizations') THEN
+    WITH inserted_orgs AS (
+        INSERT INTO public."Organizations" ("Id", "Tin", "Name", "TermsAcceptanceDate", "TermsAccepted", "TermsVersion")
+        SELECT
+            (SELECT uuid_generate_v4()) AS "Id",
+            null AS "Tin",
+            "Name" AS "Name",
+            null AS "TermsAcceptanceDate",
+            false AS "TermsAccepted",
+            null AS "TermsVersion"
+        FROM public."Clients"
+        RETURNING "Id", "Name"
+    )
+
+    UPDATE
+    	public."Clients" c
+    SET
+    	"OrganizationId" = i."Id"
+    FROM
+    	inserted_orgs i
+    WHERE
+    	c."Name" = i."Name";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007174608_AddOrganizationConsentInsertOrganizations') THEN
+    INSERT INTO public."OrganizationConsents" ("Id", "ConsentGiverOrganizationId", "ConsentReceiverOrganizationId", "ConsentDate")
+    SELECT
+    	(SELECT uuid_generate_v4()) AS "Id",
+    	con."OrganizationId" AS "ConsentGiverOrganizationId",
+    	cli."OrganizationId" AS "ConsentReceiverOrganizationId",
+    	con."ConsentDate" AS "ConsentDate"
+    FROM
+    	public."Consents" as con
+    INNER JOIN
+    	public."Clients" AS cli
+    ON
+    	con."ClientId" = cli."Id"
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007174608_AddOrganizationConsentInsertOrganizations') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20241007174608_AddOrganizationConsentInsertOrganizations', '8.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241021074018_RemoveConsentTable') THEN
+    DROP TABLE "Consents";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241021074018_RemoveConsentTable') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20241021074018_RemoveConsentTable', '8.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241022085628_AddUniqueConsentIndex') THEN
+    DROP INDEX "IX_OrganizationConsents_ConsentReceiverOrganizationId";
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241022085628_AddUniqueConsentIndex') THEN
+    CREATE UNIQUE INDEX "IX_OrganizationConsents_ConsentReceiverOrganizationId_ConsentG~" ON "OrganizationConsents" ("ConsentReceiverOrganizationId", "ConsentGiverOrganizationId");
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241022085628_AddUniqueConsentIndex') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20241022085628_AddUniqueConsentIndex', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
