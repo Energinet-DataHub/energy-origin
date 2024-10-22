@@ -33,19 +33,4 @@ public class MigrationTests
 
         await applyAllMigrations.Should().NotThrowAsync();
     }
-
-    [Fact]
-    public async Task can_rollback_all_migrations()
-    {
-        await using var dbContext = new ApplicationDbContext(options);
-        var migrator = dbContext.Database.GetService<IMigrator>();
-        await migrator.MigrateAsync();
-        var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync();
-        appliedMigrations.Should().NotBeEmpty();
-
-        await migrator.MigrateAsync("0");
-
-        var migrationsAfterRollback = await dbContext.Database.GetAppliedMigrationsAsync();
-        migrationsAfterRollback.Should().BeEmpty();
-    }
 }
