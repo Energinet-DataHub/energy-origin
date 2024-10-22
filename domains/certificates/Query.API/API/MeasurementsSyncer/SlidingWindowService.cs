@@ -123,7 +123,7 @@ public class SlidingWindowService
             return;
         }
 
-        var missingIntervals = FindMissingIntervals(window, measurements, minimumAgeThreshold);
+        var missingIntervals = FindMissingIntervals(window, measurements, newSynchronizationPoint);
         UpdateMissingMeasurementMetric(missingIntervals);
         window.UpdateSlidingWindow(newSynchronizationPoint, missingIntervals);
     }
