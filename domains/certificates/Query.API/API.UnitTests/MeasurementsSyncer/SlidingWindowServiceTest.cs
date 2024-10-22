@@ -530,7 +530,7 @@ public class SlidingWindowServiceTest
         _options.MinimumAgeThresholdHours = 120;
         var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours - 1)).RoundToLatestHour();
         var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
-        var newSyncPosition = _now.RoundToLatestHour(); // New sync position after threshold
+        var newSyncPosition = _now.RoundToLatestHour();
 
         _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
 
@@ -538,7 +538,7 @@ public class SlidingWindowServiceTest
     }
 
 [Fact]
-public void GivenLongMissingInterval_WhenRemovingAgeRestriction_ProcessesAllRemainingMeasurements()
+public void GivenEntireMissingIntervalWithAgeThresholdApplied_WhenProcessingIntervals_ThenOnlyProcessPartOfIntervalWithinThreshold()
 {
     _options.MinimumAgeThresholdHours = 72;
     var now = UnixTimestamp.Now().RoundToLatestHour();
@@ -564,28 +564,78 @@ public void GivenLongMissingInterval_WhenRemovingAgeRestriction_ProcessesAllRema
         currentTime = currentTime.Add(TimeSpan.FromHours(1));
     }
 
-    var filteredMeasurements1 = _sut.FilterMeasurements(window, allMeasurements.Take(96).ToList());
-    allMeasurements.RemoveRange(0, 96);
-    _sut.UpdateSlidingWindow(window, filteredMeasurements1, now.Add(TimeSpan.FromHours(- _options.MinimumAgeThresholdHours)));
+    _sut.UpdateSlidingWindow(window, allMeasurements, now.Add(TimeSpan.FromHours(- _options.MinimumAgeThresholdHours)));
 
-    filteredMeasurements1.Should().HaveCount(96, "because only 96 measurements before the 3-day threshold should be processed initially");
-    window.SynchronizationPoint.Should().Be(syncStart.Add(TimeSpan.FromDays(4)), "because the synchronization point should move to the end of the processed measurements");
+    window.SynchronizationPoint.Should().Be(syncStart.Add(TimeSpan.FromDays(4)));
     window.MissingMeasurements.Intervals.Should().ContainSingle()
         .Which.Should().BeEquivalentTo(new
         {
             From = syncStart.Add(TimeSpan.FromDays(4)),
             To = now
         });
-
-    _options.MinimumAgeThresholdHours = 0;
-
-    var filteredMeasurements2 = _sut.FilterMeasurements(window, allMeasurements);
-    _sut.UpdateSlidingWindow(window, filteredMeasurements2, now);
-
-    filteredMeasurements2.Should().HaveCount(72, "because the remaining 72 measurements (3 days) should now be processed");
-    window.MissingMeasurements.Intervals.Should().BeEmpty("because all measurements should now be processed");
-    window.SynchronizationPoint.Should().Be(now, "because the synchronization point should move to the current time");
 }
+
+[Fact]
+public void GivenMissingIntervalOutsideAgeThreshold_ThenDoesNotProcessIntervalsOutsideThreshold()
+{
+    _options.MinimumAgeThresholdHours = 72;
+    var now = UnixTimestamp.Now().RoundToLatestHour();
+    var syncStart = now.Add(TimeSpan.FromDays(-3)).RoundToLatestHour();
+
+    var window = _sut.CreateSlidingWindow(_gsrn, syncStart);
+
+    var missingInterval = MeasurementInterval.Create(now.Add(TimeSpan.FromDays(-3)), now);
+    window.MissingMeasurements.Intervals.Add(missingInterval);
+
+    var allMeasurements = new List<Measurement>();
+    var currentTime = syncStart;
+    for (int i = 0; i < 72; i++)
+    {
+        allMeasurements.Add(CreateMeasurement(
+            _gsrn,
+            currentTime.Seconds,
+            currentTime.Add(TimeSpan.FromHours(1)).Seconds,
+            10,
+            false,
+            EnergyQuantityValueQuality.Measured
+        ));
+        currentTime = currentTime.Add(TimeSpan.FromHours(1));
+    }
+
+    _sut.UpdateSlidingWindow(window, allMeasurements, now);
+
+    window.MissingMeasurements.Intervals.Should().ContainSingle()
+        .Which.Should().BeEquivalentTo(new
+        {
+            From = syncStart,
+            To = now
+        });
+    window.SynchronizationPoint.Should().Be(now.Add(TimeSpan.FromDays(-3)));
+    _measurementSyncMetrics.Received(0).AddNumberOfMeasurementsPublished(72);
+}
+
+[Fact]
+public void GivenNoMeasurements_And_AgeThresholdApplied_WhenUpdatingSlidingWindow_ShouldNotSplitTheSlidingWindow()
+{
+    _options.MinimumAgeThresholdHours = 72;
+    var now = UnixTimestamp.Now().RoundToLatestHour();
+    var syncStart = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour();
+    var window = _sut.CreateSlidingWindow(_gsrn, syncStart);
+    var missingInterval = MeasurementInterval.Create(syncStart, now);
+    window.MissingMeasurements.Intervals.Add(missingInterval);
+    var emptyMeasurementsList = new List<Measurement>();
+
+    _sut.UpdateSlidingWindow(window, emptyMeasurementsList, now);
+
+    window.MissingMeasurements.Intervals.Should().ContainSingle()
+        .Which.Should().BeEquivalentTo(new
+        {
+            From = syncStart
+        });
+
+    window.SynchronizationPoint.Should().Be(syncStart);
+}
+
 
     private Measurement CreateMeasurement(Gsrn gsrn, long from, long to, long quantity, bool quantityMissing, EnergyQuantityValueQuality quality)
     {
