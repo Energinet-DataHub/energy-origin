@@ -37,12 +37,14 @@ measurementsSubsystem = group "Measurements Subsystem" {
 
         apiGateway -> this "Forwards requests to"
 
-        simpleMeasurementService = component "SimpleMeasurementService" "Handles representation of measurements within Energy Origin" {
+
+        measurementService = component "MeasurementService" "Handles representation of measurements within Energy Track and Trace DK" {
             this -> dataHubFacadeApi "Get measurements from"
         }
-        meteringPointService = component "MeteringPointService" "Handles representation of metering points within Energy Origin" {
+        meteringPointService = component "MeteringPointService" "Handles representation of metering points within Energy Track and Trace DK" {
             apiGateway -> this "Forwards requests to"
             this -> dataHubFacadeApi "Get metering point info from"
+            authApi -> this "Publishes accepted terms via RabbitMq to"
         }
     }
 }
