@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +19,7 @@ public class MeasurementsSyncOptions
 
     [Required]
     [Range(0, int.MaxValue)]
-    public int MinimumAgeThresholdHours { get; set; } = 0;
+    public int MinimumAgeThresholdHours { get; set; }
 }
 
 public static partial class OptionsExtensions
