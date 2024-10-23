@@ -60,7 +60,7 @@ certificatesSubsystem = group "Certificate Subsystem" {
         contractService = component "ContractService" "Handles contracts for generation of certificates" "Service" {
             this -> measurementApi "Get metering point info from"
             this -> certStorage "Stores contracts in"
-            this -> poWallet "Creates Wallet Deposit Endpoints"
+            this -> poWallet "Creates Wallet Endpoints"
         }
         measurementsSyncer = component "Measurements Syncer" "Fetches measurements every hour and publishes to the message broker. ONLY NEED UNTIL INTEGRATION EVENT BUS HAS EVENTS FOR MEASUREMENTS." "Hosted background service" {
             tags "MockingComponent"
@@ -82,7 +82,7 @@ transferSubsystem = group "Transfer Subsystem" {
     transferApi = container "Transfer API" "" ".NET Web Api" {
         connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
         transferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
-            this -> poWallet "Creates wallet deposit endpoint"
+            this -> poWallet "Creates wallet endpoints"
         }
         deleteTransferAgreementProposalsWorker = component "Delete Transfer Agreement Proposals Worker" "Deletes expired Transfer Agreement Proposals" ".NET BackgroundService"
         transferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
