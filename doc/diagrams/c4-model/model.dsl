@@ -19,6 +19,7 @@ authSubsystem = group "Authorization Subsystem" {
 
         this -> mitId "Gets user info"
         apiGateway -> this "Forwards requests to"
+        azureAdB2c -> this "Gets user info, consents and claims"
     }
 
     authDb = container "Database" {
