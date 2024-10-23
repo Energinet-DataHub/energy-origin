@@ -430,7 +430,7 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007174608_AddOrganizationConsentInsertOrganizations') THEN
     INSERT INTO public."OrganizationConsents" ("Id", "ConsentGiverOrganizationId", "ConsentReceiverOrganizationId", "ConsentDate")
     SELECT
-    	(SELECT uuid_generate_v4()) AS "Id",
+    	uuid_generate_v4() AS "Id",
     	con."OrganizationId" AS "ConsentGiverOrganizationId",
     	cli."OrganizationId" AS "ConsentReceiverOrganizationId",
     	con."ConsentDate" AS "ConsentDate"

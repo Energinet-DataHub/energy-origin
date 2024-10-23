@@ -48,7 +48,7 @@ namespace API.Migrations
             var moreSql = """
                           INSERT INTO public."OrganizationConsents" ("Id", "ConsentGiverOrganizationId", "ConsentReceiverOrganizationId", "ConsentDate")
                           SELECT
-                          	(SELECT uuid_generate_v4()) AS "Id",
+                          	uuid_generate_v4() AS "Id",
                           	con."OrganizationId" AS "ConsentGiverOrganizationId",
                           	cli."OrganizationId" AS "ConsentReceiverOrganizationId",
                           	con."ConsentDate" AS "ConsentDate"
