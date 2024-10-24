@@ -7,35 +7,34 @@ using API.Data;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
-using Google.Protobuf.WellKnownTypes;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
-public class GrantConsentCommandHandler(
+public class GrantConsentToClientCommandHandler(
     IClientRepository clientRepository,
     IOrganizationRepository organizationRepository,
     IUserRepository userRepository,
     IOrganizationConsentRepository organizationConsentRepository,
     IUnitOfWork unitOfWork)
-    : IRequestHandler<GrantConsentCommand>
+    : IRequestHandler<GrantConsentToClientCommand>
 {
-    public async Task Handle(GrantConsentCommand command, CancellationToken cancellationToken)
+    public async Task Handle(GrantConsentToClientCommand toClientCommand, CancellationToken cancellationToken)
     {
         await unitOfWork.BeginTransactionAsync();
 
-        var idpUserId = IdpUserId.Create(command.UserId);
-        var organizationTin = Tin.Create(command.OrganizationCvr);
+        var idpUserId = IdpUserId.Create(toClientCommand.UserId);
+        var organizationTin = Tin.Create(toClientCommand.OrganizationCvr);
 
         var clientOrganizationId = await clientRepository.Query()
-            .Where(it => it.IdpClientId == command.IdpClientId)
+            .Where(it => it.IdpClientId == toClientCommand.IdpClientId)
             .Select(x => x.OrganizationId)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (clientOrganizationId == null)
         {
-            throw new EntityNotFoundException(command.IdpClientId.Value.ToString(), nameof(Organization));
+            throw new EntityNotFoundException(toClientCommand.IdpClientId.Value.ToString(), nameof(Organization));
         }
 
         var affiliatedOrganization = await userRepository.Query()
@@ -53,7 +52,7 @@ public class GrantConsentCommandHandler(
         var existingConsent = organizationRepository
             .Query()
             .Where(o => o.Id == affiliatedOrganization.Id && o.OrganizationReceivedConsents.Any(c =>
-                c.ConsentReceiverOrganization.Clients.Any(x => x.IdpClientId == command.IdpClientId)));
+                c.ConsentReceiverOrganization.Clients.Any(x => x.IdpClientId == toClientCommand.IdpClientId)));
 
         if (!await existingConsent.AnyAsync(cancellationToken))
         {
@@ -65,7 +64,6 @@ public class GrantConsentCommandHandler(
     }
 }
 
-public record GrantConsentCommand(Guid UserId, string OrganizationCvr, IdpClientId IdpClientId) : IRequest;
+public record GrantConsentToClientCommand(Guid UserId, string OrganizationCvr, IdpClientId IdpClientId) : IRequest;
 
-public class UserNotAffiliatedWithOrganizationCommandException()
-    : ForbiddenException("Not authorized to perform action");
+public class UserNotAffiliatedWithOrganizationCommandException() : ForbiddenException("Not authorized to perform action");

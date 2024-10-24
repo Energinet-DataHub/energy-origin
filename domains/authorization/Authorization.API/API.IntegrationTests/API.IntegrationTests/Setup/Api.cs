@@ -23,15 +23,16 @@ public class Api : IAsyncLifetime
         _client = client;
     }
 
-    public async Task<HttpResponseMessage> GrantConsent(Guid clientId)
+    public async Task<HttpResponseMessage> GrantConsentToClient(Guid clientId)
     {
-        var request = new GrantConsentRequest(clientId);
-        return await _client.PostAsJsonAsync("/api/authorization/consent/grant", request);
+        var request = new GrantConsentToClientRequest(clientId);
+        return await _client.PostAsJsonAsync("/api/authorization/consent/client/grant", request);
     }
 
-    public async Task<HttpResponseMessage> GetConsent(Guid clientId)
+    public async Task<HttpResponseMessage> GrantConsentToOrganization(Guid organizationId)
     {
-        return await _client.GetAsync("/api/authorization/consent/grant/" + clientId);
+        var request = new GrantConsentToOrganizationRequest(organizationId);
+        return await _client.PostAsJsonAsync("/api/authorization/consent/organization/grant", request);
     }
 
     public async Task<HttpResponseMessage> GetClient(Guid idpClientId)
@@ -66,9 +67,14 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/consents/");
     }
 
-    public async Task<HttpResponseMessage> DeleteConsent(Guid clientId)
+    public async Task<HttpResponseMessage> GetUserOrganizationReceivedConsents()
     {
-        return await _client.DeleteAsync($"/api/authorization/consents/{clientId}");
+        return await _client.GetAsync("/api/authorization/consents/organization/received");
+    }
+
+    public async Task<HttpResponseMessage> DeleteConsent(Guid consentId)
+    {
+        return await _client.DeleteAsync($"/api/authorization/consents/{consentId}");
     }
 
     public Task InitializeAsync()
