@@ -5,7 +5,6 @@ using API.Authorization._Features_;
 using API.ValueObjects;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -38,10 +37,10 @@ public class ClientController : ControllerBase
     )]
     public async Task<ActionResult<ClientConsentsResponse>> GetClientConsents([FromServices] ILogger<ClientResponse> logger)
     {
-        var queryResult = await _mediator.Send(new GetClientConsentsQuery(new IdpClientId(_identityDescriptor.Subject)));
+        var queryResult = await _mediator.Send(new GetClientGrantedConsentsQuery(new IdpClientId(_identityDescriptor.Subject)));
 
         return Ok(new ClientConsentsResponse(queryResult.GetClientConsentsQueryResultItems.Select(x =>
-            new ClientConsentsResponseItem(x.OrganizationId, x.OrganizationName.Value, x.Tin.Value))));
+            new ClientConsentsResponseItem(x.OrganizationId, x.OrganizationName.Value, x.Tin?.Value))));
     }
 
     [HttpGet]

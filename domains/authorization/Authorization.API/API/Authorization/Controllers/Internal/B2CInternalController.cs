@@ -1,6 +1,6 @@
-using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
+using API.Authorization._Features_.Internal;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace API.Authorization.Controllers;
+namespace API.Authorization.Controllers.Internal;
 
 [ApiController]
 [Authorize(Policy = Policy.B2CInternal)]

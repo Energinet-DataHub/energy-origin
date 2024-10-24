@@ -31,17 +31,6 @@ public class OrganizationTests
     }
 
     [Fact]
-    public void Organization_CanExist_WithoutConsents()
-    {
-        var tin = new Tin("12345678");
-        var organizationName = new OrganizationName("Test Organization");
-
-        var organization = Organization.Create(tin, organizationName);
-
-        organization.Consents.Should().NotBeNull().And.BeEmpty();
-    }
-
-    [Fact]
     public void Organization_CanHave_Affiliations()
     {
         var tin = new Tin("12345678");
@@ -56,24 +45,6 @@ public class OrganizationTests
         var affiliation = Affiliation.Create(user, organization);
 
         organization.Affiliations.Should().Contain(affiliation);
-    }
-
-    [Fact]
-    public void Organization_CanHave_Consents()
-    {
-        var tin = new Tin("12345678");
-        var organizationName = new OrganizationName("Test Organization");
-
-        var organization = Organization.Create(tin, organizationName);
-
-        var idpClientId = new IdpClientId(Guid.NewGuid());
-        var role = ClientType.External;
-        var client = Client.Create(idpClientId, new ClientName("Client"), role, "https://redirect.url");
-
-        var consentDate = DateTimeOffset.UtcNow;
-        var consent = Consent.Create(organization, client, consentDate);
-
-        organization.Consents.Should().Contain(consent);
     }
 
     [Fact]
@@ -150,3 +121,4 @@ public class OrganizationTests
         organization.TermsAcceptanceDate.Should().BeNull();
     }
 }
+

@@ -1,5 +1,4 @@
-using API.Authorization._Features_;
-using API.Authorization.Controllers;
+using API.Authorization._Features_.Internal;
 using API.Services;
 using FluentAssertions;
 using NSubstitute;

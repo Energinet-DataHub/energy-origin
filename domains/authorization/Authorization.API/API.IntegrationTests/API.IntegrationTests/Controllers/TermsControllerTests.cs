@@ -10,12 +10,12 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AcceptTermsTests
+public class TermsControllerTests
 {
     private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AcceptTermsTests(IntegrationTestFixture integrationTestFixture)
+    public TermsControllerTests(IntegrationTestFixture integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
@@ -26,6 +26,13 @@ public class AcceptTermsTests
     public async Task GivenValidRequest_WhenAcceptingTerms_ThenHttpOkAndTermsAccepted()
     {
         await using var context = new ApplicationDbContext(_options);
+
+        if (!context.Terms.Any())
+        {
+            context.Terms.Add(Terms.Create(1));
+            context.SaveChanges();
+        }
+
 
         var terms = context.Terms.First();
         var orgCvr = Tin.Create("12345678");
@@ -51,6 +58,12 @@ public class AcceptTermsTests
     {
         await using var context = new ApplicationDbContext(_options);
 
+        if (!context.Terms.Any())
+        {
+            context.Terms.Add(Terms.Create(1));
+            context.SaveChanges();
+        }
+
         var terms = context.Terms.First();
         var orgCvr = Any.Tin();
 
@@ -58,7 +71,7 @@ public class AcceptTermsTests
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
         await SeedOrganizationAndUser(organization, user);
 
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin.Value,
+        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value,
             termsAccepted: false);
 
         var response = await userApi.AcceptTerms();

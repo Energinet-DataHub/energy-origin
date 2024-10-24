@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Authorization._Features_;
 
 public class DeleteConsentCommandHandler(
-    IConsentRepository consentRepository,
+    IOrganizationConsentRepository organizationConsentRepository,
     IUserRepository userRepository,
     IUnitOfWork unitOfWork)
     : IRequestHandler<DeleteConsentCommand>
@@ -24,7 +24,7 @@ public class DeleteConsentCommandHandler(
 
         var idpUserId = IdpUserId.Create(request.IdpUserId);
         var userOrgCvrClaim = Tin.Create(request.OrgCvr);
-        var consentIdpClientId = IdpClientId.Create(request.IdpClientId);
+        var consentId = request.ConsentId;
 
         var userAffiliation = await userRepository.Query()
             .Where(u => u.IdpUserId == idpUserId)
@@ -36,18 +36,24 @@ public class DeleteConsentCommandHandler(
             throw new UserNotAffiliatedWithOrganizationCommandException();
         }
 
-        var consent = await consentRepository.Query()
-            .Include(c => c.Organization)
-            .FirstOrDefaultAsync(c => c.Client.IdpClientId == consentIdpClientId && c.Organization.Tin == userOrgCvrClaim, cancellationToken);
+        var organizationConsent = await organizationConsentRepository.Query().FirstOrDefaultAsync(x =>
+                x.Id == consentId
+                 &&
+                ((x.ConsentGiverOrganization.Tin == userOrgCvrClaim &&
+                x.ConsentGiverOrganization.Affiliations.Any(a => a.User.IdpUserId == idpUserId))
+                 ||
+                (x.ConsentReceiverOrganization.Tin == userOrgCvrClaim &&
+                x.ConsentReceiverOrganization.Affiliations.Any(a => a.User.IdpUserId == idpUserId))),
+            cancellationToken);
 
-        if (consent == null)
+        if (organizationConsent == null)
         {
-            throw new EntityNotFoundException(request.IdpClientId, typeof(Consent));
+            throw new EntityNotFoundException(request.ConsentId, typeof(OrganizationConsent));
         }
 
-        consentRepository.Remove(consent);
+        organizationConsentRepository.Remove(organizationConsent);
         await unitOfWork.CommitAsync();
     }
 }
 
-public record DeleteConsentCommand(Guid IdpClientId, Guid IdpUserId, string OrgCvr) : IRequest;
+public record DeleteConsentCommand(Guid ConsentId, Guid IdpUserId, string OrgCvr) : IRequest;

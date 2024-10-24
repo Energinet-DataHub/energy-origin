@@ -66,15 +66,19 @@ public class Any
         return new IdpClientId(Guid());
     }
 
-    public static Consent Consent()
-    {
-        return API.Models.Consent.Create(Organization(), Client(), DateTimeOffset.UtcNow);
-    }
-
     public static Client Client()
     {
         return API.Models.Client.Create(IdpClientId(), new ClientName("ClientName"), ClientType.External,
             "https://redirect.url");
+    }
+
+    public static Organization OrganizationWithClient(Tin? tin = null, Client? client = null)
+    {
+        var organization = Organization(tin);
+
+        organization.Clients.Add(client ?? Client());
+
+        return organization;
     }
 
     public static MitIdUserinfoResponse MitIdUserinfoResponse()

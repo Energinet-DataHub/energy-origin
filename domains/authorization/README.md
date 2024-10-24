@@ -1,12 +1,17 @@
 # Authorization Domain
+
 This is the authorization domain. - Work in progress - TODO
 
 ## For local development
+
 In order to test and develop locally, enter the docker-environment and run:
+
 ```
 docker-compose up
 ```
+
 When shutting down, run:
+
 ```
 docker-compose down --volumes
 ```
@@ -24,7 +29,7 @@ dotnet tool install --global dotnet-ef
 Adding a migration can be done like this:
 
 ```shell
-dotnet ef migrations add NameOfMigration --project Shared/DataContext
+dotnet ef migrations add NameOfMigration --project Authorization.API/API
 ```
 
 Updating your local database started with Docker Compose can be done using this command:
