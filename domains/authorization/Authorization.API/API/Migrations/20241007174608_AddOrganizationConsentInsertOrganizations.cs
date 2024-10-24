@@ -24,7 +24,7 @@ namespace API.Migrations
                       WITH inserted_orgs AS (
                           INSERT INTO public."Organizations" ("Id", "Tin", "Name", "TermsAcceptanceDate", "TermsAccepted", "TermsVersion")
                           SELECT
-                              (SELECT uuid_generate_v4()) AS "Id",
+                              uuid_generate_v4() AS "Id",
                               null AS "Tin",
                               "Name" AS "Name",
                               null AS "TermsAcceptanceDate",
