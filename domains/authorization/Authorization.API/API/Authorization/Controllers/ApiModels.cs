@@ -34,9 +34,13 @@ public record UserAuthorizationResponse(
     [property: JsonPropertyName("terms_accepted")] bool TermsAccepted
 );
 
-public record GrantConsentRequest(Guid IdpClientId);
+public record GrantConsentToClientRequest(Guid IdpClientId);
+
+public record GrantConsentToOrganizationRequest(Guid OrganizationId);
 
 public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
+
+public record OrganizationResponse(Guid OrganizationId, string OrganizationName, string? Tin);
 
 public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName, string? Tin);
 public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Result);
@@ -51,8 +55,15 @@ public record CreateClientRequest(Guid IdpClientId, string Name, ClientType Clie
 
 public record CreateClientResponse(Guid Id, Guid IdpClientId, string Name, ClientType ClientType, string RedirectUrl);
 
-public record UserOrganizationConsentsResponseItem(Guid IdpClientId, string ClientName, long ConsentDate);
+public record UserOrganizationConsentsResponseItem(Guid ConsentId, Guid GiverOrganizationId, string GiverOrganizationTin, string GiverOrganizationName, Guid ReceiverOrganizationId, string ReceiverOrganizationTin, string ReceiverOrganizationName, long ConsentDate);
 public record UserOrganizationConsentsResponse(IEnumerable<UserOrganizationConsentsResponseItem> Result);
+
+
+
+public record UserOrganizationConsentsReceivedResponseItem(Guid ConsentId, Guid OrganizationId, string OrganizationName, string Tin, long ConsentDate);
+
+public record UserOrganizationConsentsReceivedResponse(IEnumerable<UserOrganizationConsentsReceivedResponseItem> Result);
+
 
 
 public record UserinfoRequest(string MitIDBearerToken);

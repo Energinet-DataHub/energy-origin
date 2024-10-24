@@ -1,4 +1,4 @@
-using API.Authorization._Features_;
+using API.Authorization._Features_.Internal;
 using API.Data;
 using API.Models;
 using API.Repository;
@@ -8,7 +8,7 @@ using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using NSubstitute;
 
-namespace API.UnitTests._Commands_;
+namespace API.UnitTests._Features_.Internal;
 
 public class GetConsentForUserQueryHandlerTests
 {
@@ -74,7 +74,7 @@ public class GetConsentForUserQueryHandlerTests
             SubType,
             command.OrgName,
             organization.Id,
-            new List<Guid> { organization.Id },
+            new List<Guid>(),
             Scope,
             false
         ));
@@ -93,7 +93,7 @@ public class GetConsentForUserQueryHandlerTests
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.OrgIds.Should().ContainSingle().Which.Should().Be(organization.Id);
+        result.OrgId.Should().Be(organization.Id);
         result.TermsAccepted.Should().BeTrue();
         _fakeUserRepository.Query().Count().Should().Be(1);
         organization.Affiliations.Any(a => a.User.IdpUserId.Value == command.Sub).Should().BeTrue();
@@ -116,7 +116,7 @@ public class GetConsentForUserQueryHandlerTests
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.OrgIds.Should().ContainSingle().Which.Should().Be(organization.Id);
+        result.OrgId.Should().Be(organization.Id);
         result.TermsAccepted.Should().BeTrue();
         _fakeUserRepository.Query().Count().Should().Be(1);
         organization.Affiliations.Count.Should().Be(1);
@@ -142,7 +142,7 @@ public class GetConsentForUserQueryHandlerTests
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.OrgIds.Should().ContainSingle().Which.Should().Be(organization.Id);
+        result.OrgId.Should().Be(organization.Id);
         result.TermsAccepted.Should().BeFalse();
         _fakeUserRepository.Query().Count().Should().Be(1);
         organization.Affiliations.Count.Should().Be(1);

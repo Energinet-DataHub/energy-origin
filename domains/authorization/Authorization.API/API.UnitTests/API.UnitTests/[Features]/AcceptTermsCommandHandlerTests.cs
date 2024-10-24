@@ -10,7 +10,7 @@ using FluentAssertions;
 using MassTransit;
 using NSubstitute;
 
-namespace API.UnitTests._Commands_;
+namespace API.UnitTests._Features_;
 
 public class AcceptTermsCommandHandlerTests
 {

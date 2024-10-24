@@ -210,7 +210,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         {
             { UserClaimName.Scope, scope },
             { JwtRegisteredClaimNames.Name, name },
-            { ClaimType.OrgIds, orgId },
+            { ClaimType.OrgId, orgId },
+            { ClaimType.OrgIds, "" },
             { ClaimType.OrgCvr, tin },
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },

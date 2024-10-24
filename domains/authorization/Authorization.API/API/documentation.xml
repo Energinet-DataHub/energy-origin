@@ -4,32 +4,37 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="M:API.Authorization.Controllers.AdminController.CreateClient(API.Authorization.Controllers.CreateClientRequest)">
+        <member name="M:API.Authorization.Controllers.ConsentController.GrantConsentToClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},API.Authorization.Controllers.GrantConsentToClientRequest)">
             <summary>
-            Create Client.
+            Grant consent to 3rd party client
             </summary>
         </member>
-        <member name="M:API.Authorization.Controllers.ConsentController.GrantConsent(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},API.Authorization.Controllers.GrantConsentRequest)">
+        <member name="M:API.Authorization.Controllers.ConsentController.GrantConsentToOrganization(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},API.Authorization.Controllers.GrantConsentToOrganizationRequest)">
             <summary>
-            Grants consent.
-            </summary>
-        </member>
-        <member name="M:API.Authorization.Controllers.ConsentController.GetConsent(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},System.Guid)">
-            <summary>
-            Get consent from a specific Client.
+            Grant consent to organization
             </summary>
         </member>
         <member name="M:API.Authorization.Controllers.ConsentController.GetConsent">
             <summary>
-            Retrieves consents granted by the organization that a user is affiliated with. It will read the IdpUserId and OrgCvr claims from the users session token, use those to query the database, and return a list of consents.
+            Retrieves consents granted and received by the organization that a user is affiliated with. It will read the IdpUserId and OrgCvr claims from the users session token, use those to query the database, and return a list of consents.
+            </summary>
+        </member>
+        <member name="M:API.Authorization.Controllers.ConsentController.GetReceivedConsent">
+            <summary>
+            Retrieves consents received by the organization that a user is affiliated with.
             </summary>
         </member>
         <member name="M:API.Authorization.Controllers.ConsentController.DeleteConsent(System.Guid)">
             <summary>
             Deletes a consent, from the organization, which the user is affiliated with.
             </summary>
-            <param name="clientId">The ID of the client.</param>
+            <param name="consentId">The ID of the consent to delete.</param>
             <returns>No content if the deletion was successful, Not Found if the consent was not found.</returns>
+        </member>
+        <member name="M:API.Authorization.Controllers.Internal.AdminController.CreateClient(API.Authorization.Controllers.CreateClientRequest)">
+            <summary>
+            Create Client.
+            </summary>
         </member>
         <member name="T:API.Migrations.InitialCreate">
             <inheritdoc />
