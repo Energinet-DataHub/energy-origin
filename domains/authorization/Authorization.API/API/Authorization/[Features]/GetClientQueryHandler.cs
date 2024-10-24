@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Authorization.Exceptions;
@@ -7,6 +6,7 @@ using API.Repository;
 using API.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+
 namespace API.Authorization._Features_;
 public class GetClientQueryHandler(IClientRepository clientRepository)
     : IRequestHandler<GetClientQuery, GetClientQueryResult>

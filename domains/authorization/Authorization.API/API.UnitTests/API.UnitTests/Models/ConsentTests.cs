@@ -15,60 +15,22 @@ public class ConsentTests
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
         var role = ClientType.External;
-        var client = Client.Create(clientIdpClientId, new ClientName("Client"), role, "https://redirect.url");
+        var organizationWithClient = Any.OrganizationWithClient(client: Client.Create(clientIdpClientId, new ClientName("Client"), role, "https://redirect.url"));
 
         var consentDate = DateTimeOffset.UtcNow;
-        var consent = Consent.Create(organization, client, consentDate);
+        var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, consentDate);
 
         consent.Should().NotBeNull();
-        consent.Organization.Should().Be(organization);
-        consent.Client.Should().Be(client);
+        consent.ConsentGiverOrganizationId.Should().Be(organization.Id);
+        consent.ConsentReceiverOrganizationId.Should().Be(organizationWithClient.Id);
         consent.ConsentDate.Should().Be(consentDate);
-        consent.OrganizationId.Should().Be(organization.Id);
-        consent.ClientId.Should().Be(client.Id);
     }
 
     [Fact]
-    public void Consent_Create_AddsConsentToOrganizationAndClient()
+    public void Consent_Create_ThrowsArgumentException_WhenOrganizationIsEmpty()
     {
-        var organizationTin = new Tin("12345678");
-        var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationTin, organizationName);
+        Action act = () => OrganizationConsent.Create(new Guid(), new Guid(), DateTimeOffset.Now);
 
-        var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var role = ClientType.External;
-        var client = Client.Create(clientIdpClientId, new ClientName("Client"), role, "https://redirect.url");
-
-        var consentDate = DateTimeOffset.UtcNow;
-        var consent = Consent.Create(organization, client, consentDate);
-
-        organization.Consents.Should().Contain(consent);
-        client.Consents.Should().Contain(consent);
-    }
-
-    [Fact]
-    public void Consent_Create_ThrowsArgumentNullException_WhenOrganizationIsNull()
-    {
-        var clientIdpClientId = new IdpClientId(Guid.NewGuid());
-        var role = ClientType.External;
-        var client = Client.Create(clientIdpClientId, new ClientName("Client"), role, "https://redirect.url");
-
-        var consentDate = DateTimeOffset.UtcNow;
-        Action act = () => Consent.Create(null!, client, consentDate);
-
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [Fact]
-    public void Consent_Create_ThrowsArgumentNullException_WhenClientIsNull()
-    {
-        var organizationTin = new Tin("12345678");
-        var organizationName = new OrganizationName("Test Organization");
-        var organization = Organization.Create(organizationTin, organizationName);
-
-        var consentDate = DateTimeOffset.UtcNow;
-        Action act = () => Consent.Create(organization, null!, consentDate);
-
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentException>();
     }
 }

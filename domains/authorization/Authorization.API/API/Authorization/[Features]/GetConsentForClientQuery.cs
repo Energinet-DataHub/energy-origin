@@ -29,8 +29,15 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
 
         var client = await _clientRepository.Query()
             .Where(client => client.IdpClientId == requestedClientId)
-            .Select(client => new GetConsentForClientQueryResult(query.IdpClientId, client.ClientType.ToString(), client.Name.Value,
-                Guid.Empty, client.Consents.Select(consent => consent.Organization.Id), Scope))
+            .Select(client =>
+                new GetConsentForClientQueryResult(
+                    query.IdpClientId,
+                    client.ClientType.ToString(),
+                    client.Name.Value,
+                client.Organization!.OrganizationReceivedConsents.Select(x => x.ConsentReceiverOrganizationId),
+                 Guid.Empty,
+                    Scope)
+            )
             .FirstOrDefaultAsync(cancellationToken);
 
         if (client is null)
@@ -48,6 +55,6 @@ public record GetConsentForClientQueryResult(
     Guid Sub,
     string SubType,
     string OrgName,
-    Guid OrgId,
     IEnumerable<Guid> OrgIds,
+    Guid OrgId,
     string Scope);
