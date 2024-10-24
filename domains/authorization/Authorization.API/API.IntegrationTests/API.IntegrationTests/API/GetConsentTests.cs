@@ -29,19 +29,23 @@ public class GetConsentTests
     [Fact]
     public async Task GivenUser_WhenGettingConsent_ThenHttpOkConsentReturned()
     {
+        // Given
         var (idpUserId, tin) = await SeedData();
 
+        // When
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString(), orgCvr: tin.Value);
-
         var response = await userClient.GetUserOrganizationConsents();
 
+        // Then
         response.Should().Be200Ok();
-
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
         result!.Result.Should().NotBeEmpty();
         var firstResult = result.Result.First();
-        firstResult.IdpClientId.Should().NotBeEmpty();
-        firstResult.ClientName.Should().NotBeNullOrEmpty();
+        firstResult.ConsentId.Should().NotBeEmpty();
+        firstResult.GiverOrganizationId.Should().NotBeEmpty();
+        firstResult.GiverOrganizationName.Should().NotBeEmpty();
+        firstResult.ReceiverOrganizationId.Should().NotBeEmpty();
+        firstResult.ReceiverOrganizationName.Should().NotBeEmpty();
         firstResult.ConsentDate.Should().BeGreaterThan(0);
     }
 
@@ -62,18 +66,17 @@ public class GetConsentTests
     [Fact]
     public async Task GivenUserAffiliatedWithMultipleOrganizations_WhenGettingConsent_ThenOnlyConsentFromCurrentOrganizationContextIncludedInResponse()
     {
+        // Given
         var user = Any.User();
-
         var organization1 = Any.Organization();
         var organization2 = Any.Organization();
-
         var organizationWithClient1 = Any.OrganizationWithClient();
         var organizationWithClient2 = Any.OrganizationWithClient();
-
         var consent1 = OrganizationConsent.Create(organization1.Id, organizationWithClient1.Id, DateTimeOffset.UtcNow);
         var consent2 = OrganizationConsent.Create(organization2.Id, organizationWithClient2.Id, DateTimeOffset.UtcNow);
 
         await using var dbContext = new ApplicationDbContext(_options);
+
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddRangeAsync([organization1, organization2, organizationWithClient1, organizationWithClient2]);
 
@@ -85,19 +88,23 @@ public class GetConsentTests
 
         await dbContext.SaveChangesAsync();
 
+        // When
         var userIdString = user.IdpUserId.Value.ToString();
 
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
+        // Then
         response.Should().Be200Ok();
 
         var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
 
         result!.Result.Count.Should().Be(1);
         var firstResult = result.Result.First();
-        firstResult.IdpClientId.Should().Be(organizationWithClient1.Clients.First().IdpClientId.Value);
-        firstResult.ClientName.Should().Be(organizationWithClient1.Clients.First().Name.Value);
+        firstResult.GiverOrganizationId.Should().Be(organization1.Id);
+        firstResult.GiverOrganizationName.Should().Be(organization1.Name.Value);
+        firstResult.ReceiverOrganizationId.Should().Be(organizationWithClient1.Id);
+        firstResult.ReceiverOrganizationName.Should().Be(organizationWithClient1.Name.Value);
     }
 
     [Fact]

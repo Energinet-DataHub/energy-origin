@@ -24,7 +24,7 @@ public class DeleteConsentCommandHandler(
 
         var idpUserId = IdpUserId.Create(request.IdpUserId);
         var userOrgCvrClaim = Tin.Create(request.OrgCvr);
-        var consentIdpClientId = IdpClientId.Create(request.IdpClientId);
+        var consentId = request.ConsentId;
 
         var userAffiliation = await userRepository.Query()
             .Where(u => u.IdpUserId == idpUserId)
@@ -37,13 +37,18 @@ public class DeleteConsentCommandHandler(
         }
 
         var organizationConsent = await organizationConsentRepository.Query().FirstOrDefaultAsync(x =>
-                x.ConsentGiverOrganization.Tin == userOrgCvrClaim &&
-                x.ConsentReceiverOrganization.Clients.Any(y => y.IdpClientId == consentIdpClientId),
+                x.Id == consentId
+                 &&
+                ((x.ConsentGiverOrganization.Tin == userOrgCvrClaim &&
+                x.ConsentGiverOrganization.Affiliations.Any(a => a.User.IdpUserId == idpUserId))
+                 ||
+                (x.ConsentReceiverOrganization.Tin == userOrgCvrClaim &&
+                x.ConsentReceiverOrganization.Affiliations.Any(a => a.User.IdpUserId == idpUserId))),
             cancellationToken);
 
         if (organizationConsent == null)
         {
-            throw new EntityNotFoundException(request.IdpClientId, typeof(OrganizationConsent));
+            throw new EntityNotFoundException(request.ConsentId, typeof(OrganizationConsent));
         }
 
         organizationConsentRepository.Remove(organizationConsent);
@@ -51,4 +56,4 @@ public class DeleteConsentCommandHandler(
     }
 }
 
-public record DeleteConsentCommand(Guid IdpClientId, Guid IdpUserId, string OrgCvr) : IRequest;
+public record DeleteConsentCommand(Guid ConsentId, Guid IdpUserId, string OrgCvr) : IRequest;

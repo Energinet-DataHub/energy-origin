@@ -20,19 +20,26 @@ public class GetUserOrganizationConsentsQueryHandler(IOrganizationConsentReposit
 
         var consents = await organizationConsentRepository
             .Query()
-            .Where(consent => consent.ConsentGiverOrganization.Tin == userOrgCvrClaim &&
+            .Where(consent => (consent.ConsentGiverOrganization.Tin == userOrgCvrClaim &&
                               consent.ConsentGiverOrganization.Affiliations
                                   .Any(o => o.User.IdpUserId == userIdpUserIdClaim))
-            .SelectMany(x => x.ConsentReceiverOrganization.Clients.Select(consent =>
+                                ||
+                                (consent.ConsentReceiverOrganization.Tin == userOrgCvrClaim &&
+                                 consent.ConsentReceiverOrganization.Affiliations
+                                     .Any(o => o.User.IdpUserId == userIdpUserIdClaim))
+            )
+            .Select(consent =>
                 new GetUserOrganizationConsentsQueryResultItem(
-                    consent.IdpClientId.Value,
-                    consent.Name.Value,
-                    UnixTimestamp.Create(x.ConsentDate).Seconds)
-            ))
+                    consent.Id,
+                    consent.ConsentGiverOrganizationId,
+                    consent.ConsentGiverOrganization.Tin!.Value,
+                    consent.ConsentGiverOrganization.Name.Value,
+                    consent.ConsentReceiverOrganizationId,
+                    consent.ConsentReceiverOrganization.Tin!.Value,
+                    consent.ConsentReceiverOrganization.Name.Value,
+                    UnixTimestamp.Create(consent.ConsentDate).Seconds)
+            )
             .ToListAsync(cancellationToken: cancellationToken);
-
-        // TODO: Include consent to organizations (and not only organizations with clients)
-        // TODO: Include both given and received consents
 
         return new GetUserOrganizationConsentsQueryResult(consents);
     }
@@ -42,4 +49,4 @@ public record GetUserOrganizationConsentsQuery(string IdpUserId, string OrgCvr) 
 
 public record GetUserOrganizationConsentsQueryResult(List<GetUserOrganizationConsentsQueryResultItem> Result);
 
-public record GetUserOrganizationConsentsQueryResultItem(Guid IdpClientId, string ClientName, long ConsentDate);
+public record GetUserOrganizationConsentsQueryResultItem(Guid ConsentId, Guid GiverOrganizationId, string GiverOrganizationTin, string GiverOrganizationName, Guid ReceiverOrganizationId, string ReceiverOrganizationTin, string ReceiverOrganizationName, long ConsentDate);

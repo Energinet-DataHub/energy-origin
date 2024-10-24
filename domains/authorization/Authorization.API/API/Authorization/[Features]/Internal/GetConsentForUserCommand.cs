@@ -10,7 +10,7 @@ using API.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Authorization._Features_;
+namespace API.Authorization._Features_.Internal;
 
 public record GetConsentForUserCommand(Guid Sub, string Name, string OrgName, string OrgCvr)
     : IRequest<GetConsentForUserCommandResult>;
