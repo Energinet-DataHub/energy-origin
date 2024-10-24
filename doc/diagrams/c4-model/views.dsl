@@ -9,9 +9,9 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
 
     model {
         #
-        # Energy Origin (extends)
+        # Energy Track and Trace DK (extends)
         #
-        !ref energyOrigin {
+        !ref ettDk {
 
             # IMPORTANT:
             # The order by which models are included is important for how the system-to-system relationships are specified.
@@ -23,29 +23,29 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
     }
 
     views {
-        systemContext energyOrigin "EnergyOriginSystemContext" {
-            title "[System Context] Energy Origin"
+        systemContext ettDk "ETTSystemContext" {
+            title "[System Context] Energy Track and Trace DK"
             include *
             autoLayout
         }
-        container energyOrigin "EnergyOriginContainers" {
-            title "[Container Context] Energy Origin"
+        container ettDk "ETTContainers" {
+            title "[Container Context] Energy Track and Trace DK"
             include *
             autoLayout
         }
 
         # Specific area container views
-        container energyOrigin "DataHubFacadeContainers" {
+        container ettDk "DataHubFacadeContainers" {
             title "[Container Context] DataHubFacade"
             include ->dataHubFacadeSubsystem->
             autoLayout
         }
-        container energyOrigin "AuthContainers" {
+        container ettDk "AuthContainers" {
             title "[Container Context] Auth"
             include ->authSubsystem-> dataHubFacadeApi->
             autoLayout
         }
-        container energyOrigin "MeasurementsContainers" {
+        container ettDk "MeasurementsContainers" {
             title "[Container Context] Measurements"
             include ->measurementsSubsystem-> dataHubFacadeApi->
             autolayout
@@ -55,7 +55,7 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include *
             autoLayout
         }
-        container energyOrigin "CertificateContainers" {
+        container ettDk "CertificateContainers" {
             title "[Container Context] Certificates"
             include ->certificatesSubsystem->
             autoLayout
@@ -65,7 +65,7 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include *
             autoLayout
         }
-        container energyOrigin "TransferContainers" {
+        container ettDk "TransferContainers" {
             title "[Container Context] Transfer"
             include ->transferSubsystem->
             autoLayout

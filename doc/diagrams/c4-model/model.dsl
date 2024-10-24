@@ -13,13 +13,13 @@ dataHubFacadeSubsystem = group "DataHubFacade Subsystem" {
     }
 }
 
-authSubsystem = group "Auth Subsystem" {
-    authApi = container "Auth Web Api" {
+authSubsystem = group "Authorization Subsystem" {
+    authApi = container "Authorization Web Api" {
         description "API For authentication and authorization"
 
-        this -> mitId "Executes OIDC callbacks"
+        this -> mitId "Gets user info"
         apiGateway -> this "Forwards requests to"
-        this -> dataHubFacadeApi "Creates relations for metering points in"
+        azureAdB2c -> this "Gets user info, consents and claims"
     }
 
     authDb = container "Database" {
@@ -37,12 +37,13 @@ measurementsSubsystem = group "Measurements Subsystem" {
 
         apiGateway -> this "Forwards requests to"
 
-        simpleMeasurementService = component "SimpleMeasurementService" "Handles representation of measurements within Energy Origin" {
+        measurementService = component "MeasurementService" "Handles representation of measurements within Energy Track and Trace DK" {
             this -> dataHubFacadeApi "Get measurements from"
         }
-        meteringPointService = component "MeteringPointService" "Handles representation of metering points within Energy Origin" {
+        meteringPointService = component "MeteringPointService" "Handles representation of metering points within Energy Track and Trace DK" {
             apiGateway -> this "Forwards requests to"
             this -> dataHubFacadeApi "Get metering point info from"
+            authApi -> this "Publishes accepted terms via RabbitMq to"
         }
     }
 }
@@ -60,7 +61,7 @@ certificatesSubsystem = group "Certificate Subsystem" {
         contractService = component "ContractService" "Handles contracts for generation of certificates" "Service" {
             this -> measurementApi "Get metering point info from"
             this -> certStorage "Stores contracts in"
-            this -> poWallet "Creates Wallet Deposit Endpoints"
+            this -> poWallet "Creates Wallet Endpoints"
         }
         measurementsSyncer = component "Measurements Syncer" "Fetches measurements every hour and publishes to the message broker. ONLY NEED UNTIL INTEGRATION EVENT BUS HAS EVENTS FOR MEASUREMENTS." "Hosted background service" {
             tags "MockingComponent"
@@ -82,7 +83,7 @@ transferSubsystem = group "Transfer Subsystem" {
     transferApi = container "Transfer API" "" ".NET Web Api" {
         connectionsApi = component "Connections Api" "Allows users to see connections of their company." ".NET Web Api"
         transferAgreementsApi = component "Transfer Agreements Api" "Allows users to create transfer agreements with other companies" ".NET Web Api" {
-            this -> poWallet "Creates wallet deposit endpoint"
+            this -> poWallet "Creates wallet endpoints"
         }
         deleteTransferAgreementProposalsWorker = component "Delete Transfer Agreement Proposals Worker" "Deletes expired Transfer Agreement Proposals" ".NET BackgroundService"
         transferAgreementAutomation = component "Transfer Agreements Automation" "Transfers certificates within a given transfer agreement" ".NET BackgroundService" {
