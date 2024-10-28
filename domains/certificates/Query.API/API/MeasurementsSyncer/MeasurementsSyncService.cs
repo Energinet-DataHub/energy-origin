@@ -44,13 +44,15 @@ public class MeasurementsSyncService
         CancellationToken stoppingToken)
     {
         var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
-        var fetchToTimestamp = UnixTimestamp.Min(synchronizationPoint, synchronizationPoint.Add(TimeSpan.FromHours(-_options.Value.MinimumAgeThresholdHours)).RoundToLatestHour());
+
         if (_options.Value.MinimumAgeThresholdHours > 0)
         {
-            synchronizationPoint = UnixTimestamp.Now().Add(TimeSpan.FromHours(-_options.Value.MinimumAgeThresholdHours)).RoundToLatestHour();
+            synchronizationPoint = UnixTimestamp.Min(synchronizationPoint,
+                synchronizationPoint.Add(TimeSpan.FromHours(-_options.Value.MinimumAgeThresholdHours))
+                    .RoundToLatestHour());
         }
 
-        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, fetchToTimestamp, stoppingToken);
+        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, synchronizationPoint, stoppingToken);
         var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
         var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
 
