@@ -90,7 +90,7 @@ public class IdentityDescriptor
             return claimValue;
         }
 
-        throw new InvalidOperationException($"Unable to parse {claimValue} as {claimValue}");
+        return string.Empty;
     }
 
     private string? GetClaimAsOptionalString(string claimName)
