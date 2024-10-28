@@ -34,7 +34,7 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
                     query.IdpClientId,
                     client.ClientType.ToString(),
                     client.Name.Value,
-                client.Organization!.OrganizationReceivedConsents.Select(x => x.ConsentReceiverOrganizationId),
+                client.Organization!.OrganizationReceivedConsents.Select(x => x.ConsentGiverOrganizationId),
                  Guid.Empty,
                     Scope)
             )

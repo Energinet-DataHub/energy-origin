@@ -1,7 +1,9 @@
 using System.Net.Http.Json;
+using API.Authorization._Features_;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
 using API.Models;
+using API.Repository;
 using API.UnitTests;
 using API.ValueObjects;
 using FluentAssertions;
@@ -97,5 +99,43 @@ public class AuthorizationFlowTests
         organization.Name.Value.Should().Be(user.OrgName);
         organization.Affiliations.Should().ContainSingle();
         organization.Affiliations.Single().User.Name.Value.Should().Be(user.Name);
+    }
+
+
+    [Fact]
+    public async Task GivenOrganizationWithReceivedConsents_WhenGettingAuthConsentClaimsAndOrganizationConsents_ThenBothListOfOrganizationsYouHaveAccessToIsTheSame()
+    {
+        // Given
+        var user = Any.User();
+        var organization = Any.Organization();
+        var organization2 = Any.Organization();
+        var affiliation = Affiliation.Create(user, organization);
+        var organizationWithClient = Any.OrganizationWithClient();
+        var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
+        var consent2 = OrganizationConsent.Create(organization2.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
+
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Organizations.AddAsync(organization2);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await dbContext.OrganizationConsents.AddAsync(consent);
+        await dbContext.OrganizationConsents.AddAsync(consent2);
+        await dbContext.SaveChangesAsync();
+
+        var getClientGrantedConsentsQueryHandler = new GetClientGrantedConsentsQueryHandler(new ClientRepository(dbContext));
+        var consentForClientQueryHandler = new GetConsentForClientQueryHandler(new ClientRepository(dbContext));
+        var idpClientId = organizationWithClient.Clients.First().IdpClientId;
+
+        // When
+        var getClientGrantedConsentsQueryResult = await getClientGrantedConsentsQueryHandler.Handle(new GetClientGrantedConsentsQuery(idpClientId), CancellationToken.None);
+        var consentForClientQueryResult = await consentForClientQueryHandler.Handle(new GetConsentForClientQuery(idpClientId.Value), CancellationToken.None);
+
+        // Then
+        var grantedConsentsOrganizationIds = getClientGrantedConsentsQueryResult.GetClientConsentsQueryResultItems.Select(x => x.OrganizationId);
+        var authorizationClaimOrganizationsIds = consentForClientQueryResult.OrgIds;
+
+        grantedConsentsOrganizationIds.Should().BeEquivalentTo(authorizationClaimOrganizationsIds);
     }
 }
