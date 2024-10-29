@@ -43,16 +43,10 @@ public class MeasurementsSyncService
     public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo, MeteringPointTimeSeriesSlidingWindow slidingWindow,
         CancellationToken stoppingToken)
     {
-        var synchronizationPoint = UnixTimestamp.Now().RoundToLatestHour();
+        var minimumAgeThresholdInHours = _options.Value.MinimumAgeThresholdHours;
+        var pointInTimeItShouldSyncUpTo = UnixTimestamp.Now().Add(TimeSpan.FromHours(-minimumAgeThresholdInHours)).RoundToLatestHour();
 
-        if (_options.Value.MinimumAgeThresholdHours > 0)
-        {
-            synchronizationPoint = UnixTimestamp.Min(synchronizationPoint,
-                synchronizationPoint.Add(TimeSpan.FromHours(-_options.Value.MinimumAgeThresholdHours))
-                    .RoundToLatestHour());
-        }
-
-        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, synchronizationPoint, stoppingToken);
+        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, pointInTimeItShouldSyncUpTo, stoppingToken);
         var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
         var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
 
@@ -73,7 +67,7 @@ public class MeasurementsSyncService
                 await _measurementSyncPublisher.PublishIntegrationEvents(meteringPoint, syncInfo, measurementsToPublish, stoppingToken);
             }
 
-            _slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, synchronizationPoint);
+            _slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, pointInTimeItShouldSyncUpTo);
             await _slidingWindowState.UpsertSlidingWindow(slidingWindow, stoppingToken);
             await _slidingWindowState.SaveChangesAsync(stoppingToken);
         }
