@@ -74,17 +74,16 @@ public class MeasurementsSyncService
     }
 
     public async Task<List<Measurement>> FetchMeasurements(MeteringPointTimeSeriesSlidingWindow slidingWindow, string meteringPointOwner,
-        UnixTimestamp synchronizationPoint, CancellationToken cancellationToken)
+        UnixTimestamp pointInTimeItShouldSyncUpTo, CancellationToken cancellationToken)
     {
         var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
-        var synchronizationPointSeconds = synchronizationPoint.Seconds;
 
-        if (dateFrom < synchronizationPointSeconds)
+        if (dateFrom < pointInTimeItShouldSyncUpTo.Seconds)
         {
             var request = new GetMeasurementsRequest
             {
                 DateFrom = dateFrom,
-                DateTo = synchronizationPointSeconds,
+                DateTo = pointInTimeItShouldSyncUpTo.Seconds,
                 Gsrn = slidingWindow.GSRN,
                 Subject = meteringPointOwner,
                 Actor = Guid.NewGuid().ToString()
@@ -96,7 +95,7 @@ public class MeasurementsSyncService
                 res.Measurements.Count,
                 slidingWindow.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
-                DateTimeOffset.FromUnixTimeSeconds(synchronizationPointSeconds).ToString("o"));
+                DateTimeOffset.FromUnixTimeSeconds(pointInTimeItShouldSyncUpTo.Seconds).ToString("o"));
 
             return res.Measurements.ToList();
         }
