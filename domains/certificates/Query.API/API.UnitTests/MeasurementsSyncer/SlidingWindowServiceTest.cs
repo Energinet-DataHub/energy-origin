@@ -544,7 +544,7 @@ public class SlidingWindowServiceTest
         var now = _now.RoundToLatestHour();
         var startPositionOfMissingInterval = now.Add(TimeSpan.FromHours(-168));
         var missingInterval = MeasurementInterval.Create(startPositionOfMissingInterval, now);
-        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval>{missingInterval});
+        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval> { missingInterval });
 
         var allMeasurements = new List<Measurement>();
         var currentTime = startPositionOfMissingInterval;
@@ -567,7 +567,7 @@ public class SlidingWindowServiceTest
         window.MissingMeasurements.Intervals.Should().ContainSingle()
             .Which.Should().BeEquivalentTo(new
             {
-                From = now.Add(TimeSpan.FromHours(- _options.MinimumAgeThresholdHours)),
+                From = now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)),
                 To = now
             });
     }
@@ -580,7 +580,7 @@ public class SlidingWindowServiceTest
         var startPositionOfMissingInterval = now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours));
 
         var missingInterval = MeasurementInterval.Create(startPositionOfMissingInterval, now);
-        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval>{missingInterval});
+        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval> { missingInterval });
 
         var allMeasurements = new List<Measurement>();
         var currentTime = startPositionOfMissingInterval;
@@ -616,7 +616,7 @@ public class SlidingWindowServiceTest
         var now = _now.RoundToLatestHour();
         var startPositionOfMissingInterval = now.Add(TimeSpan.FromHours(-168));
         var missingInterval = MeasurementInterval.Create(startPositionOfMissingInterval, now);
-        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval>{missingInterval});
+        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval> { missingInterval });
 
         var measurementsList = new List<Measurement>();
 
