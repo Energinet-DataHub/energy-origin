@@ -1,7 +1,5 @@
 using System;
-using System.Globalization;
 using DataContext.ValueObjects;
-using DotNet.Testcontainers.Configurations;
 using Xunit;
 
 namespace API.UnitTests.ValueObjects;
@@ -97,5 +95,27 @@ public class UnixTimestampTest
         time = new DateTimeOffset(2023, 1, 1, 22, 59, 0, TimeSpan.Zero);
         unixTimestamp = UnixTimestamp.Create(time);
         Assert.Equal(60, unixTimestamp.TimeUntilNextHour().TotalSeconds);
+    }
+
+    [Fact]
+    public void Max_ReturnsLargerTimestamp()
+    {
+        var past = UnixTimestamp.Create(1646312138);
+        var present = UnixTimestamp.Create(1646312139);
+
+        var result = UnixTimestamp.Max(past, present);
+
+        Assert.Equal(present, result);
+    }
+
+    [Fact]
+    public void Min_ReturnsSmallerTimestamp()
+    {
+        var past = UnixTimestamp.Create(1646312138);
+        var present = UnixTimestamp.Create(1646312139);
+
+        var result = UnixTimestamp.Min(past, present);
+
+        Assert.Equal(past, result);
     }
 }
