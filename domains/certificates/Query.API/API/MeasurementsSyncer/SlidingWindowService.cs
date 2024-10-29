@@ -104,9 +104,10 @@ public class SlidingWindowService
 
     public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, UnixTimestamp pointInTimeItShouldSyncUpTo)
     {
-        var minimumAgeThreshold = CalculateMinimumAgeThreshold();
-
-        if (_options.MinimumAgeThresholdHours > 0 && pointInTimeItShouldSyncUpTo > minimumAgeThreshold)
+        // Prevent moving the synchronization point backward when age restriction is applied.
+        // If the current synchronization point is ahead of the age threshold,
+        // keep it as is to avoid regressing synchronization progress.
+        if (window.SynchronizationPoint > pointInTimeItShouldSyncUpTo)
         {
             pointInTimeItShouldSyncUpTo = window.SynchronizationPoint;
         }
