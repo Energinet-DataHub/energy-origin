@@ -488,23 +488,32 @@ public class SlidingWindowServiceTest
     [Fact]
     public void GivenAgeThreshold_WhenSyncPositionAfterThreshold_SyncPositionIsBlocked()
     {
+        // Current time
+        var syncPositionFromLastRun = _now;
+
+        // Set age threshold to 10 hours
         _options.MinimumAgeThresholdHours = 10;
-        var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-9)).RoundToLatestHour();
-        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
-        var newSyncPosition = initialStartSyncPosition.Add(TimeSpan.FromHours(1));
 
-        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
+        // Create sliding window with sync position from last run
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, syncPositionFromLastRun);
 
-        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(initialStartSyncPosition);
+        // Calculate pointInTimeItShouldSyncUpTo based on age threshold
+        var pointInTimeItShouldSyncUpTo = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)).RoundToLatestHour();
+
+        // Attempt to update the sliding window with the calculated pointInTimeItShouldSyncUpTo
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), pointInTimeItShouldSyncUpTo);
+
+        // Assert that the sync position remains the same
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(syncPositionFromLastRun);
     }
 
     [Fact]
     public void GivenAgeThreshold_WhenSyncPositionMatchingThreshold_SyncPositionIsBlocked()
     {
         _options.MinimumAgeThresholdHours = 10;
-        var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-10)).RoundToLatestHour();
+        var initialStartSyncPosition = _now.Add(TimeSpan.FromHours(-1)).RoundToLatestHour();
         var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
-        var newSyncPosition = initialStartSyncPosition.Add(TimeSpan.FromHours(1));
+        var newSyncPosition = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours));
 
         _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
 
@@ -544,15 +553,12 @@ public class SlidingWindowServiceTest
     {
         _options.MinimumAgeThresholdHours = 72;
         var now = UnixTimestamp.Now().RoundToLatestHour();
-        var syncStart = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour();
-
-        var window = _sut.CreateSlidingWindow(_gsrn, syncStart);
-
-        var missingInterval = MeasurementInterval.Create(syncStart, now);
-        window.MissingMeasurements.Intervals.Add(missingInterval);
+        var startPositionOfMissingInterval = now.Add(TimeSpan.FromHours(-168));
+        var missingInterval = MeasurementInterval.Create(startPositionOfMissingInterval, now);
+        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval>{missingInterval});
 
         var allMeasurements = new List<Measurement>();
-        var currentTime = syncStart;
+        var currentTime = startPositionOfMissingInterval;
         for (int i = 0; i < 168; i++)
         {
             allMeasurements.Add(CreateMeasurement(
@@ -568,11 +574,11 @@ public class SlidingWindowServiceTest
 
         _sut.UpdateSlidingWindow(window, allMeasurements, now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)));
 
-        window.SynchronizationPoint.Should().Be(syncStart.Add(TimeSpan.FromDays(4)));
+        window.SynchronizationPoint.Should().Be(now);
         window.MissingMeasurements.Intervals.Should().ContainSingle()
             .Which.Should().BeEquivalentTo(new
             {
-                From = syncStart.Add(TimeSpan.FromDays(4)),
+                From = now.Add(TimeSpan.FromHours(- _options.MinimumAgeThresholdHours)),
                 To = now
             });
     }
@@ -582,12 +588,10 @@ public class SlidingWindowServiceTest
     {
         _options.MinimumAgeThresholdHours = 72;
         var now = UnixTimestamp.Now().RoundToLatestHour();
-        var syncStart = now.Add(TimeSpan.FromDays(-3)).RoundToLatestHour();
+        var syncStart = now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours));
 
-        var window = _sut.CreateSlidingWindow(_gsrn, syncStart);
-
-        var missingInterval = MeasurementInterval.Create(now.Add(TimeSpan.FromDays(-3)), now);
-        window.MissingMeasurements.Intervals.Add(missingInterval);
+        var missingInterval = MeasurementInterval.Create(syncStart, now);
+        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval>{missingInterval});
 
         var allMeasurements = new List<Measurement>();
         var currentTime = syncStart;
@@ -612,7 +616,7 @@ public class SlidingWindowServiceTest
                 From = syncStart,
                 To = now
             });
-        window.SynchronizationPoint.Should().Be(now.Add(TimeSpan.FromDays(-3)));
+         window.SynchronizationPoint.Should().Be(now);
         _measurementSyncMetrics.Received(0).AddNumberOfMeasurementsPublished(72);
     }
 
@@ -621,29 +625,22 @@ public class SlidingWindowServiceTest
     {
         _options.MinimumAgeThresholdHours = 72;
         var now = UnixTimestamp.Now().RoundToLatestHour();
-        var syncStart = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour();
-        var window = _sut.CreateSlidingWindow(_gsrn, syncStart);
-        var missingInterval = MeasurementInterval.Create(syncStart, now);
-        window.MissingMeasurements.Intervals.Add(missingInterval);
+        var startPositionOfMissingInterval = now.Add(TimeSpan.FromHours(-168));
+        var missingInterval = MeasurementInterval.Create(startPositionOfMissingInterval, now);
+        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval>{missingInterval});
+
         var measurementsList = new List<Measurement>();
-        var currentTime = syncStart;
-        for (int i = 0; i < 168; i++)
-        {
-            measurementsList.Add(CreateMeasurement(
-                _gsrn,
-                currentTime.Seconds,
-                currentTime.Add(TimeSpan.FromHours(1)).Seconds,
-                10,
-                false,
-                EnergyQuantityValueQuality.Measured
-            ));
-            currentTime = currentTime.Add(TimeSpan.FromHours(1));
-        }
 
-        _sut.UpdateSlidingWindow(window, measurementsList, now);
+        _sut.UpdateSlidingWindow(window, measurementsList, now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)));
 
-        window.MissingMeasurements.Intervals.Should().ContainSingle();
-        window.SynchronizationPoint.Should().Be(syncStart);
+        window.MissingMeasurements.Intervals.Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(new
+            {
+                From = startPositionOfMissingInterval,
+                To = now
+            });
+        window.SynchronizationPoint.Should().Be(now);
+        _measurementSyncMetrics.Received(0);
     }
 
     [Fact]
