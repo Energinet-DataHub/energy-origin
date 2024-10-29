@@ -102,26 +102,26 @@ public class SlidingWindowService
         return window.MissingMeasurements.Intervals.Any(missingInterval => missingInterval.Contains(interval));
     }
 
-    public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, UnixTimestamp newSynchronizationPoint)
+    public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, UnixTimestamp pointInTimeItShouldSyncUpTo)
     {
         var minimumAgeThreshold = CalculateMinimumAgeThreshold();
 
-        if (_options.MinimumAgeThresholdHours > 0 && newSynchronizationPoint > minimumAgeThreshold)
+        if (_options.MinimumAgeThresholdHours > 0 && pointInTimeItShouldSyncUpTo > minimumAgeThreshold)
         {
-            newSynchronizationPoint = window.SynchronizationPoint;
+            pointInTimeItShouldSyncUpTo = window.SynchronizationPoint;
         }
 
         if (NoMeasurementsFetched(measurements))
         {
-            var interval = MeasurementInterval.Create(window.SynchronizationPoint, newSynchronizationPoint);
+            var interval = MeasurementInterval.Create(window.SynchronizationPoint, pointInTimeItShouldSyncUpTo);
             UpdateMissingMeasurementMetric(new List<MeasurementInterval> { interval });
-            window.UpdateSlidingWindow(newSynchronizationPoint, new List<MeasurementInterval> { interval });
+            window.UpdateSlidingWindow(pointInTimeItShouldSyncUpTo, new List<MeasurementInterval> { interval });
             return;
         }
 
-        var missingIntervals = FindMissingIntervals(window, measurements, newSynchronizationPoint);
+        var missingIntervals = FindMissingIntervals(window, measurements, pointInTimeItShouldSyncUpTo);
         UpdateMissingMeasurementMetric(missingIntervals);
-        window.UpdateSlidingWindow(newSynchronizationPoint, missingIntervals);
+        window.UpdateSlidingWindow(pointInTimeItShouldSyncUpTo, missingIntervals);
     }
 
     private UnixTimestamp CalculateMinimumAgeThreshold()
@@ -146,11 +146,6 @@ public class SlidingWindowService
         UnixTimestamp newSynchronizationPoint)
     {
         var minimumAgeThreshold = CalculateMinimumAgeThreshold();
-
-        if (newSynchronizationPoint > minimumAgeThreshold)
-        {
-            newSynchronizationPoint = minimumAgeThreshold;
-        }
 
         var sortedMeasurements = SortMeasurementsChronologically(window, measurements);
         var missingIntervals = new List<MeasurementInterval>();
