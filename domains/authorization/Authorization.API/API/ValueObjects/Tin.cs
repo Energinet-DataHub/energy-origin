@@ -11,7 +11,6 @@ public class Tin : ValueObject
     {
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("Value cannot be null, empty, or whitespace.", nameof(value));
-
         if (value.Length != 8 || !IsDigitsOnly(value))
             throw new ArgumentException("Value must be exactly 8 digits.", nameof(value));
 

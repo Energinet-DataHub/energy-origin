@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Authorization._Features_;
 
 public class DeleteConsentCommandHandler(
-    IConsentRepository consentRepository,
+    IOrganizationConsentRepository organizationConsentRepository,
     IUserRepository userRepository,
     IUnitOfWork unitOfWork)
     : IRequestHandler<DeleteConsentCommand>
@@ -36,16 +36,17 @@ public class DeleteConsentCommandHandler(
             throw new UserNotAffiliatedWithOrganizationCommandException();
         }
 
-        var consent = await consentRepository.Query()
-            .Include(c => c.Organization)
-            .FirstOrDefaultAsync(c => c.Client.IdpClientId == consentIdpClientId && c.Organization.Tin == userOrgCvrClaim, cancellationToken);
+        var organizationConsent = await organizationConsentRepository.Query().FirstOrDefaultAsync(x =>
+                x.ConsentGiverOrganization.Tin == userOrgCvrClaim &&
+                x.ConsentReceiverOrganization.Clients.Any(y => y.IdpClientId == consentIdpClientId),
+            cancellationToken);
 
-        if (consent == null)
+        if (organizationConsent == null)
         {
-            throw new EntityNotFoundException(request.IdpClientId, typeof(Consent));
+            throw new EntityNotFoundException(request.IdpClientId, typeof(OrganizationConsent));
         }
 
-        consentRepository.Remove(consent);
+        organizationConsentRepository.Remove(organizationConsent);
         await unitOfWork.CommitAsync();
     }
 }
