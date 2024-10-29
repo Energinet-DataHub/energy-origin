@@ -115,8 +115,17 @@ public class SlidingWindowService
         if (NoMeasurementsFetched(measurements))
         {
             var interval = MeasurementInterval.Create(window.SynchronizationPoint, pointInTimeItShouldSyncUpTo);
-            UpdateMissingMeasurementMetric(new List<MeasurementInterval> { interval });
-            window.UpdateSlidingWindow(pointInTimeItShouldSyncUpTo, new List<MeasurementInterval> { interval });
+
+            if (interval.From < interval.To)
+            {
+                UpdateMissingMeasurementMetric(new List<MeasurementInterval> { interval });
+
+                var updatedMissingIntervals = window.MissingMeasurements.Intervals.ToList();
+                updatedMissingIntervals.Add(interval);
+
+                window.UpdateSlidingWindow(pointInTimeItShouldSyncUpTo, updatedMissingIntervals);
+            }
+
             return;
         }
 
