@@ -26,6 +26,7 @@ public class SlidingWindowServiceTest
 
     public SlidingWindowServiceTest()
     {
+        _options.MinimumAgeThresholdHours = 0;
         _sut = new SlidingWindowService(_measurementSyncMetrics, Options.Create(_options));
     }
 
