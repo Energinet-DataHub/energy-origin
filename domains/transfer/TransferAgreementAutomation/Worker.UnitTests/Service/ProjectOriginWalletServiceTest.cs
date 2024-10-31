@@ -1,4 +1,5 @@
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProjectOriginClients;
@@ -251,12 +252,12 @@ public class ProjectOriginWalletServiceTest
         {
             EndDate = endDate,
             ReceiverReference = Guid.NewGuid(),
-            ReceiverTin = "12345678",
+            ReceiverTin = Tin.Create("12345678"),
             SenderId = Guid.NewGuid(),
             StartDate = startDate,
             Id = Guid.NewGuid(),
             SenderName = "SomeSender",
-            SenderTin = "11223344",
+            SenderTin = Tin.Create("11223344"),
             TransferAgreementNumber = 0
         };
         return transferAgreement;

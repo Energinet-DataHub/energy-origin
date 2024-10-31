@@ -1,6 +1,7 @@
 using DataContext.Models;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Domain.ValueObjects.Converters;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataContext;
@@ -24,12 +25,18 @@ public class ApplicationDbContext : DbContext
             .HasIndex(nameof(TransferAgreement.SenderId), nameof(TransferAgreement.TransferAgreementNumber))
             .IsUnique();
 
+        modelBuilder.Entity<TransferAgreement>().Property(o => o.SenderTin).HasConversion(new TinValueConverter());
+        modelBuilder.Entity<TransferAgreement>().Property(o => o.ReceiverTin).HasConversion(new TinValueConverter());
+
         modelBuilder.Entity<ClaimAutomationArgument>()
             .HasKey(p => p.SubjectId);
 
         modelBuilder.Entity<TransferAgreementProposal>()
             .Property(b => b.CreatedAt)
             .HasDefaultValueSql("current_timestamp at time zone 'UTC'");
+
+        modelBuilder.Entity<TransferAgreementProposal>().Property(o => o.SenderCompanyTin).HasConversion(new TinValueConverter());
+        modelBuilder.Entity<TransferAgreementProposal>().Property(o => o.ReceiverCompanyTin).HasConversion(new NullableTinValueConverter());
 
         modelBuilder.AddActivityLogEntry();
     }

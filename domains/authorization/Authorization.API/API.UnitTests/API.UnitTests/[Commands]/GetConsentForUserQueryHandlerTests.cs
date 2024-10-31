@@ -4,6 +4,7 @@ using API.Models;
 using API.Repository;
 using API.UnitTests.Repository;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using NSubstitute;
 

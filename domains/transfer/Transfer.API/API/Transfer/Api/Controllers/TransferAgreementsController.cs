@@ -9,6 +9,7 @@ using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation.AspNetCore;
@@ -60,7 +61,7 @@ public class TransferAgreementsController(
 
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin != identityDescriptor.OrganizationCvr)
+        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin.Value != identityDescriptor.OrganizationCvr)
         {
             return ValidationProblem("Only the receiver company can accept this Transfer Agreement Proposal");
         }
@@ -70,7 +71,7 @@ public class TransferAgreementsController(
             return ValidationProblem("This proposal has run out");
         }
 
-        proposal.ReceiverCompanyTin ??= identityDescriptor.OrganizationCvr!;
+        proposal.ReceiverCompanyTin = Tin.Create(identityDescriptor.OrganizationCvr!);
 
         var taRepo = unitOfWork.TransferAgreementRepo;
 
@@ -98,7 +99,7 @@ public class TransferAgreementsController(
         var walletEndpoint = await walletClient.CreateWalletEndpoint(subject, walletId.Value, CancellationToken.None);
 
         var externalEndpoint =
-            await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId, walletEndpoint, proposal.ReceiverCompanyTin, CancellationToken.None);
+            await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId, walletEndpoint, proposal.ReceiverCompanyTin.Value, CancellationToken.None);
 
         var transferAgreement = new TransferAgreement
         {
@@ -138,7 +139,7 @@ public class TransferAgreementsController(
             actorName: identity.Name,
             organizationTin: identity.OrganizationCvr!,
             organizationName: identity.OrganizationName,
-            otherOrganizationTin: proposal.SenderCompanyTin,
+            otherOrganizationTin: proposal.SenderCompanyTin.Value,
             otherOrganizationName: proposal.SenderCompanyName,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
@@ -150,9 +151,9 @@ public class TransferAgreementsController(
             actorId: Guid.Empty,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: string.Empty,
-            organizationTin: proposal.SenderCompanyTin,
+            organizationTin: proposal.SenderCompanyTin.Value,
             organizationName: proposal.SenderCompanyName,
-            otherOrganizationTin: result.ReceiverTin,
+            otherOrganizationTin: result.ReceiverTin.Value,
             otherOrganizationName: result.ReceiverName,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
@@ -250,8 +251,8 @@ public class TransferAgreementsController(
             StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
             EndDate: transferAgreement.EndDate?.ToUnixTimeSeconds(),
             SenderName: transferAgreement.SenderName,
-            SenderTin: transferAgreement.SenderTin,
-            ReceiverTin: transferAgreement.ReceiverTin);
+            SenderTin: transferAgreement.SenderTin.Value,
+            ReceiverTin: transferAgreement.ReceiverTin.Value);
 
         await AppendAgreementEndDateChangedToActivityLog(identityDescriptor, transferAgreement);
 
@@ -267,7 +268,7 @@ public class TransferAgreementsController(
             actorId: identity.Subject,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: String.Empty,
-            organizationTin: result.ReceiverTin,
+            organizationTin: result.ReceiverTin.Value,
             organizationName: result.ReceiverName,
             otherOrganizationTin: identity.OrganizationCvr!,
             otherOrganizationName: identity.OrganizationName,
@@ -283,7 +284,7 @@ public class TransferAgreementsController(
             actorName: identity.Name,
             organizationTin: identity.OrganizationCvr!,
             organizationName: identity.OrganizationName,
-            otherOrganizationTin: result.ReceiverTin,
+            otherOrganizationTin: result.ReceiverTin.Value,
             otherOrganizationName: result.ReceiverName,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
@@ -297,8 +298,8 @@ public class TransferAgreementsController(
             StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
             EndDate: transferAgreement.EndDate?.ToUnixTimeSeconds(),
             SenderName: transferAgreement.SenderName,
-            SenderTin: transferAgreement.SenderTin,
-            ReceiverTin: transferAgreement.ReceiverTin
+            SenderTin: transferAgreement.SenderTin.Value,
+            ReceiverTin: transferAgreement.ReceiverTin.Value
         );
 
     [HttpGet("overview")]
@@ -317,12 +318,12 @@ public class TransferAgreementsController(
 
         var transferAgreementDtos = transferAgreements
             .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.SenderName,
-                x.SenderTin, x.ReceiverTin, GetTransferAgreementStatusFromAgreement(x)))
+                x.SenderTin.Value, x.ReceiverTin.Value, GetTransferAgreementStatusFromAgreement(x)))
             .ToList();
 
         var transferAgreementProposalDtos = transferAgreementProposals
             .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), string.Empty,
-                string.Empty, x.ReceiverCompanyTin, GetTransferAgreementStatusFromProposal(x)))
+                string.Empty, x.ReceiverCompanyTin?.Value, GetTransferAgreementStatusFromProposal(x)))
             .ToList();
 
         transferAgreementProposalDtos.AddRange(transferAgreementDtos);

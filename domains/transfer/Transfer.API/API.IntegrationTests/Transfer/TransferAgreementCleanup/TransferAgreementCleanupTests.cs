@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using EnergyOrigin.ActivityLog.API;
 using System.Net;
 using System.Net.Http.Json;
+using EnergyOrigin.Domain.ValueObjects;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,13 +21,13 @@ public class TransferAgreementCleanupTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly Guid sub;
-    private readonly string tin;
+    private readonly Tin tin;
 
     public TransferAgreementCleanupTests(IntegrationTestFixture integrationTestFixture)
     {
         factory = integrationTestFixture.Factory;
         sub = Guid.NewGuid();
-        tin = "11223344";
+        tin = Tin.Create("11223344");
     }
 
     [Fact]
@@ -41,7 +42,7 @@ public class TransferAgreementCleanupTests
         {
             Id = Guid.NewGuid(),
             EndDate = DateTimeOffset.UtcNow.AddHours(-1),
-            ReceiverTin = "12345678",
+            ReceiverTin = Tin.Create("12345678"),
             SenderName = "SomeSender",
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
@@ -53,7 +54,7 @@ public class TransferAgreementCleanupTests
         {
             Id = Guid.NewGuid(),
             EndDate = null,
-            ReceiverTin = "12345679",
+            ReceiverTin = Tin.Create("12345679"),
             SenderName = "SomeSender",
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
@@ -65,7 +66,7 @@ public class TransferAgreementCleanupTests
         {
             Id = Guid.NewGuid(),
             EndDate = DateTimeOffset.UtcNow.AddHours(1),
-            ReceiverTin = "12345677",
+            ReceiverTin = Tin.Create("12345677"),
             SenderName = "SomeSender",
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
@@ -101,7 +102,7 @@ public class TransferAgreementCleanupTests
         {
             Id = Guid.NewGuid(),
             EndDate = DateTimeOffset.UtcNow.AddHours(-1),
-            ReceiverTin = receiverTin,
+            ReceiverTin = Tin.Create(receiverTin),
             SenderName = "SomeSender",
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
@@ -116,7 +117,7 @@ public class TransferAgreementCleanupTests
         var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0, TimeSpan.FromSeconds(30));
         tas.Should().BeEmpty();
 
-        var senderClient = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
+        var senderClient = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin.Value);
 
         var senderPost = await senderClient.PostAsJsonAsync("api/transfer/activity-log",
             new ActivityLogEntryFilterRequest(null, null, null));
@@ -150,7 +151,7 @@ public class TransferAgreementCleanupTests
         {
             Id = Guid.NewGuid(),
             EndDate = DateTimeOffset.UtcNow.AddHours(-1),
-            ReceiverTin = "12345678",
+            ReceiverTin = Tin.Create("12345678"),
             SenderName = "SomeSender",
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),

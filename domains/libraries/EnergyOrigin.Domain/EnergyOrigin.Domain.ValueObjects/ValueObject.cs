@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
-namespace API.ValueObjects;
+namespace EnergyOrigin.Domain.ValueObjects;
 
 public abstract class ValueObject : IEquatable<ValueObject>
 {

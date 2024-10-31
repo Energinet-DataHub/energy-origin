@@ -1,5 +1,6 @@
 using System;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.Converters;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -35,8 +36,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasConversion(new ValueConverter<OrganizationName, string>(v => v.Value, v => new OrganizationName(v)))
             .IsRequired();
 
-        modelBuilder.Entity<Organization>().Property(o => o.Tin)
-            .HasConversion(new ValueConverter<Tin?, string>(v => v != null ? v.Value : "", v => new Tin(v)));
+        modelBuilder.Entity<Organization>().Property(o => o.Tin).HasConversion(new NullableTinValueConverter());
 
         modelBuilder.Entity<Organization>().HasIndex(o => o.Tin).IsUnique();
 

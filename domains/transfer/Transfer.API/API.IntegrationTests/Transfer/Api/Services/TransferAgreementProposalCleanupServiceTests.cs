@@ -8,6 +8,7 @@ using DataContext;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -20,13 +21,13 @@ public class TransferAgreementProposalCleanupServiceTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly Guid sub;
-    private readonly string tin;
+    private readonly Tin tin;
 
     public TransferAgreementProposalCleanupServiceTests(IntegrationTestFixture integrationTestFixture)
     {
         factory = integrationTestFixture.Factory;
         sub = Guid.NewGuid();
-        tin = "11223344";
+        tin = Tin.Create("11223344");
         factory.CreateClient();
     }
 
@@ -43,7 +44,7 @@ public class TransferAgreementProposalCleanupServiceTests
             SenderCompanyId = sub,
             SenderCompanyTin = tin,
             CreatedAt = DateTimeOffset.UtcNow,
-            ReceiverCompanyTin = "12345678",
+            ReceiverCompanyTin = Tin.Create("12345678"),
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
             StartDate = DateTimeOffset.UtcNow,
             SenderCompanyName = "SomeCompany"
@@ -55,7 +56,7 @@ public class TransferAgreementProposalCleanupServiceTests
             SenderCompanyId = sub,
             SenderCompanyTin = tin,
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-14),
-            ReceiverCompanyTin = "12345678",
+            ReceiverCompanyTin = Tin.Create("12345678"),
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
             StartDate = DateTimeOffset.UtcNow.AddDays(-14),
             SenderCompanyName = "SomeCompany"
@@ -84,7 +85,7 @@ public class TransferAgreementProposalCleanupServiceTests
             SenderCompanyId = sub,
             SenderCompanyTin = tin,
             CreatedAt = DateTimeOffset.UtcNow.AddDays(-14),
-            ReceiverCompanyTin = "12345678",
+            ReceiverCompanyTin = Tin.Create("12345678"),
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
             StartDate = DateTimeOffset.UtcNow.AddDays(-14),
             SenderCompanyName = "SomeCompany"
@@ -96,7 +97,7 @@ public class TransferAgreementProposalCleanupServiceTests
         var invitations = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreementProposal>(0, TimeSpan.FromSeconds(30));
 
         invitations.Should().BeEmpty();
-        var client = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
+        var client = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin.Value);
 
         var post = await client.PostAsJsonAsync("api/transfer/activity-log", new ActivityLogEntryFilterRequest(null, null, null));
         post.StatusCode.Should().Be(HttpStatusCode.OK);

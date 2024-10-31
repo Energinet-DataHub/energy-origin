@@ -10,8 +10,7 @@ using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using DataContext;
 using DataContext.Models;
-using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -114,7 +113,7 @@ public class TransferAgreementsControllerTests
     {
         var sub = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        var receiverTin = "12334455";
+        var receiverTin = Tin.Create("12334455");
 
         var taProposal = new TransferAgreementProposal
         {
@@ -125,12 +124,12 @@ public class TransferAgreementsControllerTests
             ReceiverCompanyTin = receiverTin,
             SenderCompanyName = "SomeCompany",
             SenderCompanyId = sub,
-            SenderCompanyTin = "12345678"
+            SenderCompanyTin = Tin.Create("12345678")
         };
 
         await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
-        var receiverClient = factory.CreateB2CAuthenticatedClient(sub, orgId, tin: receiverTin);
+        var receiverClient = factory.CreateB2CAuthenticatedClient(sub, orgId, tin: receiverTin.Value);
 
         var createRequest = new CreateTransferAgreement(taProposal.Id);
         var response = await receiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", createRequest);
@@ -142,7 +141,7 @@ public class TransferAgreementsControllerTests
     {
         var sub = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        var receiverTin = "12334455";
+        var receiverTin = Tin.Create("12334455");
 
         var ta = new TransferAgreement
         {
@@ -154,7 +153,7 @@ public class TransferAgreementsControllerTests
             ReceiverTin = receiverTin,
             SenderId = sub,
             SenderName = "SomeOrg",
-            SenderTin = "11223344",
+            SenderTin = Tin.Create("11223344"),
             TransferAgreementNumber = 1
         };
 
@@ -169,12 +168,12 @@ public class TransferAgreementsControllerTests
             SenderCompanyName = "SomeOrg",
             ReceiverCompanyTin = receiverTin,
             SenderCompanyId = sub,
-            SenderCompanyTin = "11223344"
+            SenderCompanyTin = Tin.Create("11223344")
         };
 
         await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { secondTaProposal });
 
-        var receiverClient = factory.CreateB2CAuthenticatedClient(sub, orgId, tin: receiverTin);
+        var receiverClient = factory.CreateB2CAuthenticatedClient(sub, orgId, tin: receiverTin.Value);
 
         var createSecondConnectionResponse = await receiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", new CreateTransferAgreement(secondTaProposal.Id));
 
@@ -226,9 +225,9 @@ public class TransferAgreementsControllerTests
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
             SenderId = orgId,
             SenderName = "nrgi A/S",
-            SenderTin = "44332211",
+            SenderTin = Tin.Create("44332211"),
             ReceiverName = "Hestesko A/S",
-            ReceiverTin = "87654321",
+            ReceiverTin = Tin.Create("87654321"),
             ReceiverReference = Guid.NewGuid()
         };
 
@@ -263,9 +262,9 @@ public class TransferAgreementsControllerTests
             EndDate = DateTimeOffset.UtcNow.AddDays(1),
             SenderId = Guid.NewGuid(),
             SenderName = "nrgi A/S",
-            SenderTin = "44332211",
+            SenderTin = Tin.Create("44332211"),
             ReceiverName = "Moelle A/S",
-            ReceiverTin = receiverTin,
+            ReceiverTin = Tin.Create(receiverTin),
             ReceiverReference = Guid.NewGuid()
         };
         var newAuthenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId, tin: receiverTin);
@@ -284,11 +283,11 @@ public class TransferAgreementsControllerTests
         getTransferAgreement.Should().NotBeNull();
 
         getTransferAgreement!.Id.Should().Be(fakeTransferAgreement.Id);
-        getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin);
+        getTransferAgreement.ReceiverTin.Should().Be(fakeTransferAgreement.ReceiverTin.Value);
         getTransferAgreement.StartDate.Should().Be(fakeTransferAgreement.StartDate.ToUnixTimeSeconds());
         getTransferAgreement.EndDate.Should().Be(fakeTransferAgreement.EndDate?.ToUnixTimeSeconds());
         getTransferAgreement.SenderName.Should().Be(fakeTransferAgreement.SenderName);
-        getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin);
+        getTransferAgreement.SenderTin.Should().Be(fakeTransferAgreement.SenderTin.Value);
     }
 
     [Fact]
@@ -305,9 +304,9 @@ public class TransferAgreementsControllerTests
                 EndDate = DateTimeOffset.UtcNow.AddDays(1),
                 SenderId = orgId,
                 SenderName = "nrgi A/S",
-                SenderTin = "44332211",
+                SenderTin = Tin.Create("44332211"),
                 ReceiverName = "Moelle A/S",
-                ReceiverTin = "12345678",
+                ReceiverTin = Tin.Create("12345678"),
                 ReceiverReference = orgId
             }
         });
@@ -358,9 +357,9 @@ public class TransferAgreementsControllerTests
                     EndDate = DateTimeOffset.UtcNow.AddDays(1),
                     SenderId = Guid.NewGuid(),
                     SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
+                    SenderTin = Tin.Create("44332211"),
                     ReceiverName = "Producent A/S",
-                    ReceiverTin = "11223344",
+                    ReceiverTin = Tin.Create("11223344"),
                     ReceiverReference = Guid.NewGuid()
                 },
                 new()
@@ -370,9 +369,9 @@ public class TransferAgreementsControllerTests
                     EndDate = DateTimeOffset.UtcNow.AddDays(3),
                     SenderId = orgId,
                     SenderName = "Producent A/S",
-                    SenderTin = "11223344",
+                    SenderTin = Tin.Create("11223344"),
                     ReceiverName = "Test A/S",
-                    ReceiverTin = "87654321",
+                    ReceiverTin = Tin.Create("87654321"),
                     ReceiverReference = Guid.NewGuid()
                 }
             });
@@ -405,9 +404,9 @@ public class TransferAgreementsControllerTests
                 StartDate = DateTimeOffset.UtcNow,
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderName = "nrgi A/S",
-                SenderTin = "44332211",
+                SenderTin = Tin.Create("44332211"),
                 ReceiverName = "Producent A/S",
-                ReceiverTin = receiverTin,
+                ReceiverTin = Tin.Create(receiverTin),
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 1
             },
@@ -418,9 +417,9 @@ public class TransferAgreementsControllerTests
                 StartDate = DateTimeOffset.UtcNow.AddDays(11),
                 EndDate = DateTimeOffset.UtcNow.AddDays(15),
                 SenderName = "nrgi A/S",
-                SenderTin = "44332211",
+                SenderTin = Tin.Create("44332211"),
                 ReceiverName = "Producent A/S",
-                ReceiverTin = receiverTin,
+                ReceiverTin = Tin.Create(receiverTin),
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 2
             }
@@ -450,9 +449,9 @@ public class TransferAgreementsControllerTests
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
                     SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
+                    SenderTin = Tin.Create("44332211"),
                     ReceiverName = "Producent A/S",
-                    ReceiverTin = "11223344",
+                    ReceiverTin = Tin.Create("11223344"),
                     ReceiverReference = Guid.NewGuid()
                 }
             });
@@ -500,9 +499,9 @@ public class TransferAgreementsControllerTests
                     StartDate = DateTimeOffset.UtcNow.AddDays(-5),
                     EndDate = DateTimeOffset.UtcNow.AddDays(-1),
                     SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
+                    SenderTin = Tin.Create("44332211"),
                     ReceiverName = "Producent A/S",
-                    ReceiverTin = "11223344",
+                    ReceiverTin = Tin.Create("11223344"),
                     ReceiverReference = Guid.NewGuid()
                 }
             });
@@ -560,9 +559,9 @@ public class TransferAgreementsControllerTests
                     StartDate = DateTimeOffset.UtcNow.AddDays(1),
                     EndDate = DateTimeOffset.UtcNow.AddDays(10),
                     SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
+                    SenderTin = Tin.Create("44332211"),
                     ReceiverName = "Producent A/S",
-                    ReceiverTin = "1122334",
+                    ReceiverTin = Tin.Create("11223344"),
                     ReceiverReference = Guid.NewGuid()
                 }
             });
@@ -621,9 +620,9 @@ public class TransferAgreementsControllerTests
                     EndDate = DateTimeOffset.UtcNow.AddDays(1),
                     SenderId = Guid.NewGuid(),
                     SenderName = "nrgi A/S",
-                    SenderTin = "44332211",
+                    SenderTin = Tin.Create("44332211"),
                     ReceiverName = "Producent A/S",
-                    ReceiverTin = "11223344",
+                    ReceiverTin = Tin.Create("11223344"),
                     ReceiverReference = Guid.NewGuid()
                 },
                 new() // Inactive
@@ -633,9 +632,9 @@ public class TransferAgreementsControllerTests
                     EndDate = DateTimeOffset.UtcNow.AddDays(3),
                     SenderId = orgId,
                     SenderName = "Producent A/S",
-                    SenderTin = "11223344",
+                    SenderTin = Tin.Create("11223344"),
                     ReceiverName = "Test A/S",
-                    ReceiverTin = "87654321",
+                    ReceiverTin = Tin.Create("87654321"),
                     ReceiverReference = Guid.NewGuid()
                 }
             });
@@ -649,9 +648,9 @@ public class TransferAgreementsControllerTests
                 Id = Guid.NewGuid(),
                 StartDate = DateTimeOffset.UtcNow,
                 SenderCompanyName = "SomeOrg",
-                ReceiverCompanyTin = "11223342",
+                ReceiverCompanyTin = Tin.Create("11223342"),
                 SenderCompanyId = orgId,
-                SenderCompanyTin = "11223344"
+                SenderCompanyTin = Tin.Create("11223344")
             },
             new () // Expired
             {
@@ -660,9 +659,9 @@ public class TransferAgreementsControllerTests
                 Id = Guid.NewGuid(),
                 StartDate = DateTimeOffset.UtcNow,
                 SenderCompanyName = "SomeOrg",
-                ReceiverCompanyTin = "11223342",
+                ReceiverCompanyTin = Tin.Create("11223342"),
                 SenderCompanyId = orgId,
-                SenderCompanyTin = "11223344"
+                SenderCompanyTin = Tin.Create("11223344")
             }
         });
 

@@ -1,5 +1,6 @@
 using API.Models;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 
 namespace API.UnitTests.Models;
@@ -9,7 +10,7 @@ public class OrganizationTests
     [Fact]
     public void Organization_WithValidData_CreatesSuccessfully()
     {
-        var tin = new Tin("12345678");
+        var tin = Tin.Create("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
         var organization = Organization.Create(tin, organizationName);
@@ -22,7 +23,7 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanExist_WithoutAffiliations()
     {
-        var tin = new Tin("12345678");
+        var tin = Tin.Create("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
         var organization = Organization.Create(tin, organizationName);
@@ -33,7 +34,7 @@ public class OrganizationTests
     [Fact]
     public void Organization_CanHave_Affiliations()
     {
-        var tin = new Tin("12345678");
+        var tin = Tin.Create("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
         var organization = Organization.Create(tin, organizationName);
@@ -50,7 +51,7 @@ public class OrganizationTests
     [Fact]
     public void Organization_WhenCreated_HasNoTermsAccepted()
     {
-        var tin = new Tin("12345678");
+        var tin = Tin.Create("12345678");
         var organizationName = new OrganizationName("Test Organization");
 
         var organization = Organization.Create(tin, organizationName);
@@ -63,7 +64,7 @@ public class OrganizationTests
     [Fact]
     public void AcceptTerms_ShouldUpdateTermsInformation()
     {
-        var tin = new Tin("12345678");
+        var tin = Tin.Create("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(tin, organizationName);
         var terms = Terms.Create(1);
@@ -78,7 +79,7 @@ public class OrganizationTests
     [Fact]
     public void AcceptTerms_ShouldUpdateTermsVersion_WhenCalledMultipleTimes()
     {
-        var tin = new Tin("12345678");
+        var tin = Tin.Create("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(tin, organizationName);
         var termsV1 = Terms.Create(1);
@@ -94,7 +95,7 @@ public class OrganizationTests
     [Fact]
     public void InvalidateTerms_ShouldSetTermsAcceptedToFalse()
     {
-        var tin = new Tin("12345678");
+        var tin = Tin.Create("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(tin, organizationName);
         var terms = Terms.Create(1);
@@ -110,7 +111,7 @@ public class OrganizationTests
     [Fact]
     public void InvalidateTerms_ShouldWorkEvenIfTermsNotPreviouslyAccepted()
     {
-        var tin = new Tin("12345678");
+        var tin = Tin.Create("12345678");
         var organizationName = new OrganizationName("Test Organization");
         var organization = Organization.Create(tin, organizationName);
 

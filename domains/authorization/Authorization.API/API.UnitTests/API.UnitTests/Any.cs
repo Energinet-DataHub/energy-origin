@@ -1,7 +1,7 @@
 using API.Authorization.Controllers;
 using API.Models;
 using API.ValueObjects;
-using NSubstitute.Core;
+using EnergyOrigin.Domain.ValueObjects;
 using ClientType = API.Models.ClientType;
 
 namespace API.UnitTests;
@@ -40,7 +40,7 @@ public class Any
 
     public static Tin Tin()
     {
-        return API.ValueObjects.Tin.Create(IntString(8));
+        return EnergyOrigin.Domain.ValueObjects.Tin.Create(IntString(8));
     }
 
     private static string IntString(int charCount)

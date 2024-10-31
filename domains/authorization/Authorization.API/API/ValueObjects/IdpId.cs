@@ -1,5 +1,5 @@
 using System;
-using System.Text.Json;
+using EnergyOrigin.Domain.ValueObjects;
 
 namespace API.ValueObjects;
 

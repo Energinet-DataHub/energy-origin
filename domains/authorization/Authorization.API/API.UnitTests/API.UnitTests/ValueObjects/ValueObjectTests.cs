@@ -1,4 +1,5 @@
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 
 namespace API.UnitTests.ValueObjects;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;
@@ -13,7 +14,7 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
     public async Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement)
     {
         var agreements = await context.TransferAgreements.Where(t =>
-            t.SenderId == transferAgreement.SenderId)
+                t.SenderId == transferAgreement.SenderId)
             .ToListAsync();
 
         var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
@@ -42,19 +43,27 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
         return newTransferAgreement;
     }
 
-    public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin) =>
-        await context.TransferAgreements
-            .Where(ta => ta.SenderId == subjectId
-                         || ta.ReceiverTin == receiverTin)
+    public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid subjectId, string receiverTin)
+    {
+        var tin = Tin.Create(receiverTin);
+        return await context.TransferAgreements
+            .Where(ta => ta.SenderId == subjectId || ta.ReceiverTin == tin)
             .ToListAsync();
+    }
 
-    public Task<List<TransferAgreement>> GetAllTransferAgreements() => context.TransferAgreements.ToListAsync();
+    public Task<List<TransferAgreement>> GetAllTransferAgreements()
+    {
+        return context.TransferAgreements.ToListAsync();
+    }
 
-    public async Task<TransferAgreement?> GetTransferAgreement(Guid id, string subject, string tin) =>
-        await context
+    public async Task<TransferAgreement?> GetTransferAgreement(Guid id, string subject, string tin)
+    {
+        var receiverTin = Tin.Create(tin);
+        return await context
             .TransferAgreements
-            .Where(agreement => agreement.Id == id && (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin.Equals(tin)))
+            .Where(agreement => agreement.Id == id && (agreement.SenderId == Guid.Parse(subject) || agreement.ReceiverTin == receiverTin))
             .FirstOrDefaultAsync();
+    }
 
     public async Task<bool> HasDateOverlap(TransferAgreement transferAgreement)
     {
@@ -69,19 +78,19 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
         );
     }
 
-    private static bool IsOverlappingTransferAgreement(TransferAgreement transferAgreement, DateTimeOffset startDate, DateTimeOffset? endDate) =>
-        !(startDate >= transferAgreement.EndDate || endDate <= transferAgreement.StartDate);
+    private static bool IsOverlappingTransferAgreement(TransferAgreement transferAgreement, DateTimeOffset startDate, DateTimeOffset? endDate)
+    {
+        return !(startDate >= transferAgreement.EndDate || endDate <= transferAgreement.StartDate);
+    }
 
     public async Task<bool> HasDateOverlap(TransferAgreementProposal proposal)
     {
+        var proposalReceiverCompanyTin = proposal.ReceiverCompanyTin;
         var overlappingAgreements = await context.TransferAgreements
-            .Where(t => t.SenderId == proposal.SenderCompanyId &&
-                        t.ReceiverTin == proposal.ReceiverCompanyTin)
+            .Where(t => t.SenderId == proposal.SenderCompanyId && t.ReceiverTin == proposalReceiverCompanyTin)
             .ToListAsync();
 
-        return overlappingAgreements.Any(a =>
-            IsOverlappingTransferAgreement(a, proposal.StartDate, proposal.EndDate)
-        );
+        return overlappingAgreements.Any(a => IsOverlappingTransferAgreement(a, proposal.StartDate, proposal.EndDate));
     }
 
     public async Task<List<TransferAgreementProposal>> GetTransferAgreementProposals(Guid subjectId)

@@ -8,6 +8,7 @@ using API.Models;
 using API.Repository;
 using API.ValueObjects;
 using API.Data;
+using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MassTransit;

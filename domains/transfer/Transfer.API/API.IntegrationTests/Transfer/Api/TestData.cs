@@ -47,8 +47,8 @@ public class TestData
             new NpgsqlParameter("EndDate", agreement.EndDate),
             new NpgsqlParameter("SenderId", agreement.SenderId),
             new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin),
+            new NpgsqlParameter("SenderTin", agreement.SenderTin.Value),
+            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin.Value),
             new NpgsqlParameter("ReceiverReference", agreement.ReceiverReference),
             new NpgsqlParameter("TransferAgreementNumber", agreement.TransferAgreementNumber)
         };

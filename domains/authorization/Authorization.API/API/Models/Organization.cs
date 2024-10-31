@@ -1,7 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 
 namespace API.Models;
 

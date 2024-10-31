@@ -6,6 +6,7 @@ using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
@@ -53,10 +54,10 @@ public class TransferAgreementProposalController(
         var newProposal = new TransferAgreementProposal
         {
             SenderCompanyId = organizationId,
-            SenderCompanyTin = identityDescriptor.OrganizationCvr!,
+            SenderCompanyTin = Tin.Create(identityDescriptor.OrganizationCvr!),
             SenderCompanyName = identityDescriptor.OrganizationName,
             Id = Guid.NewGuid(),
-            ReceiverCompanyTin = request.ReceiverTin,
+            ReceiverCompanyTin = String.IsNullOrWhiteSpace(request.ReceiverTin) ? null : Tin.Create(request.ReceiverTin),
             StartDate = DateTimeOffset.FromUnixTimeSeconds(request.StartDate),
             EndDate = request.EndDate == null ? null : DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value)
         };
@@ -88,14 +89,12 @@ public class TransferAgreementProposalController(
         var response = new TransferAgreementProposalResponse(
             newProposal.Id,
             newProposal.SenderCompanyName,
-            newProposal.ReceiverCompanyTin,
+            newProposal.ReceiverCompanyTin?.Value,
             newProposal.StartDate.ToUnixTimeSeconds(),
             newProposal.EndDate?.ToUnixTimeSeconds()
         );
         return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = newProposal.Id }, response);
     }
-
-
 
     /// <summary>
     /// Get TransferAgreementProposal by Id
@@ -124,7 +123,7 @@ public class TransferAgreementProposalController(
             return ValidationProblem("You cannot Accept/Deny your own TransferAgreementProposal");
         }
 
-        if (proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr != proposal.ReceiverCompanyTin)
+        if (proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr != proposal.ReceiverCompanyTin.Value)
         {
             return ValidationProblem("You cannot Accept/Deny a TransferAgreementProposal for another company");
         }
@@ -137,7 +136,7 @@ public class TransferAgreementProposalController(
         return Ok(new TransferAgreementProposalResponse(
                 proposal.Id,
                 proposal.SenderCompanyName,
-                proposal.ReceiverCompanyTin,
+                proposal.ReceiverCompanyTin?.Value,
                 proposal.StartDate.ToUnixTimeSeconds(),
                 proposal.EndDate?.ToUnixTimeSeconds()
             )
@@ -164,7 +163,7 @@ public class TransferAgreementProposalController(
 
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        if (proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr != proposal.ReceiverCompanyTin)
+        if (proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr != proposal.ReceiverCompanyTin.Value)
         {
             return ValidationProblem("You cannot Deny a TransferAgreementProposal for another company");
         }
@@ -185,7 +184,7 @@ public class TransferAgreementProposalController(
            actorName: identity.Name,
            organizationTin: identity.OrganizationCvr!,
            organizationName: identity.OrganizationName,
-           otherOrganizationTin: proposal.ReceiverCompanyTin ?? string.Empty,
+           otherOrganizationTin: proposal.ReceiverCompanyTin?.Value ?? string.Empty,
            otherOrganizationName: string.Empty,
            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
            actionType: actionType,

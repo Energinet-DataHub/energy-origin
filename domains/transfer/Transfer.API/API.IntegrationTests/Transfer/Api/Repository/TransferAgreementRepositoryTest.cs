@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -36,8 +37,8 @@ public class TransferAgreementRepositoryTest
             EndDate = DateTimeOffset.UtcNow.AddDays(10),
             SenderId = senderId,
             SenderName = "nrgi A/S",
-            SenderTin = "44332211",
-            ReceiverTin = "12345678",
+            SenderTin = Tin.Create("44332211"),
+            ReceiverTin = Tin.Create("12345678"),
             ReceiverReference = Guid.NewGuid(),
             TransferAgreementNumber = agreements[0].TransferAgreementNumber
         };
@@ -56,8 +57,8 @@ public class TransferAgreementRepositoryTest
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderId = senderId,
                 SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = "12345678",
+                SenderTin = Tin.Create("44332211"),
+                ReceiverTin = Tin.Create("12345678"),
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 1
             },
@@ -68,8 +69,8 @@ public class TransferAgreementRepositoryTest
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderId = senderId,
                 SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = "12345678",
+                SenderTin = Tin.Create("44332211"),
+                ReceiverTin = Tin.Create("12345678"),
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 2
             },
@@ -80,8 +81,8 @@ public class TransferAgreementRepositoryTest
                 EndDate = DateTimeOffset.UtcNow.AddDays(10),
                 SenderId = senderId,
                 SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = "12345678",
+                SenderTin = Tin.Create("44332211"),
+                ReceiverTin = Tin.Create("12345678"),
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 3
 
