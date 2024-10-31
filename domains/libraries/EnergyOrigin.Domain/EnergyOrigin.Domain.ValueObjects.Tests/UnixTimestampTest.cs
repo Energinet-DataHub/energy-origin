@@ -1,10 +1,6 @@
-using System;
-using System.Globalization;
-using DataContext.ValueObjects;
-using DotNet.Testcontainers.Configurations;
 using Xunit;
 
-namespace API.UnitTests.ValueObjects;
+namespace EnergyOrigin.Domain.ValueObjects.Tests;
 
 public class UnixTimestampTest
 {
@@ -97,5 +93,29 @@ public class UnixTimestampTest
         time = new DateTimeOffset(2023, 1, 1, 22, 59, 0, TimeSpan.Zero);
         unixTimestamp = UnixTimestamp.Create(time);
         Assert.Equal(60, unixTimestamp.TimeUntilNextHour().TotalSeconds);
+    }
+
+    [Fact]
+    public void GivenUnixTimestamp_WhenAddingMinutes_ResultIsTheSameWithAddTimespan()
+    {
+        int minutes = new Random().Next(-100, 100);
+        var now = UnixTimestamp.Now();
+        Assert.Equal(now.AddMinutes(minutes), now.Add(TimeSpan.FromMinutes(minutes)));
+    }
+
+    [Fact]
+    public void GivenUnixTimestamp_WhenAddingHours_ResultIsTheSameWithAddTimespan()
+    {
+        int hours = new Random().Next(-100, 100);
+        var now = UnixTimestamp.Now();
+        Assert.Equal(now.AddHours(hours), now.Add(TimeSpan.FromHours(hours)));
+    }
+
+    [Fact]
+    public void GivenUnixTimestamp_WhenAddingDays_ResultIsTheSameWithAddTimespan()
+    {
+        int days = new Random().Next(-100, 100);
+        var now = UnixTimestamp.Now();
+        Assert.Equal(now.AddDays(days), now.Add(TimeSpan.FromDays(days)));
     }
 }

@@ -37,7 +37,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         var certificates = new List<GranularCertificate>();
         while (hasMoreCertificates)
         {
-            var response = await walletClient.GetGranularCertificates(transferAgreement.SenderId, new CancellationToken(), limit: BatchSize, skip: certificates.Count);
+            var response = await walletClient.GetGranularCertificates(transferAgreement.SenderId.Value, new CancellationToken(), limit: BatchSize, skip: certificates.Count);
 
             if (response == null)
                 throw new TransferCertificatesException($"Something went wrong when getting certificates from the wallet for {transferAgreement.SenderId}. Response is null.");
@@ -63,7 +63,7 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
             logger.LogInformation("Transferring certificate {certificateId} to {receiver}",
                 certificate.FederatedStreamId, transferAgreement.ReceiverTin);
 
-            await walletClient.TransferCertificates(transferAgreement.SenderId, certificate, certificate.Quantity, transferAgreement.ReceiverReference);
+            await walletClient.TransferCertificates(transferAgreement.SenderId.Value, certificate, certificate.Quantity, transferAgreement.ReceiverReference);
         }
 
         metrics.SetNumberOfCertificates(certificatesCount);
@@ -74,11 +74,11 @@ public class ProjectOriginWalletService : IProjectOriginWalletService
         if (transferAgreement.EndDate == null)
         {
             return certificate.CertificateType == CertificateType.Production &&
-                   certificate.Start >= transferAgreement.StartDate.ToUnixTimeSeconds();
+                   certificate.Start >= transferAgreement.StartDate.EpochSeconds;
         }
 
         return certificate.CertificateType == CertificateType.Production &&
-               certificate.Start >= transferAgreement.StartDate.ToUnixTimeSeconds() &&
-               certificate.End <= transferAgreement.EndDate!.Value.ToUnixTimeSeconds();
+               certificate.Start >= transferAgreement.StartDate.EpochSeconds &&
+               certificate.End <= transferAgreement.EndDate!.EpochSeconds;
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 
 namespace DataContext.Models;
 
@@ -47,7 +48,7 @@ public class MeteringPointTimeSeriesSlidingWindow
             return SynchronizationPoint;
         }
 
-        var earliestMissingMeasurement = MissingMeasurements.Intervals.MinBy(m => m.From.Seconds);
+        var earliestMissingMeasurement = MissingMeasurements.Intervals.MinBy(m => m.From.EpochSeconds);
         return earliestMissingMeasurement!.From;
     }
 

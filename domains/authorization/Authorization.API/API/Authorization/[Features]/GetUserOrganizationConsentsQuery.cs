@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Repository;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +28,7 @@ public class GetUserOrganizationConsentsQueryHandler(IOrganizationConsentReposit
                 new GetUserOrganizationConsentsQueryResultItem(
                     consent.IdpClientId.Value,
                     consent.Name.Value,
-                    UnixTimestamp.Create(x.ConsentDate).Seconds)
+                    UnixTimestamp.Create(x.ConsentDate).EpochSeconds)
             ))
             .ToListAsync(cancellationToken: cancellationToken);
 

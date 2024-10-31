@@ -7,6 +7,7 @@ using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using Measurements.V1;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
@@ -70,8 +71,8 @@ public class MeasurementsSyncService
     public async Task<List<Measurement>> FetchMeasurements(MeteringPointTimeSeriesSlidingWindow slidingWindow, string meteringPointOwner,
         UnixTimestamp synchronizationPoint, CancellationToken cancellationToken)
     {
-        var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
-        var synchronizationPointSeconds = synchronizationPoint.Seconds;
+        var dateFrom = slidingWindow.GetFetchIntervalStart().EpochSeconds;
+        var synchronizationPointSeconds = synchronizationPoint.EpochSeconds;
 
         if (dateFrom < synchronizationPointSeconds)
         {

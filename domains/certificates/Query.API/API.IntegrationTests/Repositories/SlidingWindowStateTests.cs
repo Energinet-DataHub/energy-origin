@@ -9,6 +9,7 @@ using API.UnitTests;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -48,7 +49,7 @@ public class SlidingWindowStateTests
 
         var actualPeriodStartTime = await syncState.GetSlidingWindowStartTime(info, CancellationToken.None);
 
-        actualPeriodStartTime.SynchronizationPoint.Seconds.Should().Be(UnixTimestamp.Create(info.StartSyncDate).RoundToNextHour().Seconds);
+        actualPeriodStartTime.SynchronizationPoint.EpochSeconds.Should().Be(UnixTimestamp.Create(info.StartSyncDate).RoundToNextHour().EpochSeconds);
     }
 
     [Fact]
@@ -90,7 +91,7 @@ public class SlidingWindowStateTests
 
         var actualPeriodStartTime = await syncState.GetSlidingWindowStartTime(info, CancellationToken.None);
 
-        actualPeriodStartTime.SynchronizationPoint.Seconds.Should().Be(UnixTimestamp.Create(info.StartSyncDate).RoundToNextHour().Seconds);
+        actualPeriodStartTime.SynchronizationPoint.EpochSeconds.Should().Be(UnixTimestamp.Create(info.StartSyncDate).RoundToNextHour().EpochSeconds);
     }
 
     [Fact]
