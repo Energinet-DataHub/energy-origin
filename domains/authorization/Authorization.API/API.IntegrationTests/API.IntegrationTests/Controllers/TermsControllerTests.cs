@@ -43,7 +43,7 @@ public class TermsControllerTests
 
         response.Should().Be200Ok();
 
-        var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponseDto>();
+        var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponse>();
         result.Should().NotBeNull();
         result!.Message.Should().Be("Terms accepted successfully.");
 
@@ -78,7 +78,7 @@ public class TermsControllerTests
 
         response.Should().Be200Ok();
 
-        var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponseDto>();
+        var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponse>();
         result.Should().NotBeNull();
         result!.Message.Should().Be("Terms accepted successfully.");
 
@@ -87,6 +87,42 @@ public class TermsControllerTests
         updatedOrganization.Should().NotBeNull();
         updatedOrganization!.TermsAccepted.Should().BeTrue();
         updatedOrganization.TermsVersion.Should().Be(terms.Version);
+    }
+
+    [Fact]
+    public async Task GivenExistingOrganizationAndUser_WhenRevokingTerms_ThenHttpOkAndTermsUpdated()
+    {
+        // Given
+        await using var context = new ApplicationDbContext(_options);
+
+        if (!context.Terms.Any())
+        {
+            context.Terms.Add(Terms.Create(1));
+            context.SaveChanges();
+        }
+
+        var terms = context.Terms.First();
+        var orgCvr = Any.Tin();
+
+        var organization = Organization.Create(orgCvr, new OrganizationName("Existing Org"));
+        organization.AcceptTerms(terms);
+        var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
+        await SeedOrganizationAndUser(organization, user);
+
+        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString(), termsAccepted: true);
+
+        // When
+        var response = await userApi.RevokeTerms();
+
+        // Then
+        var updatedOrganization = await context.Organizations.FirstOrDefaultAsync(o => o.Id == organization.Id);
+
+        response.Should().Be200Ok();
+        var result = await response.Content.ReadFromJsonAsync<RevokeTermsResponse>();
+        result!.Message.Should().Be("Terms revoked successfully.");
+        updatedOrganization!.TermsAccepted.Should().BeFalse();
+        updatedOrganization.TermsVersion.Should().BeNull();
+        updatedOrganization.TermsAcceptanceDate.Should().BeNull();
     }
 
     private async Task SeedOrganizationAndUser(Organization organization, User user)
