@@ -681,31 +681,29 @@ public class SlidingWindowServiceTest
     [Fact]
     public void RemovingMinimumAgeRequirement_ShouldAdvanceSynchronizationPointAndFetchAllAvailableMeasurements()
     {
-        var initialMinAgeHours = 72;
-        var measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
-        var slidingWindowService = new SlidingWindowService(measurementSyncMetrics, Options.Create(_options));
         _options.MinimumAgeThresholdHours = 72;
 
-        var initialCutoffTime = _now.Add(-TimeSpan.FromHours(initialMinAgeHours)).RoundToLatestHour();
+        var initialThreshold = _now.Add(-TimeSpan.FromHours(_options.MinimumAgeThresholdHours)).RoundToLatestHour();
 
-        var synchronizationPoint = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
-        var window = slidingWindowService.CreateSlidingWindow(_gsrn, synchronizationPoint);
+        var startPositionOfMissingInterval = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
+        var window = _sut.CreateSlidingWindow(_gsrn, startPositionOfMissingInterval);
 
         var initialMeasurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, synchronizationPoint.Seconds, initialCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, startPositionOfMissingInterval.Seconds, initialThreshold.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
         };
-        slidingWindowService.UpdateSlidingWindow(window, initialMeasurements, initialCutoffTime);
+        _sut.UpdateSlidingWindow(window, initialMeasurements, initialThreshold);
+        Assert.Equal(initialThreshold, window.SynchronizationPoint);
 
         _options.MinimumAgeThresholdHours = 0;
-        var newCutoffTime = _now.RoundToLatestHour();
+        var newThreshold = _now.Add(-TimeSpan.FromHours(_options.MinimumAgeThresholdHours)).RoundToLatestHour();
         var newMeasurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, initialCutoffTime.Seconds, newCutoffTime.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, initialThreshold.Seconds, newThreshold.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
         };
-        slidingWindowService.UpdateSlidingWindow(window, newMeasurements, newCutoffTime);
+        _sut.UpdateSlidingWindow(window, newMeasurements, newThreshold);
 
-        Assert.Equal(newCutoffTime, window.SynchronizationPoint);
+        Assert.Equal(newThreshold, window.SynchronizationPoint);
 
         Assert.Empty(window.MissingMeasurements.Intervals);
     }
