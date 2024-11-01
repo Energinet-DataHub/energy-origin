@@ -35,6 +35,7 @@ public class IdentityDescriptor
     public string? OrganizationCvr => GetClaimAsOptionalString(ClaimType.OrgCvr);
 
     public IList<Guid> AuthorizedOrganizationIds => GetClaimAsGuidList(ClaimType.OrgIds);
+    public Guid OrganizationId => GetClaimAsGuid(ClaimType.OrgId);
 
     public IList<string> Scope => GetClaimAsStringList(ClaimType.OrgIds);
 
