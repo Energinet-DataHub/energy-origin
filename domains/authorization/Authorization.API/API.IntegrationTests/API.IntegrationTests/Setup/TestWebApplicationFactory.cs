@@ -88,28 +88,29 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
 
-    public Api CreateApi(string sub = "", string name = "", string orgIds = "", string subType = "", string orgCvr = "12345678",
+    public Api CreateApi(string sub = "", string name = "", string orgId = "", string orgIds = "", string subType = "", string orgCvr = "12345678",
         string orgName = "Test Org", bool termsAccepted = true)
     {
         sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
         name = string.IsNullOrEmpty(name) ? "Test Testesen" : name;
-        orgIds = string.IsNullOrEmpty(orgIds) ? Guid.NewGuid().ToString() : orgIds;
+        orgId = string.IsNullOrEmpty(orgId) ? Guid.NewGuid().ToString() : orgId;
+        orgIds = string.IsNullOrEmpty(orgIds) ? orgId : orgIds;
         subType = string.IsNullOrEmpty(subType) ? "user" : subType;
 
-        return new Api(CreateAuthenticatedClient(sub, name, orgIds, subType, orgCvr, orgName, termsAccepted));
+        return new Api(CreateAuthenticatedClient(sub, name, orgId, orgIds, subType, orgCvr, orgName, termsAccepted));
     }
 
-    private HttpClient CreateAuthenticatedClient(string sub, string name, string orgIds, string subType, string orgCvr, string orgName,
+    private HttpClient CreateAuthenticatedClient(string sub, string name, string orgId, string orgIds, string subType, string orgCvr, string orgName,
         bool termsAccepted)
     {
         var httpClient = CreateClient();
-        var token = GenerateToken(sub, name, orgIds, subType, orgCvr, orgName, termsAccepted);
+        var token = GenerateToken(sub, name, orgId, orgIds, subType, orgCvr, orgName, termsAccepted);
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         httpClient.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
         return httpClient;
     }
 
-    private string GenerateToken(string sub, string name, string orgIds, string subType, string orgCvr, string orgName, bool termsAccepted)
+    private string GenerateToken(string sub, string name, string orgId, string orgIds, string subType, string orgCvr, string orgName, bool termsAccepted)
     {
         using RSA rsa = RSA.Create(2048 * 2);
         var req = new CertificateRequest("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -124,6 +125,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         {
             new("sub", sub),
             new("name", name),
+            new("org_id", orgId),
             new("org_ids", orgIds),
             new("sub_type", subType),
             new("org_cvr", orgCvr),

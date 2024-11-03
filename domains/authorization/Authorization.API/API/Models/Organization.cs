@@ -56,4 +56,11 @@ public class Organization : IEntity<Guid>
     }
 
     public void InvalidateTerms() => TermsAccepted = false;
+
+    public void RevokeTerms()
+    {
+        TermsAccepted = false;
+        TermsVersion = null;
+        TermsAcceptanceDate = null;
+    }
 }
