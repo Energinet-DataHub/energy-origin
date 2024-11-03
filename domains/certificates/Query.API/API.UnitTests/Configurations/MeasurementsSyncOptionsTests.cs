@@ -42,13 +42,33 @@ public class MeasurementsSyncOptionsTests
     }
 
     [Fact]
-    public void GivenEnvironmentVariable_WhenMinimumAgeThresholdHoursSetAsEmptyString_ReturnsValidationError()
+    public void GivenEnvironmentVariable_WhenMinimumAgeThresholdHoursSetToNegativeValue_ReturnsValidationError()
     {
         var configValues = new Dictionary<string, string?>
         {
             [$"{MeasurementsSyncOptions.MeasurementsSync}:Disabled"] = "false",
             [$"{MeasurementsSyncOptions.MeasurementsSync}:SleepType"] = MeasurementsSyncerSleepType.Hourly.ToString(),
-            [$"{MeasurementsSyncOptions.MeasurementsSync}:MinimumAgeThresholdHours"] = string.Empty
+            [$"{MeasurementsSyncOptions.MeasurementsSync}:MinimumAgeThresholdHours"] = "-1"
+        };
+
+        var exception = Assert.Throws<OptionsValidationException>(() => BuildOptions(configValues));
+
+        exception.Failures.Should().ContainSingle()
+            .Which.Should().Contain("The field MinimumAgeThresholdHours must be between 0 and 2147483647.");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("\n")]
+    [InlineData("\t")]
+    public void GivenEnvironmentVariable_WhenMinimumAgeThresholdHoursSetAsWhitespaceOrEmpty_ReturnsValidationError(string value)
+    {
+        var configValues = new Dictionary<string, string?>
+        {
+            [$"{MeasurementsSyncOptions.MeasurementsSync}:Disabled"] = "false",
+            [$"{MeasurementsSyncOptions.MeasurementsSync}:SleepType"] = MeasurementsSyncerSleepType.Hourly.ToString(),
+            [$"{MeasurementsSyncOptions.MeasurementsSync}:MinimumAgeThresholdHours"] = value
         };
 
         var exception = Assert.Throws<OptionsValidationException>(() => BuildOptions(configValues));
@@ -85,21 +105,5 @@ public class MeasurementsSyncOptionsTests
         var options = BuildOptions(configValues);
 
         options.MinimumAgeThresholdHours.Should().Be(1);
-    }
-
-    [Fact]
-    public void GivenEnvironmentVariable_WhenMinimumAgeThresholdHoursSetToNegativeValue_ReturnsValidationError()
-    {
-        var configValues = new Dictionary<string, string?>
-        {
-            [$"{MeasurementsSyncOptions.MeasurementsSync}:Disabled"] = "false",
-            [$"{MeasurementsSyncOptions.MeasurementsSync}:SleepType"] = MeasurementsSyncerSleepType.Hourly.ToString(),
-            [$"{MeasurementsSyncOptions.MeasurementsSync}:MinimumAgeThresholdHours"] = "-1"
-        };
-
-        var exception = Assert.Throws<OptionsValidationException>(() => BuildOptions(configValues));
-
-        exception.Failures.Should().ContainSingle()
-            .Which.Should().Contain("The field MinimumAgeThresholdHours must be between 0 and 2147483647.");
     }
 }
