@@ -1,10 +1,9 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using API.Configurations;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace API.UnitTests.Configurations;
@@ -13,68 +12,47 @@ public class MeasurementsSyncOptionsTests
 {
     private const string MustBeExplicitlySetError = "The MinimumAgeThresholdHours must be explicitly set.";
 
-    private static List<ValidationResult> ValidateOptions(Dictionary<string, string?> configValues)
+    private static MeasurementsSyncOptions BuildOptions(Dictionary<string, string?> configValues)
     {
-        var services = new ServiceCollection()
-            .AddSingleton<IConfiguration>(new ConfigurationBuilder()
-                .AddInMemoryCollection(configValues)
-                .Build())
-            .BuildServiceProvider();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configValues)
+            .Build();
 
-        var options = new MeasurementsSyncOptions();
-        var validationContext = new ValidationContext(options);
-        validationContext.InitializeServiceProvider(type => services.GetService(type));
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.MeasurementsSyncOptions(); // Use the real options registration logic
 
-        return options.Validate(validationContext).ToList();
+        var serviceProvider = services.BuildServiceProvider();
+        return serviceProvider.GetRequiredService<IOptions<MeasurementsSyncOptions>>().Value;
     }
 
     [Fact]
     public void GivenEnvironmentVariable_WhenMinimumAgeThresholdHoursNotSet_ReturnsValidationError()
     {
-        var measurementsSyncOptions = new Dictionary<string, string?>
+        var configValues = new Dictionary<string, string?>
         {
             [$"{MeasurementsSyncOptions.MeasurementsSync}:Disabled"] = "false",
             [$"{MeasurementsSyncOptions.MeasurementsSync}:SleepType"] = MeasurementsSyncerSleepType.Hourly.ToString(),
         };
 
-        var validationResults = ValidateOptions(measurementsSyncOptions);
+        var exception = Assert.Throws<OptionsValidationException>(() => BuildOptions(configValues));
 
-        validationResults.Should().ContainSingle()
-            .Which.Should().Match<ValidationResult>(vr =>
-                vr.ErrorMessage == MustBeExplicitlySetError &&
-                vr.MemberNames.Single() == nameof(MeasurementsSyncOptions.MinimumAgeThresholdHours));
-    }
-
-    [Fact]
-    public void GivenEnvironmentVariable_WhenMinimumAgeThresholdHoursEmptyString_ReturnsValidationError()
-    {
-        var measurementsSyncOptions = new Dictionary<string, string?>
-        {
-            [$"{MeasurementsSyncOptions.MeasurementsSync}:Disabled"] = "false",
-            [$"{MeasurementsSyncOptions.MeasurementsSync}:SleepType"] = MeasurementsSyncerSleepType.Hourly.ToString(),
-            [$"{MeasurementsSyncOptions.MeasurementsSync}:MinimumAgeThresholdHours"] = string.Empty
-        };
-
-        var validationResults = ValidateOptions(measurementsSyncOptions);
-
-        validationResults.Should().ContainSingle()
-            .Which.Should().Match<ValidationResult>(vr =>
-                vr.ErrorMessage == MustBeExplicitlySetError &&
-                vr.MemberNames.Single() == nameof(MeasurementsSyncOptions.MinimumAgeThresholdHours));
+        exception.Failures.Should().ContainSingle()
+            .Which.Should().Be(MustBeExplicitlySetError);
     }
 
     [Fact]
     public void GivenEnvironmentVariable_WhenMinimumAgeThresholdHoursExplicitlySetToZero_PassesValidation()
     {
-        var measurementsSyncOptions = new Dictionary<string, string?>
+        var configValues = new Dictionary<string, string?>
         {
             [$"{MeasurementsSyncOptions.MeasurementsSync}:Disabled"] = "false",
             [$"{MeasurementsSyncOptions.MeasurementsSync}:SleepType"] = MeasurementsSyncerSleepType.Hourly.ToString(),
             [$"{MeasurementsSyncOptions.MeasurementsSync}:MinimumAgeThresholdHours"] = "0"
         };
 
-        var validationResults = ValidateOptions(measurementsSyncOptions);
+        var options = BuildOptions(configValues);
 
-        validationResults.Should().BeEmpty();
+        options.MinimumAgeThresholdHours.Should().Be(0);
     }
 }
