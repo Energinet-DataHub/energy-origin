@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace API.Configurations;
@@ -7,7 +10,7 @@ namespace API.Configurations;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum MeasurementsSyncerSleepType { EveryThirdSecond, Hourly }
 
-public class MeasurementsSyncOptions
+public class MeasurementsSyncOptions : IValidatableObject
 {
     public const string MeasurementsSync = "MeasurementsSync";
 
@@ -20,6 +23,24 @@ public class MeasurementsSyncOptions
     [Required]
     [Range(0, int.MaxValue)]
     public int MinimumAgeThresholdHours { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var configuration = validationContext.GetService<IConfiguration>()
+                            ?? throw new InvalidOperationException("Configuration service not available");
+
+        if (string.IsNullOrWhiteSpace(configuration
+                .GetSection(MeasurementsSync)
+                .GetValue<string>(nameof(MinimumAgeThresholdHours))))
+            yield return new ValidationResult(
+                $"The {nameof(MinimumAgeThresholdHours)} must be explicitly set.",
+                [nameof(MinimumAgeThresholdHours)]);
+
+        if (MinimumAgeThresholdHours < 0)
+            yield return new ValidationResult(
+                $"The {nameof(MinimumAgeThresholdHours)} must be greater than or equal to 0.",
+                [nameof(MinimumAgeThresholdHours)]);
+    }
 }
 
 public static partial class OptionsExtensions
