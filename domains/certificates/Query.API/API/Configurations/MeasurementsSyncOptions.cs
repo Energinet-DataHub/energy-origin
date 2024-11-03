@@ -35,11 +35,6 @@ public class MeasurementsSyncOptions : IValidatableObject
             yield return new ValidationResult(
                 $"The {nameof(MinimumAgeThresholdHours)} must be explicitly set.",
                 [nameof(MinimumAgeThresholdHours)]);
-
-        if (MinimumAgeThresholdHours < 0)
-            yield return new ValidationResult(
-                $"The {nameof(MinimumAgeThresholdHours)} must be greater than or equal to 0.",
-                [nameof(MinimumAgeThresholdHours)]);
     }
 }
 
