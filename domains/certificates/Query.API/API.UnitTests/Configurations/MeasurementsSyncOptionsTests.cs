@@ -20,7 +20,7 @@ public class MeasurementsSyncOptionsTests
 
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(configuration);
-        services.MeasurementsSyncOptions(); // Use the real options registration logic
+        services.MeasurementsSyncOptions();
 
         var serviceProvider = services.BuildServiceProvider();
         return serviceProvider.GetRequiredService<IOptions<MeasurementsSyncOptions>>().Value;
