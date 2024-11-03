@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -26,10 +25,9 @@ public class MeasurementsSyncOptions : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        var configuration = validationContext.GetService<IConfiguration>()
-                            ?? throw new InvalidOperationException("Configuration service not available");
+        var configuration = validationContext.GetService<IConfiguration>();
 
-        if (string.IsNullOrWhiteSpace(configuration
+        if (string.IsNullOrWhiteSpace(configuration?
                 .GetSection(MeasurementsSync)
                 .GetValue<string>(nameof(MinimumAgeThresholdHours))))
             yield return new ValidationResult(
