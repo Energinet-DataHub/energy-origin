@@ -49,15 +49,19 @@ public class GrantConsentToClientCommandHandler(
             throw new UserNotAffiliatedWithOrganizationCommandException();
         }
 
-        var existingConsent = organizationRepository
+        var existingConsent = await organizationRepository
             .Query()
-            .Where(o => o.Id == affiliatedOrganization.Id && o.OrganizationReceivedConsents.Any(c =>
-                c.ConsentReceiverOrganization.Clients.Any(x => x.IdpClientId == toClientCommand.IdpClientId)));
+            .Where(o => o.Id == affiliatedOrganization.Id && o.OrganizationGivenConsents.Any(c =>
+                c.ConsentReceiverOrganization.Clients.Any(x => x.IdpClientId == toClientCommand.IdpClientId))).AnyAsync(cancellationToken);
 
-        if (!await existingConsent.AnyAsync(cancellationToken))
+        if (!existingConsent)
         {
             var organizationConsent = OrganizationConsent.Create(affiliatedOrganization.Id, clientOrganizationId.Value, DateTimeOffset.UtcNow);
             await organizationConsentRepository.AddAsync(organizationConsent, cancellationToken);
+        }
+        else
+        {
+            throw new EntityAlreadyExistsException(nameof(OrganizationConsent));
         }
 
         await unitOfWork.CommitAsync();

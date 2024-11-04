@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Authorization.Exceptions;
 using API.Data;
 using API.Models;
 using API.Repository;
@@ -41,15 +42,19 @@ public class GrantConsentToOrganizationCommandHandler(
             throw new UserNotAffiliatedWithOrganizationCommandException();
         }
 
-        var existingConsent = organizationRepository
+        var existingConsent = await organizationRepository
             .Query()
-            .Where(o => o.Id == affiliatedOrganization.Id && o.OrganizationReceivedConsents.Any(c =>
-                c.ConsentReceiverOrganizationId == consentReceiverOrganizationId));
+            .Where(o => o.Id == affiliatedOrganization.Id && o.OrganizationGivenConsents.Any(c =>
+                c.ConsentReceiverOrganizationId == consentReceiverOrganizationId)).AnyAsync(cancellationToken);
 
-        if (!await existingConsent.AnyAsync(cancellationToken))
+        if (!existingConsent)
         {
             var organizationConsent = OrganizationConsent.Create(affiliatedOrganization.Id, consentReceiverOrganizationId, DateTimeOffset.UtcNow);
             await organizationConsentRepository.AddAsync(organizationConsent, cancellationToken);
+        }
+        else
+        {
+            throw new EntityAlreadyExistsException(nameof(OrganizationConsent));
         }
 
         await unitOfWork.CommitAsync();

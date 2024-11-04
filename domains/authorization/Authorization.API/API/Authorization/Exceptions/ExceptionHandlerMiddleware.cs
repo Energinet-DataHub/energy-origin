@@ -32,6 +32,7 @@ public class ExceptionHandlerMiddleware
             {
                 NotFoundException => new Error(HttpStatusCode.NotFound, ex.Message),
                 ForbiddenException => new Error(HttpStatusCode.Forbidden, ex.Message),
+                AlreadyExistsException => new Error(HttpStatusCode.Conflict, ex.Message),
                 _ => new Error(HttpStatusCode.InternalServerError, ex.Message)
             };
 

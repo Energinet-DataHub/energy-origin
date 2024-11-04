@@ -62,6 +62,27 @@ public class GrantConsentTest
     }
 
     [Fact]
+    public async Task GivenKnownClientId_WhenGrantingSameConsentTwice_409ConflictReturned2ndTime()
+    {
+        var organizationWithClient = Any.OrganizationWithClient();
+        var user = Any.User();
+        var organization = Any.Organization();
+        var affiliation = Affiliation.Create(user, organization);
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.SaveChangesAsync();
+
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var response1 = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
+        response1.Should().Be200Ok();
+        var response2 = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
+        response2.Should().Be409Conflict();
+    }
+
+    [Fact]
     public async Task GivenKnownOrganizationId_WhenGrantingConsent_200OkReturned()
     {
         var consentReceiverOrganization = Any.Organization();
@@ -78,6 +99,27 @@ public class GrantConsentTest
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
         response.Should().Be200Ok();
+    }
+
+    [Fact]
+    public async Task GivenKnownOrganizationId_WhenGrantingSameConsentTwice_409ConflictReturned2ndTime()
+    {
+        var consentReceiverOrganization = Any.Organization();
+        var user = Any.User();
+        var organization = Any.Organization();
+        var affiliation = Affiliation.Create(user, organization);
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.SaveChangesAsync();
+
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var response1 = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
+        response1.Should().Be200Ok();
+        var response2 = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
+        response2.Should().Be409Conflict();
     }
 
     [Fact]
