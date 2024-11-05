@@ -97,7 +97,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v3
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v4
         with:
           configurations: |
             domains/authorization/Authorization.API/configuration.yaml
@@ -109,5 +109,6 @@ jobs:
             domains/transfer/ClaimAutomation/configuration.yaml
             domains/transfer/TransferAgreementAutomation/configuration.yaml
             domains/redoc/configuration.yaml
-          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
+          github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
+          github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
