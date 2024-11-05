@@ -7,7 +7,7 @@ using API.Data;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
-using Google.Protobuf.WellKnownTypes;
+using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

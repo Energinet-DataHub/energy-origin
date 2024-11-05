@@ -1,23 +1,21 @@
-using System;
-using System.Collections.Generic;
-
-namespace DataContext.ValueObjects;
+namespace EnergyOrigin.Domain.ValueObjects;
 
 public class UnixTimestamp : ValueObject
 {
     public const long SecondsPerDay = 86400;
     public const long SecondsPerHour = 3600;
     public const long SecondsPerMinute = 60;
-    public long Seconds { get; private set; }
+
+    public long EpochSeconds { get; private set; }
 
     private UnixTimestamp()
     {
-        Seconds = 0;
+        EpochSeconds = 0;
     }
 
-    private UnixTimestamp(long seconds)
+    private UnixTimestamp(long epochSeconds)
     {
-        Seconds = seconds;
+        EpochSeconds = epochSeconds;
     }
 
     public static UnixTimestamp Now()
@@ -27,24 +25,24 @@ public class UnixTimestamp : ValueObject
 
     public UnixTimestamp RoundToLatestHour()
     {
-        return new UnixTimestamp(Seconds - Seconds % SecondsPerHour);
+        return new UnixTimestamp(EpochSeconds - EpochSeconds % SecondsPerHour);
     }
 
     public UnixTimestamp RoundToNextHour()
     {
-        return Seconds % SecondsPerHour > 0 ? new UnixTimestamp(Seconds + (3600 - Seconds % SecondsPerHour)) : this;
+        return EpochSeconds % SecondsPerHour > 0 ? new UnixTimestamp(EpochSeconds + (3600 - EpochSeconds % SecondsPerHour)) : this;
     }
 
     public TimeSpan TimeUntilNextHour()
     {
         var lastHour = RoundToLatestHour();
-        var secondsIntoThisHour = Seconds - lastHour.Seconds;
+        var secondsIntoThisHour = EpochSeconds - lastHour.EpochSeconds;
         return TimeSpan.FromSeconds(SecondsPerHour - secondsIntoThisHour);
     }
 
     public UnixTimestamp RoundToLatestMidnight()
     {
-        return new UnixTimestamp(Seconds - Seconds % SecondsPerDay);
+        return new UnixTimestamp(EpochSeconds - EpochSeconds % SecondsPerDay);
     }
 
     public static UnixTimestamp Create(long seconds)
@@ -59,7 +57,7 @@ public class UnixTimestamp : ValueObject
 
     public static UnixTimestamp Max(UnixTimestamp a, UnixTimestamp b)
     {
-        return a.Seconds > b.Seconds ? a : b;
+        return a.EpochSeconds > b.EpochSeconds ? a : b;
     }
 
     public static UnixTimestamp Empty()
@@ -69,41 +67,51 @@ public class UnixTimestamp : ValueObject
 
     public DateTimeOffset ToDateTimeOffset()
     {
-        return DateTimeOffset.FromUnixTimeSeconds(Seconds);
+        return DateTimeOffset.FromUnixTimeSeconds(EpochSeconds);
     }
 
     public UnixTimestamp Add(TimeSpan timespan)
     {
-        return new UnixTimestamp(this.Seconds + (long)timespan.TotalSeconds);
+        return new UnixTimestamp(this.EpochSeconds + (long)timespan.TotalSeconds);
     }
 
     public static bool operator >=(UnixTimestamp t1, UnixTimestamp t2)
     {
-        return t1.Seconds >= t2.Seconds;
+        return t1.EpochSeconds >= t2.EpochSeconds;
     }
 
     public static bool operator <=(UnixTimestamp t1, UnixTimestamp t2)
     {
-        return t1.Seconds <= t2.Seconds;
+        return t1.EpochSeconds <= t2.EpochSeconds;
     }
 
     public static bool operator >(UnixTimestamp t1, UnixTimestamp t2)
     {
-        return t1.Seconds > t2.Seconds;
+        return t1.EpochSeconds > t2.EpochSeconds;
     }
 
     public static bool operator <(UnixTimestamp t1, UnixTimestamp t2)
     {
-        return t1.Seconds < t2.Seconds;
-    }
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        return new object[] { Seconds };
+        return t1.EpochSeconds < t2.EpochSeconds;
     }
 
     public override string ToString()
     {
-        return DateTimeOffset.FromUnixTimeSeconds(Seconds).ToString();
+        return DateTimeOffset.FromUnixTimeSeconds(EpochSeconds).ToString();
+    }
+
+    public UnixTimestamp AddMinutes(int minutes)
+    {
+        return this.Add(TimeSpan.FromMinutes(minutes));
+    }
+
+    public UnixTimestamp AddHours(int hours)
+    {
+        return this.Add(TimeSpan.FromHours(hours));
+    }
+
+    public UnixTimestamp AddDays(int days)
+    {
+        return this.Add(TimeSpan.FromDays(days));
     }
 }

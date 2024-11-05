@@ -43,12 +43,12 @@ public class TestData
         object[] agreementFields =
         {
             new NpgsqlParameter("Id", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin),
+            new NpgsqlParameter("StartDate", agreement.StartDate.ToDateTimeOffset()),
+            new NpgsqlParameter("EndDate", agreement.EndDate?.ToDateTimeOffset()),
+            new NpgsqlParameter("SenderId", agreement.SenderId.Value),
+            new NpgsqlParameter("SenderName", agreement.SenderName.Value),
+            new NpgsqlParameter("SenderTin", agreement.SenderTin.Value),
+            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin.Value),
             new NpgsqlParameter("ReceiverReference", agreement.ReceiverReference),
             new NpgsqlParameter("TransferAgreementNumber", agreement.TransferAgreementNumber)
         };

@@ -3,6 +3,7 @@ using System.Linq;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using Measurements.V1;
 
 namespace API.MeasurementsSyncer;
@@ -121,7 +122,7 @@ public class SlidingWindowService
     {
         foreach (var missingInterval in missingIntervals)
         {
-            var secondsOfMissingInterval = missingInterval.To.Seconds - missingInterval.From.Seconds;
+            var secondsOfMissingInterval = missingInterval.To.EpochSeconds - missingInterval.From.EpochSeconds;
             var numberOfMissingIntervals = secondsOfMissingInterval / UnixTimestamp.SecondsPerHour;
 
             _measurementSyncMetrics.AddNumberOfMissingMeasurement(numberOfMissingIntervals);
@@ -190,7 +191,7 @@ public class SlidingWindowService
 
     private static bool ContainsGapAfterLastMeasurement(UnixTimestamp newSynchronizationPoint, Measurement lastMeasurement)
     {
-        return lastMeasurement.DateTo < newSynchronizationPoint.Seconds;
+        return lastMeasurement.DateTo < newSynchronizationPoint.EpochSeconds;
     }
 
     private static void AddMissingInterval(UnixTimestamp intervalStart, UnixTimestamp intervalEnd, List<MeasurementInterval> missingIntervals)
@@ -216,7 +217,7 @@ public class SlidingWindowService
 
     private static bool ContainsGapBeforeFirstMeasurement(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> sortedMeasurements)
     {
-        return sortedMeasurements[0].DateFrom > window.SynchronizationPoint.Seconds;
+        return sortedMeasurements[0].DateFrom > window.SynchronizationPoint.EpochSeconds;
     }
 
     private static List<Measurement> SortMeasurementsChronologically(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements)

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Repository;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +21,7 @@ public class GetConsentQueryHandler(IClientRepository clientRepository)
         var consents = await clientRepository
             .Query()
             .Where(client => client.IdpClientId == idpClientId)
-            .SelectMany(x => x.Organization!.OrganizationReceivedConsents.Select(y => new GetConsentQueryResultItem(x.IdpClientId, x.Organization.Name, x.RedirectUrl)))
+            .SelectMany(x => x.Organization!.OrganizationReceivedConsents.Select(y => new GetConsentQueryResultItem(x.IdpClientId, x.Organization.Name.Value, x.RedirectUrl)))
             .ToListAsync();
 
         return new GetConsentsQueryResult(consents);
@@ -31,4 +32,4 @@ public record GetConsentQuery(Guid IdpClientId) : IRequest<GetConsentsQueryResul
 
 public record GetConsentsQueryResult(List<GetConsentQueryResultItem> Result);
 
-public record GetConsentQueryResultItem(IdpClientId IdpClientId, OrganizationName OrganizationName, string RedirectUrl);
+public record GetConsentQueryResultItem(IdpClientId IdpClientId, string OrganizationName, string RedirectUrl);

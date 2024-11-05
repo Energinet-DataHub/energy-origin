@@ -1,11 +1,11 @@
 using DataContext.Models;
-using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.Converters;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DataContext;
 
@@ -19,7 +19,7 @@ public class ApplicationDbContext : DbContext
     {
         configurationBuilder
             .Properties<UnixTimestamp>()
-            .HaveConversion<UnixTimestampConverter>();
+            .HaveConversion<UnixTimestampValueToSecondsConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -62,4 +62,4 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
     }
 }
 
-public class UnixTimestampConverter() : ValueConverter<UnixTimestamp, long>(v => v.Seconds, v => UnixTimestamp.Create(v));
+

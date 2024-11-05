@@ -9,6 +9,7 @@ using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation.AspNetCore;
@@ -60,17 +61,17 @@ public class TransferAgreementsController(
 
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin != identityDescriptor.OrganizationCvr)
+        if (proposal.ReceiverCompanyTin != null && proposal.ReceiverCompanyTin.Value != identityDescriptor.OrganizationCvr)
         {
             return ValidationProblem("Only the receiver company can accept this Transfer Agreement Proposal");
         }
 
-        if (proposal.EndDate < DateTimeOffset.UtcNow)
+        if (proposal.EndDate != null && proposal.EndDate < UnixTimestamp.Now())
         {
             return ValidationProblem("This proposal has run out");
         }
 
-        proposal.ReceiverCompanyTin ??= identityDescriptor.OrganizationCvr!;
+        proposal.ReceiverCompanyTin = Tin.Create(identityDescriptor.OrganizationCvr!);
 
         var taRepo = unitOfWork.TransferAgreementRepo;
 
@@ -98,7 +99,7 @@ public class TransferAgreementsController(
         var walletEndpoint = await walletClient.CreateWalletEndpoint(subject, walletId.Value, CancellationToken.None);
 
         var externalEndpoint =
-            await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId, walletEndpoint, proposal.ReceiverCompanyTin, CancellationToken.None);
+            await walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.Value, walletEndpoint, proposal.ReceiverCompanyTin.Value, CancellationToken.None);
 
         var transferAgreement = new TransferAgreement
         {
@@ -107,7 +108,7 @@ public class TransferAgreementsController(
             SenderId = proposal.SenderCompanyId,
             SenderName = proposal.SenderCompanyName,
             SenderTin = proposal.SenderCompanyTin,
-            ReceiverName = identityDescriptor.OrganizationName,
+            ReceiverName = OrganizationName.Create(identityDescriptor.OrganizationName),
             ReceiverTin = proposal.ReceiverCompanyTin,
             ReceiverReference = externalEndpoint.ReceiverId
         };
@@ -138,8 +139,8 @@ public class TransferAgreementsController(
             actorName: identity.Name,
             organizationTin: identity.OrganizationCvr!,
             organizationName: identity.OrganizationName,
-            otherOrganizationTin: proposal.SenderCompanyTin,
-            otherOrganizationName: proposal.SenderCompanyName,
+            otherOrganizationTin: proposal.SenderCompanyTin.Value,
+            otherOrganizationName: proposal.SenderCompanyName.Value,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
             entityId: result.Id.ToString())
@@ -150,10 +151,10 @@ public class TransferAgreementsController(
             actorId: Guid.Empty,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: string.Empty,
-            organizationTin: proposal.SenderCompanyTin,
-            organizationName: proposal.SenderCompanyName,
-            otherOrganizationTin: result.ReceiverTin,
-            otherOrganizationName: result.ReceiverName,
+            organizationTin: proposal.SenderCompanyTin.Value,
+            organizationName: proposal.SenderCompanyName.Value,
+            otherOrganizationTin: result.ReceiverTin.Value,
+            otherOrganizationName: result.ReceiverName.Value,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
             entityId: result.Id.ToString())
@@ -215,19 +216,21 @@ public class TransferAgreementsController(
         }
 
         var endDate = request.EndDate.HasValue
-            ? DateTimeOffset.FromUnixTimeSeconds(request.EndDate.Value)
-            : (DateTimeOffset?)null;
+            ? UnixTimestamp.Create(request.EndDate.Value)
+            : null;
 
         var taRepo = unitOfWork.TransferAgreementRepo;
         var transferAgreement = await taRepo.GetTransferAgreement(id, organizationId.ToString(), identityDescriptor.OrganizationCvr!);
 
-        if (transferAgreement == null || transferAgreement.SenderId != organizationId)
+        if (transferAgreement == null || transferAgreement.SenderId.Value != organizationId)
         {
             return NotFound();
         }
 
-        if (transferAgreement.EndDate < DateTimeOffset.UtcNow)
+        if (transferAgreement.EndDate != null && transferAgreement.EndDate < UnixTimestamp.Now())
+        {
             return ValidationProblem("Transfer agreement has expired");
+        }
 
         var overlapQuery = new TransferAgreement
         {
@@ -247,11 +250,11 @@ public class TransferAgreementsController(
 
         var response = new TransferAgreementDto(
             Id: transferAgreement.Id,
-            StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
-            EndDate: transferAgreement.EndDate?.ToUnixTimeSeconds(),
-            SenderName: transferAgreement.SenderName,
-            SenderTin: transferAgreement.SenderTin,
-            ReceiverTin: transferAgreement.ReceiverTin);
+            StartDate: transferAgreement.StartDate.EpochSeconds,
+            EndDate: transferAgreement.EndDate?.EpochSeconds,
+            SenderName: transferAgreement.SenderName.Value,
+            SenderTin: transferAgreement.SenderTin.Value,
+            ReceiverTin: transferAgreement.ReceiverTin.Value);
 
         await AppendAgreementEndDateChangedToActivityLog(identityDescriptor, transferAgreement);
 
@@ -267,8 +270,8 @@ public class TransferAgreementsController(
             actorId: identity.Subject,
             actorType: ActivityLogEntry.ActorTypeEnum.User,
             actorName: String.Empty,
-            organizationTin: result.ReceiverTin,
-            organizationName: result.ReceiverName,
+            organizationTin: result.ReceiverTin.Value,
+            organizationName: result.ReceiverName.Value,
             otherOrganizationTin: identity.OrganizationCvr!,
             otherOrganizationName: identity.OrganizationName,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
@@ -283,8 +286,8 @@ public class TransferAgreementsController(
             actorName: identity.Name,
             organizationTin: identity.OrganizationCvr!,
             organizationName: identity.OrganizationName,
-            otherOrganizationTin: result.ReceiverTin,
-            otherOrganizationName: result.ReceiverName,
+            otherOrganizationTin: result.ReceiverTin.Value,
+            otherOrganizationName: result.ReceiverName.Value,
             entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
             entityId: result.Id.ToString())
@@ -294,11 +297,11 @@ public class TransferAgreementsController(
     private static TransferAgreementDto ToTransferAgreementDto(TransferAgreement transferAgreement) =>
         new(
             Id: transferAgreement.Id,
-            StartDate: transferAgreement.StartDate.ToUnixTimeSeconds(),
-            EndDate: transferAgreement.EndDate?.ToUnixTimeSeconds(),
-            SenderName: transferAgreement.SenderName,
-            SenderTin: transferAgreement.SenderTin,
-            ReceiverTin: transferAgreement.ReceiverTin
+            StartDate: transferAgreement.StartDate.EpochSeconds,
+            EndDate: transferAgreement.EndDate?.EpochSeconds,
+            SenderName: transferAgreement.SenderName.Value,
+            SenderTin: transferAgreement.SenderTin.Value,
+            ReceiverTin: transferAgreement.ReceiverTin.Value
         );
 
     [HttpGet("overview")]
@@ -316,13 +319,13 @@ public class TransferAgreementsController(
         }
 
         var transferAgreementDtos = transferAgreements
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), x.SenderName,
-                x.SenderTin, x.ReceiverTin, GetTransferAgreementStatusFromAgreement(x)))
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, x.SenderName.Value,
+                x.SenderTin.Value, x.ReceiverTin.Value, GetTransferAgreementStatusFromAgreement(x)))
             .ToList();
 
         var transferAgreementProposalDtos = transferAgreementProposals
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.ToUnixTimeSeconds(), x.EndDate?.ToUnixTimeSeconds(), string.Empty,
-                string.Empty, x.ReceiverCompanyTin, GetTransferAgreementStatusFromProposal(x)))
+            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, string.Empty,
+                string.Empty, x.ReceiverCompanyTin?.Value, GetTransferAgreementStatusFromProposal(x)))
             .ToList();
 
         transferAgreementProposalDtos.AddRange(transferAgreementDtos);
@@ -332,7 +335,7 @@ public class TransferAgreementsController(
 
     private TransferAgreementStatus GetTransferAgreementStatusFromProposal(TransferAgreementProposal transferAgreementProposal)
     {
-        var timespan = DateTimeOffset.UtcNow - transferAgreementProposal.CreatedAt;
+        var timespan = DateTimeOffset.UtcNow - transferAgreementProposal.CreatedAt.ToDateTimeOffset();
 
         return timespan.Days switch
         {
@@ -343,11 +346,11 @@ public class TransferAgreementsController(
 
     private TransferAgreementStatus GetTransferAgreementStatusFromAgreement(TransferAgreement transferAgreement)
     {
-        if (transferAgreement.StartDate <= DateTimeOffset.UtcNow && transferAgreement.EndDate == null)
+        if (transferAgreement.StartDate <= UnixTimestamp.Now() && transferAgreement.EndDate == null)
         {
             return TransferAgreementStatus.Active;
         }
-        else if (transferAgreement.StartDate < DateTimeOffset.UtcNow && transferAgreement.EndDate > DateTimeOffset.UtcNow)
+        else if (transferAgreement.StartDate < UnixTimestamp.Now() && transferAgreement.EndDate != null && transferAgreement.EndDate > UnixTimestamp.Now())
         {
             return TransferAgreementStatus.Active;
         }

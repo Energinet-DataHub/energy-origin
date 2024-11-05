@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 
 namespace API.MeasurementsSyncer.Persistence;
 
