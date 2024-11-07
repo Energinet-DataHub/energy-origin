@@ -230,7 +230,7 @@ public class MeasurementsSyncServiceTest
     {
         _options.MinimumAgeThresholdHours = 2;
         var now = UnixTimestamp.Now().RoundToLatestHour();
-        var slidingWindowSyncPoint = now.Add(TimeSpan.FromHours(-4)).RoundToLatestHour();
+        var slidingWindowSyncPoint = now.Add(TimeSpan.FromHours(-4));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, slidingWindowSyncPoint);
 
         var measurement = Any.Measurement(_syncInfo.Gsrn, slidingWindowSyncPoint.Seconds, 5);
@@ -263,7 +263,7 @@ public class MeasurementsSyncServiceTest
     {
         _options.MinimumAgeThresholdHours = 5;
         var now = UnixTimestamp.Now().RoundToLatestHour();
-        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-10)).RoundToLatestHour());
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-10)));
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
@@ -275,7 +275,7 @@ public class MeasurementsSyncServiceTest
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         _options.MinimumAgeThresholdHours = 0;
-        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-4)).RoundToLatestHour().Seconds, 10);
+        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-4)).Seconds, 10);
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
         _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
 
@@ -291,10 +291,10 @@ public class MeasurementsSyncServiceTest
     {
         var now = UnixTimestamp.Now().RoundToLatestHour();
 
-        var syncPoint = now.Add(TimeSpan.FromHours(1)).RoundToLatestHour();
+        var syncPoint = now.Add(TimeSpan.FromHours(1));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint);
 
-        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-2)).RoundToLatestHour().Seconds, 10);
+        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-2)).Seconds, 10);
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
@@ -307,7 +307,7 @@ public class MeasurementsSyncServiceTest
 
         _options.MinimumAgeThresholdHours = 150;
 
-        var response = await _service.FetchMeasurements(slidingWindow, _syncInfo.MeteringPointOwner, now.Add(TimeSpan.FromHours(-150)).RoundToLatestHour(), CancellationToken.None);
+        var response = await _service.FetchMeasurements(slidingWindow, _syncInfo.MeteringPointOwner, now.Add(TimeSpan.FromHours(-150)), CancellationToken.None);
 
         response.Should().BeEmpty();
     }
@@ -317,7 +317,7 @@ public class MeasurementsSyncServiceTest
     {
         _options.MinimumAgeThresholdHours = 5;
         var now = UnixTimestamp.Now().RoundToLatestHour();
-        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-10)).RoundToLatestHour());
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-10)));
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
@@ -335,7 +335,7 @@ public class MeasurementsSyncServiceTest
         _fakeMeasurementPublisher.ClearReceivedCalls();
 
         _options.MinimumAgeThresholdHours = 2;
-        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-3)).RoundToLatestHour().Seconds, 10);
+        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-3)).Seconds, 10);
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
         _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
 
@@ -392,10 +392,10 @@ public class MeasurementsSyncServiceTest
         _options.MinimumAgeThresholdHours = 96;
         var now = UnixTimestamp.Now().RoundToLatestHour();
 
-        var syncPoint = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour();
+        var syncPoint = now.Add(TimeSpan.FromDays(-7));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint);
 
-        var missingIntervalOutsideThreshold = MeasurementInterval.Create(now.Add(TimeSpan.FromHours(-1)).RoundToLatestHour(), now.RoundToLatestHour());
+        var missingIntervalOutsideThreshold = MeasurementInterval.Create(now.Add(TimeSpan.FromHours(-1)), now);
         slidingWindow.MissingMeasurements.Intervals.Add(missingIntervalOutsideThreshold);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
@@ -422,10 +422,10 @@ public class MeasurementsSyncServiceTest
         _options.MinimumAgeThresholdHours = 96;
         var now = UnixTimestamp.Now().RoundToLatestHour();
 
-        var syncStart = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour();
+        var syncStart = now.Add(TimeSpan.FromDays(-7));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncStart);
 
-        var missingInterval = MeasurementInterval.Create(syncStart, now.RoundToLatestHour());
+        var missingInterval = MeasurementInterval.Create(syncStart, now);
         slidingWindow.MissingMeasurements.Intervals.Add(missingInterval);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
