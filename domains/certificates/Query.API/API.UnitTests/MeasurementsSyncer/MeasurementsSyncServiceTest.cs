@@ -131,10 +131,8 @@ public class MeasurementsSyncServiceTest
         var now = UnixTimestamp.Now().RoundToLatestHour();
 
         var syncPoint = now.Add(TimeSpan.FromHours(1)).RoundToLatestHour();
-        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint);
-
         var missingIntervalWhichWillAppear = MeasurementInterval.Create(syncPoint.Add(TimeSpan.FromHours(-200)).RoundToLatestHour(), syncPoint.RoundToLatestHour());
-        slidingWindow.MissingMeasurements.Intervals.Add(missingIntervalWhichWillAppear);
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint, [missingIntervalWhichWillAppear]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
