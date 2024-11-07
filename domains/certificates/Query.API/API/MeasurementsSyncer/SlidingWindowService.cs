@@ -92,10 +92,10 @@ public class SlidingWindowService
             .ToList();
     }
 
-    private static bool IsAfterSynchronizationPoint(MeteringPointTimeSeriesSlidingWindow window, UnixTimestamp from, UnixTimestamp to, UnixTimestamp minimumAgeThreshold)
-    {
-        return from >= window.SynchronizationPoint && to <= minimumAgeThreshold;
-    }
+        private static bool IsAfterSynchronizationPoint(MeteringPointTimeSeriesSlidingWindow window, UnixTimestamp from, UnixTimestamp to, UnixTimestamp minimumAgeThreshold)
+        {
+            return from >= window.SynchronizationPoint && to <= minimumAgeThreshold;
+        }
 
     private static bool IsIncludedInMissingInterval(MeteringPointTimeSeriesSlidingWindow window, MeasurementInterval interval)
     {
