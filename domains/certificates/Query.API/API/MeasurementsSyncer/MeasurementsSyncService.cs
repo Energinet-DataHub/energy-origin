@@ -54,7 +54,7 @@ public class MeasurementsSyncService
 
         if (fetchedMeasurements.Count > 0)
         {
-            var measurementsToPublish = _slidingWindowService.FilterMeasurements(slidingWindow, fetchedMeasurements);
+            var measurementsToPublish = _slidingWindowService.FilterMeasurements(slidingWindow, fetchedMeasurements, pointInTimeItShouldSyncUpTo);
 
             _logger.LogInformation(
                 "Publishing {numberOfMeasurementsLeft} of total {numberOfMeasurements} measurements fetched for GSRN {GSRN}",

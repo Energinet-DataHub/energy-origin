@@ -32,7 +32,7 @@ public class SlidingWindowService
         return MeteringPointTimeSeriesSlidingWindow.Create(gsrn, synchronizationPoint, missingMeasurements);
     }
 
-    public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements)
+    public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, UnixTimestamp pointInTimeItShouldUpTo)
     {
         return measurements
             .Where(m => m.Gsrn == window.GSRN)
@@ -50,7 +50,7 @@ public class SlidingWindowService
                 var to = UnixTimestamp.Create(m.DateTo);
                 var interval = MeasurementInterval.Create(from, to);
 
-                if (IsAfterSynchronizationPoint(window, from))
+                if (IsAfterSynchronizationPoint(window, from, to, pointInTimeItShouldUpTo))
                 {
                     return true;
                 }
@@ -92,9 +92,9 @@ public class SlidingWindowService
             .ToList();
     }
 
-    private static bool IsAfterSynchronizationPoint(MeteringPointTimeSeriesSlidingWindow window, UnixTimestamp from)
+    private static bool IsAfterSynchronizationPoint(MeteringPointTimeSeriesSlidingWindow window, UnixTimestamp from, UnixTimestamp to, UnixTimestamp minimumAgeThreshold)
     {
-        return from >= window.SynchronizationPoint;
+        return from >= window.SynchronizationPoint && to <= minimumAgeThreshold;
     }
 
     private static bool IsIncludedInMissingInterval(MeteringPointTimeSeriesSlidingWindow window, MeasurementInterval interval)
