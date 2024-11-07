@@ -15,4 +15,5 @@ public class TransferAgreement
     public Tin ReceiverTin { get; set; } = Tin.Empty();
     public Guid ReceiverReference { get; set; }
     public int TransferAgreementNumber { get; set; }
+    public TransferAgreementType Type { get; set; }
 }

@@ -1,12 +1,36 @@
 using System;
+using DataContext.Models;
 using FluentValidation;
+using System.Text.Json.Serialization;
 
 namespace API.Transfer.Api.Dto.Requests;
 
 public record CreateTransferAgreementProposal(
     long StartDate,
     long? EndDate,
-    string? ReceiverTin);
+    string? ReceiverTin,
+    CreateTransferAgreementType? Type = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum CreateTransferAgreementType
+{
+    TransferAllCertificates = 0,
+    TransferCertificatesBasedOnConsumption = 1,
+}
+
+public static class CreateTransferAgreementTypeMapper
+{
+    public static TransferAgreementType MapCreateTransferAgreementType(CreateTransferAgreementType? request)
+    {
+        return request switch
+        {
+            null => TransferAgreementType.TransferAllCertificates,
+            CreateTransferAgreementType.TransferAllCertificates => TransferAgreementType.TransferAllCertificates,
+            CreateTransferAgreementType.TransferCertificatesBasedOnConsumption => TransferAgreementType.TransferCertificatesBasedOnConsumption,
+            _ => throw new ArgumentOutOfRangeException($"Unable to map transfer agreement type value {request}")
+        };
+    }
+}
 
 public class CreateTransferAgreementProposalValidator : AbstractValidator<CreateTransferAgreementProposal>
 {
