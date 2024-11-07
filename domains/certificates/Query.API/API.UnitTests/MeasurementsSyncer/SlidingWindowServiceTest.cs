@@ -554,8 +554,8 @@ public class SlidingWindowServiceTest
         {
             allMeasurements.Add(CreateMeasurement(
                 _gsrn,
-                currentTime.Seconds,
-                currentTime.Add(TimeSpan.FromHours(1)).Seconds,
+                currentTime.EpochSeconds,
+                currentTime.Add(TimeSpan.FromHours(1)).EpochSeconds,
                 10,
                 false,
                 EnergyQuantityValueQuality.Measured
@@ -590,8 +590,8 @@ public class SlidingWindowServiceTest
         {
             allMeasurements.Add(CreateMeasurement(
                 _gsrn,
-                currentTime.Seconds,
-                currentTime.Add(TimeSpan.FromHours(1)).Seconds,
+                currentTime.EpochSeconds,
+                currentTime.Add(TimeSpan.FromHours(1)).EpochSeconds,
                 10,
                 false,
                 EnergyQuantityValueQuality.Measured
@@ -649,13 +649,13 @@ public class SlidingWindowServiceTest
 
         var beforeThreshold1 = startPositionOfMissingInterval.Add(TimeSpan.FromHours(10));
         var beforeThreshold2 = startPositionOfMissingInterval.Add(TimeSpan.FromHours(12));
-        measurements.Add(CreateMeasurement(_gsrn, beforeThreshold1.Seconds, beforeThreshold1.Add(TimeSpan.FromHours(1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured));
-        measurements.Add(CreateMeasurement(_gsrn, beforeThreshold2.Seconds, beforeThreshold2.Add(TimeSpan.FromHours(1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured));
+        measurements.Add(CreateMeasurement(_gsrn, beforeThreshold1.EpochSeconds, beforeThreshold1.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured));
+        measurements.Add(CreateMeasurement(_gsrn, beforeThreshold2.EpochSeconds, beforeThreshold2.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured));
 
         var afterThreshold1 = now.Add(TimeSpan.FromHours(-48));
         var afterThreshold2 = now.Add(TimeSpan.FromHours(-24));
-        measurements.Add(CreateMeasurement(_gsrn, afterThreshold1.Seconds, afterThreshold1.Add(TimeSpan.FromHours(1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured));
-        measurements.Add(CreateMeasurement(_gsrn, afterThreshold2.Seconds, afterThreshold2.Add(TimeSpan.FromHours(1)).Seconds, 10, false, EnergyQuantityValueQuality.Measured));
+        measurements.Add(CreateMeasurement(_gsrn, afterThreshold1.EpochSeconds, afterThreshold1.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured));
+        measurements.Add(CreateMeasurement(_gsrn, afterThreshold2.EpochSeconds, afterThreshold2.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured));
 
         _sut.UpdateSlidingWindow(window, measurements, now);
 
@@ -691,7 +691,7 @@ public class SlidingWindowServiceTest
 
         var initialMeasurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, startPositionOfMissingInterval.Seconds, initialThreshold.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, startPositionOfMissingInterval.EpochSeconds, initialThreshold.EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured)
         };
         _sut.UpdateSlidingWindow(window, initialMeasurements, initialThreshold);
         Assert.Equal(initialThreshold, window.SynchronizationPoint);
@@ -700,7 +700,7 @@ public class SlidingWindowServiceTest
         var newThreshold = _now.Add(-TimeSpan.FromHours(_options.MinimumAgeThresholdHours)).RoundToLatestHour();
         var newMeasurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, initialThreshold.Seconds, newThreshold.Seconds, 10, false, EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, initialThreshold.EpochSeconds, newThreshold.EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured)
         };
         _sut.UpdateSlidingWindow(window, newMeasurements, newThreshold);
 

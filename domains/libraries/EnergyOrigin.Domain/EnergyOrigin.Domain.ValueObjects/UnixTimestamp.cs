@@ -62,7 +62,7 @@ public class UnixTimestamp : ValueObject
 
     public static UnixTimestamp Min(UnixTimestamp a, UnixTimestamp b)
     {
-        return a.Seconds < b.Seconds ? a : b;
+        return a.EpochSeconds < b.EpochSeconds ? a : b;
     }
 
     public static UnixTimestamp Empty()

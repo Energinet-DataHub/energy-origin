@@ -7,7 +7,7 @@ using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
-using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using Measurements.V1;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
@@ -76,14 +76,14 @@ public class MeasurementsSyncService
     public async Task<List<Measurement>> FetchMeasurements(MeteringPointTimeSeriesSlidingWindow slidingWindow, string meteringPointOwner,
         UnixTimestamp pointInTimeItShouldSyncUpTo, CancellationToken cancellationToken)
     {
-        var dateFrom = slidingWindow.GetFetchIntervalStart().Seconds;
+        var dateFrom = slidingWindow.GetFetchIntervalStart().EpochSeconds;
 
-        if (dateFrom < pointInTimeItShouldSyncUpTo.Seconds)
+        if (dateFrom < pointInTimeItShouldSyncUpTo.EpochSeconds)
         {
             var request = new GetMeasurementsRequest
             {
                 DateFrom = dateFrom,
-                DateTo = pointInTimeItShouldSyncUpTo.Seconds,
+                DateTo = pointInTimeItShouldSyncUpTo.EpochSeconds,
                 Gsrn = slidingWindow.GSRN,
                 Subject = meteringPointOwner,
                 Actor = Guid.NewGuid().ToString()
@@ -95,7 +95,7 @@ public class MeasurementsSyncService
                 res.Measurements.Count,
                 slidingWindow.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
-                DateTimeOffset.FromUnixTimeSeconds(pointInTimeItShouldSyncUpTo.Seconds).ToString("o"));
+                DateTimeOffset.FromUnixTimeSeconds(pointInTimeItShouldSyncUpTo.EpochSeconds).ToString("o"));
 
             return res.Measurements.ToList();
         }
