@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
 using DataContext;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.TransferAgreementProposalCleanup;
@@ -55,13 +56,14 @@ public class TransferAgreementProposalCleanupService(
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
+        var olderThanTimestamp = UnixTimestamp.Create(olderThan);
         var oldProposals = context.TransferAgreementProposals
-            .Where(i => i.CreatedAt < olderThan);
+            .Where(i => i.CreatedAt < olderThanTimestamp);
 
         context.TransferAgreementProposals.RemoveRange(oldProposals);
 
         var activityLogEntries = oldProposals.Select(proposal => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
-            string.Empty, proposal.SenderCompanyTin, proposal.SenderCompanyName, String.Empty, String.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
+            string.Empty, proposal.SenderCompanyTin.Value, proposal.SenderCompanyName.Value, String.Empty, String.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
             ActivityLogEntry.ActionTypeEnum.Expired, proposal.Id.ToString()));
         await context.ActivityLogs.AddRangeAsync(activityLogEntries, cancellationToken);
 

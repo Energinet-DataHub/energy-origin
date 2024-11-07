@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using EnergyOrigin.ActivityLog.API;
 using System.Net;
 using System.Net.Http.Json;
+using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.Tests;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,14 +21,14 @@ namespace API.IntegrationTests.Transfer.TransferAgreementCleanup;
 public class TransferAgreementCleanupTests
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
-    private readonly Guid sub;
-    private readonly string tin;
+    private readonly OrganizationId sub;
+    private readonly Tin tin;
 
     public TransferAgreementCleanupTests(IntegrationTestFixture integrationTestFixture)
     {
         factory = integrationTestFixture.Factory;
-        sub = Guid.NewGuid();
-        tin = "11223344";
+        sub = Any.OrganizationId();
+        tin = Tin.Create("11223344");
     }
 
     [Fact]
@@ -40,37 +42,37 @@ public class TransferAgreementCleanupTests
         var expiredTa = new TransferAgreement
         {
             Id = Guid.NewGuid(),
-            EndDate = DateTimeOffset.UtcNow.AddHours(-1),
-            ReceiverTin = "12345678",
-            SenderName = "SomeSender",
+            EndDate = UnixTimestamp.Now().AddHours(-1),
+            ReceiverTin = Tin.Create("12345678"),
+            SenderName = OrganizationName.Create("SomeSender"),
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
             SenderId = sub,
-            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            StartDate = UnixTimestamp.Now().AddDays(-1),
             TransferAgreementNumber = 0
         };
         var nullEndDateTa = new TransferAgreement
         {
             Id = Guid.NewGuid(),
             EndDate = null,
-            ReceiverTin = "12345679",
-            SenderName = "SomeSender",
+            ReceiverTin = Tin.Create("12345679"),
+            SenderName = OrganizationName.Create("SomeSender"),
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
             SenderId = sub,
-            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            StartDate = UnixTimestamp.Now().AddDays(-1),
             TransferAgreementNumber = 1
         };
         var endDateTa = new TransferAgreement
         {
             Id = Guid.NewGuid(),
-            EndDate = DateTimeOffset.UtcNow.AddHours(1),
-            ReceiverTin = "12345677",
-            SenderName = "SomeSender",
+            EndDate = UnixTimestamp.Now().AddHours(1),
+            ReceiverTin = Tin.Create("12345677"),
+            SenderName = OrganizationName.Create("SomeSender"),
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
             SenderId = sub,
-            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            StartDate = UnixTimestamp.Now().AddDays(-1),
             TransferAgreementNumber = 2
         };
 
@@ -100,13 +102,13 @@ public class TransferAgreementCleanupTests
         var expiredTa = new TransferAgreement
         {
             Id = Guid.NewGuid(),
-            EndDate = DateTimeOffset.UtcNow.AddHours(-1),
-            ReceiverTin = receiverTin,
-            SenderName = "SomeSender",
+            EndDate = UnixTimestamp.Now().AddHours(-1),
+            ReceiverTin = Tin.Create(receiverTin),
+            SenderName = OrganizationName.Create("SomeSender"),
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
             SenderId = sub,
-            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            StartDate = UnixTimestamp.Now().AddDays(-1),
             TransferAgreementNumber = 0
         };
 
@@ -116,7 +118,7 @@ public class TransferAgreementCleanupTests
         var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0, TimeSpan.FromSeconds(30));
         tas.Should().BeEmpty();
 
-        var senderClient = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin);
+        var senderClient = factory.CreateAuthenticatedClient(sub.Value.ToString(), tin: tin.Value);
 
         var senderPost = await senderClient.PostAsJsonAsync("api/transfer/activity-log",
             new ActivityLogEntryFilterRequest(null, null, null));
@@ -149,13 +151,13 @@ public class TransferAgreementCleanupTests
         var expiredTa = new TransferAgreement
         {
             Id = Guid.NewGuid(),
-            EndDate = DateTimeOffset.UtcNow.AddHours(-1),
-            ReceiverTin = "12345678",
-            SenderName = "SomeSender",
+            EndDate = UnixTimestamp.Now().AddHours(-1),
+            ReceiverTin = Tin.Create("12345678"),
+            SenderName = OrganizationName.Create("SomeSender"),
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
             SenderId = sub,
-            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            StartDate = UnixTimestamp.Now().AddDays(-1),
             TransferAgreementNumber = 0
         };
 

@@ -9,6 +9,7 @@ using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Measurements.V1;
 using Meteringpoint.V1;
@@ -70,8 +71,8 @@ public class MeasurementsSyncServiceTest
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, UnixTimestamp.Create(_syncInfo.StartSyncDate));
 
         // When measurement is received
-        var dateTo = UnixTimestamp.Now().RoundToLatestHour().Seconds;
-        var measurement = Any.Measurement(_syncInfo.Gsrn, slidingWindow.SynchronizationPoint.Seconds, 5);
+        var dateTo = UnixTimestamp.Now().RoundToLatestHour().EpochSeconds;
+        var measurement = Any.Measurement(_syncInfo.Gsrn, slidingWindow.SynchronizationPoint.EpochSeconds, 5);
         var mockedResponse = new GetMeasurementsResponse { Measurements = { measurement } };
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
@@ -81,7 +82,7 @@ public class MeasurementsSyncServiceTest
 
         // Then sliding window is updated
         await _fakeSlidingWindowState.Received(1)
-            .UpsertSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.Seconds == dateTo), CancellationToken.None);
+            .UpsertSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.EpochSeconds == dateTo), CancellationToken.None);
         await _fakeSlidingWindowState.Received().SaveChangesAsync(CancellationToken.None);
     }
 
@@ -111,7 +112,7 @@ public class MeasurementsSyncServiceTest
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, UnixTimestamp.Create(_syncInfo.StartSyncDate));
 
         // When 2 measurements where fetched
-        var dateFrom = slidingWindow.SynchronizationPoint.Seconds;
+        var dateFrom = slidingWindow.SynchronizationPoint.EpochSeconds;
         var measurement1 = Any.Measurement(_syncInfo.Gsrn, dateFrom, 5);
         var measurement2 = Any.Measurement(_syncInfo.Gsrn, dateFrom + 3600, 7);
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement1, measurement2 } };

@@ -1,5 +1,6 @@
 using API.Models;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 
 namespace API.UnitTests.Models;
@@ -37,8 +38,8 @@ public class UserTests
         var idpUserId = IdpUserId.Create(Guid.NewGuid());
         var name = UserName.Create("Test User");
 
-        var organizationTin = new Tin("12345678");
-        var organizationName = new OrganizationName("Test Organization");
+        var organizationTin = Tin.Create("12345678");
+        var organizationName = OrganizationName.Create("Test Organization");
 
         var organization = Organization.Create(organizationTin, organizationName);
 

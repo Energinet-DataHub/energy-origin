@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;
@@ -35,8 +36,9 @@ public class TransferAgreementProposalRepository(ApplicationDbContext context) :
 
     public async Task<TransferAgreementProposal?> GetNonExpiredTransferAgreementProposal(Guid id)
     {
+        var expireTime = UnixTimestamp.Now().Add(TimeSpan.FromDays(-14));
         var proposal = await context.TransferAgreementProposals
-            .FirstOrDefaultAsync(i => i.CreatedAt > DateTimeOffset.UtcNow.AddDays(-14) && i.Id == id);
+            .FirstOrDefaultAsync(i => i.CreatedAt > expireTime && i.Id == id);
 
         return proposal;
     }
@@ -45,7 +47,7 @@ public class TransferAgreementProposalRepository(ApplicationDbContext context) :
     {
         var proposal = await context.TransferAgreementProposals
             .AsNoTracking()
-            .FirstOrDefaultAsync(i => i.CreatedAt > DateTimeOffset.UtcNow.AddDays(-14) && i.Id == id);
+            .FirstOrDefaultAsync(i => i.CreatedAt > UnixTimestamp.Now().Add(TimeSpan.FromDays(-14)) && i.Id == id);
 
         return proposal;
     }

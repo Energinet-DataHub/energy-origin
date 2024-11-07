@@ -4,11 +4,11 @@ using API.Data;
 using API.Models;
 using API.Repository;
 using API.UnitTests.Repository;
-using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 using FluentAssertions;
 using MassTransit;
 using NSubstitute;
-using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 
 namespace API.UnitTests._Commands_;
 
@@ -51,7 +51,7 @@ public class AcceptTermsCommandHandlerTests
     public async Task Handle_WhenOrganizationExistsButTermsNotAccepted_UpdatesTermsAndPublishesMessage()
     {
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
-        var organization = Organization.Create(new Tin(command.OrgCvr), new OrganizationName("Test Org"));
+        var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 

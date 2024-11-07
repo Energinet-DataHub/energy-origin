@@ -1,17 +1,16 @@
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
+using EnergyOrigin.Domain.ValueObjects;
 
 namespace DataContext.Models;
 
 public class TransferAgreementProposal
 {
     public Guid Id { get; set; }
-    public Guid SenderCompanyId { get; set; }
-    public string SenderCompanyTin { get; set; } = string.Empty;
-    public string SenderCompanyName { get; set; } = string.Empty;
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public DateTimeOffset CreatedAt { get; set; }
-    public DateTimeOffset StartDate { get; set; }
-    public DateTimeOffset? EndDate { get; set; }
-    public string? ReceiverCompanyTin { get; set; }
+    public OrganizationId SenderCompanyId { get; set; } = OrganizationId.Empty();
+    public Tin SenderCompanyTin { get; set; } = Tin.Empty();
+    public OrganizationName SenderCompanyName { get; set; } = OrganizationName.Empty();
+    public UnixTimestamp CreatedAt { get; set; } = UnixTimestamp.Now();
+    public UnixTimestamp StartDate { get; set; } = UnixTimestamp.Empty();
+    public UnixTimestamp? EndDate { get; set; }
+    public Tin? ReceiverCompanyTin { get; set; }
 }
