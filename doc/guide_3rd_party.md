@@ -46,7 +46,7 @@ var clientId = "<client-id>";
 var clientSecret = "<client-secret>";
 var scope = "https://datahubeouenerginet.onmicrosoft.com/energy-origin/.default";
 
-using var httpClient = new HttpClient();
+using var authHttpClient = new HttpClient();
 var content = new FormUrlEncodedContent(new[]
 {
     new KeyValuePair<string, string>("grant_type", "client_credentials"),
@@ -90,41 +90,29 @@ In order to start the grant consent user flow, redirect the user to the followin
 
 All API endpoints in ETT are versioned using a header based versioning scheme. A request must contain an `X-API-Version` header with a value matching the desired version of the endpoint to use.
 
-### C# example: API request
-
-```csharp
-var token = "<access-token>"; // Access token obtained with client-credentials
-var organizationId = "<organization-id>"; // Id of organization to act on behalf of
-
-using var httpClient = new HttpClient();
-using var request = new HttpRequestMessage(HttpMethod.Get, $"https://demo.energytrackandtrace.dk/wallet-api/wallets?organizationId={organizationId}");
-request.Headers.Authorization = new AuthenticationHeaderValue("bearer", token);
-request.Headers.Add("X-API-Version", "20250101");
-var response = await httpClient.SendAsync(request);
-```
-
 Refer to OpenAPI spec for a description of available API endpoints.
 
-In the example above, an organization id is used to specify which organization to act on behalf of. The available organizations are given by the consents granted to you as a 3rd party client. A list of consenting organizations can be found with a `GET` request to `api/authorization/client/consents`, providing a valid access token that identifies you as a 3rd party client.
+Most API's takes an organization id as query param and is used to specify which organization to act on behalf of. The available organizations are given by the consents granted to you as a 3rd party client. A list of consenting organizations can be found with a `GET` request to `api/authorization/client/consents`, providing a valid access token that identifies you as a 3rd party client.
 
 ### C# example: Get consents
 
 ```csharp
 var token = "<access-token>"; // Access token obtained with client-credentials
 
-using var httpClient = new HttpClient();
-using var request = new HttpRequestMessage(HttpMethod.Get, "https://demo.energytrackandtrace.dk/api/authorization/client/consents");
+var httpClient = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "https://demo.energytrackandtrace.dk/api/authorization/client/consents");
 request.Headers.Authorization = new AuthenticationHeaderValue("bearer", token);
-request.Headers.Add("X-API-Version", "20230101");
+request.Headers.Add("X-API-Version", "1");
 var response = await httpClient.SendAsync(request);
+
+var consentResponse = await response.Content.ReadFromJsonAsync<ConsentResponse>();
 ```
 
 The result should look something lige the `JSON` response below. A list of organizations that have granted you consent to act on their behalf.
 
 ```json
 {
-  "result":[
-    { "organizationId":"645ca01a-7ddd-4d27-ba67-7abc550ce5e3", "organizationName":"Producent A/S"}]
+  "result":[{ "organizationId":"645ca01a-7ddd-4d27-ba67-7abc550ce5e3", "organizationName":"Producent A/S", "tin": "1234567" }]
 }
 ```
 
@@ -132,7 +120,20 @@ Use the `organization id` for the corresponding organization when making request
 
 ## Get Metering Points
 
-Obtain a list of metering points owned by an organization by using the <https://demo.energytrackandtrace.dk/developer#tag/MeteringPoints/paths/~1api~1measurements~1meteringpoints/get> endpoint.
+Given the Organizations you can now get metering points for one of them. Obtain a list of metering points owned by an organization by using the <https://demo.energytrackandtrace.dk/developer#tag/MeteringPoints/paths/~1api~1measurements~1meteringpoints/get> endpoint.
+
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+var organizationId = "<organizationId>"; // One of the organizations you have consent to fetch data from
+
+var httpClient = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "https://demo.energytrackandtrace.dk/api/measurements/meteringpoints?organizationId=" + organizationId );
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+request.Headers.Add("X-API-Version", "1");
+var response = await httpClient.SendAsync(request);
+
+var meteringPoints = await response.Content.ReadFromJsonAsync<MeteringpointsResponse>();
+```
 
 ## Create Contract
 
@@ -142,15 +143,69 @@ Use a GSRN number from the response described in [Get Metering Points](#get-mete
 
 If the metering point owner does not already have a wallet, a new wallet will be created as part of the request. For both production and consumption certificates a contract is needed.
 
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+var organizationId = "<organizationId>"; // One of the organizations you have consent to fetch data from
+var gsrn = "<gsrn>"; // One of the metering points GSRN's
+
+var contracts = new List<dynamic>();
+{
+    new
+    {
+        Gsrn = gsrn,
+        StartDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+        EndDate = DateTimeOffset.UtcNow.AddDays(20).ToUnixTimeSeconds(),
+    }
+};
+var request = new { Contracts = contracts };
+var jsonString = JsonSerializer.Serialize(test);
+
+var httpClient = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Post, "https://demo.energytrackandtrace.dk/api/certificates/contracts?organizationId=" + organizationId )
+{
+    Content = new StringContent(jsonString, Encoding.UTF8, "application/json")
+};
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+request.Headers.Add("X-API-Version", "1");
+var response = await httpClient.SendAsync(request);
+```
+
 ## Get Wallet
 
 Certificates issued will be transferred the the organizations wallet. To obtain wallet information use the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1wallets/get> endpoint.
+
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+var organizationId = "<organizationId>"; // One of the organizations you have consent to fetch data from
+
+var httpClient = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, "https://demo.energytrackandtrace.dk/wallet-api/wallets?organizationId=" + organizationId );
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+request.Headers.Add("X-API-Version", "1");
+var response = await httpClient.SendAsync(request);
+
+var wallet = await response.Content.ReadFromJsonAsync<WalletResponse>();
+```
 
 ## Create Wallet Endpoint
 
 In order to transfer certificates to another wallet. The receiving wallet owner will need to create a wallet endpoint.
 
 Create wallet endpoint using the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1wallets~1%7BwalletId%7D~1endpoints/post> endpoint. Use `Wallet id` from [](#get-wallet) and `organization id` from consent. see [Authorization](#authorization) for information about how to obtain `organization id`.
+
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+var organizationId = "<organizationId>"; // Organization id of the organization which wants to receive certificates
+var walletId = "<walletId>"; // Receiving wallet id
+
+var httpClient = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Post, $"https://demo.energytrackandtrace.dk/wallet-api/wallets/{walletId}/endpoints?organizationId=" + organizationId);
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+request.Headers.Add("X-API-Version", "1");
+var response = await httpClient.SendAsync(request);
+
+var walletEndpoint = await response.Content.ReadFromJsonAsync<CreateWalletEndpointResponse>();
+```
 
 ## Create External Endpoint
 
@@ -162,9 +217,46 @@ The response will include the `received id` to use when transferring certifates.
 
 See <https://github.com/project-origin/wallet/blob/main/doc/concepts/wallet.md> for more information about the wallet system.
 
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+var organizationId = "<organizationId>"; // Organization id of the organization which wants to send certificates
+var walletId = "<walletId>"; // Receiving wallet id
+var requestObject = new
+{
+    WalletReference = walletEndpoint.WalletReference,
+    TextReference = "Transfer by 3rd Party Client" // Free text. Put in whatever you want :)
+};
+
+ var httpClient = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Post, $"https://demo.energytrackandtrace.dk/wallet-api/external-endpoints?organizationId={organizationId}")
+{
+    Content = new StringContent(JsonSerializer.Serialize(requestObject), Encoding.UTF8, "application/json")
+};
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+request.Headers.Add("X-API-Version", "1");
+var response = await httpClient.SendAsync(request);
+
+var externalEndpoint = await response.Content.ReadFromJsonAsync<CreateExternalEndpointResponse>();
+```
+
 ## Get Certificates
 
 Sender wallet owner will need to identify which certificates to transfer. To get a list of certificates available to transfer use the <https://demo.energytrackandtrace.dk/developer#tag/Certificates/paths/~1wallet-api~1certificates/get> endpoint.
+
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+var organizationId = "<organizationId>";
+var start = DateTimeOffset.UtcNow.AddDays(-3).ToUnixTimeSeconds();
+var end = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+var httpClient = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, $"https://demo.energytrackandtrace.dk/wallet-api/certificates?organizationId={organizationId}&start={start}&end={end}");
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+request.Headers.Add("X-API-Version", "1");
+var response = await httpClient.SendAsync(request);
+
+var certificates = await response.Content.ReadFromJsonAsync<CertificatesResponse>();
+```
 
 ## Transfer Certificate
 
@@ -176,10 +268,72 @@ Specify the amount to transfer to the receiver wallet. If needed the certificate
 
 By default hashed attributes are not included in the transfer. Make sure to include any hashed attributes, in the transfer request, the receiver wallet owner should be able to see.
 
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+var organizationId = "<organizationId>"; // Organization id of sender
+
+var requestObject = new
+{
+    CertificateId = certificateFederatedStreamId, // the federatedStreamId from the get Certificates endpoint
+    ReceiverId = externalEndpointId, // The externalEndpointId created earlier
+    Quantity = quantity, // How much quantity wanted claimed. (Eg. all of the consumer quantity or whatever you want to trasnfer)
+    HashedAttributes = new string []
+    {
+    }
+};
+
+var httpClient = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Post, $"https://demo.energytrackandtrace.dk/wallet-api/transfers?organizationId={organizationId}")
+{
+    Content = new StringContent(JsonSerializer.Serialize(requestObject), Encoding.UTF8, "application/json")
+};
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+request.Headers.Add("X-API-Version", "1");
+var response = await httpClient.SendAsync(request);
+
+var transfer = await response.Content.ReadFromJsonAsync<TransferResponse>();
+```
+
 ## Claim Energy
 
 Given a production certificate and a consumption certificate in a wallet, it is possible to claim the produced energy. Use the <https://demo.energytrackandtrace.dk/developer#tag/Claims/paths/~1wallet-api~1claims/post> endpoint to claim two certificates. If needed to certificates will  be sliced automatically to match the amount of quantity that should be claimed.
 
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+var organizationId = "<organizationId>"; // Organization id owner of both certificates
+
+var requestObject = new
+{
+    ProductionCertificateId = productionCertificateFederatedStreamId,
+    ConsumptionCertificateId = consumptionCertificateFederatedStreamId,
+    Quantity = quantity
+};
+
+var httpClient = new HttpClient();
+HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"https://demo.energytrackandtrace.dk/wallet-api/claims?organizationId={consumerConsents.OrganizationId}")
+{
+    Content = new StringContent(JsonSerializer.Serialize(requestObject), Encoding.UTF8, "application/json")
+};
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+request.Headers.Add("X-API-Version", "1");
+var response = await httpClient.SendAsync(request);
+```
+
 ## Get Claims
 
 Claimed certificates will not be returned in lists of available certificates. To get claimed certificates, use the <https://demo.energytrackandtrace.dk/developer#tag/Claims/paths/~1wallet-api~1claims~1cursor/get> endpoint.
+
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+var organizationId = "<organizationId>";
+var start = DateTimeOffset.UtcNow.AddDays(-3).ToUnixTimeSeconds();
+var end = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+var httpClient = new HttpClient();
+var request = new HttpRequestMessage(HttpMethod.Get, $"https://demo.energytrackandtrace.dk/wallet-api/claims?organizationId={organizationId}&start={start}&end={end}");
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+request.Headers.Add("X-API-Version", "1");
+var response = await httpClient.SendAsync(request);
+
+var certificates = await response.Content.ReadFromJsonAsync<ClaimsResponse>();
+```
