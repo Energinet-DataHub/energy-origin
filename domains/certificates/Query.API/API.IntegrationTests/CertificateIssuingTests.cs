@@ -9,6 +9,7 @@ using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
 using API.UnitTests;
 using DataContext.ValueObjects;
+using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2;
 using FluentAssertions;
 using Measurements.V1;
 using Meteringpoint.V1;
@@ -107,7 +108,7 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
         granularCertificate.Attributes.Should().NotBeEmpty();
-        var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
+        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.CityName, meteringPoint.Postcode, "Denmark");
         granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
             { EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet" },
@@ -121,7 +122,7 @@ public sealed class CertificateIssuingTests : TestBase
             { EnergyTagAttributeKeys.EnergyTagProducedEnergySource, "F01040100" },
             { EnergyTagAttributeKeys.EnergyTagProducedEnergyTechnology, "T010000" },
             { EnergyTagAttributeKeys.EnergyTagConnectedGridIdentification, granularCertificate.GridArea },
-            { EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, address },
+            { EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, address.ToString() },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A" },
             { EnergyTagAttributeKeys.EnergyTagEnergyCarrier, "Electricity" },
