@@ -234,14 +234,14 @@ public class MeasurementsSyncServiceTest
         var slidingWindowSyncPoint = now.Add(TimeSpan.FromHours(-4));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, slidingWindowSyncPoint);
 
-        var measurement = Any.Measurement(_syncInfo.Gsrn, slidingWindowSyncPoint.EpochSeconds, 5);
-        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
+        var measurement1 = Any.Measurement(_syncInfo.Gsrn, slidingWindowSyncPoint.EpochSeconds, 5);
+        var measurementResponse1 = new GetMeasurementsResponse { Measurements = { measurement1 } };
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(meteringPointsResponse);
 
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse1);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -250,8 +250,14 @@ public class MeasurementsSyncServiceTest
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
 
         _fakeMeasurementPublisher.ClearReceivedCalls();
+        _fakeClient.ClearReceivedCalls();
 
-        _options.MinimumAgeThresholdHours = 20;
+         _options.MinimumAgeThresholdHours = 20;
+
+        var measurement2 = Any.Measurement(_syncInfo.Gsrn, slidingWindowSyncPoint.AddHours(1).EpochSeconds, 5);
+        var measurementResponse2 = new GetMeasurementsResponse { Measurements = { measurement2 } };
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse2);
+
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.DidNotReceive().PublishIntegrationEvents(
