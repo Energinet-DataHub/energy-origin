@@ -279,6 +279,7 @@ var requestObject = new
     Quantity = quantity, // How much quantity wanted claimed. (Eg. all of the consumer quantity or whatever you want to trasnfer)
     HashedAttributes = new string []
     {
+        "AssetId"
     }
 };
 
