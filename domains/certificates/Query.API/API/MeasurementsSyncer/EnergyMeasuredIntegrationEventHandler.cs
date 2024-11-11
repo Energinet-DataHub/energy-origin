@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.MeasurementsSyncer.Metrics;
-using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V1;
+using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using ProjectOriginClients.Models;
 using HashedAttribute = API.ContractService.Clients.HashedAttribute;
-using MeterType = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V1.MeterType;
+using MeterType = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2.MeterType;
 
 namespace API.MeasurementsSyncer;
 
@@ -53,10 +53,9 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
 
         if (measurementEvent.MeterType == MeterType.Production)
         {
-            var address = measurementEvent.Address;
-            hashedAttributes.Add(new HashedAttribute
-            { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceUniqueIdentification, Value = measurementEvent.GSRN });
-            hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, Value = address });
+            hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceUniqueIdentification, Value = measurementEvent.GSRN });
+            hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, Value = measurementEvent.Address.ToString() });
+            hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, Value = measurementEvent.Capacity });
 
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, measurementEvent.GridArea);
@@ -66,7 +65,6 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionEndingIntervalTimestamp, measurementEvent.DateTo.ToString());
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcFaceValue, measurementEvent.Quantity.ToString());
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagConnectedGridIdentification, measurementEvent.GridArea);
-            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, measurementEvent.Capacity);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagEnergyCarrier, "Electricity");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueDeviceType, "Production");
