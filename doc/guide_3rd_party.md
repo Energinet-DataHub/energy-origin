@@ -108,15 +108,15 @@ var response = await httpClient.SendAsync(request);
 var consentResponse = await response.Content.ReadFromJsonAsync<ConsentResponse>();
 ```
 
-The result should look something lige the `JSON` response below. A list of organizations that have granted you consent to act on their behalf.
+The result should look something like the `JSON` response below. A list of organizations that have granted you consent to act on their behalf.
 
 ```json
 {
-  "result":[{ "organizationId":"645ca01a-7ddd-4d27-ba67-7abc550ce5e3", "organizationName":"Producent A/S", "tin": "1234567" }]
+  "result":[{ "organizationId":"645ca01a-7ddd-4d27-ba67-7abc550ce5e3", "organizationName":"Producent A/S", "tin": "12345678" }]
 }
 ```
 
-Use the `organization id` for the corresponding organization when making request.
+Use the `organizationId` for the corresponding organization when making request.
 
 ## Get Metering Points
 
@@ -172,11 +172,11 @@ var response = await httpClient.SendAsync(request);
 
 ## Get Wallet
 
-Certificates issued will be transferred the the organizations wallet. To obtain wallet information use the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1wallets/get> endpoint.
+Certificates will be issued to the organizations wallet, to obtain wallet information use the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1wallets/get> endpoint.
 
 ```csharp
 var token = "<access-token>"; // Access token obtained with client-credentials
-var organizationId = "<organizationId>"; // One of the organizations you have consent to fetch data from
+var organizationId = "<organizationId>"; // One of the organizations you have consent to act on behalf of.
 
 var httpClient = new HttpClient();
 var request = new HttpRequestMessage(HttpMethod.Get, "https://demo.energytrackandtrace.dk/wallet-api/wallets?organizationId=" + organizationId );
@@ -336,5 +336,5 @@ request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessTo
 request.Headers.Add("X-API-Version", "1");
 var response = await httpClient.SendAsync(request);
 
-var certificates = await response.Content.ReadFromJsonAsync<ClaimsResponse>();
+var claims = await response.Content.ReadFromJsonAsync<ClaimsResponse>();
 ```
