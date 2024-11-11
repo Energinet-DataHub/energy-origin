@@ -252,7 +252,7 @@ public class MeasurementsSyncServiceTest
         _fakeMeasurementPublisher.ClearReceivedCalls();
         _fakeClient.ClearReceivedCalls();
 
-         _options.MinimumAgeThresholdHours = 20;
+        _options.MinimumAgeThresholdHours = 20;
 
         var measurement2 = Any.Measurement(_syncInfo.Gsrn, slidingWindowSyncPoint.AddHours(1).EpochSeconds, 5);
         var measurementResponse2 = new GetMeasurementsResponse { Measurements = { measurement2 } };
