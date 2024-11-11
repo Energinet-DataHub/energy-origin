@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.MeasurementsSyncer;
 using DataContext.ValueObjects;
-using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V1;
+using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
