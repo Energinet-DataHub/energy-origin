@@ -46,7 +46,7 @@ var clientId = "<client-id>";
 var clientSecret = "<client-secret>";
 var scope = "https://datahubeouenerginet.onmicrosoft.com/energy-origin/.default";
 
-using var authHttpClient = new HttpClient();
+var httpClient = new HttpClient();
 var content = new FormUrlEncodedContent(new[]
 {
     new KeyValuePair<string, string>("grant_type", "client_credentials"),
@@ -55,7 +55,7 @@ var content = new FormUrlEncodedContent(new[]
     new KeyValuePair<string, string>("scope", scope)
 });
 
-using var response = await httpClient.PostAsync(tokenEndpointUrl, content);
+var response = await httpClient.PostAsync(tokenEndpointUrl, content);
 response.EnsureSuccessStatusCode();
 
 var responseBody = await response.Content.ReadFromJsonAsync<TokenResponse>();
