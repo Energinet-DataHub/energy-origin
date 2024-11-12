@@ -58,15 +58,22 @@ public record Address
     {
         var sb = new StringBuilder();
 
-        sb.Append($"{StreetName} {BuildingNumber}");
+        sb.Append($"{StreetName} {BuildingNumber},");
 
-        if (!string.IsNullOrWhiteSpace(Floor))
-            sb.Append($", {Floor}");
+        if (!string.IsNullOrWhiteSpace(Floor) && !string.IsNullOrWhiteSpace(Room))
+        {
+            sb.Append($" {Floor}. {Room},");
+        }
+        else if (!string.IsNullOrWhiteSpace(Floor) && string.IsNullOrWhiteSpace(Room))
+        {
+            sb.Append($" {Floor}.,");
+        }
+        else if (string.IsNullOrWhiteSpace(Floor) && !string.IsNullOrWhiteSpace(Room))
+        {
+            sb.Append($" {Room},");
+        }
 
-        if (!string.IsNullOrWhiteSpace(Room))
-            sb.Append($". {Room}");
-
-        sb.Append($", {Postcode} {CityName}, {Country}");
+        sb.Append($" {Postcode} {CityName}, {Country}");
 
         return sb.ToString();
     }

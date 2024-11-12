@@ -13,6 +13,8 @@ public class AddressTests
     [InlineData("Øresundsvej", "128", "1", "8", "2300", "København S", "Danmark", "Øresundsvej 128, 1. 8, 2300 København S, Danmark")]
     [InlineData("Nygårdsvænget", "34", "st", "a19", "2800", "Kongens Lyngby", "Danmark", "Nygårdsvænget 34, st. a19, 2800 Kongens Lyngby, Danmark")]
     [InlineData("   Nygårdsvænget   ", "  34  ", "  st  ", "  a19  ", "  2800  ", "  Kongens Lyngby  ", "  Danmark  ", "Nygårdsvænget 34, st. a19, 2800 Kongens Lyngby, Danmark")]
+    [InlineData("Nygårdsvænget", "34", "st", "", "2800", "Kongens Lyngby", "Danmark", "Nygårdsvænget 34, st., 2800 Kongens Lyngby, Danmark")]
+    [InlineData("Nygårdsvænget", "34", "", "a19", "2800", "Kongens Lyngby", "Danmark", "Nygårdsvænget 34, a19, 2800 Kongens Lyngby, Danmark")]
     public void ToString_WhenCalled_ShouldReturnFormattedAddress(string streetName, string buildingNumber, string floor, string room, string postcode, string cityName, string country, string expected)
     {
         var address = new Address(streetName, buildingNumber, floor, room, postcode, cityName, country);
