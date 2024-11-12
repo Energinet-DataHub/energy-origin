@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using API.MeasurementsSyncer;
 using DataContext.ValueObjects;
-using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2;
+using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using FluentAssertions;
 using Measurements.V1;
 using Meteringpoint.V1;
