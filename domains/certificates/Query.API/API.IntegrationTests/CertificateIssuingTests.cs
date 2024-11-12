@@ -9,7 +9,7 @@ using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
 using API.UnitTests;
 using DataContext.ValueObjects;
-using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2;
+using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using FluentAssertions;
 using Measurements.V1;
 using Meteringpoint.V1;
@@ -108,7 +108,7 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
         granularCertificate.Attributes.Should().NotBeEmpty();
-        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.CityName, meteringPoint.Postcode, "Denmark");
+        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Danmark");
         granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
             { EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet" },
