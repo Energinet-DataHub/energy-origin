@@ -108,7 +108,7 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
         granularCertificate.Attributes.Should().NotBeEmpty();
-        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Denmark");
+        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Danmark");
         granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
             { EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet" },
