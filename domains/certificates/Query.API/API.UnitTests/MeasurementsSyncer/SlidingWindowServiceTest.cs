@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using API.Configurations;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
@@ -8,6 +9,7 @@ using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Measurements.V1;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using Testing.Helpers;
 using Xunit;
@@ -20,10 +22,13 @@ public class SlidingWindowServiceTest
     private readonly Gsrn _gsrn = new Gsrn(GsrnHelper.GenerateRandom());
     private readonly UnixTimestamp _now = UnixTimestamp.Now();
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
+    private readonly MeasurementsSyncOptions _options = new();
+
 
     public SlidingWindowServiceTest()
     {
-        _sut = new SlidingWindowService(_measurementSyncMetrics);
+        _options.MinimumAgeThresholdHours = 0;
+        _sut = new SlidingWindowService(_measurementSyncMetrics, Options.Create(_options));
     }
 
     [Fact]
@@ -92,7 +97,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds, synchronizationPoint.Add(TimeSpan.FromHours(2)).EpochSeconds,
                 10, quantityMissing, EnergyQuantityValueQuality.Measured)
         };
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, _now);
 
         // Assert all measurements after synchronization point should be published
         Assert.Equal(publishedCount, measurementsToPublish.Count);
@@ -117,7 +122,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, _now.Add(TimeSpan.FromHours(-5)).EpochSeconds, _now.Add(TimeSpan.FromHours(-4)).EpochSeconds, 10, quantityMissing,
                 EnergyQuantityValueQuality.Measured)
         };
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, _now);
 
         // Assert all measurements after synchronization point should be published
         Assert.Equal(publishedCount, measurementsToPublish.Count());
@@ -142,7 +147,7 @@ public class SlidingWindowServiceTest
                     EnergyQuantityValueQuality.Measured))
             .ToList();
 
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, _now);
 
         // Assert all measurements after synchronization point should be published
         Assert.Equal(publishedCount, measurementsToPublish.Count);
@@ -329,7 +334,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromMinutes(120)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Calculated)
         };
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, _now);
 
         // Assert updated sliding window contains 3 missing intervals
         Assert.Equal(4, measurementsToPublish.Count);
@@ -353,7 +358,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Calculated),
         };
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, _now);
 
         measurementsToPublish.Count.Should().Be(2);
     }
@@ -376,7 +381,7 @@ public class SlidingWindowServiceTest
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds, uint.MaxValue, false, EnergyQuantityValueQuality.Calculated),
         };
-        var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
+        var measurementsToPublish = _sut.FilterMeasurements(window, measurements, _now);
 
         measurementsToPublish.Count.Should().Be(1);
     }
@@ -457,6 +462,250 @@ public class SlidingWindowServiceTest
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
 
         // Assert no missing intervals
+        Assert.Empty(window.MissingMeasurements.Intervals);
+    }
+
+    [Fact]
+    public void GivenAgeThreshold_WhenStartingNewSyncInterval_StartingSyncPositionIsNotCreatedBackwardsInTime()
+    {
+        _options.MinimumAgeThresholdHours = 120;
+        var initialStartSyncPosition = _now.RoundToLatestHour();
+
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, initialStartSyncPosition);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(initialStartSyncPosition);
+    }
+
+    [Fact]
+    public void GivenNoAgeThreshold_WhenStartingNewSyncInterval_SyncPositionEqualsInitialStartPosition()
+    {
+        _options.MinimumAgeThresholdHours = 0;
+        var syncPositionFromLastRun = _now.RoundToLatestHour();
+
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, syncPositionFromLastRun);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(syncPositionFromLastRun);
+    }
+
+    [Fact]
+    public void GivenAgeThreshold_WhenSyncPositionAfterThreshold_SyncPositionIsBlocked()
+    {
+        _options.MinimumAgeThresholdHours = 10;
+        var syncPositionFromLastRun = _now.RoundToLatestHour();
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, syncPositionFromLastRun);
+        var pointInTimeItShouldSyncUpTo = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours));
+
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), pointInTimeItShouldSyncUpTo);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(syncPositionFromLastRun);
+    }
+
+    [Fact]
+    public void GivenAgeThreshold_WhenSyncPositionMatchingThreshold_SyncPositionIsBlocked()
+    {
+        _options.MinimumAgeThresholdHours = 10;
+        var syncPositionFromLastRun = _now.Add(TimeSpan.FromHours(-1)).RoundToLatestHour();
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, syncPositionFromLastRun);
+        var newSyncPosition = _now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours));
+
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(syncPositionFromLastRun);
+    }
+
+    [Fact]
+    public void GivenAgeThreshold_WhenSyncPositionIsWithinThreshold_SyncPositionMovesForward()
+    {
+        _options.MinimumAgeThresholdHours = 10;
+        var syncPositionFromLastRun = _now.Add(TimeSpan.FromHours(-11)).RoundToLatestHour();
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, syncPositionFromLastRun);
+        var newSyncPosition = syncPositionFromLastRun.Add(TimeSpan.FromHours(1));
+
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(newSyncPosition);
+    }
+
+    [Fact]
+    public void GivenNoAgeThreshold_WhenUpdatingSyncPosition_SyncPositionMovementProceedsNormally()
+    {
+        _options.MinimumAgeThresholdHours = 0;
+        var syncPositionFromLastRun = _now.RoundToLatestHour();
+        var slidingWindow = _sut.CreateSlidingWindow(_gsrn, syncPositionFromLastRun);
+        var newSyncPosition = syncPositionFromLastRun.Add(TimeSpan.FromHours(1));
+
+        _sut.UpdateSlidingWindow(slidingWindow, new List<Measurement>(), newSyncPosition);
+
+        slidingWindow.SynchronizationPoint.Should().BeEquivalentTo(newSyncPosition);
+    }
+
+    [Fact]
+    public void GivenEntireMissingIntervalWithAgeThresholdApplied_WhenProcessingIntervals_ThenOnlyProcessPartOfIntervalWithinThreshold()
+    {
+        _options.MinimumAgeThresholdHours = 72;
+        var now = _now.RoundToLatestHour();
+        var startPositionOfMissingInterval = now.Add(TimeSpan.FromHours(-168));
+        var missingInterval = MeasurementInterval.Create(startPositionOfMissingInterval, now);
+        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval> { missingInterval });
+
+        var allMeasurements = new List<Measurement>();
+        var currentTime = startPositionOfMissingInterval;
+        for (int i = 0; i < 168; i++)
+        {
+            allMeasurements.Add(CreateMeasurement(
+                _gsrn,
+                currentTime.EpochSeconds,
+                currentTime.Add(TimeSpan.FromHours(1)).EpochSeconds,
+                10,
+                false,
+                EnergyQuantityValueQuality.Measured
+            ));
+            currentTime = currentTime.Add(TimeSpan.FromHours(1));
+        }
+
+        _sut.UpdateSlidingWindow(window, allMeasurements, now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)));
+
+        window.SynchronizationPoint.Should().Be(now);
+        window.MissingMeasurements.Intervals.Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(new
+            {
+                From = now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)),
+                To = now
+            });
+    }
+
+    [Fact]
+    public void GivenMissingIntervalOutsideAgeThreshold_ThenDoesNotProcessIntervalsOutsideThreshold()
+    {
+        _options.MinimumAgeThresholdHours = 72;
+        var now = _now.RoundToLatestHour();
+        var startPositionOfMissingInterval = now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours));
+
+        var missingInterval = MeasurementInterval.Create(startPositionOfMissingInterval, now);
+        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval> { missingInterval });
+
+        var allMeasurements = new List<Measurement>();
+        var currentTime = startPositionOfMissingInterval;
+        for (int i = 0; i < 72; i++)
+        {
+            allMeasurements.Add(CreateMeasurement(
+                _gsrn,
+                currentTime.EpochSeconds,
+                currentTime.Add(TimeSpan.FromHours(1)).EpochSeconds,
+                10,
+                false,
+                EnergyQuantityValueQuality.Measured
+            ));
+            currentTime = currentTime.Add(TimeSpan.FromHours(1));
+        }
+
+        _sut.UpdateSlidingWindow(window, allMeasurements, now);
+
+        window.MissingMeasurements.Intervals.Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(new
+            {
+                From = startPositionOfMissingInterval,
+                To = now
+            });
+        window.SynchronizationPoint.Should().Be(now);
+        _measurementSyncMetrics.Received(0).AddNumberOfMeasurementsPublished(72);
+    }
+
+    [Fact]
+    public void GivenNoMeasurements_And_AgeThresholdApplied_WhenUpdatingSlidingWindow_ShouldNotSplitTheSlidingWindow()
+    {
+        _options.MinimumAgeThresholdHours = 72;
+        var now = _now.RoundToLatestHour();
+        var startPositionOfMissingInterval = now.Add(TimeSpan.FromHours(-168));
+        var missingInterval = MeasurementInterval.Create(startPositionOfMissingInterval, now);
+        var window = _sut.CreateSlidingWindow(_gsrn, now, new List<MeasurementInterval> { missingInterval });
+
+        var measurementsList = new List<Measurement>();
+
+        _sut.UpdateSlidingWindow(window, measurementsList, now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)));
+
+        window.MissingMeasurements.Intervals.Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(new
+            {
+                From = startPositionOfMissingInterval,
+                To = now
+            });
+        window.SynchronizationPoint.Should().Be(now);
+        _measurementSyncMetrics.Received(0);
+    }
+
+    [Fact]
+    public void Given7DayMissingInterval_WhenAddingMeasurementsAcrossThreshold_ShouldSplitMissingIntervalsAndProcessOnlyBeforeThreshold()
+    {
+        _options.MinimumAgeThresholdHours = 72;
+        var now = _now.RoundToLatestHour();
+        var startPositionOfMissingInterval = now.Add(TimeSpan.FromDays(-7)).RoundToLatestHour();
+
+        var window = _sut.CreateSlidingWindow(_gsrn, startPositionOfMissingInterval);
+        var missingInterval = MeasurementInterval.Create(startPositionOfMissingInterval, now);
+        window.MissingMeasurements.Intervals.Add(missingInterval);
+
+        var measurements = new List<Measurement>();
+
+        var beforeThreshold1 = startPositionOfMissingInterval.Add(TimeSpan.FromHours(10));
+        var beforeThreshold2 = startPositionOfMissingInterval.Add(TimeSpan.FromHours(12));
+        measurements.Add(CreateMeasurement(_gsrn, beforeThreshold1.EpochSeconds, beforeThreshold1.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured));
+        measurements.Add(CreateMeasurement(_gsrn, beforeThreshold2.EpochSeconds, beforeThreshold2.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured));
+
+        var afterThreshold1 = now.Add(TimeSpan.FromHours(-48));
+        var afterThreshold2 = now.Add(TimeSpan.FromHours(-24));
+        measurements.Add(CreateMeasurement(_gsrn, afterThreshold1.EpochSeconds, afterThreshold1.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured));
+        measurements.Add(CreateMeasurement(_gsrn, afterThreshold2.EpochSeconds, afterThreshold2.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured));
+
+        _sut.UpdateSlidingWindow(window, measurements, now);
+
+        var threshold = now.Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours));
+
+        window.MissingMeasurements.Intervals.Should().HaveCount(2);
+
+        window.MissingMeasurements.Intervals[0].Should().BeEquivalentTo(new
+        {
+            From = startPositionOfMissingInterval,
+            To = beforeThreshold1
+        });
+
+        window.MissingMeasurements.Intervals[1].Should().BeEquivalentTo(new
+        {
+            From = threshold,
+            To = now
+        });
+
+        _measurementSyncMetrics.Received(1).AddNumberOfMissingMeasurement(10);
+        _measurementSyncMetrics.Received(1).AddNumberOfMissingMeasurement(72);
+    }
+
+    [Fact]
+    public void RemovingMinimumAgeRequirement_ShouldAdvanceSynchronizationPointAndFetchAllAvailableMeasurements()
+    {
+        _options.MinimumAgeThresholdHours = 72;
+
+        var initialThreshold = _now.Add(-TimeSpan.FromHours(_options.MinimumAgeThresholdHours)).RoundToLatestHour();
+
+        var startPositionOfMissingInterval = _now.Add(-TimeSpan.FromDays(10)).RoundToLatestHour();
+        var window = _sut.CreateSlidingWindow(_gsrn, startPositionOfMissingInterval);
+
+        var initialMeasurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, startPositionOfMissingInterval.EpochSeconds, initialThreshold.EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        _sut.UpdateSlidingWindow(window, initialMeasurements, initialThreshold);
+        Assert.Equal(initialThreshold, window.SynchronizationPoint);
+
+        _options.MinimumAgeThresholdHours = 0;
+        var newThreshold = _now.Add(-TimeSpan.FromHours(_options.MinimumAgeThresholdHours)).RoundToLatestHour();
+        var newMeasurements = new List<Measurement>
+        {
+            CreateMeasurement(_gsrn, initialThreshold.EpochSeconds, newThreshold.EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured)
+        };
+        _sut.UpdateSlidingWindow(window, newMeasurements, newThreshold);
+
+        Assert.Equal(newThreshold, window.SynchronizationPoint);
+
         Assert.Empty(window.MissingMeasurements.Intervals);
     }
 

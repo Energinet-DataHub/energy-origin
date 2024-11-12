@@ -61,6 +61,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("MeteringPoint:GrpcUrl", "http://foo");
         builder.UseSetting("MeasurementsSync:Disabled", "false");
         builder.UseSetting("MeasurementsSync:SleepType", "EveryThirdSecond");
+        builder.UseSetting("MeasurementsSync:MinimumAgeThresholdHours", "0");
         builder.UseSetting("IssuingContractCleanup:SleepTime", "00:00:03");
         builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("Stamp:Url", StampUrl);

@@ -60,6 +60,11 @@ public class UnixTimestamp : ValueObject
         return a.EpochSeconds > b.EpochSeconds ? a : b;
     }
 
+    public static UnixTimestamp Min(UnixTimestamp a, UnixTimestamp b)
+    {
+        return a.EpochSeconds < b.EpochSeconds ? a : b;
+    }
+
     public static UnixTimestamp Empty()
     {
         return new UnixTimestamp();
