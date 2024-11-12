@@ -5,8 +5,8 @@
         xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
         PolicySchemaVersion="0.3.0.0"
         TenantId="datahubeopenerginet.onmicrosoft.com"
-        PolicyId="B2C_1A_MitID"
-        PublicPolicyUri="http://datahubeopenerginet.onmicrosoft.com/B2C_1A_MitID"
+        PolicyId="B2C_1A_MitID_v3"
+        PublicPolicyUri="http://datahubeopenerginet.onmicrosoft.com/B2C_1A_MitID_v3"
         DeploymentMode="Production"
         UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
 
@@ -91,7 +91,7 @@
                 <DataType>string</DataType>
                 <UserHelpText>Id of users own organization</UserHelpText>
             </ClaimType>
-            
+
             <ClaimType Id="org_ids">
                 <DisplayName>org_ids</DisplayName>
                 <DataType>stringCollection</DataType>
@@ -212,11 +212,6 @@
                 <UserHelpText/>
             </ClaimType>
 
-            <!-- Used to force re-authentication -->
-            <ClaimType Id="prompt">
-                <DisplayName>Prompt</DisplayName>
-                <DataType>string</DataType>
-            </ClaimType>
         </ClaimsSchema>
 
         <ClaimsTransformations>
@@ -392,10 +387,6 @@
                     <CryptographicKeys>
                         <Key Id="client_secret" StorageReferenceId="B2C_1A_MitIDSecret"/>
                     </CryptographicKeys>
-                    <!-- Used to force re-authentication -->
-                    <InputClaims>
-                        <InputClaim ClaimTypeReferenceId="prompt" DefaultValue="login" />
-                    </InputClaims>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="sub"/>
                         <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="first_name"/>
@@ -502,6 +493,28 @@
                     </OutputClaimsTransformations>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
                 </TechnicalProfile>
+
+                <TechnicalProfile Id="ConditionalMitIDLogoutMethod">
+                    <DisplayName>Perform user logout in MitID, so a later logout-and-login in ETT will require re-authentication in MitID</DisplayName>
+                    <Protocol Name="Proprietary"
+                              Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://netseidbroker.dk/op/api/v1/session/logout</Item> <!-- From: https://netseidbroker.dk/op/swagger/index.html -->
+                        <Item Key="AuthenticationType">Bearer</Item>
+                        <Item Key="UseClaimAsBearerToken">mitIDBearerToken</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                        <Item Key="HttpBinding">POST</Item>
+                        <Item Key="DebugMode">true</Item>
+                        <Item Key="DefaultUserMessageIfRequestFailed">Failed to logout user in MitID.</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="mitIDBearerToken" PartnerClaimType="access_token"/> <!-- Put in property 'access_token' in body of request -->
+                        <InputClaim ClaimTypeReferenceId="mitIDBearerToken" /> <!-- Needed for 'UseClaimAsBearerToken' defined above-->
+                    </InputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
+                </TechnicalProfile>
+
             </TechnicalProfiles>
         </ClaimsProvider>
 
@@ -559,7 +572,21 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="8" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
+                <OrchestrationStep Order="8" Type="ClaimsExchange">
+                    <!-- If tos_accepted == true then logout user in MitID provider (otherwise we expect another login after accepting terms) -->
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>tos_accepted</Value>
+                            <Value>true</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ConditionalMitIDLogoutExchange" TechnicalProfileReferenceId="ConditionalMitIDLogoutMethod"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="9" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
             </OrchestrationSteps>
         </UserJourney>
     </UserJourneys>
