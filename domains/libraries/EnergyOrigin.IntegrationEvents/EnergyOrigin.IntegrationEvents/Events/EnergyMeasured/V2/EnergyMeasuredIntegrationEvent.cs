@@ -1,8 +1,8 @@
-namespace EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V1;
+namespace EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2;
 
 public record EnergyMeasuredIntegrationEvent(
     string GSRN,
-    string Address,
+    Address Address,
     string GridArea,
     Guid RecipientId,
     long DateFrom,
@@ -29,3 +29,11 @@ public enum Quality
 }
 
 public record Technology(string AibFuelCode, string AibTechCode);
+
+public record Address(string StreetName, string BuildingNumber, string CityName, string Postcode, string Country)
+{
+    public override string ToString()
+    {
+        return $"{StreetName} {BuildingNumber}. {Postcode} {CityName}, {Country}";
+    }
+}

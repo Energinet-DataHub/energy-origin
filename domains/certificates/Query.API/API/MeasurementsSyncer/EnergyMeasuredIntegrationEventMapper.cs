@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DataContext.ValueObjects;
-using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V1;
+using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2;
 using Measurements.V1;
 using Meteringpoint.V1;
-using Technology = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V1.Technology;
+using Technology = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2.Technology;
 
 namespace API.MeasurementsSyncer;
 
@@ -22,7 +22,7 @@ public class EnergyMeasuredIntegrationEventMapper
     private EnergyMeasuredIntegrationEvent MapToIntegrationEvent(MeteringPoint meteringPoint, MeteringPointType meteringPointType, string gridArea,
         DataContext.ValueObjects.Technology? technology, Guid recipientId, Measurement measurement)
     {
-        var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
+        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.CityName, meteringPoint.Postcode, "Denmark");
         return new EnergyMeasuredIntegrationEvent(
             GSRN: measurement.Gsrn,
             Address: address,
