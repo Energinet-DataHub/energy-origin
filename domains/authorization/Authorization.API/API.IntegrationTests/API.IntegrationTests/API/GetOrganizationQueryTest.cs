@@ -9,12 +9,12 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetClientQueryTest
+public class GetOrganizationQueryTest
 {
     private readonly Api _api;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetClientQueryTest(IntegrationTestFixture integrationTestFixture)
+    public GetOrganizationQueryTest(IntegrationTestFixture integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
@@ -22,24 +22,28 @@ public class GetClientQueryTest
     }
 
     [Fact]
-    public async Task GivenIdpClientId_WhenGettingClient_ClientReturned()
+    public async Task GivenOrganizationId_WhenGettingOrganization_OrganizationIsReturned()
     {
-        var client = Any.Client();
+        // Given organization
+        var organization = Any.Organization();
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Clients.AddAsync(client);
+        await dbContext.Organizations.AddAsync(organization);
         await dbContext.SaveChangesAsync();
-        var response = await _api.GetClient(client.IdpClientId.Value);
+
+        // When getting organization
+        var response = await _api.GetOrganization(organization.Id);
+
+        // Then
         response.Should().Be200Ok();
-        var content = await response.Content.ReadFromJsonAsync<ClientResponse>();
-        content!.IdpClientId.Should().Be(client.IdpClientId.Value);
-        content.Name.Should().Be(client.Name.Value);
-        content.RedirectUrl.Should().Be(client.RedirectUrl);
+        var content = await response.Content.ReadFromJsonAsync<OrganizationResponse>();
+        content!.OrganizationId.Should().Be(organization.Id);
+        content.OrganizationName.Should().Be(organization.Name.Value);
     }
 
     [Fact]
-    public async Task GivenUnknownIdpClientId_WhenGettingClient_404NotFound()
+    public async Task GivenUnknownOrganizationId_WhenGettingOrganization_404NotFound()
     {
-        var response = await _api.GetClient(Guid.NewGuid());
+        var response = await _api.GetOrganization(Guid.NewGuid());
         response.Should().Be404NotFound();
     }
 }

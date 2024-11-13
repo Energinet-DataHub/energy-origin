@@ -7,7 +7,7 @@ using API.Repository;
 using API.ValueObjects;
 using MediatR;
 
-namespace API.Authorization._Features_;
+namespace API.Authorization._Features_.Internal;
 
 public record CreateClientCommandHandler(IUnitOfWork UnitOfWork, IClientRepository ClientRepository) : IRequestHandler<CreateClientCommand, CreateClientCommandResult>
 {

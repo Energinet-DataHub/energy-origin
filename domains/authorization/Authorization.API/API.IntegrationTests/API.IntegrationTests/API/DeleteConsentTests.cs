@@ -1,10 +1,8 @@
 using System.Net.Http.Json;
-using API.Authorization._Features_;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
-using API.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,12 +45,41 @@ public class DeleteConsentTests
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
 
         // When
-        var response = await userClient.DeleteConsent(organizationWithClient.Clients.First().IdpClientId.Value);
+        var response = await userClient.DeleteConsent(consent.Id);
         var deletedConsent = await dbContext.OrganizationConsents.FirstOrDefaultAsync(x => x.Id == consent.Id)!;
 
         // Then
         response.Should().Be204NoContent();
         deletedConsent.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GivenValidConsent_WhenDeletingConsentAsNonAffiliatedUser_ThenHttp404NotFound()
+    {
+        // Given
+        var user = Any.User();
+        var userOrganization = Any.Organization();
+        var affiliation = Affiliation.Create(user, userOrganization);
+        var consentGiverOrganization = Any.Organization();
+        var consentReceiverOrganization = Any.Organization();
+        var consent = OrganizationConsent.Create(consentGiverOrganization.Id, consentReceiverOrganization.Id, DateTimeOffset.UtcNow);
+
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(userOrganization);
+        await dbContext.Organizations.AddAsync(consentGiverOrganization);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
+        await dbContext.OrganizationConsents.AddAsync(consent);
+        await dbContext.SaveChangesAsync();
+
+        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: userOrganization.Tin!.Value);
+
+        // When
+        var response = await userClient.DeleteConsent(consent.Id);
+
+        // Then
+        response.Should().Be404NotFound();
     }
 
     [Fact]
@@ -109,7 +136,7 @@ public class DeleteConsentTests
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
 
         // When
-        var response = await userClient.DeleteConsent(organizationWithClient2.Clients.First().IdpClientId.Value);
+        var response = await userClient.DeleteConsent(consent2.Id);
 
         // Then
         response.Should().Be404NotFound();
@@ -143,7 +170,7 @@ public class DeleteConsentTests
         consentList!.Result.Should().NotBeEmpty();
 
         // When
-        var deleteResponse = await userClient.DeleteConsent(organizationWithClient.Clients.First().IdpClientId.Value);
+        var deleteResponse = await userClient.DeleteConsent(consent.Id);
         deleteResponse.Should().Be204NoContent();
 
         // Then
