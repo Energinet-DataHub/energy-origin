@@ -49,7 +49,7 @@ public class AuthorizationControllerTests
         result!.Sub.Should().Be(request.Sub);
         result.SubType.Should().Be("User");
         result.OrgName.Should().Be(request.OrgName);
-        result.OrgIds.Should().NotBeEmpty();
+        result.OrgIds.Should().BeEmpty();
         result.Scope.Should().Be("dashboard production meters certificates wallet");
         result.TermsAccepted.Should().BeTrue();
     }

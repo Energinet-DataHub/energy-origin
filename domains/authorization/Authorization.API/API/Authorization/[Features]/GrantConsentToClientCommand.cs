@@ -13,19 +13,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
-public class GrantConsentCommandHandler(
+public class GrantConsentToClientCommandHandler(
     IClientRepository clientRepository,
     IOrganizationRepository organizationRepository,
     IUserRepository userRepository,
     IOrganizationConsentRepository organizationConsentRepository,
     IUnitOfWork unitOfWork)
-    : IRequestHandler<GrantConsentCommand>
+    : IRequestHandler<GrantConsentToClientCommand>
 {
-    public async Task Handle(GrantConsentCommand command, CancellationToken cancellationToken)
+    public async Task Handle(GrantConsentToClientCommand command, CancellationToken cancellationToken)
     {
         await unitOfWork.BeginTransactionAsync();
 
-        var idpUserId = IdpUserId.Create(command.UserId);
+        var idpUserId = IdpUserId.Create(command.IdpUserId);
         var organizationTin = Tin.Create(command.OrganizationCvr);
 
         var clientOrganizationId = await clientRepository.Query()
@@ -35,7 +35,7 @@ public class GrantConsentCommandHandler(
 
         if (clientOrganizationId == null)
         {
-            throw new EntityNotFoundException(command.IdpClientId.Value.ToString(), nameof(Organization));
+            throw new EntityNotFoundException(command.IdpClientId.Value.ToString(), nameof(Client));
         }
 
         var affiliatedOrganization = await userRepository.Query()
@@ -47,7 +47,12 @@ public class GrantConsentCommandHandler(
 
         if (affiliatedOrganization is null)
         {
-            throw new UserNotAffiliatedWithOrganizationCommandException();
+            throw new ForbiddenException();
+        }
+
+        if (clientOrganizationId == affiliatedOrganization.Id)
+        {
+            throw new UnableToGrantConsentToOwnOrganizationException();
         }
 
         var existingConsent = organizationRepository
@@ -65,7 +70,4 @@ public class GrantConsentCommandHandler(
     }
 }
 
-public record GrantConsentCommand(Guid UserId, string OrganizationCvr, IdpClientId IdpClientId) : IRequest;
-
-public class UserNotAffiliatedWithOrganizationCommandException()
-    : ForbiddenException("Not authorized to perform action");
+public record GrantConsentToClientCommand(Guid IdpUserId, string OrganizationCvr, IdpClientId IdpClientId) : IRequest;

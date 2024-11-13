@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.MeasurementsSyncer.Metrics;
-using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2;
+using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using ProjectOriginClients.Models;
 using HashedAttribute = API.ContractService.Clients.HashedAttribute;
-using MeterType = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V2.MeterType;
+using MeterType = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3.MeterType;
 
 namespace API.MeasurementsSyncer;
 

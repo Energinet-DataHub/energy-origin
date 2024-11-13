@@ -85,7 +85,8 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
             return Forbid();
         }
 
-        var contract = await service.GetById(id, identityDescriptor.AuthorizedOrganizationIds, cancellationToken);
+        var contract = await service.GetById(id, identityDescriptor.AuthorizedOrganizationIds.Concat([identityDescriptor.OrganizationId]).ToList(),
+            cancellationToken);
 
         return contract == null
             ? NotFound()

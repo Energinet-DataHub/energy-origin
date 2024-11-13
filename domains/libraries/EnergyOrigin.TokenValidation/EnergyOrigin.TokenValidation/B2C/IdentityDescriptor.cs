@@ -55,7 +55,7 @@ public class IdentityDescriptor
         var claimValue = _user.FindFirstValue(claimName);
         if (claimValue is not null)
         {
-            return claimValue.Split(" ").Select(Guid.Parse).ToList();
+            return claimValue.Split(" ").Where(str => !string.IsNullOrEmpty(str)).Select(Guid.Parse).ToList();
         }
 
         throw new InvalidOperationException($"Unable to parse {claimValue} as {claimName}");

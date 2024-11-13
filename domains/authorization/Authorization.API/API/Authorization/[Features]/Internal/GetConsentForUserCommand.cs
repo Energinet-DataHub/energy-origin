@@ -11,7 +11,7 @@ using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Authorization._Features_;
+namespace API.Authorization._Features_.Internal;
 
 public record GetConsentForUserCommand(Guid Sub, string Name, string OrgName, string OrgCvr)
     : IRequest<GetConsentForUserCommandResult>;
@@ -35,7 +35,6 @@ public class GetConsentForUserQueryHandler(
 {
     public async Task<GetConsentForUserCommandResult> Handle(GetConsentForUserCommand command, CancellationToken cancellationToken)
     {
-
         const string scope = "dashboard production meters certificates wallet";
         const string subType = "User";
         await unitOfWork.BeginTransactionAsync();
@@ -73,7 +72,7 @@ public class GetConsentForUserQueryHandler(
                 subType,
                 command.OrgName,
                 organization.Id,
-                new List<Guid> { organization.Id },
+                new List<Guid>(),
                 scope,
                 false
             );
@@ -97,6 +96,12 @@ public class GetConsentForUserQueryHandler(
             userRepository.Update(user);
         }
 
+        var consentReceivedOrganizationIds = await organizationRepository.Query()
+            .Where(org => org.Id == organization.Id)
+            .SelectMany(org => org.OrganizationReceivedConsents)
+            .Select(consent => consent.ConsentGiverOrganizationId)
+            .ToListAsync(cancellationToken);
+
         await unitOfWork.CommitAsync();
 
         return new GetConsentForUserCommandResult(
@@ -105,7 +110,7 @@ public class GetConsentForUserQueryHandler(
             subType,
             command.OrgName,
             organization.Id,
-            new List<Guid> { organization.Id },
+            consentReceivedOrganizationIds,
             scope,
             true
         );
