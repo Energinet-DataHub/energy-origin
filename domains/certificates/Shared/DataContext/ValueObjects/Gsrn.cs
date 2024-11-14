@@ -7,8 +7,7 @@ namespace DataContext.ValueObjects;
 public partial class Gsrn : ValueObject
 {
     [GeneratedRegex("^57\\d{16}$")]
-    private static partial Regex MyRegex();
-    private static readonly Regex regex = MyRegex();
+    private static Regex regex => new("^57\\d{16}$");
 
     public string Value { get; }
 
