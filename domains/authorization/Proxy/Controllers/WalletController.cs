@@ -15,6 +15,19 @@ public class WalletController : ProxyBase
     {
     }
 
+    [HttpPost]
+    [Route("withdraw")]
+    [Authorize(policy: Policy.FrontendOr3rdParty)]
+    [ApiVersion(ApiVersions.Version1)]
+    public async Task WithdrawTemp([FromBody] WithdrawRequest request)
+    {
+        using var client = new HttpClient();
+        client.BaseAddress = new Uri("http://po-stamp.eo.svc:5000/");
+
+        var response = await client.PostAsync($"stamp-api/v1/certificates/{request.Registry}/{request.CertificateId}/withdraw", new StringContent(""));
+        response.EnsureSuccessStatusCode();
+    }
+
     /// <summary>
     /// Creates a new wallet for the user.
     /// </summary>
@@ -114,6 +127,11 @@ public class WalletController : ProxyBase
     }
 }
 
+public record WithdrawRequest()
+{
+    public required string Registry { get; init; }
+    public required Guid CertificateId { get; init; }
+}
 
 /// <summary>
 /// A wallet record
