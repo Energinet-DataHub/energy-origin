@@ -66,7 +66,7 @@ public class WalletController : ProxyBase
     public async Task CreateWallet([FromBody] CreateWalletRequest request, [FromQuery] string? organizationId)
     {
         throw new NotSupportedException("Currently not supporting creating extra wallets");
-        await ProxyClientCredentialsRequest("v1/wallets", organizationId);
+        //await ProxyClientCredentialsRequest("v1/wallets", organizationId);
     }
 
     /// <summary>
