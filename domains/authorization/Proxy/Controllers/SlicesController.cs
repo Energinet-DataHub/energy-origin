@@ -30,6 +30,34 @@ public class SlicesController : ProxyBase
     /// <response code="400">Public key could not be decoded.</response>
     /// <response code="404">Receiver endpoint not found.</response>
     [HttpPost]
+    [Route("v1/slices")]
+    [Produces("application/json")]
+    [AllowAnonymous]
+    [ApiVersionNeutral]
+    [Obsolete]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    public async Task ReceiveSlice([FromBody] ReceiveRequest request)
+    {
+        await ProxyInsecureCall("v1/slices");
+    }
+
+    /// <summary>
+    /// Receive a certificate-slice from another wallet.
+    /// </summary>
+    /// <remarks>
+    /// This request is used to receive a certificate-slice from another wallet, which is then stored in the local wallet.
+    /// The endpoint is verified to exists within the wallet system, otherwise a 404 will be returned.
+    /// The endpoint will return 202 Accepted was initial validation has succeeded.
+    /// The certificate-slice will further verified with data from the registry in a seperate thread.
+    /// </remarks>
+    /// <param name = "request" >Contains the data </param>
+    /// <response code="202">The slice was accepted.</response>
+    /// <response code="400">Public key could not be decoded.</response>
+    /// <response code="404">Receiver endpoint not found.</response>
+    [HttpPost]
     [Route("slices")]
     [Produces("application/json")]
     [AllowAnonymous]
