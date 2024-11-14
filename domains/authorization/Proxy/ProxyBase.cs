@@ -139,23 +139,6 @@ public class ProxyBase : ControllerBase
     }
 
     /// <summary>
-    /// Proxies a request to the wallet service using the internal token validation.
-    /// </summary>
-    /// <param name="path"></param>
-    protected async Task ProxyTokenValidationRequest(string path)
-    {
-        var organizationId = User.FindFirst("sub")?.Value;
-
-        if (string.IsNullOrEmpty(organizationId))
-        {
-            Forbidden();
-            return;
-        }
-
-        await ProxyRequest(path, organizationId);
-    }
-
-    /// <summary>
     /// Proxies a request to the wallet service without any validation.
     /// </summary>
     /// <param name="path"></param>
