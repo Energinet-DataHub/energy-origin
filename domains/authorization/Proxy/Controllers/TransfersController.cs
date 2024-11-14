@@ -37,25 +37,6 @@ public class TransfersController : ProxyBase
     }
 
     /// <summary>
-    /// Gets detailed list of all of the transfers that have been made to other wallets.
-    /// </summary>
-    /// <response code="200">Returns the individual transferes within the filter.</response>
-    /// <response code="401">If the user is not authenticated.</response>
-    [HttpGet]
-    [Route("v1/transfers")]
-    [Produces("application/json")]
-    [Authorize]
-    [ApiVersionNeutral]
-    [Obsolete]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<Transfer, PageInfo>), StatusCodes.Status200OK)]
-    public async Task GetTransfersLegacy([FromQuery] GetTransfersQueryParameters param)
-    {
-        await ProxyTokenValidationRequest("v1/transfers");
-    }
-
-    /// <summary>
     /// Gets detailed list of all the transfers that have been made to other wallets.
     /// </summary>
     /// <response code="200">Returns the individual transferes within the filter.</response>
@@ -80,26 +61,6 @@ public class TransfersController : ProxyBase
     /// <response code="200">Returns the individual transferes within the filter.</response>
     /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
-    [Route("v1/aggregate-transfers")]
-    [Produces("application/json")]
-    [Authorize]
-    [ApiVersionNeutral]
-    [Obsolete]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ResultList<AggregatedTransfers, PageInfo>), StatusCodes.Status200OK)]
-    public async Task AggregateTransfersLegacy([FromQuery] AggregateTransfersQueryParameters param)
-    {
-        await ProxyTokenValidationRequest("v1/aggregate-transfers");
-    }
-
-    /// <summary>
-    /// Gets detailed list of all the transfers that have been made to other wallets.
-    /// </summary>
-    /// <response code="200">Returns the individual transferes within the filter.</response>
-    /// <response code="401">If the user is not authenticated.</response>
-    [HttpGet]
     [Route("aggregate-transfers")]
     [Produces("application/json")]
     [Authorize(policy: Policy.FrontendOr3rdParty)]
@@ -112,23 +73,6 @@ public class TransfersController : ProxyBase
     public async Task AggregateTransfers([FromQuery] AggregateTransfersQueryParameters param, string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/aggregate-transfers", organizationId);
-    }
-
-    /// <summary>
-    /// Transfers a certificate to another wallet.
-    /// </summary>
-    /// <param name="request"></param>
-    [HttpPost]
-    [Route("v1/transfers")]
-    [Produces("application/json")]
-    [Authorize]
-    [ApiVersionNeutral]
-    [Obsolete]
-    [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status202Accepted)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    public async Task TransferCertificateLegacy([FromBody] TransferRequest request)
-    {
-        await ProxyTokenValidationRequest("v1/transfers");
     }
 
     /// <summary>
