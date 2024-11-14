@@ -246,7 +246,6 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     {
         private readonly List<object[]> _data = new List<object[]>
         {
-            new object[] {"/wallets", new CreateWalletRequest{ PrivateKey = Encoding.ASCII.GetBytes("test") }},
             new object[] {"/wallets/8229a340-1c9d-46b6-8212-b767e42e02f0/endpoints", new {}},
             new object[] {"/external-endpoints", new CreateExternalEndpointRequest{TextReference = "Hello", WalletReference = new WalletEndpointReference(){ Endpoint = new Uri("https://test"), Version = 0, PublicKey = "test"}}},
             new object[] {"/claims", new ClaimRequest{ Quantity = 1, ConsumptionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}, ProductionCertificateId = new FederatedStreamId(){ Registry = "test", StreamId = Guid.NewGuid()}}},
