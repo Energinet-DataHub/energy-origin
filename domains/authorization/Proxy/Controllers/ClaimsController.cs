@@ -41,25 +41,6 @@ public class ClaimsController : ProxyBase
     /// <response code="200">Returns all the indiviual claims.</response>
     /// <response code="401">If the user is not authenticated.</response>
     [HttpGet]
-    [Route("v1/claims")]
-    [Produces("application/json")]
-    [Authorize]
-    [ApiVersionNeutral]
-    [Obsolete]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ResultList<Claim, PageInfo>), StatusCodes.Status200OK)]
-    public async Task GetClaimsLegacy([FromQuery] GetClaimsQueryParameters param)
-    {
-        await ProxyTokenValidationRequest("v1/claims");
-    }
-
-    /// <summary>
-    /// Gets all claims in the wallet
-    /// </summary>
-    /// <response code="200">Returns all the indiviual claims.</response>
-    /// <response code="401">If the user is not authenticated.</response>
-    [HttpGet]
     [Route("claims")]
     [Produces("application/json")]
     [Authorize(policy: Policy.FrontendOr3rdParty)]
@@ -71,27 +52,6 @@ public class ClaimsController : ProxyBase
     public async Task GetClaims([FromQuery] GetClaimsQueryParameters param, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/claims", organizationId);
-    }
-
-    /// <summary>
-    /// Returns a list of aggregates claims for the authenticated user based on the specified time zone and time range.
-    /// </summary>
-    /// <response code="200">Returns the aggregated claims.</response>
-    /// <response code="400">If the time zone is invalid.</response>
-    /// <response code="401">If the user is not authenticated.</response>
-    [HttpGet]
-    [Route("v1/aggregate-claims")]
-    [Produces("application/json")]
-    [Authorize]
-    [ApiVersionNeutral]
-    [Obsolete]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ResultList<AggregatedClaims, PageInfo>), StatusCodes.Status200OK)]
-    public async Task AggregateClaimsLegacy([FromQuery] AggregateClaimsQueryParameters param)
-    {
-        await ProxyTokenValidationRequest("v1/aggregate-claims");
     }
 
     /// <summary>
@@ -113,26 +73,6 @@ public class ClaimsController : ProxyBase
     public async Task AggregateClaims([FromQuery] AggregateClaimsQueryParameters param, [FromQuery] string? organizationId)
     {
         await ProxyClientCredentialsRequest("v1/aggregate-claims", organizationId);
-    }
-
-    /// <summary>
-    /// Queues a request to claim two certificate for a given quantity.
-    /// </summary>
-    /// <param name="request">The claim request</param>
-    /// <response code="202">Claim request has been queued for processing.</response>
-    /// <response code="401">If the user is not authenticated.</response>
-    [HttpPost]
-    [Route("v1/claims")]
-    [Produces("application/json")]
-    [Authorize]
-    [ApiVersionNeutral]
-    [Obsolete]
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status202Accepted)]
-    public async Task ClaimCertificateLegacy([FromBody] ClaimRequest request)
-    {
-        await ProxyTokenValidationRequest("v1/claims");
     }
 
     /// <summary>
