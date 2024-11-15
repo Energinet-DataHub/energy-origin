@@ -40,7 +40,7 @@ public class TransferAgreementsController(
     /// <response code="201">Successful operation</response>
     /// <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
     /// <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
-    [HttpPost]
+    [HttpPost("Accept-Proposal")]
     [ProducesResponseType(typeof(TransferAgreement), 201)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
@@ -358,12 +358,12 @@ public class TransferAgreementsController(
         return TransferAgreementStatus.Inactive;
     }
 
-    [HttpPost("create/")]
+    [HttpPost]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
     public async Task<ActionResult> CreateTransferAgreementDirectly([FromBody] CreateTransferAgreementRequest request,[FromQuery] Guid organizationId)
     {
-        accessDescriptor.IsAuthorizedToOrganizations([request.transferGiverOrganizationId, request.transferReceiverOrganizationId]);
+        accessDescriptor.IsAuthorizedToOrganizations([organizationId, request.TransferReceiverOrganizationId]);
 
         var taRepo = unitOfWork.TransferAgreementRepo;
 
@@ -389,20 +389,19 @@ public class TransferAgreementsController(
             walletId = createWalletResponse.WalletId;
         }
 
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(subject, walletId.Value, CancellationToken.None);
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(organizationId, walletId.Value, CancellationToken.None);
 
-        var externalEndpoint =
-            await walletClient.CreateExternalEndpoint(request.transferGiverOrganizationId, walletEndpoint, request.transferReceiverOrganizationId.ToString(), CancellationToken.None);
+        var externalEndpoint = await walletClient.CreateExternalEndpoint(organizationId, walletEndpoint, request.TransferReceiverOrganizationId.ToString(), CancellationToken.None);
 
         var transferAgreement = new TransferAgreement
         {
-            StartDate = UnixTimestamp.Create(request.startDate),
-            EndDate = request.endDate.HasValue ? UnixTimestamp.Create(request.endDate.Value) : null,
-            SenderId = OrganizationId.Create(request.transferGiverOrganizationId),
-            SenderName = OrganizationName.Empty(), // TODO: We can set this if it's the logged in user. But I would rather fix this as part of bug fix.
-            SenderTin = Tin.Empty(), // TODO: We can set this if it's the logged in user. But I would rather fix this as part of bug fix.
-            ReceiverName = OrganizationName.Empty(),
-            ReceiverTin = Tin.Empty(), // TODO: We can set this if it's the logged in user. But I would rather fix this as part of bug fix.
+            StartDate = UnixTimestamp.Create(request.StartDate),
+            EndDate = request.EndDate.HasValue ? UnixTimestamp.Create(request.EndDate.Value) : null,
+            SenderId = OrganizationId.Create(organizationId),
+            SenderName = OrganizationName.Create(request.SenderName),
+            SenderTin = Tin.Create(request.SenderTin),
+            ReceiverName = OrganizationName.Create(request.ReceiverName),
+            ReceiverTin = Tin.Create(request.ReceiverTin),
             ReceiverReference = externalEndpoint.ReceiverId
         };
 
@@ -422,4 +421,4 @@ public class TransferAgreementsController(
     }
 }
 
-public record CreateTransferAgreementRequest(Guid transferReceiverOrganizationId, Guid transferGiverOrganizationId, long startDate, long? endDate);
+
