@@ -29,13 +29,19 @@ public class AcceptServiceProviderTermsCommandHandlerTests
     public async Task Handle_WhenOrganizationNotAcceptedServiceProviderTerms_AcceptsServiceProviderTerms()
     {
         var command = new AcceptServiceProviderTermsCommand("12345678");
-        await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None);
+        var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
+        await _organizationRepository.AddAsync(organization, CancellationToken.None); // Add the organization to the repository
+        await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None); // Add service provider terms
 
         await _handler.Handle(command, CancellationToken.None);
 
-        _organizationRepository.Query().Count().Should().Be(1);
+        var updatedOrganization = _organizationRepository.Query().FirstOrDefault(o => o.Tin == Tin.Create(command.OrgCvr));
+        updatedOrganization.Should().NotBeNull();
+        updatedOrganization!.ServiceProviderTermsAccepted.Should().BeTrue();
+        updatedOrganization.ServiceProviderTermsVersion.Should().Be(1);
         await _unitOfWork.Received(1).CommitAsync();
     }
+
 
     [Fact]
     public async Task Handle_WhenOrganizationExistsButTermsNotAccepted_UpdatesTerms()
