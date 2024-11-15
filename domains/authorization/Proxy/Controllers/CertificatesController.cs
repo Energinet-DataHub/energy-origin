@@ -56,6 +56,7 @@ public class CertificatesController : ProxyBase
         await ProxyClientCredentialsRequest($"v1/certificates/{registry}/{streamId}", organizationId);
     }
 
+
     /// <summary>
     /// Gets all certificates in the wallet that are <b>available</b> for use.
     /// </summary>
