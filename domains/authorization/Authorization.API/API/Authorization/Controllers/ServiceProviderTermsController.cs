@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using Asp.Versioning;
