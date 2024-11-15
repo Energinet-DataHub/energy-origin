@@ -19,6 +19,9 @@ public class Organization : IEntity<Guid>
         TermsAccepted = false;
         TermsVersion = null;
         TermsAcceptanceDate = null;
+        ServiceProviderTermsAccepted = false;
+        ServiceProviderTermsVersion = null;
+        ServiceProviderTermsAcceptanceDate = null;
     }
 
     private Organization()
