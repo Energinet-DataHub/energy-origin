@@ -40,7 +40,7 @@ public class TransferAgreementsController(
     /// <response code="201">Successful operation</response>
     /// <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
     /// <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
-    [HttpPost("Accept-Proposal")]
+    [HttpPost()]
     [ProducesResponseType(typeof(TransferAgreement), 201)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
@@ -358,7 +358,7 @@ public class TransferAgreementsController(
         return TransferAgreementStatus.Inactive;
     }
 
-    [HttpPost]
+    [HttpPost("create/")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
     public async Task<ActionResult> CreateTransferAgreementDirectly([FromBody] CreateTransferAgreementRequest request,[FromQuery] Guid organizationId)
@@ -367,13 +367,23 @@ public class TransferAgreementsController(
 
         var taRepo = unitOfWork.TransferAgreementRepo;
 
-        // We should check if there is conflicts before going on.
-        // var hasConflict = await taRepo.HasDateOverlap(proposal);
-        // if (hasConflict)
-        // {
-        //     return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range",
-        //         statusCode: 409);
-        // }
+        var transferAgreement = new TransferAgreement
+        {
+            StartDate = UnixTimestamp.Create(request.StartDate),
+            EndDate = request.EndDate.HasValue ? UnixTimestamp.Create(request.EndDate.Value) : null,
+            SenderId = OrganizationId.Create(organizationId),
+            SenderName = OrganizationName.Create(request.SenderName),
+            SenderTin = Tin.Create(request.SenderTin),
+            ReceiverName = OrganizationName.Create(request.ReceiverName),
+            ReceiverTin = Tin.Create(request.ReceiverTin)
+        };
+
+        var hasConflict = await taRepo.HasDateOverlap(transferAgreement);
+        if (hasConflict)
+        {
+            return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range",
+                statusCode: 409);
+        }
 
         var wallets = await walletClient.GetWallets(request.ReceiverOrganizationId, CancellationToken.None);
 
@@ -392,17 +402,7 @@ public class TransferAgreementsController(
 
         var externalEndpoint = await walletClient.CreateExternalEndpoint(organizationId, walletEndpoint, request.SenderTin, CancellationToken.None);
 
-        var transferAgreement = new TransferAgreement
-        {
-            StartDate = UnixTimestamp.Create(request.StartDate),
-            EndDate = request.EndDate.HasValue ? UnixTimestamp.Create(request.EndDate.Value) : null,
-            SenderId = OrganizationId.Create(organizationId),
-            SenderName = OrganizationName.Create(request.SenderName),
-            SenderTin = Tin.Create(request.SenderTin),
-            ReceiverName = OrganizationName.Create(request.ReceiverName),
-            ReceiverTin = Tin.Create(request.ReceiverTin),
-            ReceiverReference = externalEndpoint.ReceiverId
-        };
+        transferAgreement.ReceiverReference = externalEndpoint.ReceiverId;
 
         try
         {

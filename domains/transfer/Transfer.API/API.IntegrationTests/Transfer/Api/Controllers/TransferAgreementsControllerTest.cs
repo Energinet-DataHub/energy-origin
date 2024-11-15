@@ -581,6 +581,49 @@ public class TransferAgreementsControllerTests
         updatedTransferAgreement!.EndDate.Should().Be(newEndDate);
     }
 
+    [Fact]
+    public async Task CreatePOATransferAgreement_ShouldCreateTransferAgreement_WhenInputIsValid()
+    {
+        var sub = Guid.NewGuid();
+        var orgId = Any.OrganizationId();
+        var agreementId = Guid.NewGuid();
+
+        // await SeedTransferAgreements(
+        //     new List<TransferAgreement>()
+        //     {
+        //         new()
+        //         {
+        //             Id = agreementId,
+        //             SenderId = orgId,
+        //             StartDate = UnixTimestamp.Now().AddDays(1),
+        //             EndDate = UnixTimestamp.Now().AddDays(10),
+        //             SenderName = OrganizationName.Create("nrgi A/S"),
+        //             SenderTin = Tin.Create("44332211"),
+        //             ReceiverName = OrganizationName.Create("Producent A/S"),
+        //             ReceiverTin = Tin.Create("11223344"),
+        //             ReceiverReference = Guid.NewGuid()
+        //         }
+        //     });
+
+        var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
+        var request = new CreateTransferAgreementRequest(sub,DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.ToUnixTimeSeconds(), "12345678", "æpæ", "87456123", "lol");
+        var jsonContent = JsonContent.Create(request);
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+
+        var test = dbContext.TransferAgreements.ToList();
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create?organizationId={orgId}", request);
+
+        //response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
+        // updatedTransferAgreement.Should().NotBeNull();
+        // updatedTransferAgreement!.EndDate.Should().Be(newEndDate);
+
+        var test2 = dbContext.TransferAgreements.ToList();
+    }
+
     private async Task<Guid> CreateTransferAgreementProposal(Guid orgId, HttpClient authenticatedClient, CreateTransferAgreementProposal request)
     {
         var result = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
