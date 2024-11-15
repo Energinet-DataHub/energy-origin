@@ -15,6 +15,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Client> Clients { get; set; }
     public DbSet<OrganizationConsent> OrganizationConsents { get; set; }
     public DbSet<Terms> Terms { get; set; }
+    public DbSet<ServiceProviderTerms> ServiceProviderTerms { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +27,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         ConfigureClientTable(modelBuilder);
         ConfigureUserTable(modelBuilder);
         ConfigureTermsTable(modelBuilder);
+        ConfigureServiceProviderTermsTable(modelBuilder);
 
         modelBuilder.AddTransactionalOutboxEntities();
     }
@@ -50,6 +52,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Organization>().Property(o => o.TermsVersion);
 
         modelBuilder.Entity<Organization>().Property(o => o.TermsAcceptanceDate);
+
+        modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsAccepted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsVersion);
+
+        modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsAcceptanceDate);
     }
 
     private static void ConfigureClientTable(ModelBuilder modelBuilder)
@@ -109,6 +119,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     }
 
     private static void ConfigureTermsTable(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Terms>().Property(t => t.Version)
+            .IsRequired();
+        modelBuilder.Entity<Terms>().HasIndex(t => t.Version)
+            .IsUnique();
+    }
+
+    private static void ConfigureServiceProviderTermsTable(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Terms>().Property(t => t.Version)
             .IsRequired();

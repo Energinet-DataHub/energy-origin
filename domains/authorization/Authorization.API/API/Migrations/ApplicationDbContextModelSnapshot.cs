@@ -80,6 +80,17 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset?>("ServiceProviderTermsAcceptanceDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("ServiceProviderTermsAccepted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<int?>("ServiceProviderTermsVersion")
+                        .HasColumnType("integer");
+
                     b.Property<DateTimeOffset?>("TermsAcceptanceDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -125,6 +136,20 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.ToTable("OrganizationConsents");
+                });
+
+            modelBuilder.Entity("API.Models.ServiceProviderTerms", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ServiceProviderTerms");
                 });
 
             modelBuilder.Entity("API.Models.Terms", b =>

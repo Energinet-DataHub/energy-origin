@@ -132,5 +132,29 @@
         <member name="M:API.Migrations.AddUniqueConsentIndex.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Migrations.AddServiceProviderTerms">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddServiceProviderTerms.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddServiceProviderTerms.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddServiceProviderTerms.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.AddDefaultServiceProviderTermsWithUniqueConstraint">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddDefaultServiceProviderTermsWithUniqueConstraint.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddDefaultServiceProviderTermsWithUniqueConstraint.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddDefaultServiceProviderTermsWithUniqueConstraint.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
