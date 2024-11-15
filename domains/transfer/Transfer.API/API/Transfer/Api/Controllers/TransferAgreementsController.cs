@@ -357,4 +357,69 @@ public class TransferAgreementsController(
 
         return TransferAgreementStatus.Inactive;
     }
+
+    [HttpPost("create/")]
+    [ProducesResponseType(typeof(TransferAgreementDto), 200)]
+    [ProducesResponseType(typeof(void), 404)]
+    public async Task<ActionResult> CreateTransferAgreementDirectly([FromBody] CreateTransferAgreementRequest request,[FromQuery] Guid organizationId)
+    {
+        accessDescriptor.IsAuthorizedToOrganizations([request.transferGiverOrganizationId, request.transferReceiverOrganizationId]);
+
+        var taRepo = unitOfWork.TransferAgreementRepo;
+
+        // We should check if there is conflicts before going on.
+        // var hasConflict = await taRepo.HasDateOverlap(proposal);
+        // if (hasConflict)
+        // {
+        //     return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range",
+        //         statusCode: 409);
+        // }
+
+        var subject = identityDescriptor.Subject;
+        var wallets = await walletClient.GetWallets(subject, CancellationToken.None);
+
+        var walletId = wallets.Result.FirstOrDefault()?.Id;
+        if (walletId == null) // TODO: This code should be deleted when we allign when and where we create a wallet. 🐉
+        {
+            var createWalletResponse = await walletClient.CreateWallet(identityDescriptor.Subject, CancellationToken.None);
+
+            if (createWalletResponse == null)
+                throw new ApplicationException("Failed to create wallet.");
+
+            walletId = createWalletResponse.WalletId;
+        }
+
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(subject, walletId.Value, CancellationToken.None);
+
+        var externalEndpoint =
+            await walletClient.CreateExternalEndpoint(request.transferGiverOrganizationId, walletEndpoint, request.transferReceiverOrganizationId.ToString(), CancellationToken.None);
+
+        var transferAgreement = new TransferAgreement
+        {
+            StartDate = UnixTimestamp.Create(request.startDate),
+            EndDate = request.endDate.HasValue ? UnixTimestamp.Create(request.endDate.Value) : null,
+            SenderId = OrganizationId.Create(request.transferGiverOrganizationId),
+            SenderName = OrganizationName.Empty(), // TODO: We can set this if it's the logged in user. But I would rather fix this as part of bug fix.
+            SenderTin = Tin.Empty(), // TODO: We can set this if it's the logged in user. But I would rather fix this as part of bug fix.
+            ReceiverName = OrganizationName.Empty(),
+            ReceiverTin = Tin.Empty(), // TODO: We can set this if it's the logged in user. But I would rather fix this as part of bug fix.
+            ReceiverReference = externalEndpoint.ReceiverId
+        };
+
+        try
+        {
+            var result = await taRepo.AddTransferAgreement(transferAgreement);
+
+            await unitOfWork.SaveAsync();
+
+            return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
+        }
+        catch (DbUpdateException)
+        {
+            return ValidationProblem(statusCode: 409);
+        }
+
+    }
 }
+
+public record CreateTransferAgreementRequest(Guid transferReceiverOrganizationId, Guid transferGiverOrganizationId, long startDate, long? endDate);

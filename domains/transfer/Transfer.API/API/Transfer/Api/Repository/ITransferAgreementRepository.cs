@@ -9,6 +9,7 @@ public interface ITransferAgreementRepository
 {
     Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement);
     Task<TransferAgreement> AddTransferAgreementAndDeleteProposal(TransferAgreement newTransferAgreement, Guid proposalId);
+    Task<TransferAgreement> AddTransferAgreement(TransferAgreement newTransferAgreement);
     Task<TransferAgreement?> GetTransferAgreement(Guid id, string subject, string tin);
     Task<List<TransferAgreement>> GetTransferAgreementsList(Guid organizationId, string receiverTin);
     Task<List<TransferAgreement>> GetAllTransferAgreements();

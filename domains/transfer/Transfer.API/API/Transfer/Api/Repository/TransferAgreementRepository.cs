@@ -43,6 +43,19 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
         return newTransferAgreement;
     }
 
+    public async Task<TransferAgreement> AddTransferAgreement(TransferAgreement newTransferAgreement)
+    {
+        var agreements = await context.TransferAgreements.Where(t =>
+                t.SenderId == newTransferAgreement.SenderId)
+            .ToListAsync();
+        var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
+        newTransferAgreement.TransferAgreementNumber = transferAgreementNumber;
+
+        await context.TransferAgreements.AddAsync(newTransferAgreement);
+
+        return newTransferAgreement;
+    }
+
     public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid organizationId, string receiverTin)
     {
         var tin = Tin.Create(receiverTin);
