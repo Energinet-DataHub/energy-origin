@@ -28,7 +28,6 @@ public class AddOrganizationConsentTests
         await using var dbContext = new ApplicationDbContext(options);
         var migrator = dbContext.GetService<IMigrator>();
 
-        // Migrate to the state before the migration under test
         await migrator.MigrateAsync("20240730115826_AddDefaultTermsWithUniqueConstraint");
 
         var orgId = Guid.NewGuid();
@@ -42,7 +41,6 @@ public class AddOrganizationConsentTests
         var applyMigration = () => migrator.MigrateAsync("20241021074018_RemoveConsentTable");
         await applyMigration.Should().NotThrowAsync();
 
-        // Use Npgsql to query the database directly
         var connectionString = dbContext.Database.GetConnectionString();
         await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
