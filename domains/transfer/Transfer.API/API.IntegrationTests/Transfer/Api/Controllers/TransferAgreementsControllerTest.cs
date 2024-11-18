@@ -588,7 +588,7 @@ public class TransferAgreementsControllerTests
         var orgId = Any.OrganizationId();
         var senderName = "Some Awesome Org";
 
-        var request = new CreateTransferAgreementRequest(sub, orgId.Value, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.ToUnixTimeSeconds(), "12345678", senderName, "87456123", "lol");
+        var request = new CreateTransferAgreementRequest(sub, orgId.Value, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.ToUnixTimeSeconds(), "12345678", "lol", "87456123", senderName);
         using var scope = factory.Services.CreateScope();
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
 
