@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext;
@@ -41,7 +42,7 @@ public class TransferAgreementsAutomationWorker(
 
             try
             {
-                var transferAgreements = await GetAllTransferAgreements(stoppingToken);
+                var transferAgreements = await GetTransferAllCertificatesAgreements(stoppingToken);
                 metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
 
                 foreach (var transferAgreement in transferAgreements)
@@ -58,11 +59,11 @@ public class TransferAgreementsAutomationWorker(
         }
     }
 
-    private async Task<List<TransferAgreement>> GetAllTransferAgreements(CancellationToken stoppingToken)
+    private async Task<List<TransferAgreement>> GetTransferAllCertificatesAgreements(CancellationToken stoppingToken)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync(stoppingToken);
 
-        return await dbContext.TransferAgreements.ToListAsync(stoppingToken);
+        return await dbContext.TransferAgreements.Where(ta => ta.Type == TransferAgreementType.TransferAllCertificates).ToListAsync(stoppingToken);
     }
 
     private async Task SleepToNearestHour(CancellationToken cancellationToken)
