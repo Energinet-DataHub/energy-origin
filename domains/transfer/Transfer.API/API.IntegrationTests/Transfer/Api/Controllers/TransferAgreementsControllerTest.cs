@@ -598,7 +598,7 @@ public class TransferAgreementsControllerTests
         var transferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == orgId);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        transferAgreement.SenderName.Should().Be(senderName);
+        transferAgreement.SenderName.Value.Should().Be(senderName);
     }
 
     [Fact]
