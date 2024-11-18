@@ -24,7 +24,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230515102933_InitialCreate') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230515102933_InitialCreate', '8.0.3');
+    VALUES ('20230515102933_InitialCreate', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -50,7 +50,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230526073317_AddTransferAgreementActorIdAndSenderId') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230526073317_AddTransferAgreementActorIdAndSenderId', '8.0.3');
+    VALUES ('20230526073317_AddTransferAgreementActorIdAndSenderId', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -69,7 +69,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230529134229_AlterColumnReceiverTin') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230529134229_AlterColumnReceiverTin', '8.0.3');
+    VALUES ('20230529134229_AlterColumnReceiverTin', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -95,7 +95,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230614101345_AddTransferAgreementsSenderNameAndSenderTin') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230614101345_AddTransferAgreementsSenderNameAndSenderTin', '8.0.3');
+    VALUES ('20230614101345_AddTransferAgreementsSenderNameAndSenderTin', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -114,7 +114,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230618103100_UpdateEndDateToNullable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230618103100_UpdateEndDateToNullable', '8.0.3');
+    VALUES ('20230618103100_UpdateEndDateToNullable', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -162,7 +162,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230704092115_AddTransferAgreementHistoryEntry') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230704092115_AddTransferAgreementHistoryEntry', '8.0.3');
+    VALUES ('20230704092115_AddTransferAgreementHistoryEntry', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -188,7 +188,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230807080407_AddTransferAgreementReceiverReference') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230807080407_AddTransferAgreementReceiverReference', '8.0.3');
+    VALUES ('20230807080407_AddTransferAgreementReceiverReference', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -222,7 +222,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829090644_AddInvitationsTable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230829090644_AddInvitationsTable', '8.0.3');
+    VALUES ('20230829090644_AddInvitationsTable', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -248,7 +248,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230829124003_AddUniqueIndexAndTransferAgreementNumber') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230829124003_AddUniqueIndexAndTransferAgreementNumber', '8.0.3');
+    VALUES ('20230829124003_AddUniqueIndexAndTransferAgreementNumber', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -315,7 +315,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection', '8.0.3');
+    VALUES ('20230904142106_RemovedSchemaAndRenamedInvitationsAndAddedConnection', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -338,7 +338,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231102084120_AddClaimAutomationArgument') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231102084120_AddClaimAutomationArgument', '8.0.3');
+    VALUES ('20231102084120_AddClaimAutomationArgument', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -381,7 +381,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20231123093303_AddTransferAgreementProposalsAndDeleteConnections') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20231123093303_AddTransferAgreementProposalsAndDeleteConnections', '8.0.3');
+    VALUES ('20231123093303_AddTransferAgreementProposalsAndDeleteConnections', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -419,7 +419,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240125123642_AddActivitylogEntity') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240125123642_AddActivitylogEntity', '8.0.3');
+    VALUES ('20240125123642_AddActivitylogEntity', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -438,7 +438,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240216131219_ActivityLogEntityIdIsNowAString') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240216131219_ActivityLogEntityIdIsNowAString', '8.0.3');
+    VALUES ('20240216131219_ActivityLogEntityIdIsNowAString', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -464,7 +464,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240305123915_AddOtherOrganizationToActivityLogEntries') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240305123915_AddOtherOrganizationToActivityLogEntries', '8.0.3');
+    VALUES ('20240305123915_AddOtherOrganizationToActivityLogEntries', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -483,7 +483,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240307132055_AddReceiverNameToTransferAgreements') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240307132055_AddReceiverNameToTransferAgreements', '8.0.3');
+    VALUES ('20240307132055_AddReceiverNameToTransferAgreements', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -502,7 +502,33 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240409063522_RemoveTransferAgreementHistory') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240409063522_RemoveTransferAgreementHistory', '8.0.3');
+    VALUES ('20240409063522_RemoveTransferAgreementHistory', '8.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241107113909_AddTransferAgreementType') THEN
+    ALTER TABLE "TransferAgreements" ADD "Type" integer NOT NULL DEFAULT 0;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241107113909_AddTransferAgreementType') THEN
+    ALTER TABLE "TransferAgreementProposals" ADD "Type" integer NOT NULL DEFAULT 0;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241107113909_AddTransferAgreementType') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20241107113909_AddTransferAgreementType', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
