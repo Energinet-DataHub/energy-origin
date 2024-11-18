@@ -149,6 +149,9 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Version")
+                        .IsUnique();
+
                     b.ToTable("ServiceProviderTerms");
                 });
 

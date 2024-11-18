@@ -29,7 +29,7 @@ public class AddServiceProviderTermsTests
 
         await migrator.MigrateAsync("20241022085628_AddUniqueConsentIndex");
 
-        await migrator.MigrateAsync("20241115124556_AddServiceProviderTerms");
+        await migrator.MigrateAsync("20241118010705_AddServiceProviderTerms");
 
         var connectionString = dbContext.Database.GetConnectionString();
         await using var connection = new NpgsqlConnection(connectionString);
@@ -71,7 +71,7 @@ public class AddServiceProviderTermsTests
         var orgId = Guid.NewGuid();
         await InsertTestOrganization(dbContext, orgId, "12345678", "Test Organization");
 
-        await migrator.MigrateAsync("20241115124556_AddServiceProviderTerms");
+        await migrator.MigrateAsync("20241118010705_AddServiceProviderTerms");
 
         var connectionString = dbContext.Database.GetConnectionString();
         await using var connection = new NpgsqlConnection(connectionString);

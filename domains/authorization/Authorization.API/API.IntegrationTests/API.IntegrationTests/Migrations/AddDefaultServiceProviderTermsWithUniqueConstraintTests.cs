@@ -26,9 +26,9 @@ public class AddDefaultServiceProviderTermsWithUniqueConstraintTests
         await using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.GetService<IMigrator>();
 
-        await migrator.MigrateAsync("20241115124556_AddServiceProviderTerms");
+        await migrator.MigrateAsync("20241118010705_AddServiceProviderTerms");
 
-        await migrator.MigrateAsync("20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint");
+        await migrator.MigrateAsync("20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint");
 
         var terms2 = ServiceProviderTerms.Create(2);
         dbContext.ServiceProviderTerms.Add(terms2);
@@ -49,9 +49,9 @@ public class AddDefaultServiceProviderTermsWithUniqueConstraintTests
         await using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.GetService<IMigrator>();
 
-        await migrator.MigrateAsync("20241115124556_AddServiceProviderTerms");
+        await migrator.MigrateAsync("20241118010705_AddServiceProviderTerms");
 
-        await migrator.MigrateAsync("20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint");
+        await migrator.MigrateAsync("20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint");
 
         var terms2 = ServiceProviderTerms.Create(2);
         var terms3 = ServiceProviderTerms.Create(3);
@@ -71,9 +71,9 @@ public class AddDefaultServiceProviderTermsWithUniqueConstraintTests
         await using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.GetService<IMigrator>();
 
-        await migrator.MigrateAsync("20241115124556_AddServiceProviderTerms");
+        await migrator.MigrateAsync("20241118010705_AddServiceProviderTerms");
 
-        await migrator.MigrateAsync("20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint");
+        await migrator.MigrateAsync("20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint");
 
         var terms = await dbContext.ServiceProviderTerms.SingleOrDefaultAsync();
         terms.Should().NotBeNull();
@@ -87,10 +87,10 @@ public class AddDefaultServiceProviderTermsWithUniqueConstraintTests
         await using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.GetService<IMigrator>();
 
-        await migrator.MigrateAsync("20241115124556_AddServiceProviderTerms");
+        await migrator.MigrateAsync("20241118010705_AddServiceProviderTerms");
 
-        await migrator.MigrateAsync("20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint");
-        await migrator.MigrateAsync("20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint");
+        await migrator.MigrateAsync("20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint");
+        await migrator.MigrateAsync("20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint");
 
         var termsCount = await dbContext.ServiceProviderTerms.CountAsync();
         termsCount.Should().Be(1);

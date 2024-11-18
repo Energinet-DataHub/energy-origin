@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241115124556_AddServiceProviderTerms")]
+    [Migration("20241118010705_AddServiceProviderTerms")]
     partial class AddServiceProviderTerms
     {
         /// <inheritdoc />

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint")]
+    [Migration("20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint")]
     partial class AddDefaultServiceProviderTermsWithUniqueConstraint
     {
         /// <inheritdoc />
@@ -151,6 +151,9 @@ namespace API.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Version")
+                        .IsUnique();
 
                     b.ToTable("ServiceProviderTerms");
                 });
