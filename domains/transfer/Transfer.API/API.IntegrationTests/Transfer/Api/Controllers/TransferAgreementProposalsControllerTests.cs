@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -219,7 +220,7 @@ public class TransferAgreementProposalsControllerTests
         var senderClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, tin.Value);
 
         var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
-            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
 
         var createResponse = await senderClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -407,6 +408,55 @@ public class TransferAgreementProposalsControllerTests
         var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{randomGuid}?organizationId={orgId}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GivenRequest_WhenAddingOptionalProperty_MissingPropertyShouldBeAccepted()
+    {
+        // Given request without new optional property
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new
+        {
+            StartDate = UnixTimestamp.Now().AddDays(1).EpochSeconds,
+            EndDate = UnixTimestamp.Now().AddDays(2).EpochSeconds,
+            ReceiverTin = "00998877"
+        };
+
+        // When making request
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
+
+        // Response should be OK, and proposal should have default type
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var scope = factory.Services.CreateScope();
+        await using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        var proposal = dbContext.TransferAgreementProposals.Single(tap => tap.ReceiverCompanyTin == Tin.Create(request.ReceiverTin));
+        proposal.Type.Should().Be(TransferAgreementType.TransferAllCertificates);
+    }
+
+    [Fact]
+    public async Task GivenRequest_WhenSupplyingOptionalProperty_PropertyShouldBeAccepted()
+    {
+        // Given request without new optional property
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new
+        {
+            StartDate = UnixTimestamp.Now().AddDays(1).EpochSeconds,
+            EndDate = UnixTimestamp.Now().AddDays(2).EpochSeconds,
+            ReceiverTin = "00998878",
+            Type = CreateTransferAgreementType.TransferCertificatesBasedOnConsumption
+        };
+
+        // When making request
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
+
+        // Response should be OK, and proposal should have correct type
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var scope = factory.Services.CreateScope();
+        await using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        var proposal = dbContext.TransferAgreementProposals.Single(tap => tap.ReceiverCompanyTin == Tin.Create(request.ReceiverTin));
+        proposal.Type.Should().Be(TransferAgreementType.TransferCertificatesBasedOnConsumption);
     }
 
     [Fact]

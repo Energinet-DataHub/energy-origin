@@ -7,7 +7,7 @@ namespace API.IntegrationTests.Transfer.Api.Dto.Requests;
 
 public class CreateTransferAgreementProposalValidatorTest
 {
-    private CreateTransferAgreementProposalValidator sut = new();
+    private readonly CreateTransferAgreementProposalValidator sut = new();
 
     [Theory]
     [InlineData("")]

@@ -19,7 +19,6 @@ using VerifyTests;
 using VerifyXunit;
 using Xunit;
 using Xunit.Abstractions;
-using TransferAgreementDto = API.Transfer.Api.Dto.Responses.TransferAgreementDto;
 using TransferAgreementsResponse = API.Transfer.Api.Dto.Responses.TransferAgreementsResponse;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
@@ -627,7 +626,8 @@ public class TransferAgreementsControllerTests
                     SenderTin = Tin.Create("44332233"),
                     ReceiverName = OrganizationName.Create("Producent A/S"),
                     ReceiverTin = tin,
-                    ReceiverReference = Guid.NewGuid()
+                    ReceiverReference = Guid.NewGuid(),
+                    Type = TransferAgreementType.TransferAllCertificates
                 },
                 new() // Inactive
                 {
@@ -639,7 +639,8 @@ public class TransferAgreementsControllerTests
                     SenderTin = tin,
                     ReceiverName = OrganizationName.Create("Test A/S"),
                     ReceiverTin = Tin.Create("87654321"),
-                    ReceiverReference = Guid.NewGuid()
+                    ReceiverReference = Guid.NewGuid(),
+                    Type = TransferAgreementType.TransferCertificatesBasedOnConsumption
                 }
             });
 
@@ -654,7 +655,8 @@ public class TransferAgreementsControllerTests
                 SenderCompanyName = OrganizationName.Create("SomeOrg"),
                 ReceiverCompanyTin = Tin.Create("11223342"),
                 SenderCompanyId = orgId,
-                SenderCompanyTin = tin
+                SenderCompanyTin = tin,
+                Type = TransferAgreementType.TransferAllCertificates
             },
             new () // Expired
             {
@@ -665,7 +667,8 @@ public class TransferAgreementsControllerTests
                 SenderCompanyName = OrganizationName.Create("SomeOrg"),
                 ReceiverCompanyTin = Tin.Create("11223342"),
                 SenderCompanyId = orgId,
-                SenderCompanyTin = tin
+                SenderCompanyTin = tin,
+                Type = TransferAgreementType.TransferCertificatesBasedOnConsumption
             }
         });
 
@@ -678,13 +681,15 @@ public class TransferAgreementsControllerTests
 
         transferAgreementsResponse.Should().NotBeNull();
         transferAgreementsResponse!.Result.Should().HaveCount(4);
-        transferAgreementsResponse!.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Active)
+        transferAgreementsResponse.Result.Where(ta => ta.Type == TransferAgreementTypeDto.TransferAllCertificates).Should().HaveCount(2);
+        transferAgreementsResponse.Result.Where(ta => ta.Type == TransferAgreementTypeDto.TransferCertificatesBasedOnConsumption).Should().HaveCount(2);
+        transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Active)
             .Should().HaveCount(1);
-        transferAgreementsResponse!.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Inactive)
+        transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Inactive)
             .Should().HaveCount(1);
-        transferAgreementsResponse!.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Proposal)
+        transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Proposal)
             .Should().HaveCount(1);
-        transferAgreementsResponse!.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.ProposalExpired)
+        transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.ProposalExpired)
             .Should().HaveCount(1);
     }
 }
