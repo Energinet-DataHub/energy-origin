@@ -280,59 +280,11 @@ public class TransferAgreementsController(
     {
         accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
-        var taRepo = unitOfWork.TransferAgreementRepo;
+        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId, request.SenderOrganizationId, request.StartDate,
+            request.EndDate, request.ReceiverTin, request.ReceiverName, request.SenderTin, request.SenderName), CancellationToken.None);
 
-        var transferAgreement = new TransferAgreement
-        {
-            StartDate = UnixTimestamp.Create(request.StartDate),
-            EndDate = request.EndDate.HasValue ? UnixTimestamp.Create(request.EndDate.Value) : null,
-            SenderId = OrganizationId.Create(request.SenderOrganizationId),
-            SenderName = OrganizationName.Create(request.SenderName),
-            SenderTin = Tin.Create(request.SenderTin),
-            ReceiverName = OrganizationName.Create(request.ReceiverName),
-            ReceiverTin = Tin.Create(request.ReceiverTin)
-        };
-
-        var hasConflict = await taRepo.HasDateOverlap(transferAgreement, CancellationToken.None);
-        if (hasConflict)
-        {
-            return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range",
-                statusCode: 409);
-        }
-
-        var wallets = await walletClient.GetWallets(request.ReceiverOrganizationId, CancellationToken.None);
-
-        var walletId = wallets.Result.FirstOrDefault()?.Id;
-        if (walletId == null) // TODO: This code should be deleted when we allign when and where we create a wallet. 🐉
-        {
-            var createWalletResponse = await walletClient.CreateWallet(request.ReceiverOrganizationId, CancellationToken.None);
-
-            if (createWalletResponse == null)
-                throw new ApplicationException("Failed to create wallet.");
-
-            walletId = createWalletResponse.WalletId;
-        }
-
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(request.ReceiverOrganizationId, walletId.Value, CancellationToken.None);
-
-        var externalEndpoint = await walletClient.CreateExternalEndpoint(request.SenderOrganizationId, walletEndpoint, request.SenderTin, CancellationToken.None);
-
-        transferAgreement.ReceiverReference = externalEndpoint.ReceiverId;
-
-        try
-        {
-            var result = await taRepo.AddTransferAgreement(transferAgreement, CancellationToken.None);
-
-            await unitOfWork.SaveAsync();
-
-            return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result.Id, result.SenderTin.Value, result.SenderName.Value,
-                result.ReceiverTin.Value, result.StartDate.EpochSeconds, result.EndDate?.EpochSeconds, result.Type));
-        }
-        catch (DbUpdateException)
-        {
-            return ValidationProblem(statusCode: 409);
-        }
-
+        return CreatedAtAction(nameof(Get), new { id = command.TransferAgreementId }, ToTransferAgreementDto(command.TransferAgreementId, command.SenderTin, command.SenderName,
+            command.ReceiverTin, command.StartDate, command.EndDate, command.Type));
     }
 }
 
