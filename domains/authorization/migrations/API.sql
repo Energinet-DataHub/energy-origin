@@ -502,28 +502,28 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241115124556_AddServiceProviderTerms') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241118010705_AddServiceProviderTerms') THEN
     ALTER TABLE "Organizations" ADD "ServiceProviderTermsAcceptanceDate" timestamp with time zone;
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241115124556_AddServiceProviderTerms') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241118010705_AddServiceProviderTerms') THEN
     ALTER TABLE "Organizations" ADD "ServiceProviderTermsAccepted" boolean NOT NULL DEFAULT FALSE;
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241115124556_AddServiceProviderTerms') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241118010705_AddServiceProviderTerms') THEN
     ALTER TABLE "Organizations" ADD "ServiceProviderTermsVersion" integer;
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241115124556_AddServiceProviderTerms') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241118010705_AddServiceProviderTerms') THEN
     CREATE TABLE "ServiceProviderTerms" (
         "Id" uuid NOT NULL,
         "Version" integer NOT NULL,
@@ -534,9 +534,9 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241115124556_AddServiceProviderTerms') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241118010705_AddServiceProviderTerms') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20241115124556_AddServiceProviderTerms', '8.0.8');
+    VALUES ('20241118010705_AddServiceProviderTerms', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
@@ -546,7 +546,7 @@ START TRANSACTION;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint') THEN
     INSERT INTO "ServiceProviderTerms" ("Id", "Version")
     VALUES ('a545358f-0475-43b4-a911-6fa8009ec0da', 1);
     END IF;
@@ -554,16 +554,16 @@ END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint') THEN
     CREATE UNIQUE INDEX "IX_ServiceProviderTerms_Version" ON "ServiceProviderTerms" ("Version");
     END IF;
 END $EF$;
 
 DO $EF$
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint') THEN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20241115125358_AddDefaultServiceProviderTermsWithUniqueConstraint', '8.0.8');
+    VALUES ('20241118010747_AddDefaultServiceProviderTermsWithUniqueConstraint', '8.0.8');
     END IF;
 END $EF$;
 COMMIT;
