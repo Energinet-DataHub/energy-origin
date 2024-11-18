@@ -583,18 +583,18 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task CreatePOATransferAgreement_ShouldCreateTransferAgreement_WhenInputIsValid()
     {
-        var sub = Guid.NewGuid();
-        var orgId = Any.OrganizationId();
+        var receiverOrganizationId = Guid.NewGuid();
+        var senderOrganizationId = Any.OrganizationId();
         var senderName = "Some Awesome Org";
 
-        var request = new CreateTransferAgreementRequest(sub, orgId.Value, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.ToUnixTimeSeconds(), "12345678", "lol", "87456123", senderName, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
+        var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId.Value, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.ToUnixTimeSeconds(), "12345678", "lol", "87456123", senderName, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
         using var scope = factory.Services.CreateScope();
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId.Value);
         var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
 
-        var transferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == orgId);
+        var transferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == senderOrganizationId);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         transferAgreement.SenderName.Value.Should().Be(senderName);
@@ -603,14 +603,14 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task CreatePOATransferAgreement_ShouldFailTransferAgreement_WhenThereIsAllreadyOneOverlappingTransferAgreement()
     {
-        var sub = Guid.NewGuid();
-        var orgId = Any.OrganizationId();
+        var receiverOrganizationId = Guid.NewGuid();
+        var senderOrganizationId = Any.OrganizationId();
         var agreementId = Guid.NewGuid();
 
         var existingTransferAgreement = new TransferAgreement()
         {
             Id = agreementId,
-            SenderId = orgId,
+            SenderId = senderOrganizationId,
             StartDate = UnixTimestamp.Now().AddDays(1),
             EndDate = UnixTimestamp.Now().AddDays(20),
             SenderName = OrganizationName.Create("nrgi A/S"),
@@ -626,12 +626,12 @@ public class TransferAgreementsControllerTests
             });
 
         var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
-        var request = new CreateTransferAgreementRequest(sub, orgId.Value, UnixTimestamp.Now().EpochSeconds, UnixTimestamp.Now().AddDays(10).EpochSeconds, existingTransferAgreement.ReceiverTin.Value, existingTransferAgreement.ReceiverName.Value, existingTransferAgreement.SenderTin.Value, existingTransferAgreement.SenderName.Value, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
+        var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId.Value, UnixTimestamp.Now().EpochSeconds, UnixTimestamp.Now().AddDays(10).EpochSeconds, existingTransferAgreement.ReceiverTin.Value, existingTransferAgreement.ReceiverName.Value, existingTransferAgreement.SenderTin.Value, existingTransferAgreement.SenderName.Value, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
         var jsonContent = JsonContent.Create(request);
         using var scope = factory.Services.CreateScope();
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId.Value);
         var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);

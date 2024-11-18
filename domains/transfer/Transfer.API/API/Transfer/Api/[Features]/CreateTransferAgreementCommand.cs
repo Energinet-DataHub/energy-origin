@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +25,7 @@ public record CreateTransferAgreementCommand(
     string SenderName,
     TransferAgreementType Type
 
-    // TODO: Delete once we get info from Auth 🐉
+// TODO: Delete once we get info from Auth 🐉
 ) : IRequest<CreateTransferAgreementCommandResult>;
 public record CreateTransferAgreementCommandResult(Guid TransferAgreementId, string SenderName, string SenderTin, string ReceiverTin, long StartDate, long? EndDate, TransferAgreementType Type);
 
