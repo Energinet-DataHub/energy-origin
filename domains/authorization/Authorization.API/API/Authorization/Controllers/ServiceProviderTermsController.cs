@@ -27,7 +27,7 @@ public class ServiceProviderTermsController(IMediator mediator, IdentityDescript
     [ProducesResponseType(typeof(AcceptServiceProviderTermsResponse), StatusCodes.Status403Forbidden)]
     [SwaggerOperation(
         Summary = "Accept Service Provider Terms on behalf of users affiliated organization",
-        Description = "Requires 'org_cvr' claim"
+        Description = "Requires 'org_id' claim"
     )]
     public async Task<ActionResult<AcceptServiceProviderTermsResponse>> AcceptServiceProviderTerms()
     {
@@ -42,7 +42,7 @@ public class ServiceProviderTermsController(IMediator mediator, IdentityDescript
     [ProducesResponseType(typeof(GetServiceProviderTermsResponse), StatusCodes.Status200OK)]
     [SwaggerOperation(
         Summary = "Find Service Provider Terms Status on behalf of users affiliated organization",
-        Description = "Requires 'org_cvr' claim"
+        Description = "Requires 'org_id' claim"
     )]
     public async Task<ActionResult<GetServiceProviderTermsResponse>> GetServiceProviderTerms()
     {
