@@ -128,9 +128,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void ConfigureServiceProviderTermsTable(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Terms>().Property(t => t.Version)
+        modelBuilder.Entity<ServiceProviderTerms>().Property(t => t.Version)
             .IsRequired();
-        modelBuilder.Entity<Terms>().HasIndex(t => t.Version)
+        modelBuilder.Entity<ServiceProviderTerms>().HasIndex(t => t.Version)
             .IsUnique();
     }
 }
