@@ -12,18 +12,6 @@ namespace API.Transfer.Api.Repository;
 
 public class TransferAgreementRepository(ApplicationDbContext context) : ITransferAgreementRepository
 {
-    public async Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement, CancellationToken cancellationToken)
-    {
-        var agreements = await context.TransferAgreements.Where(t =>
-                t.SenderId == transferAgreement.SenderId)
-            .ToListAsync(cancellationToken);
-
-        var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
-        transferAgreement.TransferAgreementNumber = transferAgreementNumber;
-        await context.TransferAgreements.AddAsync(transferAgreement, cancellationToken);
-        return transferAgreement;
-    }
-
     public async Task<TransferAgreement> AddTransferAgreementAndDeleteProposal(TransferAgreement newTransferAgreement, Guid proposalId, CancellationToken cancellationToken)
     {
         var agreements = await context.TransferAgreements.Where(t =>
@@ -42,6 +30,20 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
 
         return newTransferAgreement;
     }
+
+    public async Task<TransferAgreement> AddTransferAgreement(TransferAgreement newTransferAgreement, CancellationToken cancellationToken)
+    {
+        var agreements = await context.TransferAgreements.Where(t =>
+                t.SenderId == newTransferAgreement.SenderId)
+            .ToListAsync();
+        var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
+        newTransferAgreement.TransferAgreementNumber = transferAgreementNumber;
+
+        await context.TransferAgreements.AddAsync(newTransferAgreement);
+
+        return newTransferAgreement;
+    }
+
 
     public async Task<List<TransferAgreement>> GetTransferAgreementsList(Guid organizationId, string receiverTin, CancellationToken cancellationToken)
     {

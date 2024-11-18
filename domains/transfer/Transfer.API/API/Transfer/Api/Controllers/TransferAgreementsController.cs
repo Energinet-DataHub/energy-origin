@@ -17,6 +17,8 @@ using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProjectOriginClients;
 
 namespace API.Transfer.Api.Controllers;
 
@@ -41,7 +43,7 @@ public class TransferAgreementsController(
     /// <response code="201">Successful operation</response>
     /// <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
     /// <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>
-    [HttpPost]
+    [HttpPost()]
     [ProducesResponseType(typeof(TransferAgreement), 201)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
@@ -270,4 +272,20 @@ public class TransferAgreementsController(
 
         return TransferAgreementStatus.Inactive;
     }
+
+    [HttpPost("create/")]
+    [ProducesResponseType(typeof(TransferAgreementDto), 200)]
+    [ProducesResponseType(typeof(void), 404)]
+    public async Task<ActionResult> CreateTransferAgreementDirectly([FromServices] IProjectOriginWalletClient walletClient, [FromBody] CreateTransferAgreementRequest request)
+    {
+        accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
+
+        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId, request.SenderOrganizationId, request.StartDate,
+            request.EndDate, request.ReceiverTin, request.ReceiverName, request.SenderTin, request.SenderName, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)), CancellationToken.None);
+
+        return CreatedAtAction(nameof(Get), new { id = command.TransferAgreementId }, ToTransferAgreementDto(command.TransferAgreementId, command.SenderTin, command.SenderName,
+            command.ReceiverTin, command.StartDate, command.EndDate, command.Type));
+    }
 }
+
+
