@@ -281,7 +281,7 @@ public class TransferAgreementsController(
         accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
         var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId, request.SenderOrganizationId, request.StartDate,
-            request.EndDate, request.ReceiverTin, request.ReceiverName, request.SenderTin, request.SenderName), CancellationToken.None);
+            request.EndDate, request.ReceiverTin, request.ReceiverName, request.SenderTin, request.SenderName, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)), CancellationToken.None);
 
         return CreatedAtAction(nameof(Get), new { id = command.TransferAgreementId }, ToTransferAgreementDto(command.TransferAgreementId, command.SenderTin, command.SenderName,
             command.ReceiverTin, command.StartDate, command.EndDate, command.Type));

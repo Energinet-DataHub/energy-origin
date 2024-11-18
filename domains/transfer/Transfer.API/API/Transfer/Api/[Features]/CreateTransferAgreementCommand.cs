@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Transfer.Api.Dto.Requests;
+using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext.Models;
@@ -18,10 +20,13 @@ public record CreateTransferAgreementCommand(
     long StartDate,
     long? EndDate,
     string ReceiverTin, // TODO: Delete once we get info from Auth 🐉
-    string ReceiverName,// TODO: Delete once we get info from Auth 🐉
-    string SenderTin,   // TODO: Delete once we get info from Auth 🐉
-    string SenderName   // TODO: Delete once we get info from Auth 🐉
-    ) : IRequest<CreateTransferAgreementCommandResult>;
+    string ReceiverName, // TODO: Delete once we get info from Auth 🐉
+    string SenderTin, // TODO: Delete once we get info from Auth 🐉
+    string SenderName,
+    TransferAgreementType Type
+
+    // TODO: Delete once we get info from Auth 🐉
+) : IRequest<CreateTransferAgreementCommandResult>;
 public record CreateTransferAgreementCommandResult(Guid TransferAgreementId, string SenderName, string SenderTin, string ReceiverTin, long StartDate, long? EndDate, TransferAgreementType Type);
 
 public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProjectOriginWalletClient walletClient) : IRequestHandler<CreateTransferAgreementCommand, CreateTransferAgreementCommandResult>
@@ -38,7 +43,8 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProj
             SenderName = OrganizationName.Create(command.SenderName),
             SenderTin = Tin.Create(command.SenderTin),
             ReceiverName = OrganizationName.Create(command.ReceiverName),
-            ReceiverTin = Tin.Create(command.ReceiverTin)
+            ReceiverTin = Tin.Create(command.ReceiverTin),
+            Type = command.Type
         };
 
         var hasConflict = await taRepo.HasDateOverlap(transferAgreement, CancellationToken.None);
