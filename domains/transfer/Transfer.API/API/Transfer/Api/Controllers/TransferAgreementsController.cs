@@ -361,9 +361,9 @@ public class TransferAgreementsController(
     [HttpPost("create/")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> CreateTransferAgreementDirectly([FromBody] CreateTransferAgreementRequest request,[FromQuery] Guid organizationId)
+    public async Task<ActionResult> CreateTransferAgreementDirectly([FromBody] CreateTransferAgreementRequest request)
     {
-        accessDescriptor.IsAuthorizedToOrganizations([organizationId, request.ReceiverOrganizationId]);
+        accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
         var taRepo = unitOfWork.TransferAgreementRepo;
 
@@ -371,7 +371,7 @@ public class TransferAgreementsController(
         {
             StartDate = UnixTimestamp.Create(request.StartDate),
             EndDate = request.EndDate.HasValue ? UnixTimestamp.Create(request.EndDate.Value) : null,
-            SenderId = OrganizationId.Create(organizationId),
+            SenderId = OrganizationId.Create(request.SenderOrganizationId),
             SenderName = OrganizationName.Create(request.SenderName),
             SenderTin = Tin.Create(request.SenderTin),
             ReceiverName = OrganizationName.Create(request.ReceiverName),
@@ -400,7 +400,7 @@ public class TransferAgreementsController(
 
         var walletEndpoint = await walletClient.CreateWalletEndpoint(request.ReceiverOrganizationId, walletId.Value, CancellationToken.None);
 
-        var externalEndpoint = await walletClient.CreateExternalEndpoint(organizationId, walletEndpoint, request.SenderTin, CancellationToken.None);
+        var externalEndpoint = await walletClient.CreateExternalEndpoint(request.SenderOrganizationId, walletEndpoint, request.SenderTin, CancellationToken.None);
 
         transferAgreement.ReceiverReference = externalEndpoint.ReceiverId;
 
