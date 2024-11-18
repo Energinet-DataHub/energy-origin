@@ -12,18 +12,6 @@ namespace API.Transfer.Api.Repository;
 
 public class TransferAgreementRepository(ApplicationDbContext context) : ITransferAgreementRepository
 {
-    public async Task<TransferAgreement> AddTransferAgreementToDb(TransferAgreement transferAgreement, CancellationToken cancellationToken)
-    {
-        var agreements = await context.TransferAgreements.Where(t =>
-                t.SenderId == transferAgreement.SenderId)
-            .ToListAsync(cancellationToken);
-
-        var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
-        transferAgreement.TransferAgreementNumber = transferAgreementNumber;
-        await context.TransferAgreements.AddAsync(transferAgreement, cancellationToken);
-        return transferAgreement;
-    }
-
     public async Task<TransferAgreement> AddTransferAgreementAndDeleteProposal(TransferAgreement newTransferAgreement, Guid proposalId, CancellationToken cancellationToken)
     {
         var agreements = await context.TransferAgreements.Where(t =>
