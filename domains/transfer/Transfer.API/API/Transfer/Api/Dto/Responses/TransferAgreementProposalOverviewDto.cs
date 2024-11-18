@@ -9,4 +9,5 @@ public record TransferAgreementProposalOverviewDto(
     string? SenderName,
     string? SenderTin,
     string? ReceiverTin,
+    TransferAgreementTypeDto Type,
     TransferAgreementStatus TransferAgreementStatus);

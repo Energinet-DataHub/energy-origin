@@ -7,5 +7,5 @@ public record TransferAgreementProposalResponse(
     string SenderCompanyName,
     string? ReceiverTin,
     long StartDate,
-    long? EndDate
-    );
+    long? EndDate,
+    TransferAgreementTypeDto Type);

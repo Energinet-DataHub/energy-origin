@@ -13,4 +13,5 @@ public class TransferAgreementProposal
     public UnixTimestamp StartDate { get; set; } = UnixTimestamp.Empty();
     public UnixTimestamp? EndDate { get; set; }
     public Tin? ReceiverCompanyTin { get; set; }
+    public TransferAgreementType Type { get; set; }
 }

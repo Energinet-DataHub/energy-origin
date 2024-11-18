@@ -3,6 +3,7 @@ using API.Cvr;
 using API.Shared.Options;
 using API.Transfer;
 using API.Transfer.Api.Controllers;
+using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext;
 using EnergyOrigin.ActivityLog;
@@ -40,6 +41,7 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
@@ -77,6 +79,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
 app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)

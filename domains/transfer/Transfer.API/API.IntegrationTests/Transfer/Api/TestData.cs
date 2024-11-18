@@ -39,7 +39,7 @@ public class TestData
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
 
         var agreementQuery =
-            $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\", \"TransferAgreementNumber\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference, @TransferAgreementNumber)";
+            $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\", \"TransferAgreementNumber\", \"Type\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference, @TransferAgreementNumber, @Type)";
         object[] agreementFields =
         {
             new NpgsqlParameter("Id", agreement.Id),
@@ -50,7 +50,8 @@ public class TestData
             new NpgsqlParameter("SenderTin", agreement.SenderTin.Value),
             new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin.Value),
             new NpgsqlParameter("ReceiverReference", agreement.ReceiverReference),
-            new NpgsqlParameter("TransferAgreementNumber", agreement.TransferAgreementNumber)
+            new NpgsqlParameter("TransferAgreementNumber", agreement.TransferAgreementNumber),
+            new NpgsqlParameter("Type", (int)agreement.Type)
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);
