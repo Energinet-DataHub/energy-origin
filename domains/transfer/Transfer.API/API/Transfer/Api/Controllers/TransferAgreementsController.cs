@@ -276,7 +276,7 @@ public class TransferAgreementsController(
     [HttpPost("create/")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> CreateTransferAgreementDirectly([FromServices]IProjectOriginWalletClient walletClient, [FromBody] CreateTransferAgreementRequest request)
+    public async Task<ActionResult> CreateTransferAgreementDirectly([FromServices] IProjectOriginWalletClient walletClient, [FromBody] CreateTransferAgreementRequest request)
     {
         accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
