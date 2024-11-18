@@ -137,7 +137,8 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             SenderTin = proposal.SenderCompanyTin,
             ReceiverName = command.ReceiverOrganizationName,
             ReceiverTin = command.ReceiverOrganizationTin,
-            ReceiverReference = externalEndpoint.ReceiverId
+            ReceiverReference = externalEndpoint.ReceiverId,
+            Type = proposal.Type
         };
 
         var result = await taRepo.AddTransferAgreementAndDeleteProposal(transferAgreement, command.TransferAgreementProposalId, cancellationToken);

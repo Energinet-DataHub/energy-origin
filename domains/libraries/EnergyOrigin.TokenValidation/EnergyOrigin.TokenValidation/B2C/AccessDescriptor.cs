@@ -18,4 +18,9 @@ public class AccessDescriptor
         var isAuthorizedToOrganization = _identity.AuthorizedOrganizationIds.Contains(organizationId);
         return isInternalClient || isOwnOrganization || isAuthorizedToOrganization;
     }
+
+    public bool IsAuthorizedToOrganizations(List<Guid> organizationIds)
+    {
+        return organizationIds.TrueForAll(IsAuthorizedToOrganization);
+    }
 }
