@@ -28,26 +28,25 @@ public class AcceptServiceProviderTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenOrganizationNotAcceptedServiceProviderTerms_AcceptsServiceProviderTerms()
     {
-        var command = new AcceptServiceProviderTermsCommand("12345678");
-        var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
-        await _organizationRepository.AddAsync(organization, CancellationToken.None); // Add the organization to the repository
-        await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None); // Add service provider terms
+        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
+        var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
+        await _organizationRepository.AddAsync(organization, CancellationToken.None);
+        await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None);
 
         await _handler.Handle(command, CancellationToken.None);
 
-        var updatedOrganization = _organizationRepository.Query().FirstOrDefault(o => o.Tin == Tin.Create(command.OrgCvr));
+        var updatedOrganization = _organizationRepository.Query().FirstOrDefault(o => o.Id == organization.Id);
         updatedOrganization.Should().NotBeNull();
         updatedOrganization!.ServiceProviderTermsAccepted.Should().BeTrue();
         updatedOrganization.ServiceProviderTermsVersion.Should().Be(1);
         await _unitOfWork.Received(1).CommitAsync();
     }
 
-
     [Fact]
     public async Task Handle_WhenOrganizationExistsButTermsNotAccepted_UpdatesTerms()
     {
-        var command = new AcceptServiceProviderTermsCommand("12345678");
-        var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
+        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
+        var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None);
 
@@ -61,7 +60,8 @@ public class AcceptServiceProviderTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenExceptionOccurs_RollsBackTransactionAndDoesNotSaveChanges()
     {
-        var command = new AcceptServiceProviderTermsCommand("12345678");
+        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
+        var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
         mockOrganizationRepository.Query().Returns(_ => throw new Exception("Test exception"));
         await using var mockUnitOfWork = Substitute.For<IUnitOfWork>();
@@ -74,11 +74,12 @@ public class AcceptServiceProviderTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenNoServiceProviderTermsExist_RollsBackTransaction()
     {
-        var command = new AcceptServiceProviderTermsCommand("12345678");
+        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
+        var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
 
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await action.Should().ThrowAsync<InvalidConfigurationException>();
+        await action.Should().ThrowAsync<EntityNotFoundException>();
         await _unitOfWork.DidNotReceive().CommitAsync();
     }
 }

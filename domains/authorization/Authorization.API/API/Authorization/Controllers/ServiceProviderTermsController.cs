@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using Asp.Versioning;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
@@ -30,7 +31,7 @@ public class ServiceProviderTermsController(IMediator mediator, IdentityDescript
     )]
     public async Task<ActionResult<AcceptServiceProviderTermsResponse>> AcceptServiceProviderTerms()
     {
-        var command = new AcceptServiceProviderTermsCommand(identityDescriptor.OrganizationCvr!);
+        var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(identityDescriptor.OrganizationId));
         await mediator.Send(command);
         return Ok(new AcceptServiceProviderTermsResponse("Service Provider Terms accepted successfully."));
     }
@@ -45,9 +46,7 @@ public class ServiceProviderTermsController(IMediator mediator, IdentityDescript
     )]
     public async Task<ActionResult<GetServiceProviderTermsResponse>> GetServiceProviderTerms()
     {
-        var query = new GetServiceProviderTermsForOrganizationQuery(
-            identityDescriptor.OrganizationCvr!
-        );
+        var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(identityDescriptor.OrganizationId));
 
         var termsAccepted = await mediator.Send(query);
 

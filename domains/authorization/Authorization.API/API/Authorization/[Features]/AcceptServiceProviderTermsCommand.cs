@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
-public record AcceptServiceProviderTermsCommand(string OrgCvr) : IRequest;
+public record AcceptServiceProviderTermsCommand(OrganizationId OrgId) : IRequest;
 
 public class AcceptServiceProviderTermsCommandHandler(
     IOrganizationRepository organizationRepository,
@@ -22,14 +22,14 @@ public class AcceptServiceProviderTermsCommandHandler(
     {
         await unitOfWork.BeginTransactionAsync();
 
-        var usersOrganizationsCvr = Tin.Create(request.OrgCvr);
+        var usersAffiliatedOrganizationsId = request.OrgId.Value;
 
         var usersAffiliatedOrganization = await organizationRepository.Query()
-            .FirstOrDefaultAsync(o => o.Tin == usersOrganizationsCvr, cancellationToken);
+            .FirstOrDefaultAsync(o => o.Id == usersAffiliatedOrganizationsId, cancellationToken);
 
         if (usersAffiliatedOrganization == null)
         {
-            throw new InvalidConfigurationException("User not Affiliated with any Organization");
+            throw new EntityNotFoundException(nameof(usersAffiliatedOrganization), "Organization does not exist.");
         }
 
         var latestServiceProviderTerms = await serviceProviderTermsRepository.Query()

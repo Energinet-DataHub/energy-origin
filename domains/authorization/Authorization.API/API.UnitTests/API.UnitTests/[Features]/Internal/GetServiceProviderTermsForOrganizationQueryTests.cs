@@ -28,7 +28,7 @@ public class GetServiceProviderTermsForOrganizationQueryTests
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None);
 
-        var query = new GetServiceProviderTermsForOrganizationQuery("12345678");
+        var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(organization.Id));
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -42,7 +42,7 @@ public class GetServiceProviderTermsForOrganizationQueryTests
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None);
 
-        var query = new GetServiceProviderTermsForOrganizationQuery("12345678");
+        var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(organization.Id));
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -52,12 +52,11 @@ public class GetServiceProviderTermsForOrganizationQueryTests
     [Fact]
     public async Task Handle_WhenOrganizationDoesNotExist_ThrowsInvalidConfigurationException()
     {
-        var query = new GetServiceProviderTermsForOrganizationQuery("12345678");
+        var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(Guid.NewGuid()));
 
         Func<Task> action = async () => await _handler.Handle(query, CancellationToken.None);
 
-        await action.Should().ThrowAsync<InvalidConfigurationException>()
-            .WithMessage("Organization not found.");
+        await action.Should().ThrowAsync<EntityNotFoundException>();
     }
 
     [Fact]
@@ -66,12 +65,11 @@ public class GetServiceProviderTermsForOrganizationQueryTests
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
 
-        var query = new GetServiceProviderTermsForOrganizationQuery("12345678");
+        var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(organization.Id));
 
         Func<Task> action = async () => await _handler.Handle(query, CancellationToken.None);
 
-        await action.Should().ThrowAsync<InvalidConfigurationException>()
-            .WithMessage("No Service Provider Terms configured.");
+        await action.Should().ThrowAsync<EntityNotFoundException>();
     }
 
     [Fact]
@@ -82,7 +80,7 @@ public class GetServiceProviderTermsForOrganizationQueryTests
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(2), CancellationToken.None);
 
-        var query = new GetServiceProviderTermsForOrganizationQuery("12345678");
+        var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(organization.Id));
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
