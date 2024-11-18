@@ -17,6 +17,8 @@ using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProjectOriginClients;
 
 namespace API.Transfer.Api.Controllers;
 
@@ -274,7 +276,7 @@ public class TransferAgreementsController(
     [HttpPost("create/")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> CreateTransferAgreementDirectly([FromBody] CreateTransferAgreementRequest request)
+    public async Task<ActionResult> CreateTransferAgreementDirectly([FromServices]IProjectOriginWalletClient walletClient, [FromBody] CreateTransferAgreementRequest request)
     {
         accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
@@ -291,7 +293,7 @@ public class TransferAgreementsController(
             ReceiverTin = Tin.Create(request.ReceiverTin)
         };
 
-        var hasConflict = await taRepo.HasDateOverlap(transferAgreement);
+        var hasConflict = await taRepo.HasDateOverlap(transferAgreement, CancellationToken.None);
         if (hasConflict)
         {
             return ValidationProblem("There is already a Transfer Agreement with proposals company tin within the selected date range",
@@ -319,11 +321,12 @@ public class TransferAgreementsController(
 
         try
         {
-            var result = await taRepo.AddTransferAgreement(transferAgreement);
+            var result = await taRepo.AddTransferAgreement(transferAgreement, CancellationToken.None);
 
             await unitOfWork.SaveAsync();
 
-            return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result));
+            return CreatedAtAction(nameof(Get), new { id = result.Id }, ToTransferAgreementDto(result.Id, result.SenderTin.Value, result.SenderName.Value,
+                result.ReceiverTin.Value, result.StartDate.EpochSeconds, result.EndDate?.EpochSeconds, result.Type));
         }
         catch (DbUpdateException)
         {
