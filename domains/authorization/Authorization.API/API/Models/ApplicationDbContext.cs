@@ -59,7 +59,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsVersion);
 
-        modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsAcceptanceDate);
+        modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsAcceptanceDate).HasConversion(new NullableUnixTimestampValueToDateTimeOffsetConverter());
     }
 
     private static void ConfigureClientTable(ModelBuilder modelBuilder)
