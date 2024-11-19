@@ -10,6 +10,7 @@
     <Company>Energinet DataHub A/S</Company>
     <PackageDescription>This library enables token validation in Energy Origin.</PackageDescription>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />

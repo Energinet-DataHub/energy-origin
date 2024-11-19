@@ -10,6 +10,7 @@
     <Company>Energinet DataHub A/S</Company>
     <PackageDescription>This library contains functions for setting up Energy Origin solutions with logging, swagger, api versioning and OpenTelemetry</PackageDescription>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
