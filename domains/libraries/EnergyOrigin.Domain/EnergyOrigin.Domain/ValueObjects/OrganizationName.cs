@@ -1,4 +1,4 @@
-namespace EnergyOrigin.Domain.ValueObjects;
+namespace EnergyOrigin.Domain.ValueObjects.ValueObjects;
 
 public class OrganizationName : ValueObject
 {

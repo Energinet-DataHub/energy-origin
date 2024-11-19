@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace EnergyOrigin.Domain.ValueObjects;
+namespace EnergyOrigin.Domain.ValueObjects.ValueObjects;
 
 public abstract class ValueObject : IEquatable<ValueObject>
 {

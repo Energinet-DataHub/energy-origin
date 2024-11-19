@@ -12,6 +12,7 @@ using System.Net;
 using System.Net.Http.Json;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects.Tests;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 

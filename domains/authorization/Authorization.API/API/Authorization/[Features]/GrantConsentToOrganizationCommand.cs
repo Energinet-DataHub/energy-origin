@@ -8,6 +8,7 @@ using API.Models;
 using API.Repository;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ForbiddenException = API.Authorization.Exceptions.ForbiddenException;

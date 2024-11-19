@@ -129,9 +129,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.IntegrationTests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{F4432ADE-7BF3-448A-ADA5-95729E3911D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.Domain.ValueObjects", "libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.ValueObjects\EnergyOrigin.Domain.ValueObjects.csproj", "{0DB71A10-3B7C-45D6-8314-07551375870B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.Domain", "libraries\EnergyOrigin.Domain\EnergyOrigin.Domain\EnergyOrigin.Domain.csproj", "{0DB71A10-3B7C-45D6-8314-07551375870B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.Domain.ValueObjects.Tests", "libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.ValueObjects.Tests\EnergyOrigin.Domain.ValueObjects.Tests.csproj", "{8CB40444-41ED-4719-B24A-49AB747D905F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.Domain.Tests", "libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.Tests\EnergyOrigin.Domain.Tests.csproj", "{8CB40444-41ED-4719-B24A-49AB747D905F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

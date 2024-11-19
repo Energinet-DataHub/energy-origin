@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog.csproj" />
-    <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.ValueObjects\EnergyOrigin.Domain.ValueObjects.csproj" />
+    <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Domain\EnergyOrigin.Domain\EnergyOrigin.Domain.csproj" />
     <ProjectReference Include="..\ProjectOriginClients\ProjectOriginClients.csproj" />
   </ItemGroup>
 

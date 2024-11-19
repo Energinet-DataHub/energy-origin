@@ -5,6 +5,7 @@ using API.Models;
 using API.Repository;
 using API.UnitTests.Repository;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 using FluentAssertions;
 using MassTransit;

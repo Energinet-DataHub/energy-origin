@@ -2,6 +2,7 @@ using API.Authorization.Controllers;
 using API.Models;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using ClientType = API.Models.ClientType;
 
 namespace API.UnitTests;
@@ -40,7 +41,7 @@ public class Any
 
     public static Tin Tin()
     {
-        return EnergyOrigin.Domain.ValueObjects.Tin.Create(IntString(8));
+        return EnergyOrigin.Domain.ValueObjects.ValueObjects.Tin.Create(IntString(8));
     }
 
     private static string IntString(int charCount)
@@ -53,7 +54,7 @@ public class Any
 
     public static OrganizationName OrganizationName()
     {
-        return EnergyOrigin.Domain.ValueObjects.OrganizationName.Create("Wind turbines'R'us");
+        return EnergyOrigin.Domain.ValueObjects.ValueObjects.OrganizationName.Create("Wind turbines'R'us");
     }
 
     public static Organization Organization(Tin? tin = null)

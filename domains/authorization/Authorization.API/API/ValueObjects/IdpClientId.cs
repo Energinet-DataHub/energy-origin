@@ -1,5 +1,6 @@
 using System;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 
 namespace API.ValueObjects;
 

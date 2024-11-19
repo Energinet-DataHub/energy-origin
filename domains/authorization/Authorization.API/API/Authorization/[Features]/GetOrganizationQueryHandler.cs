@@ -4,6 +4,7 @@ using API.Authorization.Exceptions;
 using API.Models;
 using API.Repository;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OrganizationId = API.ValueObjects.OrganizationId;

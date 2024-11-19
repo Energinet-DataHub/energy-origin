@@ -1,6 +1,7 @@
 using API.Models;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using FluentAssertions;
 
 namespace API.UnitTests.Models;

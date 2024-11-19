@@ -7,6 +7,7 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+        <RootNamespace>EnergyOrigin.Domain.ValueObjects.Tests</RootNamespace>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -33,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\EnergyOrigin.Domain.ValueObjects\EnergyOrigin.Domain.ValueObjects.csproj" />
+      <ProjectReference Include="..\EnergyOrigin.Domain\EnergyOrigin.Domain.csproj" />
     </ItemGroup>
 
 </Project>

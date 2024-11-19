@@ -1,5 +1,6 @@
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProjectOriginClients;

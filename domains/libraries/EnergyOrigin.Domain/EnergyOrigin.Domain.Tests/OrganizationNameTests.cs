@@ -1,3 +1,4 @@
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using Xunit;
 
 namespace EnergyOrigin.Domain.ValueObjects.Tests;

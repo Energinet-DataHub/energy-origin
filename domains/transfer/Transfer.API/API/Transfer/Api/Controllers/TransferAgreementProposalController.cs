@@ -9,6 +9,7 @@ using Asp.Versioning;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;

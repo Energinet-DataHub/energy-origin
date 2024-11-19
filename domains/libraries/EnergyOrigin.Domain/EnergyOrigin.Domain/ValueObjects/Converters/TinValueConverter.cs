@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace EnergyOrigin.Domain.ValueObjects.Converters;
+namespace EnergyOrigin.Domain.ValueObjects.ValueObjects.Converters;
 
 public class TinValueConverter() : ValueConverter<Tin, string>(v => v.Value, v => String.IsNullOrWhiteSpace(v) ? Tin.Empty() : Tin.Create(v));
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;

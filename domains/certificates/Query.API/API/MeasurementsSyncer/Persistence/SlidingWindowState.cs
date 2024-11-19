@@ -4,6 +4,7 @@ using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 
 namespace API.MeasurementsSyncer.Persistence;
 
