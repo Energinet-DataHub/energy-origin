@@ -11,6 +11,8 @@
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />

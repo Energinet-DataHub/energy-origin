@@ -9,6 +9,7 @@
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" />
     <PackageReference Include="Grpc.Tools" PrivateAssets="all" />
+    <PackageReference Include="NBitcoin" />
     <PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" />
     <PackageReference Include="ProjectOrigin.PedersenCommitment" />
   </ItemGroup>

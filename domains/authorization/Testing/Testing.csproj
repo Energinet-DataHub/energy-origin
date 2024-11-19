@@ -12,7 +12,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="NSubstitute" />
+    <PackageReference Include="SSH.NET" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
     <PackageReference Include="Testcontainers" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="Testcontainers.RabbitMq" />

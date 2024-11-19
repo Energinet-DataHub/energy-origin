@@ -9,12 +9,23 @@
     <DefineConstants>CI</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="AnyOf" />
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="GraphQL" />
+    <PackageReference Include="GraphQL.NewtonsoftJson" />
+    <PackageReference Include="JmesPath.Net" />
+    <PackageReference Include="JsonConverter.Abstractions" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.CodeAnalysis" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MimeKitLite" />
     <PackageReference Include="NSubstitute" />
+    <PackageReference Include="NSwag.Core" />
+    <PackageReference Include="Scriban.Signed" />
+    <PackageReference Include="SSH.NET" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
     <PackageReference Include="Testcontainers" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="Testcontainers.RabbitMq" />

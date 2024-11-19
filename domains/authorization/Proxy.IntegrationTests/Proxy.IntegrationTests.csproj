@@ -9,16 +9,31 @@
 
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="AnyOf" />
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="GraphQL" />
+    <PackageReference Include="GraphQL.NewtonsoftJson" />
+    <PackageReference Include="JmesPath.Net" />
+    <PackageReference Include="JsonConverter.Abstractions" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MimeKitLite" />
+    <PackageReference Include="NBitcoin" />
+    <PackageReference Include="NSwag.Core" />
+    <PackageReference Include="Scriban.Signed" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
     <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="WireMock.Net" />
     <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.analyzers">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="xunit.extensibility.core" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>

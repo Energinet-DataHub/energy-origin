@@ -16,11 +16,15 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
+    <PackageReference Include="FluentValidation" />
     <PackageReference Include="FluentValidation.AspNetCore" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="IdentityModel" />
     <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <PackageReference Include="Polly" />
     <PackageReference Include="Polly.Extensions.Http" />
   </ItemGroup>

@@ -19,6 +19,11 @@
     <PackageReference Include="Asp.Versioning.Mvc" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
     <PackageReference Include="MassTransit" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <PackageReference Include="Npgsql.OpenTelemetry" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
@@ -27,8 +32,13 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Process" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+    <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Expressions" />
+    <PackageReference Include="Serilog.Formatting.Compact" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.Debug" />
+    <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
   </ItemGroup>

@@ -23,21 +23,30 @@
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" />
     <PackageReference Include="EnergyOrigin.IntegrationEvents" />
+    <PackageReference Include="FluentValidation" />
     <PackageReference Include="FluentValidation.AspNetCore" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="MassTransit" />
     <PackageReference Include="MassTransit.Abstractions" />
     <PackageReference Include="MassTransit.RabbitMQ" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" />
+    <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Newtonsoft.Json.Bson" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Npgsql.OpenTelemetry" />
     <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="RabbitMQ.Client" />
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <None Update="documentation.xml">
