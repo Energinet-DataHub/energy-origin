@@ -1,6 +1,4 @@
-using System;
-
-namespace API.Transfer.Api.Exceptions;
+namespace EnergyOrigin.Domain.Exceptions;
 
 public class NotFoundException : Exception
 {

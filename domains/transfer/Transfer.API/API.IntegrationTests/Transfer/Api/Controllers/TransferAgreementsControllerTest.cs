@@ -12,7 +12,6 @@ using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects.Tests;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;

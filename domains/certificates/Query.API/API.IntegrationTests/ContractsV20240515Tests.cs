@@ -15,7 +15,6 @@ using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using EnergyOrigin.Setup;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;

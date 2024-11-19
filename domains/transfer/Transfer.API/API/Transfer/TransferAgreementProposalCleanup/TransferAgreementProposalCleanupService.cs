@@ -8,7 +8,6 @@ using API.Transfer.TransferAgreementProposalCleanup.Options;
 using DataContext;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.TransferAgreementProposalCleanup;

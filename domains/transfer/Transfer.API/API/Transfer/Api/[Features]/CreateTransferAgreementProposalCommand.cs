@@ -6,7 +6,6 @@ using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 

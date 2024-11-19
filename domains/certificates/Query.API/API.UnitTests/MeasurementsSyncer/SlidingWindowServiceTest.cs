@@ -7,7 +7,6 @@ using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using FluentAssertions;
 using Measurements.V1;
 using Microsoft.Extensions.Options;

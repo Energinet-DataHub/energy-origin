@@ -1,7 +1,7 @@
 using DataContext.Models;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.DataContext;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects.Converters;
+using EnergyOrigin.Domain.ValueObjects.Converters;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataContext;

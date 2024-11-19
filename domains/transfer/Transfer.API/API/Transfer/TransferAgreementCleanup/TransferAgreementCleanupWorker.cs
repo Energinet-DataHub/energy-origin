@@ -6,7 +6,6 @@ using API.Transfer.TransferAgreementCleanup.Options;
 using DataContext;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

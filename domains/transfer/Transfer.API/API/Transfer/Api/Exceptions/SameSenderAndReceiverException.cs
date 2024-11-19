@@ -1,4 +1,5 @@
 using System.Net;
+using EnergyOrigin.Domain.Exceptions;
 
 namespace API.Transfer.Api.Exceptions;
 

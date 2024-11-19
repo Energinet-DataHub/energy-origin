@@ -8,7 +8,6 @@ using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectOriginClients;

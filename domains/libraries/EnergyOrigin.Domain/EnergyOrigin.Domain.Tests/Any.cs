@@ -1,5 +1,3 @@
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
-
 namespace EnergyOrigin.Domain.ValueObjects.Tests;
 
 public static class Any

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Authorization.Exceptions;
 using API.Models;
+using EnergyOrigin.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repository;

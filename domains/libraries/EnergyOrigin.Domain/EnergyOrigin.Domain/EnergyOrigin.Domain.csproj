@@ -1,17 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <OutputType>Library</OutputType>
 		<IsPackable>true</IsPackable>
 		<PackageId>EnergyOrigin.Domain</PackageId>
 		<RepositoryUrl>https://github.com/Energinet-DataHub/energy-origin</RepositoryUrl>
 		<Authors>Energinet</Authors>
 		<Company>Energinet DataHub A/S</Company>
-		<PackageDescription>This library contain shared value objects.</PackageDescription>
+		<PackageDescription>This library contain shared domain stuff.</PackageDescription>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-		<RootNamespace>EnergyOrigin.Domain.ValueObjects</RootNamespace>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

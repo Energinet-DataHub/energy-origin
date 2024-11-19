@@ -7,7 +7,6 @@ using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

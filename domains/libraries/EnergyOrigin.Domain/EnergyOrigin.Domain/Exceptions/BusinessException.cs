@@ -1,7 +1,6 @@
-using System;
 using System.Net;
 
-namespace API.Transfer.Api.Exceptions;
+namespace EnergyOrigin.Domain.Exceptions;
 
 public class BusinessException : Exception
 {

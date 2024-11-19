@@ -10,7 +10,6 @@ using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using FluentAssertions;
 using Measurements.V1;
 using Meteringpoint.V1;

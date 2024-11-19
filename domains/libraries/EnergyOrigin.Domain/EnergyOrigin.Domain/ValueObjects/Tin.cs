@@ -1,4 +1,4 @@
-namespace EnergyOrigin.Domain.ValueObjects.ValueObjects;
+namespace EnergyOrigin.Domain.ValueObjects;
 
 public class Tin : ValueObject
 {

@@ -1,6 +1,6 @@
 using System;
 using API.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects.Converters;
+using EnergyOrigin.Domain.ValueObjects.Converters;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

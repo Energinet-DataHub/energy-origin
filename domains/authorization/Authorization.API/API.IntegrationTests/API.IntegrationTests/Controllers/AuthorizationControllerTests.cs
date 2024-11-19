@@ -5,7 +5,6 @@ using API.Models;
 using API.UnitTests;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using ClientType = API.Models.ClientType;

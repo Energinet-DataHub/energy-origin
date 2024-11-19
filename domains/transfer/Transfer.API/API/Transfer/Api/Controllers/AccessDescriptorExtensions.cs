@@ -9,7 +9,7 @@ internal static class AccessDescriptorExtensions
     {
         if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
         {
-            throw new ForbiddenException(organizationId);
+            throw new NotAuthorizedException(organizationId);
         }
     }
 }

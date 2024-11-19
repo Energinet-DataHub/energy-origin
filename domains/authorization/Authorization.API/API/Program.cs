@@ -7,6 +7,7 @@ using API.Models;
 using API.Options;
 using API.Repository;
 using API.Services;
+using EnergyOrigin.Domain.Exceptions;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;

@@ -3,6 +3,7 @@ using API.IntegrationTests.Setup;
 using API.Models;
 using API.Repository;
 using API.UnitTests;
+using EnergyOrigin.Domain.Exceptions;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;

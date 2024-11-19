@@ -7,8 +7,8 @@ using API.Data;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
+using EnergyOrigin.Domain.Exceptions;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

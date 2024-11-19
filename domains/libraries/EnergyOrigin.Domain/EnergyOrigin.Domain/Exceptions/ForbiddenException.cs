@@ -1,6 +1,4 @@
-using System;
-
-namespace API.Authorization.Exceptions;
+namespace EnergyOrigin.Domain.Exceptions;
 
 public class ForbiddenException : Exception
 {

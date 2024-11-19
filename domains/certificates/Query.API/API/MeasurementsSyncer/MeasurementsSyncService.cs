@@ -8,7 +8,6 @@ using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.ValueObjects;
 using Measurements.V1;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;

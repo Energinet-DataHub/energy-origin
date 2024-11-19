@@ -16,7 +16,7 @@ public class IdentityDescriptor
     {
         if (httpContextAccessor.HttpContext is null)
         {
-            throw new ForbiddenException("HttpContext is null");
+            throw new NotAuthorizedException("HttpContext is null");
         }
 
         _httpContext = httpContextAccessor.HttpContext;
