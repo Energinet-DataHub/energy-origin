@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Authorization._Features_;
+using API.Authorization._Features_.Internal;
 using API.ValueObjects;
 using Asp.Versioning;
-using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
-using OrganizationId = API.ValueObjects.OrganizationId;
+using OrganizationId = EnergyOrigin.Domain.ValueObjects.OrganizationId;
 
 namespace API.Authorization.Controllers;
 
@@ -38,6 +38,10 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GrantConsentToClient([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentToClientRequest toClientRequest)
     {
+        if (!await mediator.Send(new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(identity.OrganizationId))))
+        {
+            return Forbid("Organization has not accepted the latest service provider terms.");
+        }
         await mediator.Send(new GrantConsentToClientCommand(identity.Subject, identity.OrganizationCvr!, new IdpClientId(toClientRequest.IdpClientId)));
         return Ok();
     }
@@ -56,7 +60,12 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GrantConsentToOrganization([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentToOrganizationRequest request)
     {
-        await mediator.Send(new GrantConsentToOrganizationCommand(identity.Subject, identity.OrganizationCvr!, new OrganizationId(request.OrganizationId)));
+        if (!await mediator.Send(new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(request.OrganizationId))))
+        {
+            return Forbid("Organization has not accepted the latest service provider terms.");
+        }
+
+        await mediator.Send(new GrantConsentToOrganizationCommand(identity.Subject, identity.OrganizationCvr!, OrganizationId.Create(request.OrganizationId)));
         return Ok();
     }
 

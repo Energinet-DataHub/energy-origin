@@ -11,7 +11,7 @@ using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ForbiddenException = API.Authorization.Exceptions.ForbiddenException;
-using OrganizationId = API.ValueObjects.OrganizationId;
+using OrganizationId = EnergyOrigin.Domain.ValueObjects.OrganizationId;
 
 namespace API.Authorization._Features_;
 

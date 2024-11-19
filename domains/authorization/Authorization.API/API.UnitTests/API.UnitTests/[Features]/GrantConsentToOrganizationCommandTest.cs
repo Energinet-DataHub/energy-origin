@@ -2,7 +2,7 @@ using API.Authorization._Features_;
 using API.Authorization.Exceptions;
 using API.Models;
 using API.UnitTests.Repository;
-using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 
 namespace API.UnitTests._Features_;
