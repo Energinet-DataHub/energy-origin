@@ -15,6 +15,8 @@ using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
+using TransferAgreementAutomation.Worker.Service.Engine;
+using TransferAgreementAutomation.Worker.Service.TransactionStatus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,7 +73,12 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddHostedService<TransferAgreementsAutomationWorker>();
 builder.Services.AddSingleton<ITransferAgreementAutomationMetrics, TransferAgreementAutomationMetrics>();
-builder.Services.AddSingleton<IProjectOriginWalletService, ProjectOriginWalletService>();
+
+builder.Services.AddSingleton<TransferEngineUtility>();
+builder.Services.AddSingleton<IRequestStatusRepository, InMemoryRequestStatusRepository>();
+builder.Services.AddSingleton<ITransferEngine, TransferAllCertificatesEngine>();
+builder.Services.AddSingleton<ITransferEngine, TransferCertificatesBasedOnConsumptionEngine>();
+builder.Services.AddSingleton<ITransferEngineCoordinator, TransferEngineCoordinator>();
 
 builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>();
 builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
