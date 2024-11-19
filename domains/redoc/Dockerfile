@@ -6,10 +6,10 @@ COPY domains/certificates domains/certificates
 COPY domains/measurements domains/measurements
 COPY domains/libraries domains/libraries
 
-RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger
-RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
-RUN dotnet run --project domains/authorization/Authorization.API/API/API.csproj --swagger
-RUN dotnet run --project domains/measurements/Measurements.API/API/API.csproj --swagger
+RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger -p:TreatWarningsAsErrors=false
+RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger -p:TreatWarningsAsErrors=false
+RUN dotnet run --project domains/authorization/Authorization.API/API/API.csproj --swagger -p:TreatWarningsAsErrors=false
+RUN dotnet run --project domains/measurements/Measurements.API/API/API.csproj --swagger -p:TreatWarningsAsErrors=false
 
 FROM redocly/cli AS packager
 
