@@ -11,6 +11,7 @@ public class TransferAgreement
     public OrganizationId SenderId { get; set; } = OrganizationId.Empty();
     public OrganizationName SenderName { get; set; } = OrganizationName.Empty();
     public Tin SenderTin { get; set; } = Tin.Empty();
+    public OrganizationId? ReceiverId { get; set; }
     public OrganizationName ReceiverName { get; set; } = OrganizationName.Empty();
     public Tin ReceiverTin { get; set; } = Tin.Empty();
     public Guid ReceiverReference { get; set; }
