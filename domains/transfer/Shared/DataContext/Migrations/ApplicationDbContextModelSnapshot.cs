@@ -17,7 +17,7 @@ namespace DataContext.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -33,7 +33,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("SubjectId");
 
-                    b.ToTable("ClaimAutomationArguments");
+                    b.ToTable("ClaimAutomationArguments", (string)null);
                 });
 
             modelBuilder.Entity("DataContext.Models.TransferAgreement", b =>
@@ -81,59 +81,7 @@ namespace DataContext.Migrations
                     b.HasIndex("SenderId", "TransferAgreementNumber")
                         .IsUnique();
 
-                    b.ToTable("TransferAgreements");
-                });
-
-            modelBuilder.Entity("DataContext.Models.TransferAgreementHistoryEntry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ActorId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ActorName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AuditAction")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ReceiverTin")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("SenderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SenderName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SenderTin")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTimeOffset>("StartDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("TransferAgreementId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TransferAgreementId");
-
-                    b.ToTable("TransferAgreementHistoryEntries");
+                    b.ToTable("TransferAgreements", (string)null);
                 });
 
             modelBuilder.Entity("DataContext.Models.TransferAgreementProposal", b =>
@@ -172,7 +120,7 @@ namespace DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TransferAgreementProposals");
+                    b.ToTable("TransferAgreementProposals", (string)null);
                 });
 
             modelBuilder.Entity("EnergyOrigin.ActivityLog.DataContext.ActivityLogEntry", b =>
@@ -225,18 +173,7 @@ namespace DataContext.Migrations
                     b.HasIndex("OrganizationTin")
                         .HasAnnotation("SqlServer:Clustered", false);
 
-                    b.ToTable("ActivityLogs");
-                });
-
-            modelBuilder.Entity("DataContext.Models.TransferAgreementHistoryEntry", b =>
-                {
-                    b.HasOne("DataContext.Models.TransferAgreement", "TransferAgreement")
-                        .WithMany()
-                        .HasForeignKey("TransferAgreementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TransferAgreement");
+                    b.ToTable("ActivityLogs", (string)null);
                 });
 #pragma warning restore 612, 618
         }
