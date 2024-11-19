@@ -6,7 +6,6 @@
 
 START TRANSACTION;
 
-
 DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240514093230_InitialCreate') THEN
@@ -111,13 +110,9 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240514093230_InitialCreate') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240514093230_InitialCreate', '8.0.8');
+    VALUES ('20240514093230_InitialCreate', '9.0.0');
     END IF;
 END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
 
 DO $EF$
 BEGIN
@@ -130,13 +125,9 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240620115450_AddOrganizationTinUniqueIndex') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240620115450_AddOrganizationTinUniqueIndex', '8.0.8');
+    VALUES ('20240620115450_AddOrganizationTinUniqueIndex', '9.0.0');
     END IF;
 END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
 
 DO $EF$
 BEGIN
@@ -282,13 +273,9 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240711101829_AddTermsWithOutbox') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240711101829_AddTermsWithOutbox', '8.0.8');
+    VALUES ('20240711101829_AddTermsWithOutbox', '9.0.0');
     END IF;
 END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
 
 DO $EF$
 BEGIN
@@ -309,13 +296,9 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240730115826_AddDefaultTermsWithUniqueConstraint') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240730115826_AddDefaultTermsWithUniqueConstraint', '8.0.8');
+    VALUES ('20240730115826_AddDefaultTermsWithUniqueConstraint', '9.0.0');
     END IF;
 END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
 
 DO $EF$
 BEGIN
@@ -378,13 +361,9 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007173932_AddOrganizationConsent') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20241007173932_AddOrganizationConsent', '8.0.8');
+    VALUES ('20241007173932_AddOrganizationConsent', '9.0.0');
     END IF;
 END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
 
 DO $EF$
 BEGIN
@@ -447,13 +426,9 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241007174608_AddOrganizationConsentInsertOrganizations') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20241007174608_AddOrganizationConsentInsertOrganizations', '8.0.8');
+    VALUES ('20241007174608_AddOrganizationConsentInsertOrganizations', '9.0.0');
     END IF;
 END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
 
 DO $EF$
 BEGIN
@@ -466,13 +441,9 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241021074018_RemoveConsentTable') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20241021074018_RemoveConsentTable', '8.0.8');
+    VALUES ('20241021074018_RemoveConsentTable', '9.0.0');
     END IF;
 END $EF$;
-COMMIT;
-
-START TRANSACTION;
-
 
 DO $EF$
 BEGIN
@@ -492,7 +463,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241022085628_AddUniqueConsentIndex') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20241022085628_AddUniqueConsentIndex', '8.0.8');
+    VALUES ('20241022085628_AddUniqueConsentIndex', '9.0.0');
     END IF;
 END $EF$;
 COMMIT;

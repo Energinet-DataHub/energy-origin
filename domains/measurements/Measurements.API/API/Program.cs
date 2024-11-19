@@ -12,17 +12,17 @@ Log.Logger = LoggerBuilder.BuildSerilogger();
 
 try
 {
-    Log.Information("Starting server.");
+    Log.Information("Starting server");
     WebApplication app = configuration.BuildApp(args);
 
     if (args.Contains("--swagger"))
     {
-        app.BuildSwaggerYamlFile(app.Environment, "measurements.yaml"); // Lets build
+        app.BuildSwaggerYamlFile(app.Environment, "measurements.yaml");
     }
     else
     {
         await app.RunAsync();
-        Log.Information("Server stopped.");
+        Log.Information("Server stopped");
     }
 }
 catch (Exception ex)

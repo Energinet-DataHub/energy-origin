@@ -6,7 +6,6 @@
 
 START TRANSACTION;
 
-
 DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240311094200_Addrelations') THEN
@@ -24,7 +23,7 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20240311094200_Addrelations') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-    VALUES ('20240311094200_Addrelations', '8.0.2');
+    VALUES ('20240311094200_Addrelations', '9.0.0');
     END IF;
 END $EF$;
 COMMIT;

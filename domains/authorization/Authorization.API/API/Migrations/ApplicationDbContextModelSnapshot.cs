@@ -17,7 +17,7 @@ namespace API.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -34,7 +34,7 @@ namespace API.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("Affiliations");
+                    b.ToTable("Affiliations", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Client", b =>
@@ -67,7 +67,7 @@ namespace API.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("Clients");
+                    b.ToTable("Clients", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Organization", b =>
@@ -99,7 +99,7 @@ namespace API.Migrations
                     b.HasIndex("Tin")
                         .IsUnique();
 
-                    b.ToTable("Organizations");
+                    b.ToTable("Organizations", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.OrganizationConsent", b =>
@@ -124,7 +124,7 @@ namespace API.Migrations
                     b.HasIndex("ConsentReceiverOrganizationId", "ConsentGiverOrganizationId")
                         .IsUnique();
 
-                    b.ToTable("OrganizationConsents");
+                    b.ToTable("OrganizationConsents", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Terms", b =>
@@ -141,7 +141,7 @@ namespace API.Migrations
                     b.HasIndex("Version")
                         .IsUnique();
 
-                    b.ToTable("Terms");
+                    b.ToTable("Terms", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.User", b =>
@@ -162,7 +162,7 @@ namespace API.Migrations
                     b.HasIndex("IdpUserId")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
@@ -211,7 +211,7 @@ namespace API.Migrations
 
                     b.HasIndex("Delivered");
 
-                    b.ToTable("InboxState");
+                    b.ToTable("InboxState", (string)null);
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
@@ -302,7 +302,7 @@ namespace API.Migrations
                     b.HasIndex("InboxMessageId", "InboxConsumerId", "SequenceNumber")
                         .IsUnique();
 
-                    b.ToTable("OutboxMessage");
+                    b.ToTable("OutboxMessage", (string)null);
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxState", b =>
@@ -332,7 +332,7 @@ namespace API.Migrations
 
                     b.HasIndex("Created");
 
-                    b.ToTable("OutboxState");
+                    b.ToTable("OutboxState", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Affiliation", b =>
