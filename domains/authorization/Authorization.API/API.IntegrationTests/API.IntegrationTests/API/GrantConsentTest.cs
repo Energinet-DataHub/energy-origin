@@ -47,22 +47,43 @@ public class GrantConsentTest
     {
         var organizationWithClient = Any.OrganizationWithClient();
         var user = Any.User();
-        var organization = Any.Organization();
-        var affiliation = Affiliation.Create(user, organization);
+        var organizationThatIsGrantingConsent = Any.Organization();
+        organizationWithClient.AcceptServiceProviderTerms(ServiceProviderTerms.Create(2));
+        var affiliation = Affiliation.Create(user, organizationThatIsGrantingConsent);
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Organizations.AddAsync(organizationWithClient);
         await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Organizations.AddAsync(organizationThatIsGrantingConsent);
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organizationThatIsGrantingConsent.Tin!.Value);
         var response = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
         response.Should().Be200Ok();
     }
 
     [Fact]
     public async Task GivenKnownOrganizationId_WhenGrantingConsent_200OkReturned()
+    {
+        var consentReceiverOrganization = Any.Organization();
+        var user = Any.User();
+        var organization = Any.Organization();
+        organization.AcceptServiceProviderTerms(ServiceProviderTerms.Create(2));
+        var affiliation = Affiliation.Create(user, organization);
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.SaveChangesAsync();
+
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var response = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
+        response.Should().Be200Ok();
+    }
+
+    [Fact]
+    public async Task GivenKnownOrganizationId_WhenGrantingConsentToReceiverOrganizationWithoutServiceProviderTerms_Return403Forbidden()
     {
         var consentReceiverOrganization = Any.Organization();
         var user = Any.User();
@@ -77,7 +98,7 @@ public class GrantConsentTest
 
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
-        response.Should().Be200Ok();
+        response.Should().Be403Forbidden();
     }
 
     [Fact]
