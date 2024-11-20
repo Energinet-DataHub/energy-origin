@@ -45,6 +45,11 @@ public class GrantConsentToOrganizationCommandHandler(
             throw new ForbiddenException();
         }
 
+        if (affiliatedOrganization.ServiceProviderTermsAccepted == false)
+        {
+            throw new ServiceProviderTermsNotAcceptedException();
+        }
+
         if (affiliatedOrganization.Id == command.OrganizationId.Value)
         {
             throw new UnableToGrantConsentToOwnOrganizationException();

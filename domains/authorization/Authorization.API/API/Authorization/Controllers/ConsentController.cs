@@ -38,10 +38,6 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GrantConsentToClient([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentToClientRequest toClientRequest)
     {
-        if (!await mediator.Send(new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(identity.OrganizationId))))
-        {
-            return Forbid("Organization has not accepted the latest service provider terms.");
-        }
         await mediator.Send(new GrantConsentToClientCommand(identity.Subject, identity.OrganizationCvr!, new IdpClientId(toClientRequest.IdpClientId)));
         return Ok();
     }
@@ -60,11 +56,6 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GrantConsentToOrganization([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentToOrganizationRequest request)
     {
-        if (!await mediator.Send(new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(request.OrganizationId))))
-        {
-            return Forbid("Organization has not accepted the latest service provider terms.");
-        }
-
         await mediator.Send(new GrantConsentToOrganizationCommand(identity.Subject, identity.OrganizationCvr!, OrganizationId.Create(request.OrganizationId)));
         return Ok();
     }
