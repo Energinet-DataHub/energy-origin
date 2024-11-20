@@ -16,7 +16,7 @@ namespace API.Transfer.Api._Features_;
 public class AcceptTransferAgreementProposalCommand : IRequest<AcceptTransferAgreementProposalCommandResult>
 {
     public Guid TransferAgreementProposalId { get; }
-    public Guid ReceiverOrganizationId { get; }
+    public OrganizationId ReceiverOrganizationId { get; }
     public Tin ReceiverOrganizationTin { get; }
     public OrganizationName ReceiverOrganizationName { get; }
 
@@ -24,7 +24,7 @@ public class AcceptTransferAgreementProposalCommand : IRequest<AcceptTransferAgr
         string? receiverOrganizationName)
     {
         TransferAgreementProposalId = transferAgreementProposalId;
-        ReceiverOrganizationId = receiverOrganizationId;
+        ReceiverOrganizationId = OrganizationId.Create(receiverOrganizationId);
         ReceiverOrganizationTin = receiverOrganizationTin is not null ? Tin.Create(receiverOrganizationTin) : Tin.Empty();
         ReceiverOrganizationName =
             receiverOrganizationName is not null ? OrganizationName.Create(receiverOrganizationName) : OrganizationName.Empty();
@@ -105,8 +105,7 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new TransferAgreementConflictException();
         }
 
-
-        var receiverOrganizationId = command.ReceiverOrganizationId;
+        var receiverOrganizationId = command.ReceiverOrganizationId.Value;
         var wallets = await _walletClient.GetWallets(receiverOrganizationId, CancellationToken.None);
 
         var walletId = wallets.Result.FirstOrDefault()?.Id;
@@ -134,6 +133,7 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             EndDate = proposal.EndDate,
             SenderId = proposal.SenderCompanyId,
             SenderName = proposal.SenderCompanyName,
+            ReceiverId = command.ReceiverOrganizationId,
             SenderTin = proposal.SenderCompanyTin,
             ReceiverName = command.ReceiverOrganizationName,
             ReceiverTin = command.ReceiverOrganizationTin,
