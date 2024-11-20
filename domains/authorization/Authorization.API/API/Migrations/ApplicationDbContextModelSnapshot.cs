@@ -34,7 +34,7 @@ namespace API.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("Affiliations", (string)null);
+                    b.ToTable("Affiliations");
                 });
 
             modelBuilder.Entity("API.Models.Client", b =>
@@ -67,7 +67,7 @@ namespace API.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("Clients", (string)null);
+                    b.ToTable("Clients");
                 });
 
             modelBuilder.Entity("API.Models.Organization", b =>
@@ -88,9 +88,6 @@ namespace API.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<int?>("ServiceProviderTermsVersion")
-                        .HasColumnType("integer");
-
                     b.Property<DateTimeOffset?>("TermsAcceptanceDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -110,7 +107,7 @@ namespace API.Migrations
                     b.HasIndex("Tin")
                         .IsUnique();
 
-                    b.ToTable("Organizations", (string)null);
+                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("API.Models.OrganizationConsent", b =>
@@ -135,24 +132,7 @@ namespace API.Migrations
                     b.HasIndex("ConsentReceiverOrganizationId", "ConsentGiverOrganizationId")
                         .IsUnique();
 
-                    b.ToTable("OrganizationConsents", (string)null);
-                });
-
-            modelBuilder.Entity("API.Models.ServiceProviderTerms", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Version")
-                        .IsUnique();
-
-                    b.ToTable("ServiceProviderTerms", (string)null);
+                    b.ToTable("OrganizationConsents");
                 });
 
             modelBuilder.Entity("API.Models.Terms", b =>
@@ -169,7 +149,7 @@ namespace API.Migrations
                     b.HasIndex("Version")
                         .IsUnique();
 
-                    b.ToTable("Terms", (string)null);
+                    b.ToTable("Terms");
                 });
 
             modelBuilder.Entity("API.Models.User", b =>
@@ -190,7 +170,7 @@ namespace API.Migrations
                     b.HasIndex("IdpUserId")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
@@ -239,7 +219,7 @@ namespace API.Migrations
 
                     b.HasIndex("Delivered");
 
-                    b.ToTable("InboxState", (string)null);
+                    b.ToTable("InboxState");
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
@@ -330,7 +310,7 @@ namespace API.Migrations
                     b.HasIndex("InboxMessageId", "InboxConsumerId", "SequenceNumber")
                         .IsUnique();
 
-                    b.ToTable("OutboxMessage", (string)null);
+                    b.ToTable("OutboxMessage");
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxState", b =>
@@ -360,7 +340,7 @@ namespace API.Migrations
 
                     b.HasIndex("Created");
 
-                    b.ToTable("OutboxState", (string)null);
+                    b.ToTable("OutboxState");
                 });
 
             modelBuilder.Entity("API.Models.Affiliation", b =>

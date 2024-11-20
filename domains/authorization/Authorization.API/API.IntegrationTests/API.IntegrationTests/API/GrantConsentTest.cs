@@ -45,6 +45,7 @@ public class GrantConsentTest
         var organizationWithClient = Any.OrganizationWithClient();
         var user = Any.User();
         var organizationThatIsGrantingConsent = Any.Organization();
+        organizationWithClient.AcceptServiceProviderTerms();
         var affiliation = Affiliation.Create(user, organizationThatIsGrantingConsent);
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Organizations.AddAsync(organizationWithClient);
@@ -62,6 +63,7 @@ public class GrantConsentTest
     public async Task GivenKnownOrganizationId_WhenGrantingConsent_200OkReturned()
     {
         var consentReceiverOrganization = Any.Organization();
+        consentReceiverOrganization.AcceptServiceProviderTerms();
         var user = Any.User();
         var organization = Any.Organization();
         var affiliation = Affiliation.Create(user, organization);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddServiceProviderTerms : Migration
+    public partial class AddServiceProviderTermsFieldsToOrganizationsTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,42 +23,17 @@ namespace API.Migrations
                 type: "boolean",
                 nullable: false,
                 defaultValue: false);
-
-            migrationBuilder.AddColumn<int>(
-                name: "ServiceProviderTermsVersion",
-                table: "Organizations",
-                type: "integer",
-                nullable: true);
-
-            migrationBuilder.CreateTable(
-                name: "ServiceProviderTerms",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ServiceProviderTerms", x => x.Id);
-                });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "ServiceProviderTerms");
-
             migrationBuilder.DropColumn(
                 name: "ServiceProviderTermsAcceptanceDate",
                 table: "Organizations");
 
             migrationBuilder.DropColumn(
                 name: "ServiceProviderTermsAccepted",
-                table: "Organizations");
-
-            migrationBuilder.DropColumn(
-                name: "ServiceProviderTermsVersion",
                 table: "Organizations");
         }
     }

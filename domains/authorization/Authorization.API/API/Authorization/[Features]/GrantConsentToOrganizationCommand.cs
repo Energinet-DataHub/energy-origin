@@ -45,7 +45,12 @@ public class GrantConsentToOrganizationCommandHandler(
             throw new ForbiddenException();
         }
 
-        if (affiliatedOrganization.ServiceProviderTermsAccepted == false)
+        var serviceProviderTermsAccepted = await organizationRepository.Query()
+            .Where(o => o.Id == consentReceiverOrganizationId)
+            .Select(o => o.ServiceProviderTermsAccepted)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (serviceProviderTermsAccepted == false)
         {
             throw new ServiceProviderTermsNotAcceptedException();
         }

@@ -22,45 +22,6 @@ public class AddServiceProviderTermsTests
     }
 
     [Fact]
-    public async Task ApplyingMigration_AddsServiceProviderTermsTableWithCorrectColumns()
-    {
-        await using var dbContext = new ApplicationDbContext(_options);
-        var migrator = dbContext.GetService<IMigrator>();
-
-        await migrator.MigrateAsync("20241022085628_AddUniqueConsentIndex");
-
-        await migrator.MigrateAsync("20241118010705_AddServiceProviderTerms");
-
-        var connectionString = dbContext.Database.GetConnectionString();
-        await using var connection = new NpgsqlConnection(connectionString);
-        await connection.OpenAsync();
-
-        var commandText = @"
-                SELECT column_name, data_type, is_nullable
-                FROM information_schema.columns
-                WHERE table_name = 'ServiceProviderTerms';";
-
-        var columns = new List<(string ColumnName, string DataType, string IsNullable)>();
-
-        await using (var command = new NpgsqlCommand(commandText, connection))
-        await using (var reader = await command.ExecuteReaderAsync())
-        {
-            while (await reader.ReadAsync())
-            {
-                var columnName = reader.GetString(0);
-                var dataType = reader.GetString(1);
-                var isNullable = reader.GetString(2);
-
-                columns.Add((columnName, dataType, isNullable));
-            }
-        }
-
-        columns.Should().ContainSingle(c => c.ColumnName == "Id" && c.DataType == "uuid" && c.IsNullable == "NO");
-        columns.Should().ContainSingle(c => c.ColumnName == "Version" && c.DataType == "integer" && c.IsNullable == "NO");
-        columns.Should().HaveCount(2);
-    }
-
-    [Fact]
     public async Task ApplyingMigration_AddsServiceProviderTermsFieldsToExistingOrganization()
     {
         await using var dbContext = new ApplicationDbContext(_options);
@@ -71,14 +32,14 @@ public class AddServiceProviderTermsTests
         var orgId = Guid.NewGuid();
         await InsertTestOrganization(dbContext, orgId, "12345678", "Test Organization");
 
-        await migrator.MigrateAsync("20241118010705_AddServiceProviderTerms");
+        await migrator.MigrateAsync("20241120144111_AddServiceProviderTermsFieldsToOrganizationsTable");
 
         var connectionString = dbContext.Database.GetConnectionString();
         await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
 
         var commandText = @"
-                SELECT ""Id"", ""ServiceProviderTermsAccepted"", ""ServiceProviderTermsVersion"", ""ServiceProviderTermsAcceptanceDate""
+                SELECT ""Id"", ""ServiceProviderTermsAccepted"", ""ServiceProviderTermsAcceptanceDate""
                 FROM ""Organizations""
                 WHERE ""Id"" = @Id;";
 
@@ -95,12 +56,6 @@ public class AddServiceProviderTermsTests
 
             var serviceProviderTermsAccepted = reader.GetBoolean(reader.GetOrdinal("ServiceProviderTermsAccepted"));
 
-            int? serviceProviderTermsVersion = null;
-            if (!reader.IsDBNull(reader.GetOrdinal("ServiceProviderTermsVersion")))
-            {
-                serviceProviderTermsVersion = reader.GetInt32(reader.GetOrdinal("ServiceProviderTermsVersion"));
-            }
-
             DateTimeOffset? serviceProviderTermsAcceptanceDate = null;
             if (!reader.IsDBNull(reader.GetOrdinal("ServiceProviderTermsAcceptanceDate")))
             {
@@ -108,7 +63,6 @@ public class AddServiceProviderTermsTests
             }
 
             serviceProviderTermsAccepted.Should().BeFalse();
-            serviceProviderTermsVersion.Should().BeNull();
             serviceProviderTermsAcceptanceDate.Should().BeNull();
         }
 
@@ -120,15 +74,14 @@ public class AddServiceProviderTermsTests
         var organizationTable = dbContext.Model.FindEntityType(typeof(Organization))!.GetTableName();
         var query = $@"
                 INSERT INTO ""{organizationTable}""
-                (""Id"", ""Tin"", ""Name"", ""TermsAccepted"", ""TermsVersion"", ""TermsAcceptanceDate"")
-                VALUES (@Id, @Tin, @Name, @TermsAccepted, @TermsVersion, @TermsAcceptanceDate);";
+                (""Id"", ""Tin"", ""Name"", ""TermsAccepted"", ""TermsAcceptanceDate"")
+                VALUES (@Id, @Tin, @Name, @TermsAccepted, @TermsAcceptanceDate);";
 
         await dbContext.Database.ExecuteSqlRawAsync(query,
             new NpgsqlParameter("Id", id),
             new NpgsqlParameter("Tin", tin),
             new NpgsqlParameter("Name", name),
             new NpgsqlParameter("TermsAccepted", true),
-            new NpgsqlParameter("TermsVersion", 1),
             new NpgsqlParameter("TermsAcceptanceDate", DateTime.UtcNow));
     }
 }

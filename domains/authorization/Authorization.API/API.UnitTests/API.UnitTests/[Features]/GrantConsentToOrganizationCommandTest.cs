@@ -22,6 +22,7 @@ public class GrantConsentToOrganizationCommandTest
         var userOrganization = Any.Organization();
         _ = Affiliation.Create(user, userOrganization);
         var organization = Any.Organization();
+        organization.AcceptServiceProviderTerms();
         await _userRepository.AddAsync(user, CancellationToken.None);
         await _organizationRepository.AddAsync(userOrganization, CancellationToken.None);
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
@@ -44,6 +45,7 @@ public class GrantConsentToOrganizationCommandTest
         var userOrganization = Any.Organization();
         _ = Affiliation.Create(user, userOrganization);
         var organization = Any.Organization();
+        organization.AcceptServiceProviderTerms();
         var existingConsent = OrganizationConsent.Create(userOrganization.Id, organization.Id, DateTimeOffset.Now);
         await _userRepository.AddAsync(user, CancellationToken.None);
         await _organizationRepository.AddAsync(userOrganization, CancellationToken.None);
@@ -66,6 +68,7 @@ public class GrantConsentToOrganizationCommandTest
         // Given user and organization
         var user = Any.User();
         var userOrganization = Any.Organization();
+        userOrganization.AcceptServiceProviderTerms();
         _ = Affiliation.Create(user, userOrganization);
         await _userRepository.AddAsync(user, CancellationToken.None);
         await _organizationRepository.AddAsync(userOrganization, CancellationToken.None);
