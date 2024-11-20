@@ -10,23 +10,20 @@ namespace API.UnitTests._Features_.Internal;
 public class GetServiceProviderTermsForOrganizationQueryTests
 {
     private readonly FakeOrganizationRepository _organizationRepository;
-    private readonly FakeServiceProviderTermsRepository _serviceProviderTermsRepository;
     private readonly GetServiceProviderTermsQueryHandler _handler;
 
     public GetServiceProviderTermsForOrganizationQueryTests()
     {
         _organizationRepository = new FakeOrganizationRepository();
-        _serviceProviderTermsRepository = new FakeServiceProviderTermsRepository();
-        _handler = new GetServiceProviderTermsQueryHandler(_organizationRepository, _serviceProviderTermsRepository);
+        _handler = new GetServiceProviderTermsQueryHandler(_organizationRepository);
     }
 
     [Fact]
-    public async Task Handle_WhenOrganizationHasAcceptedLatestTerms_ReturnsTrue()
+    public async Task Handle_WhenOrganizationHasAcceptedTerms_ReturnsTrue()
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
-        organization.AcceptServiceProviderTerms(ServiceProviderTerms.Create(1));
+        organization.AcceptServiceProviderTerms();
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
-        await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None);
 
         var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(organization.Id));
 
@@ -36,11 +33,10 @@ public class GetServiceProviderTermsForOrganizationQueryTests
     }
 
     [Fact]
-    public async Task Handle_WhenOrganizationHasNotAcceptedLatestTerms_ReturnsFalse()
+    public async Task Handle_WhenOrganizationHasNotAcceptedTerms_ReturnsFalse()
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
-        await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None);
 
         var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(organization.Id));
 
@@ -57,33 +53,5 @@ public class GetServiceProviderTermsForOrganizationQueryTests
         Func<Task> action = async () => await _handler.Handle(query, CancellationToken.None);
 
         await action.Should().ThrowAsync<EntityNotFoundException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenNoServiceProviderTermsExist_ThrowsEntityNotFoundException()
-    {
-        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
-        await _organizationRepository.AddAsync(organization, CancellationToken.None);
-
-        var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(organization.Id));
-
-        Func<Task> action = async () => await _handler.Handle(query, CancellationToken.None);
-
-        await action.Should().ThrowAsync<EntityNotFoundException>();
-    }
-
-    [Fact]
-    public async Task Handle_WhenOrganizationHasOlderTermsVersion_ReturnsFalse()
-    {
-        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
-        organization.AcceptServiceProviderTerms(ServiceProviderTerms.Create(1));
-        await _organizationRepository.AddAsync(organization, CancellationToken.None);
-        await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(2), CancellationToken.None);
-
-        var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(organization.Id));
-
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        result.Should().BeFalse();
     }
 }

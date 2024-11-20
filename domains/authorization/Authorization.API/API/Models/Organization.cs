@@ -20,7 +20,6 @@ public class Organization : IEntity<Guid>
         TermsVersion = null;
         TermsAcceptanceDate = null;
         ServiceProviderTermsAccepted = false;
-        ServiceProviderTermsVersion = null;
         ServiceProviderTermsAcceptanceDate = null;
     }
 
@@ -35,7 +34,6 @@ public class Organization : IEntity<Guid>
     public int? TermsVersion { get; private set; }
     public DateTimeOffset? TermsAcceptanceDate { get; private set; }
     public bool ServiceProviderTermsAccepted { get; private set; }
-    public int? ServiceProviderTermsVersion { get; private set; }
     public UnixTimestamp? ServiceProviderTermsAcceptanceDate { get; private set; }
     public ICollection<Affiliation> Affiliations { get; init; } = new List<Affiliation>();
     public ICollection<OrganizationConsent> OrganizationGivenConsents { get; init; } = new List<OrganizationConsent>();
@@ -54,10 +52,9 @@ public class Organization : IEntity<Guid>
         );
     }
 
-    public void AcceptServiceProviderTerms(ServiceProviderTerms serviceProviderTerms)
+    public void AcceptServiceProviderTerms()
     {
         ServiceProviderTermsAccepted = true;
-        ServiceProviderTermsVersion = serviceProviderTerms.Version;
         ServiceProviderTermsAcceptanceDate = UnixTimestamp.Now();
     }
 

@@ -13,16 +13,14 @@ namespace API.UnitTests._Features_;
 public class AcceptServiceProviderTermsCommandHandlerTests
 {
     private readonly FakeOrganizationRepository _organizationRepository;
-    private readonly FakeServiceProviderTermsRepository _serviceProviderTermsRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly AcceptServiceProviderTermsCommandHandler _handler;
 
     public AcceptServiceProviderTermsCommandHandlerTests()
     {
         _organizationRepository = new FakeOrganizationRepository();
-        _serviceProviderTermsRepository = new FakeServiceProviderTermsRepository();
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _handler = new AcceptServiceProviderTermsCommandHandler(_organizationRepository, _serviceProviderTermsRepository, _unitOfWork);
+        _handler = new AcceptServiceProviderTermsCommandHandler(_organizationRepository, _unitOfWork);
     }
 
     [Fact]
@@ -31,14 +29,12 @@ public class AcceptServiceProviderTermsCommandHandlerTests
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
         var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
-        await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None);
 
         await _handler.Handle(command, CancellationToken.None);
 
         var updatedOrganization = _organizationRepository.Query().FirstOrDefault(o => o.Id == organization.Id);
         updatedOrganization.Should().NotBeNull();
         updatedOrganization!.ServiceProviderTermsAccepted.Should().BeTrue();
-        updatedOrganization.ServiceProviderTermsVersion.Should().Be(1);
         await _unitOfWork.Received(1).CommitAsync();
     }
 
@@ -48,7 +44,6 @@ public class AcceptServiceProviderTermsCommandHandlerTests
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
         var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
-        await _serviceProviderTermsRepository.AddAsync(ServiceProviderTerms.Create(1), CancellationToken.None);
 
         await _handler.Handle(command, CancellationToken.None);
 
@@ -65,7 +60,7 @@ public class AcceptServiceProviderTermsCommandHandlerTests
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
         mockOrganizationRepository.Query().Returns(_ => throw new Exception("Test exception"));
         await using var mockUnitOfWork = Substitute.For<IUnitOfWork>();
-        var handler = new AcceptServiceProviderTermsCommandHandler(mockOrganizationRepository, _serviceProviderTermsRepository, mockUnitOfWork);
+        var handler = new AcceptServiceProviderTermsCommandHandler(mockOrganizationRepository, mockUnitOfWork);
 
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
         await mockUnitOfWork.DidNotReceive().CommitAsync();

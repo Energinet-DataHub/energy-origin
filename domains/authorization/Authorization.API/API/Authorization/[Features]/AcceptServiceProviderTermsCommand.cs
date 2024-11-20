@@ -14,7 +14,6 @@ public record AcceptServiceProviderTermsCommand(OrganizationId OrgId) : IRequest
 
 public class AcceptServiceProviderTermsCommandHandler(
     IOrganizationRepository organizationRepository,
-    IServiceProviderTermsRepository serviceProviderTermsRepository,
     IUnitOfWork unitOfWork)
     : IRequestHandler<AcceptServiceProviderTermsCommand>
 {
@@ -32,18 +31,9 @@ public class AcceptServiceProviderTermsCommandHandler(
             throw new EntityNotFoundException(nameof(usersAffiliatedOrganization), "Organization does not exist.");
         }
 
-        var latestServiceProviderTerms = await serviceProviderTermsRepository.Query()
-            .OrderByDescending(t => t.Version)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (latestServiceProviderTerms == null)
+        if (!usersAffiliatedOrganization.ServiceProviderTermsAccepted)
         {
-            throw new InvalidConfigurationException("No Service Provider Terms configured");
-        }
-
-        if (!usersAffiliatedOrganization.ServiceProviderTermsAccepted || usersAffiliatedOrganization.ServiceProviderTermsVersion != latestServiceProviderTerms.Version)
-        {
-            usersAffiliatedOrganization.AcceptServiceProviderTerms(latestServiceProviderTerms);
+            usersAffiliatedOrganization.AcceptServiceProviderTerms();
         }
 
         await unitOfWork.CommitAsync();

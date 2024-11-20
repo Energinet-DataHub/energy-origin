@@ -93,7 +93,6 @@ builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IOrganizationConsentRepository, OrganizationOrganizationConsentRepository>();
 builder.Services.AddScoped<ITermsRepository, TermsRepository>();
-builder.Services.AddScoped<IServiceProviderTermsRepository, ServiceProviderTermsRepository>();
 
 builder.Services.AddAuthorizationApi();
 builder.Services.AddOptions<MitIDOptions>().BindConfiguration(MitIDOptions.Prefix).ValidateDataAnnotations()

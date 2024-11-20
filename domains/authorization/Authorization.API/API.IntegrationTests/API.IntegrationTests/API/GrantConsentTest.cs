@@ -1,9 +1,6 @@
-using System.Net.Http.Json;
-using API.Authorization._Features_;
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
-using API.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -48,7 +45,6 @@ public class GrantConsentTest
         var organizationWithClient = Any.OrganizationWithClient();
         var user = Any.User();
         var organizationThatIsGrantingConsent = Any.Organization();
-        organizationWithClient.AcceptServiceProviderTerms(ServiceProviderTerms.Create(2));
         var affiliation = Affiliation.Create(user, organizationThatIsGrantingConsent);
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Organizations.AddAsync(organizationWithClient);
@@ -68,7 +64,6 @@ public class GrantConsentTest
         var consentReceiverOrganization = Any.Organization();
         var user = Any.User();
         var organization = Any.Organization();
-        organization.AcceptServiceProviderTerms(ServiceProviderTerms.Create(2));
         var affiliation = Affiliation.Create(user, organization);
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Organizations.AddAsync(consentReceiverOrganization);
