@@ -55,6 +55,35 @@ public class TransferAgreementsControllerTests
     }
 
     [Fact]
+    public async Task GivenProposal_WhenAccepting_ReceiverIdIsStored()
+    {
+        // Given proposal
+        var receiverTin = "12334459";
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var authenticatedSenderClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
+        var createdProposalId = await CreateTransferAgreementProposal(orgId, authenticatedSenderClient, request);
+
+        // When accepting proposal
+        var receiverSub = Guid.NewGuid();
+        var receiverOrgId = Guid.NewGuid();
+        var authenticatedReceiverClient = factory.CreateB2CAuthenticatedClient(receiverSub, receiverOrgId, receiverTin);
+        var transferAgreement = new CreateTransferAgreement(createdProposalId);
+        var response = await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrgId}", transferAgreement);
+
+        // Response is OK, and transfer agreement is created with receiver id
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        var storedTransferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == OrganizationId.Create(orgId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        storedTransferAgreement.ReceiverId!.Value.Should().Be(receiverOrgId);
+    }
+
+    [Fact]
     public async Task Create_ShouldCreateTransferAgreementWithSubjectTin_WhenProposalReceiverTinIsNull()
     {
         var subjectTin = "12334455";
@@ -598,10 +627,11 @@ public class TransferAgreementsControllerTests
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         transferAgreement.SenderName.Value.Should().Be(senderName);
+        transferAgreement.ReceiverId!.Value.Should().Be(receiverOrganizationId);
     }
 
     [Fact]
-    public async Task CreatePOATransferAgreement_ShouldFailTransferAgreement_WhenThereIsAllreadyOneOverlappingTransferAgreement()
+    public async Task CreatePOATransferAgreement_ShouldFailTransferAgreement_WhenThereIsAlreadyOneOverlappingTransferAgreement()
     {
         var receiverOrganizationId = Guid.NewGuid();
         var senderOrganizationId = Any.OrganizationId();

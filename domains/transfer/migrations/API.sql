@@ -533,3 +533,22 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241119105831_AddTransferAgreementReceiverOrganizationId') THEN
+    ALTER TABLE "TransferAgreements" ADD "ReceiverId" uuid;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241119105831_AddTransferAgreementReceiverOrganizationId') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20241119105831_AddTransferAgreementReceiverOrganizationId', '8.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+
