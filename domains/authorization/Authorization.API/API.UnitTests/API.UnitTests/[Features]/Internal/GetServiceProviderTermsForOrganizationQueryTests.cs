@@ -50,7 +50,7 @@ public class GetServiceProviderTermsForOrganizationQueryTests
     }
 
     [Fact]
-    public async Task Handle_WhenOrganizationDoesNotExist_ThrowsInvalidConfigurationException()
+    public async Task Handle_WhenOrganizationDoesNotExist_ThrowsEntityNotFoundException()
     {
         var query = new GetServiceProviderTermsForOrganizationQuery(OrganizationId.Create(Guid.NewGuid()));
 
@@ -60,7 +60,7 @@ public class GetServiceProviderTermsForOrganizationQueryTests
     }
 
     [Fact]
-    public async Task Handle_WhenNoServiceProviderTermsExist_ThrowsInvalidConfigurationException()
+    public async Task Handle_WhenNoServiceProviderTermsExist_ThrowsEntityNotFoundException()
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
