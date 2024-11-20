@@ -64,6 +64,10 @@ public record UserOrganizationConsentsReceivedResponseItem(Guid ConsentId, Guid 
 
 public record UserOrganizationConsentsReceivedResponse(IEnumerable<UserOrganizationConsentsReceivedResponseItem> Result);
 
+public record AcceptServiceProviderTermsResponse(string Message);
+
+public record GetServiceProviderTermsResponse(bool TermsAccepted);
+
 
 
 public record UserinfoRequest(string MitIDBearerToken);

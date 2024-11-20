@@ -54,8 +54,4 @@ public class ServiceProviderTermsController(IMediator mediator, IdentityDescript
     }
 }
 
-public record AcceptServiceProviderTermsResponse(string Message);
-
-public record GetServiceProviderTermsResponse(bool TermsAccepted);
-
 
