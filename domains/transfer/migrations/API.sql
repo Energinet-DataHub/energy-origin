@@ -539,13 +539,6 @@ START TRANSACTION;
 DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241119105831_AddTransferAgreementReceiverOrganizationId') THEN
-    DROP TABLE "TransferAgreementHistoryEntries";
-    END IF;
-END $EF$;
-
-DO $EF$
-BEGIN
-    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241119105831_AddTransferAgreementReceiverOrganizationId') THEN
     ALTER TABLE "TransferAgreements" ADD "ReceiverId" uuid;
     END IF;
 END $EF$;
