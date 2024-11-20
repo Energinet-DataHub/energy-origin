@@ -19,6 +19,7 @@ public record CreateTransferAgreementCommand(
     Guid SenderOrganizationId,
     long StartDate,
     long? EndDate,
+    Guid ReceiverId,
     string ReceiverTin, // TODO: Delete once we get info from Auth 🐉
     string ReceiverName, // TODO: Delete once we get info from Auth 🐉
     string SenderTin, // TODO: Delete once we get info from Auth 🐉
@@ -42,6 +43,7 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProj
             SenderId = OrganizationId.Create(command.SenderOrganizationId),
             SenderName = OrganizationName.Create(command.SenderName),
             SenderTin = Tin.Create(command.SenderTin),
+            ReceiverId = OrganizationId.Create(command.ReceiverId),
             ReceiverName = OrganizationName.Create(command.ReceiverName),
             ReceiverTin = Tin.Create(command.ReceiverTin),
             Type = command.Type

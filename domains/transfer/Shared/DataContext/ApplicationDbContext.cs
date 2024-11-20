@@ -32,6 +32,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<TransferAgreement>().Property(o => o.SenderName).HasConversion(new OrganizationNameValueConverter());
         modelBuilder.Entity<TransferAgreement>().Property(o => o.ReceiverName).HasConversion(new OrganizationNameValueConverter());
         modelBuilder.Entity<TransferAgreement>().Property(o => o.SenderId).HasConversion(new OrganizationIdValueConverter());
+        modelBuilder.Entity<TransferAgreement>().Property(o => o.ReceiverId).HasConversion(new NullableOrganizationIdValueConverter());
 
         modelBuilder.Entity<ClaimAutomationArgument>()
             .HasKey(p => p.SubjectId);

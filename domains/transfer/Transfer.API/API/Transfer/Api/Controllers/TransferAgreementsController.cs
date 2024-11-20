@@ -17,7 +17,6 @@ using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ProjectOriginClients;
 
 namespace API.Transfer.Api.Controllers;
@@ -276,16 +275,16 @@ public class TransferAgreementsController(
     [HttpPost("create/")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> CreateTransferAgreementDirectly([FromServices] IProjectOriginWalletClient walletClient, [FromBody] CreateTransferAgreementRequest request)
+    public async Task<ActionResult> CreateTransferAgreementDirectly([FromServices] IProjectOriginWalletClient walletClient,
+        [FromBody] CreateTransferAgreementRequest request)
     {
         accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
-        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId, request.SenderOrganizationId, request.StartDate,
-            request.EndDate, request.ReceiverTin, request.ReceiverName, request.SenderTin, request.SenderName, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)), CancellationToken.None);
+        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId, request.SenderOrganizationId,
+            request.StartDate, request.EndDate, request.ReceiverOrganizationId, request.ReceiverTin, request.ReceiverName, request.SenderTin,
+            request.SenderName, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)), CancellationToken.None);
 
-        return CreatedAtAction(nameof(Get), new { id = command.TransferAgreementId }, ToTransferAgreementDto(command.TransferAgreementId, command.SenderTin, command.SenderName,
-            command.ReceiverTin, command.StartDate, command.EndDate, command.Type));
+        return CreatedAtAction(nameof(Get), new { id = command.TransferAgreementId }, ToTransferAgreementDto(command.TransferAgreementId,
+            command.SenderTin, command.SenderName, command.ReceiverTin, command.StartDate, command.EndDate, command.Type));
     }
 }
-
-
