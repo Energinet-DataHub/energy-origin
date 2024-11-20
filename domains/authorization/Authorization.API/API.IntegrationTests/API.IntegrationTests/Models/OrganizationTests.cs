@@ -1,12 +1,9 @@
 using API.Authorization.Exceptions;
 using API.IntegrationTests.Setup;
-using API.Models;
-using API.Repository;
 using API.UnitTests;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using NpgsqlTypes;
 
 namespace API.IntegrationTests.Models;
 

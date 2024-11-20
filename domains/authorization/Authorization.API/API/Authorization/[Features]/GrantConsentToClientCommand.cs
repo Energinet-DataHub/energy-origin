@@ -30,7 +30,7 @@ public class GrantConsentToClientCommandHandler(
 
         var clientOrganizationInfo = await clientRepository.Query()
             .Where(it => it.IdpClientId == command.IdpClientId)
-            .Select(x => new {x.OrganizationId, x.Organization!.ServiceProviderTermsAccepted})
+            .Select(x => new { x.OrganizationId, x.Organization!.ServiceProviderTermsAccepted })
             .FirstOrDefaultAsync(cancellationToken);
 
         if (clientOrganizationInfo == null)
