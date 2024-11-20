@@ -1,4 +1,4 @@
-﻿using API.IntegrationTests.Setup;
+using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
 using FluentAssertions;
