@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using API.ValueObjects;
+using OrganizationId = EnergyOrigin.Domain.ValueObjects.OrganizationId;
 
 namespace API.Models;
 
@@ -31,5 +32,10 @@ public class Client : IEntity<Guid>
     public static Client Create(IdpClientId idpClientId, ClientName name, ClientType clientType, string redirectUrl)
     {
         return new Client(Guid.NewGuid(), idpClientId, name, clientType, redirectUrl);
+    }
+
+    public void SetOrganization(OrganizationId organizationId)
+    {
+        OrganizationId = organizationId.Value;
     }
 }
