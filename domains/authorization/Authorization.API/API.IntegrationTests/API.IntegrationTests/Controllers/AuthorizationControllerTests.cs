@@ -12,26 +12,19 @@ using ClientType = API.Models.ClientType;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AuthorizationControllerTests
+public class AuthorizationControllerTests : IntegrationTestBase
 {
     private readonly Api _api;
-    private readonly IntegrationTestFixture _integrationTestFixture;
-    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AuthorizationControllerTests(IntegrationTestFixture integrationTestFixture)
+    public AuthorizationControllerTests(IntegrationTestFixture fixture) : base(fixture)
     {
-        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-
-        _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: _integrationTestFixture.WebAppFactory.IssuerIdpClientId.ToString());
+        _api = _fixture.WebAppFactory.CreateApi(sub: _fixture.WebAppFactory.IssuerIdpClientId.ToString());
     }
 
     [Fact]
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenHttpOkAndCorrectResponseReturned()
     {
-        await using var dbContext = new ApplicationDbContext(_options);
-        var (idpUserId, tin, orgName) = await SeedData(dbContext);
+        var (idpUserId, tin, orgName) = await SeedData(_fixture.DbContext);
 
         var request = new AuthorizationUserRequest(
             Sub: idpUserId.Value,
@@ -57,10 +50,9 @@ public class AuthorizationControllerTests
     [Fact]
     public async Task GivenNonExistingOrganization_WhenGettingConsent_ThenHttpOkAndTermsNotAccepted()
     {
-        await using var dbContext = new ApplicationDbContext(_options);
-        var client = Client.Create(new IdpClientId(_integrationTestFixture.WebAppFactory.IssuerIdpClientId), ClientName.Create("Internal Client"), ClientType.Internal, "https://localhost:5001");
-        await dbContext.Clients.AddAsync(client);
-        await dbContext.SaveChangesAsync();
+        var client = Client.Create(new IdpClientId(_fixture.WebAppFactory.IssuerIdpClientId), ClientName.Create("Internal Client"), ClientType.Internal, "https://localhost:5001");
+        await _fixture.DbContext.Clients.AddAsync(client);
+        await _fixture.DbContext.SaveChangesAsync();
 
         var request = new AuthorizationUserRequest(
             Sub: Guid.NewGuid(),
@@ -106,8 +98,7 @@ public class AuthorizationControllerTests
     [Fact]
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenAffiliationIsCreated()
     {
-        await using var dbContext = new ApplicationDbContext(_options);
-        var (idpUserId, tin, orgName) = await SeedData(dbContext);
+        var (idpUserId, tin, orgName) = await SeedData(_fixture.DbContext);
 
         var request = new AuthorizationUserRequest(
             Sub: idpUserId.Value,
@@ -120,6 +111,6 @@ public class AuthorizationControllerTests
 
         response.Should().Be200Ok();
 
-        dbContext.Affiliations.Where(x => x.Organization.Tin == tin).ToList().Should().ContainSingle();
+        _fixture.DbContext.Affiliations.Where(x => x.Organization.Tin == tin).ToList().Should().ContainSingle();
     }
 }

@@ -4,6 +4,7 @@ using API.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
+using Respawn.Graph;
 using Testcontainers.RabbitMq;
 
 namespace API.IntegrationTests.Setup;
@@ -70,13 +71,21 @@ public class IntegrationTestFixture : IAsyncLifetime
         _respawner = await Respawner.CreateAsync(_connection, new RespawnerOptions
         {
             DbAdapter = DbAdapter.Postgres,
-            SchemasToInclude = new[] { "public" }
+            SchemasToInclude = new[] { "public" },
+            TablesToIgnore = new[] { new Table("public", "Terms") }
         });
     }
 
     public async Task ResetDatabaseAsync()
     {
         await _respawner.ResetAsync(_connection);
+
+        var dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        if (!await dbContext.Terms.AnyAsync())
+        {
+            dbContext.Terms.Add(Terms.Create(version: 1));
+            await dbContext.SaveChangesAsync();
+        }
     }
 
     public async Task DisposeAsync()

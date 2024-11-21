@@ -9,25 +9,21 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetClientQueryTest
+public class GetClientQueryTest : IntegrationTestBase
 {
     private readonly Api _api;
-    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetClientQueryTest(IntegrationTestFixture integrationTestFixture)
+    public GetClientQueryTest(IntegrationTestFixture fixture) : base(fixture)
     {
-        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-        _api = integrationTestFixture.WebAppFactory.CreateApi();
+        _api = fixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
     public async Task GivenIdpClientId_WhenGettingClient_ClientReturned()
     {
         var client = Any.Client();
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Clients.AddAsync(client);
-        await dbContext.SaveChangesAsync();
+        await _fixture.DbContext.Clients.AddAsync(client);
+        await _fixture.DbContext.SaveChangesAsync();
         var response = await _api.GetClient(client.IdpClientId.Value);
         response.Should().Be200Ok();
         var content = await response.Content.ReadFromJsonAsync<ClientResponse>();

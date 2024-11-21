@@ -12,19 +12,13 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetConsentTests
+public class GetConsentTests : IntegrationTestBase
 {
     private readonly Api _api;
-    private readonly IntegrationTestFixture _integrationTestFixture;
-    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetConsentTests(IntegrationTestFixture integrationTestFixture)
+    public GetConsentTests(IntegrationTestFixture fixture) : base(fixture)
     {
-        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-
-        _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.WebAppFactory.CreateApi();
+        _api = _fixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
@@ -34,7 +28,7 @@ public class GetConsentTests
         var (idpUserId, tin) = await SeedData();
 
         // When
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString(), orgCvr: tin.Value);
+        var userClient = _fixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString(), orgCvr: tin.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
         // Then
@@ -77,23 +71,22 @@ public class GetConsentTests
         var consent1 = OrganizationConsent.Create(organization1.Id, organizationWithClient1.Id, DateTimeOffset.UtcNow);
         var consent2 = OrganizationConsent.Create(organization2.Id, organizationWithClient2.Id, DateTimeOffset.UtcNow);
 
-        await using var dbContext = new ApplicationDbContext(_options);
 
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddRangeAsync([organization1, organization2, organizationWithClient1, organizationWithClient2]);
+        await _fixture.DbContext.Users.AddAsync(user);
+        await _fixture.DbContext.Organizations.AddRangeAsync([organization1, organization2, organizationWithClient1, organizationWithClient2]);
 
         var affiliation1 = Affiliation.Create(user, organization1);
         var affiliation2 = Affiliation.Create(user, organization2);
 
-        await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
-        await dbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
+        await _fixture.DbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
+        await _fixture.DbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
 
-        await dbContext.SaveChangesAsync();
+        await _fixture.DbContext.SaveChangesAsync();
 
         // When
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
+        var userClient = _fixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
         // Then
@@ -119,23 +112,22 @@ public class GetConsentTests
 
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Users.AddRangeAsync(user1, user2);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await _fixture.DbContext.Users.AddRangeAsync(user1, user2);
+        await _fixture.DbContext.Organizations.AddAsync(organization);
+        await _fixture.DbContext.Organizations.AddAsync(organizationWithClient);
 
         var affiliation1 = Affiliation.Create(user1, organization);
         var affiliation2 = Affiliation.Create(user2, organization);
 
-        await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
-        await dbContext.OrganizationConsents.AddAsync(consent);
+        await _fixture.DbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
+        await _fixture.DbContext.OrganizationConsents.AddAsync(consent);
 
-        await dbContext.SaveChangesAsync();
+        await _fixture.DbContext.SaveChangesAsync();
 
-        var userClient1 = _integrationTestFixture.WebAppFactory.CreateApi(sub: user1.IdpUserId.Value.ToString());
+        var userClient1 = _fixture.WebAppFactory.CreateApi(sub: user1.IdpUserId.Value.ToString());
         var response1 = await userClient1.GetUserOrganizationConsents();
 
-        var userClient2 = _integrationTestFixture.WebAppFactory.CreateApi(sub: user2.IdpUserId.Value.ToString());
+        var userClient2 = _fixture.WebAppFactory.CreateApi(sub: user2.IdpUserId.Value.ToString());
         var response2 = await userClient2.GetUserOrganizationConsents();
 
         response1.Should().Be200Ok();
@@ -158,22 +150,21 @@ public class GetConsentTests
         var consent1 = OrganizationConsent.Create(userOrganization.Id, organization1.Id, DateTimeOffset.UtcNow);
         var consent2 = OrganizationConsent.Create(organization2.Id, userOrganization.Id, DateTimeOffset.UtcNow);
 
-        await using var dbContext = new ApplicationDbContext(_options);
 
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddRangeAsync([userOrganization, organization1, organization2]);
+        await _fixture.DbContext.Users.AddAsync(user);
+        await _fixture.DbContext.Organizations.AddRangeAsync([userOrganization, organization1, organization2]);
 
         var affiliation = Affiliation.Create(user, userOrganization);
 
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
+        await _fixture.DbContext.Affiliations.AddAsync(affiliation);
+        await _fixture.DbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
 
-        await dbContext.SaveChangesAsync();
+        await _fixture.DbContext.SaveChangesAsync();
 
         // When
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: userOrganization.Tin!.Value);
+        var userClient = _fixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: userOrganization.Tin!.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
         // Then
@@ -197,22 +188,21 @@ public class GetConsentTests
         var consent1 = OrganizationConsent.Create(userOrganization.Id, organization1.Id, DateTimeOffset.UtcNow);
         var consent2 = OrganizationConsent.Create(organization2.Id, userOrganization.Id, DateTimeOffset.UtcNow);
 
-        await using var dbContext = new ApplicationDbContext(_options);
 
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddRangeAsync([userOrganization, organization1, organization2]);
+        await _fixture.DbContext.Users.AddAsync(user);
+        await _fixture.DbContext.Organizations.AddRangeAsync([userOrganization, organization1, organization2]);
 
         var affiliation = Affiliation.Create(user, userOrganization);
 
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
+        await _fixture.DbContext.Affiliations.AddAsync(affiliation);
+        await _fixture.DbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
 
-        await dbContext.SaveChangesAsync();
+        await _fixture.DbContext.SaveChangesAsync();
 
         // When
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: userOrganization.Tin!.Value);
+        var userClient = _fixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: userOrganization.Tin!.Value);
         var response = await userClient.GetUserOrganizationReceivedConsents();
 
         // Then
@@ -233,14 +223,13 @@ public class GetConsentTests
         var organizationWithClient = Any.OrganizationWithClient();
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
-        await dbContext.OrganizationConsents.AddAsync(consent);
+        await _fixture.DbContext.Users.AddAsync(user);
+        await _fixture.DbContext.Organizations.AddAsync(organization);
+        await _fixture.DbContext.Affiliations.AddAsync(affiliation);
+        await _fixture.DbContext.Organizations.AddAsync(organizationWithClient);
+        await _fixture.DbContext.OrganizationConsents.AddAsync(consent);
 
-        await dbContext.SaveChangesAsync();
+        await _fixture.DbContext.SaveChangesAsync();
         return (user.IdpUserId, organization.Tin!);
     }
 }

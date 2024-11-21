@@ -7,19 +7,10 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetServiceProviderTermsTest
+public class GetServiceProviderTermsTest : IntegrationTestBase
 {
-    private readonly Api _api;
-    private readonly IntegrationTestFixture _integrationTestFixture;
-    private readonly DbContextOptions<ApplicationDbContext> _options;
-
-    public GetServiceProviderTermsTest(IntegrationTestFixture integrationTestFixture)
+    public GetServiceProviderTermsTest(IntegrationTestFixture fixture) : base(fixture)
     {
-        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-
-        _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
@@ -30,14 +21,13 @@ public class GetServiceProviderTermsTest
         var organization = Any.Organization();
         organization.AcceptServiceProviderTerms();
         var affiliation = Affiliation.Create(user, organization);
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.SaveChangesAsync();
+        await _fixture.DbContext.Organizations.AddAsync(consentReceiverOrganization);
+        await _fixture.DbContext.Users.AddAsync(user);
+        await _fixture.DbContext.Organizations.AddAsync(organization);
+        await _fixture.DbContext.Affiliations.AddAsync(affiliation);
+        await _fixture.DbContext.SaveChangesAsync();
 
-        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString());
+        var api = _fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString());
         var response = await api.GetServiceProviderTerms();
         response.Should().Be200Ok();
     }

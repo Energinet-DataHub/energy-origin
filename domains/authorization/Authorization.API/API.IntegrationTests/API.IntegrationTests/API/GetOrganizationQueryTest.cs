@@ -9,16 +9,13 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetOrganizationQueryTest
+public class GetOrganizationQueryTest : IntegrationTestBase
 {
     private readonly Api _api;
-    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetOrganizationQueryTest(IntegrationTestFixture integrationTestFixture)
+    public GetOrganizationQueryTest(IntegrationTestFixture fixture) : base(fixture)
     {
-        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-        _api = integrationTestFixture.WebAppFactory.CreateApi();
+        _api = _fixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
@@ -26,9 +23,8 @@ public class GetOrganizationQueryTest
     {
         // Given organization
         var organization = Any.Organization();
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.SaveChangesAsync();
+        await _fixture.DbContext.Organizations.AddAsync(organization);
+        await _fixture.DbContext.SaveChangesAsync();
 
         // When getting organization
         var response = await _api.GetOrganization(organization.Id);

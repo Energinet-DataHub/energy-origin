@@ -166,5 +166,4 @@ public class DeleteConsentTests : IntegrationTestBase
         var consentListAfterDeletion = await consentListResponseAfterDeletion.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>();
         consentListAfterDeletion!.Result.Should().BeEmpty();
     }
-
 }
