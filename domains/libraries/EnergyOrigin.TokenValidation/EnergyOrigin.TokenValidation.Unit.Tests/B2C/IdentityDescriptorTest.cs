@@ -67,7 +67,17 @@ public class IdentityDescriptorTest
         sut.AuthorizedOrganizationIds.Should().Contain(org2Id);
     }
 
-    private static HttpContextAccessor BuildContextAccessor(IEnumerable<Claim> claims)
+    [Fact]
+    public void GivenEmptyOrgIdClaim_WhenParsing_ExceptionIsThrown()
+    {
+        var claims = new List<Claim> { new(ClaimType.OrgId, "") };
+        var contextAccessor = BuildContextAccessor(claims);
+        var sut = new IdentityDescriptor(contextAccessor);
+
+        Assert.Throws<InvalidOperationException>(() => sut.OrganizationId);
+    }
+
+    public static HttpContextAccessor BuildContextAccessor(IEnumerable<Claim> claims)
     {
         var claimsIdentity = new ClaimsIdentity(claims);
         var principal = new ClaimsPrincipal(new[] { claimsIdentity });
