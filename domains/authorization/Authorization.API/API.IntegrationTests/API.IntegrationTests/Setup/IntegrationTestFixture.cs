@@ -28,12 +28,6 @@ public abstract class IntegrationTestBase : IClassFixture<IntegrationTestFixture
     }
 }
 
-[CollectionDefinition(CollectionName)]
-public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixture>
-{
-    public const string CollectionName = nameof(IntegrationTestCollection);
-}
-
 public class IntegrationTestFixture : IAsyncLifetime
 {
     public TestWebApplicationFactory WebAppFactory { get; private set; } = null!;

@@ -7,26 +7,22 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace API.IntegrationTests.Migrations;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class MigrationTests
+public class MigrationTests : IntegrationTestBase, IAsyncLifetime
 {
-    private readonly DbContextOptions<ApplicationDbContext> options;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public MigrationTests(IntegrationTestFixture integrationTestFixture)
+    public MigrationTests(IntegrationTestFixture fixture) : base(fixture)
     {
-        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
-        options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(newDatabaseInfo.ConnectionString)
-            .Options;
-
-        using var dbContext = new ApplicationDbContext(options);
+        var newDatabaseInfo = _fixture.PostgresContainer.CreateNewDatabase().Result;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(_options);
         dbContext.Database.Migrate();
     }
 
     [Fact]
     public async Task can_apply_all_migrations()
     {
-        await using var dbContext = new ApplicationDbContext(options);
+        await using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.Database.GetService<IMigrator>();
 
         var applyAllMigrations = async () => await migrator.MigrateAsync();

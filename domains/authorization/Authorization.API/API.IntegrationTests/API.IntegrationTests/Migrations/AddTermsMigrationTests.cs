@@ -8,23 +8,20 @@ using Npgsql;
 
 namespace API.IntegrationTests.Migrations;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class AddTermsMigrationTests
+public class AddTermsMigrationTests : IntegrationTestBase, IAsyncLifetime
 {
-    private readonly DbContextOptions<ApplicationDbContext> options;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AddTermsMigrationTests(IntegrationTestFixture integrationTestFixture)
+    public AddTermsMigrationTests(IntegrationTestFixture fixture) : base(fixture)
     {
-        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
-        options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(newDatabaseInfo.ConnectionString)
-            .Options;
+        var newDatabaseInfo = _fixture.PostgresContainer.CreateNewDatabase().Result;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
     }
 
     [Fact]
     public async Task AddTerms_Migration_SetsTermsAcceptedToFalseForExistingOrganizations()
     {
-        await using var dbContext = new ApplicationDbContext(options);
+        await using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.GetService<IMigrator>();
 
         await migrator.MigrateAsync("20240620115450_AddOrganizationTinUniqueIndex");

@@ -7,14 +7,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace API.IntegrationTests.Migrations;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class AddUniqueTermsVersionConstraintMigrationTests
+public class AddUniqueTermsVersionConstraintMigrationTests : IntegrationTestBase, IAsyncLifetime
 {
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AddUniqueTermsVersionConstraintMigrationTests(IntegrationTestFixture integrationTestFixture)
+    public AddUniqueTermsVersionConstraintMigrationTests(IntegrationTestFixture fixture) : base(fixture)
     {
-        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        var newDatabaseInfo = _fixture.PostgresContainer.CreateNewDatabase().Result;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
     }
 
