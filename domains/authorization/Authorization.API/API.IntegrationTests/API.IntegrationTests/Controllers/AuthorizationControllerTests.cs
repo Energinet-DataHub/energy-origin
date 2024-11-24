@@ -10,7 +10,7 @@ using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.Controllers;
 
-public class AuthorizationControllerTests : IntegrationTestBase, IAsyncLifetime
+public class AuthorizationControllerTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly Api _api;
 

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace API.IntegrationTests.Migrations;
 
-public class MigrationTests : IntegrationTestBase, IAsyncLifetime
+public class MigrationTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly DbContextOptions<ApplicationDbContext> _options;
 

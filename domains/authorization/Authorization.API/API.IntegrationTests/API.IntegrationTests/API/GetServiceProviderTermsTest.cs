@@ -5,7 +5,7 @@ using FluentAssertions;
 
 namespace API.IntegrationTests.API;
 
-public class GetServiceProviderTermsTest : IntegrationTestBase, IAsyncLifetime
+public class GetServiceProviderTermsTest : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     public GetServiceProviderTermsTest(IntegrationTestFixture fixture) : base(fixture)
     {

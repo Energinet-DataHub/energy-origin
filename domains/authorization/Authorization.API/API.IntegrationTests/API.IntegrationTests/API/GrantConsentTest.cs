@@ -6,7 +6,7 @@ using FluentAssertions;
 
 namespace API.IntegrationTests.API;
 
-public class GrantConsentTest : IntegrationTestBase, IAsyncLifetime
+public class GrantConsentTest : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly Api _api;
 

@@ -8,7 +8,7 @@ using Npgsql;
 
 namespace API.IntegrationTests.Migrations;
 
-public class AddTermsMigrationTests : IntegrationTestBase, IAsyncLifetime
+public class AddTermsMigrationTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly DbContextOptions<ApplicationDbContext> _options;
 

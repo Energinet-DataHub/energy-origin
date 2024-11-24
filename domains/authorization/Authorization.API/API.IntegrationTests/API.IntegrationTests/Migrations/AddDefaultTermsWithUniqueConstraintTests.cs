@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace API.IntegrationTests.Migrations;
 
-public class AddUniqueTermsVersionConstraintMigrationTests : IntegrationTestBase, IAsyncLifetime
+public class AddUniqueTermsVersionConstraintMigrationTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly DbContextOptions<ApplicationDbContext> _options;
 

@@ -8,7 +8,7 @@ using Respawn.Graph;
 
 namespace API.IntegrationTests.Setup;
 
-public abstract class IntegrationTestBase : IClassFixture<IntegrationTestFixture>
+public abstract class IntegrationTestBase
 {
     protected readonly IntegrationTestFixture _fixture;
 

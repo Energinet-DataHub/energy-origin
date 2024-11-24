@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Controllers;
 
-public class AuthorizationFlowTests : IntegrationTestBase, IAsyncLifetime
+public class AuthorizationFlowTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly Api _api;
 

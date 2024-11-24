@@ -10,7 +10,7 @@ using FluentAssertions;
 
 namespace API.IntegrationTests.API;
 
-public class GetConsentTests : IntegrationTestBase, IAsyncLifetime
+public class GetConsentTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly Api _api;
 

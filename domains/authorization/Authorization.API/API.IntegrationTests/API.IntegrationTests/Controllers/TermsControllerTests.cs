@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Controllers;
 
-public class TermsControllerTests : IntegrationTestBase, IAsyncLifetime
+public class TermsControllerTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     public TermsControllerTests(IntegrationTestFixture fixture) : base(fixture)
     {

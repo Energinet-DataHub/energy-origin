@@ -6,7 +6,7 @@ using FluentAssertions;
 
 namespace API.IntegrationTests.API;
 
-public class GetClientQueryTest : IntegrationTestBase, IAsyncLifetime
+public class GetClientQueryTest : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly Api _api;
 

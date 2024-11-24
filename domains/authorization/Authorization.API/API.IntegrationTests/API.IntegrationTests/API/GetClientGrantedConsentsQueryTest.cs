@@ -9,7 +9,7 @@ using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.API;
 
-public class GetClientGrantedConsentsQueryTest : IntegrationTestBase, IAsyncLifetime
+public class GetClientGrantedConsentsQueryTest : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly Api _api;
     private readonly Guid _sub;

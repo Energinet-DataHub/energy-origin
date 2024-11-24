@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Migrations;
 
-public class ApplicationDbContextModelSnapshotTests : IntegrationTestBase, IAsyncLifetime
+public class ApplicationDbContextModelSnapshotTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
 {
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
