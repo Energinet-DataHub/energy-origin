@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-public class DeleteConsentTests : IntegrationTestBase
+public class DeleteConsentTests : IntegrationTestBase, IAsyncLifetime
 {
 
     public DeleteConsentTests(IntegrationTestFixture fixture) : base(fixture)
