@@ -17,7 +17,7 @@ public record CreateClientCommandHandler(IUnitOfWork UnitOfWork, IClientReposito
     {
         await UnitOfWork.BeginTransactionAsync();
         var client = Client.Create(request.IdpClientId, request.Name, request.ClientType, request.RedirectUrl);
-        var organization =  Organization.Create(Tin.Empty(), OrganizationName.Create(request.Name.Value));
+        var organization = Organization.Create(Tin.Empty(), OrganizationName.Create(request.Name.Value));
         client.SetOrganization(OrganizationId.Create(organization.Id));
 
         // Clients are manually vetted by EnergyTrackAndTrace, so we can assume that the organization has accepted the Service Provider Terms
