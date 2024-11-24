@@ -6,8 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class GetServiceProviderTermsTest : IntegrationTestBase
+public class GetServiceProviderTermsTest : IntegrationTestBase, IAsyncLifetime
 {
     public GetServiceProviderTermsTest(IntegrationTestFixture fixture) : base(fixture)
     {

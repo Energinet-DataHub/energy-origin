@@ -8,14 +8,14 @@ using ClientType = API.Authorization.Controllers.ClientType;
 
 namespace API.IntegrationTests.API;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class CreateClientTest : IntegrationTestBase
+
+public class CreateClientTest : IntegrationTestBase, IAsyncLifetime
 {
     private readonly Api _api;
 
     public CreateClientTest(IntegrationTestFixture fixture) : base(fixture)
     {
-        _api = fixture.WebAppFactory.CreateApi(sub: fixture.WebAppFactory.IssuerIdpClientId.ToString());
+        _api = _fixture.WebAppFactory.CreateApi(sub: _fixture.WebAppFactory.IssuerIdpClientId.ToString());
     }
 
     [Fact]

@@ -1,15 +1,12 @@
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
-using API.Models;
 using API.UnitTests;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class GetOrganizationQueryTest : IntegrationTestBase
+public class GetOrganizationQueryTest : IntegrationTestBase, IAsyncLifetime
 {
     private readonly Api _api;
 

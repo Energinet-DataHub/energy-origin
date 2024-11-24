@@ -8,14 +8,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class GetClientQueryTest : IntegrationTestBase
+public class GetClientQueryTest : IntegrationTestBase, IAsyncLifetime
 {
     private readonly Api _api;
 
     public GetClientQueryTest(IntegrationTestFixture fixture) : base(fixture)
     {
-        _api = fixture.WebAppFactory.CreateApi();
+        _api = _fixture.WebAppFactory.CreateApi();
     }
 
     [Fact]

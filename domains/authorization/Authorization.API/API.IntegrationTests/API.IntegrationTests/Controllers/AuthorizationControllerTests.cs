@@ -11,8 +11,7 @@ using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.Controllers;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class AuthorizationControllerTests : IntegrationTestBase
+public class AuthorizationControllerTests : IntegrationTestBase, IAsyncLifetime
 {
     private readonly Api _api;
 

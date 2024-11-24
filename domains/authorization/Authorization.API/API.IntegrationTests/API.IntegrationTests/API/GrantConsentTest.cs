@@ -7,14 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class GrantConsentTest : IntegrationTestBase
+public class GrantConsentTest : IntegrationTestBase, IAsyncLifetime
 {
     private readonly Api _api;
 
     public GrantConsentTest(IntegrationTestFixture fixture) : base(fixture)
     {
-        _api = fixture.WebAppFactory.CreateApi();
+        _api = _fixture.WebAppFactory.CreateApi();
     }
 
     [Fact]

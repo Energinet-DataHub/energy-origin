@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using API.Authorization.Controllers;
@@ -6,22 +5,19 @@ using API.IntegrationTests.Setup;
 using API.Models;
 using API.Repository;
 using API.UnitTests;
-using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.Controllers;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class AuthorizationFlowTests : IntegrationTestBase
+public class AuthorizationFlowTests : IntegrationTestBase, IAsyncLifetime
 {
     private readonly Api _api;
 
     public AuthorizationFlowTests(IntegrationTestFixture fixture) : base(fixture)
     {
-        _api = fixture.WebAppFactory.CreateApi(sub: fixture.WebAppFactory.IssuerIdpClientId.ToString());
+        _api = _fixture.WebAppFactory.CreateApi(sub: _fixture.WebAppFactory.IssuerIdpClientId.ToString());
     }
 
     [Fact]

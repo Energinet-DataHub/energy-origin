@@ -11,8 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class GetConsentTests : IntegrationTestBase
+public class GetConsentTests : IntegrationTestBase, IAsyncLifetime
 {
     private readonly Api _api;
 

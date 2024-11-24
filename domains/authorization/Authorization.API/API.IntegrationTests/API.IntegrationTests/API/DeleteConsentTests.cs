@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-[Collection(IntegrationTestCollection.CollectionName)]
 public class DeleteConsentTests : IntegrationTestBase
 {
 

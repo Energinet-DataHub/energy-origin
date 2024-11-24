@@ -5,9 +5,28 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
 using Respawn.Graph;
-using Testcontainers.RabbitMq;
 
 namespace API.IntegrationTests.Setup;
+
+public abstract class IntegrationTestBase : IClassFixture<IntegrationTestFixture>
+{
+    protected readonly IntegrationTestFixture _fixture;
+
+    protected IntegrationTestBase(IntegrationTestFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
+    public virtual async Task InitializeAsync()
+    {
+        await _fixture.ResetDatabaseAsync();
+    }
+
+    public virtual Task DisposeAsync()
+    {
+        return Task.CompletedTask;
+    }
+}
 
 [CollectionDefinition(CollectionName)]
 public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixture>
@@ -15,49 +34,37 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
     public const string CollectionName = nameof(IntegrationTestCollection);
 }
 
-public abstract class IntegrationTestBase(IntegrationTestFixture fixture)
-    : IClassFixture<IntegrationTestFixture>, IAsyncLifetime
-{
-    protected readonly IntegrationTestFixture _fixture = fixture;
-
-    public virtual async Task InitializeAsync()
-    {
-        await _fixture.ResetDatabaseAsync();
-    }
-
-    public virtual Task DisposeAsync() => Task.CompletedTask;
-}
-
 public class IntegrationTestFixture : IAsyncLifetime
 {
-    public PostgresContainer PostgresContainer { get; } = new();
-    public RabbitMqContainer RabbitMqContainer { get; } = new RabbitMqBuilder().WithUsername("guest").WithPassword("guest").Build();
-
     public TestWebApplicationFactory WebAppFactory { get; private set; } = null!;
     private Respawner _respawner = null!;
     private DbConnection _connection = null!;
+    public PostgresContainer PostgresContainer = null!;
 
     private IServiceScope _scope = null!;
     public ApplicationDbContext DbContext => _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+    private DatabaseInfo _databaseInfo = null!;
+
     public async Task InitializeAsync()
     {
+        PostgresContainer = new PostgresContainer();
         await PostgresContainer.InitializeAsync();
-        await RabbitMqContainer.StartAsync();
-        var newDatabase = await PostgresContainer.CreateNewDatabase();
+        _databaseInfo = await PostgresContainer.CreateNewDatabase();
 
-        var connectionStringSplit = RabbitMqContainer.GetConnectionString().Split(":");
+        await SharedRabbitMqContainer.Instance.InitializeAsync();
+
         var rabbitMqOptions = new RabbitMqOptions
         {
-            Host = connectionStringSplit[0],
-            Port = int.Parse(connectionStringSplit[^1].TrimEnd('/')),
+            Host = "localhost",
+            Port = 5672,
             Username = "guest",
             Password = "guest"
         };
 
         WebAppFactory = new TestWebApplicationFactory
         {
-            ConnectionString = newDatabase.ConnectionString
+            ConnectionString = _databaseInfo.ConnectionString
         };
 
         WebAppFactory.SetRabbitMqOptions(rabbitMqOptions);
@@ -103,6 +110,5 @@ public class IntegrationTestFixture : IAsyncLifetime
 
         await WebAppFactory.DisposeAsync();
         await PostgresContainer.DisposeAsync();
-        await RabbitMqContainer.DisposeAsync();
     }
 }

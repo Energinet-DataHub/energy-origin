@@ -10,9 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Controllers;
 
-[Collection(IntegrationTestCollection.CollectionName)]
 public class TermsControllerTests : IntegrationTestBase
 {
+
     public TermsControllerTests(IntegrationTestFixture fixture) : base(fixture)
     {
     }
@@ -20,7 +20,6 @@ public class TermsControllerTests : IntegrationTestBase
     [Fact]
     public async Task GivenValidRequest_WhenAcceptingTerms_ThenHttpOkAndTermsAccepted()
     {
-
 
         if (!_fixture.DbContext.Terms.Any())
         {

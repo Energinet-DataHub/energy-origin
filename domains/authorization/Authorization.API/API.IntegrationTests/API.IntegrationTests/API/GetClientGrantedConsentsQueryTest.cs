@@ -10,8 +10,7 @@ using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.API;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class GetClientGrantedConsentsQueryTest : IntegrationTestBase
+public class GetClientGrantedConsentsQueryTest : IntegrationTestBase, IAsyncLifetime
 {
     private readonly Api _api;
     private readonly Guid _sub;
@@ -19,7 +18,7 @@ public class GetClientGrantedConsentsQueryTest : IntegrationTestBase
     public GetClientGrantedConsentsQueryTest(IntegrationTestFixture fixture) : base(fixture)
     {
         _sub = Guid.NewGuid();
-        _api = fixture.WebAppFactory.CreateApi(_sub.ToString());
+        _api = _fixture.WebAppFactory.CreateApi(_sub.ToString());
     }
 
     [Fact]
