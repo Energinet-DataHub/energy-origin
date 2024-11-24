@@ -1,10 +1,8 @@
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
-using API.Models;
 using API.UnitTests;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 

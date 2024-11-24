@@ -12,7 +12,6 @@ namespace API.IntegrationTests.Controllers;
 
 public class TermsControllerTests : IntegrationTestBase, IAsyncLifetime
 {
-
     public TermsControllerTests(IntegrationTestFixture fixture) : base(fixture)
     {
     }

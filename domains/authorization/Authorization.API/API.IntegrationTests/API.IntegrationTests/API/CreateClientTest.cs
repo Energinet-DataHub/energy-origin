@@ -8,7 +8,6 @@ using ClientType = API.Authorization.Controllers.ClientType;
 
 namespace API.IntegrationTests.API;
 
-
 public class CreateClientTest : IntegrationTestBase, IAsyncLifetime
 {
     private readonly Api _api;

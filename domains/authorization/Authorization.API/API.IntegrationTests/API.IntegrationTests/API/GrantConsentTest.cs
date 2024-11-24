@@ -3,7 +3,6 @@ using API.Models;
 using API.UnitTests;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 

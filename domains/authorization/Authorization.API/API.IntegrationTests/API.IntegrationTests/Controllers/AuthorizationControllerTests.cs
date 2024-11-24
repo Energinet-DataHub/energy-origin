@@ -6,7 +6,6 @@ using API.UnitTests;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.Controllers;

@@ -2,7 +2,6 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.Authorization.Controllers;
-using API.ValueObjects;
 
 namespace API.IntegrationTests.Setup;
 

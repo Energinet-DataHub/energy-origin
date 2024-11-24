@@ -7,7 +7,6 @@ using API.UnitTests;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
