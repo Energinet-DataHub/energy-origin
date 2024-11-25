@@ -2,14 +2,28 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Configurations;
 using DataContext;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace API.IssuingContractCleanup;
 
-public class IssuingContractCleanupService(ApplicationDbContext dbContext, ILogger<IssuingContractCleanupService> logger)
+public class IssuingContractCleanupService
 {
+    private readonly ApplicationDbContext dbContext;
+    private readonly ILogger<IssuingContractCleanupService> logger;
+    private readonly MeasurementsSyncOptions options;
+
+    public IssuingContractCleanupService(ApplicationDbContext dbContext, ILogger<IssuingContractCleanupService> logger, IOptions<MeasurementsSyncOptions> options)
+    {
+        this.dbContext = dbContext;
+        this.logger = logger;
+        this.options = options.Value;
+    }
+
     public async Task RunCleanupJob(CancellationToken stoppingToken)
     {
         if (await IsWaitingForMigrations(stoppingToken))
@@ -25,7 +39,7 @@ public class IssuingContractCleanupService(ApplicationDbContext dbContext, ILogg
     private async Task DeleteExpiredIssuingContracts(CancellationToken cancellationToken)
     {
         var expiredIssuingContracts = dbContext.Contracts
-            .Where(c => c.EndDate != null && c.EndDate < DateTimeOffset.UtcNow);
+            .Where(c => c.EndDate != null && c.EndDate < UnixTimestamp.Now().Add(-TimeSpan.FromHours(options.MinimumAgeThresholdHours)).ToDateTimeOffset());
 
         dbContext.Contracts.RemoveRange(expiredIssuingContracts);
 
