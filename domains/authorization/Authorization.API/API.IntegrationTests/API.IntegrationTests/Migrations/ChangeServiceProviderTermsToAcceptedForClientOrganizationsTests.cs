@@ -1,4 +1,4 @@
-﻿using API.IntegrationTests.Setup;
+using API.IntegrationTests.Setup;
 using API.Models;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
