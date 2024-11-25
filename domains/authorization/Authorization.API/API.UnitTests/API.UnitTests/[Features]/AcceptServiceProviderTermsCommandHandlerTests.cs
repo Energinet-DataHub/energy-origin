@@ -53,7 +53,7 @@ public class AcceptServiceProviderTermsCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenNoServiceProviderTermsExist_RollsBackTransaction()
+    public async Task Handle_WhenNoOrganizationExists_RollsBackTransaction()
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
         var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
