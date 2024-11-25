@@ -61,12 +61,9 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     private static void ReplaceB2CAuthenticationSchemes(IHost host)
     {
         var authenticationSchemeProvider = host.Services.GetRequiredService<IAuthenticationSchemeProvider>();
-        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme
-            .B2CAuthenticationScheme);
-        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme
-            .B2CClientCredentialsCustomPolicyAuthenticationScheme);
-        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme
-            .B2CMitIDCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme);
 
         var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
             AuthenticationScheme.B2CAuthenticationScheme,
