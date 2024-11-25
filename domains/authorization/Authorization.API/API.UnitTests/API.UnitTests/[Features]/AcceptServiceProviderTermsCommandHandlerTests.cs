@@ -26,7 +26,7 @@ public class AcceptServiceProviderTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenOrganizationNotAcceptedServiceProviderTerms_AcceptsServiceProviderTerms()
     {
-        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
+        var organization = Organization.Create(Any.Tin(), Any.OrganizationName());
         var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
 
@@ -41,7 +41,7 @@ public class AcceptServiceProviderTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenExceptionOccurs_RollsBackTransactionAndDoesNotSaveChanges()
     {
-        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
+        var organization = Organization.Create(Any.Tin(), Any.OrganizationName());
         var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
         mockOrganizationRepository.Query().Returns(_ => throw new Exception("Test exception"));
@@ -55,7 +55,7 @@ public class AcceptServiceProviderTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenNoOrganizationExists_RollsBackTransaction()
     {
-        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
+        var organization = Organization.Create(Any.Tin(), Any.OrganizationName());
         var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
 
         var action = async () => await _handler.Handle(command, CancellationToken.None);
