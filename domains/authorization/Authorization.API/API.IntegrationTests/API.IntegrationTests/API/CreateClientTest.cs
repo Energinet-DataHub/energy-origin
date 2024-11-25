@@ -52,7 +52,7 @@ public class CreateClientTest
         await using var dbContext = new ApplicationDbContext(_options);
         Guid idpClientId = Guid.NewGuid();
 
-        var response = await _api.CreateClient(idpClientId, "Test Client", ClientType.External, "http://localhost:5000");
+        var response = await _api.CreateClient(idpClientId, "Test Client", ClientType.Internal, "http://localhost:5000");
         var client = await response.Content.ReadFromJsonAsync<CreateClientResponse>(_api.SerializerOptions);
         var dbClient = await dbContext.Clients.FirstOrDefaultAsync(x => x.IdpClientId == new IdpClientId(idpClientId));
         var dbOrganization = await dbContext.Organizations.FirstOrDefaultAsync(o => o.Id == dbClient!.OrganizationId);

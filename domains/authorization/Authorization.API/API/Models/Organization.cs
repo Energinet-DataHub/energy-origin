@@ -9,7 +9,7 @@ public class Organization : IEntity<Guid>
 {
     private Organization(
         Guid id,
-        Tin tin,
+        Tin? tin,
         OrganizationName organizationName
     )
     {
@@ -41,7 +41,7 @@ public class Organization : IEntity<Guid>
     public ICollection<Client> Clients { get; init; } = new List<Client>();
 
     public static Organization Create(
-        Tin tin,
+        Tin? tin,
         OrganizationName organizationName
     )
     {
