@@ -144,5 +144,11 @@
         <member name="M:API.Migrations.AddServiceProviderTermsFieldsToOrganizationsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Migrations.ChangeServiceProviderTermsToAcceptedForClientOrganizations">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.ChangeServiceProviderTermsToAcceptedForClientOrganizations.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
