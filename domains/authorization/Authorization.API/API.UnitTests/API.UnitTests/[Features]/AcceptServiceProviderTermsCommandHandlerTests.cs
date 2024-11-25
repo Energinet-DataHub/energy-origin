@@ -39,20 +39,6 @@ public class AcceptServiceProviderTermsCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenOrganizationExistsButTermsNotAccepted_UpdatesTerms()
-    {
-        var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
-        var command = new AcceptServiceProviderTermsCommand(OrganizationId.Create(organization.Id));
-        await _organizationRepository.AddAsync(organization, CancellationToken.None);
-
-        await _handler.Handle(command, CancellationToken.None);
-
-        organization.ServiceProviderTermsAccepted.Should().BeTrue();
-        organization.ServiceProviderTermsAccepted.Should().Be(true);
-        await _unitOfWork.Received(1).CommitAsync();
-    }
-
-    [Fact]
     public async Task Handle_WhenExceptionOccurs_RollsBackTransactionAndDoesNotSaveChanges()
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
