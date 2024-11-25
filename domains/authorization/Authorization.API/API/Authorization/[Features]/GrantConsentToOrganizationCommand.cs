@@ -50,7 +50,7 @@ public class GrantConsentToOrganizationCommandHandler(
             .Select(o => o.ServiceProviderTermsAccepted)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (serviceProviderTermsAccepted == false)
+        if (!serviceProviderTermsAccepted)
         {
             throw new ServiceProviderTermsNotAcceptedException();
         }
