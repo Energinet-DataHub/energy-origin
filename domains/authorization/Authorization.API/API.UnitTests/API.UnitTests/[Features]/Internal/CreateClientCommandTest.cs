@@ -34,7 +34,7 @@ public class CreateClientCommandTest
 
         // Assert Organization
         organizations.Count.Should().Be(1);
-        organizations[0].Tin.Should().Be(Tin.Empty());
+        organizations[0].Tin.Should().Be(null);
         organizations[0].ServiceProviderTermsAccepted.Should().BeTrue();
         organizations[0].ServiceProviderTermsAcceptanceDate.Should().NotBeNull();
         organizations[0].TermsAccepted.Should().BeFalse();
