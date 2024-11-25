@@ -5,33 +5,41 @@ using API.Models;
 using API.UnitTests;
 using API.ValueObjects;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.API;
 
-public class GetClientGrantedConsentsQueryTest : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
+[Collection(IntegrationTestCollection.CollectionName)]
+public class GetClientGrantedConsentsQueryTest
 {
     private readonly Api _api;
     private readonly Guid _sub;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetClientGrantedConsentsQueryTest(IntegrationTestFixture fixture) : base(fixture)
+    public GetClientGrantedConsentsQueryTest(IntegrationTestFixture integrationTestFixture)
     {
+        var connectionString = integrationTestFixture.WebAppFactory.ConnectionString;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(connectionString).Options;
         _sub = Guid.NewGuid();
-        _api = _fixture.WebAppFactory.CreateApi(_sub.ToString());
+        _api = integrationTestFixture.WebAppFactory.CreateApi(_sub.ToString());
     }
 
     [Fact]
     public async Task GivenLoggedInClient_WhenGettingClientConsents_ThenClientConsentsReturned()
     {
+        // Given
+        await using var dbContext = new ApplicationDbContext(_options);
+
         var client = Client.Create(new IdpClientId(_sub), new("Loz"), ClientType.Internal, "https://localhost:5001");
         var organization = Any.Organization();
         var organizationWithClient = Any.OrganizationWithClient(client: client);
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
-        await _fixture.DbContext.Organizations.AddAsync(organization);
-        await _fixture.DbContext.Organizations.AddAsync(organizationWithClient);
-        await _fixture.DbContext.OrganizationConsents.AddAsync(consent);
-        await _fixture.DbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await dbContext.OrganizationConsents.AddAsync(consent);
+        await dbContext.SaveChangesAsync();
 
         // When
         var response = await _api.GetClientConsents();
@@ -47,14 +55,17 @@ public class GetClientGrantedConsentsQueryTest : IntegrationTestBase, IClassFixt
     [Fact]
     public async Task GivenLoggedInClient_WhenGettingClientConsents_WithNoConsents_ThenEmptyResponseReturned()
     {
+        // Given
+        await using var dbContext = new ApplicationDbContext(_options);
+
         var organizationWithClient = Any.OrganizationWithClient();
         var organization = Any.Organization();
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
-        await _fixture.DbContext.Organizations.AddAsync(organizationWithClient);
-        await _fixture.DbContext.Organizations.AddAsync(organization);
-        await _fixture.DbContext.OrganizationConsents.AddAsync(consent);
-        await _fixture.DbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.OrganizationConsents.AddAsync(consent);
+        await dbContext.SaveChangesAsync();
 
         // When
         var response = await _api.GetClientConsents();

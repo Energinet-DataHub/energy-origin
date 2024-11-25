@@ -1,26 +1,33 @@
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
+using API.Models;
 using API.UnitTests;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-public class GetClientQueryTest : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
+[Collection(IntegrationTestCollection.CollectionName)]
+public class GetClientQueryTest
 {
     private readonly Api _api;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetClientQueryTest(IntegrationTestFixture fixture) : base(fixture)
+    public GetClientQueryTest(IntegrationTestFixture integrationTestFixture)
     {
-        _api = _fixture.WebAppFactory.CreateApi();
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
+        _api = integrationTestFixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
     public async Task GivenIdpClientId_WhenGettingClient_ClientReturned()
     {
         var client = Any.Client();
-        await _fixture.DbContext.Clients.AddAsync(client);
-        await _fixture.DbContext.SaveChangesAsync();
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Clients.AddAsync(client);
+        await dbContext.SaveChangesAsync();
         var response = await _api.GetClient(client.IdpClientId.Value);
         response.Should().Be200Ok();
         var content = await response.Content.ReadFromJsonAsync<ClientResponse>();

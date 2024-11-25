@@ -10,27 +10,35 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Controllers;
 
-public class TermsControllerTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
+[Collection(IntegrationTestCollection.CollectionName)]
+public class TermsControllerTests
 {
-    public TermsControllerTests(IntegrationTestFixture fixture) : base(fixture)
+    private readonly IntegrationTestFixture _integrationTestFixture;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
+
+    public TermsControllerTests(IntegrationTestFixture integrationTestFixture)
     {
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
+        _integrationTestFixture = integrationTestFixture;
     }
 
     [Fact]
     public async Task GivenValidRequest_WhenAcceptingTerms_ThenHttpOkAndTermsAccepted()
     {
+        await using var context = new ApplicationDbContext(_options);
 
-        if (!_fixture.DbContext.Terms.Any())
+        if (!context.Terms.Any())
         {
-            _fixture.DbContext.Terms.Add(Terms.Create(1));
-            _fixture.DbContext.SaveChanges();
+            context.Terms.Add(Terms.Create(1));
+            context.SaveChanges();
         }
 
 
-        var terms = _fixture.DbContext.Terms.First();
+        var terms = context.Terms.First();
         var orgCvr = Tin.Create("12345678");
 
-        var userApi = _fixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: orgCvr.Value, termsAccepted: false);
+        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: orgCvr.Value, termsAccepted: false);
 
         var response = await userApi.AcceptTerms();
 
@@ -40,7 +48,7 @@ public class TermsControllerTests : IntegrationTestBase, IClassFixture<Integrati
         result.Should().NotBeNull();
         result!.Message.Should().Be("Terms accepted successfully.");
 
-        var organization = await _fixture.DbContext.Organizations.FirstOrDefaultAsync(o => o.Tin == orgCvr);
+        var organization = await context.Organizations.FirstOrDefaultAsync(o => o.Tin == orgCvr);
         organization.Should().NotBeNull();
         organization!.TermsAccepted.Should().BeTrue();
         organization.TermsVersion.Should().Be(terms.Version);
@@ -49,14 +57,23 @@ public class TermsControllerTests : IntegrationTestBase, IClassFixture<Integrati
     [Fact]
     public async Task GivenExistingOrganizationAndUser_WhenAcceptingTerms_ThenHttpOkAndTermsUpdated()
     {
-        var terms = await _fixture.DbContext.Terms.FirstAsync();
+        await using var context = new ApplicationDbContext(_options);
 
+        if (!context.Terms.Any())
+        {
+            context.Terms.Add(Terms.Create(1));
+            context.SaveChanges();
+        }
+
+        var terms = context.Terms.First();
         var orgCvr = Any.Tin();
+
         var organization = Organization.Create(orgCvr, OrganizationName.Create("Existing Org"));
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
         await SeedOrganizationAndUser(organization, user);
 
-        var userApi = _fixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value, termsAccepted: false);
+        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value,
+            termsAccepted: false);
 
         var response = await userApi.AcceptTerms();
 
@@ -66,8 +83,7 @@ public class TermsControllerTests : IntegrationTestBase, IClassFixture<Integrati
         result.Should().NotBeNull();
         result!.Message.Should().Be("Terms accepted successfully.");
 
-        var updatedOrganization = await _fixture.DbContext.Organizations.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Tin == orgCvr);
+        var updatedOrganization = await context.Organizations.FirstOrDefaultAsync(o => o.Tin == orgCvr);
 
         updatedOrganization.Should().NotBeNull();
         updatedOrganization!.TermsAccepted.Should().BeTrue();
@@ -77,13 +93,16 @@ public class TermsControllerTests : IntegrationTestBase, IClassFixture<Integrati
     [Fact]
     public async Task GivenExistingOrganizationAndUser_WhenRevokingTerms_ThenHttpOkAndTermsUpdated()
     {
-        if (!_fixture.DbContext.Terms.Any())
+        // Given
+        await using var context = new ApplicationDbContext(_options);
+
+        if (!context.Terms.Any())
         {
-            _fixture.DbContext.Terms.Add(Terms.Create(1));
-            _fixture.DbContext.SaveChanges();
+            context.Terms.Add(Terms.Create(1));
+            context.SaveChanges();
         }
 
-        var terms = _fixture.DbContext.Terms.First();
+        var terms = context.Terms.First();
         var orgCvr = Any.Tin();
 
         var organization = Organization.Create(orgCvr, OrganizationName.Create("Existing Org"));
@@ -91,14 +110,13 @@ public class TermsControllerTests : IntegrationTestBase, IClassFixture<Integrati
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
         await SeedOrganizationAndUser(organization, user);
 
-        var userApi = _fixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString(), termsAccepted: true);
+        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString(), termsAccepted: true);
 
         // When
         var response = await userApi.RevokeTerms();
 
         // Then
-        var updatedOrganization = await _fixture.DbContext.Organizations.AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Tin == orgCvr);
+        var updatedOrganization = await context.Organizations.FirstOrDefaultAsync(o => o.Id == organization.Id);
 
         response.Should().Be200Ok();
         var result = await response.Content.ReadFromJsonAsync<RevokeTermsResponse>();
@@ -110,8 +128,9 @@ public class TermsControllerTests : IntegrationTestBase, IClassFixture<Integrati
 
     private async Task SeedOrganizationAndUser(Organization organization, User user)
     {
-        await _fixture.DbContext.Organizations.AddAsync(organization);
-        await _fixture.DbContext.Users.AddAsync(user);
-        await _fixture.DbContext.SaveChangesAsync();
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.SaveChangesAsync();
     }
 }

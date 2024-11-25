@@ -1,18 +1,24 @@
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
+using API.Models;
 using API.UnitTests;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-public class GetOrganizationQueryTest : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
+[Collection(IntegrationTestCollection.CollectionName)]
+public class GetOrganizationQueryTest
 {
     private readonly Api _api;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetOrganizationQueryTest(IntegrationTestFixture fixture) : base(fixture)
+    public GetOrganizationQueryTest(IntegrationTestFixture integrationTestFixture)
     {
-        _api = _fixture.WebAppFactory.CreateApi();
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
+        _api = integrationTestFixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
@@ -20,8 +26,9 @@ public class GetOrganizationQueryTest : IntegrationTestBase, IClassFixture<Integ
     {
         // Given organization
         var organization = Any.Organization();
-        await _fixture.DbContext.Organizations.AddAsync(organization);
-        await _fixture.DbContext.SaveChangesAsync();
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.SaveChangesAsync();
 
         // When getting organization
         var response = await _api.GetOrganization(organization.Id);

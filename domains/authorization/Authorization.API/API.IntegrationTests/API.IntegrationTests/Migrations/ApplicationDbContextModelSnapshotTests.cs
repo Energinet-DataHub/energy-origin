@@ -6,22 +6,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Migrations;
 
-public class ApplicationDbContextModelSnapshotTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ApplicationDbContextModelSnapshotTests
 {
-    private readonly DbContextOptions<ApplicationDbContext> _options;
+    private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public ApplicationDbContextModelSnapshotTests(IntegrationTestFixture fixture) : base(fixture)
+    public ApplicationDbContextModelSnapshotTests(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = _fixture.PostgresContainer.CreateNewDatabase().Result;
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
-        using var dbContext = new ApplicationDbContext(_options);
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseNpgsql(newDatabaseInfo.ConnectionString)
+            .Options;
+
+        using var dbContext = new ApplicationDbContext(options);
         dbContext.Database.Migrate();
     }
 
     [Fact]
     public async Task model_snapshot_matches_database_schema()
     {
-        await using var dbContext = new ApplicationDbContext(_options);
+        await using var dbContext = new ApplicationDbContext(options);
         await dbContext.Database.MigrateAsync();
 
         var modelSnapshot = dbContext.Model;

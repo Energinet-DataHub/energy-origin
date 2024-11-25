@@ -8,21 +8,24 @@ using Npgsql;
 
 namespace API.IntegrationTests.Migrations;
 
-public class AddOrganizationConsentTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
+[Collection(IntegrationTestCollection.CollectionName)]
+public class AddOrganizationConsentTests
 {
-    private readonly DbContextOptions<ApplicationDbContext> _options;
+    private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public AddOrganizationConsentTests(IntegrationTestFixture fixture) : base(fixture)
+    public AddOrganizationConsentTests(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = _fixture.PostgresContainer.CreateNewDatabase().Result;
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseNpgsql(newDatabaseInfo.ConnectionString)
+            .Options;
     }
 
     [Fact]
     public async Task AddTerms_Migration_SetsTermsAcceptedToFalseForExistingOrganizations()
     {
         // Given old client and organization data
-        await using var dbContext = new ApplicationDbContext(_options);
+        await using var dbContext = new ApplicationDbContext(options);
         var migrator = dbContext.GetService<IMigrator>();
 
         await migrator.MigrateAsync("20240730115826_AddDefaultTermsWithUniqueConstraint");

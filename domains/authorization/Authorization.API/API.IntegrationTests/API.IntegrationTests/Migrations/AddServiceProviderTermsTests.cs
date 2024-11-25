@@ -8,14 +8,17 @@ using Npgsql;
 
 namespace API.IntegrationTests.Migrations;
 
-public class AddServiceProviderTermsTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
+[Collection(IntegrationTestCollection.CollectionName)]
+public class AddServiceProviderTermsTests
 {
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AddServiceProviderTermsTests(IntegrationTestFixture fixture) : base(fixture)
+    public AddServiceProviderTermsTests(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = _fixture.PostgresContainer.CreateNewDatabase().Result;
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseNpgsql(newDatabaseInfo.ConnectionString)
+            .Options;
     }
 
     [Fact]

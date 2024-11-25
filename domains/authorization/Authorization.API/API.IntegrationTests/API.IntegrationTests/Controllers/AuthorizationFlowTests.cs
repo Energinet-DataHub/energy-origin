@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using API.Authorization.Controllers;
@@ -5,19 +6,28 @@ using API.IntegrationTests.Setup;
 using API.Models;
 using API.Repository;
 using API.UnitTests;
+using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.Controllers;
 
-public class AuthorizationFlowTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>, IAsyncLifetime
+[Collection(IntegrationTestCollection.CollectionName)]
+public class AuthorizationFlowTests
 {
     private readonly Api _api;
+    private readonly IntegrationTestFixture _integrationTestFixture;
+    private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AuthorizationFlowTests(IntegrationTestFixture fixture) : base(fixture)
+    public AuthorizationFlowTests(IntegrationTestFixture integrationTestFixture)
     {
-        _api = _fixture.WebAppFactory.CreateApi(sub: _fixture.WebAppFactory.IssuerIdpClientId.ToString());
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
+
+        _integrationTestFixture = integrationTestFixture;
+        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: _integrationTestFixture.WebAppFactory.IssuerIdpClientId.ToString());
     }
 
     [Fact]
@@ -26,6 +36,7 @@ public class AuthorizationFlowTests : IntegrationTestBase, IClassFixture<Integra
         // Given
         var user = new { OrgCvr = "87654321", OrgName = Guid.NewGuid().ToString(), Name = Guid.NewGuid().ToString(), Sub = Guid.NewGuid() };
 
+        await using var dbContext = new ApplicationDbContext(_options);
 
         var request = new AuthorizationUserRequest(
             Sub: user.Sub,
@@ -37,7 +48,7 @@ public class AuthorizationFlowTests : IntegrationTestBase, IClassFixture<Integra
         var consentResponse1 = await _api.GetConsentForUser(request);
 
         // When
-        var userApi = _fixture.WebAppFactory.CreateApi(sub: user.Sub.ToString(), orgCvr: user.OrgCvr, orgName: user.OrgName, termsAccepted: false);
+        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.Sub.ToString(), orgCvr: user.OrgCvr, orgName: user.OrgName, termsAccepted: false);
         var termsResponse = await userApi.AcceptTerms();
         var consentResponse2 = await _api.GetConsentForUser(request);
 
@@ -46,7 +57,7 @@ public class AuthorizationFlowTests : IntegrationTestBase, IClassFixture<Integra
         termsResponse.Should().Be200Ok();
         consentResponse2.Should().Be200Ok();
 
-        var organization = _fixture.DbContext.Organizations
+        var organization = dbContext.Organizations
             .Include(x => x.Affiliations)
             .ThenInclude(y => y.User).ToList()
             .Single(x => x.Tin == Tin.Create(user.OrgCvr));
@@ -63,10 +74,11 @@ public class AuthorizationFlowTests : IntegrationTestBase, IClassFixture<Integra
         // Given
         var user = new { OrgCvr = "11223344", OrgName = Guid.NewGuid().ToString(), Name = Guid.NewGuid().ToString(), Sub = Guid.NewGuid() };
 
+        await using var dbContext = new ApplicationDbContext(_options);
         var org = Organization.Create(Tin.Create(user.OrgCvr), OrganizationName.Create(user.OrgName));
-        org.AcceptTerms(_fixture.DbContext.Terms.First());
-        _fixture.DbContext.Organizations.Add(org);
-        await _fixture.DbContext.SaveChangesAsync();
+        org.AcceptTerms(dbContext.Terms.First());
+        dbContext.Organizations.Add(org);
+        await dbContext.SaveChangesAsync();
 
         var request = new AuthorizationUserRequest(
             Sub: user.Sub,
@@ -81,7 +93,7 @@ public class AuthorizationFlowTests : IntegrationTestBase, IClassFixture<Integra
         // Then
         consentResponse.Should().Be200Ok();
 
-        var organization = _fixture.DbContext.Organizations
+        var organization = dbContext.Organizations
             .Include(x => x.Affiliations)
             .ThenInclude(y => y.User).ToList()
             .Single(x => x.Tin == Tin.Create(user.OrgCvr));
@@ -104,17 +116,18 @@ public class AuthorizationFlowTests : IntegrationTestBase, IClassFixture<Integra
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
         var consent2 = OrganizationConsent.Create(organization2.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
-        await _fixture.DbContext.Users.AddAsync(user);
-        await _fixture.DbContext.Organizations.AddAsync(organization);
-        await _fixture.DbContext.Organizations.AddAsync(organization2);
-        await _fixture.DbContext.Affiliations.AddAsync(affiliation);
-        await _fixture.DbContext.Organizations.AddAsync(organizationWithClient);
-        await _fixture.DbContext.OrganizationConsents.AddAsync(consent);
-        await _fixture.DbContext.OrganizationConsents.AddAsync(consent2);
-        await _fixture.DbContext.SaveChangesAsync();
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Organizations.AddAsync(organization2);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await dbContext.OrganizationConsents.AddAsync(consent);
+        await dbContext.OrganizationConsents.AddAsync(consent2);
+        await dbContext.SaveChangesAsync();
 
-        var getClientGrantedConsentsQueryHandler = new GetClientGrantedConsentsQueryHandler(new ClientRepository(_fixture.DbContext));
-        var consentForClientQueryHandler = new GetConsentForClientQueryHandler(new ClientRepository(_fixture.DbContext));
+        var getClientGrantedConsentsQueryHandler = new GetClientGrantedConsentsQueryHandler(new ClientRepository(dbContext));
+        var consentForClientQueryHandler = new GetConsentForClientQueryHandler(new ClientRepository(dbContext));
         var idpClientId = organizationWithClient.Clients.First().IdpClientId;
 
         // When
