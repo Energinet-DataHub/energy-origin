@@ -23,7 +23,7 @@ public class GetServiceProviderTermsTest
     }
 
     [Fact]
-    public async Task GivenKnownOrganizationId_WhenGrantingConsent_200OkReturned()
+    public async Task WhenCallingGetServiceProviderTermsEndpointThenReturnOkResponse()
     {
         var consentReceiverOrganization = Any.Organization();
         var user = Any.User();
