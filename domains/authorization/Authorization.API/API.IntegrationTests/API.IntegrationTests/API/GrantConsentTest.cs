@@ -79,7 +79,6 @@ public class GrantConsentTest
         var response = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
         response.Should().Be200Ok();
 
-        var api2 = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response2 = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
         response2.Should().Be200Ok();
     }
