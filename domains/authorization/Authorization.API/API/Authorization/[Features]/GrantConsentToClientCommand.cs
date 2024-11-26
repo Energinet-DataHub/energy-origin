@@ -57,7 +57,7 @@ public class GrantConsentToClientCommandHandler(
 
         var existingConsent = organizationRepository
             .Query()
-            .Where(o => o.Id == affiliatedOrganization.Id && o.OrganizationReceivedConsents.Any(c =>
+            .Where(o => o.Id == affiliatedOrganization.Id && o.OrganizationGivenConsents.Any(c =>
                 c.ConsentReceiverOrganization.Clients.Any(x => x.IdpClientId == command.IdpClientId)));
 
         if (!await existingConsent.AnyAsync(cancellationToken))
