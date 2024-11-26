@@ -11,10 +11,10 @@ using MediatR;
 
 namespace API.Transfer.Api._Features_;
 
-public class GetTransferAgreementsQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetTransferAgreementsQuery, TransferAgreementProposalOverviewResponse>
+public class GetTransferAgreementsQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetTransferAgreementsQuery, GetTransferAgreementQueryResult>
 {
 
-    public async Task<TransferAgreementProposalOverviewResponse> Handle(GetTransferAgreementsQuery request, CancellationToken cancellationToken)
+    public async Task<GetTransferAgreementQueryResult> Handle(GetTransferAgreementsQuery request, CancellationToken cancellationToken)
     {
         var transferAgreements =
             await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(request.OrganizationId, request.ReceiverTin,  cancellationToken);
@@ -22,24 +22,24 @@ public class GetTransferAgreementsQueryHandler(IUnitOfWork unitOfWork) : IReques
 
         if (!transferAgreementProposals.Any() && !transferAgreements.Any())
         {
-            return new TransferAgreementProposalOverviewResponse(new());
+            return new GetTransferAgreementQueryResult(new());
         }
 
         var transferAgreementDtos = transferAgreements
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, x.SenderName.Value,
+            .Select(x => new GetTransferAgreementQueryResultItem(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, x.SenderName.Value,
                 x.SenderTin.Value, x.ReceiverTin.Value, TransferAgreementTypeMapper.MapCreateTransferAgreementType(x.Type),
                 GetTransferAgreementStatusFromAgreement(x)))
             .ToList();
 
         var transferAgreementProposalDtos = transferAgreementProposals
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, string.Empty,
+            .Select(x => new GetTransferAgreementQueryResultItem(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, string.Empty,
                 string.Empty, x.ReceiverCompanyTin?.Value, TransferAgreementTypeMapper.MapCreateTransferAgreementType(x.Type),
                 GetTransferAgreementStatusFromProposal(x)))
             .ToList();
 
         transferAgreementProposalDtos.AddRange(transferAgreementDtos);
 
-        return new TransferAgreementProposalOverviewResponse(transferAgreementProposalDtos);
+        return new GetTransferAgreementQueryResult(transferAgreementProposalDtos);
     }
 
     private TransferAgreementStatus GetTransferAgreementStatusFromProposal(TransferAgreementProposal transferAgreementProposal)
@@ -70,9 +70,9 @@ public class GetTransferAgreementsQueryHandler(IUnitOfWork unitOfWork) : IReques
 
 }
 
-public record GetTransferAgreementsQuery(Guid OrganizationId, string ReceiverTin) : IRequest<TransferAgreementProposalOverviewResponse>;
+public record GetTransferAgreementsQuery(Guid OrganizationId, string ReceiverTin) : IRequest<GetTransferAgreementQueryResult>;
 
-public record TransferAgreementProposalOverviewDto(
+public record GetTransferAgreementQueryResultItem(
     Guid Id,
     long StartDate,
     long? EndDate,
@@ -83,5 +83,4 @@ public record TransferAgreementProposalOverviewDto(
     TransferAgreementStatus TransferAgreementStatus);
 
 
-public record TransferAgreementProposalOverviewResponse(List<TransferAgreementProposalOverviewDto> Result);
-
+public record GetTransferAgreementQueryResult(List<GetTransferAgreementQueryResultItem> Result);

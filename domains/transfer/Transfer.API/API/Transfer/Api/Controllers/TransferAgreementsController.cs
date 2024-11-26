@@ -90,28 +90,6 @@ public class TransferAgreementsController(
         return Ok(TransferAgreementDtoMapper.MapTransferAgreement(result));
     }
 
-    [HttpGet]
-    [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
-    public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements([FromQuery] Guid organizationId,
-        CancellationToken cancellationToken)
-    {
-        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
-
-        var transferAgreements =
-            await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(organizationId,
-                identityDescriptor.OrganizationCvr!, cancellationToken);
-
-        if (!transferAgreements.Any())
-        {
-            return Ok(new TransferAgreementsResponse(new List<TransferAgreementDto>()));
-        }
-
-        var listResponse = transferAgreements.Select(TransferAgreementDtoMapper.MapTransferAgreement)
-            .ToList();
-
-        return Ok(new TransferAgreementsResponse(listResponse));
-    }
-
     [HttpPut("{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
@@ -223,27 +201,39 @@ public class TransferAgreementsController(
     }
 
     [HttpGet("overview")]
-    [ProducesResponseType(typeof(TransferAgreementProposalOverviewResponse), 200)]
-    public async Task<ActionResult<TransferAgreementProposalOverviewResponse>> GetOwnTransferAgreementProposal(
+    [ProducesResponseType(typeof(GetTransferAgreementQueryResult), 200)]
+    public async Task<ActionResult<GetTransferAgreementQueryResult>> GetOwnTransferAgreementProposal(
         CancellationToken cancellationToken)
     {
         var queryResult =
             await mediator.Send(new GetTransferAgreementsQuery(identityDescriptor.OrganizationId,
                 identityDescriptor.OrganizationCvr!));
 
-        return Ok(queryResult);
+        var dto = queryResult
+            .Result
+            .Select(x =>
+                new TransferAgreementOverviewDto(x.Id, x.StartDate, x.EndDate, x.SenderName, x.SenderTin, x.ReceiverTin, x.Type, x.TransferAgreementStatus))
+            .ToList();
+
+        return Ok(new TransferAgreementOverviewResponse(dto));
     }
 
     [HttpGet("overview/consent")]
-    [ProducesResponseType(typeof(TransferAgreementProposalOverviewResponse), 200)]
-    public async Task<ActionResult<TransferAgreementProposalOverviewResponse>> GetTransferAgreementProposal(
+    [ProducesResponseType(typeof(GetTransferAgreementQueryResult), 200)]
+    public async Task<ActionResult<GetTransferAgreementQueryResult>> GetTransferAgreementProposal(
         CancellationToken cancellationToken)
     {
         var orgIds = identityDescriptor.AuthorizedOrganizationIds;
 
         var queryResult = await mediator.Send(new GetConsentTransferAgreementsQuery(orgIds));
 
-        return Ok(queryResult);
+        var dto = queryResult
+            .Result
+            .Select(x =>
+                new TransferAgreementOverviewDto(x.Id, x.StartDate, x.EndDate, x.SenderName, x.SenderTin, x.ReceiverTin, x.Type, x.TransferAgreementStatus))
+            .ToList();
+
+        return Ok(new TransferAgreementOverviewResponse(dto));
     }
 
     [HttpPost("create/")]

@@ -50,13 +50,14 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
         var tin = Tin.Create(receiverTin);
         var orgId = OrganizationId.Create(organizationId);
         return await context.TransferAgreements
-            .Where(ta => ta.SenderId == orgId || ta.ReceiverTin == tin)
+            .Where(ta => ta.SenderId == orgId || ta.ReceiverTin == tin || ta.ReceiverId == orgId)
             .ToListAsync(cancellationToken);
     }
 
     public async Task<List<TransferAgreement>> GetTransferAgreementsList(IList<Guid> organizationIds, CancellationToken cancellationToken)
     {
         var orgIds = organizationIds.Select(OrganizationId.Create).ToList();
+        var t = await context.TransferAgreements.ToListAsync(cancellationToken);
         return await context.TransferAgreements
             .Where(ta =>  orgIds.Contains(ta.SenderId) || (ta.ReceiverId != null && orgIds.Contains(ta.ReceiverId)))
             .ToListAsync(cancellationToken);

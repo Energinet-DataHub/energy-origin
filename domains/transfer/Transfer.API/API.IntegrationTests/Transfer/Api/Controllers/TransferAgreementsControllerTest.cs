@@ -20,7 +20,6 @@ using VerifyTests;
 using VerifyXunit;
 using Xunit;
 using Xunit.Abstractions;
-using TransferAgreementsResponse = API.Transfer.Api.Dto.Responses.TransferAgreementsResponse;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
@@ -372,53 +371,6 @@ public class TransferAgreementsControllerTests
     }
 
     [Fact]
-    public async Task GetBySubjectId_ShouldReturnTransferAgreements_WhenUserHasTransferAgreements()
-    {
-        var sub = Guid.NewGuid();
-        var orgId = Any.OrganizationId();
-        var tin = Tin.Create("11223366");
-
-        await SeedTransferAgreements(
-            new List<TransferAgreement>()
-            {
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    StartDate = UnixTimestamp.Now(),
-                    EndDate = UnixTimestamp.Now().AddDays(1),
-                    SenderId = Any.OrganizationId(),
-                    SenderName = OrganizationName.Create("nrgi A/S"),
-                    SenderTin = Tin.Create("44332211"),
-                    ReceiverName = OrganizationName.Create("Producent A/S"),
-                    ReceiverTin = tin,
-                    ReceiverReference = Any.Guid()
-                },
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    StartDate = UnixTimestamp.Now().AddDays(2),
-                    EndDate = UnixTimestamp.Now().AddDays(3),
-                    SenderId = orgId,
-                    SenderName = OrganizationName.Create("Producent A/S"),
-                    SenderTin = tin,
-                    ReceiverName = OrganizationName.Create("Test A/S"),
-                    ReceiverTin = Tin.Create("87654321"),
-                    ReceiverReference = Guid.NewGuid()
-                }
-            });
-
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub: sub, orgId: orgId.Value, tin: tin.Value);
-        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements?organizationId={orgId}");
-
-        response.EnsureSuccessStatusCode();
-        var transferAgreements = await response.Content.ReadAsStringAsync();
-        var transferAgreementsResponse = JsonConvert.DeserializeObject<TransferAgreementsResponse>(transferAgreements);
-
-        transferAgreementsResponse.Should().NotBeNull();
-        transferAgreementsResponse!.Result.Should().HaveCount(2);
-    }
-
-    [Fact]
     public async Task EditEndDate_ShouldReturnConflict_WhenNewEndDateCausesOverlap()
     {
         var sub = Guid.NewGuid();
@@ -694,22 +646,23 @@ public class TransferAgreementsControllerTests
     }
 
     [Fact]
-    public async Task GetConsentTransferAgreement()
+    public async Task GetOnlyConsentTransferAgreement()
     {
-                var sub = Guid.NewGuid();
+        var sub = Guid.NewGuid();
         var orgId = Any.OrganizationId();
+        var consentOrgId = Any.OrganizationId();
         var tin = Tin.Create("55667788");
         var now = UnixTimestamp.Now();
 
         await SeedTransferAgreements(
             new List<TransferAgreement>()
             {
-                new() // Active
+                new() // Inactive Own TA
                 {
                     Id = Guid.NewGuid(),
-                    StartDate = now.AddHours(-1),
-                    EndDate = now.AddDays(1),
-                    SenderId = OrganizationId.Create(Guid.NewGuid()),
+                    StartDate = now.AddHours(4),
+                    EndDate = now.AddDays(5),
+                    SenderId = orgId,
                     SenderName = OrganizationName.Create("nrgi A/S"),
                     SenderTin = Tin.Create("44332233"),
                     ReceiverName = OrganizationName.Create("Producent A/S"),
@@ -717,16 +670,30 @@ public class TransferAgreementsControllerTests
                     ReceiverReference = Guid.NewGuid(),
                     Type = TransferAgreementType.TransferAllCertificates
                 },
-                new() // Inactive
+                new() // Active
+                {
+                    Id = Guid.NewGuid(),
+                    StartDate = now.AddHours(-1),
+                    EndDate = now.AddDays(1),
+                    SenderId = consentOrgId,
+                    SenderName = OrganizationName.Create("nrgi A/S"),
+                    SenderTin = Tin.Create("44332233"),
+                    ReceiverName = OrganizationName.Create("Producent A/S"),
+                    ReceiverTin = tin,
+                    ReceiverReference = Guid.NewGuid(),
+                    Type = TransferAgreementType.TransferAllCertificates
+                },
+                new() // Inactive Receiver
                 {
                     Id = Guid.NewGuid(),
                     StartDate = now.AddDays(2),
                     EndDate = now.AddDays(3),
-                    SenderId = orgId,
+                    SenderId = Any.OrganizationId(),
                     SenderName = OrganizationName.Create("Producent A/S"),
                     SenderTin = tin,
                     ReceiverName = OrganizationName.Create("Test A/S"),
                     ReceiverTin = Tin.Create("87654321"),
+                    ReceiverId = consentOrgId,
                     ReceiverReference = Guid.NewGuid(),
                     Type = TransferAgreementType.TransferCertificatesBasedOnConsumption
                 }
@@ -742,7 +709,7 @@ public class TransferAgreementsControllerTests
                 StartDate = now.AddDays(1),
                 SenderCompanyName = OrganizationName.Create("SomeOrg"),
                 ReceiverCompanyTin = Tin.Create("11223342"),
-                SenderCompanyId = orgId,
+                SenderCompanyId = consentOrgId,
                 SenderCompanyTin = tin,
                 Type = TransferAgreementType.TransferAllCertificates
             },
@@ -754,18 +721,18 @@ public class TransferAgreementsControllerTests
                 StartDate = now,
                 SenderCompanyName = OrganizationName.Create("SomeOrg"),
                 ReceiverCompanyTin = Tin.Create("11223342"),
-                SenderCompanyId = orgId,
+                SenderCompanyId = consentOrgId,
                 SenderCompanyTin = tin,
                 Type = TransferAgreementType.TransferCertificatesBasedOnConsumption
             }
         });
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub: sub, orgId: orgId.Value, tin: tin.Value);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub: sub, orgId: orgId.Value, orgIds: consentOrgId.Value.ToString(), tin: tin.Value);
         var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/overview/consent");
 
         response.EnsureSuccessStatusCode();
         var transferAgreements = await response.Content.ReadAsStringAsync();
-        var transferAgreementsResponse = JsonConvert.DeserializeObject<TransferAgreementProposalOverviewResponse>(transferAgreements);
+        var transferAgreementsResponse = JsonConvert.DeserializeObject<GetTransferAgreementQueryResult>(transferAgreements);
 
         transferAgreementsResponse.Should().NotBeNull();
         transferAgreementsResponse!.Result.Should().HaveCount(4);
@@ -782,10 +749,11 @@ public class TransferAgreementsControllerTests
     }
 
     [Fact]
-    public async Task GetOverviewBySubjectId_ShouldReturnTransferAgreementsOverview_WhenUserHasTransferAgreements()
+    public async Task GetOwnOverviewBySubjectId_ShouldReturnTransferAgreementsOverview_WhenUserHasTransferAgreements()
     {
         var sub = Guid.NewGuid();
         var orgId = Any.OrganizationId();
+        var consentOrgId = Any.OrganizationId();
         var tin = Tin.Create("55667788");
         var now = UnixTimestamp.Now();
 
@@ -817,7 +785,20 @@ public class TransferAgreementsControllerTests
                     ReceiverTin = Tin.Create("87654321"),
                     ReceiverReference = Guid.NewGuid(),
                     Type = TransferAgreementType.TransferCertificatesBasedOnConsumption
-                }
+                },
+                new() // Inactive Consent TA
+                {
+                Id = Guid.NewGuid(),
+                StartDate = now.AddDays(2),
+                EndDate = now.AddDays(3),
+                SenderId = consentOrgId,
+                SenderName = OrganizationName.Create("Producent A/S"),
+                SenderTin = tin,
+                ReceiverName = OrganizationName.Create("Test A/S"),
+                ReceiverTin = Tin.Create("87654321"),
+                ReceiverReference = Guid.NewGuid(),
+                Type = TransferAgreementType.TransferCertificatesBasedOnConsumption
+            }
             });
 
         await SeedTransferAgreementProposals(new List<TransferAgreementProposal>
@@ -848,12 +829,12 @@ public class TransferAgreementsControllerTests
             }
         });
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub: sub, orgId: orgId.Value, tin: tin.Value);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub: sub, orgId: orgId.Value, orgIds: consentOrgId.Value.ToString(), tin: tin.Value);
         var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/overview?organizationId={orgId}");
 
         response.EnsureSuccessStatusCode();
         var transferAgreements = await response.Content.ReadAsStringAsync();
-        var transferAgreementsResponse = JsonConvert.DeserializeObject<TransferAgreementProposalOverviewResponse>(transferAgreements);
+        var transferAgreementsResponse = JsonConvert.DeserializeObject<GetTransferAgreementQueryResult>(transferAgreements);
 
         transferAgreementsResponse.Should().NotBeNull();
         transferAgreementsResponse!.Result.Should().HaveCount(4);
