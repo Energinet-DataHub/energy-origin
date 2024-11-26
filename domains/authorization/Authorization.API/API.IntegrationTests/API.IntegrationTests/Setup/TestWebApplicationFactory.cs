@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using API.Authorization.Controllers;
+using API.Database.Postgres;
 using API.Models;
 using API.Options;
 using EnergyOrigin.Setup;
@@ -17,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using MsOptions = Microsoft.Extensions.Options;
 
 namespace API.IntegrationTests.Setup;
 
@@ -35,6 +37,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         {
             services.RemoveDbContext<ApplicationDbContext>();
             services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(ConnectionString); });
+
+            // We should ensure DB UP has run here :)
+            services.Configure<PostgresOptions>(options =>
+            {
+                options.ConnectionString = ConnectionString;
+            });
+            services.AddSingleton<IRepositoryUpgrader, PostgresUpgrader>();
 
             services.EnsureDbCreated<ApplicationDbContext>();
             services.Configure<RabbitMqOptions>(options =>
@@ -179,6 +188,10 @@ public static class ServiceCollectionExtensions
         using var scope = services.BuildServiceProvider().CreateScope();
         var serviceProvider = scope.ServiceProvider;
         var context = serviceProvider.GetRequiredService<T>();
-        context.Database.EnsureCreated();
+        var pp = serviceProvider.GetRequiredService<IRepositoryUpgrader>();
+
+        pp.Upgrade().GetAwaiter().GetResult();
+
+        //context.Database.EnsureCreated();
     }
 }
