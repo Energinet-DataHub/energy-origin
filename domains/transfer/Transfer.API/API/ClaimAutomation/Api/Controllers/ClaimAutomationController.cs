@@ -35,7 +35,7 @@ public class ClaimAutomationController(IUnitOfWork unitOfWork, AccessDescriptor 
         {
             var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt.ToUnixTimeSeconds());
 
-            return Ok(claimAutomationArgumentDto);
+            return CreatedAtAction(nameof(GetClaimAutomation), null, claimAutomationArgumentDto);
         }
 
         var claimAutomationArgument = new ClaimAutomationArgument(organizationId, DateTimeOffset.UtcNow);
@@ -70,7 +70,7 @@ public class ClaimAutomationController(IUnitOfWork unitOfWork, AccessDescriptor 
 
         if (claim == null)
         {
-            return NotFound();
+            return NoContent();
         }
 
         await unitOfWork.ClaimAutomationRepository.DeleteClaimAutomationArgument(claim);
