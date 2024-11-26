@@ -54,9 +54,12 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<List<TransferAgreement>> GetAllTransferAgreements(CancellationToken cancellationToken)
+    public async Task<List<TransferAgreement>> GetTransferAgreementsList(IList<Guid> organizationIds, CancellationToken cancellationToken)
     {
-        return await context.TransferAgreements.ToListAsync(cancellationToken);
+        var orgIds = organizationIds.Select(OrganizationId.Create).ToList();
+        return await context.TransferAgreements
+            .Where(ta =>  orgIds.Contains(ta.SenderId) || (ta.ReceiverId != null && orgIds.Contains(ta.ReceiverId)))
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<TransferAgreement?> GetTransferAgreement(Guid id, string subject, string tin, CancellationToken cancellationToken)
@@ -102,6 +105,14 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
         var orgId = OrganizationId.Create(organizationId);
         return await context.TransferAgreementProposals
             .Where(p => p.SenderCompanyId == orgId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<TransferAgreementProposal>> GetTransferAgreementProposals(IList<Guid> organizationIds, CancellationToken cancellationToken)
+    {
+        var orgIds = organizationIds.Select(OrganizationId.Create).ToList();
+        return await context.TransferAgreementProposals
+            .Where(p => orgIds.Contains(p.SenderCompanyId))
             .ToListAsync(cancellationToken);
     }
 }

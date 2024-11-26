@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using API.Transfer.Api._Features_;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using DataContext;
@@ -690,6 +691,94 @@ public class TransferAgreementsControllerTests
         using var scope = factory.Services.CreateScope();
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
         await TestData.SeedTransferAgreementProposals(dbContext, transferAgreementProposals);
+    }
+
+    [Fact]
+    public async Task GetConsentTransferAgreement()
+    {
+                var sub = Guid.NewGuid();
+        var orgId = Any.OrganizationId();
+        var tin = Tin.Create("55667788");
+        var now = UnixTimestamp.Now();
+
+        await SeedTransferAgreements(
+            new List<TransferAgreement>()
+            {
+                new() // Active
+                {
+                    Id = Guid.NewGuid(),
+                    StartDate = now.AddHours(-1),
+                    EndDate = now.AddDays(1),
+                    SenderId = OrganizationId.Create(Guid.NewGuid()),
+                    SenderName = OrganizationName.Create("nrgi A/S"),
+                    SenderTin = Tin.Create("44332233"),
+                    ReceiverName = OrganizationName.Create("Producent A/S"),
+                    ReceiverTin = tin,
+                    ReceiverReference = Guid.NewGuid(),
+                    Type = TransferAgreementType.TransferAllCertificates
+                },
+                new() // Inactive
+                {
+                    Id = Guid.NewGuid(),
+                    StartDate = now.AddDays(2),
+                    EndDate = now.AddDays(3),
+                    SenderId = orgId,
+                    SenderName = OrganizationName.Create("Producent A/S"),
+                    SenderTin = tin,
+                    ReceiverName = OrganizationName.Create("Test A/S"),
+                    ReceiverTin = Tin.Create("87654321"),
+                    ReceiverReference = Guid.NewGuid(),
+                    Type = TransferAgreementType.TransferCertificatesBasedOnConsumption
+                }
+            });
+
+        await SeedTransferAgreementProposals(new List<TransferAgreementProposal>
+        {
+            new () // Proposal
+            {
+                CreatedAt = now.AddDays(-1),
+                EndDate = now.AddDays(5),
+                Id = Guid.NewGuid(),
+                StartDate = now.AddDays(1),
+                SenderCompanyName = OrganizationName.Create("SomeOrg"),
+                ReceiverCompanyTin = Tin.Create("11223342"),
+                SenderCompanyId = orgId,
+                SenderCompanyTin = tin,
+                Type = TransferAgreementType.TransferAllCertificates
+            },
+            new () // Expired
+            {
+                CreatedAt = now.AddDays(-16),
+                EndDate = now.AddDays(5),
+                Id = Guid.NewGuid(),
+                StartDate = now,
+                SenderCompanyName = OrganizationName.Create("SomeOrg"),
+                ReceiverCompanyTin = Tin.Create("11223342"),
+                SenderCompanyId = orgId,
+                SenderCompanyTin = tin,
+                Type = TransferAgreementType.TransferCertificatesBasedOnConsumption
+            }
+        });
+
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub: sub, orgId: orgId.Value, tin: tin.Value);
+        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/overview/consent");
+
+        response.EnsureSuccessStatusCode();
+        var transferAgreements = await response.Content.ReadAsStringAsync();
+        var transferAgreementsResponse = JsonConvert.DeserializeObject<TransferAgreementProposalOverviewResponse>(transferAgreements);
+
+        transferAgreementsResponse.Should().NotBeNull();
+        transferAgreementsResponse!.Result.Should().HaveCount(4);
+        transferAgreementsResponse.Result.Where(ta => ta.Type == TransferAgreementTypeDto.TransferAllCertificates).Should().HaveCount(2);
+        transferAgreementsResponse.Result.Where(ta => ta.Type == TransferAgreementTypeDto.TransferCertificatesBasedOnConsumption).Should().HaveCount(2);
+        transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Active)
+            .Should().HaveCount(1);
+        transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Inactive)
+            .Should().HaveCount(1);
+        transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.Proposal)
+            .Should().HaveCount(1);
+        transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.ProposalExpired)
+            .Should().HaveCount(1);
     }
 
     [Fact]
