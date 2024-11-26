@@ -57,7 +57,6 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
     public async Task<List<TransferAgreement>> GetTransferAgreementsList(IList<Guid> organizationIds, CancellationToken cancellationToken)
     {
         var orgIds = organizationIds.Select(OrganizationId.Create).ToList();
-        var t = await context.TransferAgreements.ToListAsync(cancellationToken);
         return await context.TransferAgreements
             .Where(ta =>  orgIds.Contains(ta.SenderId) || (ta.ReceiverId != null && orgIds.Contains(ta.ReceiverId)))
             .ToListAsync(cancellationToken);
