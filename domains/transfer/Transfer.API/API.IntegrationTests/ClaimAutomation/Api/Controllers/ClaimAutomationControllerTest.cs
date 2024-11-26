@@ -32,12 +32,25 @@ public class ClaimAutomationControllerTest
     }
 
     [Fact]
-    public async Task StopProcess_WhenNoClaimProcessExists_ReturnsNotFound()
+    public async Task StopProcessTwice_WhenClaimProcessExists_ReturnsNoContent()
+    {
+        var subject = Guid.NewGuid();
+
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
+        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        var result1 = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}");
+        result1.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var result2 = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}");
+        result2.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task StopProcess_WhenNoClaimProcessExists_ReturnsNoContent()
     {
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
         var result = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}");
-        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        result.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
@@ -50,14 +63,26 @@ public class ClaimAutomationControllerTest
     }
 
     [Fact]
-    public async Task StartProcess_WhenClaimProcessAlreadyStarted_ReturnsOk()
+    public async Task StartProcessTwice_WhenNoClaimProcessHasStarted_ReturnsCreatedAt()
+    {
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var result1 = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        result1.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var result2 = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        result2.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task StartProcess_WhenClaimProcessAlreadyStarted_ReturnsCreatedAt()
     {
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
         await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
 
         var result = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
-        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     [Fact]
