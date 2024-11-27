@@ -77,6 +77,7 @@ public class Any
         var organization = Organization(tin);
 
         organization.Clients.Add(client ?? Client());
+        organization.AcceptServiceProviderTerms();
 
         return organization;
     }
