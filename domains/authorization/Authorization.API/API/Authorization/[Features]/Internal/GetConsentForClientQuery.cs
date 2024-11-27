@@ -35,7 +35,7 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
                     client.ClientType.ToString(),
                     client.Name.Value,
                 client.Organization!.OrganizationReceivedConsents.Select(x => x.ConsentGiverOrganizationId),
-                 Guid.Empty,
+                client.Organization.Id,
                     Scope)
             )
             .FirstOrDefaultAsync(cancellationToken);
