@@ -58,7 +58,7 @@ public class Organization : IEntity<Guid>
         ServiceProviderTermsAcceptanceDate = UnixTimestamp.Now();
     }
 
-    public void InvalidateServiceProviderTerms() => ServiceProviderTermsAccepted = false;
+    public void RevokeServiceProviderTerms() => ServiceProviderTermsAccepted = false;
 
     public void AcceptTerms(Terms terms)
     {
