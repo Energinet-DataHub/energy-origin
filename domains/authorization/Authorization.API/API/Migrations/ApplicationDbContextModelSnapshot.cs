@@ -80,6 +80,14 @@ namespace API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset?>("ServiceProviderTermsAcceptanceDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("ServiceProviderTermsAccepted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<DateTimeOffset?>("TermsAcceptanceDate")
                         .HasColumnType("timestamp with time zone");
 

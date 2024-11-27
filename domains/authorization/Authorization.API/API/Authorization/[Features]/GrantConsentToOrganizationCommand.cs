@@ -11,7 +11,7 @@ using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ForbiddenException = API.Authorization.Exceptions.ForbiddenException;
-using OrganizationId = API.ValueObjects.OrganizationId;
+using OrganizationId = EnergyOrigin.Domain.ValueObjects.OrganizationId;
 
 namespace API.Authorization._Features_;
 
@@ -43,6 +43,16 @@ public class GrantConsentToOrganizationCommandHandler(
         if (affiliatedOrganization is null)
         {
             throw new ForbiddenException();
+        }
+
+        var serviceProviderTermsAccepted = await organizationRepository.Query()
+            .Where(o => o.Id == consentReceiverOrganizationId)
+            .Select(o => o.ServiceProviderTermsAccepted)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (!serviceProviderTermsAccepted)
+        {
+            throw new ServiceProviderTermsNotAcceptedException();
         }
 
         if (affiliatedOrganization.Id == command.OrganizationId.Value)

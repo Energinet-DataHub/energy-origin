@@ -28,14 +28,19 @@ public class GrantConsentToClientCommandHandler(
         var idpUserId = IdpUserId.Create(command.IdpUserId);
         var organizationTin = Tin.Create(command.OrganizationCvr);
 
-        var clientOrganizationId = await clientRepository.Query()
+        var clientOrganizationInfo = await clientRepository.Query()
             .Where(it => it.IdpClientId == command.IdpClientId)
-            .Select(x => x.OrganizationId)
+            .Select(x => new { x.OrganizationId, x.Organization!.ServiceProviderTermsAccepted })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (clientOrganizationId == null)
+        if (clientOrganizationInfo == null)
         {
             throw new EntityNotFoundException(command.IdpClientId.Value.ToString(), nameof(Client));
+        }
+
+        if (clientOrganizationInfo.ServiceProviderTermsAccepted == false)
+        {
+            throw new ServiceProviderTermsNotAcceptedException();
         }
 
         var affiliatedOrganization = await userRepository.Query()
@@ -50,7 +55,7 @@ public class GrantConsentToClientCommandHandler(
             throw new ForbiddenException();
         }
 
-        if (clientOrganizationId == affiliatedOrganization.Id)
+        if (clientOrganizationInfo.OrganizationId == affiliatedOrganization.Id)
         {
             throw new UnableToGrantConsentToOwnOrganizationException();
         }
@@ -62,7 +67,12 @@ public class GrantConsentToClientCommandHandler(
 
         if (!await existingConsent.AnyAsync(cancellationToken))
         {
-            var organizationConsent = OrganizationConsent.Create(affiliatedOrganization.Id, clientOrganizationId.Value, DateTimeOffset.UtcNow);
+            var organizationConsent = OrganizationConsent.Create(
+                affiliatedOrganization.Id,
+                clientOrganizationInfo.OrganizationId!.Value,
+                DateTimeOffset.UtcNow
+                );
+
             await organizationConsentRepository.AddAsync(organizationConsent, cancellationToken);
         }
 

@@ -16,7 +16,9 @@ public class AddTermsMigrationTests
     public AddTermsMigrationTests(IntegrationTestFixture integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
-        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseNpgsql(newDatabaseInfo.ConnectionString)
+            .Options;
     }
 
     [Fact]
@@ -32,14 +34,37 @@ public class AddTermsMigrationTests
         var applyMigration = () => migrator.MigrateAsync("20240711101829_AddTermsWithOutbox");
         await applyMigration.Should().NotThrowAsync();
 
-        var organizations = await dbContext.Organizations.ToListAsync();
-        organizations.Should().NotBeEmpty();
-        organizations.Should().AllSatisfy(org =>
+        var connectionString = dbContext.Database.GetConnectionString();
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+
+        var commandText = @"
+            SELECT ""TermsAccepted"", ""TermsVersion"", ""TermsAcceptanceDate""
+            FROM ""Organizations""";
+
+        await using var command = new NpgsqlCommand(commandText, connection);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        bool hasRows = false;
+        while (await reader.ReadAsync())
         {
-            org.TermsAccepted.Should().BeFalse();
-            org.TermsVersion.Should().BeNull();
-            org.TermsAcceptanceDate.Should().BeNull();
-        });
+            hasRows = true;
+
+            var termsAccepted = reader.GetBoolean(reader.GetOrdinal("TermsAccepted"));
+            var termsVersionOrdinal = reader.GetOrdinal("TermsVersion");
+            var termsAcceptanceDateOrdinal = reader.GetOrdinal("TermsAcceptanceDate");
+
+            int? termsVersion = reader.IsDBNull(termsVersionOrdinal) ? null : reader.GetInt32(termsVersionOrdinal);
+            DateTimeOffset? termsAcceptanceDate = reader.IsDBNull(termsAcceptanceDateOrdinal)
+                ? null
+                : reader.GetFieldValue<DateTimeOffset>(termsAcceptanceDateOrdinal);
+
+            termsAccepted.Should().BeFalse();
+            termsVersion.Should().BeNull();
+            termsAcceptanceDate.Should().BeNull();
+        }
+
+        hasRows.Should().BeTrue();
     }
 
     private static async Task InsertOldOrganization(ApplicationDbContext dbContext, Guid id, string tin, string name)

@@ -29,6 +29,11 @@ public class Api : IAsyncLifetime
         return await _client.PostAsJsonAsync("/api/authorization/consent/client/grant", request);
     }
 
+    public async Task<HttpResponseMessage> GetServiceProviderTerms()
+    {
+        return await _client.GetAsync("/api/authorization/service-provider-terms");
+    }
+
     public async Task<HttpResponseMessage> GrantConsentToOrganization(Guid organizationId)
     {
         var request = new GrantConsentToOrganizationRequest(organizationId);

@@ -50,6 +50,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Organization>().Property(o => o.TermsVersion);
 
         modelBuilder.Entity<Organization>().Property(o => o.TermsAcceptanceDate);
+
+        modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsAccepted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsAcceptanceDate).HasConversion(new NullableUnixTimestampValueToDateTimeOffsetConverter());
     }
 
     private static void ConfigureClientTable(ModelBuilder modelBuilder)

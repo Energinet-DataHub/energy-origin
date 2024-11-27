@@ -3,11 +3,9 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using API.Authorization.Controllers;
 using API.Models;
 using API.Options;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -17,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Setup;
 
@@ -62,28 +61,25 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     private static void ReplaceB2CAuthenticationSchemes(IHost host)
     {
         var authenticationSchemeProvider = host.Services.GetRequiredService<IAuthenticationSchemeProvider>();
-        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
-            .B2CAuthenticationScheme);
-        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
-            .B2CClientCredentialsCustomPolicyAuthenticationScheme);
-        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
-            .B2CMitIDCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme);
 
         var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
+            AuthenticationScheme.B2CAuthenticationScheme,
+            AuthenticationScheme.B2CAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CScheme);
 
         var b2CMitIdScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CMitIdScheme);
 
         var b2CClientCredentialsScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
@@ -115,7 +111,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         using RSA rsa = RSA.Create(2048 * 2);
         var req = new CertificateRequest("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         req.CertificateExtensions.Add(
-            new X509KeyUsageExtension(System.Security.Cryptography.X509Certificates.X509KeyUsageFlags.DigitalSignature,
+            new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature,
                 true));
         var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
 
