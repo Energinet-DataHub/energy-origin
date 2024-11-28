@@ -21,7 +21,7 @@ public class EnergyMeasuredIntegrationEventMapperTest
         var gsrn = Any.Gsrn();
         var start = DateTimeOffset.Now.AddDays(-1);
         var mappedEvents = _sut.MapToIntegrationEvents(new MeteringPoint(),
-            new MeteringPointSyncInfo(gsrn, start, Guid.NewGuid().ToString(), MeteringPointType.Production, "DK1", Guid.NewGuid(), Any.Technology()),
+            new MeteringPointSyncInfo(gsrn, start, null, Guid.NewGuid().ToString(), MeteringPointType.Production, "DK1", Guid.NewGuid(), Any.Technology()),
             new List<Measurement>());
 
         mappedEvents.Should().BeEmpty();
@@ -37,7 +37,7 @@ public class EnergyMeasuredIntegrationEventMapperTest
         var measurement = Any.Measurement(gsrn, DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeSeconds(), 5);
         var technology = Any.Technology();
         var recipientId = Guid.NewGuid();
-        var syncInfo = new MeteringPointSyncInfo(gsrn, start, Guid.NewGuid().ToString(), MeteringPointType.Production, "DK1", recipientId,
+        var syncInfo = new MeteringPointSyncInfo(gsrn, start, null, Guid.NewGuid().ToString(), MeteringPointType.Production, "DK1", recipientId,
             technology);
 
         // When mapping to event

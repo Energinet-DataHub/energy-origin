@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
+using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using Measurements.V1;
 
 namespace API.UnitTests;
@@ -55,6 +57,16 @@ public class Any
             DateTo = dateFrom + 3600,
             Quantity = value,
             Quality = EnergyQuantityValueQuality.Measured
+        };
+    }
+
+    public static CertificateIssuingContract CertificateIssuingContract(Gsrn gsrn, UnixTimestamp start, UnixTimestamp? end)
+    {
+        return new CertificateIssuingContract()
+        {
+            GSRN = gsrn.Value,
+            StartDate = start.ToDateTimeOffset(),
+            EndDate = end?.ToDateTimeOffset()
         };
     }
 }

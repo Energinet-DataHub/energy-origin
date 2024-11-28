@@ -33,6 +33,7 @@ public class SlidingWindowStateTests
         new(
             Gsrn: gsrn,
             StartSyncDate: DateTimeOffset.Now.AddDays(-1),
+            EndSyncDate: null,
             MeteringPointOwner: "SomeMeteringPointOwner",
             MeteringPointType.Production,
             "DK1",
