@@ -44,7 +44,10 @@ public class MeasurementsSyncService
         CancellationToken stoppingToken)
     {
         var minimumAgeThresholdInHours = _options.Value.MinimumAgeThresholdHours;
-        var pointInTimeItShouldSyncUpTo = UnixTimestamp.Now().Add(TimeSpan.FromHours(-minimumAgeThresholdInHours)).RoundToLatestHour();
+
+        var latestPossibleSyncTimestamp = UnixTimestamp.Now().Add(TimeSpan.FromHours(-minimumAgeThresholdInHours)).RoundToLatestHour();
+        var contractEndSyncTimestamp = syncInfo.EndSyncDate is not null ? UnixTimestamp.Create(syncInfo.EndSyncDate.Value) : UnixTimestamp.Create(DateTimeOffset.MaxValue);
+        var pointInTimeItShouldSyncUpTo = UnixTimestamp.Min(latestPossibleSyncTimestamp, contractEndSyncTimestamp);
 
         var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, pointInTimeItShouldSyncUpTo, stoppingToken);
         var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });

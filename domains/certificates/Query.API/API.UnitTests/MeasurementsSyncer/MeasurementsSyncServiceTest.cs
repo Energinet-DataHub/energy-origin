@@ -9,6 +9,7 @@ using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using DocumentFormat.OpenXml.Presentation;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Measurements.V1;
@@ -27,6 +28,7 @@ public class MeasurementsSyncServiceTest
     private readonly MeteringPointSyncInfo _syncInfo = new(
         Gsrn: Any.Gsrn(),
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
+        EndSyncDate: null,
         MeteringPointOwner: "meteringPointOwner",
         MeteringPointType.Production,
         "DK1",
@@ -39,6 +41,7 @@ public class MeasurementsSyncServiceTest
     private readonly IMeasurementSyncPublisher _fakeMeasurementPublisher = Substitute.For<IMeasurementSyncPublisher>();
     private readonly MeasurementsSyncService _service;
     private readonly MeasurementsSyncOptions _options = new();
+
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient =
         Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
@@ -46,7 +49,8 @@ public class MeasurementsSyncServiceTest
     {
         _options.MinimumAgeThresholdHours = 0;
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
-        _service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics, Options.Create(_options)),
+        _service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState, _fakeClient,
+            new SlidingWindowService(measurementSyncMetrics, Options.Create(_options)),
             new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options));
     }
 
@@ -82,7 +86,8 @@ public class MeasurementsSyncServiceTest
 
         // Then sliding window is updated
         await _fakeSlidingWindowState.Received(1)
-            .UpsertSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.EpochSeconds == dateTo), CancellationToken.None);
+            .UpsertSlidingWindow(Arg.Is<MeteringPointTimeSeriesSlidingWindow>(t => t.SynchronizationPoint.EpochSeconds == dateTo),
+                CancellationToken.None);
         await _fakeSlidingWindowState.Received().SaveChangesAsync(CancellationToken.None);
     }
 
@@ -132,7 +137,8 @@ public class MeasurementsSyncServiceTest
     {
         _options.MinimumAgeThresholdHours = 100;
         var syncPositionFromLastRun = UnixTimestamp.Now().Add(TimeSpan.FromHours(-24)).RoundToLatestHour();
-        var missingIntervals = MeasurementInterval.Create(syncPositionFromLastRun.Add(TimeSpan.FromHours(-200)), syncPositionFromLastRun.Add(TimeSpan.FromHours(-199)));
+        var missingIntervals = MeasurementInterval.Create(syncPositionFromLastRun.Add(TimeSpan.FromHours(-200)),
+            syncPositionFromLastRun.Add(TimeSpan.FromHours(-199)));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPositionFromLastRun, [missingIntervals]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
@@ -157,7 +163,8 @@ public class MeasurementsSyncServiceTest
     {
         _options.MinimumAgeThresholdHours = 100;
         var syncPositionFromLastRun = UnixTimestamp.Now().Add(TimeSpan.FromHours(-24)).RoundToLatestHour();
-        var missingIntervals = MeasurementInterval.Create(syncPositionFromLastRun.Add(TimeSpan.FromHours(-200)), syncPositionFromLastRun.Add(TimeSpan.FromHours(-199)));
+        var missingIntervals = MeasurementInterval.Create(syncPositionFromLastRun.Add(TimeSpan.FromHours(-200)),
+            syncPositionFromLastRun.Add(TimeSpan.FromHours(-199)));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPositionFromLastRun, [missingIntervals]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
@@ -183,11 +190,13 @@ public class MeasurementsSyncServiceTest
         _options.MinimumAgeThresholdHours = 100;
         var now = UnixTimestamp.Now().RoundToLatestHour();
         var syncPositionFromLastRun = now.Add(TimeSpan.FromHours(-24));
-        var missingIntervals = MeasurementInterval.Create(syncPositionFromLastRun.Add(TimeSpan.FromHours(-200)), syncPositionFromLastRun.Add(TimeSpan.FromHours(-199)));
+        var missingIntervals = MeasurementInterval.Create(syncPositionFromLastRun.Add(TimeSpan.FromHours(-200)),
+            syncPositionFromLastRun.Add(TimeSpan.FromHours(-199)));
 
         var syncInfo = new MeteringPointSyncInfo(
             Gsrn: Any.Gsrn(),
             StartSyncDate: missingIntervals.From.ToDateTimeOffset(),
+            EndSyncDate: null,
             MeteringPointOwner: "meteringPointOwner",
             MeteringPointType.Production,
             "DK1",
@@ -314,7 +323,8 @@ public class MeasurementsSyncServiceTest
 
         _options.MinimumAgeThresholdHours = 150;
 
-        var response = await _service.FetchMeasurements(slidingWindow, _syncInfo.MeteringPointOwner, now.Add(TimeSpan.FromHours(-150)), CancellationToken.None);
+        var response = await _service.FetchMeasurements(slidingWindow, _syncInfo.MeteringPointOwner, now.Add(TimeSpan.FromHours(-150)),
+            CancellationToken.None);
 
         response.Should().BeEmpty();
     }
@@ -359,6 +369,7 @@ public class MeasurementsSyncServiceTest
         var syncInfo = new MeteringPointSyncInfo(
             Gsrn: Any.Gsrn(),
             StartSyncDate: DateTimeOffset.Now.AddDays(-14),
+            EndSyncDate: null,
             MeteringPointOwner: "meteringPointOwner",
             MeteringPointType.Production,
             "DK1",
@@ -424,7 +435,75 @@ public class MeasurementsSyncServiceTest
     }
 
     [Fact]
-    public async Task GivenSingleMissingIntervalSpanning7Days_WhenApplying4DayThreshold_OnlyMeasurementsWithinThresholdAreProcessed_AndRemainingDaysAreStillMissing()
+    public async Task GivenContractAndSlidingWindow_WhenFetchingMeasurements_PointInTimeToSyncToHandlesContractEnd()
+    {
+        // Given contract and sliding window
+        _options.MinimumAgeThresholdHours = 5;
+        var latestHour = UnixTimestamp.Now().RoundToLatestHour();
+        var contractStart = latestHour.AddHours(-7);
+        var contractEnd = latestHour.AddHours(-6);
+        var syncInfo = new MeteringPointSyncInfo(
+            Gsrn: Any.Gsrn(),
+            StartSyncDate: contractStart.ToDateTimeOffset(),
+            EndSyncDate: contractEnd.ToDateTimeOffset(),
+            MeteringPointOwner: "meteringPointOwner",
+            MeteringPointType.Production,
+            "DK1",
+            Guid.NewGuid(),
+            new Technology("T12345", "T54321"));
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStart);
+
+        // When fetching measurements
+        var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
+
+        var measurementResponse = new GetMeasurementsResponse();
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
+
+        // Then fetch to contract end (and not all the way to now-age)
+        var request = (GetMeasurementsRequest)_fakeClient.ReceivedWithAnyArgs(1).ReceivedCalls().First().GetArguments()[0]!;
+        request.DateFrom.Should().Be(contractStart.EpochSeconds);
+        request.DateTo.Should().Be(contractEnd.EpochSeconds);
+    }
+
+    [Fact]
+    public async Task GivenContractAndSlidingWindow_WhenFetchingMeasurements_PointInTimeToSyncToHandlesContractWithNoEndDate()
+    {
+        // Given contract and sliding window
+        _options.MinimumAgeThresholdHours = 5;
+        var latestHour = UnixTimestamp.Now().RoundToLatestHour();
+        var contractStart = latestHour.AddHours(-7);
+        var syncInfo = new MeteringPointSyncInfo(
+            Gsrn: Any.Gsrn(),
+            StartSyncDate: contractStart.ToDateTimeOffset(),
+            EndSyncDate: null,
+            MeteringPointOwner: "meteringPointOwner",
+            MeteringPointType.Production,
+            "DK1",
+            Guid.NewGuid(),
+            new Technology("T12345", "T54321"));
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStart);
+
+        // When fetching measurements
+        var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
+
+        var measurementResponse = new GetMeasurementsResponse();
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+
+        await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
+
+        // Then fetch to contract end (and not all the way to now-age)
+        var request = (GetMeasurementsRequest)_fakeClient.ReceivedWithAnyArgs(1).ReceivedCalls().First().GetArguments()[0]!;
+        request.DateFrom.Should().Be(contractStart.EpochSeconds);
+        request.DateTo.Should().Be(latestHour.AddHours(-_options.MinimumAgeThresholdHours).EpochSeconds);
+    }
+
+    [Fact]
+    public async Task
+        GivenSingleMissingIntervalSpanning7Days_WhenApplying4DayThreshold_OnlyMeasurementsWithinThresholdAreProcessed_AndRemainingDaysAreStillMissing()
     {
         _options.MinimumAgeThresholdHours = 96;
         var now = UnixTimestamp.Now().RoundToLatestHour();
@@ -466,7 +545,8 @@ public class MeasurementsSyncServiceTest
     }
 
     [Fact]
-    public async Task Given_That_We_Have_7days_MissingInterval_And_We_Place_The_AgeThreshold_In_The_Middle_Of_It_Then_Prove_That_Only_MissingIntervals_From_The_SlidingWindows_StartPosition_And_Until_The_AgeThreshold_Are_Being_Processed_Thus_Leaving_The_MissingIntervals_Spanning_From_AgeThresholds_PointInTime_To_CurrentTimeStamp()
+    public async Task
+        Given_That_We_Have_7days_MissingInterval_And_We_Place_The_AgeThreshold_In_The_Middle_Of_It_Then_Prove_That_Only_MissingIntervals_From_The_SlidingWindows_StartPosition_And_Until_The_AgeThreshold_Are_Being_Processed_Thus_Leaving_The_MissingIntervals_Spanning_From_AgeThresholds_PointInTime_To_CurrentTimeStamp()
     {
         _options.MinimumAgeThresholdHours = 96;
         var now = UnixTimestamp.Now().RoundToLatestHour();
@@ -475,6 +555,7 @@ public class MeasurementsSyncServiceTest
         var syncInfo = new MeteringPointSyncInfo(
             Gsrn: Any.Gsrn(),
             StartSyncDate: syncStart.ToDateTimeOffset(),
+            EndSyncDate: null,
             MeteringPointOwner: "meteringPointOwner",
             MeteringPointType.Production,
             "DK1",

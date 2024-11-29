@@ -27,7 +27,7 @@ public class MeasurementSyncPublisherTest
         var gsrn = Any.Gsrn();
         var meteringPoint = Any.MeteringPoint(gsrn);
         var meteringPointOwner = Guid.NewGuid().ToString();
-        var syncInfo = new MeteringPointSyncInfo(gsrn, DateTimeOffset.UtcNow, meteringPointOwner, MeteringPointType.Production, "DK1", Guid.NewGuid(),
+        var syncInfo = new MeteringPointSyncInfo(gsrn, DateTimeOffset.UtcNow, null, meteringPointOwner, MeteringPointType.Production, "DK1", Guid.NewGuid(),
             Any.Technology());
         var measurement1 = Any.Measurement(gsrn, DateTimeOffset.UtcNow.AddHours(-6).ToUnixTimeSeconds(), 10);
         var measurement2 = Any.Measurement(gsrn, DateTimeOffset.UtcNow.AddHours(-5).ToUnixTimeSeconds(), 10);
