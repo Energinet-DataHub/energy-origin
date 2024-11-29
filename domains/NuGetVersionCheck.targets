@@ -1,38 +1,39 @@
 ﻿<Project>
     <Target Name="CheckNuGetPackageVersions" BeforeTargets="PrepareForBuild">
-        <!-- Gather package references -->
+        <!-- Step 1: Combine direct and transitive dependencies -->
         <ItemGroup>
-            <AllPackageReferences Include="@(PackageReference)">
+            <AllDependencies Include="@(PackageReference);@(_PackageReferenceTransitive)">
                 <Version>%(Version)</Version>
-                <Source>Direct</Source>
-            </AllPackageReferences>
+                <Parent Condition="'%(Identity)' == '%(PackageReference.Identity)'">$(MSBuildProjectName)</Parent>
+                <Parent Condition="'%(Identity)' == '%(_PackageReferenceTransitive.Identity)'">%(_PackageReferenceTransitive.Parent.Package)</Parent>
+            </AllDependencies>
         </ItemGroup>
 
-        <!-- Identify prerelease packages -->
+        <!-- Step 2: Identify unwanted dependencies -->
         <ItemGroup>
-            <PrereleasePackages Include="@(AllPackageReferences)"
-                                Condition="$([System.String]::new('%(AllPackageReferences.Version)').Contains('-'))">
-                <Message>NuGet package '%(Identity) (%(Version))' is a prerelease version</Message>
-            </PrereleasePackages>
+            <UnwantedDependencies Include="@(AllDependencies)"
+                                  Condition="$([System.String]::Copy('%(Version)').Contains('-')) OR
+                                            $([System.Version]::Parse($([System.Text.RegularExpressions.Regex]::Replace('%(Version)', '-.*$', ''))).CompareTo($([System.Version]::Parse('1.0.0')))) &lt; 0">
+                <Type Condition="$([System.String]::Copy('%(Version)').Contains('-'))">pre-release</Type>
+                <Type Condition="$([System.Version]::Parse($([System.Text.RegularExpressions.Regex]::Replace('%(Version)', '-.*$', ''))).CompareTo($([System.Version]::Parse('1.0.0')))) &lt; 0">unstable</Type>
+            </UnwantedDependencies>
         </ItemGroup>
 
-        <!-- Identify unstable packages -->
-        <ItemGroup>
-            <LowVersionPackages Include="@(AllPackageReferences)"
-                                Condition="$([System.Version]::Parse($([System.Text.RegularExpressions.Regex]::Replace('%(AllPackageReferences.Version)', '-.*$', ''))).CompareTo($([System.Version]::Parse('1.0.0')))) &lt; 0">
-                <Message>NuGet package '%(Identity) (%(Version))' is an unstable version</Message>
-            </LowVersionPackages>
-        </ItemGroup>
+        <!-- Step 3: Output unwanted packages list with dependency trees -->
+        <Message Text="Unwanted Package Analysis:"
+                 Importance="High"
+                 Condition="'@(UnwantedDependencies)' != ''" />
 
-        <!-- Stop the build on errors -->
-        <Error
-                Text="%(PrereleasePackages.Message)"
-                Condition="'@(PrereleasePackages)' != '' and '%(PrereleasePackages.Source)' == 'Direct'"
-                File="$(MSBuildProjectFullPath)" />
+        <Message Text="
+%(UnwantedDependencies.Parent)
+└── %(UnwantedDependencies.Identity) v%(UnwantedDependencies.Version)
+    Type: %(UnwantedDependencies.Type)"
+                 Importance="High"
+                 Condition="'@(UnwantedDependencies)' != ''" />
 
-        <Error
-                Text="%(LowVersionPackages.Message)"
-                Condition="'@(LowVersionPackages)' != '' and '%(LowVersionPackages.Source)' == 'Direct'"
-                File="$(MSBuildProjectFullPath)" />
+        <!-- Step 4: Stop the build for unwanted dependencies -->
+        <Error Text="Package '%(UnwantedDependencies.Identity)' v%(UnwantedDependencies.Version) is %(UnwantedDependencies.Type)"
+               Condition="'@(UnwantedDependencies)' != ''"
+               File="$(MSBuildProjectFile)" />
     </Target>
 </Project>
