@@ -33,6 +33,14 @@ jobs:
         with:
           solution: domains/EnergyTrackAndTrace.sln
 
+  dotnet-report:
+    needs: test
+    uses: ./.github/workflows/dotnet-report.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
   build-authorization:
     needs: test
     uses: ./.github/workflows/build-authorization.yaml
