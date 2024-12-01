@@ -2,6 +2,11 @@ name: Dotnet - Test
 description: Runs the dotnet tests
 
 inputs:
+
+  github-token:
+    description: GitHub token for authentication.
+    required: true
+
   solution:
     description: Is the path to a solution file.
     required: true
@@ -35,8 +40,9 @@ runs:
         ! test -z "${{ env.SDK }}"
 
     - name: Test
-      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@5f3759e533edebb441b055c0130bcb30c4c88449
+      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@c2d4c53ffafd28011970e285b59d4fb95588cafc
       with:
+        github-token: ${{ inputs.github-token }}
         path: ${{ env.DIRECTORY }}
         dotnet-version: ${{ env.SDK }}
         pin-version: true
