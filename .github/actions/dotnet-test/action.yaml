@@ -17,7 +17,7 @@ inputs:
     default: ""
 
   generate-report:
-    description: Is a boolean value to indicate if a report should be generated.
+    description: If a test report should be generated.
     required: false
     default: "false"
 
