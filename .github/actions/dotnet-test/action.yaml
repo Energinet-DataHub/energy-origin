@@ -46,7 +46,7 @@ runs:
 
     - name: Test
       continue-on-error: true
-      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@244e7d1920b4efc259655e175b5e527ae0f2e151
+      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@481d12de96e77b68c62fd8bef395ddfdc661d597
       with:
         path: ${{ env.DIRECTORY }}
         dotnet-version: ${{ env.SDK }}
