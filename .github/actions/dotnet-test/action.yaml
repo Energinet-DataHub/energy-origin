@@ -41,8 +41,11 @@ runs:
         dotnet-version: ${{ env.SDK }}
         pin-version: true
 
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
+    - name: Test results
+    - uses: dorny/test-reporter@v1
+      if: success() || failure()
       with:
-        name: test-results
+        name: Test results
         path: "**/*.trx"
+        reporter: dotnet-trx
+        fail-on-error: true
