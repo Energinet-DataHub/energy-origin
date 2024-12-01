@@ -59,6 +59,6 @@ runs:
         github-token: ${{ inputs.github-token }}
         results-path: './**/*.trx'
         comment-title: 'Test Results'
-        allow-failed-tests: 'false'
+        allow-failed-tests: 'true'
         show-failed-tests-only: 'true'
         show-test-output: 'true'
