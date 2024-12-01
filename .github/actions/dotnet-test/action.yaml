@@ -16,6 +16,11 @@ inputs:
     required: false
     default: ""
 
+  generate-report:
+    description: Is a boolean value to indicate if a report should be generated.
+    required: false
+    default: "false"
+
 runs:
   using: composite
   steps:
@@ -40,9 +45,21 @@ runs:
         ! test -z "${{ env.SDK }}"
 
     - name: Test
-      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@97f6f34bd0b18a37ee193b0224e55b48ec5849d4
+      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@cb5558dff34608ed775f0a79812e191ff5e6e0f8
       with:
-        github-token: ${{ inputs.github-token }}
         path: ${{ env.DIRECTORY }}
         dotnet-version: ${{ env.SDK }}
         pin-version: true
+        generate-report: ${{ inputs.generate-report }}
+
+    - name: Report Test Results
+      needs: Test
+      if: ${{ inputs.generate-report == 'true' }}
+      uses: bibipkins/dotnet-test-reporter@v1.4.1
+      with:
+        github-token: ${{ inputs.github-token }}
+        results-path: './**/*.trx'
+        comment-title: 'Test Results'
+        allow-failed-tests: 'false'
+        show-failed-tests-only: 'true'
+        show-test-output: 'true'

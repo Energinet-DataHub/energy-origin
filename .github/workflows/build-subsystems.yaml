@@ -37,6 +37,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           solution: domains/EnergyTrackAndTrace.sln
+          generate-report: "true"
 
   build-authorization:
     needs: test
