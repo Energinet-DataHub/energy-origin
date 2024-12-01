@@ -27,11 +27,17 @@ jobs:
   test:
     needs: setup
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-test
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           solution: domains/EnergyTrackAndTrace.sln
+          generate-report: "true"
 
   build-authorization:
     needs: test
