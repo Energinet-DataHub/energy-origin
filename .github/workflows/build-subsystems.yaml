@@ -15,7 +15,6 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
-
     outputs:
       authorization: ${{ steps.authorization.outputs.matches }}
       certificates: ${{ steps.certificates.outputs.matches }}
@@ -29,7 +28,7 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
       issues: write
     steps:

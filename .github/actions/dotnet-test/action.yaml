@@ -40,7 +40,7 @@ runs:
         ! test -z "${{ env.SDK }}"
 
     - name: Test
-      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@f5b717f0d752078eb7ca12b7d5eab0b0a912174c
+      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@97f6f34bd0b18a37ee193b0224e55b48ec5849d4
       with:
         github-token: ${{ inputs.github-token }}
         path: ${{ env.DIRECTORY }}
