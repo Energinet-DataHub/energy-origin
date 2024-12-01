@@ -35,7 +35,7 @@ runs:
         ! test -z "${{ env.SDK }}"
 
     - name: Test
-      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@5d5aa2a041b6e994ed2c4da92604e7b611e59cc2
+      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@c9f3b9d206e90ed25a4d455d215931ae810439e1
       with:
         path: ${{ env.DIRECTORY }}
         dotnet-version: ${{ env.SDK }}
