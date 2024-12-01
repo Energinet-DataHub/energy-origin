@@ -35,8 +35,14 @@ runs:
         ! test -z "${{ env.SDK }}"
 
     - name: Test
-      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@6284026de0d3865357eccdee3cff47b56ef58021
+      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@7bb6f07b131d1c0952bf63f13b780bcde71fa019
       with:
         path: ${{ env.DIRECTORY }}
         dotnet-version: ${{ env.SDK }}
         pin-version: true
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: "**/*.trx"

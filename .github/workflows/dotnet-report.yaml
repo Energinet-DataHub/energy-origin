@@ -1,0 +1,27 @@
+﻿name: Dotnet - Report
+
+on:
+  workflow_run:
+    workflows:
+      - Build Subsystems
+    types:
+      - completed
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+
+      - name: Parse TRX results
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          artifact: test-results
+          path: "**/*.trx"
+          reporter: dotnet-trx
+          fail-on-error: true
