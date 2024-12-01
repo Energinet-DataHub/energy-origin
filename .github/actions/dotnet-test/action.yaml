@@ -53,7 +53,6 @@ runs:
         generate-report: ${{ inputs.generate-report }}
 
     - name: Report Test Results
-      needs: Test
       if: ${{ inputs.generate-report == 'true' }}
       uses: bibipkins/dotnet-test-reporter@v1.4.1
       with:
