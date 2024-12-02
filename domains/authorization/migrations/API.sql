@@ -497,3 +497,58 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241120144111_AddServiceProviderTermsFieldsToOrganizationsTable') THEN
+    ALTER TABLE "Organizations" ADD "ServiceProviderTermsAcceptanceDate" timestamp with time zone;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241120144111_AddServiceProviderTermsFieldsToOrganizationsTable') THEN
+    ALTER TABLE "Organizations" ADD "ServiceProviderTermsAccepted" boolean NOT NULL DEFAULT FALSE;
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241120144111_AddServiceProviderTermsFieldsToOrganizationsTable') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20241120144111_AddServiceProviderTermsFieldsToOrganizationsTable', '8.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241125102638_ChangeServiceProviderTermsToAcceptedForClientOrganizations') THEN
+
+                    UPDATE "Organizations"
+                    SET "ServiceProviderTermsAccepted" = TRUE,
+                        "ServiceProviderTermsAcceptanceDate" = NOW()
+                    WHERE "Id" IN (
+                        SELECT DISTINCT "OrganizationId"
+                        FROM "Clients"
+                        WHERE "OrganizationId" IS NOT NULL
+                    )
+                    AND ("ServiceProviderTermsAccepted" = FALSE OR "ServiceProviderTermsAccepted" IS NULL);
+                
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20241125102638_ChangeServiceProviderTermsToAcceptedForClientOrganizations') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20241125102638_ChangeServiceProviderTermsToAcceptedForClientOrganizations', '8.0.8');
+    END IF;
+END $EF$;
+COMMIT;
+

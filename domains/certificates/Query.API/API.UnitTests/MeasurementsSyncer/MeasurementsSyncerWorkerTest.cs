@@ -21,6 +21,7 @@ public class MeasurementsSyncerWorkerTest
     private readonly MeteringPointSyncInfo _syncInfo = new(
         Gsrn: Any.Gsrn(),
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
+        EndSyncDate: null,
         MeteringPointOwner: "meteringPointOwner",
         MeteringPointType.Production,
         "DK1",
