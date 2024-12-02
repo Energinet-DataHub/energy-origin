@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 
 namespace API.Transfer.Api.Dto.Responses;
 
-public record TransferAgreementProposalOverviewDto(
+
+public record TransferAgreementOverviewDto(
     Guid Id,
     long StartDate,
     long? EndDate,
@@ -11,3 +13,5 @@ public record TransferAgreementProposalOverviewDto(
     string? ReceiverTin,
     TransferAgreementTypeDto Type,
     TransferAgreementStatus TransferAgreementStatus);
+
+public record TransferAgreementOverviewResponse(List<TransferAgreementOverviewDto> Result);

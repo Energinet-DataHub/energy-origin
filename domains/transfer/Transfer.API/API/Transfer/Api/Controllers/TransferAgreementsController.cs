@@ -47,18 +47,21 @@ public class TransferAgreementsController(
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 409)]
-    public async Task<ActionResult> Create(CreateTransferAgreement request, [FromQuery] Guid organizationId, CancellationToken cancellationToken)
+    public async Task<ActionResult> Create(CreateTransferAgreement request, [FromQuery] Guid organizationId,
+        CancellationToken cancellationToken)
     {
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
         var organizationTin = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationCvr : null;
         var organizationName = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationName : null;
-        var command = new AcceptTransferAgreementProposalCommand(request.TransferAgreementProposalId, organizationId, organizationTin,
+        var command = new AcceptTransferAgreementProposalCommand(request.TransferAgreementProposalId, organizationId,
+            organizationTin,
             organizationName);
         var result = await mediator.Send(command, cancellationToken);
 
         return CreatedAtAction(nameof(Get), new { id = result.TransferAgreementId },
-            ToTransferAgreementDto(result.TransferAgreementId, result.SenderTin, result.SenderName, result.ReceiverTin, result.StartDate,
+            ToTransferAgreementDto(result.TransferAgreementId, result.SenderTin, result.SenderName, result.ReceiverTin,
+                result.StartDate,
                 result.EndDate, result.Type));
     }
 
@@ -70,11 +73,13 @@ public class TransferAgreementsController(
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> Get([FromRoute] Guid id, [FromQuery] Guid organizationId, CancellationToken cancellationToken)
+    public async Task<ActionResult> Get([FromRoute] Guid id, [FromQuery] Guid organizationId,
+        CancellationToken cancellationToken)
     {
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        var result = await unitOfWork.TransferAgreementRepo.GetTransferAgreement(id, organizationId.ToString(), identityDescriptor.OrganizationCvr!,
+        var result = await unitOfWork.TransferAgreementRepo.GetTransferAgreement(id, organizationId.ToString(),
+            identityDescriptor.OrganizationCvr!,
             cancellationToken);
 
         if (result == null)
@@ -85,33 +90,13 @@ public class TransferAgreementsController(
         return Ok(TransferAgreementDtoMapper.MapTransferAgreement(result));
     }
 
-    [HttpGet]
-    [ProducesResponseType(typeof(TransferAgreementsResponse), 200)]
-    public async Task<ActionResult<TransferAgreementsResponse>> GetTransferAgreements([FromQuery] Guid organizationId,
-        CancellationToken cancellationToken)
-    {
-        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
-
-        var transferAgreements =
-            await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(organizationId, identityDescriptor.OrganizationCvr!, cancellationToken);
-
-        if (!transferAgreements.Any())
-        {
-            return Ok(new TransferAgreementsResponse(new List<TransferAgreementDto>()));
-        }
-
-        var listResponse = transferAgreements.Select(TransferAgreementDtoMapper.MapTransferAgreement)
-            .ToList();
-
-        return Ok(new TransferAgreementsResponse(listResponse));
-    }
-
     [HttpPut("{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 409)]
-    public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate([FromRoute] Guid id, [FromBody] EditTransferAgreementEndDate request,
+    public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate([FromRoute] Guid id,
+        [FromBody] EditTransferAgreementEndDate request,
         [FromQuery] Guid organizationId, CancellationToken cancellationToken)
     {
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
@@ -131,7 +116,8 @@ public class TransferAgreementsController(
 
         var taRepo = unitOfWork.TransferAgreementRepo;
         var transferAgreement =
-            await taRepo.GetTransferAgreement(id, organizationId.ToString(), identityDescriptor.OrganizationCvr!, cancellationToken);
+            await taRepo.GetTransferAgreement(id, organizationId.ToString(), identityDescriptor.OrganizationCvr!,
+                cancellationToken);
 
         if (transferAgreement == null || transferAgreement.SenderId.Value != organizationId)
         {
@@ -199,7 +185,8 @@ public class TransferAgreementsController(
         );
     }
 
-    private static TransferAgreementDto ToTransferAgreementDto(Guid transferAgreementId, string senderTin, string senderName, string receiverTin,
+    private static TransferAgreementDto ToTransferAgreementDto(Guid transferAgreementId, string senderTin,
+        string senderName, string receiverTin,
         long startDate, long? endDate, TransferAgreementType type)
     {
         return new(
@@ -214,77 +201,60 @@ public class TransferAgreementsController(
     }
 
     [HttpGet("overview")]
-    [ProducesResponseType(typeof(TransferAgreementProposalOverviewResponse), 200)]
-    public async Task<ActionResult<TransferAgreementProposalOverviewResponse>> GetTransferAgreementProposal([FromQuery] Guid organizationId,
+    [ProducesResponseType(typeof(TransferAgreementOverviewResponse), 200)]
+    public async Task<ActionResult<TransferAgreementOverviewResponse>> GetTransferAgreementsOverview(
         CancellationToken cancellationToken)
     {
-        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+        var queryResult =
+            await mediator.Send(new GetTransferAgreementsQuery(identityDescriptor.OrganizationId,
+                identityDescriptor.OrganizationCvr!), cancellationToken);
 
-        var transferAgreements =
-            await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(organizationId, identityDescriptor.OrganizationCvr!, cancellationToken);
-        var transferAgreementProposals = await unitOfWork.TransferAgreementRepo.GetTransferAgreementProposals(organizationId, cancellationToken);
-
-        if (!transferAgreementProposals.Any() && !transferAgreements.Any())
-        {
-            return Ok(new TransferAgreementProposalOverviewResponse(new()));
-        }
-
-        var transferAgreementDtos = transferAgreements
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, x.SenderName.Value,
-                x.SenderTin.Value, x.ReceiverTin.Value, TransferAgreementTypeMapper.MapCreateTransferAgreementType(x.Type),
-                GetTransferAgreementStatusFromAgreement(x)))
+        var dto = queryResult
+            .Result
+            .Select(x =>
+                new TransferAgreementOverviewDto(x.Id, x.StartDate, x.EndDate, x.SenderName, x.SenderTin, x.ReceiverTin, x.Type, x.TransferAgreementStatus))
             .ToList();
 
-        var transferAgreementProposalDtos = transferAgreementProposals
-            .Select(x => new TransferAgreementProposalOverviewDto(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, string.Empty,
-                string.Empty, x.ReceiverCompanyTin?.Value, TransferAgreementTypeMapper.MapCreateTransferAgreementType(x.Type),
-                GetTransferAgreementStatusFromProposal(x)))
+        return Ok(new TransferAgreementOverviewResponse(dto));
+    }
+
+    [HttpGet("overview/consent")]
+    [ProducesResponseType(typeof(TransferAgreementOverviewResponse), 200)]
+    public async Task<ActionResult<TransferAgreementOverviewResponse>> GetConsentTransferAgreementsOverview(
+        CancellationToken cancellationToken)
+    {
+        var orgIds = identityDescriptor.AuthorizedOrganizationIds;
+
+        var queryResult = await mediator.Send(new GetConsentTransferAgreementsQuery(orgIds), cancellationToken);
+
+        var dto = queryResult
+            .Result
+            .Select(x =>
+                new TransferAgreementOverviewDto(x.Id, x.StartDate, x.EndDate, x.SenderName, x.SenderTin, x.ReceiverTin, x.Type, x.TransferAgreementStatus))
             .ToList();
 
-        transferAgreementProposalDtos.AddRange(transferAgreementDtos);
-
-        return Ok(new TransferAgreementProposalOverviewResponse(transferAgreementProposalDtos));
-    }
-
-    private TransferAgreementStatus GetTransferAgreementStatusFromProposal(TransferAgreementProposal transferAgreementProposal)
-    {
-        var timespan = DateTimeOffset.UtcNow - transferAgreementProposal.CreatedAt.ToDateTimeOffset();
-
-        return timespan.Days switch
-        {
-            >= 0 and <= 14 => TransferAgreementStatus.Proposal,
-            _ => TransferAgreementStatus.ProposalExpired
-        };
-    }
-
-    private TransferAgreementStatus GetTransferAgreementStatusFromAgreement(TransferAgreement transferAgreement)
-    {
-        if (transferAgreement.StartDate <= UnixTimestamp.Now() && transferAgreement.EndDate == null)
-        {
-            return TransferAgreementStatus.Active;
-        }
-        else if (transferAgreement.StartDate < UnixTimestamp.Now() && transferAgreement.EndDate != null &&
-                 transferAgreement.EndDate > UnixTimestamp.Now())
-        {
-            return TransferAgreementStatus.Active;
-        }
-
-        return TransferAgreementStatus.Inactive;
+        return Ok(new TransferAgreementOverviewResponse(dto));
     }
 
     [HttpPost("create/")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> CreateTransferAgreementDirectly([FromServices] IProjectOriginWalletClient walletClient,
+    public async Task<ActionResult> CreateTransferAgreementDirectly(
+        [FromServices] IProjectOriginWalletClient walletClient,
         [FromBody] CreateTransferAgreementRequest request)
     {
         accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
-        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId, request.SenderOrganizationId,
-            request.StartDate, request.EndDate, request.ReceiverOrganizationId, request.ReceiverTin, request.ReceiverName, request.SenderTin,
-            request.SenderName, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)), CancellationToken.None);
+        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId,
+                request.SenderOrganizationId,
+                request.StartDate, request.EndDate, request.ReceiverOrganizationId, request.ReceiverTin,
+                request.ReceiverName, request.SenderTin,
+                request.SenderName, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)),
+            CancellationToken.None);
 
-        return CreatedAtAction(nameof(Get), new { id = command.TransferAgreementId }, ToTransferAgreementDto(command.TransferAgreementId,
-            command.SenderTin, command.SenderName, command.ReceiverTin, command.StartDate, command.EndDate, command.Type));
+        return CreatedAtAction(nameof(Get), new { id = command.TransferAgreementId }, ToTransferAgreementDto(
+            command.TransferAgreementId,
+            command.SenderTin, command.SenderName, command.ReceiverTin, command.StartDate, command.EndDate,
+            command.Type));
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using API.Transfer.Api.Options;
+using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementCleanup;
 using API.Transfer.TransferAgreementCleanup.Options;
 using API.Transfer.TransferAgreementProposalCleanup;
@@ -32,6 +33,7 @@ public static class Startup
             c.BaseAddress = new Uri(options.WalletUrl);
         });
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
+        services.AddSingleton<TransferAgreementStatusService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
         services.AddHostedService<TransferAgreementCleanupWorker>();
     }
