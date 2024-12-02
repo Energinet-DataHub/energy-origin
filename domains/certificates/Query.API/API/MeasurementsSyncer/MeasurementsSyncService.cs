@@ -28,7 +28,8 @@ public class MeasurementsSyncService
 
     public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISlidingWindowState slidingWindowState,
         Measurements.V1.Measurements.MeasurementsClient measurementsClient, SlidingWindowService slidingWindowService,
-        IMeasurementSyncMetrics measurementSyncMetrics, IMeasurementSyncPublisher measurementSyncPublisher, Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient, IOptions<MeasurementsSyncOptions> _measurementSyncOptions)
+        IMeasurementSyncMetrics measurementSyncMetrics, IMeasurementSyncPublisher measurementSyncPublisher,
+        Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient, IOptions<MeasurementsSyncOptions> _measurementSyncOptions)
     {
         _logger = logger;
         _slidingWindowState = slidingWindowState;
@@ -46,11 +47,14 @@ public class MeasurementsSyncService
         var minimumAgeThresholdInHours = _options.Value.MinimumAgeThresholdHours;
 
         var latestPossibleSyncTimestamp = UnixTimestamp.Now().Add(TimeSpan.FromHours(-minimumAgeThresholdInHours)).RoundToLatestHour();
-        var contractEndSyncTimestamp = syncInfo.EndSyncDate is not null ? UnixTimestamp.Create(syncInfo.EndSyncDate.Value) : UnixTimestamp.Create(DateTimeOffset.MaxValue);
+        var contractEndSyncTimestamp = syncInfo.EndSyncDate is not null
+            ? UnixTimestamp.Create(syncInfo.EndSyncDate.Value)
+            : UnixTimestamp.Create(DateTimeOffset.MaxValue);
         var pointInTimeItShouldSyncUpTo = UnixTimestamp.Min(latestPossibleSyncTimestamp, contractEndSyncTimestamp);
 
         var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, pointInTimeItShouldSyncUpTo, stoppingToken);
-        var meteringPoints = await _meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
+        var meteringPoints =
+            await _meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
         var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
 
         _measurementSyncMetrics.AddNumberOfMeasurementsFetched(fetchedMeasurements.Count);
@@ -100,6 +104,18 @@ public class MeasurementsSyncService
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
                 DateTimeOffset.FromUnixTimeSeconds(pointInTimeItShouldSyncUpTo.EpochSeconds).ToString("o"));
 
+            foreach (var measurement in res.Measurements)
+            {
+                _logger.LogInformation(
+                    "Fetched measurement for GSRN {GSRN} in period from {from} to: {to}, quantity {Quantity}, Quality {Quality}, QuantityMissing {QuantityMissing}",
+                    slidingWindow.GSRN,
+                    DateTimeOffset.FromUnixTimeSeconds(measurement.DateFrom).ToString("o"),
+                    DateTimeOffset.FromUnixTimeSeconds(measurement.DateTo).ToString("o"),
+                    measurement.Quantity,
+                    measurement.Quality,
+                    measurement.QuantityMissing);
+            }
+
             return res.Measurements.ToList();
         }
 
@@ -111,6 +127,10 @@ public class MeasurementsSyncService
         try
         {
             var slidingWindow = await _slidingWindowState.GetSlidingWindowStartTime(syncInfo, stoppingToken);
+
+            _logger.LogInformation("Sliding window for GSRN {GSRN} sync point {SyncPoint}, missing intervals {MissingIntervals}", slidingWindow.GSRN,
+                slidingWindow.SynchronizationPoint.ToDateTimeOffset().ToString("o"), slidingWindow.MissingMeasurements);
+
             await FetchAndPublishMeasurements(syncInfo, slidingWindow, stoppingToken);
         }
         catch (Exception e)
