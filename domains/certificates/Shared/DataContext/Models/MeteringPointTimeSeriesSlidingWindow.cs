@@ -75,6 +75,6 @@ public class MissingMeasurements
 
     public override string ToString()
     {
-        return Intervals.Aggregate("", (res, interval) => res + $"[{interval.From}, {interval.To}]");
+        return Intervals.Any() ? Intervals.Aggregate("", (res, interval) => res + $"[{interval.From}, {interval.To}]") : "[]";
     }
 }
