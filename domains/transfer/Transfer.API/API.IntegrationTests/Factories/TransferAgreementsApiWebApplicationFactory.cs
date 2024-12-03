@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using API.Transfer.Api.Clients;
 using API.Transfer.TransferAgreementProposalCleanup;
 using Asp.Versioning.ApiExplorer;
 using DataContext;
@@ -102,6 +103,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 s.Remove(s.First(x => x.ImplementationType == typeof(TransferAgreementProposalCleanupService)));
                 s.Remove(s.First(x => x.ImplementationType == typeof(CleanupActivityLogsHostedService)));
             }
+
+            s.Remove(s.First(sd => sd.ServiceType == typeof(IAuthorizationClient)));
+            s.AddScoped<IAuthorizationClient, MockAuthorizationClient>();
         });
     }
 

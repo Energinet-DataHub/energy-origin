@@ -35,11 +35,11 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
     {
         var agreements = await context.TransferAgreements.Where(t =>
                 t.SenderId == newTransferAgreement.SenderId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
         var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
         newTransferAgreement.TransferAgreementNumber = transferAgreementNumber;
 
-        await context.TransferAgreements.AddAsync(newTransferAgreement);
+        await context.TransferAgreements.AddAsync(newTransferAgreement, cancellationToken);
 
         return newTransferAgreement;
     }
@@ -71,7 +71,7 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
 
     public async Task<bool> HasDateOverlap(TransferAgreement transferAgreement, CancellationToken cancellationToken)
     {
-        var overlappingAgreements = await context.TransferAgreements
+        var overlappingAgreements = await context.TransferAgreements.AsNoTracking()
             .Where(t => t.SenderId == transferAgreement.SenderId &&
                         t.ReceiverTin == transferAgreement.ReceiverTin &&
                         t.Id != transferAgreement.Id)
