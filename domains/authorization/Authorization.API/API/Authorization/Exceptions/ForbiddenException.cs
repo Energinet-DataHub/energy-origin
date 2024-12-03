@@ -12,3 +12,6 @@ public class ForbiddenException : Exception
     {
     }
 }
+
+public class ServiceProviderTermsNotAcceptedException()
+    : ForbiddenException("Organization has not accepted the latest service provider terms.");

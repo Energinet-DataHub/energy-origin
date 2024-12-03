@@ -173,13 +173,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return client;
     }
 
-    public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
+    public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string orgIds = "", string name = "Peter Producent",
         string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer",
-                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted));
+                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), orgIds: orgIds, termsAccepted: termsAccepted));
         client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
 
         return client;
@@ -194,6 +194,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string issuer = "demo.energioprindelse.dk",
         string audience = "Users",
         string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
+        string orgIds = "",
         bool termsAccepted = true)
     {
         var claims = new Dictionary<string, object>()
@@ -201,7 +202,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             { UserClaimName.Scope, scope },
             { JwtRegisteredClaimNames.Name, name },
             { ClaimType.OrgId, orgId },
-            { ClaimType.OrgIds, "" },
+            { ClaimType.OrgIds, orgIds },
             { ClaimType.OrgCvr, tin },
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },

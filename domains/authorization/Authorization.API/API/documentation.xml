@@ -132,5 +132,23 @@
         <member name="M:API.Migrations.AddUniqueConsentIndex.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:API.Migrations.AddServiceProviderTermsFieldsToOrganizationsTable">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddServiceProviderTermsFieldsToOrganizationsTable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddServiceProviderTermsFieldsToOrganizationsTable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.AddServiceProviderTermsFieldsToOrganizationsTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API.Migrations.ChangeServiceProviderTermsToAcceptedForClientOrganizations">
+            <inheritdoc />
+        </member>
+        <member name="M:API.Migrations.ChangeServiceProviderTermsToAcceptedForClientOrganizations.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

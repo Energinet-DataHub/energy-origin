@@ -22,7 +22,7 @@ public class IssuingContractCleanupTests
         postgresContainer = integrationTestFixture.PostgresContainer;
     }
 
-    [Fact]
+    [Fact(Skip = "Contract clean up temporarily disabled")]
     public async Task ShouldOnlyDeleteExpiredIssuingContracts()
     {
         var dbContext = GetDbContext();
