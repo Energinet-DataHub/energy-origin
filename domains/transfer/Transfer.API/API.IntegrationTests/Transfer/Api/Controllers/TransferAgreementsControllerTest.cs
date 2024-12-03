@@ -572,14 +572,14 @@ public class TransferAgreementsControllerTests
         using var scope = factory.Services.CreateScope();
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId, orgIds: $"{senderOrganizationId}, {receiverOrganizationId}");
         var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
 
-        var transferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == OrganizationId.Create(senderOrganizationId));
+        var transferAgreement = dbContext.TransferAgreements.SingleOrDefault(x => x.SenderId == OrganizationId.Create(senderOrganizationId));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        transferAgreement.SenderName.Value.Should().Be(MockAuthorizationClient.MockedConsents.Single(x => x.GiverOrganizationId == senderOrganizationId).GiverOrganizationName); // MockAuthorizationClientName
-        transferAgreement.ReceiverId!.Value.Should().Be(receiverOrganizationId);
+        transferAgreement!.SenderName.Value.Should().Be(MockAuthorizationClient.MockedConsents.Single(x => x.GiverOrganizationId == senderOrganizationId).GiverOrganizationName); // MockAuthorizationClientName
+        transferAgreement!.ReceiverId!.Value.Should().Be(receiverOrganizationId);
     }
 
     [Fact]
@@ -608,13 +608,12 @@ public class TransferAgreementsControllerTests
                 existingTransferAgreement
             });
 
-        var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
         var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId, UnixTimestamp.Now().EpochSeconds, UnixTimestamp.Now().AddDays(10).EpochSeconds, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
         var jsonContent = JsonContent.Create(request);
         using var scope = factory.Services.CreateScope();
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId, orgIds: $"{senderOrganizationId}, {receiverOrganizationId}");
         var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
