@@ -47,8 +47,7 @@ public class TransferAgreementsController(
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 409)]
-    public async Task<ActionResult> Create(CreateTransferAgreement request, [FromQuery] Guid organizationId,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> Create(CreateTransferAgreement request, [FromQuery] Guid organizationId, CancellationToken cancellationToken)
     {
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 

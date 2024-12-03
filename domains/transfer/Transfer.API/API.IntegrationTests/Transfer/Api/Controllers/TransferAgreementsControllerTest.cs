@@ -848,4 +848,23 @@ public class TransferAgreementsControllerTests
         transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.ProposalExpired)
             .Should().HaveCount(1);
     }
+
+    [Fact] // TODO: Finish this test.
+    public async Task Create_ShouldCreateTransferAgreementForConsent_WhenModelIsValid()
+    {
+        var receiverTin = MockAuthorizationClient.MockedConsents.First().GiverOrganizationTin;
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var authenticatedSenderClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
+        var createdProposalId = await CreateTransferAgreementProposal(orgId, authenticatedSenderClient, request);
+
+        var receiverSub = Guid.NewGuid();
+        var receiverOrgId = Guid.NewGuid();
+        var authenticatedReceiverClient = factory.CreateB2CAuthenticatedClient(receiverSub, receiverOrgId, receiverTin, orgIds: string.Join(",", MockAuthorizationClient.MockedConsents));
+        var transferAgreement = new CreateTransferAgreement(createdProposalId);
+        var response = await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrgId}", transferAgreement);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
 }

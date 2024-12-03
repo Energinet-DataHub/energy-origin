@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.AspNetCore.Http;
 
 namespace API.Transfer.Api.Clients;
@@ -16,11 +17,18 @@ public class AuthorizationClient(HttpClient httpClient, IBearerTokenService bear
 {
     public async Task<UserOrganizationConsentsResponse?> GetConsentsAsync()
     {
-        httpClient.DefaultRequestHeaders.Add("Authorization", bearerTokenService.GetBearerToken()); // Handle expired tokens? Can we?
+        httpClient.DefaultRequestHeaders.Add("Authorization", bearerTokenService.GetBearerToken());
         return await httpClient.GetFromJsonAsync<UserOrganizationConsentsResponse>("/api/authorization/consents");
+    }
+
+    public async Task<OrganizationResponse?> GetOrganizationByTinAsync(Tin tin)
+    {
+        httpClient.DefaultRequestHeaders.Add("Authorization", bearerTokenService.GetBearerToken());
+        return await httpClient.GetFromJsonAsync<OrganizationResponse>($"/api/authorization/organization/by-tin/{tin}"); // TODO: Create endpoint
     }
 }
 
+public record OrganizationResponse(Guid OrganizationId, string OrganizationName, string OrganizationTin);
 public record UserOrganizationConsentsResponseItem(Guid ConsentId, Guid GiverOrganizationId, string GiverOrganizationTin, string GiverOrganizationName, Guid ReceiverOrganizationId, string ReceiverOrganizationTin, string ReceiverOrganizationName, long ConsentDate);
 public record UserOrganizationConsentsResponse(IEnumerable<UserOrganizationConsentsResponseItem> Result);
 

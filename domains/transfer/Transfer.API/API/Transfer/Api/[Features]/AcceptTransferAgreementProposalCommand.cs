@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Transfer.Api.Clients;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext.Models;
@@ -58,15 +59,17 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
     AcceptTransferAgreementProposalCommandResult>
 {
     private readonly IProjectOriginWalletClient _walletClient;
+    private readonly IAuthorizationClient _authorizationClient;
     private readonly IdentityDescriptor _identityDescriptor;
     private readonly IUnitOfWork _unitOfWork;
 
     public AcceptTransferAgreementProposalCommandHandler(IdentityDescriptor identityDescriptor, IUnitOfWork unitOfWork,
-        IProjectOriginWalletClient walletClient)
+        IProjectOriginWalletClient walletClient, IAuthorizationClient authorizationClient)
     {
         _identityDescriptor = identityDescriptor;
         _unitOfWork = unitOfWork;
         _walletClient = walletClient;
+        _authorizationClient = authorizationClient;
     }
 
     public async Task<AcceptTransferAgreementProposalCommandResult> Handle(AcceptTransferAgreementProposalCommand command,
@@ -85,33 +88,52 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new EntityNotFoundException(command.TransferAgreementProposalId, typeof(TransferAgreementProposal));
         }
 
-        if (proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != command.ReceiverOrganizationTin)
-        {
-            throw new BusinessException("Only the receiver company can accept this Transfer Agreement Proposal");
-        }
-
         if (proposal.EndDate is not null && proposal.EndDate < UnixTimestamp.Now())
         {
             throw new BusinessException("This proposal has run out");
         }
 
+        var isConsentTransferProposalAccept = command.ReceiverOrganizationTin.IsEmpty();
+        if (!isConsentTransferProposalAccept && proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != command.ReceiverOrganizationTin)
+        {
+            throw new BusinessException("Only the receiver company can accept this Transfer Agreement Proposal");
+        }
+
         proposal.ReceiverCompanyTin = command.ReceiverOrganizationTin;
+        var receiverOrganizationName = command.ReceiverOrganizationName;
+        var receiverOrganizationTin = command.ReceiverOrganizationTin;
+        var receiverOrganizationId = command.ReceiverOrganizationId;
+
+        if(isConsentTransferProposalAccept)
+        {
+            var consents = await _authorizationClient.GetConsentsAsync();
+            var consent = consents?.Result.FirstOrDefault(c => c.GiverOrganizationId == command.ReceiverOrganizationId.Value);
+
+            if (consent == null || proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != Tin.Create(consent.ReceiverOrganizationTin)) // || proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != Tin.Create(consent.ReceiverOrganizationTin) <-- This part should be redundant
+            {
+                throw new BusinessException("Only the POA receiver company can accept this Transfer Agreement Proposal"); // TODO: Should we have another error for this????
+            }
+
+            receiverOrganizationName = OrganizationName.Create(consent.ReceiverOrganizationName);
+            receiverOrganizationTin = Tin.Create(consent.ReceiverOrganizationTin);
+
+            proposal.ReceiverCompanyTin = Tin.Create(consent.GiverOrganizationTin); // This is needed to ensure HasDataOverlap works, because a proposal
+        }
 
         var taRepo = _unitOfWork.TransferAgreementRepo;
 
-        var hasConflict = await taRepo.HasDateOverlap(proposal, cancellationToken);
+        var hasConflict = await taRepo.HasDateOverlap(proposal, cancellationToken); // TODO: This will currently fail if TIN is null, since we can't check for overlap. Maybe this was always broken???? 🐉
         if (hasConflict)
         {
             throw new TransferAgreementConflictException();
         }
 
-        var receiverOrganizationId = command.ReceiverOrganizationId.Value;
-        var wallets = await _walletClient.GetWallets(receiverOrganizationId, CancellationToken.None);
+        var wallets = await _walletClient.GetWallets(receiverOrganizationId.Value, CancellationToken.None);
 
         var walletId = wallets.Result.FirstOrDefault()?.Id;
         if (walletId == null)
         {
-            var createWalletResponse = await _walletClient.CreateWallet(receiverOrganizationId, CancellationToken.None);
+            var createWalletResponse = await _walletClient.CreateWallet(receiverOrganizationId.Value, CancellationToken.None);
 
             if (createWalletResponse == null)
             {
@@ -121,10 +143,10 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             walletId = createWalletResponse.WalletId;
         }
 
-        var walletEndpoint = await _walletClient.CreateWalletEndpoint(receiverOrganizationId, walletId.Value, CancellationToken.None);
+        var walletEndpoint = await _walletClient.CreateWalletEndpoint(receiverOrganizationId.Value, walletId.Value, CancellationToken.None);
 
         var externalEndpoint =
-            await _walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.Value, walletEndpoint, proposal.ReceiverCompanyTin.Value,
+            await _walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.Value, walletEndpoint, receiverOrganizationTin.Value,
                 CancellationToken.None);
 
         var transferAgreement = new TransferAgreement
@@ -133,10 +155,10 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             EndDate = proposal.EndDate,
             SenderId = proposal.SenderCompanyId,
             SenderName = proposal.SenderCompanyName,
-            ReceiverId = command.ReceiverOrganizationId,
             SenderTin = proposal.SenderCompanyTin,
-            ReceiverName = command.ReceiverOrganizationName,
-            ReceiverTin = command.ReceiverOrganizationTin,
+            ReceiverId = receiverOrganizationId,
+            ReceiverName = receiverOrganizationName,
+            ReceiverTin = receiverOrganizationTin,
             ReceiverReference = externalEndpoint.ReceiverId,
             Type = proposal.Type
         };
