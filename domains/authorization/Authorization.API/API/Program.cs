@@ -3,6 +3,7 @@ using System.Linq;
 using API.Authorization;
 using API.Authorization.Exceptions;
 using API.Data;
+using API.Metrics;
 using API.Models;
 using API.Options;
 using API.Repository;
@@ -16,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +27,8 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.Services.AddOpenTelemetryMetricsAndTracing("Authorization.API", otlpOptions.ReceiverEndpoint);
+builder.Services.AddOpenTelemetryMetricsAndTracing("Authorization.API", otlpOptions.ReceiverEndpoint)
+    .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(AuthorizationMetrics.MetricName));
 
 builder.AddSerilogWithoutOutboxLogs();
 
