@@ -28,19 +28,19 @@ public class IntegrationTestFixture : IAsyncLifetime
     public IntegrationTestFixture()
     {
         Factory = new TransferAgreementsApiWebApplicationFactory();
-        PostgresContainer = new PostgresContainer();
+        PostgresContainer = PostgresContainer.Instance;
         CvrWireMockServer = WireMockServer.Start();
     }
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
-        await PostgresContainer.InitializeAsync();
 
         SetupPoWalletClientMock();
 
         Factory.ConnectionString = PostgresContainer.ConnectionString;
         Factory.CvrBaseUrl = CvrWireMockServer.Url!;
         Factory.Start();
+        return Task.CompletedTask;
     }
 
     private IProjectOriginWalletClient SetupPoWalletClientMock()

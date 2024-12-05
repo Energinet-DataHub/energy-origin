@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using API.IntegrationTests.Testcontainers;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
@@ -14,10 +15,10 @@ public class TransferAgreementRepositoryTest
 {
     private readonly DbContextOptions<ApplicationDbContext> options;
 
-    public TransferAgreementRepositoryTest(IntegrationTestFixture integrationTestFixture)
+    public TransferAgreementRepositoryTest()
     {
-        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
-        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
+        var emptyDb = PostgresContainer.Instance.CreateNewDatabase().Result;
+        options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
         using var dbContext = new ApplicationDbContext(options);
         dbContext.Database.Migrate();
     }

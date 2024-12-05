@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using API.IntegrationTests.Testcontainers;
 using DataContext;
 using EnergyOrigin.ActivityLog.DataContext;
 using FluentAssertions;
@@ -13,12 +14,14 @@ using Xunit;
 namespace API.IntegrationTests.Shared.Migrations;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class ActivityLogEntityIdIsNowAStringTests(IntegrationTestFixture integrationTestFixture) : MigrationsTestBase(integrationTestFixture)
+public class ActivityLogEntityIdIsNowAStringTests()
 {
     [Fact]
     public async Task ApplyMigration_WhenDataExistsInDatabase()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        var emptyDb = await PostgresContainer.Instance.CreateNewDatabase();
+        var _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(_options);
 
         var migrator = dbContext.GetService<IMigrator>();
 

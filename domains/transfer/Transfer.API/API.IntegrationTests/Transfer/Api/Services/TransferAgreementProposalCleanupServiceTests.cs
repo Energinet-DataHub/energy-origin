@@ -4,12 +4,14 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using API.IntegrationTests.Testcontainers;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -94,12 +96,14 @@ public class TransferAgreementProposalCleanupServiceTests
         dbContext.TransferAgreementProposals.Add(oldInvitation);
         await dbContext.SaveChangesAsync();
 
-        var invitations = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreementProposal>(0, TimeSpan.FromSeconds(30));
+        var invitations =
+            await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreementProposal>(0, TimeSpan.FromSeconds(30));
 
         invitations.Should().BeEmpty();
         var client = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin.Value);
 
-        var post = await client.PostAsJsonAsync("api/transfer/activity-log", new ActivityLogEntryFilterRequest(null, null, null));
+        var post = await client.PostAsJsonAsync("api/transfer/activity-log",
+            new ActivityLogEntryFilterRequest(null, null, null));
         post.StatusCode.Should().Be(HttpStatusCode.OK);
         var activityLogResponseBody = await post.Content.ReadAsStringAsync();
         var logs = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(activityLogResponseBody);

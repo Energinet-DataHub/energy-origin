@@ -9,13 +9,16 @@ using Xunit;
 
 namespace API.IntegrationTests.ClaimAutomation.Api.Repository;
 
-public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClassFixture<PostgresContainer>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class ClaimAutomationRepositoryTest(IntegrationTestFixture integrationTestFixture)
 {
     [Fact]
     public async Task exception_is_thrown_when_duplicated_claim_automation_argument()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
-        await dbContext.Database.MigrateAsync();
+        var emptyDb = await integrationTestFixture.PostgresContainer.CreateNewDatabase();
+        var _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(_options);
+        dbContext.Database.EnsureCreated();
 
         var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
 
@@ -24,15 +27,5 @@ public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClass
 
         dbContext.ClaimAutomationArguments.Add(claimAutomationArgument);
         dbContext.Invoking(db => db.SaveChanges()).Should().Throw<DbUpdateException>();
-    }
-
-    private async Task<ApplicationDbContext> CreateNewCleanDatabase()
-    {
-        await container.InitializeAsync();
-
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
-            .Options;
-        var dbContext = new ApplicationDbContext(contextOptions);
-        return dbContext;
     }
 }

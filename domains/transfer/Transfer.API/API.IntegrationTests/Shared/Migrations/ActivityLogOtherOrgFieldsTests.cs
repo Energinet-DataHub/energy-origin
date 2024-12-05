@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using API.IntegrationTests.Testcontainers;
 using DataContext;
 using EnergyOrigin.ActivityLog.DataContext;
 using FluentAssertions;
@@ -13,12 +14,14 @@ using Xunit;
 namespace API.IntegrationTests.Shared.Migrations;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class ActivityLogEntryOtherOrgFieldsTests(IntegrationTestFixture integrationTestFixture) : MigrationsTestBase(integrationTestFixture)
+public class ActivityLogEntryOtherOrgFieldsTests()
 {
     [Fact]
     public async Task GivenMigrationApplied_IfNewActivityLogEntryIsCreated_OtherOrganizationFieldsExist()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        var emptyDb = await PostgresContainer.Instance.CreateNewDatabase();
+        var _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.GetService<IMigrator>();
         var applyMigration = () => migrator.MigrateAsync();
 
@@ -35,7 +38,9 @@ public class ActivityLogEntryOtherOrgFieldsTests(IntegrationTestFixture integrat
     [Fact]
     public async Task GivenActivityLogExists_IfMigrationApplied_OldActivityLogsOtherOrganizationFieldsEqualStringEmpty()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        var emptyDb = await PostgresContainer.Instance.CreateNewDatabase();
+        var _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.GetService<IMigrator>();
         await migrator.MigrateAsync("20240216131219_ActivityLogEntityIdIsNowAString");
         await InsertOldActivityLogEntry(dbContext, Guid.NewGuid());
@@ -53,7 +58,9 @@ public class ActivityLogEntryOtherOrgFieldsTests(IntegrationTestFixture integrat
     [Fact]
     public async Task ApplyMigration_WhenDataExistsInDatabase()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        var emptyDb = await PostgresContainer.Instance.CreateNewDatabase();
+        var _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(_options);
 
         var migrator = dbContext.GetService<IMigrator>();
 

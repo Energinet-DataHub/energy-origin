@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using System;
 using System.Threading.Tasks;
+using API.IntegrationTests.Testcontainers;
 using DataContext;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -11,13 +12,15 @@ using Xunit;
 namespace API.IntegrationTests.Shared.Migrations;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AddTransferAgreementProposalsAndDeleteConnectionsMigrationTests(IntegrationTestFixture integrationTestFixture)
-    : MigrationsTestBase(integrationTestFixture)
+public class AddTransferAgreementProposalsAndDeleteConnectionsMigrationTests()
+
 {
     [Fact]
     public async Task ApplyMigration_WhenExistingDataInDatabase_Success()
     {
-        await using var dbContext = await CreateNewCleanDatabase();
+        var emptyDb = await PostgresContainer.Instance.CreateNewDatabase();
+        var _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
+        using var dbContext = new ApplicationDbContext(_options);
 
         var migrator = dbContext.GetService<IMigrator>();
 

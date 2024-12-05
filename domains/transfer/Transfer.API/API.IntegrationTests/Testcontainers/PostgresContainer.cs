@@ -6,28 +6,35 @@ using Xunit;
 
 namespace API.IntegrationTests.Testcontainers;
 
-public class PostgresContainer : IAsyncLifetime
+public class PostgresContainer
 {
-    private readonly PostgreSqlContainer testContainer;
+    private static readonly Lazy<PostgresContainer> lazyContainer = new Lazy<PostgresContainer>(() =>
+    {
+        var container = new PostgreSqlBuilder().WithImage("postgres:15.2").Build();
+        container.StartAsync().GetAwaiter().GetResult();
+        return new PostgresContainer(container);
+    });
 
-    public PostgresContainer() => testContainer = new PostgreSqlBuilder().WithImage("postgres:15.2").Build();
+    private readonly PostgreSqlContainer _container;
 
-    public string ConnectionString => testContainer.GetConnectionString();
+    private PostgresContainer(PostgreSqlContainer container)
+    {
+        _container = container;
+    }
 
-    public async Task InitializeAsync() => await testContainer.StartAsync();
+    public static PostgresContainer Instance => lazyContainer.Value;
 
-    public async Task DisposeAsync() => await testContainer.DisposeAsync();
+    public string ConnectionString => _container.GetConnectionString();
 
     public async Task<DatabaseInfo> CreateNewDatabase()
     {
-        var randomName = Guid.NewGuid().ToString().Substring(0, 8);
-        await testContainer.ExecScriptAsync("CREATE DATABASE " + randomName);
+        var randomName = "a" + Guid.NewGuid().ToString().Substring(0, 8);
+        await _container.ExecScriptAsync("CREATE DATABASE " + randomName);
         var regex = new Regex("Database=[^;]+;");
         var match = regex.Match(ConnectionString);
         return new DatabaseInfo(ConnectionString.Replace(match.Value, "Database=" + randomName + ";"));
     }
 }
-
 public class DatabaseInfo
 {
     public string ConnectionString { get; private set; }
