@@ -111,7 +111,7 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
 
             if (consent == null || proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != Tin.Create(consent.ReceiverOrganizationTin)) // || proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != Tin.Create(consent.ReceiverOrganizationTin) <-- This part should be redundant
             {
-                throw new BusinessException("Only the POA receiver company can accept this Transfer Agreement Proposal"); // TODO: Should we have another error for this????
+                throw new BusinessException("Only the Consent receiver company can accept this Transfer Agreement Proposal");
             }
 
             receiverOrganizationName = OrganizationName.Create(consent.ReceiverOrganizationName);

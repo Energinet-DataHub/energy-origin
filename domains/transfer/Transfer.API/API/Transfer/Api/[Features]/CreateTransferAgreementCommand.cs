@@ -24,8 +24,6 @@ public record CreateTransferAgreementCommand(
     long StartDate,
     long? EndDate,
     TransferAgreementType Type
-
-// TODO: Delete once we get info from Auth 🐉
 ) : IRequest<CreateTransferAgreementCommandResult>;
 public record CreateTransferAgreementCommandResult(Guid TransferAgreementId, string SenderName, string SenderTin, string ReceiverTin, long StartDate, long? EndDate, TransferAgreementType Type);
 
