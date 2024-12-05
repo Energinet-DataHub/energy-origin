@@ -41,27 +41,22 @@ public class MeasurementsSyncService
         _options = _measurementSyncOptions;
     }
 
-    public async Task FetchAndPublishMeasurements(MeteringPointSyncInfo syncInfo, MeteringPointTimeSeriesSlidingWindow slidingWindow,
+    public async Task FetchAndPublishMeasurements(
+        MeteringPointSyncInfo syncInfo,
+        MeteringPointTimeSeriesSlidingWindow slidingWindow,
         CancellationToken stoppingToken)
     {
-        var minimumAgeThresholdInHours = _options.Value.MinimumAgeThresholdHours;
+        var newSyncPoint = GetNextSyncPoint(syncInfo);
 
-        var latestPossibleSyncTimestamp = UnixTimestamp.Now().Add(TimeSpan.FromHours(-minimumAgeThresholdInHours)).RoundToLatestHour();
-        var contractEndSyncTimestamp = syncInfo.EndSyncDate is not null
-            ? UnixTimestamp.Create(syncInfo.EndSyncDate.Value)
-            : UnixTimestamp.Create(DateTimeOffset.MaxValue);
-        var pointInTimeItShouldSyncUpTo = UnixTimestamp.Min(latestPossibleSyncTimestamp, contractEndSyncTimestamp);
-
-        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, pointInTimeItShouldSyncUpTo, stoppingToken);
-        var meteringPoints =
-            await _meteringPointsClient.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest() { Subject = syncInfo.MeteringPointOwner });
+        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, newSyncPoint, stoppingToken);
+        var meteringPoints = await GetOwnedMeteringPoints(syncInfo);
         var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
 
         _measurementSyncMetrics.AddNumberOfMeasurementsFetched(fetchedMeasurements.Count);
 
         if (fetchedMeasurements.Count > 0)
         {
-            var measurementsToPublish = _slidingWindowService.FilterMeasurements(slidingWindow, fetchedMeasurements, pointInTimeItShouldSyncUpTo);
+            var measurementsToPublish = _slidingWindowService.FilterMeasurements(slidingWindow, fetchedMeasurements);
 
             _logger.LogInformation(
                 "Publishing {numberOfMeasurementsLeft} of total {numberOfMeasurements} measurements fetched for GSRN {GSRN}",
@@ -74,23 +69,41 @@ public class MeasurementsSyncService
                 await _measurementSyncPublisher.PublishIntegrationEvents(meteringPoint, syncInfo, measurementsToPublish, stoppingToken);
             }
 
-            _slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, pointInTimeItShouldSyncUpTo);
+            _slidingWindowService.UpdateSlidingWindow(slidingWindow, fetchedMeasurements, newSyncPoint);
             await _slidingWindowState.UpsertSlidingWindow(slidingWindow, stoppingToken);
             await _slidingWindowState.SaveChangesAsync(stoppingToken);
         }
     }
 
+    private async Task<MeteringPointsResponse> GetOwnedMeteringPoints(MeteringPointSyncInfo syncInfo)
+    {
+        var request = new OwnedMeteringPointsRequest { Subject = syncInfo.MeteringPointOwner };
+        return await _meteringPointsClient.GetOwnedMeteringPointsAsync(request);
+    }
+
+    private UnixTimestamp GetNextSyncPoint(MeteringPointSyncInfo syncInfo)
+    {
+        var minimumAgeThresholdInHours = _options.Value.MinimumAgeThresholdHours;
+
+        var latestPossibleSyncTimestamp = UnixTimestamp.Now().Add(TimeSpan.FromHours(-minimumAgeThresholdInHours)).RoundToLatestHour();
+        var contractEndSyncTimestamp = syncInfo.EndSyncDate is not null
+            ? UnixTimestamp.Create(syncInfo.EndSyncDate.Value)
+            : UnixTimestamp.Create(DateTimeOffset.MaxValue);
+        var pointInTimeItShouldSyncUpTo = UnixTimestamp.Min(latestPossibleSyncTimestamp, contractEndSyncTimestamp);
+        return pointInTimeItShouldSyncUpTo;
+    }
+
     public async Task<List<Measurement>> FetchMeasurements(MeteringPointTimeSeriesSlidingWindow slidingWindow, string meteringPointOwner,
-        UnixTimestamp pointInTimeItShouldSyncUpTo, CancellationToken cancellationToken)
+        UnixTimestamp newSyncPoint, CancellationToken cancellationToken)
     {
         var dateFrom = slidingWindow.GetFetchIntervalStart().EpochSeconds;
 
-        if (dateFrom < pointInTimeItShouldSyncUpTo.EpochSeconds)
+        if (dateFrom < newSyncPoint.EpochSeconds)
         {
             var request = new GetMeasurementsRequest
             {
                 DateFrom = dateFrom,
-                DateTo = pointInTimeItShouldSyncUpTo.EpochSeconds,
+                DateTo = newSyncPoint.EpochSeconds,
                 Gsrn = slidingWindow.GSRN,
                 Subject = meteringPointOwner,
                 Actor = Guid.NewGuid().ToString()
@@ -102,7 +115,7 @@ public class MeasurementsSyncService
                 res.Measurements.Count,
                 slidingWindow.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
-                DateTimeOffset.FromUnixTimeSeconds(pointInTimeItShouldSyncUpTo.EpochSeconds).ToString("o"));
+                DateTimeOffset.FromUnixTimeSeconds(newSyncPoint.EpochSeconds).ToString("o"));
 
             foreach (var measurement in res.Measurements)
             {
@@ -116,7 +129,8 @@ public class MeasurementsSyncService
                     measurement.QuantityMissing);
             }
 
-            return res.Measurements.ToList();
+            // DH2 should not return measurements after newSyncPoint, but just in case
+            return res.Measurements.Where(m => m.DateTo <= newSyncPoint.EpochSeconds).ToList();
         }
 
         return new();
