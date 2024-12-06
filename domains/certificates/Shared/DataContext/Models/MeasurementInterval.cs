@@ -1,5 +1,5 @@
 using System;
-using DataContext.ValueObjects;
+using System.Collections.Generic;
 using EnergyOrigin.Domain.ValueObjects;
 
 namespace DataContext.Models;
@@ -34,5 +34,22 @@ public class MeasurementInterval
     public bool Contains(MeasurementInterval other)
     {
         return other.From >= From && other.To <= To;
+    }
+
+    public bool Overlaps(MeasurementInterval other)
+    {
+        return other.Contains(this) || (other.From >= From && other.From <= To) || (other.To >= From && other.To <= To);
+    }
+
+    public MeasurementInterval? FindFirstIntervalContaining(List<MeasurementInterval> otherIntervals)
+    {
+        foreach (var otherInterval in otherIntervals)
+        {
+            if (otherInterval.Contains(this))
+            {
+                return otherInterval;
+            }
+        }
+        return null;
     }
 }
