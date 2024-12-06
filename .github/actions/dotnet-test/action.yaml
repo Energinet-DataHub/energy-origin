@@ -45,20 +45,8 @@ runs:
         ! test -z "${{ env.SDK }}"
 
     - name: Test
-      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@62ad0d978f416f358c4d36018e7c152b1e37a0f2
+      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@adjust-verbosity-of-dotnet-validate-action
       with:
         path: ${{ env.DIRECTORY }}
         dotnet-version: ${{ env.SDK }}
         pin-version: true
-        generate-report: ${{ inputs.generate-report }}
-
-    - name: Report Test Results
-      if: ${{ inputs.generate-report == 'true' }}
-      uses: bibipkins/dotnet-test-reporter@v1.4.1
-      with:
-        github-token: ${{ inputs.github-token }}
-        results-path: './**/*.trx'
-        comment-title: 'Test Results'
-        allow-failed-tests: 'false'
-        show-failed-tests-only: 'true'
-        show-test-output: 'true'
