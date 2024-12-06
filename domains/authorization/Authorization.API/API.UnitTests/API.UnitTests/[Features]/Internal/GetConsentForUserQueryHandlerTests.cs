@@ -162,7 +162,8 @@ public class GetConsentForUserQueryHandlerTests
             mockOrganizationRepository,
             _fakeUserRepository,
             _fakeTermsRepository,
-            _fakeUnitOfWork);
+            _fakeUnitOfWork,
+            _fakeMetrics);
 
         var command = new GetConsentForUserCommand(Guid.NewGuid(), "Test User", "Test Org", "12345678");
 
