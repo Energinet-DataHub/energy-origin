@@ -1,5 +1,6 @@
 using API.Authorization._Features_.Internal;
 using API.Data;
+using API.Metrics;
 using API.Models;
 using API.Repository;
 using API.UnitTests.Repository;
@@ -15,6 +16,7 @@ public class GetConsentForUserQueryHandlerTests
     private readonly FakeOrganizationRepository _fakeOrganizationRepository;
     private readonly FakeUserRepository _fakeUserRepository;
     private readonly FakeTermsRepository _fakeTermsRepository;
+    private readonly IAuthorizationMetrics _fakeMetrics;
     private readonly IUnitOfWork _fakeUnitOfWork;
     private readonly GetConsentForUserQueryHandler _handler;
 
@@ -24,11 +26,13 @@ public class GetConsentForUserQueryHandlerTests
         _fakeUserRepository = new FakeUserRepository();
         _fakeTermsRepository = new FakeTermsRepository();
         _fakeUnitOfWork = Substitute.For<IUnitOfWork>();
+        _fakeMetrics = Substitute.For<IAuthorizationMetrics>();
         _handler = new GetConsentForUserQueryHandler(
             _fakeOrganizationRepository,
             _fakeUserRepository,
             _fakeTermsRepository,
-            _fakeUnitOfWork);
+            _fakeUnitOfWork,
+            _fakeMetrics);
     }
 
     private const string Scope = "dashboard production meters certificates wallet";
