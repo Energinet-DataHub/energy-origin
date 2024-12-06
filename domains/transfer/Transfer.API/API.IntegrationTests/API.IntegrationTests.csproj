@@ -18,7 +18,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Allure.Xunit" Version="2.12.1" />
         <PackageReference Include="FluentAssertions" Version="6.12.1" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.8" />
