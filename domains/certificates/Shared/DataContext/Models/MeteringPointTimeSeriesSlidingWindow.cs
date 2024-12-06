@@ -55,7 +55,8 @@ public class MeteringPointTimeSeriesSlidingWindow
     public void UpdateSlidingWindow(UnixTimestamp newSynchronizationPoint, List<MeasurementInterval> missingMeasurements)
     {
         SynchronizationPoint = newSynchronizationPoint;
-        MissingMeasurements = new MissingMeasurements(missingMeasurements);
+        MissingMeasurements.Intervals.Clear();
+        MissingMeasurements.Intervals.AddRange(missingMeasurements);
     }
 }
 
