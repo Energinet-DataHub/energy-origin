@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace API.Metrics;
 
@@ -28,26 +31,36 @@ public class AuthorizationMetrics : IAuthorizationMetrics
 
     public void AddUniqueUserLogin(string labelKey, string? labelValue)
     {
-        NumberOfUniqueUserLogins.Add(1, new KeyValuePair<string, object?>(labelKey, labelValue));
+        NumberOfUniqueUserLogins.Add(1, new KeyValuePair<string, object?>(labelKey, HashLabel($"{labelValue}")));
     }
 
     public void AddUniqueUserOrganizationLogin(string labelKey, string? labelValue)
     {
-        NumberOfUniqueUserOrganizationLogins.Add(1, new KeyValuePair<string, object?>(labelKey, labelValue));
+        NumberOfUniqueUserOrganizationLogins.Add(1, new KeyValuePair<string, object?>(labelKey, HashLabel($"{labelValue}")));
     }
 
     public void AddUniqueClientLogin(string labelKey, string? labelValue)
     {
-        NumberOfUniqueClientLogins.Add(1, new KeyValuePair<string, object?>(labelKey, labelValue));
+        NumberOfUniqueClientLogins.Add(1, new KeyValuePair<string, object?>(labelKey, HashLabel($"{labelValue}")));
     }
 
     public void AddUniqueClientOrganizationLogin(string labelKey, string? labelValue)
     {
-        NumberOfUniqueClientOrganizationLogins.Add(1, new KeyValuePair<string, object?>(labelKey, labelValue));
+        NumberOfUniqueClientOrganizationLogins.Add(1, new KeyValuePair<string, object?>(labelKey, HashLabel($"{labelValue}")));
     }
 
     public void AddTotalLogin()
     {
         _totalNumberOfLogins++;
+    }
+
+    private string HashLabel(string label)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            var bytes = Encoding.UTF8.GetBytes(label);
+            var hash = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
+        }
     }
 }

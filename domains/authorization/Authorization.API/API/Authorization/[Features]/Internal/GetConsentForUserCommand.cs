@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Data;
+using API.Metrics;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
@@ -30,7 +31,9 @@ public class GetConsentForUserQueryHandler(
     IOrganizationRepository organizationRepository,
     IUserRepository userRepository,
     ITermsRepository termsRepository,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    IAuthorizationMetrics metrics)
+
     : IRequestHandler<GetConsentForUserCommand, GetConsentForUserCommandResult>
 {
     public async Task<GetConsentForUserCommandResult> Handle(GetConsentForUserCommand command, CancellationToken cancellationToken)
@@ -103,6 +106,10 @@ public class GetConsentForUserQueryHandler(
             .ToListAsync(cancellationToken);
 
         await unitOfWork.CommitAsync();
+
+        metrics.AddUniqueUserLogin("UserLogin", user.IdpUserId.ToString());
+        metrics.AddUniqueUserOrganizationLogin("UserOrganizationLogin", organization.Id.ToString());
+        metrics.AddTotalLogin();
 
         return new GetConsentForUserCommandResult(
             command.Sub,
