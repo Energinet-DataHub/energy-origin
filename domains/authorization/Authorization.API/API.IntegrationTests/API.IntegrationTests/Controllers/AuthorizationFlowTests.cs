@@ -3,6 +3,7 @@ using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
+using API.Metrics;
 using API.Models;
 using API.Repository;
 using API.UnitTests;
@@ -127,7 +128,7 @@ public class AuthorizationFlowTests
         await dbContext.SaveChangesAsync();
 
         var getClientGrantedConsentsQueryHandler = new GetClientGrantedConsentsQueryHandler(new ClientRepository(dbContext));
-        var consentForClientQueryHandler = new GetConsentForClientQueryHandler(new ClientRepository(dbContext));
+        var consentForClientQueryHandler = new GetConsentForClientQueryHandler(new ClientRepository(dbContext), new AuthorizationMetrics());
         var idpClientId = organizationWithClient.Clients.First().IdpClientId;
 
         // When
