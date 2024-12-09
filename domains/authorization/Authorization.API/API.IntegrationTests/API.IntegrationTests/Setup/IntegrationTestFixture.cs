@@ -1,4 +1,5 @@
 using API.Options;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using Testcontainers.RabbitMq;
 
 namespace API.IntegrationTests.Setup;
