@@ -1,6 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DotNet.Testcontainers.Builders;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -8,24 +9,28 @@ namespace EnergyTrackAndTrace.Testing.Testcontainers;
 
 public class PostgresContainer : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer testContainer;
-
-    public PostgresContainer() => testContainer = new PostgreSqlBuilder().WithImage("postgres:15.2")
+    public PostgreSqlContainer TestContainer { get; } = new PostgreSqlBuilder()
+        .WithImage("postgres:latest")
+        .WithDatabase("db")
+        .WithUsername("postgres")
+        .WithPassword("postgres")
+        .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready"))
+        .WithCleanUp(true)
         .Build();
 
-    public string ConnectionString => testContainer.GetConnectionString();
+    public string ConnectionString => TestContainer.GetConnectionString();
 
     public async Task InitializeAsync()
     {
-        await testContainer.StartAsync();
+        await TestContainer.StartAsync();
     }
 
-    public Task DisposeAsync() => testContainer.DisposeAsync().AsTask();
+    public Task DisposeAsync() => TestContainer.DisposeAsync().AsTask();
 
     public async Task<DatabaseInfo> CreateNewDatabase()
     {
-        var randomName = "a" + Guid.NewGuid().ToString().Substring(0, 8);
-        await testContainer.ExecScriptAsync("CREATE DATABASE " + randomName);
+        var randomName = "a" + Guid.NewGuid().ToString().Substring(0, 8); // must start with a letter or underscore
+        await TestContainer.ExecScriptAsync("CREATE DATABASE " + randomName);
         var regex = new Regex("Database=[^;]+;");
         var match = regex.Match(ConnectionString);
         return new DatabaseInfo(ConnectionString.Replace(match.Value, "Database=" + randomName + ";"));
