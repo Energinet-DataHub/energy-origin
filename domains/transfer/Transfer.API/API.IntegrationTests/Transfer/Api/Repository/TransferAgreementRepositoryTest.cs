@@ -17,7 +17,7 @@ public class TransferAgreementRepositoryTest
 
     public TransferAgreementRepositoryTest()
     {
-        var emptyDb = PostgresContainer.Instance.CreateNewDatabase().Result;
+        var emptyDb = PostgresContainer.GetInstance.CreateNewDatabase().Result;
         options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
         using var dbContext = new ApplicationDbContext(options);
         dbContext.Database.Migrate();

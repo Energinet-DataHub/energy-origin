@@ -8,21 +8,26 @@ namespace API.IntegrationTests.Testcontainers;
 
 public class PostgresContainer
 {
-    private static readonly Lazy<PostgresContainer> lazyContainer = new Lazy<PostgresContainer>(() =>
-    {
-        var container = new PostgreSqlBuilder().WithImage("postgres:15.2").Build();
-        container.StartAsync().GetAwaiter().GetResult();
-        return new PostgresContainer(container);
-    });
-
+    private static PostgresContainer? _instance;
     private readonly PostgreSqlContainer _container;
 
-    private PostgresContainer(PostgreSqlContainer container)
+    private PostgresContainer()
     {
-        _container = container;
+        _container = new PostgreSqlBuilder().WithImage("postgres:15.2").Build();
+        _container.StartAsync().GetAwaiter().GetResult();
     }
 
-    public static PostgresContainer Instance => lazyContainer.Value;
+    public static PostgresContainer GetInstance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = new PostgresContainer();
+            }
+            return _instance;
+        }
+    }
 
     public string ConnectionString => _container.GetConnectionString();
 

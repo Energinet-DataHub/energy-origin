@@ -11,7 +11,7 @@ namespace API.IntegrationTests.Shared.Migrations
 
         public MigrationsTestBase(IntegrationTestFixture integrationTestFixture)
         {
-            container = PostgresContainer.Instance;
+            container = PostgresContainer.GetInstance;
         }
 
         protected async Task<ApplicationDbContext> CreateNewCleanDatabase()

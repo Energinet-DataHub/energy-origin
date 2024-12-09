@@ -19,7 +19,7 @@ public class ActivityLogEntryOtherOrgFieldsTests()
     [Fact]
     public async Task GivenMigrationApplied_IfNewActivityLogEntryIsCreated_OtherOrganizationFieldsExist()
     {
-        var emptyDb = await PostgresContainer.Instance.CreateNewDatabase();
+        var emptyDb = await PostgresContainer.GetInstance.CreateNewDatabase();
         var _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
         using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.GetService<IMigrator>();
@@ -38,7 +38,7 @@ public class ActivityLogEntryOtherOrgFieldsTests()
     [Fact]
     public async Task GivenActivityLogExists_IfMigrationApplied_OldActivityLogsOtherOrganizationFieldsEqualStringEmpty()
     {
-        var emptyDb = await PostgresContainer.Instance.CreateNewDatabase();
+        var emptyDb = await PostgresContainer.GetInstance.CreateNewDatabase();
         var _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
         using var dbContext = new ApplicationDbContext(_options);
         var migrator = dbContext.GetService<IMigrator>();
@@ -58,7 +58,7 @@ public class ActivityLogEntryOtherOrgFieldsTests()
     [Fact]
     public async Task ApplyMigration_WhenDataExistsInDatabase()
     {
-        var emptyDb = await PostgresContainer.Instance.CreateNewDatabase();
+        var emptyDb = await PostgresContainer.GetInstance.CreateNewDatabase();
         var _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
         using var dbContext = new ApplicationDbContext(_options);
 

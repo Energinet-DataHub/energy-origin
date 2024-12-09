@@ -38,7 +38,8 @@ public class TransferAgreementProposalCleanupServiceTests
     {
         using var scope = factory.Services.CreateScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.TruncateTableAsync<TransferAgreementProposal>();
+        await dbContext.TruncateTableAsync<TransferAgreementProposal>()
+
 
         var newInvitation = new TransferAgreementProposal
         {

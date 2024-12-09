@@ -28,7 +28,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     public IntegrationTestFixture()
     {
         Factory = new TransferAgreementsApiWebApplicationFactory();
-        PostgresContainer = PostgresContainer.Instance;
+        PostgresContainer = PostgresContainer.GetInstance;
         CvrWireMockServer = WireMockServer.Start();
     }
 
