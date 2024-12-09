@@ -5,6 +5,7 @@ using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
 using API.MeteringPoints.Api.Models;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -13,7 +14,6 @@ using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Relation.V1;
 using Tests.Extensions;
-using Tests.TestContainers;
 using Xunit;
 
 namespace Tests.MeteringPoints.Api.Consumer;
