@@ -48,7 +48,7 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
         {
             throw new EntityNotFoundException(query.IdpClientId, typeof(Client));
         }
-        _metrics.AddUniqueClientOrganizationLogin("OrganisationId", client.OrgId.ToString());
+        _metrics.AddUniqueClientOrganizationLogin(client.OrgId.ToString());
         return client;
     }
 }

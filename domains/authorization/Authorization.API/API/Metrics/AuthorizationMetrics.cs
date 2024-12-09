@@ -4,6 +4,7 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using API.ValueObjects;
 
 namespace API.Metrics;
 
@@ -20,20 +21,22 @@ public class AuthorizationMetrics : IAuthorizationMetrics
         var meter = new Meter(MetricName);
 
         NumberOfUniqueUserLogins = meter.CreateCounter<long>("ett_authorization_unique_user_logins");
-        NumberOfUniqueClientOrganizationLogins = meter.CreateCounter<long>("ett_authorization_unique_client_organization_logins");
+        NumberOfUniqueClientOrganizationLogins =
+            meter.CreateCounter<long>("ett_authorization_unique_client_organization_logins");
     }
 
-    public void AddUniqueUserLogin(IList<KeyValuePair<string, object?>> labels)
+    public void AddUniqueUserLogin(string organizationId, IdpUserId idpClientId)
     {
-        var hashedLabels = labels
-            .Select(label => new KeyValuePair<string, object?>(label.Key, HashLabel($"{label.Value}")));
-
-        NumberOfUniqueUserLogins.Add(1, hashedLabels.ToArray());
+        NumberOfUniqueUserLogins.Add(1,
+            new KeyValuePair<string, object?>("OrganizationId", HashLabel(organizationId)),
+            new KeyValuePair<string, object?>("UserId", HashLabel(idpClientId.Value.ToString()))
+        );
     }
 
-    public void AddUniqueClientOrganizationLogin(string labelKey, string? labelValue)
+    public void AddUniqueClientOrganizationLogin(string organizationId)
     {
-        NumberOfUniqueClientOrganizationLogins.Add(1, new KeyValuePair<string, object?>(labelKey, HashLabel($"{labelValue}")));
+        NumberOfUniqueClientOrganizationLogins.Add(1,
+            new KeyValuePair<string, object?>("OrganizationId", HashLabel(organizationId)));
     }
 
     private string HashLabel(string label)
