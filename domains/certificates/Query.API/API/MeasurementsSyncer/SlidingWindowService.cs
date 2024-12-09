@@ -142,7 +142,8 @@ public class SlidingWindowService
         var measurementsBeforeWindowSyncPoint = measurements.Where(m => m.DateTo <= window.SynchronizationPoint.EpochSeconds).ToList();
 
         // By default missing intervals are the same as before fetching new measurements
-        var updatedMissingIntervals = new List<MeasurementInterval>(window.MissingMeasurements.Intervals);
+        var updatedMissingIntervals = window.MissingMeasurements.Intervals
+            .Select(m => MeasurementInterval.Create(m.From, m.To)).ToList();
 
         // Loop through each measurement: if measurement is inside a missing interval, then replace the interval with 1..2 new intervals
         foreach (var measurement in measurementsBeforeWindowSyncPoint)
