@@ -107,7 +107,7 @@ public class GetConsentForUserQueryHandler(
 
         await unitOfWork.CommitAsync();
 
-        metrics.AddUniqueUserLogin(new []
+        metrics.AddUniqueUserLogin(new[]
         {
             new KeyValuePair<string, object?>("UserId", user.IdpUserId.ToString()),
             new KeyValuePair<string, object?>("OrganizationId", organization.Id.ToString())
