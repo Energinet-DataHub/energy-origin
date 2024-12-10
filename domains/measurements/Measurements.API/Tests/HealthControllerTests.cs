@@ -1,6 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using API;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using Tests.Extensions;
 using Tests.Fixtures;
 using Tests.TestContainers;

@@ -14,15 +14,15 @@ using Xunit;
 namespace API.IntegrationTests.Repositories;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class ContractStateTest : IAsyncLifetime
+public class ContractStateTest
 {
-    private ContractState _sut;
+    private readonly ContractState _sut;
     private readonly int _minimumAgeThresholdHours = 5;
-    private DbContextFactoryMock _dbContextFactoryMock;
+    private readonly DbContextFactoryMock _dbContextFactoryMock;
 
     public ContractStateTest(IntegrationTestFixture integrationTestFixture)
     {
-        _dbContextFactoryMock = new DbContextFactoryMock();
+        _dbContextFactoryMock = new DbContextFactoryMock(integrationTestFixture.PostgresContainer);
         var options = Options.Create(new MeasurementsSyncOptions() { MinimumAgeThresholdHours = _minimumAgeThresholdHours });
         _sut = new ContractState(_dbContextFactoryMock, NullLogger<ContractState>.Instance, options);
     }
@@ -97,7 +97,4 @@ public class ContractStateTest : IAsyncLifetime
         // Contract is included
         syncInfo.Should().BeNull();
     }
-
-    public Task InitializeAsync() => _dbContextFactoryMock.InitializeAsync();
-    public Task DisposeAsync() => _dbContextFactoryMock.DisposeAsync();
 }
