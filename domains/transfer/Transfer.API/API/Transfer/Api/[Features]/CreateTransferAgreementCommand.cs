@@ -6,12 +6,11 @@ using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Clients;
-using API.Transfer.Api.Dto.Requests;
-using API.Transfer.Api.Dto.Responses;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProjectOriginClients;
@@ -27,44 +26,29 @@ public record CreateTransferAgreementCommand(
 ) : IRequest<CreateTransferAgreementCommandResult>;
 public record CreateTransferAgreementCommandResult(Guid TransferAgreementId, string SenderName, string SenderTin, string ReceiverTin, long StartDate, long? EndDate, TransferAgreementType Type);
 
-public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProjectOriginWalletClient WalletClient, IAuthorizationClient AuthorizationClient) : IRequestHandler<CreateTransferAgreementCommand, CreateTransferAgreementCommandResult>
+public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProjectOriginWalletClient WalletClient, IAuthorizationClient AuthorizationClient, IdentityDescriptor IdentityDescriptor) : IRequestHandler<CreateTransferAgreementCommand, CreateTransferAgreementCommandResult>
 {
-    private record GiverReceiverDto(OrganizationId SenderOrganizationId, OrganizationName SenderName, Tin SenderTin, OrganizationId ReceiverOrganizationId,  OrganizationName ReceiverName, Tin ReceiverTin);
-
-    private GiverReceiverDto FromConsentResponse(UserOrganizationConsentsResponse consents, Guid SenderOrganizationId, Guid ReceiverOrganizationId)
-    {
-        var sender = consents.Result.First(c => c.GiverOrganizationId == SenderOrganizationId); // Todo Or self?
-        var receiver = consents.Result.First(c => c.GiverOrganizationId == ReceiverOrganizationId); // Todo Or self?
-
-        return new GiverReceiverDto(
-            OrganizationId.Create(SenderOrganizationId),
-            OrganizationName.Create(sender.GiverOrganizationName),
-            Tin.Create(sender.GiverOrganizationTin),
-            OrganizationId.Create(ReceiverOrganizationId),
-            OrganizationName.Create(receiver.GiverOrganizationName),
-            Tin.Create(receiver.GiverOrganizationTin));
-    }
-
     public async Task<CreateTransferAgreementCommandResult> Handle(CreateTransferAgreementCommand command, CancellationToken cancellationToken)
     {
         var taRepo = UnitOfWork.TransferAgreementRepo;
 
         var consents = await AuthorizationClient.GetConsentsAsync();
         if(consents == null)
-            throw new ApplicationException("Failed to get consents from authorization.");
+            throw new BusinessException("Failed to get consents from authorization.");
 
-        var authResponse = FromConsentResponse(consents, command.SenderOrganizationId, command.ReceiverOrganizationId);
+        (var SenderOrganizationId, var SenderTin, var SenderName) = GetOrganizationOnBehalfOf(command.SenderOrganizationId, consents);
+        (var ReceiverOrganizationId, var ReceiverTin, var ReceiverName) = GetOrganizationOnBehalfOf(command.ReceiverOrganizationId, consents);
 
         var transferAgreement = new TransferAgreement
         {
             StartDate = UnixTimestamp.Create(command.StartDate),
             EndDate = command.EndDate.HasValue ? UnixTimestamp.Create(command.EndDate.Value) : null,
-            SenderId = authResponse.SenderOrganizationId,
-            SenderName = authResponse.SenderName,
-            SenderTin = authResponse.SenderTin,
-            ReceiverId = authResponse.ReceiverOrganizationId,
-            ReceiverName = authResponse.ReceiverName,
-            ReceiverTin = authResponse.ReceiverTin,
+            SenderId = SenderOrganizationId,
+            SenderName = SenderName,
+            SenderTin = SenderTin,
+            ReceiverId = ReceiverOrganizationId,
+            ReceiverName = ReceiverName,
+            ReceiverTin = ReceiverTin,
             Type = command.Type
         };
 
@@ -89,7 +73,7 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProj
 
         var walletEndpoint = await WalletClient.CreateWalletEndpoint(command.ReceiverOrganizationId, walletId.Value, CancellationToken.None);
 
-        var externalEndpoint = await WalletClient.CreateExternalEndpoint(command.SenderOrganizationId, walletEndpoint, authResponse.SenderTin.Value, CancellationToken.None);
+        var externalEndpoint = await WalletClient.CreateExternalEndpoint(command.SenderOrganizationId, walletEndpoint, SenderTin.Value, CancellationToken.None);
 
         transferAgreement.ReceiverReference = externalEndpoint.ReceiverId;
 
@@ -107,5 +91,27 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProj
             throw new TransferAgreementConflictException();
         }
     }
+
+    private (OrganizationId organizationId, Tin organizationTin, OrganizationName organizationName) GetOrganizationOnBehalfOf(Guid organizationId2, UserOrganizationConsentsResponse consents)
+    {
+        OrganizationId organizationId;
+        Tin organizationTin;
+        OrganizationName organizationName;
+
+        if (IdentityDescriptor.OrganizationId == organizationId2)
+        {
+            organizationId = OrganizationId.Create(IdentityDescriptor.OrganizationId);
+            organizationTin = Tin.Create(IdentityDescriptor.OrganizationCvr!);
+            organizationName = OrganizationName.Create(IdentityDescriptor.OrganizationName);
+        }
+        else
+        {
+            (organizationId, organizationTin, organizationName) = consents!.GetCurrentOrganizationBehalfOf(organizationId2);
+        }
+
+        return (organizationId, organizationTin, organizationName);
+    }
+
+
 }
 

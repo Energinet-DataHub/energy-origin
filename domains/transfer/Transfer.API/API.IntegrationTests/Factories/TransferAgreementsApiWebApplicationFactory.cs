@@ -105,7 +105,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             }
 
             s.Remove(s.First(sd => sd.ServiceType == typeof(IAuthorizationClient)));
-            s.AddScoped<IAuthorizationClient, MockAuthorizationClient>();
+            s.AddSingleton<IAuthorizationClient, MockAuthorizationClient>();
         });
     }
 

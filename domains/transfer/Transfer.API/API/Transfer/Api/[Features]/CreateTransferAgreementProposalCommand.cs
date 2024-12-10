@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Transfer.Api.Clients;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext.Models;
@@ -14,20 +16,15 @@ namespace API.Transfer.Api._Features_;
 public class CreateTransferAgreementProposalCommand : IRequest<CreateTransferAgreementProposalCommandResult>
 {
     public OrganizationId SenderOrganizationId { get; }
-    public Tin SenderOrganizationTin { get; }
-    public OrganizationName SenderOrganizationName { get; }
     public Tin ReceiverOrganizationTin { get; }
     public UnixTimestamp StartDate { get; }
     public UnixTimestamp? EndDate { get; }
     public TransferAgreementType Type { get; }
 
-    public CreateTransferAgreementProposalCommand(Guid senderOrganizationId, string? senderOrganizationTin, string? senderOrganizationName,
-        string? receiverOrganizationTin, long startDate, long? endDate, TransferAgreementType type)
+    public CreateTransferAgreementProposalCommand(Guid senderOrganizationId, string? receiverOrganizationTin, long startDate, long? endDate, TransferAgreementType type)
     {
         ReceiverOrganizationTin = receiverOrganizationTin is not null ? Tin.Create(receiverOrganizationTin) : Tin.Empty();
         SenderOrganizationId = OrganizationId.Create(senderOrganizationId);
-        SenderOrganizationTin = senderOrganizationTin is not null ? Tin.Create(senderOrganizationTin) : Tin.Empty();
-        SenderOrganizationName = senderOrganizationName is not null ? OrganizationName.Create(senderOrganizationName) : OrganizationName.Empty();
         StartDate = UnixTimestamp.Create(startDate);
         EndDate = endDate is not null ? UnixTimestamp.Create(endDate.Value) : null;
         Type = type;
@@ -62,18 +59,25 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
 {
     private readonly IdentityDescriptor _identityDescriptor;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuthorizationClient _authorizationClient;
 
-    public CreateTransferAgreementProposalCommandHandler(IdentityDescriptor identityDescriptor, IUnitOfWork unitOfWork)
+    public CreateTransferAgreementProposalCommandHandler(IdentityDescriptor identityDescriptor, IUnitOfWork unitOfWork, IAuthorizationClient authorizationClient)
     {
         _identityDescriptor = identityDescriptor;
         _unitOfWork = unitOfWork;
+        _authorizationClient = authorizationClient;
     }
 
     public async Task<CreateTransferAgreementProposalCommandResult> Handle(CreateTransferAgreementProposalCommand command,
         CancellationToken cancellationToken = default)
     {
+        OrganizationId organizationId;
+        Tin organizationTin;
+        OrganizationName organizationName;
 
-        if (command.ReceiverOrganizationTin != Tin.Empty() && command.ReceiverOrganizationTin.Value.Equals(_identityDescriptor.OrganizationCvr))
+        (organizationId, organizationTin, organizationName) = await GetOrganizationOnBehalfOf(command);
+
+        if (command.ReceiverOrganizationTin != Tin.Empty() && command.ReceiverOrganizationTin.Value.Equals(organizationTin.Value))
         {
             throw new SameSenderAndReceiverException();
         }
@@ -81,9 +85,9 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
         var newProposal = new TransferAgreementProposal
         {
             Id = Guid.NewGuid(),
-            SenderCompanyId = command.SenderOrganizationId,
-            SenderCompanyTin = command.SenderOrganizationTin,
-            SenderCompanyName = command.SenderOrganizationName,
+            SenderCompanyId = organizationId,
+            SenderCompanyTin = organizationTin,
+            SenderCompanyName = organizationName,
             ReceiverCompanyTin = command.ReceiverOrganizationTin,
             StartDate = command.StartDate,
             EndDate = command.EndDate,
@@ -110,6 +114,31 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
             newProposal.StartDate.EpochSeconds, newProposal.EndDate?.EpochSeconds, newProposal.Type);
     }
 
+    private async Task<(OrganizationId organizationId, Tin organizationTin, OrganizationName organizationName)> GetOrganizationOnBehalfOf(CreateTransferAgreementProposalCommand command)
+    {
+        OrganizationId organizationId;
+        Tin organizationTin;
+        OrganizationName organizationName;
+
+        if (_identityDescriptor.OrganizationId == command.SenderOrganizationId.Value)
+        {
+            organizationId = OrganizationId.Create(_identityDescriptor.OrganizationId);
+            organizationTin = Tin.Create(_identityDescriptor.OrganizationCvr!);
+            organizationName = OrganizationName.Create(_identityDescriptor.OrganizationName);
+        }
+        else
+        {
+            var consents = await _authorizationClient.GetConsentsAsync();
+
+            if(consents == null)
+                throw new BusinessException("Failed to get consents from authorization.");
+
+            (organizationId, organizationTin, organizationName) = consents.GetCurrentOrganizationBehalfOf(command.SenderOrganizationId.Value);
+        }
+
+        return (organizationId, organizationTin, organizationName);
+    }
+
     private async Task AppendToActivityLog(IdentityDescriptor identity, TransferAgreementProposal proposal,
         ActivityLogEntry.ActionTypeEnum actionType)
     {
@@ -125,5 +154,15 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
             actionType: actionType,
             entityId: proposal.Id.ToString())
         );
+    }
+}
+
+public static class UserOrganizationConsentsResponseExtensions
+{
+    public static (OrganizationId OrganizationId, Tin OrganizationTin, OrganizationName OrganizationName) GetCurrentOrganizationBehalfOf(this UserOrganizationConsentsResponse userOrganizationConsentsResponse, Guid organizationId)
+    {
+        var consent = userOrganizationConsentsResponse!.Result.First(c => c.GiverOrganizationId == organizationId);
+
+        return (OrganizationId.Create(consent.GiverOrganizationId), Tin.Create(consent.GiverOrganizationTin), OrganizationName.Create(consent.GiverOrganizationName));
     }
 }

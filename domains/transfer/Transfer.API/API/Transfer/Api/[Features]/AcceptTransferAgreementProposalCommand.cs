@@ -93,36 +93,16 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new BusinessException("This proposal has run out");
         }
 
-        var isConsentTransferProposalAccept = command.ReceiverOrganizationTin.IsEmpty();
-        if (!isConsentTransferProposalAccept && proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != command.ReceiverOrganizationTin)
+        (OrganizationId receiverOrganizationId, Tin receiverOrganizationTin, OrganizationName receiverOrganizationName) = await GetOrganizationOnBehalfOf(command);
+
+        if (proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != command.ReceiverOrganizationTin)
         {
             throw new BusinessException("Only the receiver company can accept this Transfer Agreement Proposal");
         }
 
-        proposal.ReceiverCompanyTin = command.ReceiverOrganizationTin;
-        var receiverOrganizationName = command.ReceiverOrganizationName;
-        var receiverOrganizationTin = command.ReceiverOrganizationTin;
-        var receiverOrganizationId = command.ReceiverOrganizationId;
-
-        if(isConsentTransferProposalAccept)
-        {
-            var consents = await _authorizationClient.GetConsentsAsync();
-            var consent = consents?.Result.FirstOrDefault(c => c.GiverOrganizationId == command.ReceiverOrganizationId.Value);
-
-            if (consent == null || proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != Tin.Create(consent.ReceiverOrganizationTin)) // || proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != Tin.Create(consent.ReceiverOrganizationTin) <-- This part should be redundant
-            {
-                throw new BusinessException("Only the Consent receiver company can accept this Transfer Agreement Proposal");
-            }
-
-            receiverOrganizationName = OrganizationName.Create(consent.ReceiverOrganizationName);
-            receiverOrganizationTin = Tin.Create(consent.ReceiverOrganizationTin);
-
-            proposal.ReceiverCompanyTin = Tin.Create(consent.GiverOrganizationTin); // This is needed to ensure HasDataOverlap works, because a proposal
-        }
-
         var taRepo = _unitOfWork.TransferAgreementRepo;
 
-        var hasConflict = await taRepo.HasDateOverlap(proposal, cancellationToken); // TODO: This will currently fail if TIN is null, since we can't check for overlap. Maybe this was always broken???? 🐉
+        var hasConflict = await taRepo.HasDateOverlap(proposal, cancellationToken);
         if (hasConflict)
         {
             throw new TransferAgreementConflictException();
@@ -171,6 +151,31 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
 
         return new AcceptTransferAgreementProposalCommandResult(result.Id, result.SenderName.Value, result.SenderTin.Value, result.ReceiverTin.Value,
             result.StartDate.EpochSeconds, result.EndDate?.EpochSeconds, result.Type);
+    }
+
+    private async Task<(OrganizationId organizationId, Tin organizationTin, OrganizationName organizationName)> GetOrganizationOnBehalfOf(AcceptTransferAgreementProposalCommand command)
+    {
+        OrganizationId organizationId;
+        Tin organizationTin;
+        OrganizationName organizationName;
+
+        if (_identityDescriptor.OrganizationId == command.ReceiverOrganizationId.Value)
+        {
+            organizationId = OrganizationId.Create(_identityDescriptor.OrganizationId);
+            organizationTin = Tin.Create(_identityDescriptor.OrganizationCvr!);
+            organizationName = OrganizationName.Create(_identityDescriptor.OrganizationName);
+        }
+        else
+        {
+            var consents = await _authorizationClient.GetConsentsAsync();
+
+            if(consents == null)
+                throw new BusinessException("Failed to get consents from authorization.");
+
+            (organizationId, organizationTin, organizationName) = consents.GetCurrentOrganizationBehalfOf(command.ReceiverOrganizationId.Value);
+        }
+
+        return (organizationId, organizationTin, organizationName);
     }
 
     private async Task AppendProposalAcceptedToActivityLog(IdentityDescriptor identity, TransferAgreement result, TransferAgreementProposal proposal)
