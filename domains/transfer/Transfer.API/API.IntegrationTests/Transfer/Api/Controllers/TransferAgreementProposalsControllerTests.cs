@@ -47,6 +47,20 @@ public class TransferAgreementProposalsControllerTests
     }
 
     [Fact]
+    public async Task CreateUsingConsent()
+    {
+        var senderOrganizationId = new Guid("7adc659d-ad17-4d2d-a92f-b9904bbd306d");
+        var receiverOrganizationId = new Guid("d37337e8-035a-4f1c-a416-eae9375148e1");
+
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId} {receiverOrganizationId}");
+        var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
+        var result = await authenticatedClient
+            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
+
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
     public async Task Create_ShouldReturnUnauthorized_WhenUnauthenticated()
     {
         var client = factory.CreateUnauthenticatedClient();
