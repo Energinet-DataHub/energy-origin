@@ -25,34 +25,24 @@ internal class ContractServiceImpl : IContractService
     private readonly IStampClient stampClient;
     private readonly IUnitOfWork unitOfWork;
     private readonly ILogger<ContractServiceImpl> logger;
-    private readonly IAuthorizationCertMetrics _metrics;
 
     public ContractServiceImpl(
         IMeteringPointsClient meteringPointsClient,
         IWalletClient walletClient,
         IStampClient stampClient,
         IUnitOfWork unitOfWork,
-        ILogger<ContractServiceImpl> logger,
-        IAuthorizationCertMetrics _metrics)
+        ILogger<ContractServiceImpl> logger)
     {
         this.meteringPointsClient = meteringPointsClient;
         this.walletClient = walletClient;
         this.stampClient = stampClient;
         this.unitOfWork = unitOfWork;
         this.logger = logger;
-        this._metrics = _metrics;
     }
 
     public async Task<CreateContractResult> Create(CreateContracts contracts, Guid meteringPointOwnerId, Guid subjectId, string subjectName, string organizationName,
         string organizationTin, CancellationToken cancellationToken)
     {
-
-        for (int i = 0; i < 10; i++)
-        {
-            logger.LogInformation("ADDING METRICS");
-            _metrics.AddUniqueClientOrganizationLogin(subjectId.ToString());
-            _metrics.AddUniqueUserLogin(subjectId.ToString(), meteringPointOwnerId.ToString());
-        }
 
         var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwnerId.ToString(), cancellationToken);
         var contractsByGsrn =

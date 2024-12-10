@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService;
+using API.Metrics;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using Asp.Versioning;
@@ -37,8 +38,18 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
         [FromQuery] Guid organizationId,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
+        [FromServices] IAuthorizationCertMetrics metrics,
         CancellationToken cancellationToken)
     {
+
+
+        for (int i = 0; i < 10; i++)
+        {
+            metrics.AddUniqueClientOrganizationLogin(identityDescriptor.Subject.ToString());
+            metrics.AddUniqueUserLogin(organizationId.ToString(), identityDescriptor.Subject.ToString());
+        }
+
+
         if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
         {
             return Forbid();

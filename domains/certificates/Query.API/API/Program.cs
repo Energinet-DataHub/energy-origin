@@ -95,6 +95,8 @@ builder.Services.AddActivityLog(options => options.ServiceName = "certificates")
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddMeasurementsSyncer();
+builder.Services.AddSingleton<IAuthorizationCertMetrics, AuthorizationCertMetrics>();
+
 //builder.Services.AddIssuingContractCleanup();
 builder.Services.AddVersioningToApi();
 

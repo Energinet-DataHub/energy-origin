@@ -13,7 +13,6 @@ public static class Startup
     public static void AddContractService(this IServiceCollection services)
     {
         services.AddScoped<IContractService, ContractServiceImpl>();
-        services.AddSingleton<IAuthorizationCertMetrics, AuthorizationCertMetrics>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
 
