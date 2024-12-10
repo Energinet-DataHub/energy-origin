@@ -49,6 +49,7 @@ internal class ContractServiceImpl : IContractService
 
         for (int i = 0; i < 10; i++)
         {
+            logger.LogInformation("ADDING METRICS");
             _metrics.AddUniqueClientOrganizationLogin(subjectId.ToString());
             _metrics.AddUniqueUserLogin(subjectId.ToString(), meteringPointOwnerId.ToString());
         }
