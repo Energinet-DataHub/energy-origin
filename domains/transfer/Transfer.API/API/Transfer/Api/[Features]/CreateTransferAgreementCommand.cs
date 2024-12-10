@@ -33,7 +33,7 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProj
         var taRepo = UnitOfWork.TransferAgreementRepo;
 
         var consents = await AuthorizationClient.GetConsentsAsync();
-        if(consents == null)
+        if (consents == null)
             throw new BusinessException("Failed to get consents from authorization.");
 
         (var SenderOrganizationId, var SenderTin, var SenderName) = GetOrganizationOnBehalfOf(command.SenderOrganizationId, consents);
@@ -92,13 +92,13 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProj
         }
     }
 
-    private (OrganizationId organizationId, Tin organizationTin, OrganizationName organizationName) GetOrganizationOnBehalfOf(Guid organizationId2, UserOrganizationConsentsResponse consents)
+    private (OrganizationId organizationId, Tin organizationTin, OrganizationName organizationName) GetOrganizationOnBehalfOf(Guid organizationIdOnBehalfOf, UserOrganizationConsentsResponse consents)
     {
         OrganizationId organizationId;
         Tin organizationTin;
         OrganizationName organizationName;
 
-        if (IdentityDescriptor.OrganizationId == organizationId2)
+        if (IdentityDescriptor.OrganizationId == organizationIdOnBehalfOf)
         {
             organizationId = OrganizationId.Create(IdentityDescriptor.OrganizationId);
             organizationTin = Tin.Create(IdentityDescriptor.OrganizationCvr!);
@@ -106,7 +106,7 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProj
         }
         else
         {
-            (organizationId, organizationTin, organizationName) = consents!.GetCurrentOrganizationBehalfOf(organizationId2);
+            (organizationId, organizationTin, organizationName) = consents!.GetCurrentOrganizationBehalfOf(organizationIdOnBehalfOf);
         }
 
         return (organizationId, organizationTin, organizationName);
