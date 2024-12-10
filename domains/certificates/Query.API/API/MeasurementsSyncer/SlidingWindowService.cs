@@ -1,25 +1,20 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using Measurements.V1;
-using Microsoft.Extensions.Options;
 
 namespace API.MeasurementsSyncer;
 
 public class SlidingWindowService
 {
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics;
-    private readonly MeasurementsSyncOptions _options;
 
-    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics, IOptions<MeasurementsSyncOptions> options)
+    public SlidingWindowService(IMeasurementSyncMetrics measurementSyncMetrics)
     {
         _measurementSyncMetrics = measurementSyncMetrics;
-        _options = options.Value;
     }
 
     public MeteringPointTimeSeriesSlidingWindow CreateSlidingWindow(Gsrn gsrn, UnixTimestamp synchronizationPoint)
@@ -33,7 +28,7 @@ public class SlidingWindowService
         return MeteringPointTimeSeriesSlidingWindow.Create(gsrn, synchronizationPoint, missingMeasurements);
     }
 
-    public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, UnixTimestamp pointInTimeItShouldUpTo)
+    public List<Measurement> FilterMeasurements(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements)
     {
         return measurements
             .Where(m => m.Gsrn == window.GSRN)
@@ -43,6 +38,7 @@ public class SlidingWindowService
                 {
                     _measurementSyncMetrics.AddFilterDueQuantityMissingFlag(1);
                 }
+
                 return !m.QuantityMissing;
             })
             .Where(m =>
@@ -51,10 +47,11 @@ public class SlidingWindowService
                 var to = UnixTimestamp.Create(m.DateTo);
                 var interval = MeasurementInterval.Create(from, to);
 
-                if (IsAfterSynchronizationPoint(window, from, to, pointInTimeItShouldUpTo))
+                if (IsAfterSynchronizationPoint(window, from))
                 {
                     return true;
                 }
+
                 var isIncludedInMissingInterval = IsIncludedInMissingInterval(window, interval);
                 if (isIncludedInMissingInterval)
                 {
@@ -64,6 +61,7 @@ public class SlidingWindowService
                 {
                     _measurementSyncMetrics.AddNumberOfDuplicateMeasurements(1);
                 }
+
                 return isIncludedInMissingInterval;
             })
             .Where(m =>
@@ -93,9 +91,9 @@ public class SlidingWindowService
             .ToList();
     }
 
-    private static bool IsAfterSynchronizationPoint(MeteringPointTimeSeriesSlidingWindow window, UnixTimestamp from, UnixTimestamp to, UnixTimestamp minimumAgeThreshold)
+    private static bool IsAfterSynchronizationPoint(MeteringPointTimeSeriesSlidingWindow window, UnixTimestamp from)
     {
-        return from >= window.SynchronizationPoint && to <= minimumAgeThreshold;
+        return from >= window.SynchronizationPoint;
     }
 
     private static bool IsIncludedInMissingInterval(MeteringPointTimeSeriesSlidingWindow window, MeasurementInterval interval)
@@ -103,41 +101,12 @@ public class SlidingWindowService
         return window.MissingMeasurements.Intervals.Any(missingInterval => missingInterval.Contains(interval));
     }
 
-    public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, UnixTimestamp pointInTimeItShouldSyncUpTo)
+    public void UpdateSlidingWindow(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements, UnixTimestamp newSyncPosition)
     {
-        // Prevent moving the synchronization point backward when age restriction is applied.
-        // If the current synchronization point is ahead of the age threshold,
-        // keep it as is to avoid regressing synchronization progress.
-        if (window.SynchronizationPoint > pointInTimeItShouldSyncUpTo)
-        {
-            pointInTimeItShouldSyncUpTo = window.SynchronizationPoint;
-        }
-
-        if (NoMeasurementsFetched(measurements))
-        {
-            var interval = MeasurementInterval.Create(window.SynchronizationPoint, pointInTimeItShouldSyncUpTo);
-
-            if (interval.From < interval.To)
-            {
-                UpdateMissingMeasurementMetric(new List<MeasurementInterval> { interval });
-
-                var updatedMissingIntervals = window.MissingMeasurements.Intervals.ToList();
-                updatedMissingIntervals.Add(interval);
-
-                window.UpdateSlidingWindow(pointInTimeItShouldSyncUpTo, updatedMissingIntervals);
-            }
-
-            return;
-        }
-
-        var missingIntervals = FindMissingIntervals(window, measurements, pointInTimeItShouldSyncUpTo);
+        var missingIntervals = FindMissingIntervals(window, measurements, newSyncPosition);
         UpdateMissingMeasurementMetric(missingIntervals);
-        window.UpdateSlidingWindow(pointInTimeItShouldSyncUpTo, missingIntervals);
-    }
-
-    private UnixTimestamp CalculateMinimumAgeThreshold()
-    {
-        return UnixTimestamp.Now().Add(TimeSpan.FromHours(-_options.MinimumAgeThresholdHours)).RoundToLatestHour();
+        var newWindowSyncPosition = UnixTimestamp.Max(window.SynchronizationPoint, newSyncPosition);
+        window.UpdateSlidingWindow(newWindowSyncPosition, missingIntervals);
     }
 
     private void UpdateMissingMeasurementMetric(List<MeasurementInterval> missingIntervals)
@@ -154,22 +123,85 @@ public class SlidingWindowService
     private List<MeasurementInterval> FindMissingIntervals(
         MeteringPointTimeSeriesSlidingWindow window,
         List<Measurement> measurements,
-        UnixTimestamp newSynchronizationPoint)
+        UnixTimestamp newSyncPosition)
     {
-        var minimumAgeThreshold = CalculateMinimumAgeThreshold();
+        // Find new missing intervals in the period from <window.SynchronizationPoint> to <newSyncPosition>
+        var newMissingIntervals = FindMissingIntervalsAfterWindowSyncPoint(window, measurements, newSyncPosition);
 
-        var sortedMeasurements = SortMeasurementsChronologically(window, measurements);
-        var missingIntervals = new List<MeasurementInterval>();
+        // Update missing intervals in the already processed interval up until <window.SynchronizationPoint>
+        var updatedMissingIntervals = GetUpdatedMissingIntervalsFromWindow(window, measurements);
+
+        // Return the combined set of missing intervals, overlapping intervals will be joined
+        return CombineMissingIntervals(newMissingIntervals, updatedMissingIntervals);
+    }
+
+    private List<MeasurementInterval> GetUpdatedMissingIntervalsFromWindow(
+        MeteringPointTimeSeriesSlidingWindow window,
+        List<Measurement> measurements)
+    {
+        var measurementsBeforeWindowSyncPoint = measurements.Where(m => m.DateTo <= window.SynchronizationPoint.EpochSeconds).ToList();
+
+        // By default missing intervals are the same as before fetching new measurements
+        var updatedMissingIntervals = window.MissingMeasurements.Intervals
+            .Select(m => MeasurementInterval.Create(m.From, m.To)).ToList();
+
+        // Loop through each measurement: if measurement is inside a missing interval, then replace the interval with 1..2 new intervals
+        foreach (var measurement in measurementsBeforeWindowSyncPoint)
+        {
+            var measurementInterval = MeasurementInterval.Create(UnixTimestamp.Create(measurement.DateFrom), UnixTimestamp.Create(measurement.DateTo));
+            var missingInterval = measurementInterval.FindFirstIntervalContaining(updatedMissingIntervals);
+            if (missingInterval is not null)
+            {
+                updatedMissingIntervals.Remove(missingInterval);
+
+                if (measurementInterval.From > missingInterval.From)
+                {
+                    updatedMissingIntervals.Add(MeasurementInterval.Create(missingInterval.From, measurementInterval.From));
+                }
+
+                if (measurementInterval.To < missingInterval.To)
+                {
+                    updatedMissingIntervals.Add(MeasurementInterval.Create(measurementInterval.To, missingInterval.To));
+                }
+            }
+        }
+
+        return updatedMissingIntervals;
+    }
+
+    private List<MeasurementInterval> FindMissingIntervalsAfterWindowSyncPoint(
+        MeteringPointTimeSeriesSlidingWindow window,
+        List<Measurement> measurements,
+        UnixTimestamp newSyncPosition)
+    {
+        // If window is already sync'ed to <newSyncPosition> or later, then no missing intervals after <window.SynchronizationPoint> should be added.
+        if (window.SynchronizationPoint >= newSyncPosition)
+        {
+            return [];
+        }
+
+        var newSyncStartPosition = window.SynchronizationPoint;
+        var measurementsAfterWindowSyncPoint = measurements.Where(m => m.DateFrom >= window.SynchronizationPoint.EpochSeconds).ToList();
+
+        if (measurementsAfterWindowSyncPoint.Count == 0)
+        {
+            return [MeasurementInterval.Create(window.SynchronizationPoint, newSyncPosition)];
+        }
+
+        var sortedMeasurements = SortMeasurementsChronologically(window, measurementsAfterWindowSyncPoint);
+
+        var newMissingIntervals = new List<MeasurementInterval>();
         UnixTimestamp? currentMissingIntervalStart = null;
 
         for (var currentMeasurementIndex = -1; currentMeasurementIndex < sortedMeasurements.Count + 1; currentMeasurementIndex++)
         {
             if (IsIndexBeforeFirstMeasurement(currentMeasurementIndex))
             {
-                if (ContainsGapBeforeFirstMeasurement(window, sortedMeasurements))
+                if (ContainsGapBeforeFirstMeasurement(newSyncStartPosition, sortedMeasurements))
                 {
-                    currentMissingIntervalStart = window.SynchronizationPoint;
+                    currentMissingIntervalStart = newSyncStartPosition;
                 }
+
                 continue;
             }
 
@@ -178,12 +210,13 @@ public class SlidingWindowService
                 var lastMeasurement = sortedMeasurements[currentMeasurementIndex - 1];
                 if (IsCurrentMeasurementIndexInsideMissingInterval(currentMissingIntervalStart))
                 {
-                    AddMissingIntervalUpToThreshold(currentMissingIntervalStart!, newSynchronizationPoint, missingIntervals, minimumAgeThreshold);
+                    AddMissingIntervalUpToThreshold(currentMissingIntervalStart!, newSyncPosition, newMissingIntervals);
                 }
-                else if (ContainsGapAfterLastMeasurement(newSynchronizationPoint, lastMeasurement))
+                else if (ContainsGapAfterLastMeasurement(newSyncPosition, lastMeasurement))
                 {
-                    AddMissingIntervalUpToThreshold(UnixTimestamp.Create(lastMeasurement.DateTo), newSynchronizationPoint, missingIntervals, minimumAgeThreshold);
+                    AddMissingIntervalUpToThreshold(UnixTimestamp.Create(lastMeasurement.DateTo), newSyncPosition, newMissingIntervals);
                 }
+
                 continue;
             }
 
@@ -199,34 +232,55 @@ public class SlidingWindowService
             {
                 if (IsCurrentMeasurementIndexInsideMissingInterval(currentMissingIntervalStart))
                 {
-                    AddMissingIntervalUpToThreshold(currentMissingIntervalStart!, UnixTimestamp.Create(currentMeasurement.DateFrom), missingIntervals, minimumAgeThreshold);
+                    AddMissingIntervalUpToThreshold(currentMissingIntervalStart!, UnixTimestamp.Create(currentMeasurement.DateFrom),
+                        newMissingIntervals);
                     currentMissingIntervalStart = null;
                 }
             }
         }
-
-        var remainingMissingIntervals = window.MissingMeasurements.Intervals
-            .Where(interval => interval.To > minimumAgeThreshold)
-            .Select(interval => interval.From < minimumAgeThreshold ? MeasurementInterval.Create(minimumAgeThreshold, interval.To) : interval)
-            .ToList();
-
-        missingIntervals.AddRange(remainingMissingIntervals);
-
-        return missingIntervals;
+        return newMissingIntervals;
     }
 
-    private static void AddMissingIntervalUpToThreshold(UnixTimestamp intervalStart, UnixTimestamp intervalEnd, List<MeasurementInterval> missingIntervals, UnixTimestamp threshold)
+    private List<MeasurementInterval> CombineMissingIntervals(List<MeasurementInterval> missingIntervals1,
+        List<MeasurementInterval> missingIntervals2)
     {
-        if (intervalStart >= threshold)
-            return;
+        var missingIntervalsResult = missingIntervals1.Concat(missingIntervals2).ToList();
 
-        var adjustedEnd = intervalEnd > threshold ? threshold : intervalEnd;
+        var overlappingIntervals = GetOverlappingOrAdjacentIntervals(missingIntervalsResult);
+        while (overlappingIntervals is not null)
+        {
+            var intervalA = overlappingIntervals.Value.a;
+            var intervalB = overlappingIntervals.Value.b;
+            var combinedInterval = MeasurementInterval.Create(UnixTimestamp.Min(intervalA.From, intervalB.From),
+                UnixTimestamp.Max(intervalA.To, intervalB.To));
+            missingIntervalsResult.Remove(intervalA);
+            missingIntervalsResult.Remove(intervalB);
+            missingIntervalsResult.Add(combinedInterval);
+            overlappingIntervals = GetOverlappingOrAdjacentIntervals(missingIntervalsResult);
+        }
 
-        if (intervalStart >= adjustedEnd)
-            return;
+        return missingIntervalsResult;
+    }
 
-        var missingMeasurementInterval = MeasurementInterval.Create(intervalStart, adjustedEnd);
+    private (MeasurementInterval a, MeasurementInterval b)? GetOverlappingOrAdjacentIntervals(List<MeasurementInterval> missingIntervals)
+    {
+        foreach (var m1 in missingIntervals)
+        {
+            foreach (var m2 in missingIntervals)
+            {
+                if (m1 != m2 && (m1.Overlaps(m2) || m1.From == m2.To || m2.From == m1.To))
+                {
+                    return (m1, m2);
+                }
+            }
+        }
+        return null;
+    }
 
+    private static void AddMissingIntervalUpToThreshold(UnixTimestamp intervalStart, UnixTimestamp intervalEnd,
+        List<MeasurementInterval> missingIntervals)
+    {
+        var missingMeasurementInterval = MeasurementInterval.Create(intervalStart, intervalEnd);
         missingIntervals.Add(missingMeasurementInterval);
     }
 
@@ -235,9 +289,9 @@ public class SlidingWindowService
         return measurement.QuantityMissing;
     }
 
-    private static bool ContainsGapAfterLastMeasurement(UnixTimestamp newSynchronizationPoint, Measurement lastMeasurement)
+    private static bool ContainsGapAfterLastMeasurement(UnixTimestamp newSyncEndPosition, Measurement lastMeasurement)
     {
-        return lastMeasurement.DateTo < newSynchronizationPoint.EpochSeconds;
+        return lastMeasurement.DateTo < newSyncEndPosition.EpochSeconds;
     }
 
     private static bool IsCurrentMeasurementIndexInsideMissingInterval(UnixTimestamp? currentMissingIntervalStart)
@@ -255,9 +309,9 @@ public class SlidingWindowService
         return currentMeasurementIndex == -1;
     }
 
-    private static bool ContainsGapBeforeFirstMeasurement(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> sortedMeasurements)
+    private static bool ContainsGapBeforeFirstMeasurement(UnixTimestamp newSyncStartPosition, List<Measurement> sortedMeasurements)
     {
-        return sortedMeasurements[0].DateFrom > window.SynchronizationPoint.EpochSeconds;
+        return sortedMeasurements[0].DateFrom > newSyncStartPosition.EpochSeconds;
     }
 
     private static List<Measurement> SortMeasurementsChronologically(MeteringPointTimeSeriesSlidingWindow window, List<Measurement> measurements)
@@ -266,10 +320,5 @@ public class SlidingWindowService
             .Where(m => m.Gsrn == window.GSRN)
             .OrderBy(m => m.DateFrom)
             .ToList();
-    }
-
-    private static bool NoMeasurementsFetched(List<Measurement> measurements)
-    {
-        return measurements.Count == 0;
     }
 }

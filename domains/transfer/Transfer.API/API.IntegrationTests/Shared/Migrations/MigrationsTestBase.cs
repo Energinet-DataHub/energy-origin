@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using API.IntegrationTests.Testcontainers;
 using DataContext;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Shared.Migrations
