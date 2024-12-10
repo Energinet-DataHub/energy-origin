@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-using DotNet.Testcontainers.Images;
 using DotNet.Testcontainers.Networks;
 using EnergyTrackAndTrace.Testing.Extensions;
 using ProjectOrigin.HierarchicalDeterministicKeys;
@@ -32,7 +31,7 @@ public class RegistryFixture : IAsyncLifetime
     private readonly RabbitMqContainer rabbitMqContainer;
     private readonly PostgreSqlContainer registryPostgresContainer;
     protected readonly INetwork Network;
-    private readonly IFutureDockerImage rabbitMqImage;
+    private readonly string rabbitMqImage = "rabbitmq:3.13-management";
     public const string RegistryName = registryName;
     public IPrivateKey Dk1IssuerKey { get; init; }
     public IPrivateKey Dk2IssuerKey { get; init; }
@@ -42,10 +41,6 @@ public class RegistryFixture : IAsyncLifetime
     {
         Network = new NetworkBuilder()
             .WithName(Guid.NewGuid().ToString())
-            .Build();
-        rabbitMqImage = new ImageFromDockerfileBuilder()
-            .WithDockerfileDirectory(CommonDirectoryPath.GetProjectDirectory(), string.Empty)
-            .WithDockerfile("rabbitmq.dockerfile")
             .Build();
         rabbitMqContainer = new RabbitMqBuilder()
             .WithImage(rabbitMqImage)
@@ -117,7 +112,6 @@ public class RegistryFixture : IAsyncLifetime
 
     public virtual async Task InitializeAsync()
     {
-        await rabbitMqImage.CreateAsync();
         await Network.CreateAsync();
         await rabbitMqContainer.StartWithLoggingAsync();
         await verifierContainer.StartWithLoggingAsync();
