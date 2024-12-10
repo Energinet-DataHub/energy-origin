@@ -14,6 +14,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 
@@ -23,7 +24,7 @@ namespace API.Query.API.Controllers;
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
 [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
-public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
+public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor, IAuthorizationCertMetrics metrics, ILogger<Contracts20240515Controller> logger) : ControllerBase
 {
     /// <summary>
     /// Create contracts that activates granular certificate generation for a metering point
@@ -38,13 +39,14 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
         [FromQuery] Guid organizationId,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
-        [FromServices] IAuthorizationCertMetrics metrics,
         CancellationToken cancellationToken)
     {
 
-
+        logger.LogInformation("CREATING CONTRACTS");
         for (int i = 0; i < 10; i++)
         {
+            logger.LogInformation("LOOPING METRICS");
+
             metrics.AddUniqueClientOrganizationLogin(identityDescriptor.Subject.ToString());
             metrics.AddUniqueUserLogin(organizationId.ToString(), identityDescriptor.Subject.ToString());
         }
@@ -115,6 +117,14 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
+        logger.LogInformation("GETTING CONTRACTS");
+        for (int i = 0; i < 10; i++)
+        {
+            logger.LogInformation("LOOPING METRICS");
+
+            metrics.AddUniqueClientOrganizationLogin(identityDescriptor.Subject.ToString());
+            metrics.AddUniqueUserLogin(organizationId.ToString(), identityDescriptor.Subject.ToString());
+        }
         if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
         {
             return Forbid();
