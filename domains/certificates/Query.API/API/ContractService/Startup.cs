@@ -3,6 +3,7 @@ using API.ContractService.Clients;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
+using API.Metrics;
 using ProjectOriginClients;
 
 namespace API.ContractService;
@@ -12,6 +13,7 @@ public static class Startup
     public static void AddContractService(this IServiceCollection services)
     {
         services.AddScoped<IContractService, ContractServiceImpl>();
+        services.AddSingleton<IAuthorizationCertMetrics, AuthorizationCertMetrics>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
 

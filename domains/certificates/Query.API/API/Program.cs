@@ -13,6 +13,7 @@ using EnergyOrigin.ActivityLog;
 using EnergyOrigin.TokenValidation.b2c;
 using API.IssuingContractCleanup;
 using API.MeasurementsSyncer.Metrics;
+using API.Metrics;
 using API.UnitOfWork;
 using Contracts;
 using EnergyOrigin.Setup;
@@ -29,7 +30,8 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("Certificates.API", otlpOptions.ReceiverEndpoint)
-    .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(MeasurementSyncMetrics.MetricName));
+    .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(MeasurementSyncMetrics.MetricName))
+    .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(AuthorizationCertMetrics.MetricName));
 
 builder.Services.AddControllersWithEnumsAsStrings();
 
