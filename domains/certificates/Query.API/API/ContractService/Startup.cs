@@ -3,6 +3,7 @@ using API.ContractService.Clients;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
+using API.Metrics;
 using ProjectOriginClients;
 
 namespace API.ContractService;

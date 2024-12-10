@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
+using API.Metrics;
 using API.Query.API.ApiModels.Requests;
 using API.UnitOfWork;
 using DataContext.Models;
@@ -42,6 +43,7 @@ internal class ContractServiceImpl : IContractService
     public async Task<CreateContractResult> Create(CreateContracts contracts, Guid meteringPointOwnerId, Guid subjectId, string subjectName, string organizationName,
         string organizationTin, CancellationToken cancellationToken)
     {
+
         var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwnerId.ToString(), cancellationToken);
         var contractsByGsrn =
             await GetAllContractsByGsrn(contracts.Contracts.Select(c => c.GSRN).ToList(), cancellationToken);
