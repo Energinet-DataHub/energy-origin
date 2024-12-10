@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\authorization\Authorization.API\API\API.csproj" />
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents.csproj" />
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />

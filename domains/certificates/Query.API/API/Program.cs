@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using API.Configurations;
+using API.ContractService.Metrics;
 using API.MeasurementsSyncer;
 using DataContext;
 using EnergyOrigin.ActivityLog;
@@ -29,7 +30,8 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("Certificates.API", otlpOptions.ReceiverEndpoint)
-    .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(MeasurementSyncMetrics.MetricName));
+    .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(MeasurementSyncMetrics.MetricName))
+    .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(AuthorizationMetricsCert.MetricName));
 
 builder.Services.AddControllersWithEnumsAsStrings();
 
