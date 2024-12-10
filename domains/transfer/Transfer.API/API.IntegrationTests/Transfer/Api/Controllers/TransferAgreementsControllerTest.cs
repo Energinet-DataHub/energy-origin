@@ -565,41 +565,61 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task CreatePOATransferAgreement_ShouldCreateTransferAgreement_WhenInputIsValid()
     {
-        var receiverOrganizationId = Guid.NewGuid();
-        var senderOrganizationId = Any.OrganizationId();
-        var senderName = "Some Awesome Org";
+        var senderOrganizationId = new Guid("7adc659d-ad17-4d2d-a92f-b9904bbd306d");
+        var receiverOrganizationId = new Guid("d37337e8-035a-4f1c-a416-eae9375148e1");
 
-        var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId.Value, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.ToUnixTimeSeconds(), "12345678", "lol", "87456123", senderName, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
+        var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.ToUnixTimeSeconds(), CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
         using var scope = factory.Services.CreateScope();
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId.Value);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), Guid.NewGuid(), orgIds: $"{senderOrganizationId} {receiverOrganizationId}");
         var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
 
-        var transferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == senderOrganizationId);
+        var transferAgreement = dbContext.TransferAgreements.SingleOrDefault(x => x.SenderId == OrganizationId.Create(senderOrganizationId));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        transferAgreement.SenderName.Value.Should().Be(senderName);
-        transferAgreement.ReceiverId!.Value.Should().Be(receiverOrganizationId);
+        transferAgreement!.SenderName.Value.Should().Be(MockAuthorizationClient.MockedConsents.Single(x => x.GiverOrganizationId == senderOrganizationId).GiverOrganizationName); // MockAuthorizationClientName
+        transferAgreement!.ReceiverId!.Value.Should().Be(receiverOrganizationId);
     }
+
+    // [Fact] Shared database state....
+    // public async Task CreatePOATransferAgreementWithSelf_ShouldCreateTransferAgreement_WhenInputIsValid()
+    // {
+    //     var senderOrganizationId = new Guid("7adc659d-ad17-4d2d-a92f-b9904bbd306d");
+    //     var receiverOrganizationId = new Guid("d37337e8-035a-4f1c-a416-eae9375148e1");
+    //
+    //     var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), DateTimeOffset.UtcNow.ToUnixTimeSeconds(), CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
+    //     using var scope = factory.Services.CreateScope();
+    //     using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+    //
+    //     var authenticatedClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), senderOrganizationId, orgIds: $"{receiverOrganizationId}");
+    //     var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
+    //
+    //     var transferAgreement = dbContext.TransferAgreements.SingleOrDefault(x => x.SenderId == OrganizationId.Create(senderOrganizationId));
+    //
+    //     response.StatusCode.Should().Be(HttpStatusCode.Created);
+    //     transferAgreement!.SenderName.Value.Should().Be("Producent A/S");
+    //     transferAgreement!.ReceiverId!.Value.Should().Be(receiverOrganizationId);
+    // }
 
     [Fact]
     public async Task CreatePOATransferAgreement_ShouldFailTransferAgreement_WhenThereIsAlreadyOneOverlappingTransferAgreement()
     {
-        var receiverOrganizationId = Guid.NewGuid();
-        var senderOrganizationId = Any.OrganizationId();
+        var senderOrganizationId = new Guid("7adc659d-ad17-4d2d-a92f-b9904bbd306d");
+        var receiverOrganizationId = new Guid("d37337e8-035a-4f1c-a416-eae9375148e1");
         var agreementId = Guid.NewGuid();
 
         var existingTransferAgreement = new TransferAgreement()
         {
             Id = agreementId,
-            SenderId = senderOrganizationId,
             StartDate = UnixTimestamp.Now().AddDays(1),
             EndDate = UnixTimestamp.Now().AddDays(20),
+            SenderId = OrganizationId.Create(senderOrganizationId),
             SenderName = OrganizationName.Create("nrgi A/S"),
-            SenderTin = Tin.Create("44332211"),
+            SenderTin = Tin.Create("87654321"),
+            ReceiverId = OrganizationId.Create(receiverOrganizationId),
             ReceiverName = OrganizationName.Create("Producent A/S"),
-            ReceiverTin = Tin.Create("11223344"),
+            ReceiverTin = Tin.Create("12345678"),
             ReceiverReference = Guid.NewGuid()
         };
         await SeedTransferAgreements(
@@ -608,13 +628,12 @@ public class TransferAgreementsControllerTests
                 existingTransferAgreement
             });
 
-        var newEndDate = DateTimeOffset.UtcNow.AddDays(15).ToUnixTimeSeconds();
-        var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId.Value, UnixTimestamp.Now().EpochSeconds, UnixTimestamp.Now().AddDays(10).EpochSeconds, existingTransferAgreement.ReceiverTin.Value, existingTransferAgreement.ReceiverName.Value, existingTransferAgreement.SenderTin.Value, existingTransferAgreement.SenderName.Value, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
+        var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId, UnixTimestamp.Now().EpochSeconds, UnixTimestamp.Now().AddDays(10).EpochSeconds, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
         var jsonContent = JsonContent.Create(request);
         using var scope = factory.Services.CreateScope();
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId.Value);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId, orgIds: $"{senderOrganizationId}, {receiverOrganizationId}");
         var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
@@ -848,5 +867,24 @@ public class TransferAgreementsControllerTests
             .Should().HaveCount(1);
         transferAgreementsResponse.Result.Where(x => x.TransferAgreementStatus == TransferAgreementStatus.ProposalExpired)
             .Should().HaveCount(1);
+    }
+
+    [Fact] // TODO: Finish this test.
+    public async Task Create_ShouldCreateTransferAgreementForConsent_WhenModelIsValid()
+    {
+        var receiverTin = MockAuthorizationClient.MockedConsents.First().GiverOrganizationTin;
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var authenticatedSenderClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
+        var createdProposalId = await CreateTransferAgreementProposal(orgId, authenticatedSenderClient, request);
+
+        var receiverSub = Guid.NewGuid();
+        var receiverOrgId = Guid.NewGuid();
+        var authenticatedReceiverClient = factory.CreateB2CAuthenticatedClient(receiverSub, receiverOrgId, receiverTin, orgIds: string.Join(",", MockAuthorizationClient.MockedConsents));
+        var transferAgreement = new CreateTransferAgreement(createdProposalId);
+        var response = await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrgId}", transferAgreement);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 }

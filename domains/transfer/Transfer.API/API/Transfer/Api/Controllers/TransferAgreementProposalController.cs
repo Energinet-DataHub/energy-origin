@@ -56,13 +56,7 @@ public class TransferAgreementProposalController(
             return ValidationProblem(ModelState);
         }
 
-        var senderTin = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationCvr : null;
-        var senderName = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationName : null;
-        var type = CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type);
-        var receiverTin = request.ReceiverTin;
-        var startDate = request.StartDate;
-        var endDate = request.EndDate;
-        var command = new CreateTransferAgreementProposalCommand(organizationId, senderTin, senderName, receiverTin, startDate, endDate, type);
+        var command = new CreateTransferAgreementProposalCommand(organizationId, request.ReceiverTin, request.StartDate, request.EndDate, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type));
         var result = await mediator.Send(command);
 
         var response = new TransferAgreementProposalResponse(
