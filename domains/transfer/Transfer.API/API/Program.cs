@@ -38,14 +38,13 @@ builder.Services.AddHttpClient<IAuthorizationClient, AuthorizationClient>(client
 .AddPolicyHandler(RetryPolicy())
 .AddPolicyHandler(GetCircuitBreakerPolicy());
 
-// Should we start using real retry policies for HttpClient?
 AsyncRetryPolicy<HttpResponseMessage> RetryPolicy()
 {
-    return HttpPolicyExtensions.HandleTransientHttpError()
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
         .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 }
 
-// Should we start using circuit breaker for http client?
 IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
 {
     return HttpPolicyExtensions
