@@ -33,24 +33,25 @@ builder.AddSerilog();
 builder.Services.AddScoped<IBearerTokenService, WebContextBearerTokenService>();
 builder.Services.AddHttpClient<IAuthorizationClient, AuthorizationClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Authorization:BaseUrl"]!); // Do we want to fail in other way than nullpointer?
-})
-.AddPolicyHandler(RetryPolicy())
-.AddPolicyHandler(GetCircuitBreakerPolicy());
-
-AsyncRetryPolicy<HttpResponseMessage> RetryPolicy()
-{
-    return HttpPolicyExtensions
-        .HandleTransientHttpError()
-        .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-}
-
-IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
-{
-    return HttpPolicyExtensions
-        .HandleTransientHttpError()
-        .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
-}
+    client.BaseAddress =
+        new Uri(builder.Configuration["Authorization:BaseUrl"]!); // Do we want to fail in other way than nullpointer?
+});
+// .AddPolicyHandler(RetryPolicy())
+// .AddPolicyHandler(GetCircuitBreakerPolicy());
+//
+// AsyncRetryPolicy<HttpResponseMessage> RetryPolicy()
+// {
+//     return HttpPolicyExtensions
+//         .HandleTransientHttpError()
+//         .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+// }
+//
+// IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+// {
+//     return HttpPolicyExtensions
+//         .HandleTransientHttpError()
+//         .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
+// }
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("Transfer.API", otlpOptions.ReceiverEndpoint);
 

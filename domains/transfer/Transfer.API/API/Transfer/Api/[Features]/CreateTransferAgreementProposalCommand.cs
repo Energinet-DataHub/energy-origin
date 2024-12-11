@@ -68,13 +68,9 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
     }
 
     public async Task<CreateTransferAgreementProposalCommandResult> Handle(CreateTransferAgreementProposalCommand command,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
-        OrganizationId organizationId;
-        Tin organizationTin;
-        OrganizationName organizationName;
-
-        (organizationId, organizationTin, organizationName) = await GetOrganizationOnBehalfOf(command);
+        var (organizationId, organizationTin, organizationName) = await GetOrganizationOnBehalfOf(command);
 
         if (command.ReceiverOrganizationTin != Tin.Empty() && command.ReceiverOrganizationTin.Value.Equals(organizationTin.Value))
         {
