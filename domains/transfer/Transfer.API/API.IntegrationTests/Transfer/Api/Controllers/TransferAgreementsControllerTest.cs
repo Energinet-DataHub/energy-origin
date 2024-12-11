@@ -869,7 +869,7 @@ public class TransferAgreementsControllerTests
             .Should().HaveCount(1);
     }
 
-    [Fact] // TODO: Finish this test.
+    [Fact]
     public async Task Create_ShouldCreateTransferAgreementForConsent_WhenModelIsValid()
     {
         var receiverTin = MockAuthorizationClient.MockedConsents.First().GiverOrganizationTin;
@@ -886,5 +886,12 @@ public class TransferAgreementsControllerTests
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
         var response = await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrgId}", transferAgreement);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        var storedTransferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == OrganizationId.Create(orgId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        storedTransferAgreement.ReceiverId!.Value.Should().Be(receiverOrgId);
     }
 }
