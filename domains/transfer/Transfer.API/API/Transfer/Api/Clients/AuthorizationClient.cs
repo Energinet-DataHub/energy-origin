@@ -21,6 +21,7 @@ public class AuthorizationClient(HttpClient httpClient, IBearerTokenService bear
     {
         _logger.LogInformation("Trying to fetch consents from authorization.");
         httpClient.DefaultRequestHeaders.Add("Authorization", bearerTokenService.GetBearerToken());
+        httpClient.DefaultRequestHeaders.Add("X-API-Version", "1");
 
         var response = await httpClient.GetAsync("/api/authorization/consents");
 
