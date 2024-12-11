@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using API.Transfer.Api.Clients;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using DataContext;
@@ -49,8 +50,32 @@ public class TransferAgreementProposalsControllerTests
     [Fact]
     public async Task CreateUsingConsent()
     {
-        var senderOrganizationId = new Guid("7adc659d-ad17-4d2d-a92f-b9904bbd306d");
-        var receiverOrganizationId = new Guid("d37337e8-035a-4f1c-a416-eae9375148e1");
+        var senderOrganizationId = Guid.NewGuid();
+        var receiverOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                Guid.NewGuid(),
+                receiverOrganizationId,
+                "12345678",
+                "A",
+                senderOrganizationId,
+                "87654321",
+                "B",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            ),
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId, // Sender
+                "87654321",
+                "B",
+                receiverOrganizationId,
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
 
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId} {receiverOrganizationId}");
         var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
@@ -63,8 +88,32 @@ public class TransferAgreementProposalsControllerTests
     [Fact]
     public async Task CreateUsingConsent_ShouldReturnBadRequest_WhenCurrentConsetUserIsSender()
     {
-        var senderOrganizationId = new Guid("7adc659d-ad17-4d2d-a92f-b9904bbd306d");
-        var receiverOrganizationId = new Guid("d37337e8-035a-4f1c-a416-eae9375148e1");
+        var senderOrganizationId = Guid.NewGuid();
+        var receiverOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                Guid.NewGuid(),
+                receiverOrganizationId,
+                "12345678",
+                "A",
+                senderOrganizationId,
+                "87654321",
+                "B",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            ),
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId, // Sender
+                "87654321",
+                "B",
+                receiverOrganizationId,
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
 
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId} {receiverOrganizationId}");
         var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "87654321");
