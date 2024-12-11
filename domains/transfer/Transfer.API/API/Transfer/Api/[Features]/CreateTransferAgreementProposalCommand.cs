@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Clients;
@@ -154,15 +153,5 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
             actionType: actionType,
             entityId: proposal.Id.ToString())
         );
-    }
-}
-
-public static class UserOrganizationConsentsResponseExtensions
-{
-    public static (OrganizationId OrganizationId, Tin OrganizationTin, OrganizationName OrganizationName) GetCurrentOrganizationBehalfOf(this UserOrganizationConsentsResponse userOrganizationConsentsResponse, Guid organizationId)
-    {
-        var consent = userOrganizationConsentsResponse!.Result.First(c => c.GiverOrganizationId == organizationId);
-
-        return (OrganizationId.Create(consent.GiverOrganizationId), Tin.Create(consent.GiverOrganizationTin), OrganizationName.Create(consent.GiverOrganizationName));
     }
 }
