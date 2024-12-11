@@ -9,6 +9,7 @@ using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace API.Transfer.Api._Features_;
 
@@ -59,12 +60,14 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
     private readonly IdentityDescriptor _identityDescriptor;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuthorizationClient _authorizationClient;
+    private readonly ILogger<CreateTransferAgreementProposalCommandHandler> _logger;
 
-    public CreateTransferAgreementProposalCommandHandler(IdentityDescriptor identityDescriptor, IUnitOfWork unitOfWork, IAuthorizationClient authorizationClient)
+    public CreateTransferAgreementProposalCommandHandler(IdentityDescriptor identityDescriptor, IUnitOfWork unitOfWork, IAuthorizationClient authorizationClient, ILogger<CreateTransferAgreementProposalCommandHandler> logger)
     {
         _identityDescriptor = identityDescriptor;
         _unitOfWork = unitOfWork;
         _authorizationClient = authorizationClient;
+        _logger = logger;
     }
 
     public async Task<CreateTransferAgreementProposalCommandResult> Handle(CreateTransferAgreementProposalCommand command,
@@ -123,6 +126,7 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
         }
         else
         {
+            _logger.LogInformation("Creating transfer agreement proposal on behalf of another organization.");
             var consents = await _authorizationClient.GetConsentsAsync();
 
             if (consents == null)
