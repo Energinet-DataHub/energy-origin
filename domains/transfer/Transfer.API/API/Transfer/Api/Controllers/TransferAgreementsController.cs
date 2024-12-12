@@ -47,16 +47,11 @@ public class TransferAgreementsController(
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 409)]
-    public async Task<ActionResult> Create(CreateTransferAgreement request, [FromQuery] Guid organizationId,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> Create(CreateTransferAgreement request, [FromQuery] Guid organizationId, CancellationToken cancellationToken)
     {
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        var organizationTin = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationCvr : null;
-        var organizationName = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationName : null;
-        var command = new AcceptTransferAgreementProposalCommand(request.TransferAgreementProposalId, organizationId,
-            organizationTin,
-            organizationName);
+        var command = new AcceptTransferAgreementProposalCommand(request.TransferAgreementProposalId, organizationId);
         var result = await mediator.Send(command, cancellationToken);
 
         return CreatedAtAction(nameof(Get), new { id = result.TransferAgreementId },
@@ -239,18 +234,12 @@ public class TransferAgreementsController(
     [HttpPost("create/")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> CreateTransferAgreementDirectly(
-        [FromServices] IProjectOriginWalletClient walletClient,
-        [FromBody] CreateTransferAgreementRequest request)
+    public async Task<ActionResult> CreateTransferAgreementDirectly(CreateTransferAgreementRequest request)
     {
-        accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
+        accessDescriptor.AssertAuthorizedToAccessOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
-        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId,
-                request.SenderOrganizationId,
-                request.StartDate, request.EndDate, request.ReceiverOrganizationId, request.ReceiverTin,
-                request.ReceiverName, request.SenderTin,
-                request.SenderName, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)),
-            CancellationToken.None);
+        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId, request.SenderOrganizationId,
+            request.StartDate, request.EndDate, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)), CancellationToken.None);
 
         return CreatedAtAction(nameof(Get), new { id = command.TransferAgreementId }, ToTransferAgreementDto(
             command.TransferAgreementId,

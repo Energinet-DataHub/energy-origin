@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Transfer.Api.Clients;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext.Models;
@@ -17,17 +18,11 @@ public class AcceptTransferAgreementProposalCommand : IRequest<AcceptTransferAgr
 {
     public Guid TransferAgreementProposalId { get; }
     public OrganizationId ReceiverOrganizationId { get; }
-    public Tin ReceiverOrganizationTin { get; }
-    public OrganizationName ReceiverOrganizationName { get; }
 
-    public AcceptTransferAgreementProposalCommand(Guid transferAgreementProposalId, Guid receiverOrganizationId, string? receiverOrganizationTin,
-        string? receiverOrganizationName)
+    public AcceptTransferAgreementProposalCommand(Guid transferAgreementProposalId, Guid receiverOrganizationId)
     {
         TransferAgreementProposalId = transferAgreementProposalId;
         ReceiverOrganizationId = OrganizationId.Create(receiverOrganizationId);
-        ReceiverOrganizationTin = receiverOrganizationTin is not null ? Tin.Create(receiverOrganizationTin) : Tin.Empty();
-        ReceiverOrganizationName =
-            receiverOrganizationName is not null ? OrganizationName.Create(receiverOrganizationName) : OrganizationName.Empty();
     }
 }
 
@@ -58,15 +53,17 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
     AcceptTransferAgreementProposalCommandResult>
 {
     private readonly IProjectOriginWalletClient _walletClient;
+    private readonly IAuthorizationClient _authorizationClient;
     private readonly IdentityDescriptor _identityDescriptor;
     private readonly IUnitOfWork _unitOfWork;
 
     public AcceptTransferAgreementProposalCommandHandler(IdentityDescriptor identityDescriptor, IUnitOfWork unitOfWork,
-        IProjectOriginWalletClient walletClient)
+        IProjectOriginWalletClient walletClient, IAuthorizationClient authorizationClient)
     {
         _identityDescriptor = identityDescriptor;
         _unitOfWork = unitOfWork;
         _walletClient = walletClient;
+        _authorizationClient = authorizationClient;
     }
 
     public async Task<AcceptTransferAgreementProposalCommandResult> Handle(AcceptTransferAgreementProposalCommand command,
@@ -85,17 +82,17 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new EntityNotFoundException(command.TransferAgreementProposalId, typeof(TransferAgreementProposal));
         }
 
-        if (proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != command.ReceiverOrganizationTin)
-        {
-            throw new BusinessException("Only the receiver company can accept this Transfer Agreement Proposal");
-        }
-
         if (proposal.EndDate is not null && proposal.EndDate < UnixTimestamp.Now())
         {
             throw new BusinessException("This proposal has run out");
         }
 
-        proposal.ReceiverCompanyTin = command.ReceiverOrganizationTin;
+        (OrganizationId receiverOrganizationId, Tin receiverOrganizationTin, OrganizationName receiverOrganizationName) = await GetOrganizationOnBehalfOf(command);
+
+        if (proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != receiverOrganizationTin)
+        {
+            throw new BusinessException("Only the receiver company can accept this Transfer Agreement Proposal");
+        }
 
         var taRepo = _unitOfWork.TransferAgreementRepo;
 
@@ -105,13 +102,12 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new TransferAgreementConflictException();
         }
 
-        var receiverOrganizationId = command.ReceiverOrganizationId.Value;
-        var wallets = await _walletClient.GetWallets(receiverOrganizationId, CancellationToken.None);
+        var wallets = await _walletClient.GetWallets(receiverOrganizationId.Value, CancellationToken.None);
 
         var walletId = wallets.Result.FirstOrDefault()?.Id;
         if (walletId == null)
         {
-            var createWalletResponse = await _walletClient.CreateWallet(receiverOrganizationId, CancellationToken.None);
+            var createWalletResponse = await _walletClient.CreateWallet(receiverOrganizationId.Value, CancellationToken.None);
 
             if (createWalletResponse == null)
             {
@@ -121,10 +117,10 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             walletId = createWalletResponse.WalletId;
         }
 
-        var walletEndpoint = await _walletClient.CreateWalletEndpoint(receiverOrganizationId, walletId.Value, CancellationToken.None);
+        var walletEndpoint = await _walletClient.CreateWalletEndpoint(receiverOrganizationId.Value, walletId.Value, CancellationToken.None);
 
         var externalEndpoint =
-            await _walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.Value, walletEndpoint, proposal.ReceiverCompanyTin.Value,
+            await _walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.Value, walletEndpoint, receiverOrganizationTin.Value,
                 CancellationToken.None);
 
         var transferAgreement = new TransferAgreement
@@ -133,10 +129,10 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             EndDate = proposal.EndDate,
             SenderId = proposal.SenderCompanyId,
             SenderName = proposal.SenderCompanyName,
-            ReceiverId = command.ReceiverOrganizationId,
             SenderTin = proposal.SenderCompanyTin,
-            ReceiverName = command.ReceiverOrganizationName,
-            ReceiverTin = command.ReceiverOrganizationTin,
+            ReceiverId = receiverOrganizationId,
+            ReceiverName = receiverOrganizationName,
+            ReceiverTin = receiverOrganizationTin,
             ReceiverReference = externalEndpoint.ReceiverId,
             Type = proposal.Type
         };
@@ -149,6 +145,34 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
 
         return new AcceptTransferAgreementProposalCommandResult(result.Id, result.SenderName.Value, result.SenderTin.Value, result.ReceiverTin.Value,
             result.StartDate.EpochSeconds, result.EndDate?.EpochSeconds, result.Type);
+    }
+
+    private async Task<(OrganizationId organizationId, Tin organizationTin, OrganizationName organizationName)> GetOrganizationOnBehalfOf(AcceptTransferAgreementProposalCommand command)
+    {
+        OrganizationId organizationId;
+        Tin organizationTin;
+        OrganizationName organizationName;
+
+        if (_identityDescriptor.OrganizationId == command.ReceiverOrganizationId.Value)
+        {
+            organizationId = OrganizationId.Create(_identityDescriptor.OrganizationId);
+            organizationTin = Tin.Create(_identityDescriptor.OrganizationCvr!);
+            organizationName = OrganizationName.Create(_identityDescriptor.OrganizationName);
+        }
+        else
+        {
+            var consents = await _authorizationClient.GetConsentsAsync();
+
+            if (consents == null)
+            {
+                throw new BusinessException("Failed to get consents from authorization.");
+            }
+
+
+            (organizationId, organizationTin, organizationName) = consents.GetCurrentOrganizationBehalfOf(command.ReceiverOrganizationId.Value);
+        }
+
+        return (organizationId, organizationTin, organizationName);
     }
 
     private async Task AppendProposalAcceptedToActivityLog(IdentityDescriptor identity, TransferAgreement result, TransferAgreementProposal proposal)

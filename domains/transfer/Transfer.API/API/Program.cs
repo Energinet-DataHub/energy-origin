@@ -1,7 +1,10 @@
+using System;
+using System.Net.Http;
 using System.Text.Json.Serialization;
 using API.Cvr;
 using API.Shared.Options;
 using API.Transfer;
+using API.Transfer.Api.Clients;
 using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
@@ -16,6 +19,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Extensions.Http;
+using Polly.Retry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +29,28 @@ var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.AddSerilog();
+
+builder.Services.AddScoped<IBearerTokenService, WebContextBearerTokenService>();
+builder.Services.AddHttpClient<IAuthorizationClient, AuthorizationClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Authorization:BaseUrl"]!);
+})
+.AddPolicyHandler(RetryPolicy())
+.AddPolicyHandler(GetCircuitBreakerPolicy());
+
+AsyncRetryPolicy<HttpResponseMessage> RetryPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+}
+
+IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
+}
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("Transfer.API", otlpOptions.ReceiverEndpoint);
 
