@@ -51,11 +51,7 @@ public class TransferAgreementsController(
     {
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        var organizationTin = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationCvr : null;
-        var organizationName = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationName : null;
-        var command = new AcceptTransferAgreementProposalCommand(request.TransferAgreementProposalId, organizationId,
-            organizationTin,
-            organizationName);
+        var command = new AcceptTransferAgreementProposalCommand(request.TransferAgreementProposalId, organizationId);
         var result = await mediator.Send(command, cancellationToken);
 
         return CreatedAtAction(nameof(Get), new { id = result.TransferAgreementId },

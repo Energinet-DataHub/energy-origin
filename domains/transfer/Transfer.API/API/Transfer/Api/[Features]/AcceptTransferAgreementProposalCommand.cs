@@ -18,17 +18,11 @@ public class AcceptTransferAgreementProposalCommand : IRequest<AcceptTransferAgr
 {
     public Guid TransferAgreementProposalId { get; }
     public OrganizationId ReceiverOrganizationId { get; }
-    public Tin ReceiverOrganizationTin { get; }
-    public OrganizationName ReceiverOrganizationName { get; }
 
-    public AcceptTransferAgreementProposalCommand(Guid transferAgreementProposalId, Guid receiverOrganizationId, string? receiverOrganizationTin,
-        string? receiverOrganizationName)
+    public AcceptTransferAgreementProposalCommand(Guid transferAgreementProposalId, Guid receiverOrganizationId)
     {
         TransferAgreementProposalId = transferAgreementProposalId;
         ReceiverOrganizationId = OrganizationId.Create(receiverOrganizationId);
-        ReceiverOrganizationTin = receiverOrganizationTin is not null ? Tin.Create(receiverOrganizationTin) : Tin.Empty();
-        ReceiverOrganizationName =
-            receiverOrganizationName is not null ? OrganizationName.Create(receiverOrganizationName) : OrganizationName.Empty();
     }
 }
 
@@ -95,7 +89,7 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
 
         (OrganizationId receiverOrganizationId, Tin receiverOrganizationTin, OrganizationName receiverOrganizationName) = await GetOrganizationOnBehalfOf(command);
 
-        if (proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != command.ReceiverOrganizationTin)
+        if (proposal.ReceiverCompanyTin is not null && proposal.ReceiverCompanyTin != receiverOrganizationTin)
         {
             throw new BusinessException("Only the receiver company can accept this Transfer Agreement Proposal");
         }

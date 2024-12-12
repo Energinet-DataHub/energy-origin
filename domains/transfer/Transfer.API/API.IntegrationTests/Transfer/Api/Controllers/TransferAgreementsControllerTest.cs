@@ -947,6 +947,33 @@ public class TransferAgreementsControllerTests
     [Fact]
     public async Task Create_ShouldCreateTransferAgreementForConsent_WhenModelIsValid()
     {
+        var senderOrganizationId = Guid.NewGuid();
+        var receiverOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                Guid.NewGuid(),
+                receiverOrganizationId,
+                "12345678",
+                "A",
+                senderOrganizationId,
+                "87654321",
+                "B",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            ),
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId, // Sender
+                "87654321",
+                "B",
+                receiverOrganizationId,
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
         var receiverTin = MockAuthorizationClient.MockedConsents.First().GiverOrganizationTin;
         var sub = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -955,11 +982,12 @@ public class TransferAgreementsControllerTests
         var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, receiverTin);
         var createdProposalId = await CreateTransferAgreementProposal(orgId, authenticatedSenderClient, request);
 
-        var receiverSub = Guid.NewGuid();
-        var receiverOrgId = Guid.NewGuid();
-        var authenticatedReceiverClient = factory.CreateB2CAuthenticatedClient(receiverSub, receiverOrgId, receiverTin, orgIds: string.Join(",", MockAuthorizationClient.MockedConsents));
+        var anySub = Guid.NewGuid();
+        var anyOrgId = Guid.NewGuid();
+        var anyTin = "98989898";
+        var authenticatedReceiverClient = factory.CreateB2CAuthenticatedClient(anySub, anyOrgId, anyTin, orgIds: $"{senderOrganizationId}, {receiverOrganizationId}");
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
-        var response = await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrgId}", transferAgreement);
+        var response = await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrganizationId}", transferAgreement);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         using var scope = factory.Services.CreateScope();
@@ -967,6 +995,6 @@ public class TransferAgreementsControllerTests
         var storedTransferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == OrganizationId.Create(orgId));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        storedTransferAgreement.ReceiverId!.Value.Should().Be(receiverOrgId);
+        storedTransferAgreement.ReceiverId!.Value.Should().Be(receiverOrganizationId);
     }
 }

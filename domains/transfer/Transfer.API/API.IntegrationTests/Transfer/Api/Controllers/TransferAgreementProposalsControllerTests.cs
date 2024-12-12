@@ -51,33 +51,22 @@ public class TransferAgreementProposalsControllerTests
     public async Task CreateUsingConsent()
     {
         var senderOrganizationId = Guid.NewGuid();
-        var receiverOrganizationId = Guid.NewGuid();
 
         MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
         {
             new UserOrganizationConsentsResponseItem(
-                Guid.NewGuid(),
-                receiverOrganizationId,
-                "12345678",
-                "A",
+                System.Guid.NewGuid(),
                 senderOrganizationId,
                 "87654321",
                 "B",
-                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
-            ),
-            new UserOrganizationConsentsResponseItem(
-                System.Guid.NewGuid(),
-                senderOrganizationId, // Sender
-                "87654321",
-                "B",
-                receiverOrganizationId,
+                Guid.NewGuid(),
                 "12345678",
                 "A",
                 UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
             )
         };
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId} {receiverOrganizationId}");
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
         var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
         var result = await authenticatedClient
             .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
@@ -89,33 +78,22 @@ public class TransferAgreementProposalsControllerTests
     public async Task CreateUsingConsent_ShouldReturnBadRequest_WhenCurrentConsetUserIsSender()
     {
         var senderOrganizationId = Guid.NewGuid();
-        var receiverOrganizationId = Guid.NewGuid();
 
         MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
         {
             new UserOrganizationConsentsResponseItem(
-                Guid.NewGuid(),
-                receiverOrganizationId,
-                "12345678",
-                "A",
+                System.Guid.NewGuid(),
                 senderOrganizationId,
                 "87654321",
                 "B",
-                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
-            ),
-            new UserOrganizationConsentsResponseItem(
-                System.Guid.NewGuid(),
-                senderOrganizationId, // Sender
-                "87654321",
-                "B",
-                receiverOrganizationId,
+                Guid.NewGuid(),
                 "12345678",
                 "A",
                 UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
             )
         };
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId} {receiverOrganizationId}");
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
         var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "87654321");
         var result = await authenticatedClient
             .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);

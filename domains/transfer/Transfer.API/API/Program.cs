@@ -33,8 +33,7 @@ builder.AddSerilog();
 builder.Services.AddScoped<IBearerTokenService, WebContextBearerTokenService>();
 builder.Services.AddHttpClient<IAuthorizationClient, AuthorizationClient>(client =>
 {
-    client.BaseAddress =
-        new Uri(builder.Configuration["Authorization:BaseUrl"]!); // Do we want to fail in other way than nullpointer?
+    client.BaseAddress = new Uri(builder.Configuration["Authorization:BaseUrl"]!);
 })
 .AddPolicyHandler(RetryPolicy())
 .AddPolicyHandler(GetCircuitBreakerPolicy());
