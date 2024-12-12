@@ -164,7 +164,10 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             var consents = await _authorizationClient.GetConsentsAsync();
 
             if (consents == null)
+            { // 🦆
                 throw new BusinessException("Failed to get consents from authorization.");
+            } // 🦆
+
 
             (organizationId, organizationTin, organizationName) = consents.GetCurrentOrganizationBehalfOf(command.ReceiverOrganizationId.Value);
         }
