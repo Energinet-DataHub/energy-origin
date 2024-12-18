@@ -1,0 +1,187 @@
+{
+    "getMeterTimeSeriesResult": {
+        "meterTimeSeriesMeteringPoint": [
+            {
+                "meteringPointId": "571313111111111111",
+                "typeOfMp": "E18",
+                "consumerStartDate": "2020-03-01T23:00:00Z",
+                "meteringPointStates": [
+                    {
+                        "meterReadingOccurrence": "PT15M",
+                        "validFromDate": "2024-03-31",
+                        "validToDate": "2024-04-01",
+                        "nonProfiledEnergyQuantities": [
+                            {
+                                "date": "2024-03-31",
+                                "energyQuantityValues": [
+                                    {
+                                        "position": "1",
+                                        "energyQuantity": "1.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "2",
+                                        "energyQuantity": "2.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "3",
+                                        "energyQuantity": "3.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "4",
+                                        "energyQuantity": "4.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "5",
+                                        "energyQuantity": "5.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "6",
+                                        "energyQuantity": "6.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "7",
+                                        "energyQuantity": "7.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "8",
+                                        "energyQuantity": "8.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "9",
+                                        "energyQuantity": "9.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "10",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "11",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "12",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "13",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "14",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "15",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "16",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "17",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "18",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "19",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "20",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "21",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "22",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    },
+                                    {
+                                        "position": "23",
+                                        "energyQuantity": "0.0",
+                                        "energyTimeSeriesMeasureUnit": "KWH",
+                                        "quantityQuality": "E01",
+                                        "quantityMissingIndicator": "false"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "getMeterTimeSeriesRejection": {}
+}

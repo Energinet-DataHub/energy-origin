@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Threading.Tasks;
-using API.Measurements.Helpers;
 using API.Shared.Exceptions;
 using Grpc.Core;
 using Measurements.V1;
@@ -13,6 +12,7 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
 {
     private readonly MeterTimeSeries.MeterTimeSeriesClient _client;
     private readonly ILogger<MeasurementsService> _logger;
+    private readonly MeasurementsParser _parser = new();
 
     public MeasurementsService(MeterTimeSeries.MeterTimeSeriesClient client, ILogger<MeasurementsService> logger)
     {
@@ -47,38 +47,7 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
             throw new DataHubFacadeException($"GetMeterTimeSeries was rejected\n {rejections}");
         }
 
-        var measurements = dhResponse.GetMeterTimeSeriesResult.MeterTimeSeriesMeteringPoint.SelectMany(
-            mp => mp.MeteringPointStates?.SelectMany(
-                state => state.NonProfiledEnergyQuantities?.SelectMany(
-                                 item => item.EnergyQuantityValues?.Select(
-                                     quantity => new Measurement
-                                     {
-                                         Gsrn = mp.MeteringPointId,
-                                         DateFrom = MeterTimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date,
-                                             int.Parse(quantity.Position) - 1, state.MeterReadingOccurrence),
-                                         DateTo = MeterTimeSeriesHelper.GetDateTimeFromMeterReadingOccurrence(item.Date, int.Parse(quantity.Position),
-                                             state.MeterReadingOccurrence),
-                                         Quantity = MeterTimeSeriesHelper.GetQuantityFromMeterReading(quantity.EnergyTimeSeriesMeasureUnit,
-                                             quantity.EnergyQuantity),
-                                         Quality = MeterTimeSeriesHelper.GetQuantityQualityFromMeterReading(quantity.QuantityQuality),
-                                         QuantityMissing = MeterTimeSeriesHelper.GetQuantityMissingFromMeterReading(quantity.QuantityMissingIndicator)
-                                     }
-                                 ) ?? Enumerable.Empty<Measurement>()
-                             )
-                             .GroupBy(measurement => measurement.DateFrom.ZeroedHour())
-                             .Select(group => new Measurement
-                             {
-                                 Gsrn = mp.MeteringPointId,
-                                 DateFrom = group.Min(m => m.DateFrom),
-                                 DateTo = group.Max(m => m.DateTo),
-                                 Quantity = group.Sum(m => m.Quantity),
-                                 Quality = group.Max(m => m.Quality),
-                                 QuantityMissing = group.Any(m => m.QuantityMissing)
-                             })
-                             .Where(measurement => measurement.DateFrom >= request.DateFrom && measurement.DateTo <= request.DateTo)
-                         ?? Enumerable.Empty<Measurement>()
-            ) ?? Enumerable.Empty<Measurement>()
-        ).ToList();
+        var measurements = _parser.ParseMeasurements(request, dhResponse);
 
         // TODO: Remove excessive logging when no longer needed
         foreach (var measurement in measurements)

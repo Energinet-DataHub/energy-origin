@@ -56,6 +56,24 @@
         <ParentFile>MeteringPointControllerTests</ParentFile>
         <DependentUpon>MeteringPoint20240515ControllerTests.cs</DependentUpon>
       </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponse.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseQuarters.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseSwitchToDaylightSaving.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseSwitchFromDaylightSaving.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseSwitchFromDaylightSavingQuarters.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseSwitchToDaylightSavingQuarters.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
