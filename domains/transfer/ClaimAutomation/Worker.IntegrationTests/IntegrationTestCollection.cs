@@ -23,7 +23,6 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        PostgresContainer = new PostgresContainer();
         await PostgresContainer.InitializeAsync();
 
         ClaimAutomationWorker = new ClaimAutomationWorkerFactory();
