@@ -31,10 +31,6 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
             DateTo = request.DateTo
         };
 
-        // TODO: Remove excessive logging when no longer needed
-        _logger.LogInformation("GetMeterTimeSeries request {GSRN}, {From}, {To} {Actor}, {Subject}", dhRequest.Gsrn, dhRequest.DateFrom,
-            dhRequest.DateTo, dhRequest.Actor, dhRequest.Subject);
-
         var dhResponse = await _client.GetMeterTimeSeriesAsync(dhRequest);
 
         if (dhResponse.GetMeterTimeSeriesRejection != null && dhResponse.GetMeterTimeSeriesRejection.Rejection.Count > 0)
@@ -48,13 +44,6 @@ public class MeasurementsService : global::Measurements.V1.Measurements.Measurem
         }
 
         var measurements = _parser.ParseMeasurements(request, dhResponse);
-
-        // TODO: Remove excessive logging when no longer needed
-        foreach (var measurement in measurements)
-        {
-            _logger.LogInformation("GetMeterTimeSeries response measurements {GSRN}, {From}, {To}, {Quantity}, {Quality}, {QuantityMissing}",
-                dhRequest.Gsrn, measurement.DateFrom, measurement.DateTo, measurement.Quantity, measurement.Quality, measurement.QuantityMissing);
-        }
 
         var response = new GetMeasurementsResponse();
         response.Measurements.AddRange(measurements);
