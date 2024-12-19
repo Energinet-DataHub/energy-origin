@@ -1,42 +1,49 @@
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using ProjectOriginClients;
 using ProjectOriginClients.Models;
 using TransferAgreementAutomation.Worker.Metrics;
-using TransferAgreementAutomation.Worker.Service;
+using TransferAgreementAutomation.Worker.Service.Engine;
+using TransferAgreementAutomation.Worker.Service.TransactionStatus;
 using Xunit;
+using RequestStatus = TransferAgreementAutomation.Worker.Service.TransactionStatus.RequestStatus;
 
-namespace Worker.UnitTests.Service;
+namespace Worker.UnitTests.Service.Engine;
 
-public class ProjectOriginWalletServiceTest
+public class TransferAllCertificatesEngineTest
 {
-    private readonly ProjectOriginWalletService service;
+    private readonly TransferAllCertificatesEngine sut;
     private readonly IProjectOriginWalletClient mockWalletClient;
+    private readonly InMemoryRequestStatusRepository requestStatusStore;
 
     private readonly int batchSize = 2;
 
-    public ProjectOriginWalletServiceTest()
+    public TransferAllCertificatesEngineTest()
     {
-        var fakeLogger = Substitute.For<ILogger<ProjectOriginWalletService>>();
+        var fakeLogger = Substitute.For<ILogger<TransferAllCertificatesEngine>>();
         mockWalletClient = Substitute.For<IProjectOriginWalletClient>();
         var fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
+        requestStatusStore = new InMemoryRequestStatusRepository();
+        var transferEngineUtility = new TransferEngineUtility(mockWalletClient, requestStatusStore, NullLogger<TransferEngineUtility>.Instance) { BatchSize = batchSize };
 
-        service = new ProjectOriginWalletService(fakeLogger, mockWalletClient, fakeMetrics) { BatchSize = batchSize };
+        sut = new TransferAllCertificatesEngine(requestStatusStore, fakeLogger, mockWalletClient, fakeMetrics, transferEngineUtility);
     }
 
     [Fact]
     public async Task TransferCertificates_TransferAgreementNoEndDate_ShouldCallWalletTransferCertificate()
     {
-        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(3));
+        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, null);
 
         var cert = CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2));
         SetupWalletServiceClient(
             [cert],
             new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
-        await service.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement);
 
         _ = mockWalletClient
                .Received(1)
@@ -46,6 +53,44 @@ public class ProjectOriginWalletServiceTest
                    cert.Quantity,
                    transferAgreement.ReceiverReference
                );
+    }
+
+    [Fact]
+    public async Task GivenCertificate_WhenTransferring_RequestStateIsUpdated()
+    {
+        // Given certificate
+        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow.AddHours(-5), null);
+        var certificate = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-2), CertificateType.Production);
+        SetupWalletServiceClient([certificate], new TransferResponse { TransferRequestId = Guid.NewGuid() });
+
+        // When transferring certificate
+        await sut.TransferCertificates(transferAgreement);
+
+        // Then request status is updated
+        var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId);
+        transactions.Should().HaveCount(1);
+        transactions.First().Status.Should().Be(Status.Pending);
+        transactions.First().SenderId.Should().Be(transferAgreement.SenderId);
+    }
+
+    [Fact]
+    public async Task GivenPendingTransactions_WhenTransferring_TransferAgreementIsSkipped()
+    {
+        // Given pending transaction
+        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow.AddHours(-5), null);
+        await requestStatusStore.Add(new RequestStatus(transferAgreement.SenderId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now()));
+
+        // When transferring certificate
+        await sut.TransferCertificates(transferAgreement);
+
+        // Then transfer agreement is skipped (no certificates fetched)
+        await mockWalletClient
+            .DidNotReceive()
+            .GetGranularCertificates(
+                Arg.Any<Guid>(),
+                Arg.Any<CancellationToken>(),
+                Arg.Any<int>()
+                );
     }
 
     [Fact]
@@ -60,7 +105,7 @@ public class ProjectOriginWalletServiceTest
             [cert],
             new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
-        await service.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement);
 
         _ = mockWalletClient
               .DidNotReceive()
@@ -85,7 +130,7 @@ public class ProjectOriginWalletServiceTest
             [cert],
             new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
-        await service.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement);
 
         _ = mockWalletClient
              .DidNotReceive()
@@ -108,7 +153,7 @@ public class ProjectOriginWalletServiceTest
             [cert],
             new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
-        await service.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement);
 
         _ = mockWalletClient
              .Received(1)
@@ -129,7 +174,7 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, null);
 
-        var certs = CreateGranularCertificates(numberOfCerts);
+        var certs = Any.GranularCertificatesList(numberOfCerts, UnixTimestamp.Now().AddHours(1));
 
         var results = new List<ResultList<GranularCertificate>>();
         if (!certs.Any())
@@ -160,7 +205,7 @@ public class ProjectOriginWalletServiceTest
             .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
             .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await service.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement);
 
         _ = mockWalletClient
             .Received(numberOfCerts)
@@ -177,7 +222,7 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, null);
 
-        var certs = CreateGranularCertificates(4);
+        var certs = Any.GranularCertificatesList(4, UnixTimestamp.Now().AddHours(1));
 
         mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), skip: Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
@@ -195,7 +240,7 @@ public class ProjectOriginWalletServiceTest
             .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
             .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await service.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement);
 
         _ = mockWalletClient
             .Received(3)
@@ -212,7 +257,7 @@ public class ProjectOriginWalletServiceTest
     {
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, null);
 
-        var certs = CreateGranularCertificates(5);
+        var certs = Any.GranularCertificatesList(5, UnixTimestamp.Now().AddHours(1));
 
         mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), skip: Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
@@ -235,7 +280,7 @@ public class ProjectOriginWalletServiceTest
             .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
             .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await service.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement);
 
         _ = mockWalletClient
             .Received(5)
@@ -258,13 +303,13 @@ public class ProjectOriginWalletServiceTest
             Id = Guid.NewGuid(),
             SenderName = OrganizationName.Create("SomeSender"),
             SenderTin = Tin.Create("11223344"),
-            TransferAgreementNumber = 0
+            TransferAgreementNumber = 0,
+            Type = TransferAgreementType.TransferAllCertificates
         };
         return transferAgreement;
     }
 
-    private void SetupWalletServiceClient(List<GranularCertificate> mockedGranularCertificatesResponse,
-        TransferResponse mockedTransferResponse)
+    private void SetupWalletServiceClient(List<GranularCertificate> mockedGranularCertificatesResponse, TransferResponse mockedTransferResponse)
     {
         mockWalletClient.GetGranularCertificates(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>()).Returns(
             new ResultList<GranularCertificate>()
@@ -290,16 +335,5 @@ public class ProjectOriginWalletServiceTest
             Quantity = 123,
             Attributes = new Dictionary<string, string>()
         };
-    }
-
-    private List<GranularCertificate> CreateGranularCertificates(int count)
-    {
-        var certs = new List<GranularCertificate>();
-        for (var i = 0; i < count; i++)
-        {
-            certs.Add(CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(i), DateTimeOffset.UtcNow.AddHours(i + 1)));
-        }
-
-        return certs;
     }
 }
