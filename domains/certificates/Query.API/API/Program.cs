@@ -86,7 +86,8 @@ builder.Services.AddMassTransit(
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+    .AddRabbitMQ();
 
 builder.Services.AddActivityLog(options => options.ServiceName = "certificates");
 

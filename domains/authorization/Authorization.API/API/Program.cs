@@ -35,7 +35,8 @@ builder.AddSerilogWithoutOutboxLogs();
 builder.Services.AddControllersWithEnumsAsStrings();
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+    .AddRabbitMQ();
 
 builder.Services.AddOptions<RabbitMqOptions>()
     .BindConfiguration(RabbitMqOptions.RabbitMq)

@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
+        <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.2" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
         <PackageReference Include="IdentityModel" Version="7.0.0" />
         <PackageReference Include="MediatR" Version="12.4.1" />
