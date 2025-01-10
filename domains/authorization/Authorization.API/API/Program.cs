@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,21 @@ builder.Services.AddOpenTelemetryMetricsAndTracing("Authorization.API", otlpOpti
 builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddControllersWithEnumsAsStrings();
+
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+
+    var factory = new ConnectionFactory
+    {
+        HostName = options.Host,
+        Port = options.Port ?? 0,
+        UserName = options.Username,
+        Password = options.Password,
+        AutomaticRecoveryEnabled = true
+    };
+    return factory.CreateConnection();
+});
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
