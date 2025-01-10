@@ -30,6 +30,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 using Technology = API.ContractService.Clients.Technology;
 
@@ -66,8 +68,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("Stamp:Url", StampUrl);
         builder.UseSetting("Stamp:RegistryName", RegistryName);
-        builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
-        builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
+        builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "guest");
+        builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "guest");
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
         builder.UseSetting("RabbitMq:Port", RabbitMqOptions?.Port.ToString() ?? "4242");
 
