@@ -18,7 +18,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     public QueryApiWebApplicationFactory WebApplicationFactory { get; private set; }
     public PostgresContainer PostgresContainer { get; private set; }
     private ProjectOriginStack ProjectOriginStack { get; set; }
-    private RabbitContainer RabbitMqContainer { get; set; }
+    public RabbitContainer RabbitMqContainer { get; set; }
     public MeasurementsWireMock MeasurementsMock { get; private set; }
 
     public IntegrationTestFixture()
