@@ -140,4 +140,20 @@ public class UnixTimestampTest
 
         Assert.Equal(past, result);
     }
+
+    [Fact]
+    public void GivenCurrentTimeStamp_WhenAdding1Year_ThenReturnTimestampWithAddedYear()
+    {
+        var now = UnixTimestamp.Create(1646312138);
+        var future = now.AddYears(1);
+        Assert.Equal(now.ToDateTimeOffset().AddYears(1), future.ToDateTimeOffset());
+    }
+
+    [Fact]
+    public void GivenCurrentTimeStamp_WhenAdding4YearsWithOneLeapYear_ThenReturnCorrectTimestampWithAddedYears()
+    {
+        var now = UnixTimestamp.Create(1646312139);
+        var future = 1772542539;
+        Assert.Equal(now.ToDateTimeOffset().AddYears(4), DateTimeOffset.FromUnixTimeSeconds(future));
+    }
 }
