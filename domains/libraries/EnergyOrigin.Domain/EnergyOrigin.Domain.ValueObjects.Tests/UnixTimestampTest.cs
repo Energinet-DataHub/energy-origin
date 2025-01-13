@@ -142,7 +142,7 @@ public class UnixTimestampTest
     }
 
     [Fact]
-    public void AddYears_ReturnsTimestampWithAddedYears()
+    public void GivenCurrentTimeStamp_WhenAdding1Year_ThenReturnTimestampWithAddedYear()
     {
         var now = UnixTimestamp.Create(1646312138);
         var future = now.AddYears(1);
@@ -150,7 +150,7 @@ public class UnixTimestampTest
     }
 
     [Fact]
-    public void Add4YearsWithOneLeapYear_ReturnsCorrectTimestampWithAddedYears()
+    public void GivenCurrentTimeStamp_WhenAdding4YearsWithOneLeapYear_ThenReturnCorrectTimestampWithAddedYears()
     {
         var now = UnixTimestamp.Create(1646312139);
         var future = 1772542539;
