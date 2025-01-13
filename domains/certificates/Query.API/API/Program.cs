@@ -20,6 +20,9 @@ using MassTransit;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
 using EnergyOrigin.Setup.Swagger;
+using HealthChecks.RabbitMQ;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,10 +86,28 @@ builder.Services.AddMassTransit(
         });
     }
 );
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+
+    var factory = new ConnectionFactory
+    {
+        HostName = options.Host,
+        Port = options.Port ?? 0,
+        UserName = options.Username,
+        Password = options.Password,
+        AutomaticRecoveryEnabled = true
+    };
+    return factory.CreateConnection();
+});
+
 builder.Services.AddHealthChecks()
-    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+    .AddRabbitMQ();
+
 
 builder.Services.AddActivityLog(options => options.ServiceName = "certificates");
 

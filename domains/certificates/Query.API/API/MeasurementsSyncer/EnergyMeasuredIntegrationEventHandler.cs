@@ -110,6 +110,6 @@ public class EnergyMeasuredIntegrationEventHandlerDefinition : ConsumerDefinitio
     )
     {
         endpointConfigurator.UseMessageRetry(r => r
-            .Incremental(10, TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(1)));
+            .Incremental(6, TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(1)));
     }
 }
