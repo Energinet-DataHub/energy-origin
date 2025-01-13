@@ -53,7 +53,7 @@ public class TransferAgreementCleanupWorker(
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var expiredTransferAgreements = context.TransferAgreements
-            .Where(ta => ta.EndDate != null && ta.EndDate < UnixTimestamp.Now().AddDays(3 * 365));
+            .Where(ta => ta.EndDate != null && ta.EndDate < UnixTimestamp.Now().AddYears(3));
 
         context.TransferAgreements.RemoveRange(expiredTransferAgreements);
 

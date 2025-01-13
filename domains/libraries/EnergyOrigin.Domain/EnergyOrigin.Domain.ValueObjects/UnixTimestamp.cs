@@ -119,4 +119,9 @@ public class UnixTimestamp : ValueObject
     {
         return this.Add(TimeSpan.FromDays(days));
     }
+
+    public UnixTimestamp AddYears(int years)
+    {
+        return new UnixTimestamp(DateTimeOffset.FromUnixTimeSeconds(EpochSeconds).AddYears(years).ToUnixTimeSeconds());
+    }
 }
