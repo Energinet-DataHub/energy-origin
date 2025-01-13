@@ -1,32 +1,39 @@
-using Microsoft.IdentityModel.Tokens;
 using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Headers;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using ProjectOriginClients.Models;
-using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 using System.Net.Http.Json;
 using System.Text;
-using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
-using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
-using System.Collections.Generic;
+using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
+using ProjectOriginClients.Models;
 
 namespace ProjectOriginClients;
 
 public interface IProjectOriginWalletClient
 {
-    Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0);
-    Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity);
+    Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0,
+        CertificateType? type = null);
+
+    Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate,
+        uint quantity);
+
     Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId);
+
     Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken);
+
     Task<ResultList<WalletRecord>> GetWallets(Guid ownerSubject, CancellationToken cancellationToken);
+
     Task<WalletEndpointReference> CreateWalletEndpoint(Guid ownerSubject, Guid walletId, CancellationToken cancellationToken);
-    Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference, string textReference, CancellationToken cancellationToken);
+
+    Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference,
+        string textReference, CancellationToken cancellationToken);
+
+    Task<RequestStatus> GetRequestStatus(Guid ownerSubject, Guid requestId, CancellationToken cancellationToken);
 }
 
 public class ProjectOriginWalletClient : IProjectOriginWalletClient
@@ -44,15 +51,24 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         this.client = client;
     }
 
-    public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0)
+    public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit,
+        int skip = 0, CertificateType? certificateType = null)
     {
         SetWalletOwnerHeader(ownerSubject.ToString());
 
-        return await client.GetFromJsonAsync<ResultList<GranularCertificate>>($"v1/certificates?skip={skip}&limit={limit}",
-            cancellationToken: cancellationToken, options: jsonSerializerOptions);
+        var requestUri = $"v1/certificates?skip={skip}&limit={limit}";
+
+        if (certificateType is not null)
+        {
+            requestUri = $"{requestUri}&type={certificateType}";
+        }
+
+        return await client.GetFromJsonAsync<ResultList<GranularCertificate>>(requestUri, cancellationToken: cancellationToken,
+            options: jsonSerializerOptions);
     }
 
-    public async Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity)
+    public async Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate,
+        GranularCertificate productionCertificate, uint quantity)
     {
         SetWalletOwnerHeader(ownerSubject.ToString());
         var request = new ClaimRequest
@@ -149,13 +165,15 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         return new WalletEndpointReference(response.WalletReference.Version, response.WalletReference.Endpoint, hdPublicKey);
     }
 
-    public async Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference, string textReference, CancellationToken cancellationToken)
+    public async Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference,
+        string textReference, CancellationToken cancellationToken)
     {
         SetWalletOwnerHeader(ownerSubject.ToString());
         var request = new CreateExternalEndpointRequest
         {
             TextReference = textReference,
-            WalletReference = new WalletEndpointReferenceDto(walletEndpointReference.Version, walletEndpointReference.Endpoint, walletEndpointReference.PublicKey.Export().ToArray())
+            WalletReference = new WalletEndpointReferenceDto(walletEndpointReference.Version, walletEndpointReference.Endpoint,
+                walletEndpointReference.PublicKey.Export().ToArray())
         };
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
@@ -169,12 +187,23 @@ public class ProjectOriginWalletClient : IProjectOriginWalletClient
         return (await res.Content.ReadFromJsonAsync<CreateExternalEndpointResponse>())!;
     }
 
+    public async Task<RequestStatus> GetRequestStatus(Guid ownerSubject, Guid requestId, CancellationToken cancellationToken)
+    {
+        SetWalletOwnerHeader(ownerSubject.ToString());
+        var response = await client.GetAsync($"v1/request-status/{requestId}", cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+        var responseObj = await response.Content.ReadFromJsonAsync<RequestStatusResponse>(cancellationToken);
+        return responseObj!.Status;
+    }
+
     private void SetWalletOwnerHeader(string ownerSubject)
     {
         if (client.DefaultRequestHeaders.Contains("wallet-owner"))
         {
             client.DefaultRequestHeaders.Remove("wallet-owner");
         }
+
         client.DefaultRequestHeaders.Add("wallet-owner", ownerSubject);
     }
 }
@@ -262,7 +291,9 @@ public record WalletRecordDto()
 }
 
 public record CreateWalletEndpointResponse(WalletEndpointReferenceDto WalletReference);
+
 public record WalletEndpointReferenceDto(int Version, Uri Endpoint, byte[] PublicKey);
+
 public record WalletEndpointReference(int Version, Uri Endpoint, IHDPublicKey PublicKey);
 
 /// <summary>
@@ -327,6 +358,7 @@ public record ReceiveRequest()
     /// </summary>
     public required IEnumerable<HashedAttribute> HashedAttributes { get; init; }
 }
+
 public record HashedAttribute()
 {
     public required string Key { get; init; }
@@ -338,4 +370,20 @@ public record HashedAttribute()
     public required byte[] Salt { get; init; }
 }
 
-public record ReceiveResponse() { }
+public enum RequestStatus
+{
+    Pending,
+    Completed,
+    Failed
+}
+
+/// <summary>
+/// Request status response.
+/// </summary>
+public record RequestStatusResponse()
+{
+    /// <summary>
+    /// The status of the request.
+    /// </summary>
+    public required RequestStatus Status { get; init; }
+}

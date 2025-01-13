@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext;
@@ -36,18 +35,18 @@ public class TransferAgreementsAutomationWorker(
         {
             logger.LogInformation("TransferAgreementsAutomationWorker running at: {time}", DateTimeOffset.Now);
             metrics.ResetCertificatesTransferred();
-
-            using var scope = provider.CreateScope();
-            var projectOriginWalletService = scope.ServiceProvider.GetRequiredService<IProjectOriginWalletService>();
-
             try
             {
-                var transferAgreements = await GetTransferAllCertificatesAgreements(stoppingToken);
+                var transferAgreements = await GetTransferAgreements(stoppingToken);
                 metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
+
+                transferAgreements.Sort(new TransferAgreementProcessOrderComparer());
 
                 foreach (var transferAgreement in transferAgreements)
                 {
-                    await projectOriginWalletService.TransferCertificates(transferAgreement);
+                    using var scope = provider.CreateScope();
+                    var transferEngine = scope.ServiceProvider.GetRequiredService<ITransferEngineCoordinator>();
+                    await transferEngine.TransferCertificate(transferAgreement, stoppingToken);
                 }
             }
             catch (Exception ex)
@@ -59,11 +58,10 @@ public class TransferAgreementsAutomationWorker(
         }
     }
 
-    private async Task<List<TransferAgreement>> GetTransferAllCertificatesAgreements(CancellationToken stoppingToken)
+    private async Task<List<TransferAgreement>> GetTransferAgreements(CancellationToken stoppingToken)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync(stoppingToken);
-
-        return await dbContext.TransferAgreements.Where(ta => ta.Type == TransferAgreementType.TransferAllCertificates).ToListAsync(stoppingToken);
+        return await dbContext.TransferAgreements.ToListAsync(stoppingToken);
     }
 
     private async Task SleepToNearestHour(CancellationToken cancellationToken)

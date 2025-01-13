@@ -35,6 +35,6 @@ public static class Startup
         services.AddScoped<ITransferAgreementProposalCleanupService, TransferAgreementProposalCleanupService>();
         services.AddSingleton<TransferAgreementStatusService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
-        services.AddHostedService<TransferAgreementCleanupWorker>();
+        //services.AddHostedService<TransferAgreementCleanupWorker>();
     }
 }
