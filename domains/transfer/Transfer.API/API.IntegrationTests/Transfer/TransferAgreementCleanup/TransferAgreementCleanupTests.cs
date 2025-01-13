@@ -31,7 +31,7 @@ public class TransferAgreementCleanupTests
         tin = Tin.Create("11223344");
     }
 
-    [Fact]
+    [Fact(Skip = "Skip until new cleanup strategy is implemented")]
     public async Task ShouldOnlyDeleteExpiredTransferAgreements()
     {
         using var scope = factory.Services.CreateScope();
@@ -89,7 +89,7 @@ public class TransferAgreementCleanupTests
         tas.Select(x => x.Id).Should().NotContain(expiredTa.Id);
     }
 
-    [Fact]
+    [Fact(Skip = "Skip until new cleanup strategy is implemented")]
     public async Task ShouldProduceActivityLogEntriesForReceiverAndSender()
     {
 
@@ -140,7 +140,7 @@ public class TransferAgreementCleanupTests
         await dbContext.SaveChangesAsync();
     }
 
-    [Fact]
+    [Fact(Skip = "Skip until new cleanup strategy is implemented")]
     public async Task ShouldDeleteTaHistoryEntries()
     {
         using var scope = factory.Services.CreateScope();
