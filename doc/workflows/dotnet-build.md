@@ -111,11 +111,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@adjust-dotnet-validations
+        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v4
         with:
           configurations: |
             domains/auth/Auth.API/configuration.yaml
-          deploy_key: ${{ secrets.DEPLOY_KEY_BASE_ENVIRONMENT }}
           dry_run: ${{ inputs.dry-run }}
+          github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
+          github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
           registry-push: ${{ inputs.dry-run != 'true' }}
 ```
