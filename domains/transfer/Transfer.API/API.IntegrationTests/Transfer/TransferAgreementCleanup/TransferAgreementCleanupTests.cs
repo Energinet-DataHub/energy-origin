@@ -48,7 +48,7 @@ public class TransferAgreementCleanupTests
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
             SenderId = sub,
-            StartDate = UnixTimestamp.Now().AddDays(-3 * 366).AddDays(-1),
+            StartDate = UnixTimestamp.Now().AddYears(-4),
             TransferAgreementNumber = 0
         };
         var nullEndDateTa = new TransferAgreement
