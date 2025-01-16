@@ -238,6 +238,15 @@ public class TransferAgreementsController(
     {
         accessDescriptor.AssertAuthorizedToAccessOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
+        var validator = new CreateTransferAgreementValidator();
+
+        var validateResult = await validator.ValidateAsync(request);
+        if (!validateResult.IsValid)
+        {
+            validateResult.AddToModelState(ModelState);
+            return ValidationProblem(ModelState);
+        }
+
         var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId, request.SenderOrganizationId,
             request.StartDate, request.EndDate, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)), CancellationToken.None);
 
