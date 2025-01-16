@@ -4,6 +4,7 @@ using API.Authorization;
 using API.Authorization.Exceptions;
 using API.Data;
 using API.Metrics;
+using API.Migrations;
 using API.Models;
 using API.Options;
 using API.Repository;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
 using RabbitMQ.Client;
@@ -136,7 +138,12 @@ app.MapControllers();
 
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 
-if (args.Contains("--swagger"))
+if (args.Contains("--migrate"))
+{
+    var dbMigrator = new DbMigrator(builder.Configuration.GetConnectionString("Postgres")!, app.Services.GetRequiredService<ILogger<DbMigrator>>());
+    await dbMigrator.MigrateAsync();
+}
+else if (args.Contains("--swagger"))
 {
     app.BuildSwaggerYamlFile(builder.Environment, "authorization.yaml", ApiVersions.Version1);
 }

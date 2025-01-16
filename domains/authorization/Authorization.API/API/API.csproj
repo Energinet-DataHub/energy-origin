@@ -14,6 +14,7 @@
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
         <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.2" />
+        <PackageReference Include="dbup-postgresql" Version="5.0.40" />
         <PackageReference Include="EnergyOrigin.IntegrationEvents" Version="1.3.6" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
         <PackageReference Include="Grpc.AspNetCore" Version="2.62.0" />
@@ -33,10 +34,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Migrations\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <InternalsVisibleTo Include="API.IntegrationTests" />
     </ItemGroup>
 
@@ -50,5 +47,11 @@
       <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.ValueObjects\EnergyOrigin.Domain.ValueObjects.csproj" />
       <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
       <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Migrations\Scripts\**\*.sql">
+            <LogicalName>%(filename)%(extension)</LogicalName> <!-- Do not delete! Migration script names will not contain namespace -->
+        </EmbeddedResource>
     </ItemGroup>
 </Project>
