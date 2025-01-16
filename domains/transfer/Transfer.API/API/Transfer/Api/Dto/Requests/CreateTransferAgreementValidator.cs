@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using FluentValidation;
 
 namespace API.Transfer.Api.Dto.Requests;
