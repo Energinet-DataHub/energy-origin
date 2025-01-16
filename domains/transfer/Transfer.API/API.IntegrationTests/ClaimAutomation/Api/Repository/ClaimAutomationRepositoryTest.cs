@@ -2,9 +2,11 @@ using System;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.Setup.Migrations;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace API.IntegrationTests.ClaimAutomation.Api.Repository;
@@ -15,7 +17,6 @@ public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClass
     public async Task exception_is_thrown_when_duplicated_claim_automation_argument()
     {
         await using var dbContext = await CreateNewCleanDatabase();
-        await dbContext.Database.MigrateAsync();
 
         var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
 
@@ -32,6 +33,9 @@ public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClass
 
         var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
             .Options;
+
+        new DbMigrator(container.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+
         var dbContext = new ApplicationDbContext(contextOptions);
         return dbContext;
     }

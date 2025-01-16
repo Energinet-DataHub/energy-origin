@@ -52,4 +52,8 @@
         <ProjectReference Include="..\API.UnitTests\API.UnitTests.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Shared\" />
+    </ItemGroup>
 </Project>

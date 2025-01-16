@@ -5,12 +5,12 @@ using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
 using API.MeteringPoints.Api.Models;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
+using EnergyOrigin.Setup.Migrations;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using MassTransit;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Relation.V1;
 using Tests.Extensions;
@@ -18,29 +18,27 @@ using Xunit;
 
 namespace Tests.MeteringPoints.Api.Consumer;
 
-public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Startup>>, IClassFixture<PostgresContainer>
+public class TermsConsumerTest : IClassFixture<PostgresContainer>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
+    private readonly DatabaseInfo _databaseInfo;
 
-    public TermsConsumerTest(CustomWebApplicationFactory<Startup> factory, PostgresContainer postgresContainer)
+    public TermsConsumerTest(PostgresContainer postgresContainer)
     {
-        factory.ConnectionString = postgresContainer.ConnectionString;
-        _factory = factory;
+        _databaseInfo = postgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
+        new DbMigrator(_databaseInfo.ConnectionString, typeof(Startup).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
     }
 
-
     [Fact]
-    public async Task when_datahub_relation_is_created_relationstatus_is_created()
+    public async Task GivenTermsAcceptedEvent_WhenDataHubRelationIsCreated_RelationStatusIsCreated()
     {
         var relationMock = new CreateRelationResponse() { ErrorMessage = "", Success = true };
-        var @event = new OrgAcceptedTerms(Guid.NewGuid(), Guid.NewGuid().ToString(), DateTimeOffset.UtcNow, Guid.NewGuid(), "22222222", Guid.NewGuid());
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), Guid.NewGuid().ToString(), DateTimeOffset.UtcNow, Guid.NewGuid(), "22222222",
+            Guid.NewGuid());
         var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
         contextMock.Message.Returns(@event);
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
-            .Options;
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_databaseInfo.ConnectionString).Options;
         var dbContext = new ApplicationDbContext(contextOptions);
-        dbContext.Database.EnsureCreated();
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
         clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
@@ -52,17 +50,16 @@ public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Start
     }
 
     [Fact]
-    public async Task when_datahub_relation_is_already_excisting_no_exception()
+    public async Task GivenTermsAcceptedEvent_WhenRelationAlreadyExists_NoExceptionIsThrown()
     {
         var relationMock = new CreateRelationResponse() { ErrorMessage = "", Success = true };
-        var @event = new OrgAcceptedTerms(Guid.NewGuid(), Guid.NewGuid().ToString(), DateTimeOffset.UtcNow, Guid.NewGuid(), "22222222", Guid.NewGuid());
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), Guid.NewGuid().ToString(), DateTimeOffset.UtcNow, Guid.NewGuid(), "22222222",
+            Guid.NewGuid());
         var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
         contextMock.Message.Returns(@event);
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
-            .Options;
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_databaseInfo.ConnectionString).Options;
         var dbContext = new ApplicationDbContext(contextOptions);
-        dbContext.Database.EnsureCreated();
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
         clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
@@ -76,17 +73,16 @@ public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Start
     }
 
     [Fact]
-    public async Task when_datahub_relation_is_not_created_relationstatus_is_pending()
+    public async Task GivenTermsAcceptedEvent_WhenDataHubRelationIsNotCreated_RelationStatusIsPending()
     {
         var relationMock = new CreateRelationResponse() { ErrorMessage = "Error", Success = false };
-        var @event = new OrgAcceptedTerms(Guid.NewGuid(), Guid.NewGuid().ToString(), DateTimeOffset.UtcNow, Guid.NewGuid(), "22222222", Guid.NewGuid());
+        var @event = new OrgAcceptedTerms(Guid.NewGuid(), Guid.NewGuid().ToString(), DateTimeOffset.UtcNow, Guid.NewGuid(), "22222222",
+            Guid.NewGuid());
         var contextMock = Substitute.For<ConsumeContext<OrgAcceptedTerms>>();
         contextMock.Message.Returns(@event);
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
-            .Options;
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_databaseInfo.ConnectionString).Options;
         var dbContext = new ApplicationDbContext(contextOptions);
-        dbContext.Database.EnsureCreated();
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
         clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
@@ -95,15 +91,5 @@ public class TermsConsumerTest : IClassFixture<CustomWebApplicationFactory<Start
         await consumer.Consume(contextMock);
         var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId);
         relation!.Status.Should().Be(RelationStatus.Pending);
-    }
-}
-
-public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
-{
-    public string ConnectionString { get; set; } = "";
-
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
     }
 }

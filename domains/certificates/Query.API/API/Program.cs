@@ -1,30 +1,39 @@
 using System;
 using System.Linq;
+using API.Configurations;
 using API.ContractService;
+using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Metrics;
 using API.Query.API;
+using API.UnitOfWork;
+using Contracts;
+using DataContext;
+using EnergyOrigin.ActivityLog;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.Setup.Swagger;
+using EnergyOrigin.TokenValidation.b2c;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using API.Configurations;
-using API.MeasurementsSyncer;
-using DataContext;
-using EnergyOrigin.ActivityLog;
-using EnergyOrigin.TokenValidation.b2c;
-using API.IssuingContractCleanup;
-using API.MeasurementsSyncer.Metrics;
-using API.UnitOfWork;
-using Contracts;
-using EnergyOrigin.Setup;
-using MassTransit;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
-using EnergyOrigin.Setup.Swagger;
-using HealthChecks.RabbitMQ;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (args.Contains("--migrate"))
+{
+    builder.AddSerilogWithoutOutboxLogs();
+    var migrateApp = builder.Build();
+    var dbMigrator = new DbMigrator(builder.Configuration.GetConnectionString("Postgres")!, typeof(ApplicationDbContext).Assembly,
+        migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
+    await dbMigrator.MigrateAsync();
+    return;
+}
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;

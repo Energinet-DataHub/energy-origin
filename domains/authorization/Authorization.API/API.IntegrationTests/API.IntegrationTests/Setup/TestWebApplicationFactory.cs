@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using API.Models;
 using API.Options;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
@@ -35,7 +37,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             services.RemoveDbContext<ApplicationDbContext>();
             services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(ConnectionString); });
 
-            services.EnsureDbCreated<ApplicationDbContext>();
+            new DbMigrator(ConnectionString, typeof(Program).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+
             services.Configure<RabbitMqOptions>(options =>
             {
                 options.Host = RabbitMqOptions.Host;
@@ -168,13 +171,5 @@ public static class ServiceCollectionExtensions
         {
             services.Remove(descriptor);
         }
-    }
-
-    public static void EnsureDbCreated<T>(this IServiceCollection services) where T : DbContext
-    {
-        using var scope = services.BuildServiceProvider().CreateScope();
-        var serviceProvider = scope.ServiceProvider;
-        var context = serviceProvider.GetRequiredService<T>();
-        context.Database.EnsureCreated();
     }
 }
