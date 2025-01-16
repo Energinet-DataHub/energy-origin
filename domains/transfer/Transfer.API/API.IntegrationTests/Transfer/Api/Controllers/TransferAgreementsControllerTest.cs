@@ -654,7 +654,7 @@ public class TransferAgreementsControllerTests
     }
 
     [Fact]
-    public async Task CreatePOATransferAgreementWithSelf_ShouldNotCreateTransferAgreement_WhenInputIsInvalid()
+    public async Task CreatePOATransferAgreement_ShouldNotCreateTransferAgreement_WhenInputIsInvalid()
     {
         var senderOrganizationId = Guid.NewGuid();
         var receiverOrganizationId = Guid.NewGuid();
