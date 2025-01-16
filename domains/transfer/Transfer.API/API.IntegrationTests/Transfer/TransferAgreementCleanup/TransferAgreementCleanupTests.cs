@@ -42,13 +42,13 @@ public class TransferAgreementCleanupTests
         var expiredTa = new TransferAgreement
         {
             Id = Guid.NewGuid(),
-            EndDate = UnixTimestamp.Now().AddDays(-3 * 365),
+            EndDate = UnixTimestamp.Now().AddYears(-3),
             ReceiverTin = Tin.Create("12345678"),
             SenderName = OrganizationName.Create("SomeSender"),
             SenderTin = tin,
             ReceiverReference = Guid.NewGuid(),
             SenderId = sub,
-            StartDate = UnixTimestamp.Now().AddDays(-3 * 366).AddDays(-1),
+            StartDate = UnixTimestamp.Now().AddYears(-4),
             TransferAgreementNumber = 0
         };
         var nullEndDateTa = new TransferAgreement
