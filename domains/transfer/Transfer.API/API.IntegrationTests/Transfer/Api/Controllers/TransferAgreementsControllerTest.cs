@@ -654,6 +654,48 @@ public class TransferAgreementsControllerTests
     }
 
     [Fact]
+    public async Task CreatePOATransferAgreementWithSelf_ShouldNotCreateTransferAgreement_WhenInputIsInvalid()
+    {
+        var senderOrganizationId = Guid.NewGuid();
+        var receiverOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                Guid.NewGuid(),
+                receiverOrganizationId,
+                "12345678",
+                "A",
+                senderOrganizationId,
+                "87654321",
+                "B",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            ),
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId, // Sender
+                "87654321",
+                "B",
+                receiverOrganizationId,
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
+        var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), DateTimeOffset.UtcNow.ToUnixTimeSeconds(), CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), senderOrganizationId, orgIds: $"{receiverOrganizationId}");
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
+
+        var transferAgreement = dbContext.TransferAgreements.SingleOrDefault(x => x.SenderId == OrganizationId.Create(senderOrganizationId));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task CreatePOATransferAgreement_ShouldFailTransferAgreement_WhenThereIsAlreadyOneOverlappingTransferAgreement()
     {
         var senderOrganizationId = Guid.NewGuid();
