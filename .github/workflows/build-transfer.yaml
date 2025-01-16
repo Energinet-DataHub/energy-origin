@@ -24,7 +24,6 @@ jobs:
           solution: domains/transfer/Transfer.sln
           project: domains/transfer/Transfer.API/API/API.csproj
           configuration: domains/transfer/Transfer.API/configuration.yaml
-          migrations: domains/transfer/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}
 
   build-claim-automation:
@@ -37,7 +36,6 @@ jobs:
           solution: domains/transfer/Transfer.sln
           project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
           configuration: domains/transfer/ClaimAutomation/configuration.yaml
-          migrations: domains/transfer/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}
 
   build-transfer-automation:
@@ -50,5 +48,4 @@ jobs:
           solution: domains/transfer/Transfer.sln
           project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
           configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
-          migrations: domains/transfer/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}

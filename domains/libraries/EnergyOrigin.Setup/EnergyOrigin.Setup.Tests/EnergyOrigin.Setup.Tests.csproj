@@ -15,4 +15,15 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\EnergyTrackAndTrace.Testing\EnergyTrackAndTrace.Testing.csproj" />
+    <ProjectReference Include="..\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
+  </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Migrations\Scripts\**\*.sql">
+            <LogicalName>%(filename)%(extension)</LogicalName> <!-- Do not delete! Migration script names will not contain namespace -->
+        </EmbeddedResource>
+    </ItemGroup>
+    
 </Project>

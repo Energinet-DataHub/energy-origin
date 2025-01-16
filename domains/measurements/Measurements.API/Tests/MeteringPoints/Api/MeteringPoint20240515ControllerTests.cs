@@ -7,11 +7,13 @@ using API;
 using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Dto.Responses;
 using API.MeteringPoints.Api.Models;
+using EnergyOrigin.Setup.Migrations;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Meteringpoint.V1;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Tests.Extensions;
 using VerifyTests;
@@ -21,16 +23,15 @@ using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 
 namespace Tests.MeteringPoints.Api;
 
-public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>,
-    IClassFixture<PostgresContainer>
+public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>, IClassFixture<PostgresContainer>
 {
     private readonly CustomMeterPointWebApplicationFactory<Startup> _factory;
 
-    public MeteringPoint20240515ControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory,
-        PostgresContainer postgresContainer)
-
+    public MeteringPoint20240515ControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory, PostgresContainer postgresContainer)
     {
-        factory.ConnectionString = postgresContainer.ConnectionString;
+        var databaseInfo = postgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
+        new DbMigrator(databaseInfo.ConnectionString, typeof(Startup).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+        factory.ConnectionString = databaseInfo.ConnectionString;
         _factory = factory;
         _factory.Start();
     }
@@ -95,10 +96,8 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
-            .Options;
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString).Options;
         var dbContext = new ApplicationDbContext(contextOptions);
-        dbContext.Database.EnsureCreated();
 
         dbContext.Relations.Add(new RelationDto()
         {

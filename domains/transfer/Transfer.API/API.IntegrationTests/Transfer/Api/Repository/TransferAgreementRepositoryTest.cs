@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Migrations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Repository;
@@ -18,8 +20,8 @@ public class TransferAgreementRepositoryTest
     {
         var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
         options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
-        using var dbContext = new ApplicationDbContext(options);
-        dbContext.Database.Migrate();
+        new DbMigrator(newDatabaseInfo.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync()
+            .Wait();
     }
 
     [Fact]
@@ -85,7 +87,6 @@ public class TransferAgreementRepositoryTest
                 ReceiverTin = Tin.Create("12345678"),
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 3
-
             }
         };
         return agreements;

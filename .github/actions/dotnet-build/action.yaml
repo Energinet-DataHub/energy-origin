@@ -14,11 +14,6 @@ inputs:
     description: Is the path to a configuration file.
     required: true
 
-  migrations:
-    description: Is the path to a migrations file, if this project uses them.
-    required: false
-    default: ""
-
   dry-run:
     description: Perform all actions but without pushing the image
     required: false
@@ -73,16 +68,6 @@ runs:
       shell: bash
       run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
 
-    - name: Verify migrations if present
-      if: inputs.migrations != ''
-      uses: Energinet-Datahub/acorn-actions/actions/dotnet-verify-migrations@v3
-      with:
-        path: ${{ env.DIRECTORY }}
-        project: ${{ inputs.project }}
-        migrations: ${{ inputs.migrations }}
-        dotnet-version: ${{ inputs.sdk-version }}
-        pin-version: true
-
     - name: Build image
       uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v3
       with:
@@ -93,7 +78,6 @@ runs:
         dry-run: ${{ inputs.dry-run }}
         build-args: |
           PROJECT=${{ inputs.project }}
-          MIGRATIONS=${{ inputs.migrations }}
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
