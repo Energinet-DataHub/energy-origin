@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using ProjectOriginClients;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
@@ -106,6 +107,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
             s.Remove(s.First(sd => sd.ServiceType == typeof(IAuthorizationClient)));
             s.AddSingleton<IAuthorizationClient, MockAuthorizationClient>();
+            s.AddSingleton<IOptionsMonitor<TestContext>, TestContextMonitor>();
+            s.AddSingleton<TestContext>();
         });
     }
 

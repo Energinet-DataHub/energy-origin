@@ -16,6 +16,7 @@ using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects.Tests;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Polly;
 using Xunit;
@@ -52,53 +53,61 @@ public class TransferAgreementProposalsControllerTests
     {
         var senderOrganizationId = Guid.NewGuid();
 
-        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        using (var scope = factory.Services.CreateScope())
         {
-            new UserOrganizationConsentsResponseItem(
-                System.Guid.NewGuid(),
-                senderOrganizationId,
-                "87654321",
-                "B",
-                Guid.NewGuid(),
-                "12345678",
-                "A",
-                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
-            )
-        };
+            var testContextMonitor = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TestContext>>();
+            testContextMonitor.CurrentValue.ConsentList = new List<UserOrganizationConsentsResponseItem>
+            {
+                new UserOrganizationConsentsResponseItem(
+                    Guid.NewGuid(),
+                    senderOrganizationId,
+                    "87654321",
+                    "B",
+                    Guid.NewGuid(),
+                    "12345678",
+                    "A",
+                    UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+                )
+            };
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
-        var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
-        var result = await authenticatedClient
-            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
+            var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
+            var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
+            var result = await authenticatedClient
+                .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
 
-        result.StatusCode.Should().Be(HttpStatusCode.Created);
+            result.StatusCode.Should().Be(HttpStatusCode.Created);
+        }
     }
 
     [Fact]
-    public async Task CreateUsingConsent_ShouldReturnBadRequest_WhenCurrentConsetUserIsSender()
+    public async Task CreateUsingConsent_ShouldReturnBadRequest_WhenCurrentConsentUserIsSender()
     {
         var senderOrganizationId = Guid.NewGuid();
 
-        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        using (var scope = factory.Services.CreateScope())
         {
-            new UserOrganizationConsentsResponseItem(
-                System.Guid.NewGuid(),
-                senderOrganizationId,
-                "87654321",
-                "B",
-                Guid.NewGuid(),
-                "12345678",
-                "A",
-                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
-            )
-        };
+            var testContextMonitor = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<TestContext>>();
+            testContextMonitor.CurrentValue.ConsentList = new List<UserOrganizationConsentsResponseItem>
+            {
+                new UserOrganizationConsentsResponseItem(
+                    Guid.NewGuid(),
+                    senderOrganizationId,
+                    "87654321",
+                    "B",
+                    Guid.NewGuid(),
+                    "12345678",
+                    "A",
+                    UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+                )
+            };
 
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
-        var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "87654321");
-        var result = await authenticatedClient
-            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
+            var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
+            var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "87654321");
+            var result = await authenticatedClient
+                .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
 
-        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
     }
 
     [Fact]
