@@ -1,20 +1,13 @@
-using System;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
-using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.TokenValidation.Utilities;
 using Microsoft.AspNetCore.Http;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using ProjectOriginClients.Models;
 
-namespace API.ContractService.Clients;
+namespace EnergyOrigin.WalletClient;
 
 public class WalletClient : IWalletClient
 {
@@ -59,7 +52,7 @@ public class WalletClient : IWalletClient
     {
         var result = new ResultList<WalletRecord>
         {
-            Result = dto.Result.Select(r => new WalletRecord
+            Result = Enumerable.Select<WalletRecordDto, WalletRecord>(dto.Result, r => new WalletRecord
             {
                 Id = r.Id,
                 PublicKey = new Secp256k1Algorithm().ImportHDPublicKey(r.PublicKey)

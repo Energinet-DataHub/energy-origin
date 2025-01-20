@@ -1,9 +1,6 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using ProjectOriginClients.Models;
 
-namespace API.ContractService.Clients;
+namespace EnergyOrigin.WalletClient;
 
 public interface IWalletClient
 {
