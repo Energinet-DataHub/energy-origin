@@ -104,7 +104,7 @@ public class CertificatesSpreadsheetExporterTest
         {
             throw new NotImplementedException();
         }
-        
+
         public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken,
             int? limit, int skip = 0, CertificateType? certificateType = null)
         {

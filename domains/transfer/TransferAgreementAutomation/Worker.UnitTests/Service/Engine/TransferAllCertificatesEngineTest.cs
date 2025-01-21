@@ -78,7 +78,7 @@ public class TransferAllCertificatesEngineTest
     {
         // Given pending transaction
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow.AddHours(-5), null);
-        await requestStatusStore.Add(new (transferAgreement.SenderId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now()));
+        await requestStatusStore.Add(new(transferAgreement.SenderId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now()));
 
         // When transferring certificate
         await sut.TransferCertificates(transferAgreement);
