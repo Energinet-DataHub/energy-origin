@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using API.ContractService.Clients;
 using API.Reports;
 using EnergyOrigin.WalletClient;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
+using EnergyOrigin.WalletClient.Models;
 using Xunit;
 
 namespace API.UnitTests.Reports;
@@ -107,15 +104,9 @@ public class CertificatesSpreadsheetExporterTest
         {
             throw new NotImplementedException();
         }
-
-        public Task<EnergyOrigin.WalletClient.Models.ResultList<EnergyOrigin.WalletClient.Models.GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0,
-            EnergyOrigin.WalletClient.Models.CertificateType? certificateType = null)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken,
-            int? limit, int skip = 0)
+            int? limit, int skip = 0, CertificateType? certificateType = null)
         {
             await Task.CompletedTask;
             var resultList = new ResultList<GranularCertificate>

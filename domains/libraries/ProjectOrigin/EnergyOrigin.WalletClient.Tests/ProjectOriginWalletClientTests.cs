@@ -1,6 +1,8 @@
 using EnergyOrigin.WalletClient.Models;
 using EnergyOrigin.WalletClient.Tests.Testcontainers;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using NSubstitute;
 using Xunit;
 
 
@@ -9,10 +11,20 @@ namespace EnergyOrigin.WalletClient.Tests;
 public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
 {
     private readonly ProjectOriginStack poStack;
+    private readonly IHttpContextAccessor mockHttpContextAccessor;
 
     public ProjectOriginWalletClientTests(ProjectOriginStack poStack)
     {
         this.poStack = poStack;
+
+        mockHttpContextAccessor = Substitute.For<IHttpContextAccessor>();
+        var mockHttpContext = Substitute.For<HttpContext>();
+        var mockRequest = Substitute.For<HttpRequest>();
+        var mockHeaders = new HeaderDictionary();
+
+        mockHttpContext.Request.Returns(mockRequest);
+        mockRequest.Headers.Returns(mockHeaders);
+        mockHttpContextAccessor.HttpContext.Returns(mockHttpContext);
     }
 
     [Fact]
@@ -20,7 +32,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, mockHttpContextAccessor);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject.ToString(), new CancellationToken());
 
@@ -37,7 +49,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, mockHttpContextAccessor);
 
         var wallets = await walletClient.GetWallets(ownerSubject.ToString(), new CancellationToken());
 
@@ -50,7 +62,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, mockHttpContextAccessor);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject.ToString(), new CancellationToken());
 
@@ -66,7 +78,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, mockHttpContextAccessor);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject.ToString(), new CancellationToken());
 
@@ -87,9 +99,9 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, mockHttpContextAccessor);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject.ToString(), new CancellationToken());
 
         createWalletResponse.Should().NotBeNull();
 
@@ -125,7 +137,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, mockHttpContextAccessor);
 
         //This does not go well in the wallet since we haven't sent the certificate to the registry first,
         //and since the certificates does not appear in the wallet, but for this test we don't care
@@ -161,7 +173,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, mockHttpContextAccessor);
 
         //I cannot send any certificates to the wallet since I can't send to the registry first
         var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: int.MaxValue, skip: 0);
@@ -175,7 +187,7 @@ public class ProjectOriginWalletClientTests : IClassFixture<ProjectOriginStack>
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, mockHttpContextAccessor);
 
         //I cannot send any certificates to the wallet since I can't send to the registry first
         var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: null);
