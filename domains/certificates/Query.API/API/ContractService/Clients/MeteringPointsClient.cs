@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
+using EnergyOrigin.WalletClient;
 using Microsoft.AspNetCore.Http;
 
 namespace API.ContractService.Clients;

@@ -11,9 +11,9 @@ using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
+using EnergyOrigin.WalletClient;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ProjectOriginClients;
 
 namespace API.Transfer.Api._Features_;
 
@@ -26,7 +26,7 @@ public record CreateTransferAgreementCommand(
 ) : IRequest<CreateTransferAgreementCommandResult>;
 public record CreateTransferAgreementCommandResult(Guid TransferAgreementId, string SenderName, string SenderTin, string ReceiverTin, long StartDate, long? EndDate, TransferAgreementType Type);
 
-public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProjectOriginWalletClient WalletClient, IAuthorizationClient AuthorizationClient, IdentityDescriptor IdentityDescriptor) : IRequestHandler<CreateTransferAgreementCommand, CreateTransferAgreementCommandResult>
+public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IWalletClient WalletClient, IAuthorizationClient AuthorizationClient, IdentityDescriptor IdentityDescriptor) : IRequestHandler<CreateTransferAgreementCommand, CreateTransferAgreementCommandResult>
 {
     public async Task<CreateTransferAgreementCommandResult> Handle(CreateTransferAgreementCommand command, CancellationToken cancellationToken)
     {
@@ -58,12 +58,12 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProj
             throw new TransferAgreementConflictException();
         }
 
-        var wallets = await WalletClient.GetWallets(command.ReceiverOrganizationId, CancellationToken.None);
+        var wallets = await WalletClient.GetWallets(command.ReceiverOrganizationId.ToString(), CancellationToken.None);
 
         var walletId = wallets.Result.FirstOrDefault()?.Id;
         if (walletId == null) // TODO: This code should be deleted when we allign when and where we create a wallet. 🐉
         {
-            var createWalletResponse = await WalletClient.CreateWallet(command.ReceiverOrganizationId, CancellationToken.None);
+            var createWalletResponse = await WalletClient.CreateWallet(command.ReceiverOrganizationId.ToString(), CancellationToken.None);
 
             if (createWalletResponse == null)
                 throw new ApplicationException("Failed to create wallet.");
@@ -71,7 +71,7 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IProj
             walletId = createWalletResponse.WalletId;
         }
 
-        var walletEndpoint = await WalletClient.CreateWalletEndpoint(command.ReceiverOrganizationId, walletId.Value, CancellationToken.None);
+        var walletEndpoint = await WalletClient.CreateWalletEndpoint(walletId.Value, command.ReceiverOrganizationId.ToString(), CancellationToken.None);
 
         var externalEndpoint = await WalletClient.CreateExternalEndpoint(command.SenderOrganizationId, walletEndpoint, SenderTin.Value, CancellationToken.None);
 

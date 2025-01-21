@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\transfer\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
+      <ProjectReference Include="..\..\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
     </ItemGroup>
 
 </Project>

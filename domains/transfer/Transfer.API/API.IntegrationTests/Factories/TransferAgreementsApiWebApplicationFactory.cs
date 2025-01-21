@@ -16,6 +16,7 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
+using EnergyOrigin.WalletClient;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -25,7 +26,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
-using ProjectOriginClients;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Factories;
@@ -44,7 +44,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
     public bool WithCleanupWorker { get; set; } = true;
-    public IProjectOriginWalletClient WalletClientMock { get; private set; } = Substitute.For<IProjectOriginWalletClient>();
+    public IWalletClient WalletClientMock { get; private set; } = Substitute.For<IWalletClient>();
 
     public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
     {
@@ -94,7 +94,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.Password = (string)connectionStringBuilder["Password"];
             });
 
-            s.Remove(s.First(sd => sd.ServiceType == typeof(IProjectOriginWalletClient)));
+            s.Remove(s.First(sd => sd.ServiceType == typeof(IWalletClient)));
             s.AddScoped(_ => WalletClientMock);
 
             if (!WithCleanupWorker)

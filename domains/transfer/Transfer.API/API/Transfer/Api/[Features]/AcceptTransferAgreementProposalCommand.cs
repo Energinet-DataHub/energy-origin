@@ -9,8 +9,8 @@ using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
+using EnergyOrigin.WalletClient;
 using MediatR;
-using ProjectOriginClients;
 
 namespace API.Transfer.Api._Features_;
 
@@ -52,13 +52,13 @@ public class AcceptTransferAgreementProposalCommandResult
 public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<AcceptTransferAgreementProposalCommand,
     AcceptTransferAgreementProposalCommandResult>
 {
-    private readonly IProjectOriginWalletClient _walletClient;
+    private readonly IWalletClient _walletClient;
     private readonly IAuthorizationClient _authorizationClient;
     private readonly IdentityDescriptor _identityDescriptor;
     private readonly IUnitOfWork _unitOfWork;
 
     public AcceptTransferAgreementProposalCommandHandler(IdentityDescriptor identityDescriptor, IUnitOfWork unitOfWork,
-        IProjectOriginWalletClient walletClient, IAuthorizationClient authorizationClient)
+        IWalletClient walletClient, IAuthorizationClient authorizationClient)
     {
         _identityDescriptor = identityDescriptor;
         _unitOfWork = unitOfWork;
@@ -102,12 +102,12 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new TransferAgreementConflictException();
         }
 
-        var wallets = await _walletClient.GetWallets(receiverOrganizationId.Value, CancellationToken.None);
+        var wallets = await _walletClient.GetWallets(receiverOrganizationId.Value.ToString(), CancellationToken.None);
 
         var walletId = wallets.Result.FirstOrDefault()?.Id;
         if (walletId == null)
         {
-            var createWalletResponse = await _walletClient.CreateWallet(receiverOrganizationId.Value, CancellationToken.None);
+            var createWalletResponse = await _walletClient.CreateWallet(receiverOrganizationId.Value.ToString(), CancellationToken.None);
 
             if (createWalletResponse == null)
             {
@@ -117,7 +117,7 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             walletId = createWalletResponse.WalletId;
         }
 
-        var walletEndpoint = await _walletClient.CreateWalletEndpoint(receiverOrganizationId.Value, walletId.Value, CancellationToken.None);
+        var walletEndpoint = await _walletClient.CreateWalletEndpoint(walletId.Value, receiverOrganizationId.Value.ToString(), CancellationToken.None);
 
         var externalEndpoint =
             await _walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.Value, walletEndpoint, receiverOrganizationTin.Value,

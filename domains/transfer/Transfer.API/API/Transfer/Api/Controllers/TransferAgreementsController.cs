@@ -17,7 +17,6 @@ using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjectOriginClients;
 
 namespace API.Transfer.Api.Controllers;
 

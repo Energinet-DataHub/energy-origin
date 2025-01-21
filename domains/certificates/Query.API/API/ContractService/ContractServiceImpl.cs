@@ -9,6 +9,7 @@ using API.UnitOfWork;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.WalletClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using static API.ContractService.CreateContractResult;

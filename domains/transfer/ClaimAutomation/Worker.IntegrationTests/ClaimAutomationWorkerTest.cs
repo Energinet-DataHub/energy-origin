@@ -1,11 +1,11 @@
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
 using MassTransit.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using ProjectOriginClients.Models;
 using Xunit;
 
 namespace Worker.IntegrationTests;

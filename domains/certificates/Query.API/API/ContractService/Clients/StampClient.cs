@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
+using EnergyOrigin.WalletClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

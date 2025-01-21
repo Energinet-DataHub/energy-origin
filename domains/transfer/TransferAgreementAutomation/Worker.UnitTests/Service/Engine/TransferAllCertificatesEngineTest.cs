@@ -1,23 +1,22 @@
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Service.Engine;
 using TransferAgreementAutomation.Worker.Service.TransactionStatus;
 using Xunit;
-using RequestStatus = TransferAgreementAutomation.Worker.Service.TransactionStatus.RequestStatus;
 
 namespace Worker.UnitTests.Service.Engine;
 
 public class TransferAllCertificatesEngineTest
 {
     private readonly TransferAllCertificatesEngine sut;
-    private readonly IProjectOriginWalletClient mockWalletClient;
+    private readonly IWalletClient mockWalletClient;
     private readonly InMemoryRequestStatusRepository requestStatusStore;
 
     private readonly int batchSize = 2;
@@ -25,7 +24,7 @@ public class TransferAllCertificatesEngineTest
     public TransferAllCertificatesEngineTest()
     {
         var fakeLogger = Substitute.For<ILogger<TransferAllCertificatesEngine>>();
-        mockWalletClient = Substitute.For<IProjectOriginWalletClient>();
+        mockWalletClient = Substitute.For<IWalletClient>();
         var fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
         requestStatusStore = new InMemoryRequestStatusRepository();
         var transferEngineUtility = new TransferEngineUtility(mockWalletClient, requestStatusStore, NullLogger<TransferEngineUtility>.Instance)
@@ -79,7 +78,7 @@ public class TransferAllCertificatesEngineTest
     {
         // Given pending transaction
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow.AddHours(-5), null);
-        await requestStatusStore.Add(new RequestStatus(transferAgreement.SenderId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now()));
+        await requestStatusStore.Add(new (transferAgreement.SenderId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now()));
 
         // When transferring certificate
         await sut.TransferCertificates(transferAgreement);

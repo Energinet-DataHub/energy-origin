@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-
-namespace ProjectOriginClients.Models;
+namespace EnergyOrigin.WalletClient.Models;
 
 public record ResultList<T>()
 {

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.Reports;
+using EnergyOrigin.WalletClient;
 using ProjectOriginClients;
 using ProjectOriginClients.Models;
 using Xunit;
@@ -70,12 +71,45 @@ public class CertificatesSpreadsheetExporterTest
             throw new NotImplementedException();
         }
 
+        Task<EnergyOrigin.WalletClient.Models.ResultList<WalletRecord>> IWalletClient.GetWallets(string ownerSubject, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference, string textReference,
+            CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<RequestStatus> GetRequestStatus(Guid ownerSubject, Guid requestId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<ResultList<WalletRecord>> GetWallets(string ownerSubject, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
         public Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, string ownerSubject, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TransferResponse> TransferCertificates(Guid ownerSubject, EnergyOrigin.WalletClient.Models.GranularCertificate certificate, uint quantity, Guid receiverId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, EnergyOrigin.WalletClient.Models.GranularCertificate consumptionCertificate,
+            EnergyOrigin.WalletClient.Models.GranularCertificate productionCertificate, uint quantity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<EnergyOrigin.WalletClient.Models.ResultList<EnergyOrigin.WalletClient.Models.GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0,
+            EnergyOrigin.WalletClient.Models.CertificateType? certificateType = null)
         {
             throw new NotImplementedException();
         }

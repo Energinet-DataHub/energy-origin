@@ -16,4 +16,8 @@
     <ProjectReference Include="..\Testing\Testing.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Testcontainers\" />
+  </ItemGroup>
+
 </Project>

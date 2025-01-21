@@ -1,5 +1,6 @@
 using ClaimAutomation;
 using DataContext;
+using EnergyOrigin.WalletClient;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
@@ -9,13 +10,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
-using ProjectOriginClients;
 
 namespace Worker.IntegrationTests.Factories;
 
 public class ClaimAutomationWorkerFactory : WebApplicationFactory<Program>
 {
-    public IProjectOriginWalletClient ProjectOriginWalletClientMock { get; set; } = Substitute.For<IProjectOriginWalletClient>();
+    public IWalletClient ProjectOriginWalletClientMock { get; set; } = Substitute.For<IWalletClient>();
     public DatabaseInfo Database { get; set; } = null!;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -30,7 +30,7 @@ public class ClaimAutomationWorkerFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
-            services.Remove(services.First(s => s.ServiceType == typeof(IProjectOriginWalletClient)));
+            services.Remove(services.First(s => s.ServiceType == typeof(IWalletClient)));
             services.AddSingleton(ProjectOriginWalletClientMock);
         });
     }

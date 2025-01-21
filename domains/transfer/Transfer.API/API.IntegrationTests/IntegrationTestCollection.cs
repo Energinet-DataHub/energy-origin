@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using NSubstitute;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
 using WireMock.Server;
 using Xunit;
 
@@ -43,11 +43,11 @@ public class IntegrationTestFixture : IAsyncLifetime
         Factory.Start();
     }
 
-    private IProjectOriginWalletClient SetupPoWalletClientMock()
+    private IWalletClient SetupPoWalletClientMock()
     {
         var walletClientMock = Factory.WalletClientMock;
-        walletClientMock.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
-        walletClientMock.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+        walletClientMock.CreateWallet(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        walletClientMock.GetWallets(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(
             new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo { Count = 1, Limit = 100, Total = 1, Offset = 0 },
@@ -57,7 +57,7 @@ public class IntegrationTestFixture : IAsyncLifetime
                         { Id = Guid.NewGuid(), PublicKey = new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter() }
                 }
             });
-        walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(
+        walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(
             new WalletEndpointReference(1, new Uri("http://someUrl"),
                 new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter()));
         walletClientMock

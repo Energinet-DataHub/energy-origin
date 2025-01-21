@@ -1,5 +1,5 @@
 using EnergyOrigin.Domain.ValueObjects;
-using ProjectOriginClients.Models;
+using EnergyOrigin.WalletClient.Models;
 
 namespace Worker.UnitTests;
 
