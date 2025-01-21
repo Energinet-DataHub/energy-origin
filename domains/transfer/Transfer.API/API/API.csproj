@@ -44,7 +44,6 @@
       <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
       <ProjectReference Include="..\..\..\libraries\ProjectOrigin\EnergyOrigin.WalletClient\EnergyOrigin.WalletClient.csproj" />
       <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
-      <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
     </ItemGroup>
 
     <ItemGroup>

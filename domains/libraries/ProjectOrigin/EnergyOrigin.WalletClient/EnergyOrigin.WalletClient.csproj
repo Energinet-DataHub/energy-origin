@@ -8,8 +8,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\transfer\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
       <ProjectReference Include="..\..\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="1.1.0" />
     </ItemGroup>
 
 </Project>

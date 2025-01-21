@@ -1,0 +1,287 @@
+openapi: 3.0.1
+info:
+  title: Certificates API 1
+  description: ''
+  version: '1'
+paths:
+  /api/certificates/contracts:
+    post:
+      tags:
+        - Contracts
+      summary: Create contracts that activates granular certificate generation for a metering point
+      parameters:
+        - name: organizationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: X-API-Version
+          in: header
+          description: The requested API version
+          required: true
+          schema:
+            type: string
+            default: '1'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContracts'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateContracts'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateContracts'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+        '409':
+          description: Conflict
+    get:
+      tags:
+        - Contracts
+      summary: Returns all the user's contracts for issuing granular certificates
+      parameters:
+        - name: organizationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: X-API-Version
+          in: header
+          description: The requested API version
+          required: true
+          schema:
+            type: string
+            default: '1'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ContractList'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractList'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ContractList'
+    put:
+      tags:
+        - Contracts
+      summary: Edit the end date for multiple contracts
+      parameters:
+        - name: organizationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: X-API-Version
+          in: header
+          description: The requested API version
+          required: true
+          schema:
+            type: string
+            default: '1'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditContracts'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/EditContracts'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/EditContracts'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
+        '403':
+          description: Forbidden
+  '/api/certificates/contracts/{id}':
+    get:
+      tags:
+        - Contracts
+      summary: Returns contract based on the id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: organizationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: X-API-Version
+          in: header
+          description: The requested API version
+          required: true
+          schema:
+            type: string
+            default: '1'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Contract'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        '404':
+          description: Not Found
+components:
+  schemas:
+    Contract:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        gsrn:
+          type: string
+          description: Global Service Relation Number (GSRN) for the metering point
+        startDate:
+          type: integer
+          description: Starting date for generation of certificates in Unix time seconds
+          format: int64
+        endDate:
+          type: integer
+          description: End date for generation of certificates in Unix time seconds. The value null indicates no end date
+          format: int64
+          nullable: true
+        created:
+          type: integer
+          description: Creation date for the contract
+          format: int64
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointTypeResponse'
+        technology:
+          $ref: '#/components/schemas/Technology'
+      additionalProperties: false
+    ContractList:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Contract'
+      additionalProperties: false
+    CreateContract:
+      type: object
+      properties:
+        gsrn:
+          type: string
+          description: Global Service Relation Number (GSRN) for the metering point
+        startDate:
+          type: integer
+          description: Starting date for generation of certificates in Unix time seconds
+          format: int64
+        endDate:
+          type: integer
+          description: End date for generation of certificates in Unix time seconds. Set to null for no end date
+          format: int64
+          nullable: true
+      additionalProperties: false
+    CreateContracts:
+      type: object
+      properties:
+        contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateContract'
+      additionalProperties: false
+    EditContractEndDate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        endDate:
+          type: integer
+          description: End Date for generation of certificates in Unix time seconds. Set to null for no end date
+          format: int64
+          nullable: true
+      additionalProperties: false
+    EditContracts:
+      type: object
+      properties:
+        contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EditContractEndDate'
+      additionalProperties: false
+    MeteringPointTypeResponse:
+      enum:
+        - Production
+        - Consumption
+      type: string
+    Technology:
+      type: object
+      properties:
+        aibFuelCode:
+          type: string
+        aibTechCode:
+          type: string
+      additionalProperties: false
+    ValidationProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        status:
+          type: integer
+          format: int32
+          nullable: true
+        detail:
+          type: string
+          nullable: true
+        instance:
+          type: string
+          nullable: true
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      additionalProperties: { }
+  securitySchemes:
+    Bearer:
+      type: http
+      description: "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\""
+      scheme: Bearer
+      bearerFormat: JWT
+security:
+  - Bearer: [ ]
+tags:
+  - name: Contracts
+    description: 'Contracts are key in Energy Track & Trace. When you have an active contract for at metering point Granular Certificates will be generated until the end of the contract. It applies to both production and consumption metering points. However, the production metering points must be either Wind or Solar – otherwise it is not possible to generate GCs. When a contract is inactive Granular Certificates will no longer be generated.'
