@@ -72,6 +72,7 @@ public static class ServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddNpgsql()
+                    .AddConsoleExporter()
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
     }
 
