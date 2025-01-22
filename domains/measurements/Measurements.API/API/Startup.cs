@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
+using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API;
@@ -80,7 +81,7 @@ public class Startup
             c.DocumentFilter<AddMeasurementsTagDocumentFilter>();
         });
 
-        services.AddLogging();
+        services.AddSerilog();
 
         services.AddOptions<RabbitMqOptions>()
             .BindConfiguration(RabbitMqOptions.RabbitMq)
