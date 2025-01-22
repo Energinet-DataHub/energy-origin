@@ -133,7 +133,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectOrigin", "ProjectOri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.WalletClient.Tests", "libraries\ProjectOrigin\EnergyOrigin.WalletClient.Tests\EnergyOrigin.WalletClient.Tests.csproj", "{C5FC5D3F-C579-4EAB-8942-2B4C5042CC81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.WalletClient", "EnergyOrigin.WalletClient\EnergyOrigin.WalletClient.csproj", "{C3C607A9-7E88-467E-A6EF-165D29237E3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.WalletClient", "libraries\ProjectOrigin\EnergyOrigin.WalletClient\EnergyOrigin.WalletClient.csproj", "{C3C607A9-7E88-467E-A6EF-165D29237E3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
