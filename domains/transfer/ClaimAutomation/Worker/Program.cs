@@ -6,7 +6,6 @@ using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using DataContext;
 using EnergyOrigin.Setup;
-using EnergyOrigin.WalletClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +15,7 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using EnergyOrigin.WalletClient;
 
 var builder = WebApplication.CreateBuilder(args);
 

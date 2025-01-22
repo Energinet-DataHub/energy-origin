@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using API.ClaimAutomation.Api.Repositories;
 using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
-using EnergyOrigin.WalletClient;
-using EnergyOrigin.WalletClient.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 
 namespace ClaimAutomation.Worker.Automation;
 

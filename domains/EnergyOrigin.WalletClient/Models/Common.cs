@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace EnergyOrigin.WalletClient.Models;
 
 public record ResultList<T>()

@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Clients;
@@ -11,9 +8,9 @@ using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.WalletClient;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using EnergyOrigin.WalletClient;
 
 namespace API.Transfer.Api._Features_;
 

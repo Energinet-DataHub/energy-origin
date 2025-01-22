@@ -62,7 +62,7 @@ public class MeteringPointsClient : IMeteringPointsClient
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext == null)
         {
-            throw new HttpRequestException($"No HTTP context found. {nameof(WalletClient)} must be used as part of a request");
+            throw new HttpRequestException($"No HTTP context found. {nameof(EnergyOrigin.WalletClient)} must be used as part of a request");
         }
     }
 

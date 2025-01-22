@@ -1,7 +1,6 @@
 using System;
 using DataContext;
 using EnergyOrigin.Setup;
-using EnergyOrigin.WalletClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +16,7 @@ using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
 using TransferAgreementAutomation.Worker.Service.Engine;
 using TransferAgreementAutomation.Worker.Service.TransactionStatus;
+using EnergyOrigin.WalletClient;
 
 var builder = WebApplication.CreateBuilder(args);
 

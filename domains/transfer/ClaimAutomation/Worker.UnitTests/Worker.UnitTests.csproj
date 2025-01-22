@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\EnergyOrigin.WalletClient\EnergyOrigin.WalletClient.csproj" />
     <ProjectReference Include="..\..\Shared\Testing\Testing.csproj" />
     <ProjectReference Include="..\Worker\Worker.csproj" />
   </ItemGroup>

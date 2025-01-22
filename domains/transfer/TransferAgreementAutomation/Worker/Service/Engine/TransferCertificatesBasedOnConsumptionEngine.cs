@@ -5,10 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.WalletClient;
-using EnergyOrigin.WalletClient.Models;
 using Microsoft.Extensions.Logging;
 using TransferAgreementAutomation.Worker.Service.TransactionStatus;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using RequestStatus = TransferAgreementAutomation.Worker.Service.TransactionStatus.RequestStatus;
 
 namespace TransferAgreementAutomation.Worker.Service.Engine;

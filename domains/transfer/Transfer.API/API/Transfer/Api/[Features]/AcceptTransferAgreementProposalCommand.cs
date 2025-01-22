@@ -9,8 +9,8 @@ using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
-using EnergyOrigin.WalletClient;
 using MediatR;
+using EnergyOrigin.WalletClient;
 
 namespace API.Transfer.Api._Features_;
 

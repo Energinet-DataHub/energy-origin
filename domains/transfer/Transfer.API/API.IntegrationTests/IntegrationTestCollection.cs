@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using EnergyOrigin.WalletClient;
-using EnergyOrigin.WalletClient.Models;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using NSubstitute;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using WireMock.Server;
 using Xunit;
 

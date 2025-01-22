@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.WalletClient;
-using EnergyOrigin.WalletClient.Models;
 using Microsoft.Extensions.Logging;
 using TransferAgreementAutomation.Worker.Service.TransactionStatus;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using RequestStatus = EnergyOrigin.WalletClient.RequestStatus;
 
 namespace TransferAgreementAutomation.Worker.Service.Engine;

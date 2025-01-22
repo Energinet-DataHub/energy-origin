@@ -1,32 +1,25 @@
+using System;
+using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using EnergyOrigin.TokenValidation.b2c;
+using System.Threading;
+using System.Threading.Tasks;
 using EnergyOrigin.WalletClient.Models;
-using Microsoft.AspNetCore.Http;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace EnergyOrigin.WalletClient;
 
-public class WalletClient : IWalletClient
+public class WalletClient(HttpClient client) : IWalletClient
 {
-    private readonly HttpClient client;
-    private readonly IHttpContextAccessor httpContextAccessor;
     private const string WalletOwnerHeader = "wallet-owner";
-
-    public WalletClient(HttpClient client, IHttpContextAccessor httpContextAccessor)
-    {
-        this.client = client;
-        this.httpContextAccessor = httpContextAccessor;
-    }
 
     public async Task<CreateWalletResponse> CreateWallet(string ownerSubject, CancellationToken cancellationToken)
     {
-        ValidateHttpContext();
         SetOwnerHeader(ownerSubject);
-        ValidateOwnerAndSubjectMatch(ownerSubject);
 
         var request = new CreateWalletRequest
         {
@@ -40,9 +33,7 @@ public class WalletClient : IWalletClient
 
     public async Task<ResultList<WalletRecord>> GetWallets(string ownerSubject, CancellationToken cancellationToken)
     {
-        ValidateHttpContext();
         SetOwnerHeader(ownerSubject);
-        ValidateOwnerAndSubjectMatch(ownerSubject);
 
         var response = await client.GetAsync("v1/wallets", cancellationToken);
         var dto = await ParseResponse<ResultList<WalletRecordDto>>(response, cancellationToken);
@@ -101,9 +92,7 @@ public class WalletClient : IWalletClient
     public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, string ownerSubject,
         CancellationToken cancellationToken)
     {
-        ValidateHttpContext();
         SetOwnerHeader(ownerSubject);
-        ValidateOwnerAndSubjectMatch(ownerSubject);
 
         var response = await client.PostAsync($"v1/wallets/{walletId}/endpoints", null, cancellationToken);
 
@@ -196,30 +185,10 @@ public class WalletClient : IWalletClient
         return (await responseMessage.Content.ReadFromJsonAsync<T>(cancellationToken))!;
     }
 
-    private void ValidateHttpContext()
-    {
-        var httpContext = httpContextAccessor.HttpContext;
-        if (httpContext == null)
-        {
-            throw new HttpRequestException(
-                $"No HTTP context found. {nameof(WalletClient)} must be used as part of a request");
-        }
-    }
-
     private void SetOwnerHeader(string owner)
     {
         client.DefaultRequestHeaders.Remove(WalletOwnerHeader);
         client.DefaultRequestHeaders.Add(WalletOwnerHeader, owner);
-    }
-
-    private void ValidateOwnerAndSubjectMatch(string owner)
-    {
-        var identityDescriptor = new IdentityDescriptor(httpContextAccessor);
-        var accessDescriptor = new AccessDescriptor(identityDescriptor);
-        if (!accessDescriptor.IsAuthorizedToOrganization(Guid.Parse(owner)))
-        {
-            throw new HttpRequestException("Owner must match subject");
-        }
     }
 }
 
@@ -276,53 +245,6 @@ public record CreateExternalEndpointResponse()
     /// The ID of the created external endpoint.
     /// </summary>
     public required Guid ReceiverId { get; init; }
-}
-
-/// <summary>
-/// Request to receive a certificate-slice from another wallet.
-/// </summary>
-public record ReceiveRequest()
-{
-    /// <summary>
-    /// The public key of the receiving wallet.
-    /// </summary>
-    public required byte[] PublicKey { get; init; }
-
-    /// <summary>
-    /// The sub-position of the publicKey used on the slice on the registry.
-    /// </summary>
-    public required uint Position { get; init; }
-
-    /// <summary>
-    /// The id of the certificate.
-    /// </summary>
-    public required FederatedStreamId CertificateId { get; init; }
-
-    /// <summary>
-    /// The quantity of the slice.
-    /// </summary>
-    public required uint Quantity { get; init; }
-
-    /// <summary>
-    /// The random R used to generate the pedersen commitment with the quantitiy.
-    /// </summary>
-    public required byte[] RandomR { get; init; }
-
-    /// <summary>
-    /// List of hashed attributes, their values and salts so the receiver can access the data.
-    /// </summary>
-    public required IEnumerable<HashedAttribute> HashedAttributes { get; init; }
-}
-
-public record HashedAttribute()
-{
-    public required string Key { get; init; }
-    public required string Value { get; init; }
-
-    /// <summary>
-    /// The salt used to hash the attribute.
-    /// </summary>
-    public required byte[] Salt { get; init; }
 }
 
 public enum RequestStatus

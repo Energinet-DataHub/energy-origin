@@ -16,7 +16,6 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
-using EnergyOrigin.WalletClient;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -26,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
+using EnergyOrigin.WalletClient;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Factories;

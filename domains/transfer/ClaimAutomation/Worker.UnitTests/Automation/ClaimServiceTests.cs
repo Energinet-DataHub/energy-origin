@@ -4,13 +4,13 @@ using ClaimAutomation.Worker.Automation;
 using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using DataContext.Models;
-using EnergyOrigin.WalletClient;
-using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Testing;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using Xunit;
 
 namespace Worker.UnitTests.Automation;
