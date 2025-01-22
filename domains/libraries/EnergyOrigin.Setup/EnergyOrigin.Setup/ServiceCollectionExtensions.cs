@@ -69,6 +69,7 @@ public static class ServiceCollectionExtensions
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint))
             .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
+                    .SetSampler(new AlwaysOnSampler())
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddNpgsql()
