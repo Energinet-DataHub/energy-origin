@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\EnergyOrigin.WalletClient\EnergyOrigin.WalletClient.csproj" />
     <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
     <ProjectReference Include="..\..\Transfer.API\API\API.csproj" />
   </ItemGroup>

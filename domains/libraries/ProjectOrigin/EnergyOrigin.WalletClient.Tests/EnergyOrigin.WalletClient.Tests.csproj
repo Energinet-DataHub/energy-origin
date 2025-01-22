@@ -12,7 +12,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Testing\EnergyTrackAndTrace.Testing.csproj" />
-        <ProjectReference Include="..\..\..\EnergyOrigin.WalletClient\EnergyOrigin.WalletClient.csproj" />
+        <ProjectReference Include="..\EnergyOrigin.WalletClient\EnergyOrigin.WalletClient.csproj" />
     </ItemGroup>
 
     <ItemGroup>
