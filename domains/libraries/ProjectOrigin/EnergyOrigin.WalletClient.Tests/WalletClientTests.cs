@@ -8,7 +8,7 @@ using Xunit;
 
 namespace EnergyOrigin.WalletClient.Tests;
 
-public class ProjectOriginWalletClientTests(ProjectOriginStack poStack) : IClassFixture<ProjectOriginStack>
+public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<ProjectOriginStack>
 {
     [Fact]
     public async Task CreateAndGetWallets()

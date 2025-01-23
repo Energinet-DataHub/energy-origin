@@ -74,24 +74,14 @@ internal class ContractServiceImpl : IContractService
             }
 
             var wallets = await walletClient.GetWallets(meteringPointOwnerId.ToString(), cancellationToken);
-
-            var walletId = wallets.Result.FirstOrDefault()?.Id;
-            if (walletId == null)
-            {
-                var createWalletResponse = await walletClient.CreateWallet(meteringPointOwnerId.ToString(), cancellationToken);
-
-                if (createWalletResponse == null)
-                    throw new ApplicationException("Failed to create wallet.");
-
-                walletId = createWalletResponse.WalletId;
-            }
+            var walletId = wallets.Result.FirstOrDefault()!.Id;
 
             var contractNumber = contractsGsrn.Any()
                 ? contractsGsrn.Max(c => c.ContractNumber) + number + 1
                 : number;
 
             var walletEndpoint =
-                await walletClient.CreateWalletEndpoint(walletId.Value, meteringPointOwnerId.ToString(),
+                await walletClient.CreateWalletEndpoint(walletId, meteringPointOwnerId.ToString(),
                     cancellationToken);
 
             var recipientResponse = await stampClient.CreateRecipient(walletEndpoint, cancellationToken);

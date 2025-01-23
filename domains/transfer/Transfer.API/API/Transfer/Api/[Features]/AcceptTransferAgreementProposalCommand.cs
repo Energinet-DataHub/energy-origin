@@ -104,20 +104,9 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
 
         var wallets = await _walletClient.GetWallets(receiverOrganizationId.Value.ToString(), CancellationToken.None);
 
-        var walletId = wallets.Result.FirstOrDefault()?.Id;
-        if (walletId == null)
-        {
-            var createWalletResponse = await _walletClient.CreateWallet(receiverOrganizationId.Value.ToString(), CancellationToken.None);
+        var walletId = wallets.Result.FirstOrDefault()!.Id;
 
-            if (createWalletResponse == null)
-            {
-                throw new Exception("Failed to create wallet.");
-            }
-
-            walletId = createWalletResponse.WalletId;
-        }
-
-        var walletEndpoint = await _walletClient.CreateWalletEndpoint(walletId.Value, receiverOrganizationId.Value.ToString(), CancellationToken.None);
+        var walletEndpoint = await _walletClient.CreateWalletEndpoint(walletId, receiverOrganizationId.Value.ToString(), CancellationToken.None);
 
         var externalEndpoint =
             await _walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.Value, walletEndpoint, receiverOrganizationTin.Value,
