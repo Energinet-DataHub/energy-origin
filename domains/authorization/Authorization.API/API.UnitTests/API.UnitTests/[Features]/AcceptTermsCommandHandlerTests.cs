@@ -29,7 +29,7 @@ public class AcceptTermsCommandHandlerTests
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _publishEndpoint = Substitute.For<IPublishEndpoint>();
         _walletClient = Substitute.For<IWalletClient>();
-        _walletClient.CreateWallet(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new CreateWalletResponse() { WalletId = Guid.NewGuid() });
+        _walletClient.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new CreateWalletResponse() { WalletId = Guid.NewGuid() });
         _handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, _walletClient, _publishEndpoint);
     }
 

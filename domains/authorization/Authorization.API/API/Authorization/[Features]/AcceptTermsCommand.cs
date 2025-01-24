@@ -74,7 +74,7 @@ public class AcceptTermsCommandHandler(
 
     private async Task EnsureWalletExistsAsync(Guid organizationId)
     {
-        var createWalletResponse = await walletClient.CreateWallet(organizationId.ToString(), CancellationToken.None);
+        var createWalletResponse = await walletClient.CreateWallet(organizationId, CancellationToken.None);
 
         if (createWalletResponse == null)
         {

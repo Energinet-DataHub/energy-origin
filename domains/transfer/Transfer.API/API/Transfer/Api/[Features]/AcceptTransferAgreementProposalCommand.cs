@@ -102,11 +102,11 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new TransferAgreementConflictException();
         }
 
-        var wallets = await _walletClient.GetWallets(receiverOrganizationId.Value.ToString(), CancellationToken.None);
+        var wallets = await _walletClient.GetWallets(receiverOrganizationId.Value, CancellationToken.None);
 
-        var walletId = wallets.Result.FirstOrDefault()!.Id;
+        var walletId = wallets.Result.First().Id;
 
-        var walletEndpoint = await _walletClient.CreateWalletEndpoint(walletId, receiverOrganizationId.Value.ToString(), CancellationToken.None);
+        var walletEndpoint = await _walletClient.CreateWalletEndpoint(walletId, receiverOrganizationId.Value, CancellationToken.None);
 
         var externalEndpoint =
             await _walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.Value, walletEndpoint, receiverOrganizationTin.Value,

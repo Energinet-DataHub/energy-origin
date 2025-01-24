@@ -55,20 +55,11 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IWall
             throw new TransferAgreementConflictException();
         }
 
-        var wallets = await WalletClient.GetWallets(command.ReceiverOrganizationId.ToString(), CancellationToken.None);
+        var wallets = await WalletClient.GetWallets(command.ReceiverOrganizationId, CancellationToken.None);
 
-        var walletId = wallets.Result.FirstOrDefault()?.Id;
-        if (walletId == null) // TODO: This code should be deleted when we allign when and where we create a wallet. 🐉
-        {
-            var createWalletResponse = await WalletClient.CreateWallet(command.ReceiverOrganizationId.ToString(), CancellationToken.None);
+        var walletId = wallets.Result.First().Id;
 
-            if (createWalletResponse == null)
-                throw new ApplicationException("Failed to create wallet.");
-
-            walletId = createWalletResponse.WalletId;
-        }
-
-        var walletEndpoint = await WalletClient.CreateWalletEndpoint(walletId.Value, command.ReceiverOrganizationId.ToString(), CancellationToken.None);
+        var walletEndpoint = await WalletClient.CreateWalletEndpoint(walletId, command.ReceiverOrganizationId, CancellationToken.None);
 
         var externalEndpoint = await WalletClient.CreateExternalEndpoint(command.SenderOrganizationId, walletEndpoint, SenderTin.Value, CancellationToken.None);
 

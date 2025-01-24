@@ -17,11 +17,11 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject.ToString(), new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
         createWalletResponse.Should().NotBeNull();
 
-        var wallets = await walletClient.GetWallets(ownerSubject.ToString(), new CancellationToken());
+        var wallets = await walletClient.GetWallets(ownerSubject, new CancellationToken());
 
         wallets.Should().NotBeNull();
         wallets.Result.Count().Should().Be(1);
@@ -34,7 +34,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var wallets = await walletClient.GetWallets(ownerSubject.ToString(), new CancellationToken());
+        var wallets = await walletClient.GetWallets(ownerSubject, new CancellationToken());
 
         wallets.Should().NotBeNull();
         wallets.Result.Should().BeEmpty();
@@ -47,11 +47,11 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject.ToString(), new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
         createWalletResponse.Should().NotBeNull();
 
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject.ToString(), new CancellationToken());
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject, new CancellationToken());
 
         walletEndpoint.Should().NotBeNull();
     }
@@ -63,11 +63,11 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject.ToString(), new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
         createWalletResponse.Should().NotBeNull();
 
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject.ToString(), new CancellationToken());
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject, new CancellationToken());
 
         walletEndpoint.Should().NotBeNull();
         var cvrNumber = "12345678";
@@ -84,11 +84,11 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject.ToString(), new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
         createWalletResponse.Should().NotBeNull();
 
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject.ToString(), new CancellationToken());
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject, new CancellationToken());
 
         walletEndpoint.Should().NotBeNull();
         var cvrNumber = "12345678";

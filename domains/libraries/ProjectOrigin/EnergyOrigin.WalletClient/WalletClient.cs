@@ -17,7 +17,7 @@ public class WalletClient(HttpClient client) : IWalletClient
 {
     private const string WalletOwnerHeader = "wallet-owner";
 
-    public async Task<CreateWalletResponse> CreateWallet(string ownerSubject, CancellationToken cancellationToken)
+    public async Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
 
@@ -31,7 +31,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<CreateWalletResponse>(response, cancellationToken);
     }
 
-    public async Task<ResultList<WalletRecord>> GetWallets(string ownerSubject, CancellationToken cancellationToken)
+    public async Task<ResultList<WalletRecord>> GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
 
@@ -58,7 +58,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         WalletEndpointReference walletEndpointReference,
         string textReference, CancellationToken cancellationToken)
     {
-        SetOwnerHeader(ownerSubject.ToString());
+        SetOwnerHeader(ownerSubject);
         var request = new CreateExternalEndpointRequest
         {
             TextReference = textReference,
@@ -81,7 +81,7 @@ public class WalletClient(HttpClient client) : IWalletClient
     public async Task<RequestStatus> GetRequestStatus(Guid ownerSubject, Guid requestId,
         CancellationToken cancellationToken)
     {
-        SetOwnerHeader(ownerSubject.ToString());
+        SetOwnerHeader(ownerSubject);
         var response = await client.GetAsync($"v1/request-status/{requestId}", cancellationToken);
 
         response.EnsureSuccessStatusCode();
@@ -89,7 +89,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return responseObj!.Status;
     }
 
-    public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, string ownerSubject,
+    public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, Guid ownerSubject,
         CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
@@ -109,7 +109,7 @@ public class WalletClient(HttpClient client) : IWalletClient
     public async Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate,
         uint quantity, Guid receiverId)
     {
-        SetOwnerHeader(ownerSubject.ToString());
+        SetOwnerHeader(ownerSubject);
         var request = new TransferRequest
         {
             CertificateId = certificate.FederatedStreamId,
@@ -132,7 +132,7 @@ public class WalletClient(HttpClient client) : IWalletClient
     public async Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate,
         GranularCertificate productionCertificate, uint quantity)
     {
-        SetOwnerHeader(ownerSubject.ToString());
+        SetOwnerHeader(ownerSubject);
         var request = new ClaimRequest
         {
             ConsumptionCertificateId = consumptionCertificate.FederatedStreamId,
@@ -155,7 +155,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         CancellationToken cancellationToken, int? limit,
         int skip = 0, CertificateType? certificateType = null)
     {
-        SetOwnerHeader(ownerSubject.ToString());
+        SetOwnerHeader(ownerSubject);
 
         var requestUri = $"v1/certificates?skip={skip}&limit={limit}&sortBy=end&sort=desc";
 
@@ -185,10 +185,10 @@ public class WalletClient(HttpClient client) : IWalletClient
         return (await responseMessage.Content.ReadFromJsonAsync<T>(cancellationToken))!;
     }
 
-    private void SetOwnerHeader(string owner)
+    private void SetOwnerHeader(Guid owner)
     {
         client.DefaultRequestHeaders.Remove(WalletOwnerHeader);
-        client.DefaultRequestHeaders.Add(WalletOwnerHeader, owner);
+        client.DefaultRequestHeaders.Add(WalletOwnerHeader, owner.ToString());
     }
 }
 
