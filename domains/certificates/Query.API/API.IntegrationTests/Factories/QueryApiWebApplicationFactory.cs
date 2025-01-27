@@ -17,6 +17,7 @@ using DataContext;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -30,8 +31,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using RabbitMQ.Client;
+using Microsoft.Extensions.Logging.Abstractions;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 using Technology = API.ContractService.Clients.Technology;
 
@@ -121,6 +121,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
                 options.DefaultChallengeScheme = AuthenticationScheme.B2CAuthenticationScheme;
                 options.DefaultForbidScheme = AuthenticationScheme.B2CAuthenticationScheme;
             });
+
+            new DbMigrator(ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
         });
 
     }

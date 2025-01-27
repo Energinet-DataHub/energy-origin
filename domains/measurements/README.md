@@ -1,19 +1,31 @@
 # eo-measurements
+
 This repository contains the codebase for the measurements domain which is a part of [Energy Origin](https://github.com/Energinet-DataHub/energy-origin).
 
-### Updating the database with the migrations
+## Working with the database
 
-For local development against your Postgres database running using Docker Compose, you must update the database by running e.g. `dotnet ef database update`.
+We use Entity Framework Core as Object Relational Mapper (<https://learn.microsoft.com/en-us/ef/core/>).
 
+Entities are placed in `Measurements.API\API\MeteringPoints\Api\Models`.
 
-When running in k8s migrations are applied in an initContainer before the actual application is started. A migration script must be generated for this to work, see [below](#important).
+### Schema migration
 
-### Important! You must remember this!<a id="important"></a>
+ Schema migration scripts are placed in `Measurements.API\API\Migrations\Scripts`.
 
-You must manually remember to generate the complete SQL migration script after adding a migration. The complete SQL migration script is used to migrate the database when running in k8s.
+Migration is performed with the `DbUp` tool (<https://dbup.readthedocs.io>). SQL scripts will automatically be applied to the configured database, when running the application with the `--migrate` argument.
 
-This is the commands for generating the migration SQL script for the API project and Worker project:
+When running in k8s migrations are applied in an initContainer before the actual application is started.
 
-```shell
-dotnet ef migrations script --idempotent --project Measurements.API/API --output migrations/API.sql
+For the integration test projects, the migrations are automatically applied as part of the `WebApplicationFactory` or the individual tests.
+
+#### Adding new migration
+
+Scripts are named using the following convention: `<date>-<sequence>-<description.sql>`. Example: `20250121-0001-MassTransitInboxOutbox.sql`. The scripts will be applied to the database in alphabetical order.
+
+#### Updating local database with migrations
+
+Migrate the local database schema with:
+
+```bash
+dotnet run --project Measurements.API/API/API.csproj --migrate
 ```

@@ -23,5 +23,4 @@ jobs:
           solution: domains/certificates/Certificates.sln
           project: domains/certificates/Query.API/API/API.csproj
           configuration: domains/certificates/Query.API/configuration.yaml
-          migrations: domains/certificates/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}

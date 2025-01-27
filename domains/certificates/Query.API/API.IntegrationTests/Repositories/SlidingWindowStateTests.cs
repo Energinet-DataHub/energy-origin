@@ -11,9 +11,11 @@ using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Migrations;
 using FluentAssertions;
 using Measurements.V1;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
@@ -25,10 +27,9 @@ public class SlidingWindowStateTests
 
     public SlidingWindowStateTests(IntegrationTestFixture integrationTestFixture)
     {
-        var emptyDb = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(emptyDb.ConnectionString).Options;
-        using var dbContext = new ApplicationDbContext(_options);
-        dbContext.Database.EnsureCreated();
+        var databaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
+        new DbMigrator(databaseInfo.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(databaseInfo.ConnectionString).Options;
     }
 
     private static MeteringPointSyncInfo CreateSyncInfo(Gsrn gsrn) =>

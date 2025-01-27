@@ -10,18 +10,6 @@
             </summary>
             <response code="200">Successful operation</response>
         </member>
-        <member name="T:API.Migrations.Addrelations">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.Addrelations.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.Addrelations.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:API.Migrations.Addrelations.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
         <member name="T:Measurements.V1.MeasurementsReflection">
             <summary>Holder for reflection information generated from Measurements/gRPC/V1/Protos/measurements.proto</summary>
         </member>
