@@ -1,10 +1,7 @@
 using EnergyOrigin.WalletClient.Models;
 using EnergyOrigin.WalletClient.Tests.Testcontainers;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
-using NSubstitute;
 using Xunit;
-
 
 namespace EnergyOrigin.WalletClient.Tests;
 
