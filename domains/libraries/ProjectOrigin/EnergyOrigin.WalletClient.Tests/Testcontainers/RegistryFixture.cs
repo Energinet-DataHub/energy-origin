@@ -1,6 +1,4 @@
-using System;
 using System.Text;
-using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Images;
@@ -10,7 +8,7 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 using Testcontainers.RabbitMq;
 using Xunit;
 
-namespace ProjectOriginClients.Tests.Testcontainers;
+namespace EnergyOrigin.WalletClient.Tests.Testcontainers;
 
 public class RegistryFixture : IAsyncLifetime
 {
@@ -62,8 +60,8 @@ public class RegistryFixture : IAsyncLifetime
                 .WithNetworkAliases(VerifierAlias)
                 .WithPortBinding(GrpcPort, true)
                 .WithCommand("--serve")
-                .WithEnvironment("Issuers__DK1", Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk1IssuerKey.PublicKey.ExportPkixText())))
-                .WithEnvironment("Issuers__DK2", Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk2IssuerKey.PublicKey.ExportPkixText())))
+                .WithEnvironment("Issuers__DK1", Convert.ToBase64String(Encoding.UTF8.GetBytes((string)Dk1IssuerKey.PublicKey.ExportPkixText())))
+                .WithEnvironment("Issuers__DK2", Convert.ToBase64String(Encoding.UTF8.GetBytes((string)Dk2IssuerKey.PublicKey.ExportPkixText())))
                 .WithEnvironment($"Registries__{RegistryName}__Address", $"http://{RegistryAlias}:{GrpcPort}")
                 .WithWaitStrategy(
                     Wait.ForUnixContainer()

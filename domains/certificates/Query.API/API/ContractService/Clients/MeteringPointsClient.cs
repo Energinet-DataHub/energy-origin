@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
+using EnergyOrigin.WalletClient;
 using Microsoft.AspNetCore.Http;
 
 namespace API.ContractService.Clients;
@@ -61,7 +62,7 @@ public class MeteringPointsClient : IMeteringPointsClient
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext == null)
         {
-            throw new HttpRequestException($"No HTTP context found. {nameof(WalletClient)} must be used as part of a request");
+            throw new HttpRequestException($"No HTTP context found. {nameof(MeteringPointsClient)} must be used as part of a request");
         }
     }
 

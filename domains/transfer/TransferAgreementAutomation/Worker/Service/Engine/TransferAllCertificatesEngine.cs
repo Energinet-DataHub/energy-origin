@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using Microsoft.Extensions.Logging;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Service.TransactionStatus;
 using RequestStatus = TransferAgreementAutomation.Worker.Service.TransactionStatus.RequestStatus;
@@ -17,14 +17,14 @@ public class TransferAllCertificatesEngine : ITransferEngine
 {
     private readonly IRequestStatusRepository requestStatusRepository;
     private readonly ILogger<TransferAllCertificatesEngine> logger;
-    private readonly IProjectOriginWalletClient walletClient;
+    private readonly IWalletClient walletClient;
     private readonly ITransferAgreementAutomationMetrics metrics;
     private readonly TransferEngineUtility transferUtility;
 
     public TransferAllCertificatesEngine(
         IRequestStatusRepository requestStatusRepository,
         ILogger<TransferAllCertificatesEngine> logger,
-        IProjectOriginWalletClient walletClient,
+        IWalletClient walletClient,
         ITransferAgreementAutomationMetrics metrics,
         TransferEngineUtility transferUtility
     )

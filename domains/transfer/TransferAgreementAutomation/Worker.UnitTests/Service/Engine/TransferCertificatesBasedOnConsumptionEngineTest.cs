@@ -1,11 +1,11 @@
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Service.Engine;
 using TransferAgreementAutomation.Worker.Service.TransactionStatus;
@@ -16,7 +16,7 @@ namespace Worker.UnitTests.Service.Engine;
 
 public class TransferCertificatesBasedOnConsumptionEngineTest
 {
-    private readonly IProjectOriginWalletClient mockWalletClient;
+    private readonly IWalletClient mockWalletClient;
     private readonly InMemoryRequestStatusRepository requestStatusStore;
 
     private readonly int batchSize = 2;
@@ -25,7 +25,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
     public TransferCertificatesBasedOnConsumptionEngineTest()
     {
         var fakeLogger = Substitute.For<ILogger<TransferCertificatesBasedOnConsumptionEngine>>();
-        mockWalletClient = Substitute.For<IProjectOriginWalletClient>();
+        mockWalletClient = Substitute.For<IWalletClient>();
         var fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
         requestStatusStore = new InMemoryRequestStatusRepository();
         var transferEngineUtility = new TransferEngineUtility(mockWalletClient, requestStatusStore, NullLogger<TransferEngineUtility>.Instance)

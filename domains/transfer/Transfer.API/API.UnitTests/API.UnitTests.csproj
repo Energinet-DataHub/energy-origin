@@ -35,7 +35,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Testing\EnergyTrackAndTrace.Testing.csproj" />
-        <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>
 </Project>

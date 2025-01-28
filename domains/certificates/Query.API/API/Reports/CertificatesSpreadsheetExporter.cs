@@ -8,7 +8,8 @@ using API.ContractService.Clients;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using ProjectOriginClients.Models;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 
 namespace API.Reports;
 

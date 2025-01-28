@@ -9,6 +9,7 @@ using API.UnitOfWork;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.WalletClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using static API.ContractService.CreateContractResult;
@@ -72,25 +73,15 @@ internal class ContractServiceImpl : IContractService
                 return new ContractAlreadyExists(overlappingContract);
             }
 
-            var wallets = await walletClient.GetWallets(meteringPointOwnerId.ToString(), cancellationToken);
-
-            var walletId = wallets.Result.FirstOrDefault()?.Id;
-            if (walletId == null)
-            {
-                var createWalletResponse = await walletClient.CreateWallet(meteringPointOwnerId.ToString(), cancellationToken);
-
-                if (createWalletResponse == null)
-                    throw new ApplicationException("Failed to create wallet.");
-
-                walletId = createWalletResponse.WalletId;
-            }
+            var wallets = await walletClient.GetWallets(meteringPointOwnerId, cancellationToken);
+            var walletId = wallets.Result.First().Id;
 
             var contractNumber = contractsGsrn.Any()
                 ? contractsGsrn.Max(c => c.ContractNumber) + number + 1
                 : number;
 
             var walletEndpoint =
-                await walletClient.CreateWalletEndpoint(walletId.Value, meteringPointOwnerId.ToString(),
+                await walletClient.CreateWalletEndpoint(walletId, meteringPointOwnerId,
                     cancellationToken);
 
             var recipientResponse = await stampClient.CreateRecipient(walletEndpoint, cancellationToken);

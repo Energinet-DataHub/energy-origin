@@ -2,34 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using ProjectOriginClients.Models;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 
 namespace API.IntegrationTests.Extensions;
 
 public static class WalletServiceClientExtensions
 {
-    public const string WalletOwnerHeader = "wallet-owner";
-
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
-    };
-
-    public static async Task<IEnumerable<GranularCertificate>> QueryCertificates(this HttpClient client)
-    {
-        var response = await client.GetFromJsonAsync<ResultList<GranularCertificate>>("v1/certificates",
-            options: JsonSerializerOptions);
-
-        return response!.Result.ToList();
-    }
-
-    public static async Task<IList<GranularCertificate>> RepeatedlyQueryCertificatesUntil(this HttpClient client, Func<IEnumerable<GranularCertificate>, bool> condition, TimeSpan? timeLimit = null)
+    public static async Task<IList<GranularCertificate>> RepeatedlyQueryCertificatesUntil(this IWalletClient client, Func<IEnumerable<GranularCertificate>, bool> condition, string ownerId, TimeSpan? timeLimit = null)
     {
         if (timeLimit.HasValue && timeLimit.Value <= TimeSpan.Zero)
             throw new ArgumentException($"{nameof(timeLimit)} must be a positive time span");
@@ -41,8 +23,7 @@ public static class WalletServiceClientExtensions
 
         do
         {
-            var response = await client.GetFromJsonAsync<ResultList<GranularCertificate>>("v1/certificates",
-                options: JsonSerializerOptions);
+            var response = await client.GetGranularCertificates(Guid.Parse(ownerId), CancellationToken.None, null);
 
             if (condition(response!.Result))
                 return response.Result.ToList();

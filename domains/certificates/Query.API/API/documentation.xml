@@ -64,11 +64,6 @@
             List of hashed attributes, their values and salts so the receiver can access the data.
             </summary>
         </member>
-        <member name="P:API.ContractService.Clients.CreateWalletRequest.PrivateKey">
-            <summary>
-            The private key to import. If not provided, a private key will be generated.
-            </summary>
-        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point

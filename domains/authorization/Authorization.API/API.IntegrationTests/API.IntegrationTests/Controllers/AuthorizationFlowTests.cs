@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using API.Authorization.Controllers;
@@ -7,11 +6,9 @@ using API.Metrics;
 using API.Models;
 using API.Repository;
 using API.UnitTests;
-using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.Controllers;
 
@@ -26,16 +23,22 @@ public class AuthorizationFlowTests
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-
         _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: _integrationTestFixture.WebAppFactory.IssuerIdpClientId.ToString());
+        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: _integrationTestFixture.WebAppFactory
+            .IssuerIdpClientId.ToString());
     }
 
     [Fact]
     public async Task GivenNonExistingUserAndNoneExistingOrganization_WhenGoingThroughAcceptTermsFlow_ThenOrginizationAffiliationAndUserIsCreated()
     {
         // Given
-        var user = new { OrgCvr = "87654321", OrgName = Guid.NewGuid().ToString(), Name = Guid.NewGuid().ToString(), Sub = Guid.NewGuid() };
+        var user = new
+        {
+            OrgCvr = "87654321",
+            OrgName = Guid.NewGuid().ToString(),
+            Name = Guid.NewGuid().ToString(),
+            Sub = Guid.NewGuid()
+        };
 
         await using var dbContext = new ApplicationDbContext(_options);
 
@@ -49,7 +52,8 @@ public class AuthorizationFlowTests
         var consentResponse1 = await _api.GetConsentForUser(request);
 
         // When
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.Sub.ToString(), orgCvr: user.OrgCvr, orgName: user.OrgName, termsAccepted: false);
+        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.Sub.ToString(), orgCvr: user.OrgCvr,
+            orgName: user.OrgName, termsAccepted: false);
         var termsResponse = await userApi.AcceptTerms();
         var consentResponse2 = await _api.GetConsentForUser(request);
 
@@ -71,9 +75,14 @@ public class AuthorizationFlowTests
     [Fact]
     public async Task GivenNonExistingUserAndExistingOrganization_WhenGoingThroughAcceptTermsFlow_ThenAffiliationAndUserIsCreated()
     {
-
         // Given
-        var user = new { OrgCvr = "11223344", OrgName = Guid.NewGuid().ToString(), Name = Guid.NewGuid().ToString(), Sub = Guid.NewGuid() };
+        var user = new
+        {
+            OrgCvr = "11223344",
+            OrgName = Guid.NewGuid().ToString(),
+            Name = Guid.NewGuid().ToString(),
+            Sub = Guid.NewGuid()
+        };
 
         await using var dbContext = new ApplicationDbContext(_options);
         var org = Organization.Create(Tin.Create(user.OrgCvr), OrganizationName.Create(user.OrgName));
@@ -127,16 +136,23 @@ public class AuthorizationFlowTests
         await dbContext.OrganizationConsents.AddAsync(consent2);
         await dbContext.SaveChangesAsync();
 
-        var getClientGrantedConsentsQueryHandler = new GetClientGrantedConsentsQueryHandler(new ClientRepository(dbContext));
-        var consentForClientQueryHandler = new GetConsentForClientQueryHandler(new ClientRepository(dbContext), new AuthorizationMetrics());
+        var getClientGrantedConsentsQueryHandler =
+            new GetClientGrantedConsentsQueryHandler(new ClientRepository(dbContext));
+        var consentForClientQueryHandler =
+            new GetConsentForClientQueryHandler(new ClientRepository(dbContext), new AuthorizationMetrics());
         var idpClientId = organizationWithClient.Clients.First().IdpClientId;
 
         // When
-        var getClientGrantedConsentsQueryResult = await getClientGrantedConsentsQueryHandler.Handle(new GetClientGrantedConsentsQuery(idpClientId), CancellationToken.None);
-        var consentForClientQueryResult = await consentForClientQueryHandler.Handle(new GetConsentForClientQuery(idpClientId.Value), CancellationToken.None);
+        var getClientGrantedConsentsQueryResult =
+            await getClientGrantedConsentsQueryHandler.Handle(new GetClientGrantedConsentsQuery(idpClientId),
+                CancellationToken.None);
+        var consentForClientQueryResult =
+            await consentForClientQueryHandler.Handle(new GetConsentForClientQuery(idpClientId.Value),
+                CancellationToken.None);
 
         // Then
-        var grantedConsentsOrganizationIds = getClientGrantedConsentsQueryResult.GetClientConsentsQueryResultItems.Select(x => x.OrganizationId);
+        var grantedConsentsOrganizationIds =
+            getClientGrantedConsentsQueryResult.GetClientConsentsQueryResultItems.Select(x => x.OrganizationId);
         var authorizationClaimOrganizationsIds = consentForClientQueryResult.OrgIds;
 
         grantedConsentsOrganizationIds.Should().BeEquivalentTo(authorizationClaimOrganizationsIds);

@@ -1,9 +1,9 @@
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
 using TransferAgreementAutomation.Worker.Service.Engine;
 using TransferAgreementAutomation.Worker.Service.TransactionStatus;
 using Xunit;
@@ -14,13 +14,13 @@ namespace Worker.UnitTests.Service.Engine;
 public class TransferEngineUtilityTest
 {
     private readonly IRequestStatusRepository _requestStatusRepository;
-    private readonly IProjectOriginWalletClient _mockWalletClient;
+    private readonly IWalletClient _mockWalletClient;
     private readonly TransferEngineUtility _sut;
 
     public TransferEngineUtilityTest()
     {
         _requestStatusRepository = new InMemoryRequestStatusRepository();
-        _mockWalletClient = Substitute.For<IProjectOriginWalletClient>();
+        _mockWalletClient = Substitute.For<IWalletClient>();
         _sut = new TransferEngineUtility(_mockWalletClient, _requestStatusRepository, NullLogger<TransferEngineUtility>.Instance);
     }
 
@@ -103,7 +103,7 @@ public class TransferEngineUtilityTest
         await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now().AddMinutes(-3)));
         var request = (await _requestStatusRepository.GetByOrganization(orgId)).Single();
         _mockWalletClient.GetRequestStatus(Arg.Is(request.SenderId.Value), Arg.Is(request.RequestId), Arg.Any<CancellationToken>())
-            .Returns(ProjectOriginClients.RequestStatus.Completed);
+            .Returns(EnergyOrigin.WalletClient.RequestStatus.Completed);
 
         // When checking for pending transactions
         var hasPendingTransactions = await _sut.HasPendingTransactions(orgId);

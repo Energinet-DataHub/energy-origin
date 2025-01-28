@@ -8,9 +8,9 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
 using Testing;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using Xunit;
 
 namespace Worker.UnitTests.Automation;
@@ -19,7 +19,7 @@ public class ClaimServiceTests
 {
     private readonly ILogger<ClaimService> logger = Substitute.For<ILogger<ClaimService>>();
     private readonly IClaimAutomationRepository claimRepository = Substitute.For<IClaimAutomationRepository>();
-    private readonly IProjectOriginWalletClient walletClient = Substitute.For<IProjectOriginWalletClient>();
+    private readonly IWalletClient walletClient = Substitute.For<IWalletClient>();
     private readonly IClaimAutomationMetrics metricsMock = Substitute.For<IClaimAutomationMetrics>();
     private readonly AutomationCache cacheMock = Substitute.For<AutomationCache>();
 

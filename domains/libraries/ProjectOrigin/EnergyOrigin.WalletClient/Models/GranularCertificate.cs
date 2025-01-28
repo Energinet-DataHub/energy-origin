@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ProjectOriginClients.Models;
+namespace EnergyOrigin.WalletClient.Models;
 
 /// <summary>
 /// A certificate that is available to use in the wallet.

@@ -10,13 +10,13 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ProjectOriginClients;
 using TransferAgreementAutomation.Worker;
 using TransferAgreementAutomation.Worker.Metrics;
 using TransferAgreementAutomation.Worker.Options;
 using TransferAgreementAutomation.Worker.Service;
 using TransferAgreementAutomation.Worker.Service.Engine;
 using TransferAgreementAutomation.Worker.Service.TransactionStatus;
+using EnergyOrigin.WalletClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,7 +81,7 @@ builder.Services.AddSingleton<ITransferEngine, TransferCertificatesBasedOnConsum
 builder.Services.AddSingleton<ITransferEngineCoordinator, TransferEngineCoordinator>();
 
 builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>();
-builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
+builder.Services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     c.BaseAddress = new Uri(options.WalletUrl);

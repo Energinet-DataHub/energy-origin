@@ -20,4 +20,8 @@
 		<PackageReference Include="ProjectOrigin.PedersenCommitment" Version="1.1.1" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.0" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Models\" />
+	</ItemGroup>
 </Project>

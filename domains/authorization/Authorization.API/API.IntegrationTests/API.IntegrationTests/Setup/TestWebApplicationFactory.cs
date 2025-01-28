@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using API.Models;
 using API.Options;
 using EnergyOrigin.Setup;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using EnergyOrigin.Setup.Migrations;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
@@ -26,6 +27,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     internal string ConnectionString { get; set; } = "";
     internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
+    public string WalletUrl { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -46,6 +48,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
                 options.Username = RabbitMqOptions.Username;
                 options.Password = RabbitMqOptions.Password;
             });
+            services.Configure<ProjectOriginOptions>(options => options.WalletUrl = WalletUrl);
         });
     }
 

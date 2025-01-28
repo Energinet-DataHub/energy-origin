@@ -5,10 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
 using TransferAgreementAutomation.Worker.Service.TransactionStatus;
-using RequestStatus = ProjectOriginClients.RequestStatus;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
+using RequestStatus = EnergyOrigin.WalletClient.RequestStatus;
 
 namespace TransferAgreementAutomation.Worker.Service.Engine;
 
@@ -19,11 +19,11 @@ public class TransferEngineUtility
     public int StatusUpdateTimeoutMinutes { get; } = 120;
     public int StatusUpdateDeleteMinutes { get; } = 24 * 60;
 
-    private readonly IProjectOriginWalletClient _walletClient;
+    private readonly IWalletClient _walletClient;
     private readonly IRequestStatusRepository _requestStatusRepository;
     private readonly ILogger<TransferEngineUtility> _logger;
 
-    public TransferEngineUtility(IProjectOriginWalletClient walletClient, IRequestStatusRepository requestStatusRepository,
+    public TransferEngineUtility(IWalletClient walletClient, IRequestStatusRepository requestStatusRepository,
         ILogger<TransferEngineUtility> logger)
     {
         _walletClient = walletClient;

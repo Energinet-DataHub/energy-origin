@@ -10,7 +10,7 @@ using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
-using ProjectOriginClients;
+using EnergyOrigin.WalletClient;
 
 namespace API.Transfer.Api._Features_;
 
@@ -52,13 +52,13 @@ public class AcceptTransferAgreementProposalCommandResult
 public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<AcceptTransferAgreementProposalCommand,
     AcceptTransferAgreementProposalCommandResult>
 {
-    private readonly IProjectOriginWalletClient _walletClient;
+    private readonly IWalletClient _walletClient;
     private readonly IAuthorizationClient _authorizationClient;
     private readonly IdentityDescriptor _identityDescriptor;
     private readonly IUnitOfWork _unitOfWork;
 
     public AcceptTransferAgreementProposalCommandHandler(IdentityDescriptor identityDescriptor, IUnitOfWork unitOfWork,
-        IProjectOriginWalletClient walletClient, IAuthorizationClient authorizationClient)
+        IWalletClient walletClient, IAuthorizationClient authorizationClient)
     {
         _identityDescriptor = identityDescriptor;
         _unitOfWork = unitOfWork;
@@ -104,20 +104,9 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
 
         var wallets = await _walletClient.GetWallets(receiverOrganizationId.Value, CancellationToken.None);
 
-        var walletId = wallets.Result.FirstOrDefault()?.Id;
-        if (walletId == null)
-        {
-            var createWalletResponse = await _walletClient.CreateWallet(receiverOrganizationId.Value, CancellationToken.None);
+        var walletId = wallets.Result.First().Id;
 
-            if (createWalletResponse == null)
-            {
-                throw new Exception("Failed to create wallet.");
-            }
-
-            walletId = createWalletResponse.WalletId;
-        }
-
-        var walletEndpoint = await _walletClient.CreateWalletEndpoint(receiverOrganizationId.Value, walletId.Value, CancellationToken.None);
+        var walletEndpoint = await _walletClient.CreateWalletEndpoint(walletId, receiverOrganizationId.Value, CancellationToken.None);
 
         var externalEndpoint =
             await _walletClient.CreateExternalEndpoint(proposal.SenderCompanyId.Value, walletEndpoint, receiverOrganizationTin.Value,

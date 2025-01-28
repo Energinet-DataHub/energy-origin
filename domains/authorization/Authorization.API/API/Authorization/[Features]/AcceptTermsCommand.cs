@@ -13,6 +13,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MassTransit;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
+using EnergyOrigin.WalletClient;
 
 namespace API.Authorization._Features_;
 
@@ -22,6 +23,7 @@ public class AcceptTermsCommandHandler(
     IOrganizationRepository organizationRepository,
     ITermsRepository termsRepository,
     IUnitOfWork unitOfWork,
+    IWalletClient walletClient,
     IPublishEndpoint publishEndpoint)
     : IRequestHandler<AcceptTermsCommand>
 {
@@ -36,7 +38,8 @@ public class AcceptTermsCommandHandler(
 
         if (usersAffiliatedOrganization == null)
         {
-            usersAffiliatedOrganization = Organization.Create(usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
+            usersAffiliatedOrganization =
+                Organization.Create(usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
             await organizationRepository.AddAsync(usersAffiliatedOrganization, cancellationToken);
         }
 
@@ -49,10 +52,13 @@ public class AcceptTermsCommandHandler(
             throw new InvalidConfigurationException("No Terms configured");
         }
 
-        if (!usersAffiliatedOrganization.TermsAccepted || usersAffiliatedOrganization.TermsVersion != latestTerms.Version)
+        if (!usersAffiliatedOrganization.TermsAccepted ||
+            usersAffiliatedOrganization.TermsVersion != latestTerms.Version)
         {
             usersAffiliatedOrganization.AcceptTerms(latestTerms);
         }
+
+        await EnsureWalletExistsAsync(usersAffiliatedOrganization.Id);
 
         await publishEndpoint.Publish(new OrgAcceptedTerms(
             Guid.NewGuid(),
@@ -64,6 +70,15 @@ public class AcceptTermsCommandHandler(
         ), cancellationToken);
 
         await unitOfWork.CommitAsync();
+    }
 
+    private async Task EnsureWalletExistsAsync(Guid organizationId)
+    {
+        var createWalletResponse = await walletClient.CreateWallet(organizationId, CancellationToken.None);
+
+        if (createWalletResponse == null)
+        {
+            throw new WalletNotCreated("Failed to create wallet.");
+        }
     }
 }

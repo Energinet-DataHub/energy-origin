@@ -51,6 +51,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -92,6 +94,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -125,6 +129,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -157,6 +162,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -182,6 +188,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -207,6 +214,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
@@ -257,6 +265,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -282,6 +291,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -308,6 +318,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var now = DateTimeOffset.Now;
@@ -338,6 +349,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var now = DateTimeOffset.Now;
@@ -394,6 +406,7 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var now = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -470,6 +483,8 @@ public class ContractsV20240515Tests
 
         var subject1 = Guid.NewGuid();
         var orgId1 = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId1.ToString());
+
         using var client1 = factory.CreateB2CAuthenticatedClient(subject1, orgId1, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
@@ -504,6 +519,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -532,6 +549,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -560,6 +579,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -588,6 +609,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(1).ToUnixTimeSeconds();
@@ -636,6 +659,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(1).ToUnixTimeSeconds();
@@ -712,6 +737,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var start = DateTimeOffset.Now.AddDays(3);
@@ -751,6 +778,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var start = DateTimeOffset.Now.AddDays(3);
@@ -793,6 +822,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -817,6 +848,8 @@ public class ContractsV20240515Tests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
+        await factory.CreateWalletClient(orgId.ToString());
+
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);

@@ -12,6 +12,7 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
+using EnergyOrigin.WalletClient;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -126,6 +127,12 @@ builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IOrganizationConsentRepository, OrganizationOrganizationConsentRepository>();
 builder.Services.AddScoped<ITermsRepository, TermsRepository>();
 builder.Services.AddSingleton<IAuthorizationMetrics, AuthorizationMetrics>();
+
+builder.Services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
+{
+    var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
+    c.BaseAddress = new Uri(options.WalletUrl);
+});
 
 builder.Services.AddAuthorizationApi();
 builder.Services.AddOptions<MitIDOptions>().BindConfiguration(MitIDOptions.Prefix).ValidateDataAnnotations()
