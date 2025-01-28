@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
-using System.Text.Json.Serialization;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.WalletClient;
@@ -14,14 +11,6 @@ namespace API.IntegrationTests.Extensions;
 
 public static class WalletServiceClientExtensions
 {
-    public const string WalletOwnerHeader = "wallet-owner";
-
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        Converters = { new JsonStringEnumConverter(allowIntegerValues: true) }
-    };
-
     public static async Task<IList<GranularCertificate>> RepeatedlyQueryCertificatesUntil(this IWalletClient client, Func<IEnumerable<GranularCertificate>, bool> condition, string ownerId, TimeSpan? timeLimit = null)
     {
         if (timeLimit.HasValue && timeLimit.Value <= TimeSpan.Zero)

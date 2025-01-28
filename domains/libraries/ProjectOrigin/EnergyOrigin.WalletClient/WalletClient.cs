@@ -188,7 +188,7 @@ public class WalletClient(HttpClient client) : IWalletClient
     private void SetOwnerHeader(Guid owner)
     {
         client.DefaultRequestHeaders.Remove(WalletOwnerHeader);
-        client.DefaultRequestHeaders.Add(WalletOwnerHeader, owner.ToString());
+        client.DefaultRequestHeaders.Add(WalletOwnerHeader, owner.ToString().ToLower());
     }
 }
 

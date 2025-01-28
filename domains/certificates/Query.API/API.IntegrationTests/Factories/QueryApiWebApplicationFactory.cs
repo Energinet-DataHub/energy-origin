@@ -192,8 +192,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
-        client.DefaultRequestHeaders.Remove(WalletServiceClientExtensions.WalletOwnerHeader);
-        client.DefaultRequestHeaders.Add(WalletServiceClientExtensions.WalletOwnerHeader, orgId);
         var wallet = new WalletClient(client);
         await wallet.CreateWallet(Guid.Parse(orgId), CancellationToken.None);
         return wallet;
