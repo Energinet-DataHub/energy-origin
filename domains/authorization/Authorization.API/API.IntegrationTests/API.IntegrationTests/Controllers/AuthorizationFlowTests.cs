@@ -7,27 +7,24 @@ using API.Metrics;
 using API.Models;
 using API.Repository;
 using API.UnitTests;
-using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using ClientType = API.Models.ClientType;
 
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AuthorizationFlowTests : IClassFixture<ProjectOriginStack>
+public class AuthorizationFlowTests
 {
     private readonly Api _api;
     private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AuthorizationFlowTests(IntegrationTestFixture integrationTestFixture, ProjectOriginStack poStack)
+    public AuthorizationFlowTests(IntegrationTestFixture integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-        integrationTestFixture.WebAppFactory.WalletUrl = poStack.WalletUrl;
         _integrationTestFixture = integrationTestFixture;
         _api = integrationTestFixture.WebAppFactory.CreateApi(sub: _integrationTestFixture.WebAppFactory
             .IssuerIdpClientId.ToString());

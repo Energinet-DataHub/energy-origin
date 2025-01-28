@@ -8,7 +8,6 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
 using API.Query.API.ApiModels.Requests;
