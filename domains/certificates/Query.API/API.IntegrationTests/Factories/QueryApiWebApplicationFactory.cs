@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Mocks;
@@ -20,6 +21,7 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
+using EnergyOrigin.WalletClient;
 using FluentAssertions;
 using Grpc.Net.Client;
 using MassTransit;
@@ -186,13 +188,15 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return client;
     }
 
-    public HttpClient CreateWalletClient(string orgId)
+    public async Task<IWalletClient> CreateWalletClient(string orgId)
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
         client.DefaultRequestHeaders.Remove(WalletServiceClientExtensions.WalletOwnerHeader);
         client.DefaultRequestHeaders.Add(WalletServiceClientExtensions.WalletOwnerHeader, orgId);
-        return client;
+        var wallet = new WalletClient(client);
+        await wallet.CreateWallet(Guid.Parse(orgId), CancellationToken.None);
+        return wallet;
     }
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
