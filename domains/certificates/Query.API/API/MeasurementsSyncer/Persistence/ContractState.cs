@@ -7,6 +7,7 @@ using API.Configurations;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,30 +30,36 @@ public class ContractState : IContractState
 
     public async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken = default)
     {
+        return await GetSyncInfos(DateTimeOffset.UtcNow, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(DateTimeOffset time, CancellationToken cancellationToken = default)
+    {
         try
         {
             await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
             var allContracts = await dbContext.Contracts.AsNoTracking().ToListAsync(cancellationToken);
 
-            var minimumAgeThreshold = DateTimeOffset.UtcNow.AddHours(-options.MinimumAgeThresholdHours);
+            var minimumAgeThreshold = time.AddHours(-options.MinimumAgeThresholdHours);
 
             var eligibleContracts = allContracts
                 .Where(c => c.StartDate < minimumAgeThreshold)
                 .Where(c =>
+                {
+                    var slidingWindow = dbContext.MeteringPointTimeSeriesSlidingWindows.SingleOrDefault(sw => sw.GSRN == c.GSRN);
 
                     // Include if sliding window doesn't exist (first-time processing)
-                    !dbContext.MeteringPointTimeSeriesSlidingWindows.Any(sw => sw.GSRN == c.GSRN) ||
+                    var noSlidingWindowExists = slidingWindow is null;
 
                     // Include if sliding window exists and has missing intervals
-                    dbContext.MeteringPointTimeSeriesSlidingWindows.Any(sw =>
-                        sw.GSRN == c.GSRN && sw.MissingMeasurements.Intervals.Any()) ||
+                    var hasMissingIntervals = slidingWindow is not null && slidingWindow.MissingMeasurements.Intervals.Any();
 
-                    // Include if sliding window exists, is empty, and the contract has no EndDate (indefinite contract)
-                    dbContext.MeteringPointTimeSeriesSlidingWindows.Any(sw =>
-                        sw.GSRN == c.GSRN &&
-                        !sw.MissingMeasurements.Intervals.Any() && // Sliding window is empty
-                        (c.EndDate == null || c.EndDate > minimumAgeThreshold))
-                )
+                    // Include if sliding window exists, and not synced all the way to the end
+                    var notSyncedToEndDate = slidingWindow is not null &&
+                                             (c.EndDate is null || slidingWindow.SynchronizationPoint < UnixTimestamp.Create(c.EndDate.Value));
+
+                    return noSlidingWindowExists || hasMissingIntervals || notSyncedToEndDate;
+                })
                 .ToList();
 
             //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
@@ -62,8 +69,8 @@ public class ContractState : IContractState
                 {
                     var oldestContract = g.OrderBy(c => c.StartDate).First();
                     var gsrn = g.Key;
-                    return new MeteringPointSyncInfo(new Gsrn(gsrn), oldestContract.StartDate, oldestContract.EndDate, oldestContract.MeteringPointOwner,
-                        oldestContract.MeteringPointType, oldestContract.GridArea, oldestContract.RecipientId,
+                    return new MeteringPointSyncInfo(new Gsrn(gsrn), oldestContract.StartDate, oldestContract.EndDate,
+                        oldestContract.MeteringPointOwner, oldestContract.MeteringPointType, oldestContract.GridArea, oldestContract.RecipientId,
                         oldestContract.Technology);
                 })
                 .ToList();
