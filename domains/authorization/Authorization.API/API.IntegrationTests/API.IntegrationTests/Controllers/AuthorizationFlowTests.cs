@@ -119,8 +119,7 @@ public class AuthorizationFlowTests
 
 
     [Fact]
-    public async Task
-        GivenOrganizationWithReceivedConsents_WhenGettingAuthConsentClaimsAndOrganizationConsents_ThenBothListOfOrganizationsYouHaveAccessToIsTheSame()
+    public async Task GivenOrganizationWithReceivedConsents_WhenGettingAuthConsentClaimsAndOrganizationConsents_ThenBothListOfOrganizationsYouHaveAccessToIsTheSame()
     {
         // Given
         var user = Any.User();
