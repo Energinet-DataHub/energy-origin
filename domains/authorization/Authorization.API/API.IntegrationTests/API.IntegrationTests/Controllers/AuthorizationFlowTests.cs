@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using API.Authorization.Controllers;
@@ -8,7 +7,6 @@ using API.Models;
 using API.Repository;
 using API.UnitTests;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,8 +29,7 @@ public class AuthorizationFlowTests
     }
 
     [Fact]
-    public async Task
-        GivenNonExistingUserAndNoneExistingOrganization_WhenGoingThroughAcceptTermsFlow_ThenOrginizationAffiliationAndUserIsCreated()
+    public async Task GivenNonExistingUserAndNoneExistingOrganization_WhenGoingThroughAcceptTermsFlow_ThenOrginizationAffiliationAndUserIsCreated()
     {
         // Given
         var user = new
@@ -76,8 +73,7 @@ public class AuthorizationFlowTests
     }
 
     [Fact]
-    public async Task
-        GivenNonExistingUserAndExistingOrganization_WhenGoingThroughAcceptTermsFlow_ThenAffiliationAndUserIsCreated()
+    public async Task GivenNonExistingUserAndExistingOrganization_WhenGoingThroughAcceptTermsFlow_ThenAffiliationAndUserIsCreated()
     {
         // Given
         var user = new
