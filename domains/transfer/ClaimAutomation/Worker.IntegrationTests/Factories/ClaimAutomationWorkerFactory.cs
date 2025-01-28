@@ -1,5 +1,6 @@
 using ClaimAutomation;
 using DataContext;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.WalletClient;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
 namespace Worker.IntegrationTests.Factories;
@@ -30,6 +32,8 @@ public class ClaimAutomationWorkerFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+            new DbMigrator(Database.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+
             services.Remove(services.First(s => s.ServiceType == typeof(IWalletClient)));
             services.AddSingleton(ProjectOriginWalletClientMock);
         });

@@ -9,6 +9,7 @@ using API.Options;
 using API.Repository;
 using API.Services;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.WalletClient;
@@ -17,11 +18,22 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
 using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (args.Contains("--migrate"))
+{
+    builder.AddSerilogWithoutOutboxLogs();
+    var migrateApp = builder.Build();
+    var dbMigrator = new DbMigrator(builder.Configuration.GetConnectionString("Postgres")!, typeof(Program).Assembly,
+        migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
+    await dbMigrator.MigrateAsync();
+    return;
+}
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();

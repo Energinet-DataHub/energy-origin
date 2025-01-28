@@ -13,6 +13,7 @@ using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.HostedService;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -24,6 +25,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using EnergyOrigin.WalletClient;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
@@ -93,6 +95,8 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.User = (string)connectionStringBuilder["Username"];
                 o.Password = (string)connectionStringBuilder["Password"];
             });
+
+            new DbMigrator(ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
 
             s.Remove(s.First(sd => sd.ServiceType == typeof(IWalletClient)));
             s.AddScoped(_ => WalletClientMock);

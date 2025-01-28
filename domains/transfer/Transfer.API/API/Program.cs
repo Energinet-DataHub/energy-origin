@@ -1,16 +1,17 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using API.Cvr;
 using API.Shared.Options;
 using API.Transfer;
 using API.Transfer.Api.Clients;
-using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -18,12 +19,27 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Retry;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (args.Contains("--migrate"))
+{
+    builder.AddSerilogWithoutOutboxLogs();
+    builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix)
+        .ValidateDataAnnotations()
+        .ValidateOnStart();
+    var migrateApp = builder.Build();
+    var connectionString = migrateApp.Services.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString();
+    var dbMigrator = new DbMigrator(connectionString, typeof(ApplicationDbContext).Assembly,
+        migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
+    await dbMigrator.MigrateAsync();
+    return;
+}
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
@@ -32,11 +48,11 @@ builder.AddSerilog();
 
 builder.Services.AddScoped<IBearerTokenService, WebContextBearerTokenService>();
 builder.Services.AddHttpClient<IAuthorizationClient, AuthorizationClient>(client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["Authorization:BaseUrl"]!);
-})
-.AddPolicyHandler(RetryPolicy())
-.AddPolicyHandler(GetCircuitBreakerPolicy());
+    {
+        client.BaseAddress = new Uri(builder.Configuration["Authorization:BaseUrl"]!);
+    })
+    .AddPolicyHandler(RetryPolicy())
+    .AddPolicyHandler(GetCircuitBreakerPolicy());
 
 AsyncRetryPolicy<HttpResponseMessage> RetryPolicy()
 {
