@@ -40,7 +40,9 @@ public class AuthorizationFlowTests : IClassFixture<ProjectOriginStack>
         // Given
         var user = new
         {
-            OrgCvr = "87654321", OrgName = Guid.NewGuid().ToString(), Name = Guid.NewGuid().ToString(),
+            OrgCvr = "87654321",
+            OrgName = Guid.NewGuid().ToString(),
+            Name = Guid.NewGuid().ToString(),
             Sub = Guid.NewGuid()
         };
 
@@ -83,7 +85,9 @@ public class AuthorizationFlowTests : IClassFixture<ProjectOriginStack>
         // Given
         var user = new
         {
-            OrgCvr = "11223344", OrgName = Guid.NewGuid().ToString(), Name = Guid.NewGuid().ToString(),
+            OrgCvr = "11223344",
+            OrgName = Guid.NewGuid().ToString(),
+            Name = Guid.NewGuid().ToString(),
             Sub = Guid.NewGuid()
         };
 
