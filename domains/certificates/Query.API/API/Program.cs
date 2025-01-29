@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using API.Configurations;
 using API.ContractService;
@@ -6,11 +5,12 @@ using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.Query.API;
 using API.UnitOfWork;
-using Contracts;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using MassTransit;
@@ -19,9 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OpenTelemetry;
-using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,9 +48,6 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
 builder.Services.AddOptions<StampOptions>().BindConfiguration(StampOptions.Stamp).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.Configure<RabbitMqOptions>(
-    builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-
 builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
     {
         options.UseNpgsql(
@@ -63,60 +58,14 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
-builder.Services.AddMassTransit(
-    x =>
-    {
-        x.AddConfigureEndpointsCallback((name, cfg) =>
-        {
-            if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
-                rmq.SetQuorumQueue(3);
-        });
-
-        x.AddConsumer<EnergyMeasuredIntegrationEventHandler, EnergyMeasuredIntegrationEventHandlerDefinition>();
-
-        x.SetKebabCaseEndpointNameFormatter();
-
-        x.UsingRabbitMq((context, cfg) =>
-        {
-            var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-            var url = $"rabbitmq://{options.Host}:{options.Port}";
-
-            cfg.Host(new Uri(url), h =>
-            {
-                h.Username(options.Username);
-                h.Password(options.Password);
-            });
-            cfg.ConfigureEndpoints(context);
-        });
-        x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
-        {
-            o.UsePostgres();
-            o.UseBusOutbox();
-        });
-    }
-);
+builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
+{
+    x.AddConsumer<EnergyMeasuredIntegrationEventHandler, EnergyMeasuredIntegrationEventHandlerDefinition>();
+});
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-builder.Services.AddSingleton<IConnection>(sp =>
-{
-    var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-
-    var factory = new ConnectionFactory
-    {
-        HostName = options.Host,
-        Port = options.Port ?? 0,
-        UserName = options.Username,
-        Password = options.Password,
-        AutomaticRecoveryEnabled = true
-    };
-    return factory.CreateConnection();
-});
-
-builder.Services.AddHealthChecks()
-    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
-    .AddRabbitMQ();
-
+builder.Services.AddDefaultHealthChecks();
 
 builder.Services.AddActivityLog(options => options.ServiceName = "certificates");
 
@@ -135,7 +84,7 @@ builder.Services.AddB2C(b2COptions);
 
 var app = builder.Build();
 
-app.MapHealthChecks("/health");
+app.MapDefaultHealthChecks();
 
 app.AddSwagger("certificates");
 
