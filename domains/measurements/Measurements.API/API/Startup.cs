@@ -3,8 +3,9 @@ using API.Measurements.gRPC.V1.Services;
 using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
 using API.Options;
-using Contracts;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Health;
+using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
@@ -18,7 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using RabbitMQ.Client;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace API;
@@ -42,23 +42,7 @@ public class Startup
             optionsLifetime: ServiceLifetime.Singleton);
         services.AddDbContextFactory<ApplicationDbContext>();
 
-        services.AddSingleton<IConnection>(sp =>
-        {
-            var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-
-            var factory = new ConnectionFactory
-            {
-                HostName = options.Host,
-                Port = options.Port ?? 0,
-                UserName = options.Username,
-                Password = options.Password,
-                AutomaticRecoveryEnabled = true
-            };
-            return factory.CreateConnection();
-        })
-        .AddHealthChecks()
-        .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
-        .AddRabbitMQ();
+        services.AddDefaultHealthChecks();
 
         services.AddControllersWithEnumsAsStrings();
 
@@ -75,45 +59,17 @@ public class Startup
         services.AddEndpointsApiExplorer();
 
         services.AddSwagger("measurements");
-        services.AddSwaggerGen(c =>
-        {
-            c.DocumentFilter<AddMeasurementsTagDocumentFilter>();
-        });
+        services.AddSwaggerGen(c => { c.DocumentFilter<AddMeasurementsTagDocumentFilter>(); });
 
         services.AddLogging();
 
-        services.AddOptions<RabbitMqOptions>()
-            .BindConfiguration(RabbitMqOptions.RabbitMq)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
+        {
+            x.AddConsumer<TermsConsumer, TermsConsumerErrorDefinition>();
+        });
+
         services.AddOptions<RetryOptions>().BindConfiguration(RetryOptions.Retry).ValidateDataAnnotations()
             .ValidateOnStart();
-
-        services.AddMassTransit(o =>
-        {
-            o.SetKebabCaseEndpointNameFormatter();
-
-            o.AddConsumer<TermsConsumer, TermsConsumerErrorDefinition>();
-
-            o.AddConfigureEndpointsCallback((name, cfg) =>
-            {
-                if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
-                    rmq.SetQuorumQueue(3);
-            });
-
-            o.UsingRabbitMq((context, cfg) =>
-            {
-                var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-                var url = $"rabbitmq://{options.Host}:{options.Port}";
-
-                cfg.Host(new Uri(url), h =>
-                {
-                    h.Username(options.Username);
-                    h.Password(options.Password);
-                });
-                cfg.ConfigureEndpoints(context);
-            });
-        });
 
         var otlpConfiguration = _configuration.GetSection(OtlpOptions.Prefix);
         var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
@@ -163,7 +119,7 @@ public class Startup
         {
             endpoints.MapGrpcService<MeasurementsService>();
             endpoints.MapControllers();
-            endpoints.MapHealthChecks("/health");
+            endpoints.MapDefaultHealthChecks();
         });
     }
 }
