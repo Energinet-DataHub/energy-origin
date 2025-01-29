@@ -33,6 +33,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     {
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
         builder.UseSetting("MitID:URI", "https://pp.netseidbroker.dk/op");
+        builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
 
         builder.ConfigureTestServices(services =>
         {
@@ -48,7 +49,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
                 options.Username = RabbitMqOptions.Username;
                 options.Password = RabbitMqOptions.Password;
             });
-            services.Configure<ProjectOriginOptions>(options => options.WalletUrl = WalletUrl);
         });
     }
 
