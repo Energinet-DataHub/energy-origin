@@ -128,6 +128,9 @@ builder.Services.AddScoped<IOrganizationConsentRepository, OrganizationOrganizat
 builder.Services.AddScoped<ITermsRepository, TermsRepository>();
 builder.Services.AddSingleton<IAuthorizationMetrics, AuthorizationMetrics>();
 
+builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
+    .ValidateDataAnnotations().ValidateOnStart();
+
 builder.Services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
