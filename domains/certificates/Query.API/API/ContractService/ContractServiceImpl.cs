@@ -75,6 +75,9 @@ internal class ContractServiceImpl : IContractService
 
             var wallets = await walletClient.GetWallets(meteringPointOwnerId, cancellationToken);
 
+            //This is needed in order for our preview environments to work, as we don't
+            //accept terms in preview environments. Can be removed when we accept terms
+            //in preview environments.
             var walletId = wallets.Result.FirstOrDefault()?.Id;
             if (walletId == null)
             {
