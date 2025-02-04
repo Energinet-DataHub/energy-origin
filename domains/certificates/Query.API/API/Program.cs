@@ -1,27 +1,39 @@
 using System;
 using System.Linq;
+using API.Configurations;
 using API.ContractService;
+using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Metrics;
 using API.Query.API;
+using API.UnitOfWork;
+using Contracts;
+using DataContext;
+using EnergyOrigin.ActivityLog;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.Setup.Swagger;
+using EnergyOrigin.TokenValidation.b2c;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using API.Configurations;
-using API.MeasurementsSyncer;
-using DataContext;
-using EnergyOrigin.ActivityLog;
-using EnergyOrigin.TokenValidation.b2c;
-using API.IssuingContractCleanup;
-using API.MeasurementsSyncer.Metrics;
-using API.UnitOfWork;
-using Contracts;
-using EnergyOrigin.Setup;
-using MassTransit;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
-using EnergyOrigin.Setup.Swagger;
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (args.Contains("--migrate"))
+{
+    builder.AddSerilogWithoutOutboxLogs();
+    var migrateApp = builder.Build();
+    var dbMigrator = new DbMigrator(builder.Configuration.GetConnectionString("Postgres")!, typeof(ApplicationDbContext).Assembly,
+        migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
+    await dbMigrator.MigrateAsync();
+    return;
+}
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
@@ -83,17 +95,35 @@ builder.Services.AddMassTransit(
         });
     }
 );
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+
+    var factory = new ConnectionFactory
+    {
+        HostName = options.Host,
+        Port = options.Port ?? 0,
+        UserName = options.Username,
+        Password = options.Password,
+        AutomaticRecoveryEnabled = true
+    };
+    return factory.CreateConnection();
+});
+
 builder.Services.AddHealthChecks()
-    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
+    .AddRabbitMQ();
+
 
 builder.Services.AddActivityLog(options => options.ServiceName = "certificates");
 
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
 builder.Services.AddMeasurementsSyncer();
-builder.Services.AddIssuingContractCleanup();
+//builder.Services.AddIssuingContractCleanup();
 builder.Services.AddVersioningToApi();
 
 

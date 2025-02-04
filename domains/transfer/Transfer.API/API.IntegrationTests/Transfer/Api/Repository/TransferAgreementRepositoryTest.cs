@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Migrations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Repository;
@@ -17,8 +20,8 @@ public class TransferAgreementRepositoryTest
     {
         var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
         options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
-        using var dbContext = new ApplicationDbContext(options);
-        dbContext.Database.Migrate();
+        new DbMigrator(newDatabaseInfo.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync()
+            .Wait();
     }
 
     [Fact]
@@ -32,14 +35,14 @@ public class TransferAgreementRepositoryTest
         var transferAgreement = new TransferAgreement()
         {
             Id = Guid.NewGuid(),
-            StartDate = DateTimeOffset.UtcNow,
-            EndDate = DateTimeOffset.UtcNow.AddDays(10),
-            SenderId = senderId,
-            SenderName = "nrgi A/S",
-            SenderTin = "44332211",
-            ReceiverTin = "12345678",
+            StartDate = UnixTimestamp.Now(),
+            EndDate = UnixTimestamp.Now().AddDays(10),
+            SenderId = OrganizationId.Create(senderId),
+            SenderName = OrganizationName.Create("nrgi A/S"),
+            SenderTin = Tin.Create("44332211"),
+            ReceiverTin = Tin.Create("12345678"),
             ReceiverReference = Guid.NewGuid(),
-            TransferAgreementNumber = agreements[0].TransferAgreementNumber
+            TransferAgreementNumber = agreements[0].TransferAgreementNumber,
         };
 
         await Assert.ThrowsAsync<DbUpdateException>(() => TestData.SeedTransferAgreementsSaveChangesAsync(dbContext, transferAgreement));
@@ -52,39 +55,38 @@ public class TransferAgreementRepositoryTest
             new()
             {
                 Id = Guid.NewGuid(),
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                SenderId = senderId,
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = "12345678",
+                StartDate = UnixTimestamp.Now(),
+                EndDate = UnixTimestamp.Now().AddDays(10),
+                SenderId = OrganizationId.Create(senderId),
+                SenderName = OrganizationName.Create("nrgi A/S"),
+                SenderTin = Tin.Create("44332211"),
+                ReceiverTin = Tin.Create("12345678"),
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 1
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                SenderId = senderId,
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = "12345678",
+                StartDate = UnixTimestamp.Now(),
+                EndDate = UnixTimestamp.Now().AddDays(10),
+                SenderId = OrganizationId.Create(senderId),
+                SenderName = OrganizationName.Create("nrgi A/S"),
+                SenderTin = Tin.Create("44332211"),
+                ReceiverTin = Tin.Create("12345678"),
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 2
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(10),
-                SenderId = senderId,
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = "12345678",
+                StartDate = UnixTimestamp.Now(),
+                EndDate = UnixTimestamp.Now().AddDays(10),
+                SenderId = OrganizationId.Create(senderId),
+                SenderName = OrganizationName.Create("nrgi A/S"),
+                SenderTin = Tin.Create("44332211"),
+                ReceiverTin = Tin.Create("12345678"),
                 ReceiverReference = Guid.NewGuid(),
                 TransferAgreementNumber = 3
-
             }
         };
         return agreements;

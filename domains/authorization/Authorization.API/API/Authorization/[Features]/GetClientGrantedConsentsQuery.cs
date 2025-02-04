@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Repository;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

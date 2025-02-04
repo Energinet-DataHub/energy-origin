@@ -9,15 +9,15 @@ using ClaimAutomation.Worker.Options;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 
 namespace ClaimAutomation.Worker.Automation;
 
 public class ClaimService(
     ILogger<ClaimService> logger,
     IClaimAutomationRepository claimAutomationRepository,
-    IProjectOriginWalletClient walletClient,
+    IWalletClient walletClient,
     IShuffler shuffle,
     IClaimAutomationMetrics metrics,
     AutomationCache cache,

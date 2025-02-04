@@ -8,6 +8,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
+using EnergyOrigin.WalletClient;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace API.ContractService.Clients;
@@ -21,11 +23,13 @@ public interface IStampClient
 public class StampClient : IStampClient
 {
     private readonly HttpClient client;
+    private readonly ILogger<StampClient> logger;
     private readonly StampOptions options;
 
-    public StampClient(HttpClient client, IOptions<StampOptions> options)
+    public StampClient(HttpClient client, IOptions<StampOptions> options, ILogger<StampClient> logger)
     {
         this.client = client;
+        this.logger = logger;
         this.options = options.Value;
     }
 
@@ -64,7 +68,13 @@ public class StampClient : IStampClient
         {
             throw new HttpRequestException("Null response");
         }
-        responseMessage.EnsureSuccessStatusCode();
+
+        if (!responseMessage.IsSuccessStatusCode)
+        {
+            var error = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+            logger.LogError("Error response from Stamp: {Error}", error);
+            responseMessage.EnsureSuccessStatusCode();
+        }
         return (await responseMessage.Content.ReadFromJsonAsync<T>(cancellationToken))!;
     }
 }

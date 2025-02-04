@@ -4,6 +4,8 @@ using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
@@ -67,7 +69,7 @@ public class TermsControllerTests
         var terms = context.Terms.First();
         var orgCvr = Any.Tin();
 
-        var organization = Organization.Create(orgCvr, new OrganizationName("Existing Org"));
+        var organization = Organization.Create(orgCvr, OrganizationName.Create("Existing Org"));
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
         await SeedOrganizationAndUser(organization, user);
 
@@ -104,7 +106,7 @@ public class TermsControllerTests
         var terms = context.Terms.First();
         var orgCvr = Any.Tin();
 
-        var organization = Organization.Create(orgCvr, new OrganizationName("Existing Org"));
+        var organization = Organization.Create(orgCvr, OrganizationName.Create("Existing Org"));
         organization.AcceptTerms(terms);
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
         await SeedOrganizationAndUser(organization, user);

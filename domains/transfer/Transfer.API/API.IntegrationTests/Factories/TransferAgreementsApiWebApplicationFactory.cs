@@ -6,14 +6,14 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using API.Transfer.Api.Controllers;
+using API.Transfer.Api.Clients;
 using API.Transfer.TransferAgreementProposalCleanup;
 using Asp.Versioning.ApiExplorer;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.HostedService;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -25,8 +25,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using ProjectOriginClients;
+using EnergyOrigin.WalletClient;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Factories;
@@ -45,7 +46,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
     public bool WithCleanupWorker { get; set; } = true;
-    public IProjectOriginWalletClient WalletClientMock { get; private set; } = Substitute.For<IProjectOriginWalletClient>();
+    public IWalletClient WalletClientMock { get; private set; } = Substitute.For<IWalletClient>();
 
     public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
     {
@@ -95,7 +96,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.Password = (string)connectionStringBuilder["Password"];
             });
 
-            s.Remove(s.First(sd => sd.ServiceType == typeof(IProjectOriginWalletClient)));
+            new DbMigrator(ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+
+            s.Remove(s.First(sd => sd.ServiceType == typeof(IWalletClient)));
             s.AddScoped(_ => WalletClientMock);
 
             if (!WithCleanupWorker)
@@ -104,6 +107,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 s.Remove(s.First(x => x.ImplementationType == typeof(TransferAgreementProposalCleanupService)));
                 s.Remove(s.First(x => x.ImplementationType == typeof(CleanupActivityLogsHostedService)));
             }
+
+            s.Remove(s.First(sd => sd.ServiceType == typeof(IAuthorizationClient)));
+            s.AddSingleton<IAuthorizationClient, MockAuthorizationClient>();
         });
     }
 
@@ -171,13 +177,13 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         return client;
     }
 
-    public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
+    public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string orgIds = "", string name = "Peter Producent",
         string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer",
-                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted));
+                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), orgIds: orgIds, termsAccepted: termsAccepted));
         client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
 
         return client;
@@ -192,13 +198,15 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string issuer = "demo.energioprindelse.dk",
         string audience = "Users",
         string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
+        string orgIds = "",
         bool termsAccepted = true)
     {
         var claims = new Dictionary<string, object>()
         {
             { UserClaimName.Scope, scope },
             { JwtRegisteredClaimNames.Name, name },
-            { ClaimType.OrgIds, orgId },
+            { ClaimType.OrgId, orgId },
+            { ClaimType.OrgIds, orgIds },
             { ClaimType.OrgCvr, tin },
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },

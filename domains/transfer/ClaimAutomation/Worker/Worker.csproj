@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\DataContext\DataContext.csproj" />
-    <ProjectReference Include="..\..\Shared\ProjectOriginClients\ProjectOriginClients.csproj" />
     <ProjectReference Include="..\..\Transfer.API\API\API.csproj" />
   </ItemGroup>
 

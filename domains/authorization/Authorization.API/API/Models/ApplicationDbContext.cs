@@ -1,5 +1,6 @@
 using System;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.Converters;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -31,12 +32,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void ConfigureOrganizationTable(ModelBuilder modelBuilder)
     {
+
         modelBuilder.Entity<Organization>().Property(o => o.Name)
-            .HasConversion(new ValueConverter<OrganizationName, string>(v => v.Value, v => new OrganizationName(v)))
+            .HasConversion(new OrganizationNameValueConverter())
             .IsRequired();
 
-        modelBuilder.Entity<Organization>().Property(o => o.Tin)
-            .HasConversion(new ValueConverter<Tin?, string>(v => v != null ? v.Value : "", v => new Tin(v)));
+        modelBuilder.Entity<Organization>().Property(o => o.Tin).HasConversion(new NullableTinValueConverter());
 
         modelBuilder.Entity<Organization>().HasIndex(o => o.Tin).IsUnique();
 
@@ -49,6 +50,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<Organization>().Property(o => o.TermsVersion);
 
         modelBuilder.Entity<Organization>().Property(o => o.TermsAcceptanceDate);
+
+        modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsAccepted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        modelBuilder.Entity<Organization>().Property(o => o.ServiceProviderTermsAcceptanceDate).HasConversion(new NullableUnixTimestampValueToDateTimeOffsetConverter());
     }
 
     private static void ConfigureClientTable(ModelBuilder modelBuilder)

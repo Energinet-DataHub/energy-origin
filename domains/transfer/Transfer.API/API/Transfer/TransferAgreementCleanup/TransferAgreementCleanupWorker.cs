@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using API.Transfer.TransferAgreementCleanup.Options;
 using DataContext;
 using EnergyOrigin.ActivityLog.DataContext;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -52,15 +53,15 @@ public class TransferAgreementCleanupWorker(
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var expiredTransferAgreements = context.TransferAgreements
-            .Where(ta => ta.EndDate != null && ta.EndDate < DateTimeOffset.UtcNow);
+            .Where(ta => ta.EndDate != null && ta.EndDate < UnixTimestamp.Now().AddYears(3));
 
         context.TransferAgreements.RemoveRange(expiredTransferAgreements);
 
         var senderLogEntries = expiredTransferAgreements.Select(transferAgreement => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
-                       string.Empty, transferAgreement.SenderTin, transferAgreement.SenderName, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+                       string.Empty, transferAgreement.SenderTin.Value, transferAgreement.SenderName.Value, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
                                   ActivityLogEntry.ActionTypeEnum.Expired, transferAgreement.Id.ToString()));
         var receiverLogEntries = expiredTransferAgreements.Select(transferAgreement => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
-            string.Empty, transferAgreement.ReceiverTin, string.Empty, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
+            string.Empty, transferAgreement.ReceiverTin.Value, string.Empty, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
             ActivityLogEntry.ActionTypeEnum.Expired, transferAgreement.Id.ToString()));
         await context.ActivityLogs.AddRangeAsync(senderLogEntries, cancellationToken);
         await context.ActivityLogs.AddRangeAsync(receiverLogEntries, cancellationToken);

@@ -15,7 +15,7 @@ using Npgsql;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using ProjectOriginClients;
+using EnergyOrigin.WalletClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,7 +52,7 @@ builder.Services.AddScoped<IShuffler, Shuffler>();
 builder.Services.AddHostedService<ClaimWorker>();
 builder.Services.AddSingleton<AutomationCache>();
 builder.Services.AddSingleton<IClaimAutomationMetrics, ClaimAutomationMetrics>();
-builder.Services.AddHttpClient<IProjectOriginWalletClient, ProjectOriginWalletClient>((sp, c) =>
+builder.Services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     c.BaseAddress = new Uri(options.WalletUrl);

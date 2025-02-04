@@ -6,8 +6,8 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
 using API.Query.API.ApiModels.Requests;
@@ -17,9 +17,11 @@ using DataContext;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
+using EnergyOrigin.WalletClient;
 using FluentAssertions;
 using Grpc.Net.Client;
 using MassTransit;
@@ -30,6 +32,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 using Technology = API.ContractService.Clients.Technology;
 
@@ -61,6 +64,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("MeteringPoint:GrpcUrl", "http://foo");
         builder.UseSetting("MeasurementsSync:Disabled", "false");
         builder.UseSetting("MeasurementsSync:SleepType", "EveryThirdSecond");
+        builder.UseSetting("MeasurementsSync:MinimumAgeThresholdHours", "0");
         builder.UseSetting("IssuingContractCleanup:SleepTime", "00:00:03");
         builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("Stamp:Url", StampUrl);
@@ -118,6 +122,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
                 options.DefaultChallengeScheme = AuthenticationScheme.B2CAuthenticationScheme;
                 options.DefaultForbidScheme = AuthenticationScheme.B2CAuthenticationScheme;
             });
+
+            new DbMigrator(ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
         });
 
     }
@@ -183,13 +189,13 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return client;
     }
 
-    public HttpClient CreateWalletClient(string orgId)
+    public async Task<IWalletClient> CreateWalletClient(string orgId)
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
-        client.DefaultRequestHeaders.Remove(WalletServiceClientExtensions.WalletOwnerHeader);
-        client.DefaultRequestHeaders.Add(WalletServiceClientExtensions.WalletOwnerHeader, orgId);
-        return client;
+        var wallet = new WalletClient(client);
+        await wallet.CreateWallet(Guid.Parse(orgId), CancellationToken.None);
+        return wallet;
     }
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();
@@ -209,7 +215,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         {
             { UserClaimName.Scope, scope },
             { JwtRegisteredClaimNames.Name, name },
-            { ClaimType.OrgIds, orgId },
+            { ClaimType.OrgId, orgId },
+            { ClaimType.OrgIds, "" },
             { ClaimType.OrgCvr, tin },
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },

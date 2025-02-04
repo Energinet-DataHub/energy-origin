@@ -7,30 +7,31 @@ using API;
 using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Dto.Responses;
 using API.MeteringPoints.Api.Models;
-using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
+using EnergyOrigin.Setup.Migrations;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
+using Meteringpoint.V1;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Tests.Extensions;
-using Tests.TestContainers;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
+using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 
 namespace Tests.MeteringPoints.Api;
 
-public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>,
-    IClassFixture<PostgresContainer>
+public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>, IClassFixture<PostgresContainer>
 {
     private readonly CustomMeterPointWebApplicationFactory<Startup> _factory;
 
-    public MeteringPoint20240515ControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory,
-        PostgresContainer postgresContainer)
-
+    public MeteringPoint20240515ControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory, PostgresContainer postgresContainer)
     {
-        factory.ConnectionString = postgresContainer.ConnectionString;
+        var databaseInfo = postgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
+        new DbMigrator(databaseInfo.ConnectionString, typeof(Startup).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+        factory.ConnectionString = databaseInfo.ConnectionString;
         _factory = factory;
         _factory.Start();
     }
@@ -48,10 +49,10 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
     [Fact]
     public async Task NoMeteringPointsReturnsPendingRelation()
     {
-        var mockedResponse = new Meteringpoint.V1.MeteringPointsResponse();
+        var mockedResponse = new MeteringPointsResponse();
 
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(mockedResponse);
 
         var subject = Guid.NewGuid();
@@ -67,11 +68,11 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
     [Fact]
     public async Task GetMeteringPoints()
     {
-        var mockedResponse = new Meteringpoint.V1.MeteringPointsResponse
+        var mockedResponse = new MeteringPointsResponse
         {
             MeteringPoints =
             {
-                new Meteringpoint.V1.MeteringPoint
+                new MeteringPoint
                 {
                     MeteringPointId = "1234567890123456",
                     TypeOfMp = "E17",
@@ -88,17 +89,15 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
             }
         };
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(mockedResponse);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString)
-            .Options;
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_factory.ConnectionString).Options;
         var dbContext = new ApplicationDbContext(contextOptions);
-        dbContext.Database.EnsureCreated();
 
         dbContext.Relations.Add(new RelationDto()
         {
@@ -115,9 +114,9 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
         response!.Result.First().SubMeterType.Should()
-            .Be(MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
+            .Be(API.MeteringPoints.Api.Dto.Responses.MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
         response.Result.First().Type.Should()
-            .Be(MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
+            .Be(API.MeteringPoints.Api.Dto.Responses.MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
     }
 
     [Fact]
@@ -125,11 +124,11 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
     {
         var childTypeOfMp = "D01";
 
-        var mockedResponse = new Meteringpoint.V1.MeteringPointsResponse
+        var mockedResponse = new MeteringPointsResponse
         {
             MeteringPoints =
             {
-                new Meteringpoint.V1.MeteringPoint
+                new MeteringPoint
                 {
                     MeteringPointId = "1234567890123456",
                     TypeOfMp = "E17",
@@ -143,7 +142,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
                     AssetType = "E17",
                     Capacity = "12345678"
                 },
-                new Meteringpoint.V1.MeteringPoint
+                new MeteringPoint
                 {
                     MeteringPointId = "1234567890123457",
                     TypeOfMp = childTypeOfMp,
@@ -161,7 +160,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         };
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(mockedResponse);
 
         var subjectId = Guid.NewGuid();
@@ -175,9 +174,9 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
         response!.Result.First().SubMeterType.Should()
-            .Be(MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
+            .Be(API.MeteringPoints.Api.Dto.Responses.MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
         response.Result.First().Type.Should()
-            .Be(MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
+            .Be(API.MeteringPoints.Api.Dto.Responses.MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
     }
 
     [Theory]
@@ -205,12 +204,12 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         string buildingNumber, string floor, string room)
     {
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<Meteringpoint.V1.OwnedMeteringPointsRequest>())
-            .Returns(new Meteringpoint.V1.MeteringPointsResponse
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+            .Returns(new MeteringPointsResponse
             {
                 MeteringPoints =
                 {
-                    new Meteringpoint.V1.MeteringPoint
+                    new MeteringPoint
                     {
                         MeteringPointId = "1234567890123456",
                         TypeOfMp = "E17",

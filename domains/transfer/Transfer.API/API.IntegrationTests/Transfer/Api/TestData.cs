@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Xml;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -39,18 +42,20 @@ public class TestData
         var agreementsTable = dbContext.Model.FindEntityType(typeof(TransferAgreement))!.GetTableName();
 
         var agreementQuery =
-            $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverReference\", \"TransferAgreementNumber\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverReference, @TransferAgreementNumber)";
+            $"INSERT INTO \"{agreementsTable}\" (\"Id\", \"StartDate\", \"EndDate\", \"SenderId\", \"SenderName\", \"SenderTin\", \"ReceiverTin\", \"ReceiverId\", \"ReceiverReference\", \"TransferAgreementNumber\", \"Type\") VALUES (@Id, @StartDate, @EndDate, @SenderId, @SenderName, @SenderTin, @ReceiverTin, @ReceiverId, @ReceiverReference, @TransferAgreementNumber, @Type)";
         object[] agreementFields =
         {
             new NpgsqlParameter("Id", agreement.Id),
-            new NpgsqlParameter("StartDate", agreement.StartDate),
-            new NpgsqlParameter("EndDate", agreement.EndDate),
-            new NpgsqlParameter("SenderId", agreement.SenderId),
-            new NpgsqlParameter("SenderName", agreement.SenderName),
-            new NpgsqlParameter("SenderTin", agreement.SenderTin),
-            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin),
+            new NpgsqlParameter("StartDate", agreement.StartDate.ToDateTimeOffset()),
+            new NpgsqlParameter("EndDate", agreement.EndDate?.ToDateTimeOffset()),
+            new NpgsqlParameter("SenderId", agreement.SenderId.Value),
+            new NpgsqlParameter("SenderName", agreement.SenderName.Value),
+            new NpgsqlParameter("SenderTin", agreement.SenderTin.Value),
+            new NpgsqlParameter("ReceiverTin", agreement.ReceiverTin.Value),
+            new NpgsqlParameter("ReceiverId", agreement.ReceiverId?.Value ?? OrganizationId.Create(Guid.NewGuid()).Value), // if clause can be removed when ReceiverId is made non-nullable
             new NpgsqlParameter("ReceiverReference", agreement.ReceiverReference),
-            new NpgsqlParameter("TransferAgreementNumber", agreement.TransferAgreementNumber)
+            new NpgsqlParameter("TransferAgreementNumber", agreement.TransferAgreementNumber),
+            new NpgsqlParameter("Type", (int)agreement.Type)
         };
 
         await dbContext.Database.ExecuteSqlRawAsync(agreementQuery, agreementFields);

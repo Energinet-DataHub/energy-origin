@@ -21,6 +21,7 @@ public class MeasurementsSyncerWorkerTest
     private readonly MeteringPointSyncInfo _syncInfo = new(
         Gsrn: Any.Gsrn(),
         StartSyncDate: DateTimeOffset.Now.AddDays(-1),
+        EndSyncDate: null,
         MeteringPointOwner: "meteringPointOwner",
         MeteringPointType.Production,
         "DK1",
@@ -35,7 +36,7 @@ public class MeasurementsSyncerWorkerTest
     private readonly IServiceProvider _serviceProvider = Substitute.For<IServiceProvider>();
     private readonly ISlidingWindowState _fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
     private readonly IContractState _fakeContractState = Substitute.For<IContractState>();
-    private readonly MeasurementsSyncOptions _options = Substitute.For<MeasurementsSyncOptions>();
+    private readonly IOptions<MeasurementsSyncOptions> _options = Options.Create(Substitute.For<MeasurementsSyncOptions>());
     private readonly MeasurementsSyncerWorker _worker;
     private readonly IMeasurementSyncPublisher _fakeMeasurementPublisher = Substitute.For<IMeasurementSyncPublisher>();
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
@@ -44,11 +45,11 @@ public class MeasurementsSyncerWorkerTest
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient);
+            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, _options);
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
         _serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);
-        _worker = new MeasurementsSyncerWorker(_fakeLogger, _fakeContractState, Options.Create(_options), _scopeFactory);
+        _worker = new MeasurementsSyncerWorker(_fakeLogger, _fakeContractState, _options, _scopeFactory);
     }
 
     [Fact]

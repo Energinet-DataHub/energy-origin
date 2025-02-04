@@ -1,9 +1,6 @@
-using System.Net.Http.Json;
-using API.Authorization._Features_;
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
-using API.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -30,12 +27,40 @@ public class GrantConsentTest
     public async Task GivenUnknownClientId_WhenGrantingConsent_HttpNotFoundIsReturned()
     {
         var unknownClientId = Guid.NewGuid();
-        var response = await _api.GrantConsent(unknownClientId);
+        var response = await _api.GrantConsentToClient(unknownClientId);
+        response.Should().Be404NotFound();
+    }
+
+    [Fact]
+    public async Task GivenUnknownOrganizationId_WhenGrantingConsent_HttpNotFoundIsReturned()
+    {
+        var unknownOrganizationId = Guid.NewGuid();
+        var response = await _api.GrantConsentToOrganization(unknownOrganizationId);
         response.Should().Be404NotFound();
     }
 
     [Fact]
     public async Task GivenKnownClientId_WhenGrantingConsent_200OkReturned()
+    {
+        var organizationWithClient = Any.OrganizationWithClient();
+        var user = Any.User();
+        var organizationThatIsGrantingConsent = Any.Organization();
+        organizationWithClient.AcceptServiceProviderTerms();
+        var affiliation = Affiliation.Create(user, organizationThatIsGrantingConsent);
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organizationThatIsGrantingConsent);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.SaveChangesAsync();
+
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organizationThatIsGrantingConsent.Tin!.Value);
+        var response = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
+        response.Should().Be200Ok();
+    }
+
+    [Fact]
+    public async Task GivenKnownClientId_WhenGrantingConsentTwice_200OkReturned()
     {
         var organizationWithClient = Any.OrganizationWithClient();
         var user = Any.User();
@@ -49,41 +74,50 @@ public class GrantConsentTest
         await dbContext.SaveChangesAsync();
 
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
-        var response = await api.GrantConsent(organizationWithClient.Clients.First().IdpClientId.Value);
+        var response = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
+        response.Should().Be200Ok();
+
+        var response2 = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
+        response2.Should().Be200Ok();
+    }
+
+    [Fact]
+    public async Task GivenKnownOrganizationId_WhenGrantingConsent_200OkReturned()
+    {
+        var consentReceiverOrganization = Any.Organization();
+        consentReceiverOrganization.AcceptServiceProviderTerms();
+        var user = Any.User();
+        var organization = Any.Organization();
+        var affiliation = Affiliation.Create(user, organization);
+        await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.SaveChangesAsync();
+
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var response = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
         response.Should().Be200Ok();
     }
 
     [Fact]
-    public async Task GivenClientId_WhenGettingConsent_HttpOkConsentReturned()
+    public async Task GivenKnownOrganizationId_WhenGrantingConsentToReceiverOrganizationWithoutServiceProviderTerms_Return403Forbidden()
     {
-        var idpClientId = await SeedDataAndReturnIdpClientId();
-
-        var response = await _api.GetConsent(idpClientId.Value);
-
-        response.Should().Be200Ok();
-
-        var result = await response.Content.ReadFromJsonAsync<GetConsentsQueryResult>();
-        result!.Result.Should().NotBeEmpty();
-    }
-
-
-    private async Task<IdpClientId> SeedDataAndReturnIdpClientId()
-    {
+        var consentReceiverOrganization = Any.Organization();
         var user = Any.User();
         var organization = Any.Organization();
         var affiliation = Affiliation.Create(user, organization);
-        var organizationWithClient = Any.OrganizationWithClient();
-        var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
-
         await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
-        await dbContext.OrganizationConsents.AddAsync(consent);
-
         await dbContext.SaveChangesAsync();
-        return organizationWithClient.Clients.First().IdpClientId;
+
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var response = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
+        response.Should().Be403Forbidden();
     }
 
     [Fact]
@@ -91,17 +125,7 @@ public class GrantConsentTest
     {
         var api = _integrationTestFixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString(), termsAccepted: false);
 
-        var response = await api.GrantConsent(Guid.NewGuid());
-
-        response.Should().Be403Forbidden();
-    }
-
-    [Fact]
-    public async Task GivenSubTypeNotUser_WhenGettingConsent_HttpForbiddenIsReturned()
-    {
-        var api = _integrationTestFixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString(), termsAccepted: false);
-
-        var response = await api.GetConsent(Guid.NewGuid());
+        var response = await api.GrantConsentToClient(Guid.NewGuid());
 
         response.Should().Be403Forbidden();
     }

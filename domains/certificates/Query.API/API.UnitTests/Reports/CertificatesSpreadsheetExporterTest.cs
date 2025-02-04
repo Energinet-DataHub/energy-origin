@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using API.ContractService.Clients;
 using API.Reports;
-using ProjectOriginClients;
-using ProjectOriginClients.Models;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using Xunit;
 
 namespace API.UnitTests.Reports;
@@ -65,23 +63,50 @@ public class CertificatesSpreadsheetExporterTest
             _result = result;
         }
 
-        public Task<CreateWalletResponse> CreateWallet(string ownerSubject, CancellationToken cancellationToken)
+        public Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ResultList<WalletRecord>> GetWallets(string ownerSubject, CancellationToken cancellationToken)
+        Task<ResultList<WalletRecord>> IWalletClient.GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, string ownerSubject, CancellationToken cancellationToken)
+        public Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference, string textReference,
+            CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<RequestStatus> GetRequestStatus(Guid ownerSubject, Guid requestId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ResultList<WalletRecord>> GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate,
+            GranularCertificate productionCertificate, uint quantity)
         {
             throw new NotImplementedException();
         }
 
         public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken,
-            int? limit, int skip = 0)
+            int? limit, int skip = 0, CertificateType? certificateType = null)
         {
             await Task.CompletedTask;
             var resultList = new ResultList<GranularCertificate>

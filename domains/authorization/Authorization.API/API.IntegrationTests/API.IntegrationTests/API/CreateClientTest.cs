@@ -45,5 +45,26 @@ public class CreateClientTest
         client.Name.Should().Be(dbClient.Name.Value);
         client.RedirectUrl.Should().Be(dbClient.RedirectUrl);
     }
-}
 
+    [Fact]
+    public async Task GivenValidExternalClient_WhenCreatingClient_ThenReturn201CreatedClientResponse()
+    {
+        await using var dbContext = new ApplicationDbContext(_options);
+        Guid idpClientId = Guid.NewGuid();
+
+        var response = await _api.CreateClient(idpClientId, "Test Client", ClientType.Internal, "http://localhost:5000");
+        var client = await response.Content.ReadFromJsonAsync<CreateClientResponse>(_api.SerializerOptions);
+        var dbClient = await dbContext.Clients.FirstOrDefaultAsync(x => x.IdpClientId == new IdpClientId(idpClientId));
+        var dbOrganization = await dbContext.Organizations.FirstOrDefaultAsync(o => o.Id == dbClient!.OrganizationId);
+
+        response.Should().Be201Created();
+        client!.Id.Should().Be(dbClient!.Id);
+        client.IdpClientId.Should().Be(dbClient.IdpClientId.Value);
+        client.Name.Should().Be(dbClient.Name.Value);
+        client.RedirectUrl.Should().Be(dbClient.RedirectUrl);
+
+        dbOrganization.Should().NotBeNull();
+        dbOrganization!.Id.Should().Be(dbClient.OrganizationId!.Value);
+        dbOrganization.Name.Value.Should().Be(client.Name);
+    }
+}

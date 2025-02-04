@@ -39,6 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Testing\EnergyTrackAndTrace.Testing.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>
 
@@ -54,6 +55,24 @@
       <None Update="MeteringPoints\Api\MeteringPoint20240515ControllerTests.NoMeteringPointsReturnsPendingRelation.verified.txt">
         <ParentFile>MeteringPointControllerTests</ParentFile>
         <DependentUpon>MeteringPoint20240515ControllerTests.cs</DependentUpon>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponse.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseQuarters.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseSwitchToDaylightSaving.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseSwitchFromDaylightSaving.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseSwitchFromDaylightSavingQuarters.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </None>
+      <None Update="Measurements\gRPC\V1\Services\DataHubFacadeResponseSwitchToDaylightSavingQuarters.json">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
-using API.IntegrationTests.Testcontainers;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using NSubstitute;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
-using ProjectOriginClients.Models;
-using ProjectOriginClients;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using WireMock.Server;
 using Xunit;
 
@@ -43,7 +43,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         Factory.Start();
     }
 
-    private IProjectOriginWalletClient SetupPoWalletClientMock()
+    private IWalletClient SetupPoWalletClientMock()
     {
         var walletClientMock = Factory.WalletClientMock;
         walletClientMock.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>());

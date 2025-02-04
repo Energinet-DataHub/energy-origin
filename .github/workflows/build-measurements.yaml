@@ -23,5 +23,4 @@ jobs:
           solution: domains/measurements/Measurements.sln
           project: domains/measurements/Measurements.API/API/API.csproj
           configuration: domains/measurements/Measurements.API/configuration.yaml
-          migrations: domains/measurements/migrations/API.sql
           dry-run: ${{ inputs.dry-run }}

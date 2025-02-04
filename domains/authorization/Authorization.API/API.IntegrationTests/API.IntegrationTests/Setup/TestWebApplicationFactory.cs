@@ -3,11 +3,11 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using API.Authorization.Controllers;
 using API.Models;
 using API.Options;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
+using EnergyTrackAndTrace.Testing.Testcontainers;
+using EnergyOrigin.Setup.Migrations;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -16,7 +16,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
+using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Setup;
 
@@ -25,18 +27,21 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     internal string ConnectionString { get; set; } = "";
     internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
+    public string WalletUrl { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
         builder.UseSetting("MitID:URI", "https://pp.netseidbroker.dk/op");
+        builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
 
         builder.ConfigureTestServices(services =>
         {
             services.RemoveDbContext<ApplicationDbContext>();
             services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(ConnectionString); });
 
-            services.EnsureDbCreated<ApplicationDbContext>();
+            new DbMigrator(ConnectionString, typeof(Program).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+
             services.Configure<RabbitMqOptions>(options =>
             {
                 options.Host = RabbitMqOptions.Host;
@@ -62,28 +67,25 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     private static void ReplaceB2CAuthenticationSchemes(IHost host)
     {
         var authenticationSchemeProvider = host.Services.GetRequiredService<IAuthenticationSchemeProvider>();
-        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
-            .B2CAuthenticationScheme);
-        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
-            .B2CClientCredentialsCustomPolicyAuthenticationScheme);
-        authenticationSchemeProvider.RemoveScheme(EnergyOrigin.TokenValidation.b2c.AuthenticationScheme
-            .B2CMitIDCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme);
 
         var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CAuthenticationScheme,
+            AuthenticationScheme.B2CAuthenticationScheme,
+            AuthenticationScheme.B2CAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CScheme);
 
         var b2CMitIdScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CMitIdScheme);
 
         var b2CClientCredentialsScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
-            EnergyOrigin.TokenValidation.b2c.AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
+            AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
@@ -115,7 +117,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         using RSA rsa = RSA.Create(2048 * 2);
         var req = new CertificateRequest("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         req.CertificateExtensions.Add(
-            new X509KeyUsageExtension(System.Security.Cryptography.X509Certificates.X509KeyUsageFlags.DigitalSignature,
+            new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature,
                 true));
         var cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(5));
 
@@ -172,13 +174,5 @@ public static class ServiceCollectionExtensions
         {
             services.Remove(descriptor);
         }
-    }
-
-    public static void EnsureDbCreated<T>(this IServiceCollection services) where T : DbContext
-    {
-        using var scope = services.BuildServiceProvider().CreateScope();
-        var serviceProvider = scope.ServiceProvider;
-        var context = serviceProvider.GetRequiredService<T>();
-        context.Database.EnsureCreated();
     }
 }

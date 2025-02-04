@@ -4,6 +4,7 @@ using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
 using API.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using ClientType = API.Models.ClientType;
@@ -48,7 +49,7 @@ public class AuthorizationControllerTests
         result!.Sub.Should().Be(request.Sub);
         result.SubType.Should().Be("User");
         result.OrgName.Should().Be(request.OrgName);
-        result.OrgIds.Should().NotBeEmpty();
+        result.OrgIds.Should().BeEmpty();
         result.Scope.Should().Be("dashboard production meters certificates wallet");
         result.TermsAccepted.Should().BeTrue();
     }

@@ -36,29 +36,32 @@
             <response code="400">Bad request</response>
             <response code="409">There is already a Transfer Agreement with this company tin within the selected date range</response>
         </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.GetTransferAgreementProposal(System.Guid,System.Guid)">
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.GetTransferAgreementProposal(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Get TransferAgreementProposal by Id
             </summary>
             <param name="id">Id of TransferAgreementProposal</param>
             <param name="organizationId"></param>
+            <param name="cancellationToken"></param>
             <response code="200">Successful operation</response>
             <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
         </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.DeleteTransferAgreementProposal(System.Guid,System.Guid)">
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.DeleteTransferAgreementProposal(System.Guid,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Delete TransferAgreementProposal
             </summary>
             <param name="id">Id of TransferAgreementProposal</param>
             <param name="organizationId"></param>
+            <param name="cancellationToken"></param>
             <response code="204">Successful operation</response>
         </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementsController.Create(API.Transfer.Api.Dto.Requests.CreateTransferAgreement,System.Guid)">
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementsController.Create(API.Transfer.Api.Dto.Requests.CreateTransferAgreement,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Add a new Transfer Agreement
             </summary>
             <param name="request">The request object containing the TransferAgreementProposalId for creating the Transfer Agreement.</param>
             <param name="organizationId"></param>
+            <param name="cancellationToken"></param>
             <response code="201">Successful operation</response>
             <response code="400">Only the receiver company can accept this Transfer Agreement Proposal or the proposal has run out</response>
             <response code="409">There is already a Transfer Agreement with proposals company tin within the selected date range</response>

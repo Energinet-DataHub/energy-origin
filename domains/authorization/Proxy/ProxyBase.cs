@@ -115,7 +115,7 @@ public class ProxyBase : ControllerBase
     /// <param name="organizationId"></param>
     protected async Task ProxyClientCredentialsRequest(string path, string? organizationId)
     {
-        AccessDescriptor accessDescriptor = new(new IdentityDescriptor(_httpContextAccessor!));
+        AccessDescriptor accessDescriptor = new AccessDescriptor(new IdentityDescriptor(_httpContextAccessor!));
         if (string.IsNullOrEmpty(organizationId))
         {
             Forbidden();
@@ -123,7 +123,7 @@ public class ProxyBase : ControllerBase
         }
 
         var orgId = Guid.Parse(organizationId);
-        if (accessDescriptor is not null && !accessDescriptor.IsAuthorizedToOrganization(orgId))
+        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
         {
             Forbidden();
             return;
@@ -136,23 +136,6 @@ public class ProxyBase : ControllerBase
     {
         Response.StatusCode = StatusCodes.Status403Forbidden;
         Response.Body.Close();
-    }
-
-    /// <summary>
-    /// Proxies a request to the wallet service using the internal token validation.
-    /// </summary>
-    /// <param name="path"></param>
-    protected async Task ProxyTokenValidationRequest(string path)
-    {
-        var organizationId = User.FindFirst("sub")?.Value;
-
-        if (string.IsNullOrEmpty(organizationId))
-        {
-            Forbidden();
-            return;
-        }
-
-        await ProxyRequest(path, organizationId);
     }
 
     /// <summary>

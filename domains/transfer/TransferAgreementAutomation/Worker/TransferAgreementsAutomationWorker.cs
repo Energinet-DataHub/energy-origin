@@ -35,18 +35,18 @@ public class TransferAgreementsAutomationWorker(
         {
             logger.LogInformation("TransferAgreementsAutomationWorker running at: {time}", DateTimeOffset.Now);
             metrics.ResetCertificatesTransferred();
-
-            using var scope = provider.CreateScope();
-            var projectOriginWalletService = scope.ServiceProvider.GetRequiredService<IProjectOriginWalletService>();
-
             try
             {
-                var transferAgreements = await GetAllTransferAgreements(stoppingToken);
+                var transferAgreements = await GetTransferAgreements(stoppingToken);
                 metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
+
+                transferAgreements.Sort(new TransferAgreementProcessOrderComparer());
 
                 foreach (var transferAgreement in transferAgreements)
                 {
-                    await projectOriginWalletService.TransferCertificates(transferAgreement);
+                    using var scope = provider.CreateScope();
+                    var transferEngine = scope.ServiceProvider.GetRequiredService<ITransferEngineCoordinator>();
+                    await transferEngine.TransferCertificate(transferAgreement, stoppingToken);
                 }
             }
             catch (Exception ex)
@@ -58,10 +58,9 @@ public class TransferAgreementsAutomationWorker(
         }
     }
 
-    private async Task<List<TransferAgreement>> GetAllTransferAgreements(CancellationToken stoppingToken)
+    private async Task<List<TransferAgreement>> GetTransferAgreements(CancellationToken stoppingToken)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync(stoppingToken);
-
         return await dbContext.TransferAgreements.ToListAsync(stoppingToken);
     }
 

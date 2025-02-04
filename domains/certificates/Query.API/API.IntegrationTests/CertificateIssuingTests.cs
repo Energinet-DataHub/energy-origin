@@ -9,11 +9,12 @@ using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
 using API.UnitTests;
 using DataContext.ValueObjects;
+using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
+using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
 using Measurements.V1;
 using Meteringpoint.V1;
 using NSubstitute;
-using ProjectOriginClients.Models;
 using Testing.Extensions;
 using Xunit;
 
@@ -89,13 +90,12 @@ public sealed class CertificateIssuingTests : TestBase
             .Returns(mockedMeteringPointsResponse);
         factory.MeteringpointClient = meteringpointClientMock;
 
+        var client = await factory.CreateWalletClient(orgId);
+
         factory.Start();
 
         await factory.AddContract(subject, orgId, gsrn.Value, utcMidnight, MeteringPointType.Production, _measurementsWireMock);
-
-        var client = factory.CreateWalletClient(orgId);
-
-        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Any());
+        var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Any(), orgId);
 
         queryResponse.Should().HaveCount(1);
         var granularCertificate = queryResponse.Single();
@@ -107,7 +107,7 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
         granularCertificate.Attributes.Should().NotBeEmpty();
-        var address = meteringPoint.BuildingNumber + " " + meteringPoint.StreetName + " " + meteringPoint.CityName + " " + meteringPoint.Postcode;
+        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Danmark");
         granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
             { EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet" },
@@ -121,7 +121,7 @@ public sealed class CertificateIssuingTests : TestBase
             { EnergyTagAttributeKeys.EnergyTagProducedEnergySource, "F01040100" },
             { EnergyTagAttributeKeys.EnergyTagProducedEnergyTechnology, "T010000" },
             { EnergyTagAttributeKeys.EnergyTagConnectedGridIdentification, granularCertificate.GridArea },
-            { EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, address },
+            { EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, address.ToString() },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A" },
             { EnergyTagAttributeKeys.EnergyTagEnergyCarrier, "Electricity" },

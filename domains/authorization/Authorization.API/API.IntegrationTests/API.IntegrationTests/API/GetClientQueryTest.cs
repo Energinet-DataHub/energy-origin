@@ -5,18 +5,22 @@ using API.Models;
 using API.UnitTests;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+
 namespace API.IntegrationTests.API;
+
 [Collection(IntegrationTestCollection.CollectionName)]
 public class GetClientQueryTest
 {
     private readonly Api _api;
     private readonly DbContextOptions<ApplicationDbContext> _options;
+
     public GetClientQueryTest(IntegrationTestFixture integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
         _api = integrationTestFixture.WebAppFactory.CreateApi();
     }
+
     [Fact]
     public async Task GivenIdpClientId_WhenGettingClient_ClientReturned()
     {
@@ -31,6 +35,7 @@ public class GetClientQueryTest
         content.Name.Should().Be(client.Name.Value);
         content.RedirectUrl.Should().Be(client.RedirectUrl);
     }
+
     [Fact]
     public async Task GivenUnknownIdpClientId_WhenGettingClient_404NotFound()
     {

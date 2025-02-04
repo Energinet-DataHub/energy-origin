@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using API;
 using API.MeteringPoints.Api;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -15,6 +17,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using NSubstitute;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
@@ -32,6 +35,8 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
+
+        new DbMigrator(ConnectionString, typeof(Startup).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
 
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
 
@@ -127,7 +132,8 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
         {
             { UserClaimName.Scope, scope },
             { JwtRegisteredClaimNames.Name, name },
-            { ClaimType.OrgIds, orgId },
+            { ClaimType.OrgId, orgId },
+            { ClaimType.OrgIds, "" },
             { ClaimType.OrgCvr, tin },
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },

@@ -1,15 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using API.Transfer.Api.Clients;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.API;
+using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects.Tests;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -22,8 +26,8 @@ namespace API.IntegrationTests.Transfer.Api.Controllers;
 public class TransferAgreementProposalsControllerTests
 {
     private readonly Guid sub = Guid.NewGuid();
-    private readonly Guid orgId = Guid.NewGuid();
-    private readonly string tin = "12345678";
+    private readonly OrganizationId orgId = Any.OrganizationId();
+    private readonly Tin tin = Tin.Create("12345678");
 
     private readonly TransferAgreementsApiWebApplicationFactory factory;
 
@@ -35,12 +39,66 @@ public class TransferAgreementProposalsControllerTests
     [Fact]
     public async Task Create()
     {
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
         var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
         var result = await authenticatedClient
             .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", body);
 
         result.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task CreateUsingConsent()
+    {
+        var senderOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId,
+                "87654321",
+                "B",
+                Guid.NewGuid(),
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
+        var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
+        var result = await authenticatedClient
+            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
+
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task CreateUsingConsent_ShouldReturnBadRequest_WhenCurrentConsetUserIsSender()
+    {
+        var senderOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId,
+                "87654321",
+                "B",
+                Guid.NewGuid(),
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
+        var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "87654321");
+        var result = await authenticatedClient
+            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
+
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -60,7 +118,7 @@ public class TransferAgreementProposalsControllerTests
     public async Task Create_ShouldFail_WhenStartOrEndDateInvalid(int startDayOffset, int? endDayOffset, HttpStatusCode expectedStatusCode,
         string expectedContent)
     {
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
         var now = DateTimeOffset.UtcNow;
 
         var startDate = now.AddDays(startDayOffset).ToUnixTimeSeconds();
@@ -86,7 +144,7 @@ public class TransferAgreementProposalsControllerTests
     [InlineData(221860025546L, 253402300800L, "EndDate")]
     public async Task Create_ShouldFail_WhenDateInvalid(long start, long? end, string property)
     {
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
         var receiverTin = "12345678";
 
         var request = new CreateTransferAgreementProposal(
@@ -109,19 +167,19 @@ public class TransferAgreementProposalsControllerTests
     [Fact]
     public async Task Create_ShouldFail_WhenStartDateOrEndDateCauseOverlap()
     {
-        var senderTin = "12345678";
-        var receiverTin = "88776655";
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId, senderTin);
+        var senderTin = Tin.Create("12345678");
+        var receiverTin = Tin.Create("88776655");
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, senderTin.Value);
         var id = Guid.NewGuid();
         await SeedTransferAgreements(new List<TransferAgreement>()
         {
             new()
             {
                 Id = id,
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                StartDate = UnixTimestamp.Now(),
+                EndDate = UnixTimestamp.Now().AddDays(10),
                 SenderId = orgId,
-                SenderName = "nrgi A/S",
+                SenderName = OrganizationName.Create("nrgi A/S"),
                 SenderTin = senderTin,
                 ReceiverTin = receiverTin,
                 ReceiverReference = Guid.NewGuid()
@@ -131,7 +189,7 @@ public class TransferAgreementProposalsControllerTests
         var overlappingRequest = new CreateTransferAgreementProposal(
             StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
             EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
-            ReceiverTin: receiverTin
+            ReceiverTin: receiverTin.Value
         );
 
         var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}",
@@ -143,26 +201,26 @@ public class TransferAgreementProposalsControllerTests
     [Fact]
     public async Task Create_ShouldSucceed_WhenStartDateOrEndDateCauseOverlapAndReceiverTinIsNull()
     {
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
         var id = Guid.NewGuid();
         await SeedTransferAgreements(new List<TransferAgreement>()
         {
             new()
             {
                 Id = id,
-                StartDate = DateTimeOffset.UtcNow,
-                EndDate = DateTimeOffset.UtcNow.AddDays(10),
+                StartDate = UnixTimestamp.Now(),
+                EndDate = UnixTimestamp.Now().AddDays(10),
                 SenderId = orgId,
-                SenderName = "nrgi A/S",
-                SenderTin = "44332211",
-                ReceiverTin = "12345678",
+                SenderName = OrganizationName.Create("nrgi A/S"),
+                SenderTin = Tin.Create("44332211"),
+                ReceiverTin = Tin.Create("12345678"),
                 ReceiverReference = Guid.NewGuid()
             }
         });
 
         var overlappingRequest = new CreateTransferAgreementProposal(
-            StartDate: DateTimeOffset.UtcNow.AddDays(4).ToUnixTimeSeconds(),
-            EndDate: DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds(),
+            StartDate: UnixTimestamp.Now().AddDays(4).EpochSeconds,
+            EndDate: UnixTimestamp.Now().AddDays(5).EpochSeconds,
             ReceiverTin: null
         );
 
@@ -176,10 +234,10 @@ public class TransferAgreementProposalsControllerTests
     public async Task GivenProposalToOwnCvr_WhenCreatingProposal_ValidationErrorIsReturned()
     {
         var cvr = "11223355";
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId, cvr);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, cvr);
         var request = new CreateTransferAgreementProposal(
-            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
-            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+            StartDate: UnixTimestamp.Now().AddDays(1).EpochSeconds,
+            EndDate: UnixTimestamp.Now().AddDays(2).EpochSeconds,
             ReceiverTin: cvr
         );
 
@@ -198,10 +256,10 @@ public class TransferAgreementProposalsControllerTests
     [InlineData("12345678")]
     public async Task Create_ShouldSucceed_WhenReceiverTinValid(string? receiverTin)
     {
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
         var request = new CreateTransferAgreementProposal(
-            StartDate: DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
-            EndDate: DateTimeOffset.UtcNow.AddDays(2).ToUnixTimeSeconds(),
+            StartDate: UnixTimestamp.Now().AddDays(1).EpochSeconds,
+            EndDate: UnixTimestamp.Now().AddDays(2).EpochSeconds,
             ReceiverTin: receiverTin
         );
 
@@ -214,10 +272,10 @@ public class TransferAgreementProposalsControllerTests
     public async Task GetTransferAgreementProposal_ShouldReturnOK_WhenInvitationExists()
     {
         var receiverTin = "11223345";
-        var senderClient = factory.CreateB2CAuthenticatedClient(sub, orgId, tin);
+        var senderClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, tin.Value);
 
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
 
         var createResponse = await senderClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -243,10 +301,10 @@ public class TransferAgreementProposalsControllerTests
     public async Task GetTransferAgreementProposal_ShouldReturnBadRequest_WhenCurrentUserIsSender()
     {
         var receiverTin = "11223345";
-        var client = factory.CreateB2CAuthenticatedClient(sub, orgId, tin);
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, tin.Value);
 
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
         var createResponse = await client.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -262,10 +320,10 @@ public class TransferAgreementProposalsControllerTests
     public async Task GetTransferAgreementProposal_ShouldReturnBadRequest_WhenCurrentUserIsNotTheIntendedForTheProposal()
     {
         var receiverTin = "11223345";
-        var senderClient = factory.CreateB2CAuthenticatedClient(sub, orgId, tin);
+        var senderClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, tin.Value);
 
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
 
         var createResponse = await senderClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -285,23 +343,23 @@ public class TransferAgreementProposalsControllerTests
     [Fact]
     public async Task GetTransferAgreementProposal_ShouldReturnBadRequest_WhenProposalHasRunOut()
     {
-        var receiverTin = "11223345";
+        var receiverTin = Tin.Create("11223345");
 
         var taProposal = new TransferAgreementProposal
         {
-            CreatedAt = DateTimeOffset.UtcNow,
-            EndDate = DateTimeOffset.UtcNow,
-            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            CreatedAt = UnixTimestamp.Now(),
+            EndDate = UnixTimestamp.Now(),
+            StartDate = UnixTimestamp.Now().AddDays(-1),
             Id = Guid.NewGuid(),
-            SenderCompanyName = "SomeCompany",
+            SenderCompanyName = OrganizationName.Create("SomeCompany"),
             ReceiverCompanyTin = receiverTin,
             SenderCompanyId = orgId,
-            SenderCompanyTin = "11223344"
+            SenderCompanyTin = Tin.Create("11223344")
         };
 
         await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
-        var receiverClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), orgId, receiverTin);
+        var receiverClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), orgId.Value, receiverTin.Value);
 
         var getResponse = await receiverClient.GetAsync($"api/transfer/transfer-agreement-proposals/{taProposal.Id}?organizationId={orgId}");
 
@@ -312,7 +370,7 @@ public class TransferAgreementProposalsControllerTests
     public async Task GetTransferAgreementProposal_ShouldReturnNotFound_WhenInvitationDoesNotExist()
     {
         var nonExistentInvitationId = Guid.NewGuid();
-        var client = factory.CreateB2CAuthenticatedClient(sub, orgId, tin);
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, tin.Value);
 
         var response = await client.GetAsync($"api/transfer/transfer-agreement-proposals/{nonExistentInvitationId}?organizationId={orgId}");
 
@@ -325,19 +383,19 @@ public class TransferAgreementProposalsControllerTests
     {
         var taProposal = new TransferAgreementProposal
         {
-            CreatedAt = DateTimeOffset.UtcNow,
-            EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            StartDate = DateTimeOffset.UtcNow.AddDays(-1),
+            CreatedAt = UnixTimestamp.Now(),
+            EndDate = UnixTimestamp.Now().AddDays(1),
+            StartDate = UnixTimestamp.Now().AddDays(-1),
             Id = Guid.NewGuid(),
-            SenderCompanyName = "SomeCompany",
+            SenderCompanyName = OrganizationName.Create("SomeCompany"),
             ReceiverCompanyTin = null,
-            SenderCompanyId = Guid.NewGuid(),
-            SenderCompanyTin = "11223344"
+            SenderCompanyId = Any.OrganizationId(),
+            SenderCompanyTin = Tin.Create("11223344")
         };
 
         await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { taProposal });
 
-        var client = factory.CreateB2CAuthenticatedClient(sub, orgId, tin);
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, tin.Value);
 
         var response = await client.GetAsync($"api/transfer/transfer-agreement-proposals/{taProposal.Id}?organizationId={orgId}");
 
@@ -347,24 +405,24 @@ public class TransferAgreementProposalsControllerTests
     [Fact]
     public async Task GetTransferAgreementProposal_ShouldReturnNotFound_WhenTransferAgreementProposalExpired()
     {
-        var companyId = Guid.NewGuid();
+        var companyId = Any.OrganizationId();
         var invitationId = Guid.NewGuid();
 
         var proposal = new TransferAgreementProposal
         {
             Id = invitationId,
             SenderCompanyId = companyId,
-            SenderCompanyTin = "32132132",
-            CreatedAt = DateTimeOffset.UtcNow.AddDays(-14),
-            EndDate = DateTimeOffset.UtcNow.AddDays(1),
-            StartDate = DateTimeOffset.UtcNow.AddDays(-14),
-            SenderCompanyName = "SomeCompany",
+            SenderCompanyTin = Tin.Create("32132132"),
+            CreatedAt = UnixTimestamp.Now().AddDays(-14),
+            EndDate = UnixTimestamp.Now().AddDays(1),
+            StartDate = UnixTimestamp.Now().AddDays(-14),
+            SenderCompanyName = OrganizationName.Create("SomeCompany"),
             ReceiverCompanyTin = tin
         };
 
         await SeedTransferAgreementProposals(new List<TransferAgreementProposal> { proposal });
 
-        var client = factory.CreateB2CAuthenticatedClient(sub, orgId, tin);
+        var client = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, tin.Value);
 
         var retryPolicy = Policy
             .HandleResult<HttpResponseMessage>(response => response.StatusCode != HttpStatusCode.NotFound)
@@ -380,9 +438,9 @@ public class TransferAgreementProposalsControllerTests
     public async Task Delete_ShouldReturnNoContent_OnSuccessfulDelete()
     {
         var receiverTin = "32132132";
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
-        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(),
-            DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(), receiverTin);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
         var postResponse = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
         postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
@@ -399,12 +457,61 @@ public class TransferAgreementProposalsControllerTests
     [Fact]
     public async Task Delete_ShouldReturnNotFound_WhenConnectionInvitationNonExisting()
     {
-        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
         var randomGuid = Guid.NewGuid();
 
         var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{randomGuid}?organizationId={orgId}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GivenRequest_WhenAddingOptionalProperty_MissingPropertyShouldBeAccepted()
+    {
+        // Given request without new optional property
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new
+        {
+            StartDate = UnixTimestamp.Now().AddDays(1).EpochSeconds,
+            EndDate = UnixTimestamp.Now().AddDays(2).EpochSeconds,
+            ReceiverTin = "00998877"
+        };
+
+        // When making request
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
+
+        // Response should be OK, and proposal should have default type
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var scope = factory.Services.CreateScope();
+        await using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        var proposal = dbContext.TransferAgreementProposals.Single(tap => tap.ReceiverCompanyTin == Tin.Create(request.ReceiverTin));
+        proposal.Type.Should().Be(TransferAgreementType.TransferAllCertificates);
+    }
+
+    [Fact]
+    public async Task GivenRequest_WhenSupplyingOptionalProperty_PropertyShouldBeAccepted()
+    {
+        // Given request without new optional property
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new
+        {
+            StartDate = UnixTimestamp.Now().AddDays(1).EpochSeconds,
+            EndDate = UnixTimestamp.Now().AddDays(2).EpochSeconds,
+            ReceiverTin = "00998878",
+            Type = CreateTransferAgreementType.TransferCertificatesBasedOnConsumption
+        };
+
+        // When making request
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
+
+        // Response should be OK, and proposal should have correct type
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var scope = factory.Services.CreateScope();
+        await using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        var proposal = dbContext.TransferAgreementProposals.Single(tap => tap.ReceiverCompanyTin == Tin.Create(request.ReceiverTin));
+        proposal.Type.Should().Be(TransferAgreementType.TransferCertificatesBasedOnConsumption);
     }
 
     [Fact]

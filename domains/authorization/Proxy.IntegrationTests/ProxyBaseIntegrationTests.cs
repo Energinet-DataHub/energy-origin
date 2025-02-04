@@ -1,8 +1,6 @@
 using System.Net;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
-using Proxy.Controllers;
 using Proxy.IntegrationTests.Setup;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
@@ -11,21 +9,21 @@ namespace Proxy.IntegrationTests;
 
 public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IClassFixture<ProxyIntegrationTestFixture>
 {
-    private HttpClient CreateClientWithOrgIds(List<string> orgIds)
+    private HttpClient CreateClientWithOrgIds(Guid orgId, List<string> orgIds)
     {
-        return fixture.Factory.CreateAuthenticatedClient(orgIds: orgIds);
+        return fixture.Factory.CreateAuthenticatedClient(orgId: orgId.ToString(), orgIds: orgIds);
     }
 
     [Fact]
     public async Task Proxy_Forwards_Request_To_Downstream_With_Version_Header()
     {
-
         fixture.WalletWireMockServer
             .Given(Request.Create().WithPath("/wallet-api/v1/certificates").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(200));
 
+        var orgId = Guid.NewGuid();
         var orgIds = new List<string> { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
-        var client = CreateClientWithOrgIds(orgIds);
+        var client = CreateClientWithOrgIds(orgId, orgIds);
         var organizationId = orgIds[0];
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
@@ -39,8 +37,9 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
     [Fact]
     public async Task Proxy_Returns_Not_Found_For_Unmatched_Route()
     {
+        var orgId = Guid.NewGuid();
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
-        var client = CreateClientWithOrgIds(orgIds);
+        var client = CreateClientWithOrgIds(orgId, orgIds);
         var organizationId = orgIds[0];
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/unknown/path?organizationId={organizationId}");
@@ -54,8 +53,9 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
     [Fact]
     public async Task Proxy_Returns_BadRequest_If_Header_Missing()
     {
+        var orgId = Guid.NewGuid();
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
-        var client = CreateClientWithOrgIds(orgIds);
+        var client = CreateClientWithOrgIds(orgId, orgIds);
         var organizationId = orgIds[0];
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
@@ -68,8 +68,9 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
     [Fact]
     public async Task Proxy_Returns_BadRequest_If_Invalid_Header_Version()
     {
+        var orgId = Guid.NewGuid();
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
-        var client = CreateClientWithOrgIds(orgIds);
+        var client = CreateClientWithOrgIds(orgId, orgIds);
         var organizationId = orgIds[0];
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
@@ -101,8 +102,9 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
             .Given(Request.Create().WithPath("/wallet-api/v1/certificates").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(statusCode));
 
+        var orgId = Guid.NewGuid();
         var orgIds = new List<string> { Guid.NewGuid().ToString() };
-        var client = CreateClientWithOrgIds(orgIds);
+        var client = CreateClientWithOrgIds(orgId, orgIds);
         var organizationId = orgIds[0];
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");

@@ -67,7 +67,8 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
         var settings = new VerifySettings();
         settings.DontScrubGuids();
         await Verifier.Verify(response, settings);
-        var quality = mockedResponse.GetMeterTimeSeriesResult.MeterTimeSeriesMeteringPoint.First().MeteringPointStates.First().NonProfiledEnergyQuantities.First().EnergyQuantityValues.First().QuantityQuality;
+        var quality = mockedResponse.GetMeterTimeSeriesResult.MeterTimeSeriesMeteringPoint.First().MeteringPointStates.First()
+            .NonProfiledEnergyQuantities.First().EnergyQuantityValues.First().QuantityQuality;
         response.Measurements.First().Quality.Should().Be(MeterTimeSeriesHelper.GetQuantityQualityFromMeterReading(quality));
     }
 
@@ -141,7 +142,8 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
         var quarterlyValues = Enumerable.Range(0, 96).Select(i => r.NextInt64(0, 250)).ToArray();
 
         var wantedResult = hourlyValues.ToList();
-        wantedResult.AddRange(Enumerable.Range(0, 24).Select(i => quarterlyValues[4 * i + 0] + quarterlyValues[4 * i + 1] + quarterlyValues[4 * i + 2] + quarterlyValues[4 * i + +3]));
+        wantedResult.AddRange(Enumerable.Range(0, 24).Select(i =>
+            quarterlyValues[4 * i + 0] + quarterlyValues[4 * i + 1] + quarterlyValues[4 * i + 2] + quarterlyValues[4 * i + +3]));
         wantedResult = wantedResult.Select(x => x * 1000).ToList(); // kwh -> wh
 
         var hourlyQuantities = Enumerable.Range(0, 24).Select(i =>
@@ -153,7 +155,8 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
                 QuantityQuality = "E01",
                 QuantityMissingIndicator = "false"
             });
-        var mockedResponse = GenerateMeterTimeSeriesResponse(quantities: hourlyQuantities, dateOfReading: dateFrom.ToString("yyyy-MM-dd"), meterReadingOccurrence: occurenceOne);
+        var mockedResponse = GenerateMeterTimeSeriesResponse(quantities: hourlyQuantities, dateOfReading: dateFrom.ToString("yyyy-MM-dd"),
+            meterReadingOccurrence: occurenceOne);
 
         var quarterlyState = new MeteringPointState
         {
@@ -207,8 +210,10 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
         response.Measurements.Count.Should().Be(48);
 
         response.Measurements.Select(m => m.Quantity).Should().BeEquivalentTo(wantedResult);
-        Enumerable.Range(0, 48).Select(x => dateFrom.AddHours(x).ToUnixTimeSeconds()).Should().BeEquivalentTo(response.Measurements.Select(x => x.DateFrom));
-        Enumerable.Range(1, 48).Select(x => dateFrom.AddHours(x).ToUnixTimeSeconds()).Should().BeEquivalentTo(response.Measurements.Select(x => x.DateTo));
+        Enumerable.Range(0, 48).Select(x => dateFrom.AddHours(x).ToUnixTimeSeconds()).Should()
+            .BeEquivalentTo(response.Measurements.Select(x => x.DateFrom));
+        Enumerable.Range(1, 48).Select(x => dateFrom.AddHours(x).ToUnixTimeSeconds()).Should()
+            .BeEquivalentTo(response.Measurements.Select(x => x.DateTo));
     }
 
     [Fact]

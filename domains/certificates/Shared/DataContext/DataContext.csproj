@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.0" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -20,7 +20,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog.csproj" />
+    <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.ValueObjects\EnergyOrigin.Domain.ValueObjects.csproj" />
     <ProjectReference Include="..\ProjectOriginClients\ProjectOriginClients.csproj" />
   </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Migrations\Scripts\**\*.sql">
+            <LogicalName>%(filename)%(extension)</LogicalName> <!-- Do not delete! Migration script names will not contain namespace -->
+        </EmbeddedResource>
+    </ItemGroup>
 
 </Project>
