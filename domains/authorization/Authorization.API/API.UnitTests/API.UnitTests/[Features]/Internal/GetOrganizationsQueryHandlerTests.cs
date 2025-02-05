@@ -31,6 +31,7 @@ public class GetOrganizationsQueryTests
 
         result.Result.Should().BeEquivalentTo(new List<GetOrganizationsQueryResult>
         {
+            // TODO: FIND A WAY TO HANDLE THESE DISGUSTING NULLABLE TIN's
             new(organization1.Id, organization1.Name.Value, organization1.Tin!.Value),
             new(organization2.Id, organization2.Name.Value, organization2.Tin!.Value)
         });
