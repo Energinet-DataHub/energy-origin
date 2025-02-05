@@ -34,7 +34,3 @@ public class GetOrganizationsQueryHandler(
         return new GetOrganizationsQueryResponse(result);
     }
 }
-
-
-
-
