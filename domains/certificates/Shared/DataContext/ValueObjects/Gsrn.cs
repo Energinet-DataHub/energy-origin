@@ -24,4 +24,9 @@ public partial class Gsrn : ValueObject
     {
         yield return Value;
     }
+
+    public override string ToString()
+    {
+        return Value;
+    }
 }

@@ -43,4 +43,14 @@ public class GsrnTests
 
         gsrn1.Equals(gsrn2).Should().BeTrue();
     }
+
+    [Fact]
+    public void ToString_CorrectlyPrints()
+    {
+        var gsrnValue = "571234567890123456";
+        var gsrn = new Gsrn(gsrnValue);
+
+        Assert.Equal(gsrnValue, gsrn.ToString());
+        Assert.Equal(gsrnValue, $"{gsrn}");
+    }
 }
