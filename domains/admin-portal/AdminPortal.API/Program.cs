@@ -6,6 +6,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpClient<AggregationService>();
 builder.Services.AddScoped<AggregationService>();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 

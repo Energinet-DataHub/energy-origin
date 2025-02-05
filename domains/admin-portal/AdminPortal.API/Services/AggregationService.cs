@@ -13,13 +13,13 @@ public class AggregationService
 
     public async Task<List<MeteringPoint>> GetMeteringPointsAsync()
     {
-        var response = await _httpClient.GetFromJsonAsync<Api1Response>("api/authorization/portal/first-party-organizations");
+        var response = await _httpClient.GetFromJsonAsync<Api1Response>("http://localhost.com/api/authorization/portal/first-party-organizations");
         return response?.Result ?? new List<MeteringPoint>();
     }
 
     public async Task<List<Organization>> GetOrganizationsAsync()
     {
-        var response = await _httpClient.GetFromJsonAsync<Api2Response>("api/certificates/portal/contracts");
+        var response = await _httpClient.GetFromJsonAsync<Api2Response>("http://localhost.com/api/certificates/portal/contracts");
         return response?.Result ?? new List<Organization>();
     }
 
