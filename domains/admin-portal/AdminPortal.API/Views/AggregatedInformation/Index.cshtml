@@ -1,0 +1,27 @@
+@model List<AggregatedData>
+
+<h1>Aggregated Metering Points</h1>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>GSRN</th>
+        <th>Metering Point Type</th>
+        <th>Organization ID</th>
+        <th>Organization Name</th>
+        <th>TIN</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Gsrn</td>
+            <td>@item.MeteringPointType</td>
+            <td>@item.OrganizationId</td>
+            <td>@item.OrganizationName</td>
+            <td>@item.Tin</td>
+        </tr>
+    }
+    </tbody>
+</table>
