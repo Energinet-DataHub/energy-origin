@@ -42,4 +42,10 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
 
     public Task<List<CertificateIssuingContract>> GetAllByIds(List<Guid> ids, CancellationToken cancellationToken) =>
         dbContext.Contracts.Where(x => ids.Contains(x.Id)).ToListAsync(cancellationToken);
+
+    public IQueryable<CertificateIssuingContract> Query()
+    {
+        return dbContext.Contracts.AsQueryable();
+    }
+
 }
