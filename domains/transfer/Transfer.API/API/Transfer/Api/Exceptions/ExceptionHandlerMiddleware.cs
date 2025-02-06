@@ -4,6 +4,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
