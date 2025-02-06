@@ -8,4 +8,4 @@ public record CreateTransferAgreementRequest(
     long StartDate,
     long? EndDate,
     CreateTransferAgreementType Type
-    );
+);

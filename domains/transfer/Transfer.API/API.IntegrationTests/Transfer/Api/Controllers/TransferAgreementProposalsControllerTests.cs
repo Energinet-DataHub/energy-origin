@@ -75,7 +75,45 @@ public class TransferAgreementProposalsControllerTests
     }
 
     [Fact]
-    public async Task CreateUsingConsent_ShouldReturnBadRequest_WhenCurrentConsetUserIsSender()
+    public async Task CreateDirectUsingConsent()
+    {
+        var senderOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId,
+                "87654321",
+                "B",
+                Guid.NewGuid(),
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
+        var body = new CreateTransferAgreementProposalRequest(senderOrganizationId, DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
+        var result = await authenticatedClient
+            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals/create", body);
+
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task GivenNoConsent_WhenCreatingDirectlyUsingOrgId_NotAuthorized()
+    {
+        var senderOrganizationId = Guid.NewGuid();
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var body = new CreateTransferAgreementProposalRequest(senderOrganizationId, DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
+        var result = await authenticatedClient
+            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals/create", body);
+        result.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CreateUsingConsent_ShouldReturnBadRequest_WhenCurrentConsentUserIsSender()
     {
         var senderOrganizationId = Guid.NewGuid();
 
