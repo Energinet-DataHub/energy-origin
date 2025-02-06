@@ -56,9 +56,9 @@ public class Any
         return EnergyOrigin.Domain.ValueObjects.OrganizationName.Create("Wind turbines'R'us");
     }
 
-    public static Organization Organization(Tin? tin = null, OrganizationName? organizationName = null)
+    public static Organization Organization(Tin? tin = null)
     {
-        return API.Models.Organization.Create(tin ?? Tin(), organizationName ?? OrganizationName());
+        return API.Models.Organization.Create(tin ?? Tin(), OrganizationName());
     }
 
     public static IdpClientId IdpClientId()

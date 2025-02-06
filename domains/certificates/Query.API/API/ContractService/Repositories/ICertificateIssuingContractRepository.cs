@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext.Models;
@@ -15,5 +14,4 @@ public interface ICertificateIssuingContractRepository
     Task<IReadOnlyList<CertificateIssuingContract>> GetAllMeteringPointOwnerContracts(string meteringPointOwner, CancellationToken cancellationToken);
     Task<CertificateIssuingContract?> GetById(Guid id, CancellationToken cancellationToken);
     Task<List<CertificateIssuingContract>> GetAllByIds(List<Guid> ids, CancellationToken cancellationToken);
-    IQueryable<CertificateIssuingContract> Query();
 }
