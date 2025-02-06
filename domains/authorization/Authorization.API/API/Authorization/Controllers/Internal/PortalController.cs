@@ -15,7 +15,7 @@ namespace API.Authorization.Controllers.Internal;
 [ApiController]
 [Authorize(Policy = Policy.B2CInternal)]
 [ApiVersionNeutral]
-[Route("api/authorization")]
+[Route("api/authorization/portal")]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class PortalController(IMediator mediator) : ControllerBase
 {
