@@ -26,6 +26,7 @@ namespace API.Transfer.Api.Controllers;
 [Route("api/transfer/transfer-agreement-proposals")]
 public class TransferAgreementProposalController(
     IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
+    IValidator<CreateTransferAgreementProposalRequest> createTransferAgreementProposalRequestValidator,
     IUnitOfWork unitOfWork,
     IdentityDescriptor identityDescriptor,
     AccessDescriptor accessDescriptor,
@@ -159,6 +160,36 @@ public class TransferAgreementProposalController(
         await unitOfWork.SaveAsync();
 
         return NoContent();
+    }
+
+    [HttpPost("create/")]
+    [ProducesResponseType(typeof(TransferAgreementProposalResponse), 200)]
+    [ProducesResponseType(typeof(void), 404)]
+    public async Task<ActionResult> CreateTransferAgreementDirectly(CreateTransferAgreementProposalRequest request)
+    {
+        var organizationId = request.SenderOrganizationId;
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+
+        var validateResult = await createTransferAgreementProposalRequestValidator.ValidateAsync(request);
+        if (!validateResult.IsValid)
+        {
+            validateResult.AddToModelState(ModelState);
+            return ValidationProblem(ModelState);
+        }
+
+        var command = new CreateTransferAgreementProposalCommand(organizationId, request.ReceiverTin, request.StartDate, request.EndDate, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type));
+        var result = await mediator.Send(command);
+
+        var response = new TransferAgreementProposalResponse(
+            result.Id,
+            result.SenderOrganizationName,
+            result.ReceiverOrganizationTin,
+            result.StartDate,
+            result.EndDate,
+            TransferAgreementTypeMapper.MapCreateTransferAgreementType(result.Type)
+        );
+
+        return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = result.Id }, response);
     }
 
     private async Task AppendToActivityLog(IdentityDescriptor identity, TransferAgreementProposal proposal,
