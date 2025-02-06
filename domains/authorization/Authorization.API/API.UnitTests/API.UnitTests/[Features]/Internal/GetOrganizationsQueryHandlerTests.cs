@@ -37,7 +37,7 @@ public class GetFirstPartyOrganizationsQueryTests
     }
 
     [Fact]
-    public async Task GivenDatabaseContainsMultipleOrganizations_But_OnlyASingleOneWithATin_WhenQuerying_ThenResultContainsOrganizationWithTin()
+    public async Task GivenDatabaseContainsMultipleOrganizations_But_OnlyASingleOneWithATin_WhenQuerying_ThenResultContainsOnlyOrganizationWithTin()
     {
         var query = new GetFirstPartyOrganizationsQuery();
 
