@@ -18,7 +18,7 @@ namespace API.UnitTests.ContractService.Internal;
 public class GetCertificatesForAdminPortalQueryHandlerTests
 {
     [Fact]
-    public async Task Handle_NoRecords_ReturnsEmptyList()
+    public async Task GivenNoContracts_WhenQuery_ThenReturnEmptyResult()
     {
         // Arrange
         var mockRepo = Substitute.For<ICertificateIssuingContractRepository>();
@@ -38,7 +38,7 @@ public class GetCertificatesForAdminPortalQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_SingleRecord_ReturnsThatRecord()
+    public async Task GivenOnlySingleContractExists_WhenQuery_ThenReturnResultWithThatSingleRecord()
     {
         // Arrange
         var now = DateTimeOffset.UtcNow;
@@ -75,7 +75,7 @@ public class GetCertificatesForAdminPortalQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_MultipleRecords_SameGSRN_TakesNewestCreated()
+    public async Task GivenMultipleContractsWithSameGSRNsExist_WhenQuery_ThenOnlyReturnNewestActiveContractForTheGSRnHandle()
     {
         // Arrange
         var sameGSRN = Any.Gsrn().ToString();
