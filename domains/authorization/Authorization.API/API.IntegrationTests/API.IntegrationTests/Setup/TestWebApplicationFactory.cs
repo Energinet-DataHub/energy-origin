@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -5,10 +6,9 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using API.Models;
 using API.Options;
+using DotNet.Testcontainers.Builders;
 using EnergyOrigin.Setup;
-using EnergyTrackAndTrace.Testing.Testcontainers;
 using EnergyOrigin.Setup.Migrations;
-using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -16,18 +16,81 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
+using Respawn;
+using Testcontainers.PostgreSql;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Setup;
 
+[CollectionDefinition(nameof(BaseFixtureForTesting))]
+public class BaseFixtureForTesting : ICollectionFixture<TestWebApplicationFactory>
+{
+}
+
 public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
+        .WithImage("postgres:latest")
+        .WithDatabase("db")
+        .WithUsername("postgres")
+        .WithPassword("postgres")
+        .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready"))
+        .WithCleanUp(true)
+        .Build();
+
+    private Respawner _respawner = null!;
     internal string ConnectionString { get; set; } = "";
-    internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
+
+    internal RabbitMqOptions RabbitMqOptions { get; private set; } = new()
+    {
+        Host = "localhost",
+        Port = 5672,
+        Username = "guest",
+        Password = "guest"
+    };
+
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
-    public string WalletUrl { get; set; } = "";
+    public string WalletUrl { get; set; } = "http://localhost:5000";
+
+    public async Task InitializeAsync()
+    {
+        await _postgresContainer.StartAsync();
+        ConnectionString = _postgresContainer.GetConnectionString();
+
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        using var dbConnection = dbContext.Database.GetDbConnection();
+        await dbConnection.OpenAsync();
+
+        _respawner = await Respawner.CreateAsync(dbConnection, new RespawnerOptions
+        {
+            DbAdapter = DbAdapter.Postgres,
+            SchemasToInclude = new[] { "public" }
+        });
+
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<DbMigrator>>();
+        var migrator = new DbMigrator(ConnectionString, typeof(Program).Assembly, logger);
+        await migrator.MigrateAsync();
+    }
+
+    public async Task ResetDatabase()
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using var dbConnection = dbContext.Database.GetDbConnection();
+
+        await dbConnection.OpenAsync();
+        await _respawner.ResetAsync(dbConnection);
+    }
+
+    public new async Task DisposeAsync()
+    {
+        await _postgresContainer.DisposeAsync();
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -38,7 +101,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         builder.ConfigureTestServices(services =>
         {
             services.RemoveDbContext<ApplicationDbContext>();
-            services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(ConnectionString); });
+            services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(ConnectionString));
 
             new DbMigrator(ConnectionString, typeof(Program).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
 
@@ -89,6 +152,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
     }
+
 
     public Api CreateApi(string sub = "", string name = "", string orgId = "", string orgIds = "", string subType = "", string orgCvr = "12345678",
         string orgName = "Test Org", bool termsAccepted = true)
@@ -152,17 +216,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         var encodedAccessToken = tokenHandler.WriteToken(token);
         return encodedAccessToken!;
     }
-
-    public Task InitializeAsync()
-    {
-        Server.Should().NotBeNull();
-        return Task.CompletedTask;
-    }
-
-    public new async Task DisposeAsync()
-    {
-        await base.DisposeAsync();
-    }
 }
 
 public static class ServiceCollectionExtensions
@@ -175,4 +228,12 @@ public static class ServiceCollectionExtensions
             services.Remove(descriptor);
         }
     }
+
+    // public static void EnsureDbCreated<T>(this IServiceCollection services) where T : DbContext
+    // {
+    //     using var scope = services.BuildServiceProvider().CreateScope();
+    //     var serviceProvider = scope.ServiceProvider;
+    //     var context = serviceProvider.GetRequiredService<T>();
+    //     context.Database.EnsureCreated();
+    // }
 }
