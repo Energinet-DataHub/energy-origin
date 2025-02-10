@@ -68,8 +68,9 @@ runs:
       shell: bash
       run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
 
+
     - name: Build image
-      uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@cache-action
+      uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v3
       with:
         dockerfile: Dockerfile
         image-name: ${{ env.name }}
