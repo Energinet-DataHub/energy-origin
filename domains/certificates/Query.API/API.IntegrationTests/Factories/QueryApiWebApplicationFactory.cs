@@ -54,6 +54,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
+    public readonly Guid IssuerIdpClientId = Guid.NewGuid();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -81,7 +82,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("B2C:MitIDCustomPolicyWellKnownUrl",
             "https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_MITID");
         builder.UseSetting("B2C:Audience", "f00b9b4d-3c59-4c40-b209-2ef87e509f54");
-        builder.UseSetting("B2C:CustomPolicyClientId", "a701d13c-2570-46fa-9aa2-8d81f0d8d60b");
+        builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
 
         builder.ConfigureTestServices(services =>
         {
