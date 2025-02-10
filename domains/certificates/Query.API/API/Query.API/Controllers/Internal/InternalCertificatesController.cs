@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ContractService.Internal;
@@ -42,9 +43,9 @@ public class InternalContractsController : ControllerBase
             .Select(c => new ContractsForAdminPortalResponseItem(
                 c.GSRN,
                 c.MeteringPointOwner,
-                c.Created,
-                c.StartDate,
-                c.EndDate,
+                c.Created.ToUnixTimeSeconds(),
+                c.StartDate.ToUnixTimeSeconds(),
+                c.EndDate?.ToUnixTimeSeconds(),
                 c.MeteringPointType
             )).ToList();
 
@@ -56,9 +57,10 @@ public class InternalContractsController : ControllerBase
 public record ContractsForAdminPortalResponseItem(
     string GSRN,
     string MeteringPointOwner,
-    DateTimeOffset Created,
-    DateTimeOffset StartDate,
-    DateTimeOffset? EndDate,
+    long Created,
+    long StartDate,
+    long? EndDate,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
     MeteringPointType MeteringPointType
 );
 

@@ -42,6 +42,7 @@ public class GetFirstPartyOrganizationsTest
         var content = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
 
         Assert.NotNull(content);
+        Assert.IsType<FirstPartyOrganizationsResponse>(content);
         Assert.Contains(content!.Result, item =>
             item.OrganizationId == organization1.Id &&
             item.OrganizationName == organization1.Name.Value &&
