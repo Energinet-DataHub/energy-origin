@@ -8,7 +8,6 @@ using API.ContractService.Repositories;
 using API.UnitOfWork;
 using DataContext.Models;
 using DataContext.ValueObjects;
-using FluentAssertions;
 using MockQueryable;
 using NSubstitute;
 using Xunit;
@@ -33,8 +32,8 @@ public class GetContractsForAdminPortalQueryHandlerTests
         var result = await handler.Handle(new GetContractsForAdminPortalQuery(), CancellationToken.None);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Result.Should().BeEmpty();
+        Assert.NotNull(result);
+        Assert.Empty(result.Result);
     }
 
     [Fact]
@@ -67,11 +66,11 @@ public class GetContractsForAdminPortalQueryHandlerTests
         var result = await handler.Handle(new GetContractsForAdminPortalQuery(), CancellationToken.None);
 
         // Assert
-        result.Result.Should().HaveCount(1);
+        Assert.Single(result.Result);
         var item = result.Result.First();
-        item.GSRN.Should().Be(data[0].GSRN);
-        item.MeteringPointOwner.Should().Be(data[0].MeteringPointOwner);
-        item.MeteringPointType.Should().Be(MeteringPointType.Production);
+        Assert.Equal(data[0].GSRN, item.GSRN);
+        Assert.Equal(data[0].MeteringPointOwner, item.MeteringPointOwner);
+        Assert.Equal(MeteringPointType.Production, item.MeteringPointType);
     }
 
     [Fact]
@@ -115,9 +114,9 @@ public class GetContractsForAdminPortalQueryHandlerTests
         var result = await handler.Handle(new GetContractsForAdminPortalQuery(), CancellationToken.None);
 
         // Assert
-        result.Result.Should().HaveCount(1, "both records share the same GSRN");
+        Assert.Single(result.Result);
         var singleItem = result.Result.Single();
-        singleItem.MeteringPointOwner.Should().Be(sameOwnerOfMultipleContracts, "it has the newest Created");
+        Assert.Equal(sameOwnerOfMultipleContracts, singleItem.MeteringPointOwner);
     }
 
     [Fact]
@@ -167,11 +166,11 @@ public class GetContractsForAdminPortalQueryHandlerTests
         var result = await handler.Handle(new GetContractsForAdminPortalQuery(), CancellationToken.None);
 
         // Assert
-        result.Result.Should().HaveCount(2, "the record with EndDate in the past should be excluded");
+        Assert.Equal(2, result.Result.Count);
 
-        result.Result.Should().ContainSingle(c => c.GSRN == activeContract1.GSRN);
-        result.Result.Should().ContainSingle(c => c.GSRN == activeContract2.GSRN);
-        result.Result.Should().NotContain(c => c.GSRN == expiredContract.GSRN);
+        Assert.Contains(result.Result, c => c.GSRN == activeContract1.GSRN);
+        Assert.Contains(result.Result, c => c.GSRN == activeContract2.GSRN);
+        Assert.DoesNotContain(result.Result, c => c.GSRN == expiredContract.GSRN);
     }
 
     [Fact]
@@ -233,16 +232,16 @@ public class GetContractsForAdminPortalQueryHandlerTests
         var result = await handler.Handle(new GetContractsForAdminPortalQuery(), CancellationToken.None);
 
         // Assert
-        result.Result.Should().HaveCount(2, because: "there should be one newest record per GSRN");
+        Assert.Equal(2, result.Result.Count);
 
         var gsrn1Result = result.Result.SingleOrDefault(x => x.GSRN == gsrn1);
-        gsrn1Result.Should().NotBeNull();
-        gsrn1Result!.MeteringPointOwner.Should().Be(newerOwnerForGsrn1, "we want the newest record by Created for gsrn1");
-        gsrn1Result.MeteringPointType.Should().Be(MeteringPointType.Consumption);
+        Assert.NotNull(gsrn1Result);
+        Assert.Equal(newerOwnerForGsrn1, gsrn1Result!.MeteringPointOwner);
+        Assert.Equal(MeteringPointType.Consumption, gsrn1Result.MeteringPointType);
 
         var gsrn2Result = result.Result.SingleOrDefault(x => x.GSRN == gsrn2);
-        gsrn2Result.Should().NotBeNull();
-        gsrn2Result!.MeteringPointOwner.Should().Be(ownerForGsrn2, "there is only one contract for gsrn2");
-        gsrn2Result.MeteringPointType.Should().Be(MeteringPointType.Production);
+        Assert.NotNull(gsrn2Result);
+        Assert.Equal(ownerForGsrn2, gsrn2Result!.MeteringPointOwner);
+        Assert.Equal(MeteringPointType.Production, gsrn2Result.MeteringPointType);
     }
 }
