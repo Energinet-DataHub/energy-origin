@@ -1,4 +1,4 @@
-using API.Options;
+using EnergyOrigin.Setup.RabbitMq;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using Testcontainers.RabbitMq;
 
@@ -14,7 +14,10 @@ public class IntegrationTestFixture : IAsyncLifetime
 {
     public PostgresContainer PostgresContainer { get; } = new();
     public ProjectOriginStack ProjectOriginStack { get; } = new();
-    public RabbitMqContainer RabbitMqContainer { get; } = new RabbitMqBuilder().WithUsername("guest").WithPassword("guest").Build();
+
+    public RabbitMqContainer RabbitMqContainer { get; } =
+        new RabbitMqBuilder().WithImage("rabbitmq:3.13-management").WithUsername("guest").WithPassword("guest").WithPortBinding(15672, true).Build();
+
     public TestWebApplicationFactory WebAppFactory { get; private set; } = null!;
 
     public async Task InitializeAsync()
@@ -25,14 +28,8 @@ public class IntegrationTestFixture : IAsyncLifetime
         await RabbitMqContainer.StartAsync();
         var newDatabase = await PostgresContainer.CreateNewDatabase();
 
-        var connectionStringSplit = RabbitMqContainer.GetConnectionString().Split(":");
-        var rabbitMqOptions = new RabbitMqOptions
-        {
-            Host = connectionStringSplit[0],
-            Port = int.Parse(connectionStringSplit[^1].TrimEnd('/')),
-            Username = "guest",
-            Password = "guest"
-        };
+        var connectionString = RabbitMqContainer.GetConnectionString();
+        var rabbitMqOptions = RabbitMqOptions.FromConnectionString(connectionString);
 
         WebAppFactory = new TestWebApplicationFactory();
         WebAppFactory.WalletUrl = ProjectOriginStack.WalletUrl;

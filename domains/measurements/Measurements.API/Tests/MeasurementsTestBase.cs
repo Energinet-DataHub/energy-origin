@@ -1,9 +1,6 @@
-using API;
-using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
-using Contracts;
+using API;
+using EnergyOrigin.Setup.RabbitMq;
 using Tests.Fixtures;
 using Xunit;
 
@@ -14,7 +11,6 @@ public class MeasurementsTestBase : IClassFixture<TestServerFixture<Startup>>
     protected readonly TestServerFixture<Startup> _serverFixture;
     public string DataHubFacadeUrl { get; set; } = "http://someurl.com";
     public string otlpEndpoint { get; set; } = "http://someurl";
-
 
     public MeasurementsTestBase(TestServerFixture<Startup> serverFixture, RabbitMqOptions? rabbitMqOptions = null, string connectionString = "")
     {

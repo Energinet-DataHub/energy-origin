@@ -39,7 +39,7 @@ public class QueryApiHealthTests : TestBase
 
         await _integrationTestFixture.RabbitMqContainer.StopAsync();
 
-        using var healthResponse2 = await client.RepeatedlyQueryUntil("/health",
+        using var healthResponse2 = await client.RepeatedlyQueryUntil("/health/ready",
             response => response.StatusCode == HttpStatusCode.ServiceUnavailable);
         await _integrationTestFixture.RabbitMqContainer.InitializeAsync();
         Assert.Equal(HttpStatusCode.OK, healthResponse1.StatusCode);
@@ -54,7 +54,7 @@ public static class HttpClientExtensions
         if (timeLimit.HasValue && timeLimit.Value <= TimeSpan.Zero)
             throw new ArgumentException($"{nameof(timeLimit)} must be a positive time span");
 
-        var limit = timeLimit ?? TimeSpan.FromSeconds(300);
+        var limit = timeLimit ?? TimeSpan.FromSeconds(30);
 
         var stopwatch = new Stopwatch();
         stopwatch.Start();

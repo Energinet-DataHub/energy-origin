@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using Contracts;
+using EnergyOrigin.Setup.RabbitMq;
 using Testcontainers.RabbitMq;
 using Xunit;
 
@@ -7,7 +7,7 @@ namespace Testing.Testcontainers;
 
 public partial class RabbitContainer : IAsyncLifetime
 {
-    private readonly global::Testcontainers.RabbitMq.RabbitMqContainer testContainer;
+    private readonly RabbitMqContainer testContainer;
 
     [GeneratedRegex(@"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:(\d+)", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
     private static partial Regex IpAndPortRegex();
