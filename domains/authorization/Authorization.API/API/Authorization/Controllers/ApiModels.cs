@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using API.Authorization._Features_.Internal;
 
 namespace API.Authorization.Controllers;
 
@@ -44,6 +45,9 @@ public record OrganizationResponse(Guid OrganizationId, string OrganizationName,
 
 public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName, string? Tin);
 public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Result);
+
+public record FirstPartyOrganizationsResponseItem(Guid OrganizationId, string OrganizationName, string Tin);
+public record FirstPartyOrganizationsResponse(IEnumerable<FirstPartyOrganizationsResponseItem> Result);
 
 public enum ClientType
 {
