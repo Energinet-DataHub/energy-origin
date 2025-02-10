@@ -4,7 +4,6 @@ using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
 using EnergyOrigin.Domain.ValueObjects;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
@@ -12,18 +11,16 @@ namespace API.IntegrationTests.API;
 [Collection(IntegrationTestCollection.CollectionName)]
 public class GetFirstPartyOrganizationsTest
 {
-    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly Api _api;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
     public GetFirstPartyOrganizationsTest(IntegrationTestFixture integrationTestFixture)
     {
-        _integrationTestFixture = integrationTestFixture;
         var connectionString = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(connectionString).Options;
 
         _api = integrationTestFixture.WebAppFactory.CreateApi(
-            sub: _integrationTestFixture.WebAppFactory.IssuerIdpClientId.ToString()
+            sub: integrationTestFixture.WebAppFactory.IssuerIdpClientId.ToString()
         );
     }
 
@@ -40,21 +37,21 @@ public class GetFirstPartyOrganizationsTest
 
         var response = await _api.GetFirstPartyOrganizations();
 
-        response.Should().Be200Ok();
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
 
         var content = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
 
-        content.Should().NotBeNull();
-        content!.Result.Should().ContainEquivalentOf(new FirstPartyOrganizationsResponseItem(
-            organization1.Id,
-            organization1.Name.Value,
-            organization1.Tin!.Value
-        ));
+        Assert.NotNull(content);
+        Assert.Contains(content!.Result, item =>
+            item.OrganizationId == organization1.Id &&
+            item.OrganizationName == organization1.Name.Value &&
+            item.Tin == organization1.Tin!.Value
+        );
 
-        content.Result.Should().ContainEquivalentOf(new FirstPartyOrganizationsResponseItem(
-            organization2.Id,
-            organization2.Name.Value,
-            organization2.Tin!.Value
-        ));
+        Assert.Contains(content.Result, item =>
+            item.OrganizationId == organization2.Id &&
+            item.OrganizationName == organization2.Name.Value &&
+            item.Tin == organization2.Tin!.Value
+        );
     }
 }

@@ -1,7 +1,6 @@
 using API.Authorization._Features_.Internal;
 using API.UnitTests.Repository;
 using EnergyOrigin.Domain.ValueObjects;
-using FluentAssertions;
 
 namespace API.UnitTests._Features_.Internal;
 
@@ -17,7 +16,7 @@ public class GetFirstPartyOrganizationsQueryTests
     }
 
     [Fact]
-    public async Task GivenDatabaseContainsOrganizations_WhenQuerying_ReturnsListOfAllOrganizations()
+    public async Task GivenDatabaseContainsOrganizations_WhenQuerying_ThenReturnListOfAllOrganizations()
     {
         var query = new GetFirstPartyOrganizationsQuery();
 
@@ -29,11 +28,11 @@ public class GetFirstPartyOrganizationsQueryTests
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Result.Should().BeEquivalentTo(new List<GetFirstPartyOrganizationsQueryResultItem>
+        Assert.Equal(new List<GetFirstPartyOrganizationsQueryResultItem>
         {
             new(organization1.Id, organization1.Name.Value, organization1.Tin!.Value),
             new(organization2.Id, organization2.Name.Value, organization2.Tin!.Value)
-        });
+        }, result.Result);
     }
 
     [Fact]
@@ -49,19 +48,19 @@ public class GetFirstPartyOrganizationsQueryTests
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Result.Should().BeEquivalentTo(new List<GetFirstPartyOrganizationsQueryResultItem>
+        Assert.Equal(new List<GetFirstPartyOrganizationsQueryResultItem>
         {
             new(firstPartyOrganization.Id, firstPartyOrganization.Name.Value, firstPartyOrganization.Tin!.Value)
-        });
+        }, result.Result);
     }
 
     [Fact]
-    public async Task GivenNoOrganizations_WhenQuerying_ReturnsEmptyList()
+    public async Task GivenNoOrganizations_WhenQuerying_ThenReturnEmptyList()
     {
         var query = new GetFirstPartyOrganizationsQuery();
 
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var queryProcess = await _handler.Handle(query, CancellationToken.None);
 
-        result.Result.Should().BeEmpty();
+        Assert.Empty(queryProcess.Result);
     }
 }
