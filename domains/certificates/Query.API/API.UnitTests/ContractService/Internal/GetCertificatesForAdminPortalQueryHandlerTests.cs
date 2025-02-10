@@ -75,7 +75,7 @@ public class GetCertificatesForAdminPortalQueryHandlerTests
     }
 
     [Fact]
-    public async Task GivenMultipleContractsWithSameGSRNsExist_WhenQuery_ThenOnlyReturnNewestActiveContractForTheGSRnHandle()
+    public async Task GivenMultipleContractsWithSameGSRNsExist_WhenQuery_ThenOnlyReturnNewestActiveContractForTheGSRN()
     {
         // Arrange
         var sameGSRN = Any.Gsrn().ToString();
