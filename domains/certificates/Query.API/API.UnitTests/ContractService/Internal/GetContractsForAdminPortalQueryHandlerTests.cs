@@ -15,7 +15,7 @@ using Xunit;
 
 namespace API.UnitTests.ContractService.Internal;
 
-public class GetCertificatesForAdminPortalQueryHandlerTests
+public class GetContractsForAdminPortalQueryHandlerTests
 {
     [Fact]
     public async Task GivenNoContracts_WhenQuery_ThenReturnEmptyResult()
