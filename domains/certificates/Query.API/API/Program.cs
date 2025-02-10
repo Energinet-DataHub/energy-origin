@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using API.Configurations;
 using API.ContractService;
+using API.ContractService.Internal;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.Query.API;
@@ -119,6 +120,11 @@ builder.Services.AddHealthChecks()
 
 
 builder.Services.AddActivityLog(options => options.ServiceName = "certificates");
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblyContaining<GetContractsForAdminPortalQueryHandler>();
+});
+
 
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
