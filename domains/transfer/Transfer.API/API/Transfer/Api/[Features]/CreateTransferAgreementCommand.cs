@@ -57,9 +57,21 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IWall
 
         var wallets = await WalletClient.GetWallets(command.ReceiverOrganizationId, CancellationToken.None);
 
-        var walletId = wallets.Result.First().Id;
+        //This is needed in order for our preview environments to work, as we don't
+        //accept terms in preview environments. Can be removed when we accept terms
+        //in preview environments.
+        var walletId = wallets.Result.FirstOrDefault()?.Id;
+        if (walletId == null)
+        {
+            var createWalletResponse = await WalletClient.CreateWallet(command.ReceiverOrganizationId, cancellationToken);
 
-        var walletEndpoint = await WalletClient.CreateWalletEndpoint(walletId, command.ReceiverOrganizationId, CancellationToken.None);
+            if (createWalletResponse == null)
+                throw new ApplicationException("Failed to create wallet.");
+
+            walletId = createWalletResponse.WalletId;
+        }
+
+        var walletEndpoint = await WalletClient.CreateWalletEndpoint(walletId.Value, command.ReceiverOrganizationId, CancellationToken.None);
 
         var externalEndpoint = await WalletClient.CreateExternalEndpoint(command.SenderOrganizationId, walletEndpoint, SenderTin.Value, CancellationToken.None);
 
