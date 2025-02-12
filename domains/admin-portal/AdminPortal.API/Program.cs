@@ -18,7 +18,6 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
-builder.Services.AddHealthChecks();
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -71,7 +70,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.MapHealthChecks("/health");
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
