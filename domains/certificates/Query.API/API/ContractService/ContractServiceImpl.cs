@@ -75,26 +75,14 @@ internal class ContractServiceImpl : IContractService
 
             var wallets = await walletClient.GetWallets(meteringPointOwnerId, cancellationToken);
 
-            //This is needed in order for our preview environments to work, as we don't
-            //accept terms in preview environments. Can be removed when we accept terms
-            //in preview environments.
-            var walletId = wallets.Result.FirstOrDefault()?.Id;
-            if (walletId == null)
-            {
-                var createWalletResponse = await walletClient.CreateWallet(meteringPointOwnerId, cancellationToken);
-
-                if (createWalletResponse == null)
-                    throw new ApplicationException("Failed to create wallet.");
-
-                walletId = createWalletResponse.WalletId;
-            }
+            var walletId = wallets.Result.First().Id;
 
             var contractNumber = contractsGsrn.Any()
                 ? contractsGsrn.Max(c => c.ContractNumber) + number + 1
                 : number;
 
             var walletEndpoint =
-                await walletClient.CreateWalletEndpoint(walletId.Value, meteringPointOwnerId,
+                await walletClient.CreateWalletEndpoint(walletId, meteringPointOwnerId,
                     cancellationToken);
 
             var recipientResponse = await stampClient.CreateRecipient(walletEndpoint, cancellationToken);
