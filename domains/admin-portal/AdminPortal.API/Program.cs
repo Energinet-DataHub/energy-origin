@@ -15,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddHealthChecks();
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
 builder.Services.AddAuthentication(options =>
@@ -62,6 +62,8 @@ builder.Services.AddHttpClient("ContractsApi", client =>
 builder.Services.AddScoped<IAggregationService, AggregationService>();
 
 var app = builder.Build();
+
+app.MapHealthChecks("/health").AllowAnonymous();
 
 if (!app.Environment.IsDevelopment())
 {
