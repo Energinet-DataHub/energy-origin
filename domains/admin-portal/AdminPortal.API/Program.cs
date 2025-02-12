@@ -1,5 +1,6 @@
 using System;
 using AdminPortal.API.Services;
+using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +14,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 var builder = WebApplication.CreateBuilder(args);
 
 
+builder.AddSerilog();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHealthChecks();

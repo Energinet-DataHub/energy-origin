@@ -17,4 +17,8 @@
       <_ContentIncludedByDefault Remove="Views\AggregatedInformation\Index.cshtml" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\libraries\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
+    </ItemGroup>
+
 </Project>
