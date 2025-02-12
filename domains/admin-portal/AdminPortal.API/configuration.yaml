@@ -1,0 +1,7 @@
+name: eo-authorization-api
+repo: ghcr.io/energinet-datahub
+references:
+  - file: k8s/energy-origin-apps/admin-portal/base/api-deployment.yaml
+    path: .spec.template.spec.containers[] | select(.name == "admin-portal-api") | .image
+#  - file: k8s/energy-origin-apps/admin-portal/base/api-deployment.yaml
+#    path: .spec.template.spec.initContainers[] | select(.name == "init-migrations") | .image
