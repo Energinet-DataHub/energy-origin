@@ -24,3 +24,5 @@ jobs:
           project: domains/admin-portal/AdminPortal.API/AdminPortal.API.csproj
           configuration: domains/admin-portal/AdminPortal.API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
+          sdk-version: '9.0.2'
+          runtime-version: '9.0.200'
