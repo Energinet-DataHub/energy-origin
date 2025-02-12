@@ -60,7 +60,7 @@ namespace API.IntegrationTests.Controllers.Internal
             walletHttpClient.BaseAddress = new Uri(_fixture.WalletUrl);
             var walletClient = new WalletClient(walletHttpClient);
             await walletClient.CreateWallet(orgId, CancellationToken.None);
-                
+
             using var userCreatesAContract = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
             var insertedIntoDb = new CreateContracts([
