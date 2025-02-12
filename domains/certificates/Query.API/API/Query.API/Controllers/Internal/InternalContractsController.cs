@@ -20,7 +20,7 @@ namespace API.Query.API.Controllers.Internal;
 [ApiController]
 [ApiVersionNeutral]
 [ApiExplorerSettings(IgnoreApi = true)]
-[Route("api/certificates/portal")]
+[Route("api/certificates/admin-portal")]
 public class InternalContractsController : ControllerBase
 {
     private readonly IMediator _mediator;

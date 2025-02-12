@@ -37,7 +37,7 @@ namespace API.IntegrationTests.Controllers.Internal
             using var clientForInternalCalls = _factory.CreateB2CAuthenticatedClient(_factory.IssuerIdpClientId, orgId: _factory.IssuerIdpClientId);
 
             // Act
-            var response = await clientForInternalCalls.GetAsync("/api/certificates/portal/internal-contracts");
+            var response = await clientForInternalCalls.GetAsync("/api/certificates/admin-portal/internal-contracts");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -76,7 +76,7 @@ namespace API.IntegrationTests.Controllers.Internal
 
             // Act
             var internalClient = _factory.CreateB2CAuthenticatedClient(_factory.IssuerIdpClientId, _factory.IssuerIdpClientId);
-            using var response = await internalClient.GetAsync("api/certificates/portal/internal-contracts");
+            using var response = await internalClient.GetAsync("api/certificates/admin-portal/internal-contracts");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
