@@ -1,5 +1,4 @@
 using System;
-using AdminPortal.API;
 using AdminPortal.API.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -16,19 +15,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllersWithViews();
-var mockHandler = new MockHttpMessageHandler();
-
-builder.Services.AddHttpClient("FirstPartyApi", client =>
-    {
-        client.BaseAddress = new Uri("https://localhost/");
-    })
-    .ConfigurePrimaryHttpMessageHandler(() => mockHandler);
-
-builder.Services.AddHttpClient("ContractsApi", client =>
-    {
-        client.BaseAddress = new Uri("https://localhost/");
-    })
-    .ConfigurePrimaryHttpMessageHandler(() => mockHandler);
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
@@ -63,16 +49,15 @@ var requireAuthPolicy = new AuthorizationPolicyBuilder()
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(requireAuthPolicy);
 
-// builder.Services.AddHttpClient("FirstPartyApi", client =>
-// {
-//     client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new InvalidOperationException());
-// });
-//
-// builder.Services.AddHttpClient("ContractsApi", client =>
-// {
-//     client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new InvalidOperationException());
-// });
+builder.Services.AddHttpClient("FirstPartyApi", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Internal:AuthorizationGetFirstPartyOrganizations"] ?? throw new InvalidOperationException());
+});
 
+builder.Services.AddHttpClient("ContractsApi", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Internal:CertificatesGetActiveContracts"] ?? throw new InvalidOperationException());
+});
 
 builder.Services.AddScoped<IAggregationService, AggregationService>();
 
@@ -92,6 +77,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=ActiveContracts}/{action=Index}/{id?}");
+    pattern: "api/admin-portal/{controller=ActiveContracts}/{action=Index}/{id?}");
 
 app.Run();
