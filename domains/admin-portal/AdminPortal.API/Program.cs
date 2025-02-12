@@ -14,8 +14,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 var builder = WebApplication.CreateBuilder(args);
 
 
-if (builder.Environment.IsDevelopment())
-{
+
     builder.Services.AddControllersWithViews();
     var mockHandler = new MockHttpMessageHandler();
 
@@ -64,16 +63,16 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddAuthorizationBuilder()
         .SetFallbackPolicy(requireAuthPolicy);
 
-    builder.Services.AddHttpClient("FirstPartyApi", client =>
-    {
-        client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new InvalidOperationException());
-    });
+    // builder.Services.AddHttpClient("FirstPartyApi", client =>
+    // {
+    //     client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new InvalidOperationException());
+    // });
+    //
+    // builder.Services.AddHttpClient("ContractsApi", client =>
+    // {
+    //     client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new InvalidOperationException());
+    // });
 
-    builder.Services.AddHttpClient("ContractsApi", client =>
-    {
-        client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new InvalidOperationException());
-    });
-}
 
 builder.Services.AddScoped<IAggregationService, AggregationService>();
 
