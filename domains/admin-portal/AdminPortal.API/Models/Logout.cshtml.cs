@@ -13,9 +13,9 @@ public class Logout : PageModel
     public IActionResult OnGetAsync()
     {
         return SignOut(new AuthenticationProperties
-            {
-                RedirectUri = "/SignedOut"
-            },
+        {
+            RedirectUri = "/SignedOut"
+        },
             CookieAuthenticationDefaults.AuthenticationScheme,
             OpenIdConnectDefaults.AuthenticationScheme);
     }
