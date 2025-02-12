@@ -1,3 +1,7 @@
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using AdminPortal.API.Dtos;
 
 namespace AdminPortal.API.Services;
@@ -49,13 +53,13 @@ public class AggregationService : IAggregationService
     {
         var response = await client.GetAsync("first-party-organizations/");
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>()!;
+        return await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
     }
 
     private async Task<ContractsForAdminPortalResponse> GetContractsAsync(HttpClient client)
     {
         var response = await client.GetAsync("internal-contracts");
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>()!;
+        return await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>();
     }
 }
