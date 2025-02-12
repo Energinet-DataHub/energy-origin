@@ -29,6 +29,7 @@ public class ExceptionHandlerMiddleware
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "An error occured.");
             var error = ex switch
             {
                 NotFoundException e => new Error(HttpStatusCode.NotFound, e.Message),

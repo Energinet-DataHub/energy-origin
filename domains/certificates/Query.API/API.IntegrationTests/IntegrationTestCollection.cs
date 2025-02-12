@@ -52,6 +52,8 @@ public class IntegrationTestFixture : IAsyncLifetime
         WebApplicationFactory.Start();
     }
 
+    public string WalletUrl => ProjectOriginStack.WalletUrl;
+
     public async Task DisposeAsync()
     {
         await WebApplicationFactory.DisposeAsync();
