@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -53,13 +54,15 @@ public class AggregationService : IAggregationService
     {
         var response = await client.GetAsync("first-party-organizations/");
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
+        return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
     }
 
     private async Task<ContractsForAdminPortalResponse> GetContractsAsync(HttpClient client)
     {
-        var response = await client.GetAsync("internal-contracts");
+        var response = await client.GetAsync("internal-contracts/");
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>();
+        var result = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>();
+        return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
     }
 }
