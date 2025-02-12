@@ -70,6 +70,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.MapHealthChecks("/health");
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
