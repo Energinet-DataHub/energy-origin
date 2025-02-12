@@ -39,4 +39,4 @@ runs:
       with:
         path: ${{ env.DIRECTORY }}
         dotnet-version: ${{ env.SDK }}
-        pin-version: true
+        pin-version: false

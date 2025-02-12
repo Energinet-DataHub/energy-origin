@@ -13,19 +13,14 @@ on:
         type: string
 
 jobs:
+
   build-api:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install .NET 9 SDK
-        uses: actions/setup-dotnet@v4
+      - uses: ./.github/actions/dotnet-build
         with:
-          dotnet-version: '9.0.200'
-
-      - name: Build Admin Portal API
-        working-directory: domains/admin-portal/AdminPortal.API
-        shell: bash
-        run: |
-          dotnet restore
-          dotnet build --configuration Release
+          solution: domains/admin-portal/AdminPortal.sln
+          project: domains/admin-portal/AdminPortal.API/AdminPortal.API.csproj
+          configuration: domains/admin-portal/AdminPortal.API/configuration.yaml
+          dry-run: ${{ inputs.dry-run }}
