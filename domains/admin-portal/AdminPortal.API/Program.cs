@@ -49,6 +49,7 @@ builder.Services.AddAuthentication(options =>
         options.GetClaimsFromUserInfoEndpoint = false;
 
         options.MapInboundClaims = false;
+        options.CallbackPath = "/signout-callback-oidc";
         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
     });
 
@@ -83,7 +84,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UsePathBase("/api/admin-portal");
+app.UsePathBase("/ett-admin-portal");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
