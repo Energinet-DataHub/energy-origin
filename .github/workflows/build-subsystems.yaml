@@ -17,11 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       admin-portal: ${{ steps.admin-portal.outputs.matches }}
-      authorization: ${{ steps.authorization.outputs.matches }}
-      certificates: ${{ steps.certificates.outputs.matches }}
-      measurements: ${{ steps.measurements.outputs.matches }}
-      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
-      transfer: ${{ steps.transfer.outputs.matches }}
+#      authorization: ${{ steps.authorization.outputs.matches }}
+#      certificates: ${{ steps.certificates.outputs.matches }}
+#      measurements: ${{ steps.measurements.outputs.matches }}
+#      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
+#      transfer: ${{ steps.transfer.outputs.matches }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +35,7 @@ jobs:
           solution: domains/EnergyTrackAndTrace.sln
 
   build-admin-portal:
-    needs: test
+    needs: setup
     uses: ./.github/workflows/build-admin-portal.yaml
     secrets: inherit
     with:
@@ -95,12 +95,12 @@ jobs:
     name: Update environment
     needs:
       - build-admin-portal
-      - build-authorization
-      - build-certificates
-      - build-measurements
-      - build-oidc-mock
-      - build-transfer
-      - build-openapi
+#      - build-authorization
+#      - build-certificates
+#      - build-measurements
+#      - build-oidc-mock
+#      - build-transfer
+#      - build-openapi
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
@@ -111,15 +111,15 @@ jobs:
         with:
           configurations: |
             domains/admin-portal/AdminPortal.API/configuration.yaml
-            domains/authorization/Authorization.API/configuration.yaml
-            domains/authorization/Proxy/configuration.yaml
-            domains/certificates/Query.API/configuration.yaml
-            domains/measurements/Measurements.API/configuration.yaml
-            domains/oidc-mock/API/configuration.yaml
-            domains/transfer/Transfer.API/configuration.yaml
-            domains/transfer/ClaimAutomation/configuration.yaml
-            domains/transfer/TransferAgreementAutomation/configuration.yaml
-            domains/redoc/configuration.yaml
+#            domains/authorization/Authorization.API/configuration.yaml
+#            domains/authorization/Proxy/configuration.yaml
+#            domains/certificates/Query.API/configuration.yaml
+#            domains/measurements/Measurements.API/configuration.yaml
+#            domains/oidc-mock/API/configuration.yaml
+#            domains/transfer/Transfer.API/configuration.yaml
+#            domains/transfer/ClaimAutomation/configuration.yaml
+#            domains/transfer/TransferAgreementAutomation/configuration.yaml
+#            domains/redoc/configuration.yaml
           dry_run: ${{ inputs.dry-run }}
           github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
           github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
