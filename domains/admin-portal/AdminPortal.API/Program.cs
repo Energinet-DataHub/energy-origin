@@ -84,7 +84,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UsePathBase("/ett-admin-portal");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
