@@ -52,6 +52,7 @@ public class AggregationService : IAggregationService
 
     private async Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync(HttpClient client)
     {
+        client.DefaultRequestHeaders.Remove("Authorization");
         var response = await client.GetAsync("first-party-organizations/");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
@@ -60,6 +61,7 @@ public class AggregationService : IAggregationService
 
     private async Task<ContractsForAdminPortalResponse> GetContractsAsync(HttpClient client)
     {
+        client.DefaultRequestHeaders.Remove("Authorization");
         var response = await client.GetAsync("internal-contracts/");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>();
