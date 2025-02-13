@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace API.Authorization.Controllers.Internal;
 
 [ApiController]
+[AllowAnonymous]
 [ApiVersionNeutral]
 [Route("api/authorization/admin-portal")]
 [ApiExplorerSettings(IgnoreApi = true)]
