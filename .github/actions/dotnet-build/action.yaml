@@ -59,7 +59,7 @@ runs:
 
     - name: Fetch Dockerfile
       shell: bash
-      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/main/Dockerfile.simplified -O Dockerfile
+      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/e909d2171db6f2dfcb58111057475d94dd892d2d/Dockerfile.simplified -O Dockerfile
 
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v3
