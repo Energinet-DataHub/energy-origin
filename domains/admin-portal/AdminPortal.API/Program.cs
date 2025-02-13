@@ -76,14 +76,15 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health").AllowAnonymous();
 app.UseForwardedHeaders();
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/ett-admin-portal/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UsePathBase("/ett-admin-portal");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
