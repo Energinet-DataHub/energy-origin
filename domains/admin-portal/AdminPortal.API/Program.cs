@@ -1,5 +1,6 @@
 using System;
 using AdminPortal.API.Services;
+using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +12,9 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHealthChecks();
+builder.AddSerilog();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
@@ -58,6 +62,8 @@ builder.Services.AddHttpClient("ContractsApi", client =>
 builder.Services.AddScoped<IAggregationService, AggregationService>();
 
 var app = builder.Build();
+
+app.MapHealthChecks("/health").AllowAnonymous();
 
 if (!app.Environment.IsDevelopment())
 {
