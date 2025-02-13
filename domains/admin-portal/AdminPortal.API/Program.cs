@@ -83,10 +83,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(new StaticFileOptions
-{
-    RequestPath = "/ett-admin-portal"
-});
+app.UseStaticFiles();
 app.UsePathBase("/ett-admin-portal");
 app.UseRouting();
 app.UseAuthentication();
