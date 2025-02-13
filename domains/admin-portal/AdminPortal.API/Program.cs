@@ -23,7 +23,8 @@ builder.Services.AddControllersWithViews()
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
-        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedPrefix;
+    options.ForwardLimit = null;
 });
 builder.Services.AddAuthentication(options =>
     {
