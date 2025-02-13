@@ -16,7 +16,6 @@ using MediatR;
 
 namespace API.Query.API.Controllers.Internal;
 
-[Authorize(Policy = Policy.B2CInternal)]
 [ApiController]
 [ApiVersionNeutral]
 [ApiExplorerSettings(IgnoreApi = true)]

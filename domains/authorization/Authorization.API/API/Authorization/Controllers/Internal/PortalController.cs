@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 namespace API.Authorization.Controllers.Internal;
 
 [ApiController]
-[Authorize(Policy = Policy.B2CInternal)]
 [ApiVersionNeutral]
 [Route("api/authorization/admin-portal")]
 [ApiExplorerSettings(IgnoreApi = true)]
