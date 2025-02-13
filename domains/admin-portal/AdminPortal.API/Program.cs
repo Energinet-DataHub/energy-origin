@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// TODO: More intelligent healthcheck, as this application depends on authorization and certificates subsystem
 builder.Services.AddHealthChecks();
 builder.AddSerilog();
 
