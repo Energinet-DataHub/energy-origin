@@ -17,7 +17,6 @@ var builder = WebApplication.CreateBuilder(args);
 // TODO: More intelligent healthcheck, as this application depends on authorization and certificates subsystem
 builder.Services.AddHealthChecks();
 builder.AddSerilog();
-builder.Services.AddRazorPages();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
