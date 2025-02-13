@@ -71,12 +71,6 @@ builder.Services.AddScoped<IAggregationService, AggregationService>();
 
 var app = builder.Build();
 
-app.Use((context, next) =>
-{
-    context.Request.Scheme = "https";
-    return next(context);
-});
-
 app.MapHealthChecks("/health").AllowAnonymous();
 app.UseForwardedHeaders();
 if (!app.Environment.IsDevelopment())
@@ -87,6 +81,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UsePathBase("/api/admin-portal");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
