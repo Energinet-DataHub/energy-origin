@@ -43,7 +43,6 @@ builder.Services.AddAuthentication(options =>
         options.ResponseType = OpenIdConnectResponseType.Code;
 
         options.SaveTokens = true;
-        options.CallbackPath = "/api/admin-portal/signin-oidc";
         options.GetClaimsFromUserInfoEndpoint = false;
 
         options.MapInboundClaims = false;
