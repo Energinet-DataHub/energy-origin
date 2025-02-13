@@ -49,7 +49,7 @@ builder.Services.AddAuthentication(options =>
         options.GetClaimsFromUserInfoEndpoint = false;
 
         options.MapInboundClaims = false;
-        options.CallbackPath = "/signout-callback-oidc";
+        options.CallbackPath = "/signin-oidc";
         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
     });
 
