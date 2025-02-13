@@ -12,48 +12,48 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.AddControllersWithViews()
-        .AddMicrosoftIdentityUI();
-    builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-        })
-        .AddCookie()
-        .AddOpenIdConnect(options =>
-        {
-            var oidcConfig = builder.Configuration.GetSection("OpenIDConnectSettings");
-
-            options.Authority = oidcConfig["Authority"];
-            options.ClientId = oidcConfig["ClientId"];
-            options.ClientSecret = oidcConfig["ClientSecret"];
-
-            options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.ResponseType = OpenIdConnectResponseType.Code;
-
-            options.SaveTokens = true;
-            options.GetClaimsFromUserInfoEndpoint = false;
-
-            options.MapInboundClaims = false;
-            options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
-        });
-
-    var requireAuthPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-
-    builder.Services.AddAuthorizationBuilder()
-        .SetFallbackPolicy(requireAuthPolicy);
-
-    builder.Services.AddHttpClient("FirstPartyApi", client =>
+builder.Services.AddControllersWithViews()
+    .AddMicrosoftIdentityUI();
+builder.Services.AddAuthentication(options =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new InvalidOperationException());
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+    })
+    .AddCookie()
+    .AddOpenIdConnect(options =>
+    {
+        var oidcConfig = builder.Configuration.GetSection("OpenIDConnectSettings");
+
+        options.Authority = oidcConfig["Authority"];
+        options.ClientId = oidcConfig["ClientId"];
+        options.ClientSecret = oidcConfig["ClientSecret"];
+
+        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.ResponseType = OpenIdConnectResponseType.Code;
+
+        options.SaveTokens = true;
+        options.GetClaimsFromUserInfoEndpoint = false;
+
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
     });
 
-    builder.Services.AddHttpClient("ContractsApi", client =>
-    {
-        client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new InvalidOperationException());
-    });
+var requireAuthPolicy = new AuthorizationPolicyBuilder()
+    .RequireAuthenticatedUser()
+    .Build();
+
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(requireAuthPolicy);
+
+builder.Services.AddHttpClient("FirstPartyApi", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new InvalidOperationException());
+});
+
+builder.Services.AddHttpClient("ContractsApi", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new InvalidOperationException());
+});
 
 builder.Services.AddScoped<IAggregationService, AggregationService>();
 
@@ -70,8 +70,6 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-
-
 
 app.MapControllerRoute(
     name: "default",
