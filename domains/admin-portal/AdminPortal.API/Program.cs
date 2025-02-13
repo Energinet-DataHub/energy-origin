@@ -72,10 +72,9 @@ builder.Services.AddScoped<IAggregationService, AggregationService>();
 var app = builder.Build();
 
 app.MapHealthChecks("/health").AllowAnonymous();
-
+app.UseForwardedHeaders();
 if (!app.Environment.IsDevelopment())
 {
-    app.UseForwardedHeaders();
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
