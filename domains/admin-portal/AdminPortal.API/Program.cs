@@ -77,7 +77,6 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health").AllowAnonymous();
 app.UseForwardedHeaders();
-app.MapRazorPages();
 if (app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/ett-admin-portal/Error");
