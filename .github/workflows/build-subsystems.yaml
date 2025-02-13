@@ -35,7 +35,7 @@ jobs:
           solution: domains/EnergyTrackAndTrace.sln
 
   build-admin-portal:
-    needs: test
+    needs: setup
     uses: ./.github/workflows/build-admin-portal.yaml
     secrets: inherit
     with:
