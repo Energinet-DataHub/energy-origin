@@ -15,6 +15,8 @@
 
     <ItemGroup>
       <_ContentIncludedByDefault Remove="Views\AggregatedInformation\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Home\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Home\Privacy.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
