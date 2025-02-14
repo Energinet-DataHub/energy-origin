@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using AdminPortal.API.Services;
 using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -12,7 +11,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 var builder = WebApplication.CreateBuilder(args);
 
