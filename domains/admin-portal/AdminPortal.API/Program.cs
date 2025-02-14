@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using AdminPortal.API.Services;
 using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,12 +12,17 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 builder.AddSerilog();
 builder.Services.AddRazorPages();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.All;
+});
 builder.Services.AddScoped<IAggregationService, AggregationService>();
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
@@ -66,18 +72,10 @@ var app = builder.Build();
 
 app.MapHealthChecks("/health").AllowAnonymous();
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders =
-        ForwardedHeaders.XForwardedFor |
-        ForwardedHeaders.XForwardedProto |
-        ForwardedHeaders.XForwardedPrefix |
-        ForwardedHeaders.XForwardedHost,
-    ForwardLimit = null
-});
+app.UseForwardedHeaders();
 
 app.MapRazorPages();
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/ett-admin-portal/Error");
     app.UseHsts();
