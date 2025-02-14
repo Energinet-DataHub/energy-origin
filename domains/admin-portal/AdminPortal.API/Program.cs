@@ -20,6 +20,8 @@ builder.Services.AddRazorPages();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.All;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 builder.Services.AddScoped<IAggregationService, AggregationService>();
 builder.Services.AddControllersWithViews()
