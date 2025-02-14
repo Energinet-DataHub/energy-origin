@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHealthChecks();
 builder.AddSerilog();
 builder.Services.AddRazorPages();
-
+builder.Services.AddScoped<IAggregationService, AggregationService>();
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -71,8 +71,6 @@ builder.Services.AddHttpClient("ContractsApi", client =>
     client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new InvalidOperationException());
 });
 
-builder.Services.AddScoped<IAggregationService, AggregationService>();
-
 var app = builder.Build();
 
 app.MapHealthChecks("/health").AllowAnonymous();
@@ -99,3 +97,5 @@ app.MapControllerRoute(
     pattern: "{controller=ActiveContracts}/{action=Index}/{id?}");
 
 app.Run();
+
+public partial class Program { }
