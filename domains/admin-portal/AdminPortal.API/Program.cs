@@ -14,27 +14,18 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// TODO: More intelligent healthcheck, as this application depends on authorization and certificates subsystem
 builder.Services.AddHealthChecks();
 builder.AddSerilog();
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IAggregationService, AggregationService>();
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders =
-        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedPrefix;
-    options.ForwardLimit = null;
-    options.KnownNetworks.Clear();
-    options.KnownProxies.Clear();
-});
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
     })
-    .AddCookie()
+    .AddCookie(options => options.ExpireTimeSpan = TimeSpan.FromMinutes(30))
     .AddOpenIdConnect(options =>
     {
         var oidcConfig = builder.Configuration.GetSection("OpenIDConnectSettings");
@@ -46,7 +37,7 @@ builder.Services.AddAuthentication(options =>
         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.ResponseType = OpenIdConnectResponseType.Code;
 
-        options.SaveTokens = true;
+        options.SaveTokens = false;
         options.GetClaimsFromUserInfoEndpoint = false;
 
         options.MapInboundClaims = false;
@@ -63,18 +54,24 @@ builder.Services.AddAuthorizationBuilder()
 
 builder.Services.AddHttpClient("FirstPartyApi", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new InvalidOperationException());
+    client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new ArgumentNullException());
 });
 
 builder.Services.AddHttpClient("ContractsApi", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new InvalidOperationException());
+    client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new ArgumentNullException());
 });
 
 var app = builder.Build();
 
 app.MapHealthChecks("/health").AllowAnonymous();
-app.UseForwardedHeaders();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedPrefix,
+    ForwardLimit = null
+});
+
 app.MapRazorPages();
 if (app.Environment.IsDevelopment())
 {
