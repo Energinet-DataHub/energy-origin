@@ -68,7 +68,11 @@ app.MapHealthChecks("/health").AllowAnonymous();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedPrefix,
+    ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto |
+        ForwardedHeaders.XForwardedPrefix |
+        ForwardedHeaders.XForwardedHost,
     ForwardLimit = null
 });
 
