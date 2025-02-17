@@ -504,6 +504,80 @@ public class TransferAgreementProposalsControllerTests
     }
 
     [Fact]
+    public async Task GivenTransferAgreementProposal_WhenDeletingAsReceiver_ShouldDelete()
+    {
+        // Given TA proposal
+        var receiverTin = "32132137";
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
+        var postResponse = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
+        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
+
+        // When deleting as receiver
+        var receiverOrgId = Guid.NewGuid();
+        var receiverAuthenticatedClient = factory.CreateB2CAuthenticatedClient(sub, receiverOrgId, receiverTin);
+        var deleteResponse = await receiverAuthenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={receiverOrgId}");
+
+        // Should be deleted
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task GivenTransferAgreementProposal_WhenDeletingAsSender_ShouldDelete()
+    {
+        // Given TA proposal
+        var receiverTin = "32132137";
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
+        var postResponse = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
+        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
+
+        // When deleting as sender
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={orgId}");
+
+        // Should be deleted
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task GivenTransferAgreementProposal_WhenDeletingWithConsentToSender_ShouldDelete()
+    {
+        var senderOrgId = Guid.NewGuid();
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrgId,
+                "87654321",
+                "B",
+                Guid.NewGuid(),
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
+        // Given TA proposal
+        var receiverTin = "32132137";
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrgId.ToString()}");
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
+        var postResponse = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrgId}", request);
+        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
+
+        // When deleting with consent to sender, but still using own orgId
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={orgId}");
+
+        // Should be deleted
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
     public async Task GivenRequest_WhenAddingOptionalProperty_MissingPropertyShouldBeAccepted()
     {
         // Given request without new optional property
