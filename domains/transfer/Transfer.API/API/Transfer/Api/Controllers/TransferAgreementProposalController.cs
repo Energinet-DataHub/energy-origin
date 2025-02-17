@@ -6,8 +6,6 @@ using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using API.UnitOfWork;
 using Asp.Versioning;
-using DataContext.Models;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
@@ -72,11 +70,6 @@ public class TransferAgreementProposalController(
         return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = result.Id }, response);
     }
 
-    private bool IsOwnOrganization(Guid organizationId)
-    {
-        return identityDescriptor.OrganizationId == organizationId;
-    }
-
     /// <summary>
     /// Get TransferAgreementProposal by Id
     /// </summary>
@@ -131,34 +124,15 @@ public class TransferAgreementProposalController(
     /// Delete TransferAgreementProposal
     /// </summary>
     /// <param name="id">Id of TransferAgreementProposal</param>
-    /// <param name="organizationId"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="204">Successful operation</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), 204)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> DeleteTransferAgreementProposal([FromRoute] Guid id, [FromQuery] Guid organizationId,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> DeleteTransferAgreementProposal([FromRoute] Guid id, CancellationToken cancellationToken)
     {
-        var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposal(id, cancellationToken);
-
-        if (proposal == null)
-        {
-            return NotFound();
-        }
-
-        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
-
-        if (proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr != proposal.ReceiverCompanyTin.Value)
-        {
-            return ValidationProblem("You cannot Deny a TransferAgreementProposal for another company");
-        }
-
-        await unitOfWork.TransferAgreementProposalRepo.DeleteTransferAgreementProposal(id, cancellationToken);
-        await AppendToActivityLog(identityDescriptor, proposal, ActivityLogEntry.ActionTypeEnum.Declined);
-
-        await unitOfWork.SaveAsync();
-
+        var command = new DeleteTransferAgreementProposalCommand(id);
+        await mediator.Send(command, cancellationToken);
         return NoContent();
     }
 
@@ -190,22 +164,5 @@ public class TransferAgreementProposalController(
         );
 
         return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = result.Id }, response);
-    }
-
-    private async Task AppendToActivityLog(IdentityDescriptor identity, TransferAgreementProposal proposal,
-        ActivityLogEntry.ActionTypeEnum actionType)
-    {
-        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: identity.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: identity.Name,
-            organizationTin: identity.OrganizationCvr!,
-            organizationName: identity.OrganizationName,
-            otherOrganizationTin: proposal.ReceiverCompanyTin?.Value ?? string.Empty,
-            otherOrganizationName: string.Empty,
-            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
-            actionType: actionType,
-            entityId: proposal.Id.ToString())
-        );
     }
 }

@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
     public static void AddB2C(this IServiceCollection services, B2COptions b2COptions)
     {
 
-        services.AddAuthentication(defaultScheme: AuthenticationScheme.TokenValidation)
+        services.AddAuthentication(defaultScheme: AuthenticationScheme.B2CAuthenticationScheme)
             .AddJwtBearer(AuthenticationScheme.B2CAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
