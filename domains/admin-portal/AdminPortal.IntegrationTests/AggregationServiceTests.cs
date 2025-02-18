@@ -43,7 +43,8 @@ public class AggregationServiceTests
         var mockHandler = new MockHttpMessageHandler();
 
         var validOrgId = Guid.NewGuid().ToString();
-        mockHandler.SetFirstPartyApiResponse(HttpStatusCode.OK, new {
+        mockHandler.SetFirstPartyApiResponse(HttpStatusCode.OK, new
+        {
             Result = new[] {
                 new {
                     OrganizationId = validOrgId,
@@ -53,7 +54,8 @@ public class AggregationServiceTests
             }
         });
 
-        mockHandler.SetContractsApiResponse(HttpStatusCode.OK, new {
+        mockHandler.SetContractsApiResponse(HttpStatusCode.OK, new
+        {
             Result = new[] {
                 new {
                     GSRN = "VALID_GSRN",
@@ -91,7 +93,8 @@ public class AggregationServiceTests
 
         var org1Id = Guid.NewGuid().ToString();
         var org2Id = Guid.NewGuid().ToString();
-        mockHandler.SetFirstPartyApiResponse(HttpStatusCode.OK, new {
+        mockHandler.SetFirstPartyApiResponse(HttpStatusCode.OK, new
+        {
             Result = new[] {
                 new {
                     OrganizationId = org1Id,
@@ -106,7 +109,8 @@ public class AggregationServiceTests
             }
         });
 
-        mockHandler.SetContractsApiResponse(HttpStatusCode.OK, new {
+        mockHandler.SetContractsApiResponse(HttpStatusCode.OK, new
+        {
             Result = new[] {
                 new {
                     GSRN = "GSRN_1",
