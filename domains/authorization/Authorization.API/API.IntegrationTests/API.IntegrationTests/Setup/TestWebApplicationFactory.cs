@@ -8,6 +8,7 @@ using API.Options;
 using EnergyOrigin.Setup;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.TokenValidation.b2c;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -27,11 +28,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     internal string ConnectionString { get; set; } = "";
     internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
+    public readonly string AllowedClientId = "d216b90b-3872-498a-bc18-4941a0f4398e";
     public string WalletUrl { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
+        builder.UseSetting("Entra:AllowedClientId", AllowedClientId);
         builder.UseSetting("MitID:URI", "https://pp.netseidbroker.dk/op");
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
 
@@ -70,6 +73,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CAuthenticationScheme);
         authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme);
         authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.EntraClientCredentials);
 
         var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
             AuthenticationScheme.B2CAuthenticationScheme,
@@ -88,6 +92,12 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
+
+        var entraInternalScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.EntraClientCredentials,
+            AuthenticationScheme.EntraClientCredentials,
+            typeof(EntraAuthHandler));
+        authenticationSchemeProvider.AddScheme(entraInternalScheme);
     }
 
     public Api CreateApi(string sub = "", string name = "", string orgId = "", string orgIds = "", string subType = "", string orgCvr = "12345678",
@@ -132,6 +142,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             new("sub_type", subType),
             new("org_cvr", orgCvr),
             new("org_name", orgName),
+            new("appid", AllowedClientId)
         };
         if (termsAccepted)
         {
