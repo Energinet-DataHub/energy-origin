@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
 using API.Query.API.ApiModels.Requests;
@@ -55,6 +56,10 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
+    public readonly string AllowedClientId = "d216b90b-3872-498a-bc18-4941a0f4398e";
+    public readonly string MetadataAddress = "https://login.microsoftonline.com/f7619355-6c67-4100-9a78-1847f30742e2/v2.0/.well-known/openid-configuration";
+    public readonly string ValidAudience = "api://b3afb4d9-bce9-4055-b2b8-f9ef3c1bdb30/.default";
+    public readonly string ValidIssuer = "https://login.microsoftonline.com/f7619355-6c67-4100-9a78-1847f30742e2/v2.0";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -83,6 +88,10 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             "https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_MITID");
         builder.UseSetting("B2C:Audience", "f00b9b4d-3c59-4c40-b209-2ef87e509f54");
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
+        builder.UseSetting("Entra:AllowedClientId", AllowedClientId);
+        builder.UseSetting("Entra:MetadataAddress", MetadataAddress);
+        builder.UseSetting("Entra:ValidIssuer", ValidIssuer);
+        builder.UseSetting("Entra:ValidAudience", ValidAudience);
 
         builder.ConfigureTestServices(services =>
         {
@@ -158,6 +167,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CAuthenticationScheme);
         authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme);
         authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.B2CMitIDCustomPolicyAuthenticationScheme);
+        authenticationSchemeProvider.RemoveScheme(AuthenticationScheme.EntraClientCredentials);
 
         var b2CScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
             AuthenticationScheme.B2CAuthenticationScheme,
@@ -176,6 +186,12 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
             typeof(IntegrationTestB2CAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
+
+        var entraInternalScheme = new Microsoft.AspNetCore.Authentication.AuthenticationScheme(
+            AuthenticationScheme.EntraClientCredentials,
+            AuthenticationScheme.EntraClientCredentials,
+            typeof(EntraAuthHandler));
+        authenticationSchemeProvider.AddScheme(entraInternalScheme);
     }
 
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
@@ -217,6 +233,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             { UserClaimName.Scope, scope },
             { JwtRegisteredClaimNames.Name, name },
             { ClaimType.OrgId, orgId },
+            { ClaimType.AllowedClientId, AllowedClientId },
             { ClaimType.OrgIds, "" },
             { ClaimType.OrgCvr, tin },
             { ClaimType.OrgName, cpn },
