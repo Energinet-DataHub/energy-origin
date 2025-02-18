@@ -59,14 +59,26 @@ builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(requireAuthPolicy);
 
 builder.Services.AddHttpClient("FirstPartyApi", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new ArgumentNullException());
-});
+    {
+        client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new ArgumentNullException());
+    })
+    .AddHttpMessageHandler(() => new ClientCredentialsTokenHandler(
+        Environment.GetEnvironmentVariable("AUTHORIZATION_CLIENT_ID") ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_ID not set"),
+        Environment.GetEnvironmentVariable("AUTHORIZATION_CLIENT_SECRET") ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_SECRET not set"),
+        Environment.GetEnvironmentVariable("AUTHORIZATION_TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID not set"),
+        new[] { "api://0644f7dc-d71c-46b1-9c08-56facf59340a/access_as_admin_portal" }
+    ));
 
 builder.Services.AddHttpClient("ContractsApi", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new ArgumentNullException());
-});
+    {
+        client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new ArgumentNullException());
+    })
+    .AddHttpMessageHandler(() => new ClientCredentialsTokenHandler(
+        Environment.GetEnvironmentVariable("CERTIFICATES_CLIENT_ID") ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_ID not set"),
+        Environment.GetEnvironmentVariable("CERTIFICATES_CLIENT_SECRET") ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_SECRET not set"),
+        Environment.GetEnvironmentVariable("CERTIFICATES_TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID not set"),
+        new[] { "api://b3afb4d9-bce9-4055-b2b8-f9ef3c1bdb30/access_as_admin_portal" }
+    ));
 
 var app = builder.Build();
 

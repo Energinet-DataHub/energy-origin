@@ -17,7 +17,7 @@ using MediatR;
 namespace API.Query.API.Controllers.Internal;
 
 [ApiController]
-[AllowAnonymous]
+[Authorize(Policy = Policy.EntraInternal)]
 [ApiVersionNeutral]
 [ApiExplorerSettings(IgnoreApi = true)]
 [Route("api/certificates/admin-portal")]
