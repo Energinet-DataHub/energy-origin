@@ -90,8 +90,7 @@ public static class ServiceCollectionExtensions
                  {
                      ValidateIssuer = true,
                      ValidIssuer = entraOptions.ValidIssuer,
-                     ValidateAudience = true,
-                     ValidAudience = entraOptions.ValidAudience,
+                     ValidateAudience = false,
                      ValidateLifetime = true,
                  };
                  options.MetadataAddress = entraOptions.MetadataAddress;
