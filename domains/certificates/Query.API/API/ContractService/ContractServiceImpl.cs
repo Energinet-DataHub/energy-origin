@@ -63,6 +63,11 @@ internal class ContractServiceImpl : IContractService
                 return new GsrnNotFound();
             }
 
+            if (!matchingMeteringPoint.CanBeUsedForIssuingCertificates)
+            {
+                return new CannotBeUsedForIssuingCertificates();
+            }
+
             var contractsGsrn = contractsByGsrn.Where(c => c.GSRN == contract.GSRN).ToList();
 
             var overlappingContract = contractsGsrn.Find(c =>

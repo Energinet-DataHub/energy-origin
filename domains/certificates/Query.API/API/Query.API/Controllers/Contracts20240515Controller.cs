@@ -60,6 +60,7 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
         return result switch
         {
             GsrnNotFound => ValidationProblem(),
+            CannotBeUsedForIssuingCertificates => ValidationProblem(),
             ContractAlreadyExists => ValidationProblem(statusCode: 409),
             CreateContractResult.Success(var createdContracts) => Created("",
                 new ContractList { Result = createdContracts.Select(Contract.CreateFrom).ToList() }),

@@ -59,14 +59,14 @@ public class MeteringPointTests
 
     [Theory]
     [InlineData("D11", "E17", "E22", true)]
-    [InlineData("D12", "E17", "E22",true)]
-    [InlineData("SomethingElse", "E17", "E22",true)]
-    [InlineData("", "E17", "E22",true)]
-    [InlineData("D11", "E18", "E22",true)]
-    [InlineData("D12", "E18", "E22",true)]
-    [InlineData("SomethingElse", "E18", "E22",false)]
-    [InlineData("", "E18", "E22",false)]
-    [InlineData("D12", "E18", "E21",false)]
+    [InlineData("D12", "E17", "E22", true)]
+    [InlineData("SomethingElse", "E17", "E22", true)]
+    [InlineData("", "E17", "E22", true)]
+    [InlineData("D11", "E18", "E22", true)]
+    [InlineData("D12", "E18", "E22", true)]
+    [InlineData("SomethingElse", "E18", "E22", false)]
+    [InlineData("", "E18", "E22", false)]
+    [InlineData("D12", "E18", "E21", false)]
     public void MeteringPoint_CanBeUsedForIssuingCertificates(string assetType, string typeOfMp, string physicalStatusOfMp, bool expectedResult)
     {
         var canIssue = MeteringPoint.GetCanBeUsedForIssuingCertificates(typeOfMp, assetType, physicalStatusOfMp);
