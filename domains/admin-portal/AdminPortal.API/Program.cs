@@ -38,23 +38,23 @@ builder.Services.AddAuthentication(options =>
     .AddOpenIdConnect(options =>
     {
         var oidcConfig = builder.Configuration.GetSection("OpenIDConnectSettings");
-
         options.Authority = oidcConfig["Authority"];
         options.ClientId = oidcConfig["ClientId"];
         options.ClientSecret = oidcConfig["ClientSecret"];
 
+        options.Backchannel = new HttpClient();
+
         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.ResponseType = OpenIdConnectResponseType.Code;
-
         options.SaveTokens = false;
         options.GetClaimsFromUserInfoEndpoint = false;
-
         options.MapInboundClaims = false;
         options.CallbackPath = "/signin-oidc";
         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
     });
 
-builder.Services.AddSingleton<MsalHttpClientFactoryAdapter>();
+builder.Services.AddSingleton<MsalHttpClientFactoryAdapter>(sp =>
+    new MsalHttpClientFactoryAdapter(sp.GetRequiredService<IHttpClientFactory>()));
 
 var requireAuthPolicy = new AuthorizationPolicyBuilder()
     .RequireAuthenticatedUser()
@@ -64,7 +64,6 @@ builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(requireAuthPolicy);
 
 builder.Services.AddHttpClient("Msal")
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
     .ConfigureHttpClient(client =>
     {
         client.MaxResponseContentBufferSize = 1024 * 1024;
