@@ -110,6 +110,7 @@ public class MeasurementsSyncService
             };
             var res = await _measurementsClient.GetMeasurementsAsync(request, cancellationToken: cancellationToken);
 
+
             _logger.LogInformation(
                 "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
                 res.Measurements.Count,

@@ -84,7 +84,8 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
                     CityName = "City",
                     Postcode = "1234",
                     AssetType = "E17",
-                    Capacity = "12345678"
+                    Capacity = "12345678",
+                    PhysicalStatusOfMp = "E22",
                 }
             }
         };
@@ -140,7 +141,8 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
                     CityName = "City",
                     Postcode = "1234",
                     AssetType = "E17",
-                    Capacity = "12345678"
+                    Capacity = "12345678",
+                    PhysicalStatusOfMp = "E22"
                 },
                 new MeteringPoint
                 {
@@ -154,7 +156,8 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
                     CityName = "City",
                     Postcode = "1234",
                     AssetType = "E17",
-                    Capacity = "12345678"
+                    Capacity = "12345678",
+                    PhysicalStatusOfMp = "E22"
                 }
             }
         };
