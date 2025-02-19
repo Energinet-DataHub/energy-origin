@@ -82,7 +82,11 @@ public static class ServiceCollectionExtensions
 
     public static void AddEntra(this IServiceCollection services, EntraOptions entraOptions)
     {
-       services.AddAuthentication(defaultScheme: AuthenticationScheme.TokenValidation)
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = AuthenticationScheme.TokenValidation;
+                options.DefaultChallengeScheme = AuthenticationScheme.TokenValidation;
+            })
             .AddJwtBearer(AuthenticationScheme.EntraClientCredentials, options =>
             {
                 options.MapInboundClaims = false;
@@ -102,7 +106,7 @@ public static class ServiceCollectionExtensions
             var entraInternalPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AuthenticationScheme.EntraClientCredentials)
-                .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.AllowedClientId, new List<string> { entraOptions.AllowedClientId }))
+                .RequireClaim("appid", new List<string> { entraOptions.AllowedClientId })
                 .Build();
 
             options.AddPolicy(Policy.EntraInternal, entraInternalPolicy);
