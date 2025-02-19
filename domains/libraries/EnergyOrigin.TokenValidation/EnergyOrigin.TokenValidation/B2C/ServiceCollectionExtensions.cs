@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EnergyOrigin.TokenValidation.b2c;
 
@@ -77,5 +78,38 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IdentityDescriptor>();
         services.AddScoped<AccessDescriptor>();
         services.AddSingleton<IAuthorizationHandler, TermsAcceptedRequirementHandler>();
+    }
+
+    public static void AddEntra(this IServiceCollection services, EntraOptions entraOptions)
+    {
+        services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = AuthenticationScheme.TokenValidation;
+                options.DefaultChallengeScheme = AuthenticationScheme.TokenValidation;
+            })
+            .AddJwtBearer(AuthenticationScheme.EntraClientCredentials, options =>
+            {
+                options.MapInboundClaims = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = entraOptions.ValidIssuer,
+                    ValidateAudience = true,
+                    ValidAudience = entraOptions.ValidAudience,
+                    ValidateLifetime = true,
+                };
+                options.MetadataAddress = entraOptions.MetadataAddress;
+            });
+
+        services.AddAuthorization(options =>
+        {
+            var entraInternalPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.EntraClientCredentials)
+                .RequireClaim("appid", new List<string> { entraOptions.AllowedClientId })
+                .Build();
+
+            options.AddPolicy(Policy.EntraInternal, entraInternalPolicy);
+        });
     }
 }
