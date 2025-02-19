@@ -138,11 +138,6 @@ builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).V
     .ValidateOnStart();
 builder.Services.AddB2C(b2COptions);
 
-var entraOptions = builder.Configuration.GetSection(EntraOptions.Prefix).Get<EntraOptions>()!;
-builder.Services.AddOptions<EntraOptions>().BindConfiguration(EntraOptions.Prefix).ValidateDataAnnotations()
-    .ValidateOnStart();
-builder.Services.AddEntra(entraOptions);
-
 
 var app = builder.Build();
 
