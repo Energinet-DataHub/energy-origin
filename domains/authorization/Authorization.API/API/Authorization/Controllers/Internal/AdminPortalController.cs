@@ -14,7 +14,6 @@ namespace API.Authorization.Controllers.Internal;
 
 [ApiController]
 [Authorize(Policy = Policy.EntraInternal)]
-[Authorize(Policy = Policy.B2CInternal)]
 [ApiVersionNeutral]
 [Route("api/authorization/admin-portal")]
 [ApiExplorerSettings(IgnoreApi = true)]
