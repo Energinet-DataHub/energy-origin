@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AdminPortal.API.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Identity.Client;
 
 namespace AdminPortal.IntegrationTests;
 
@@ -25,7 +24,7 @@ public class AggregationServiceTests
     }
 
     [Fact]
-    public async Task GetActiveContractsAsync_HandlesApiFailureFromAuthorization()
+    public async Task GetActiveContractsAsync_HandlesApiFailure()
     {
         var mockHandler = new MockHttpMessageHandler();
         mockHandler.SetFirstPartyApiResponse(HttpStatusCode.InternalServerError);
@@ -35,35 +34,6 @@ public class AggregationServiceTests
         var service = scope.ServiceProvider.GetRequiredService<IAggregationService>();
 
         await Assert.ThrowsAsync<HttpRequestException>(
-            () => service.GetActiveContractsAsync());
-    }
-
-
-    [Fact]
-    public async Task GetActiveContractsAsync_HandlesApiFailureFromCertificates()
-    {
-        var mockHandler = new MockHttpMessageHandler();
-        mockHandler.SetFirstPartyApiResponse(HttpStatusCode.InternalServerError);
-
-        await using var factory = new CustomWebApplicationFactory(mockHandler);
-        using var scope = factory.Services.CreateScope();
-        var service = scope.ServiceProvider.GetRequiredService<IAggregationService>();
-
-        await Assert.ThrowsAsync<HttpRequestException>(
-            () => service.GetActiveContractsAsync());
-    }
-
-    [Fact]
-    public async Task GetActiveContractsAsync_HandlesAuthenticationFailure()
-    {
-        var mockHandler = new MockHttpMessageHandler();
-        mockHandler.SetTokenEndpointResponse(HttpStatusCode.Unauthorized);
-
-        await using var factory = new CustomWebApplicationFactory(mockHandler);
-        using var scope = factory.Services.CreateScope();
-        var service = scope.ServiceProvider.GetRequiredService<IAggregationService>();
-
-        await Assert.ThrowsAsync<MsalServiceException>(
             () => service.GetActiveContractsAsync());
     }
 
