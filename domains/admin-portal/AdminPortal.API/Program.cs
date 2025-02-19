@@ -1,8 +1,5 @@
 using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using AdminPortal.API.Services;
-using AdminPortal.API.Utilities;
 using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -54,8 +51,6 @@ builder.Services.AddAuthentication(options =>
         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
     });
 
-builder.Services.AddSingleton<MsalHttpClientFactoryAdapter>();
-
 var requireAuthPolicy = new AuthorizationPolicyBuilder()
     .RequireAuthenticatedUser()
     .Build();
@@ -63,37 +58,26 @@ var requireAuthPolicy = new AuthorizationPolicyBuilder()
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(requireAuthPolicy);
 
-builder.Services.AddHttpClient("Msal")
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
-    .ConfigureHttpClient(client =>
-    {
-        client.MaxResponseContentBufferSize = 1024 * 1024;
-        client.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json"));
-    });
-
 builder.Services.AddHttpClient("FirstPartyApi", client =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new ArgumentNullException($"Apis:FirstParty configuration missing"));
+        client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new ArgumentNullException());
     })
-    .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
-        builder.Configuration["AUTHORIZATION_CLIENT_ID"] ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_ID not set"),
-        builder.Configuration["AUTHORIZATION_CLIENT_SECRET"] ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_SECRET not set"),
-        builder.Configuration["AUTHORIZATION_TENANT_ID"] ?? throw new InvalidOperationException("AUTHORIZATION_TENANT_ID not set"),
-        new[] { "api://0644f7dc-d71c-46b1-9c08-56facf59340a/.default" },
-        sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
-        ));
+    .AddHttpMessageHandler(() => new ClientCredentialsTokenHandler(
+        Environment.GetEnvironmentVariable("AUTHORIZATION_CLIENT_ID") ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_ID not set"),
+        Environment.GetEnvironmentVariable("AUTHORIZATION_CLIENT_SECRET") ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_SECRET not set"),
+        Environment.GetEnvironmentVariable("AUTHORIZATION_TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID not set"),
+        new[] { "api://0644f7dc-d71c-46b1-9c08-56facf59340a/access_as_admin_portal" }
+    ));
 
 builder.Services.AddHttpClient("ContractsApi", client =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new ArgumentNullException($"Apis:Contracts configuration missing"));
+        client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new ArgumentNullException());
     })
-    .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
-        builder.Configuration["CERTIFICATES_CLIENT_ID"] ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_ID not set"),
-        builder.Configuration["CERTIFICATES_CLIENT_SECRET"] ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_SECRET not set"),
-        builder.Configuration["CERTIFICATES_TENANT_ID"] ?? throw new InvalidOperationException("CERTIFICATES_TENANT_ID not set"),
-        new[] { "api://b3afb4d9-bce9-4055-b2b8-f9ef3c1bdb30/.default" },
-        sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+    .AddHttpMessageHandler(() => new ClientCredentialsTokenHandler(
+        Environment.GetEnvironmentVariable("CERTIFICATES_CLIENT_ID") ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_ID not set"),
+        Environment.GetEnvironmentVariable("CERTIFICATES_CLIENT_SECRET") ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_SECRET not set"),
+        Environment.GetEnvironmentVariable("CERTIFICATES_TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID not set"),
+        new[] { "api://b3afb4d9-bce9-4055-b2b8-f9ef3c1bdb30/access_as_admin_portal" }
     ));
 
 var app = builder.Build();
