@@ -80,7 +80,7 @@ builder.Services.AddHttpClient("FirstPartyApi", client =>
         builder.Configuration["AUTHORIZATION_CLIENT_ID"] ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_ID not set"),
         builder.Configuration["AUTHORIZATION_CLIENT_SECRET"] ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_SECRET not set"),
         builder.Configuration["AUTHORIZATION_TENANT_ID"] ?? throw new InvalidOperationException("AUTHORIZATION_TENANT_ID not set"),
-        new[] { "api://0644f7dc-d71c-46b1-9c08-56facf59340a/.default" },
+        new[] { "https://datahubeouenerginet.onmicrosoft.com/energy-origin/.default" },
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
         ));
 
@@ -92,7 +92,7 @@ builder.Services.AddHttpClient("ContractsApi", client =>
         builder.Configuration["CERTIFICATES_CLIENT_ID"] ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_ID not set"),
         builder.Configuration["CERTIFICATES_CLIENT_SECRET"] ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_SECRET not set"),
         builder.Configuration["CERTIFICATES_TENANT_ID"] ?? throw new InvalidOperationException("CERTIFICATES_TENANT_ID not set"),
-        new[] { "api://b3afb4d9-bce9-4055-b2b8-f9ef3c1bdb30/.default" },
+        new[] { "https://datahubeouenerginet.onmicrosoft.com/energy-origin/.default" },
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
     ));
 
