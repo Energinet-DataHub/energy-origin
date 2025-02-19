@@ -82,20 +82,20 @@ public static class ServiceCollectionExtensions
 
     public static void AddEntra(this IServiceCollection services, EntraOptions entraOptions)
     {
-       services.AddAuthentication(defaultScheme: AuthenticationScheme.TokenValidation)
-            .AddJwtBearer(AuthenticationScheme.EntraClientCredentials, options =>
-            {
-                options.MapInboundClaims = false;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = entraOptions.ValidIssuer,
-                    ValidateAudience = true,
-                    ValidAudience = entraOptions.ValidAudience,
-                    ValidateLifetime = true,
-                };
-                options.MetadataAddress = entraOptions.MetadataAddress;
-            });
+        services.AddAuthentication(defaultScheme: AuthenticationScheme.TokenValidation)
+             .AddJwtBearer(AuthenticationScheme.EntraClientCredentials, options =>
+             {
+                 options.MapInboundClaims = false;
+                 options.TokenValidationParameters = new TokenValidationParameters
+                 {
+                     ValidateIssuer = true,
+                     ValidIssuer = entraOptions.ValidIssuer,
+                     ValidateAudience = true,
+                     ValidAudience = entraOptions.ValidAudience,
+                     ValidateLifetime = true,
+                 };
+                 options.MetadataAddress = entraOptions.MetadataAddress;
+             });
 
         services.AddAuthorization(options =>
         {

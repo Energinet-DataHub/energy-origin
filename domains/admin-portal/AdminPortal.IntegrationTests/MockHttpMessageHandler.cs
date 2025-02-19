@@ -16,6 +16,7 @@ public class MockHttpMessageHandler : HttpMessageHandler
     private readonly List<string> _organizationIds = new();
     private HttpResponseMessage? _firstPartyResponse;
     private HttpResponseMessage? _contractsResponse;
+    private HttpResponseMessage? _tokenEndpointResponse;
     private Exception? _simulatedException;
 
     public MockHttpMessageHandler()
@@ -29,22 +30,55 @@ public class MockHttpMessageHandler : HttpMessageHandler
         if (_simulatedException != null)
             throw _simulatedException;
 
-        if (_firstPartyResponse != null &&
-            request.RequestUri?.AbsolutePath.Contains("first-party-organizations") == true)
+        if (_firstPartyResponse != null && request.RequestUri?.AbsolutePath.Contains("first-party-organizations") == true)
             return Task.FromResult(_firstPartyResponse);
 
-        if (_contractsResponse != null &&
-            request.RequestUri?.AbsolutePath.Contains("internal-contracts") == true)
+        if (_contractsResponse != null && request.RequestUri?.AbsolutePath.Contains("internal-contracts") == true)
             return Task.FromResult(_contractsResponse);
 
-        var path = request.RequestUri?.AbsolutePath ?? "";
+        if (_tokenEndpointResponse != null && request.RequestUri?.AbsoluteUri.Contains("/oauth2/v2.0/token") == true)
+            return Task.FromResult(_tokenEndpointResponse);
 
+        if (request.RequestUri?.AbsoluteUri.Contains("/oauth2/v2.0/token") == true)
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new
+                    {
+                        access_token = "mock-token",
+                        expires_in = 3600,
+                        token_type = "Bearer"
+                    }),
+                    Encoding.UTF8,
+                    "application/json"
+                )
+            });
+        }
+
+        var path = request.RequestUri?.AbsolutePath ?? "";
         return Task.FromResult(path switch
         {
             { } p when p.Contains("first-party-organizations") => CreateOrganizationsResponse(),
             { } p when p.Contains("internal-contracts") => CreateContractsResponse(),
             _ => new HttpResponseMessage(HttpStatusCode.NotFound)
         });
+    }
+
+    public void SetTokenEndpointResponse(HttpStatusCode statusCode)
+    {
+        _tokenEndpointResponse = new HttpResponseMessage(statusCode)
+        {
+            Content = new StringContent(
+                JsonSerializer.Serialize(new
+                {
+                    error = "invalid_client",
+                    error_description = "Authentication failed"
+                }),
+                Encoding.UTF8,
+                "application/json"
+            )
+        };
     }
 
     private HttpResponseMessage CreateOrganizationsResponse()

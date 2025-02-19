@@ -17,17 +17,21 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseSetting("AUTHORIZATION_CLIENT_ID", "f4abbcfa-9b38-4f05-b36d-6c3186193100")
-            .UseSetting("AUTHORIZATION_CLIENT_SECRET", "f4abbcfa-9b38-4f05-b36d-6c3186193100")
+        builder.UseSetting("AUTHORIZATION_CLIENT_ID", "auth-test-client-id")
+            .UseSetting("AUTHORIZATION_CLIENT_SECRET", "test-auth-client-secret")
             .UseSetting("AUTHORIZATION_TENANT_ID", "f4abbcfa-9b38-4f05-b36d-6c3186193100")
-            .UseSetting("CERTIFICATES_CLIENT_ID", "f4abbcfa-9b38-4f05-b36d-6c3186193100")
-            .UseSetting("CERTIFICATES_CLIENT_SECRET", "f4abbcfa-9b38-4f05-b36d-6c3186193100")
+            .UseSetting("CERTIFICATES_CLIENT_ID", "certificates-test-client-id")
+            .UseSetting("CERTIFICATES_CLIENT_SECRET", "test-auth-client-secret")
             .UseSetting("CERTIFICATES_TENANT_ID", "f4abbcfa-9b38-4f05-b36d-6c3186193100");
+
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IAggregationService>();
 
             services.AddScoped<IAggregationService, AggregationService>();
+
+            services.AddHttpClient("Msal")
+                .ConfigurePrimaryHttpMessageHandler(() => _mockHandler);
 
             services.AddHttpClient("FirstPartyApi")
                 .ConfigurePrimaryHttpMessageHandler(() => _mockHandler);
