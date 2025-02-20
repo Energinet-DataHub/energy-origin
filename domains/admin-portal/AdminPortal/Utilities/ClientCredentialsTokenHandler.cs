@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 
-namespace AdminPortal.API.Utilities;
+namespace AdminPortal.Utilities;
 
 public class ClientCredentialsTokenHandler : DelegatingHandler
 {

@@ -3,9 +3,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using AdminPortal.API.Dtos;
+using AdminPortal.Dtos;
 
-namespace AdminPortal.API.Services;
+namespace AdminPortal.Services;
 public interface IAggregationService
 {
     Task<ActiveContractsResponse> GetActiveContractsAsync();

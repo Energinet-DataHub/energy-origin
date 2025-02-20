@@ -1,8 +1,8 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using AdminPortal.API.Services;
-using AdminPortal.API.Utilities;
+using AdminPortal.Services;
+using AdminPortal.Utilities;
 using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -77,9 +77,9 @@ builder.Services.AddHttpClient("FirstPartyApi", client =>
         client.BaseAddress = new Uri(builder.Configuration["Apis:FirstParty"] ?? throw new ArgumentNullException($"Apis:FirstParty configuration missing"));
     })
     .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
-        builder.Configuration["AUTHORIZATION_CLIENT_ID"] ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_ID not set"),
-        builder.Configuration["AUTHORIZATION_CLIENT_SECRET"] ?? throw new InvalidOperationException("AUTHORIZATION_CLIENT_SECRET not set"),
-        builder.Configuration["AUTHORIZATION_TENANT_ID"] ?? throw new InvalidOperationException("AUTHORIZATION_TENANT_ID not set"),
+        builder.Configuration["INTERNAL_CLIENT_ID"] ?? throw new InvalidOperationException("INTERNAL_CLIENT_ID not set"),
+        builder.Configuration["INTERNAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("INTERNAL_CLIENT_SECRET not set"),
+        builder.Configuration["INTERNAL_TENANT_ID"] ?? throw new InvalidOperationException("INTERNAL_TENANT_ID not set"),
         new[] { "api://0644f7dc-d71c-46b1-9c08-56facf59340a/.default" },
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
         ));
@@ -89,9 +89,9 @@ builder.Services.AddHttpClient("ContractsApi", client =>
         client.BaseAddress = new Uri(builder.Configuration["Apis:Contracts"] ?? throw new ArgumentNullException($"Apis:Contracts configuration missing"));
     })
     .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
-        builder.Configuration["CERTIFICATES_CLIENT_ID"] ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_ID not set"),
-        builder.Configuration["CERTIFICATES_CLIENT_SECRET"] ?? throw new InvalidOperationException("CERTIFICATES_CLIENT_SECRET not set"),
-        builder.Configuration["CERTIFICATES_TENANT_ID"] ?? throw new InvalidOperationException("CERTIFICATES_TENANT_ID not set"),
+        builder.Configuration["INTERNAL_CLIENT_ID"] ?? throw new InvalidOperationException("INTERNAL_CLIENT_ID not set"),
+        builder.Configuration["INTERNAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("INTERNAL_CLIENT_SECRET not set"),
+        builder.Configuration["INTERNAL_TENANT_ID"] ?? throw new InvalidOperationException("INTERNAL_TENANT_ID not set"),
         new[] { "api://0644f7dc-d71c-46b1-9c08-56facf59340a/.default" },
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
     ));

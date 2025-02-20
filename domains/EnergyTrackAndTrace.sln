@@ -137,9 +137,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.WalletClient",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdminPortal", "AdminPortal", "{ACBE9E96-1F65-404D-9D00-6CF45E75C796}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminPortal.API", "admin-portal\AdminPortal.API\AdminPortal.API.csproj", "{49BA2D2D-8ED3-4DCD-BF15-48D11B31E0B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminPortal", "admin-portal\AdminPortal\AdminPortal.csproj", "{49BA2D2D-8ED3-4DCD-BF15-48D11B31E0B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminPortal.IntegrationTests", "admin-portal\AdminPortal.IntegrationTests\AdminPortal.IntegrationTests.csproj", "{08BD12F8-FF04-4732-A86F-4DA4C765C23D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminPortal.Tests", "admin-portal\AdminPortal.Tests\AdminPortal.Tests.csproj", "{08BD12F8-FF04-4732-A86F-4DA4C765C23D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

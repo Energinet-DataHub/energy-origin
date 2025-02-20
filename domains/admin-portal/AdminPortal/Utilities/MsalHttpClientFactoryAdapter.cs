@@ -1,7 +1,7 @@
 using System.Net.Http;
 using Microsoft.Identity.Client;
 
-namespace AdminPortal.API.Utilities;
+namespace AdminPortal.Utilities;
 
 public class MsalHttpClientFactoryAdapter : IMsalHttpClientFactory
 {

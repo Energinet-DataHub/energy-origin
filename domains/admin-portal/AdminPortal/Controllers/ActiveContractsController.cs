@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using AdminPortal.API.Services;
+using AdminPortal.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AdminPortal.API.Controllers;
+namespace AdminPortal.Controllers;
 
 [Authorize]
 public class ActiveContractsController : Controller
