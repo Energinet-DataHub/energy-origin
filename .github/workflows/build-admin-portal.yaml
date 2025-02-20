@@ -21,6 +21,6 @@ jobs:
       - uses: ./.github/actions/dotnet-build
         with:
           solution: domains/admin-portal/AdminPortal.sln
-          project: domains/admin-portal/AdminPortal.API/AdminPortal.API.csproj
-          configuration: domains/admin-portal/AdminPortal.API/configuration.yaml
+          project: domains/admin-portal/AdminPortal/AdminPortal.csproj
+          configuration: domains/admin-portal/AdminPortal/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
