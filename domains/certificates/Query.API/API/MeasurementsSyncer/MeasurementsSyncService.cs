@@ -51,7 +51,10 @@ public class MeasurementsSyncService
         var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, newSyncPoint, stoppingToken);
         var meteringPoints = await GetOwnedMeteringPoints(syncInfo);
         var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
-
+        if (meteringPoint.PhysicalStatusOfMp != "E22")
+        {
+            _logger.LogWarning("Metering point {GSRN} is not in status E22", slidingWindow.GSRN);
+        }
         _measurementSyncMetrics.AddNumberOfMeasurementsFetched(fetchedMeasurements.Count);
 
         if (fetchedMeasurements.Count > 0)
