@@ -26,7 +26,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
-builder.Services.AddScoped<IAggregationService, AggregationService>();
+builder.Services.AddScoped<IAggregationService, ActiveContractsController>();
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
 builder.Services.AddAuthentication(options =>

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 
-namespace AdminPortal.Tests;
+namespace AdminPortal.Tests.Setup;
 
 public class InterceptOidcAuthenticationSchemeProvider : AuthenticationSchemeProvider
 {

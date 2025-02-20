@@ -11,11 +11,11 @@ public interface IAggregationService
     Task<ActiveContractsResponse> GetActiveContractsAsync();
 }
 
-public class AggregationService : IAggregationService
+public class ActiveContractsController : IAggregationService
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public AggregationService(IHttpClientFactory httpClientFactory)
+    public ActiveContractsController(IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
     }
