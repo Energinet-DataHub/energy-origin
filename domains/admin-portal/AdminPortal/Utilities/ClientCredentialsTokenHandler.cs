@@ -28,7 +28,6 @@ public class ClientCredentialsTokenHandler : DelegatingHandler
             .Build();
     }
 
-
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var result = await _confidentialClient.AcquireTokenForClient(_scopes).ExecuteAsync(cancellationToken);

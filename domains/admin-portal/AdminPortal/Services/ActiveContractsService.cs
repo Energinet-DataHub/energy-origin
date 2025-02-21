@@ -13,20 +13,20 @@ public interface IAggregationService
 
 public class ActiveContractsService : IAggregationService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IAuthorizationFacade _authorizationFacade;
+    private readonly ICertificatesFacade _certificatesFacade;
 
-    public ActiveContractsService(IHttpClientFactory httpClientFactory)
+    public ActiveContractsService(IAuthorizationFacade authorizationFacade, ICertificatesFacade certificatesFacade)
     {
-        _httpClientFactory = httpClientFactory;
+        _authorizationFacade = authorizationFacade;
+        _certificatesFacade = certificatesFacade;
     }
 
     public async Task<ActiveContractsResponse> GetActiveContractsAsync()
     {
-        var firstPartyClient = _httpClientFactory.CreateClient("FirstPartyApi");
-        var contractsClient = _httpClientFactory.CreateClient("ContractsApi");
 
-        var organizations = await GetOrganizationsAsync(firstPartyClient);
-        var contracts = await GetContractsAsync(contractsClient);
+        var organizations = await _authorizationFacade.GetOrganizationsAsync();
+        var contracts = await _certificatesFacade.GetContractsAsync();
 
         var meteringPoints = contracts.Result
             .Join(organizations.Result,
@@ -48,21 +48,5 @@ public class ActiveContractsService : IAggregationService
         {
             Results = new ResultsData { MeteringPoints = meteringPoints }
         };
-    }
-
-    private async Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync(HttpClient client)
-    {
-        var response = await client.GetAsync("first-party-organizations/");
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
-        return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
-    }
-
-    private async Task<ContractsForAdminPortalResponse> GetContractsAsync(HttpClient client)
-    {
-        var response = await client.GetAsync("internal-contracts/");
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>();
-        return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
     }
 }
