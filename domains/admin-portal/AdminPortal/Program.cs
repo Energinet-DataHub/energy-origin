@@ -1,7 +1,6 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using AdminPortal;
 using AdminPortal.Services;
 using AdminPortal.Utilities;
 using EnergyOrigin.Setup;
@@ -73,9 +72,9 @@ builder.Services.AddHttpClient("Msal")
             new MediaTypeWithQualityHeaderValue("application/json"));
     });
 
-builder.Services.AddHttpClient<AuthorizationFacade>("AuthorizationClient", client =>
+builder.Services.AddHttpClient<IAuthorizationFacade, AuthorizationFacade>("AuthorizationClient", client =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["Clients:Authorization"] ?? throw new ArgumentNullException($"Apis:FirstParty configuration missing"));
+        client.BaseAddress = new Uri(builder.Configuration["Clients:Authorization"] ?? throw new ArgumentNullException($"Clients:Authorization configuration missing"));
     })
     .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
         builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),
@@ -85,9 +84,9 @@ builder.Services.AddHttpClient<AuthorizationFacade>("AuthorizationClient", clien
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
         ));
 
-builder.Services.AddHttpClient<CertificatesFacade>("CertificatesClient", client =>
+builder.Services.AddHttpClient<ICertificatesFacade, CertificatesFacade>("CertificatesClient", client =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["Clients:Certificates"] ?? throw new ArgumentNullException($"Apis:Contracts configuration missing"));
+        client.BaseAddress = new Uri(builder.Configuration["Clients:Certificates"] ?? throw new ArgumentNullException($"Clients:Certificates configuration missing"));
     })
     .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
         builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),

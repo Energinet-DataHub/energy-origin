@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using AdminPortal.Dtos;
 
-namespace AdminPortal;
+namespace AdminPortal.Services;
 
 public interface ICertificatesFacade
 {
