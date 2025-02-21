@@ -14,17 +14,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="Views\AggregatedInformation\Index.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Home\Index.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Home\Privacy.cshtml" />
-      <_ContentIncludedByDefault Remove="AdminPortal.IntegrationTests\obj\AdminPortal.IntegrationTests.csproj.nuget.dgspec.json" />
-      <_ContentIncludedByDefault Remove="AdminPortal.IntegrationTests\obj\project.assets.json" />
-      <_ContentIncludedByDefault Remove="AdminPortal.IntegrationTests\obj\project.packagespec.json" />
-      <_ContentIncludedByDefault Remove="AdminPortal.IntegrationTests\obj\TestProject.csproj.nuget.dgspec.json" />
-      <_ContentIncludedByDefault Remove="AdminPortal.IntegrationTests\obj\TestProject1.csproj.nuget.dgspec.json" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\..\libraries\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
     </ItemGroup>
 
