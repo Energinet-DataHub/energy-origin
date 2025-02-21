@@ -17,7 +17,7 @@ public class GetFirstPartyOrganizationsQueryHandler(
     public async Task<GetFirstPartyOrganizationsQueryResult> Handle(GetFirstPartyOrganizationsQuery request, CancellationToken cancellationToken)
     {
         var firstPartyOrganizations = await organizationRepository.Query()
-            .Where(o => o.Tin != Tin.Empty())
+            .Where(o => o.Tin != Tin.Empty() || o.Tin != null)
             .Select(o => new GetFirstPartyOrganizationsQueryResultItem(
                 o.Id,
                 o.Name.Value,
