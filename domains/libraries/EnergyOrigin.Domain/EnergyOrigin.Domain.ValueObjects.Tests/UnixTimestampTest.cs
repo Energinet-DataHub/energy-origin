@@ -51,7 +51,7 @@ public class UnixTimestampTest
     public void RoundToNextHourExamples()
     {
         var now = DateTimeOffset.UtcNow;
-        var nextHour = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0, now.Offset);
+        var nextHour = new DateTimeOffset(now.Year, now.Month, now.Day, (now.Hour + 1) % 24, 0, 0 , now.Offset );
         Assert.Equal(UnixTimestamp.Create(nextHour), UnixTimestamp.Create(now).RoundToNextHour());
 
         var alignedHour = new DateTimeOffset(2024, 2, 24, 12, 0, 0, TimeSpan.Zero);
