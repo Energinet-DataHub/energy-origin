@@ -133,8 +133,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             new("org_ids", orgIds),
             new("sub_type", subType),
             new("org_cvr", orgCvr),
-            new("org_name", orgName),
-            new("appid", AdminPortalClientId)
+            new("org_name", orgName)
         };
         if (termsAccepted)
         {
