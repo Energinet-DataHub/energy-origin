@@ -13,18 +13,18 @@ using Microsoft.Extensions.Logging;
 namespace API.Authorization.Controllers.Internal;
 
 [ApiController]
-[Authorize(Policy = Policy.B2CInternal)]
+[Authorize(Policy = Policy.AdminPortal)]
 [ApiVersionNeutral]
-[Route("api/authorization/portal")]
+[Route("api/authorization/admin-portal")]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class PortalController(IMediator mediator) : ControllerBase
+public class AdminPortalController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     [Route("first-party-organizations/")]
     [ProducesResponseType(typeof(FirstPartyOrganizationsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(FirstPartyOrganizationsResponse), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetFirstPartyOrganizations(
-        [FromServices] ILogger<PortalController> logger, CancellationToken cancellationToken)
+        [FromServices] ILogger<AdminPortalController> logger, CancellationToken cancellationToken)
     {
         var queryResult = await mediator.Send(new GetFirstPartyOrganizationsQuery(), cancellationToken);
 

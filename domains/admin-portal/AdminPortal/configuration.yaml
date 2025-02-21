@@ -1,0 +1,5 @@
+name: eo-admin-portal-api
+repo: ghcr.io/energinet-datahub
+references:
+  - file: k8s/energy-origin-apps/admin-portal/base/api-deployment.yaml
+    path: .spec.template.spec.containers[] | select(.name == "admin-portal-api") | .image
