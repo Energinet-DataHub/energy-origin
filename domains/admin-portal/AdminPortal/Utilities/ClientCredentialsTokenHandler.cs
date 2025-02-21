@@ -23,7 +23,7 @@ public class ClientCredentialsTokenHandler : DelegatingHandler
         _confidentialClient = ConfidentialClientApplicationBuilder
             .Create(clientId)
             .WithClientSecret(clientSecret)
-            .WithAuthority($"https://datahubeopenerginet.b2clogin.com/{tenantId}/v2.0/")
+            .WithAuthority($"https://login.microsoftonline.com/{tenantId}/v2.0")
             .WithHttpClientFactory(httpClientFactory)
             .Build();
     }
