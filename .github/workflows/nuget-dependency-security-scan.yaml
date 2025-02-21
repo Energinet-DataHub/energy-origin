@@ -1,0 +1,104 @@
+name: NuGet Dependency Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+      checks: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install CycloneDX
+        run: dotnet tool install --global CycloneDX --version 3.1.0
+
+      - name: Generate SBOM
+        run: |
+          dotnet CycloneDX ./ -o ./sbom --json
+          # Convert to GitHub's preferred name format
+          mv ./sbom/bom.json ./sbom/sbom.spdx.json
+
+      - name: Analyze unstable versions
+        run: |
+          dotnet list package --include-transitive --format json > deps.json
+
+          echo "Unstable Packages:" > unstable-packages.txt
+          jq -r '
+            .projects[].frameworks[].topLevelPackages[] |
+            "\(.id) \(.resolvedVersion)"' deps.json | while read -r pkg version; do
+
+            if [[ "$version" =~ ^([0-9]+)\. ]]; then
+              major=${BASH_REMATCH[1]}
+              if [ $major -lt 1 ]; then
+                echo "$pkg@$version (pre-1.0)" >> unstable-packages.txt
+              fi
+            fi
+
+            if [[ "$version" =~ -[a-zA-Z] ]]; then
+              echo "$pkg@$version (pre-release)" >> unstable-packages.txt
+            fi
+          done
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            ./sbom/sbom.spdx.json
+            ./unstable-packages.txt
+
+      - name: Create PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('./unstable-packages.txt', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### Dependency Stability Report\n\`\`\`\n${report}\n\`\`\``
+            });
+
+  dependency-check:
+    runs-on: ubuntu-latest
+    needs: generate-sbom
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: security-reports
+
+      - name: Check for unstable dependencies
+        id: stability-check
+        run: |
+          if [ -s unstable-packages.txt ]; then
+            echo "Unstable dependencies found!"
+            cat unstable-packages.txt
+            echo "::warning::Found unstable dependencies"
+            exit 1
+          else
+            echo "No unstable dependencies found"
+          fi

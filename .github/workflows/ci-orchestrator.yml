@@ -32,6 +32,11 @@ jobs:
     uses: ./.github/workflows/check-licenses.yml
     secrets: inherit
 
+  nuget-dependency-security-scan:
+    if: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/nuget-dependency-security-scan.yaml
+    secrets: inherit
+
   dependabot-validate:
     uses: ./.github/workflows/dependabot-validate.yaml
     secrets: inherit
@@ -56,6 +61,7 @@ jobs:
     needs:
       [
         build-subsystems,
+        nuget-dependency-security-scan,
         check-licenses,
         dependabot-validate,
         structurizr-update-pages,
