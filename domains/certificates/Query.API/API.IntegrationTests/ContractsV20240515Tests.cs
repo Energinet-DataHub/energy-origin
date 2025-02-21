@@ -43,10 +43,10 @@ public class ContractsV20240515Tests
         var gsrn1 = GsrnHelper.GenerateRandom();
 
         measurementsWireMock.SetupMeteringPointsResponse(
-            new List<(string gsrn, MeteringPointType type, Technology? technology)>
+            new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
             {
-                (gsrn, MeteringPointType.Production, null),
-                (gsrn1, MeteringPointType.Production, null)
+                (gsrn, MeteringPointType.Production, null, true),
+                (gsrn1, MeteringPointType.Production, null, true)
             });
 
         var subject = Guid.NewGuid();
@@ -86,10 +86,10 @@ public class ContractsV20240515Tests
         var gsrn = GsrnHelper.GenerateRandom();
 
         measurementsWireMock.SetupMeteringPointsResponse(
-            new List<(string gsrn, MeteringPointType type, Technology? technology)>
+            new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
             {
-                (gsrn, MeteringPointType.Production, null),
-                (gsrn, MeteringPointType.Production, null)
+                (gsrn, MeteringPointType.Production, null, true),
+                (gsrn, MeteringPointType.Production, null, true)
             });
 
         var subject = Guid.NewGuid();
@@ -366,6 +366,8 @@ public class ContractsV20240515Tests
         using var responseContract1 = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", contract1Body);
         using var responseContract2 = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", contract2Body);
 
+        var responseContent2 = await responseContract2.Content.ReadAsStringAsync();
+        responseContent2.Should().Contain($"{contract2Body.Contracts[0].GSRN} already has an active contract");
         responseContract2.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
         var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}");
@@ -396,6 +398,57 @@ public class ContractsV20240515Tests
         using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateContract_GsrnNotFound_BadRequest()
+    {
+        var gsrnNotFound = GsrnHelper.GenerateRandom();
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrnNotFound,
+                StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            }
+        ]);
+
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        responseContent.Should().Contain($"GSRN {gsrnNotFound} was not found");
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+
+    [Fact]
+    public async Task CreateContract_CannotBeUsedForIssuingCertificates_Conflict()
+    {
+        var gsrn = GsrnHelper.GenerateRandom();
+        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, canBeUsedforIssuingCertificates: false);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrn,
+                StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            }
+        ]);
+
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        responseContent.Should().Contain($"GSRN {gsrn} cannot be used for issuing certificates");
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
     [Fact]
@@ -651,10 +704,10 @@ public class ContractsV20240515Tests
         var gsrn = GsrnHelper.GenerateRandom();
         var gsrn1 = GsrnHelper.GenerateRandom();
         measurementsWireMock.SetupMeteringPointsResponse(
-            new List<(string gsrn, MeteringPointType type, Technology? technology)>
+            new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
             {
-                (gsrn, MeteringPointType.Production, null),
-                (gsrn1, MeteringPointType.Production, null)
+                (gsrn, MeteringPointType.Production, null, true),
+                (gsrn1, MeteringPointType.Production, null, true)
             });
 
         var subject = Guid.NewGuid();
