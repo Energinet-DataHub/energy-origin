@@ -1,6 +1,4 @@
-using API.Options;
 using EnergyTrackAndTrace.Testing.Testcontainers;
-using Testcontainers.RabbitMq;
 
 namespace API.IntegrationTests.Setup;
 
@@ -14,25 +12,20 @@ public class IntegrationTestFixture : IAsyncLifetime
 {
     public PostgresContainer PostgresContainer { get; } = new();
     public ProjectOriginStack ProjectOriginStack { get; } = new();
-    public RabbitMqContainer RabbitMqContainer { get; } = new RabbitMqBuilder().WithUsername("guest").WithPassword("guest").Build();
+
+    public RabbitMqContainer RabbitMqContainer { get; } = new();
+
     public TestWebApplicationFactory WebAppFactory { get; private set; } = null!;
 
     public async Task InitializeAsync()
     {
         await PostgresContainer.InitializeAsync();
         await ProjectOriginStack.InitializeAsync();
+        await RabbitMqContainer.InitializeAsync();
 
-        await RabbitMqContainer.StartAsync();
         var newDatabase = await PostgresContainer.CreateNewDatabase();
 
-        var connectionStringSplit = RabbitMqContainer.GetConnectionString().Split(":");
-        var rabbitMqOptions = new RabbitMqOptions
-        {
-            Host = connectionStringSplit[0],
-            Port = int.Parse(connectionStringSplit[^1].TrimEnd('/')),
-            Username = "guest",
-            Password = "guest"
-        };
+        var rabbitMqOptions = RabbitMqContainer.Options;
 
         WebAppFactory = new TestWebApplicationFactory();
         WebAppFactory.WalletUrl = ProjectOriginStack.WalletUrl;
