@@ -25,7 +25,7 @@ public sealed class MeasurementsWireMock : IDisposable
     public string Url => server.Url!;
 
     public void SetupMeteringPointsResponse(
-        IEnumerable<(string gsrn, MeteringPointType type, Technology? technology)> meteringPoints)
+        IEnumerable<(string gsrn, MeteringPointType type, Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
     {
         server.ResetMappings();
         var responseJson = BuildMeteringPointsResponse(meteringPoints);
@@ -34,18 +34,18 @@ public sealed class MeasurementsWireMock : IDisposable
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(responseJson));
     }
 
-    public void SetupMeteringPointsResponse(string gsrn, MeteringPointType type, Technology? technology = null)
+    public void SetupMeteringPointsResponse(string gsrn, MeteringPointType type, Technology? technology = null, bool canBeUsedforIssuingCertificates = true)
     {
         server.ResetMappings();
 
-        var responseJson = BuildMeteringPointsResponse([(gsrn, type, technology ?? defaultTechnology)]);
+        var responseJson = BuildMeteringPointsResponse([(gsrn, type, technology ?? defaultTechnology, canBeUsedforIssuingCertificates)]);
         server
             .Given(Request.Create().WithPath("/api/measurements/meteringpoints"))
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(responseJson));
     }
 
     private string BuildMeteringPointsResponse(
-        IEnumerable<(string gsrn, MeteringPointType type, Technology? technology)> meteringPoints)
+        IEnumerable<(string gsrn, MeteringPointType type, Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
     {
         var result = meteringPoints.Select(mp => new
         {
@@ -53,7 +53,7 @@ public sealed class MeasurementsWireMock : IDisposable
             gridArea = "DK1",
             mp.type,
             technology = mp.technology ?? defaultTechnology,
-            canBeUsedForIssuingCertificates = true
+            canBeUsedForIssuingCertificates = mp.canBeUsedforIssuingCertificates
         });
 
         return JsonSerializer.Serialize(new { Result = result }, new JsonSerializerOptions

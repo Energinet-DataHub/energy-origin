@@ -260,6 +260,9 @@
         <member name="F:Meteringpoint.V1.MeteringPoint.MeteringPointAliasFieldNumber">
             <summary>Field number for the "metering_point_alias" field.</summary>
         </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.PhysicalStatusOfMpFieldNumber">
+            <summary>Field number for the "physical_status_of_mp" field.</summary>
+        </member>
         <member name="P:Meteringpoint.V1.Meteringpoint.Descriptor">
             <summary>Service descriptor</summary>
         </member>

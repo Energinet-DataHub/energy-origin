@@ -60,7 +60,12 @@ internal class ContractServiceImpl : IContractService
 
             if (matchingMeteringPoint == null)
             {
-                return new GsrnNotFound();
+                return new GsrnNotFound(contract.GSRN);
+            }
+
+            if (!matchingMeteringPoint.CanBeUsedForIssuingCertificates)
+            {
+                return new CannotBeUsedForIssuingCertificates(contract.GSRN);
             }
 
             var contractsGsrn = contractsByGsrn.Where(c => c.GSRN == contract.GSRN).ToList();
