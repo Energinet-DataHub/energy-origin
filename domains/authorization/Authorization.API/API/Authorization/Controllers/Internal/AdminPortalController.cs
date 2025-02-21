@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace API.Authorization.Controllers.Internal;
 
 [ApiController]
-[Authorize(Policy = Policy.EntraInternal)]
+[Authorize(Policy = Policy.AdminPortal)]
 [ApiVersionNeutral]
 [Route("api/authorization/admin-portal")]
 [ApiExplorerSettings(IgnoreApi = true)]

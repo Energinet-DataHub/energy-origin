@@ -73,37 +73,17 @@ public static class ServiceCollectionExtensions
                 .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.CustomPolicyClientId }))
                 .Build();
             options.AddPolicy(Policy.B2CInternal, b2CInternalPolicy);
+
+            var adminPortalPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.B2CAuthenticationScheme)
+                .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.AdminPortalClientId }))
+                .Build();
+            options.AddPolicy(Policy.AdminPortal, adminPortalPolicy);
         });
 
         services.AddScoped<IdentityDescriptor>();
         services.AddScoped<AccessDescriptor>();
         services.AddSingleton<IAuthorizationHandler, TermsAcceptedRequirementHandler>();
-    }
-
-    public static void AddEntra(this IServiceCollection services, EntraOptions entraOptions)
-    {
-        services.AddAuthentication(defaultScheme: AuthenticationScheme.TokenValidation)
-             .AddJwtBearer(AuthenticationScheme.EntraClientCredentials, options =>
-             {
-                 options.MapInboundClaims = false;
-                 options.MetadataAddress = entraOptions.MetadataAddress;
-                 options.TokenValidationParameters = new TokenValidationParameters
-                 {
-                     ValidateIssuer = true,
-                     ValidateAudience = true,
-                     ValidateLifetime = true
-                 };
-             });
-
-        services.AddAuthorization(options =>
-        {
-            var entraInternalPolicy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .AddAuthenticationSchemes(AuthenticationScheme.EntraClientCredentials)
-                .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.AllowedClientId, new List<string> { entraOptions.AllowedClientId }))
-                .Build();
-
-            options.AddPolicy(Policy.EntraInternal, entraInternalPolicy);
-        });
     }
 }

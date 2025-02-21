@@ -34,7 +34,7 @@ namespace API.IntegrationTests.Controllers.Internal
         public async Task Given_NoContracts_When_CallingApi_Then_Return200ok_With_EmptyContractsForAdminPortalResponse()
         {
             // Arrange
-            using var clientForInternalCalls = _factory.CreateB2CAuthenticatedClient(_factory.IssuerIdpClientId, orgId: _factory.IssuerIdpClientId);
+            using var clientForInternalCalls = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalClientId, Guid.Empty);
 
             // Act
             var response = await clientForInternalCalls.GetAsync("/api/certificates/admin-portal/internal-contracts");
@@ -50,6 +50,7 @@ namespace API.IntegrationTests.Controllers.Internal
         [Fact]
         public async Task Given_ContractsExist_When_CallingInternalContractsEndpoints_Then_Return200ok_With_PopulatedContractsForAdminPortalResponse()
         {
+            // Arrange
             var gsrn = GsrnHelper.GenerateRandom();
             _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
@@ -75,8 +76,8 @@ namespace API.IntegrationTests.Controllers.Internal
             await userCreatesAContract.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", insertedIntoDb);
 
             // Act
-            var internalClient = _factory.CreateB2CAuthenticatedClient(_factory.IssuerIdpClientId, _factory.IssuerIdpClientId);
-            using var response = await internalClient.GetAsync("api/certificates/admin-portal/internal-contracts");
+            var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalClientId, Guid.Empty);
+            using var response = await adminPortalClient.GetAsync("api/certificates/admin-portal/internal-contracts");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
