@@ -8,7 +8,6 @@ on:
   workflow_dispatch:
   workflow_call:
 
-
 permissions:
   contents: read
 
@@ -30,15 +29,15 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build Solution
-        run: dotnet build Sample.sln --output buildOutput
+        run: dotnet build domains/Sample.sln --output domains/buildOutput
 
       - name: Generate SBOM
         run: |
           curl -Lo $RUNNER_TEMP/sbom-tool https://github.com/microsoft/sbom-tool/releases/latest/download/sbom-tool-linux-x64
           chmod +x $RUNNER_TEMP/sbom-tool
           $RUNNER_TEMP/sbom-tool generate \
-            -b ./buildOutput \
-            -bc . \
+            -b ./domains/buildOutput \
+            -bc domains/ \
             -pn "Your-Project-Name" \
             -pv "1.0.0" \
             -ps "Your-Company" \
@@ -46,6 +45,7 @@ jobs:
             -V Verbose
 
       - name: Analyze NuGet Dependencies
+        working-directory: domains
         run: |
           dotnet list package --include-transitive --format json > dependencies.json
 
@@ -76,9 +76,9 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            buildOutput/
-            dependency-report.md
-            unstable-packages.txt
+            domains/buildOutput/
+            domains/dependency-report.md
+            domains/unstable-packages.txt
 
       - name: Create PR Comment
         if: ${{ github.event_name == 'pull_request' && (steps.check.outputs.unstable_packages_exists == 'true') }}
@@ -86,7 +86,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const report = fs.readFileSync('./dependency-report.md', 'utf8');
+            const report = fs.readFileSync('domains/dependency-report.md', 'utf8');
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -102,8 +102,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+          path: domains/
 
       - name: Validate Dependencies
+        working-directory: domains
         run: |
           if [ -f unstable-packages.txt ] && [ -s unstable-packages.txt ]; then
             echo "❌ Unstable dependencies detected:"
