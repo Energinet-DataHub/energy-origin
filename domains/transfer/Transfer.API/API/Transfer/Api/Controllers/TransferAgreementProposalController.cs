@@ -131,14 +131,12 @@ public class TransferAgreementProposalController(
     /// Delete TransferAgreementProposal
     /// </summary>
     /// <param name="id">Id of TransferAgreementProposal</param>
-    /// <param name="organizationId"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="204">Successful operation</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), 204)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> DeleteTransferAgreementProposal([FromRoute] Guid id, [FromQuery] Guid organizationId,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> DeleteTransferAgreementProposal([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposal(id, cancellationToken);
 
@@ -147,11 +145,9 @@ public class TransferAgreementProposalController(
             return NotFound();
         }
 
-        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
-
-        if (proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr != proposal.ReceiverCompanyTin.Value)
+        if (!IsAuthorizedToSender(proposal) && !IsReceiver(proposal))
         {
-            return ValidationProblem("You cannot Deny a TransferAgreementProposal for another company");
+            return Forbid();
         }
 
         await unitOfWork.TransferAgreementProposalRepo.DeleteTransferAgreementProposal(id, cancellationToken);
@@ -160,6 +156,16 @@ public class TransferAgreementProposalController(
         await unitOfWork.SaveAsync();
 
         return NoContent();
+    }
+
+    private bool IsAuthorizedToSender(TransferAgreementProposal proposal)
+    {
+        return accessDescriptor.IsAuthorizedToOrganization(proposal.SenderCompanyId.Value);
+    }
+
+    private bool IsReceiver(TransferAgreementProposal proposal)
+    {
+        return proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr == proposal.ReceiverCompanyTin.Value;
     }
 
     [HttpPost("create/")]
