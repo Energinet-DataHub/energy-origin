@@ -80,7 +80,7 @@ builder.Services.AddHttpClient<IAuthorizationFacade, AuthorizationFacade>("Autho
         builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),
         builder.Configuration["ADMIN_PORTAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_SECRET not set"),
         builder.Configuration["ADMIN_PORTAL_TENANT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_TENANT_ID not set"),
-        new[] { "https://datahubeouenerginet.onmicrosoft.com/8bb12660-aa0e-4eef-a4aa-d6cd62615201" },
+        new[] { "https://datahubeouenerginet.onmicrosoft.com/8bb12660-aa0e-4eef-a4aa-d6cd62615201/.default" },
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
         ));
 
@@ -92,7 +92,7 @@ builder.Services.AddHttpClient<ICertificatesFacade, CertificatesFacade>("Certifi
         builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),
         builder.Configuration["ADMIN_PORTAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_SECRET not set"),
         builder.Configuration["ADMIN_PORTAL_TENANT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_TENANT_ID not set"),
-        new[] { "https://datahubeouenerginet.onmicrosoft.com/8bb12660-aa0e-4eef-a4aa-d6cd62615201" },
+        new[] { "https://datahubeouenerginet.onmicrosoft.com/8bb12660-aa0e-4eef-a4aa-d6cd62615201/.default" },
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
     ));
 
