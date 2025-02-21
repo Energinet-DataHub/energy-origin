@@ -29,7 +29,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build Solution
-        run: dotnet build domains/Sample.sln --output domains/buildOutput
+        run: dotnet build domains/EnergyTrackAndTrace.sln --output domains/buildOutput
 
       - name: Generate SBOM
         run: |
@@ -38,9 +38,9 @@ jobs:
           $RUNNER_TEMP/sbom-tool generate \
             -b ./domains/buildOutput \
             -bc domains/ \
-            -pn "Your-Project-Name" \
+            -pn "energy-origin" \
             -pv "1.0.0" \
-            -ps "Your-Company" \
+            -ps "Energinet-Datahub" \
             -nsb "https://sbom.yourcompany.com" \
             -V Verbose
 
