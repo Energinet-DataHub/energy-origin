@@ -90,9 +90,7 @@ public static class ServiceCollectionExtensions
                  options.TokenValidationParameters = new TokenValidationParameters
                  {
                      ValidateIssuer = true,
-                     ValidIssuer = entraOptions.ValidIssuer,
-                     ValidateAudience = false,
-                     AudienceValidator = (_, _, _) => true,
+                     ValidateAudience = true,
                      ValidateLifetime = true
                  };
              });
