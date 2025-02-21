@@ -1,6 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EnergyOrigin.TokenValidation.b2c;
 
@@ -74,7 +77,7 @@ public static class ServiceCollectionExtensions
             var adminPortalPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AuthenticationScheme.B2CAuthenticationScheme)
-                .AddRequirements(new ClaimsAuthorizationRequirement("appid", new List<string> { b2COptions.AdminPortalClientId }))
+                .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.AdminPortalClientId }))
                 .Build();
             options.AddPolicy(Policy.AdminPortal, adminPortalPolicy);
         });
