@@ -26,8 +26,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         {
             services.Remove(services.First(s => s.ServiceType == typeof(IAuthorizationFacade)));
             services.Remove(services.First(s => s.ServiceType == typeof(ICertificatesFacade)));
-            services.AddScoped<IAuthorizationFacade, MockAuthorizationFace>();
-            services.AddScoped<ICertificatesFacade, MockCertificatesFace>();
+            services.AddScoped<IAuthorizationFacade, MockAuthorizationFacade>();
+            services.AddScoped<ICertificatesFacade, MockCertificatesFacade>();
 
             services.AddTransient<IAuthenticationSchemeProvider, AutoFailSchemeProvider>();
             services.AddAuthentication(AutoFailSchemeProvider.AutoFailScheme)
@@ -35,7 +35,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         });
     }
 
-    private class MockAuthorizationFace : IAuthorizationFacade
+    private class MockAuthorizationFacade : IAuthorizationFacade
     {
         public Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync()
         {
@@ -44,7 +44,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         }
     }
 
-    private class MockCertificatesFace : ICertificatesFacade
+    private class MockCertificatesFacade : ICertificatesFacade
     {
         public Task<ContractsForAdminPortalResponse> GetContractsAsync()
         {
@@ -90,7 +90,7 @@ public abstract class ImpersonatedUser(
             new(ClaimTypes.Name, "Test User")
         };
 
-        Options.Configure?.Invoke(claims);
+        Options.Configure.Invoke(claims);
 
         var identity = new ClaimsIdentity(claims, OpenIdConnectDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
