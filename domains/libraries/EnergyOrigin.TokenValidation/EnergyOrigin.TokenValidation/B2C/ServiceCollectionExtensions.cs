@@ -86,18 +86,15 @@ public static class ServiceCollectionExtensions
              .AddJwtBearer(AuthenticationScheme.EntraClientCredentials, options =>
              {
                  options.MapInboundClaims = false;
+                 options.MetadataAddress = entraOptions.MetadataAddress;
                  options.TokenValidationParameters = new TokenValidationParameters
                  {
                      ValidateIssuer = true,
-                     ValidIssuers = new[]
-                     {
-                         "https://sts.windows.net/f7619355-6c67-4100-9a78-1847f30742e2/",
-                         "https://login.microsoftonline.com/f7619355-6c67-4100-9a78-1847f30742e2/v2.0"
-                     },
+                     ValidIssuer = entraOptions.ValidIssuer,
                      ValidateAudience = false,
-                     ValidateLifetime = true,
+                     AudienceValidator = (_, _, _) => true,
+                     ValidateLifetime = true
                  };
-                 options.MetadataAddress = "https://login.microsoftonline.com/f7619355-6c67-4100-9a78-1847f30742e2/v2.0/.well-known/openid-configuration";
              });
 
         services.AddAuthorization(options =>
