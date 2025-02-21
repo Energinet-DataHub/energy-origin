@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace AdminPortal.Dtos;
 
@@ -16,10 +15,7 @@ public class ResultsData
 public class MeteringPoint
 {
     public required string GSRN { get; set; }
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public MeteringPointType MeteringPointType { get; set; }
-
     public required string OrganizationName { get; set; }
     public required string Tin { get; set; }
     public long Created { get; set; }
