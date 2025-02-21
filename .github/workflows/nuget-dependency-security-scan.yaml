@@ -36,7 +36,6 @@ jobs:
       - name: Generate SBOM
         run: |
           dotnet CycloneDX ./ -o ./sbom --json
-          # Convert to GitHub's preferred name format
           mv ./sbom/bom.json ./sbom/sbom.spdx.json
 
       - name: Analyze unstable versions
@@ -61,7 +60,7 @@ jobs:
           done
 
       - name: Upload results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-reports
           path: |
@@ -87,7 +86,7 @@ jobs:
     needs: generate-sbom
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: security-reports
 
