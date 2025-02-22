@@ -21,7 +21,7 @@ public class ManagedIdentityTokenHandler : DelegatingHandler
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        var tokenRequestContext = new TokenRequestContext(new[] { "api://ett-internal/.default" });
+        var tokenRequestContext = new TokenRequestContext(new[] { $"api//{Environment.GetEnvironmentVariable("AZURE_APP_ID")}/.default" });
         var accessToken = await _credential.GetTokenAsync(tokenRequestContext, cancellationToken);
 
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Token);
