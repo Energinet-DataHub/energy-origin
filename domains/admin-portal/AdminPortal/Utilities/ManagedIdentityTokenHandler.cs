@@ -10,21 +10,20 @@ namespace AdminPortal.Utilities;
 public class ManagedIdentityTokenHandler : DelegatingHandler
 {
     private readonly TokenCredential _credential;
-    private readonly string _audience;
 
     public ManagedIdentityTokenHandler()
     {
         _credential = new DefaultAzureCredential();
-        _audience = "api://AzureADTokenExchange";
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
     {
-        var tokenRequest = new TokenRequestContext(new[] { $"{_audience}/.default" });
-        var accessToken = await _credential.GetTokenAsync(tokenRequest, cancellationToken);
+        var tokenRequestContext = new TokenRequestContext(new[] { "api://ett-internal/.default" });
+        var accessToken = await _credential.GetTokenAsync(tokenRequestContext, cancellationToken);
 
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Token);
-
         return await base.SendAsync(request, cancellationToken);
     }
 }
