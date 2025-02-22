@@ -22,7 +22,7 @@ public class ManagedIdentityTokenHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var tokenRequest = new TokenRequestContext(new[] { _audience });
+        var tokenRequest = new TokenRequestContext(new[] { $"{_audience}/.default" });
         var accessToken = await _credential.GetTokenAsync(tokenRequest, cancellationToken);
 
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.Token);
