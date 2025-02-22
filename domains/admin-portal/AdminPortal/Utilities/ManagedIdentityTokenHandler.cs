@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -13,7 +14,9 @@ public class ManagedIdentityTokenHandler : DelegatingHandler
 
     public ManagedIdentityTokenHandler()
     {
-        _credential = new DefaultAzureCredential();
+        _credential = new DefaultAzureCredential(
+            new DefaultAzureCredentialOptions { ManagedIdentityClientId = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID") }
+        );
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(
