@@ -1,10 +1,9 @@
-using System;
-using Azure.Core;
-using Azure.Identity;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
+using Azure.Identity;
 
 namespace AdminPortal.Utilities;
 
@@ -16,8 +15,7 @@ public class ManagedIdentityTokenHandler : DelegatingHandler
     public ManagedIdentityTokenHandler()
     {
         _credential = new DefaultAzureCredential();
-        _audience = Environment.GetEnvironmentVariable("AKS_MANAGED_IDENTITY_CLIENT_ID")
-                    ?? throw new InvalidOperationException("AKS_MANAGED_IDENTITY_CLIENT_ID is not set");
+        _audience = "api://ett-internal";
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
