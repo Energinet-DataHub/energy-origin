@@ -91,6 +91,7 @@ public static class ServiceCollectionExtensions
             .AddJwtBearer(AuthenticationScheme.WorkloadIdentityScheme, options =>
             {
                 options.MapInboundClaims = false;
+                options.TokenValidationParameters.ValidAudience = "api://ett-internal/.default";
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = true,
