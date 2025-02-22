@@ -15,7 +15,7 @@ public class ManagedIdentityTokenHandler : DelegatingHandler
     public ManagedIdentityTokenHandler()
     {
         _credential = new DefaultAzureCredential();
-        _audience = "api://ett-internal";
+        _audience = "api://AzureADTokenExchange";
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
