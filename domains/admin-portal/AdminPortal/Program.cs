@@ -54,6 +54,8 @@ builder.Services.AddAuthentication(options =>
         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
     });
 
+builder.Services.AddSingleton<MsalHttpClientFactoryAdapter>();
+
 var requireAuthPolicy = new AuthorizationPolicyBuilder()
     .RequireAuthenticatedUser()
     .Build();
@@ -61,17 +63,38 @@ var requireAuthPolicy = new AuthorizationPolicyBuilder()
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(requireAuthPolicy);
 
+builder.Services.AddHttpClient("Msal")
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
+    .ConfigureHttpClient(client =>
+    {
+        client.MaxResponseContentBufferSize = 1024 * 1024;
+        client.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json"));
+    });
+
 builder.Services.AddHttpClient<IAuthorizationFacade, AuthorizationFacade>("AuthorizationClient", client =>
     {
         client.BaseAddress = new Uri(builder.Configuration["Clients:Authorization"] ?? throw new ArgumentNullException($"Clients:Authorization configuration missing"));
     })
-    .AddHttpMessageHandler(sp => new ManagedIdentityTokenHandler());
+    .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
+        builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),
+        builder.Configuration["ADMIN_PORTAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_SECRET not set"),
+        builder.Configuration["ADMIN_PORTAL_TENANT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_TENANT_ID not set"),
+        new[] { $"https://datahubeouenerginet.onmicrosoft.com/{builder.Configuration["ADMIN_PORTAL_CLIENT_ID"]}/.default" },
+        sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+        ));
 
 builder.Services.AddHttpClient<ICertificatesFacade, CertificatesFacade>("CertificatesClient", client =>
     {
         client.BaseAddress = new Uri(builder.Configuration["Clients:Certificates"] ?? throw new ArgumentNullException($"Clients:Certificates configuration missing"));
     })
-    .AddHttpMessageHandler(sp => new ManagedIdentityTokenHandler());
+    .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
+        builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),
+        builder.Configuration["ADMIN_PORTAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_SECRET not set"),
+        builder.Configuration["ADMIN_PORTAL_TENANT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_TENANT_ID not set"),
+        new[] { $"https://datahubeouenerginet.onmicrosoft.com/{builder.Configuration["ADMIN_PORTAL_CLIENT_ID"]}/.default" },
+        sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+    ));
 
 var app = builder.Build();
 
