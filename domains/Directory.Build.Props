@@ -1,0 +1,36 @@
+﻿<Project>
+    <Target Name="BlockPreReleaseDependencies" BeforeTargets="PrepareForBuild">
+        <!-- Capture PackageReferences with their original source projects -->
+        <ItemGroup>
+            <_PackageRefWithProject Include="@(PackageReference)">
+                <OriginalProject>%(DefiningProjectFullPath)</OriginalProject>
+                <OriginalIdentity>%(Identity)</OriginalIdentity>
+                <OriginalVersion>%(Version)</OriginalVersion>
+            </_PackageRefWithProject>
+        </ItemGroup>
+
+        <!-- Filter pre-release packages -->
+        <ItemGroup>
+            <_PreReleasePackages Include="@(_PackageRefWithProject)"
+                                 Condition="$([System.String]::new('%(OriginalVersion)').Contains('-'))" />
+        </ItemGroup>
+
+        <!-- Filter under-versioned packages -->
+        <ItemGroup>
+            <_UnderVersionedPackages Include="@(_PackageRefWithProject)"
+                                     Condition="'$([System.Text.RegularExpressions.Regex]::Replace(&quot;%(OriginalVersion)&quot;, &quot;[-+].*&quot;, &quot;&quot;))' != ''
+                              AND $([System.Convert]::ToInt32($([System.Text.RegularExpressions.Regex]::Replace(&quot;%(OriginalVersion)&quot;, &quot;[-+].*&quot;, &quot;&quot;).Split('.')[0]))) &lt; 1" />
+        </ItemGroup>
+
+        <!-- Report errors against original projects -->
+        <Error Condition="'@(_PreReleasePackages)' != ''"
+               Text="Pre-release NuGet package detected: %(_PreReleasePackages.OriginalIdentity) (%(_PreReleasePackages.OriginalVersion))."
+               File="%(_PreReleasePackages.OriginalProject)"
+               Code="NU001" />
+
+        <Error Condition="'@(_UnderVersionedPackages)' != ''"
+               Text="NuGet package with version under 1.0.0 detected: %(_UnderVersionedPackages.OriginalIdentity) (%(_UnderVersionedPackages.OriginalVersion))."
+               File="%(_UnderVersionedPackages.OriginalProject)"
+               Code="NU002" />
+    </Target>
+</Project>
