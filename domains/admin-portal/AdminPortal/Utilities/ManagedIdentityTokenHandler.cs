@@ -14,9 +14,7 @@ public class ManagedIdentityTokenHandler : DelegatingHandler
 
     public ManagedIdentityTokenHandler()
     {
-        _credential = new DefaultAzureCredential(
-            new DefaultAzureCredentialOptions { ManagedIdentityClientId = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID") }
-        );
+        _credential = new DefaultAzureCredential();
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(
