@@ -22,7 +22,7 @@ public class AuthorizationFacade : IAuthorizationFacade
 
     public async Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync()
     {
-        var response = await _client.GetAsync("first-party-organizations/");
+        var response = await _client.GetAsync("first-party-organizations-workload/");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");

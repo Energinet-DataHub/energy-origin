@@ -22,7 +22,7 @@ public class CertificatesFacade : ICertificatesFacade
 
     public async Task<ContractsForAdminPortalResponse> GetContractsAsync()
     {
-        var response = await _client.GetAsync("internal-contracts/");
+        var response = await _client.GetAsync("internal-contracts-workload/");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
