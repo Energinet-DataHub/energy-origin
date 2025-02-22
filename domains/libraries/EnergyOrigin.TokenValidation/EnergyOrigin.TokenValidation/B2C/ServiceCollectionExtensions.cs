@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EnergyOrigin.TokenValidation.b2c;
 
@@ -82,5 +83,30 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IdentityDescriptor>();
         services.AddScoped<AccessDescriptor>();
         services.AddSingleton<IAuthorizationHandler, TermsAcceptedRequirementHandler>();
+    }
+
+    public static void AddWorkloadIdentity(this IServiceCollection services)
+    {
+        services.AddAuthentication()
+            .AddJwtBearer(AuthenticationScheme.WorkloadIdentityScheme, options =>
+            {
+                options.MapInboundClaims = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = true,
+                    ValidateIssuer = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true
+                };
+            });
+
+        services.AddAuthorization(options =>
+        {
+            var workloadPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.WorkloadIdentityScheme)
+                .Build();
+            options.AddPolicy(Policy.WorkloadIdentity, workloadPolicy);
+        });
     }
 }

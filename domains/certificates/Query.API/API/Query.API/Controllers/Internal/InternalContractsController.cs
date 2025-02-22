@@ -17,7 +17,6 @@ using MediatR;
 namespace API.Query.API.Controllers.Internal;
 
 [ApiController]
-[Authorize(Policy = Policy.AdminPortal)]
 [ApiVersionNeutral]
 [ApiExplorerSettings(IgnoreApi = true)]
 [Route("api/certificates/admin-portal")]
@@ -31,10 +30,35 @@ public class InternalContractsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = Policy.AdminPortal)]
     [Route("internal-contracts")]
     [ProducesResponseType(typeof(ContractsForAdminPortalResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ContractsForAdminPortalResponse), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetContractsForAdminPortal(
+        [FromServices] ILogger<InternalContractsController> logger, CancellationToken cancellationToken)
+    {
+        var queryResult = await _mediator.Send(new GetContractsForAdminPortalQuery(), cancellationToken);
+
+        var responseItems = queryResult.Result
+            .Select(c => new ContractsForAdminPortalResponseItem(
+                c.GSRN,
+                c.MeteringPointOwner,
+                c.Created.ToUnixTimeSeconds(),
+                c.StartDate.ToUnixTimeSeconds(),
+                c.EndDate?.ToUnixTimeSeconds(),
+                c.MeteringPointType
+            )).ToList();
+
+        return Ok(new ContractsForAdminPortalResponse(responseItems));
+    }
+
+
+    [HttpGet]
+    [Authorize(Policy = Policy.WorkloadIdentity)]
+    [Route("internal-contracts-workload")]
+    [ProducesResponseType(typeof(ContractsForAdminPortalResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ContractsForAdminPortalResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetContractsForAdminPortalWorkload(
         [FromServices] ILogger<InternalContractsController> logger, CancellationToken cancellationToken)
     {
         var queryResult = await _mediator.Send(new GetContractsForAdminPortalQuery(), cancellationToken);
