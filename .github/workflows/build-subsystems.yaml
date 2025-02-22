@@ -16,6 +16,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
+      admin-portal: ${{ steps.admin-portal.outputs.matches }}
       authorization: ${{ steps.authorization.outputs.matches }}
       certificates: ${{ steps.certificates.outputs.matches }}
       measurements: ${{ steps.measurements.outputs.matches }}
@@ -32,6 +33,14 @@ jobs:
       - uses: ./.github/actions/dotnet-test
         with:
           solution: domains/EnergyTrackAndTrace.sln
+
+  build-admin-portal:
+    needs: test
+    uses: ./.github/workflows/build-admin-portal.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
     needs: test
@@ -85,6 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
+      - build-admin-portal
       - build-authorization
       - build-certificates
       - build-measurements
@@ -100,6 +110,7 @@ jobs:
         uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v4
         with:
           configurations: |
+            domains/admin-portal/AdminPortal/configuration.yaml
             domains/authorization/Authorization.API/configuration.yaml
             domains/authorization/Proxy/configuration.yaml
             domains/certificates/Query.API/configuration.yaml
