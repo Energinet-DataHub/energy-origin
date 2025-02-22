@@ -93,6 +93,8 @@ public static class ServiceCollectionExtensions
             .AddJwtBearer(AuthenticationScheme.WorkloadIdentityScheme, options =>
             {
                 options.MapInboundClaims = false;
+                var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
+                options.Authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
                 options.TokenValidationParameters.ValidAudience = "api://ett-internal/.default";
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
