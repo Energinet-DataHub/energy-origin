@@ -98,7 +98,7 @@ public static class ServiceCollectionExtensions
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidAudiences = new[] { "api://ett-internal" },
+                    ValidAudiences = new[] { "api://ett-internal", "12c3f3de-88a2-46d8-8122-8ea0db0f60bc" },
                     ValidateAudience = true,
                     // ValidIssuers = new[] {$"https://sts.windows.net/{tenantId}/"},
                     ValidateIssuer = true,
