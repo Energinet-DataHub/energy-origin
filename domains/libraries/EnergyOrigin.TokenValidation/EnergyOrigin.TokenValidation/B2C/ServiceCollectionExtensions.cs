@@ -94,13 +94,13 @@ public static class ServiceCollectionExtensions
             {
                 options.MapInboundClaims = false;
                 var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
-                options.Authority = $"https://login.microsoftonline.com/{tenantId}/v2.0";
+                options.Authority = $"https://sts.windows.net/{tenantId}/";
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidAudiences = new[] { "api://ett-internal" },
                     ValidateAudience = true,
-                    ValidIssuers = new[] {$"https://sts.windows.net/{tenantId}/"},
+                    // ValidIssuers = new[] {$"https://sts.windows.net/{tenantId}/"},
                     ValidateIssuer = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true
