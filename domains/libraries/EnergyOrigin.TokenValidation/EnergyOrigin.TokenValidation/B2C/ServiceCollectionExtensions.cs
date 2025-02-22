@@ -100,7 +100,7 @@ public static class ServiceCollectionExtensions
                 {
                     ValidAudiences = new[] { "api://ett-internal", "12c3f3de-88a2-46d8-8122-8ea0db0f60bc" },
                     ValidateAudience = true,
-                    // ValidIssuers = new[] {$"https://sts.windows.net/{tenantId}/"},
+                    ValidIssuers = new[] { $"https://login.microsoftonline.com/{tenantId}/v2.0" },
                     ValidateIssuer = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true
