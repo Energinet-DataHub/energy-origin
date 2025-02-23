@@ -41,7 +41,7 @@ builder.Services.AddAuthentication(options =>
 
         options.Authority = oidcConfig["Authority"];
         options.ClientId = oidcConfig["ClientId"];
-        options.ClientSecret = oidcConfig["ClientSecret"];
+        // options.ClientSecret = oidcConfig["ClientSecret"];
 
         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.ResponseType = OpenIdConnectResponseType.Code;
