@@ -1,15 +1,19 @@
 using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using AdminPortal.Services;
 using AdminPortal.Utilities;
 using EnergyOrigin.Setup;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,12 +29,30 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddScoped<IAggregationService, ActiveContractsService>();
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+    })
+    .AddCookie(options => options.ExpireTimeSpan = TimeSpan.FromMinutes(30))
+    .AddOpenIdConnect(options =>
+    {
+        var oidcConfig = builder.Configuration.GetSection("OpenIDConnectSettings");
 
-builder.Services.AddAuthentication()
-    .AddMicrosoftIdentityWebApp(builder.Configuration)
-    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes: ["api://testforoidc/.default"])
-    .AddInMemoryTokenCaches();
+        options.Authority = oidcConfig["Authority"];
+        options.ClientId = oidcConfig["ClientId"];
+        options.ClientSecret = oidcConfig["ClientSecret"];
 
+        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.ResponseType = OpenIdConnectResponseType.Code;
+
+        options.SaveTokens = false;
+        options.GetClaimsFromUserInfoEndpoint = false;
+
+        options.MapInboundClaims = false;
+        options.CallbackPath = "/signin-oidc";
+        options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
+    });
 
 var requireAuthPolicy = new AuthorizationPolicyBuilder()
     .RequireAuthenticatedUser()
