@@ -25,7 +25,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddScoped<IAggregationService, ActiveContractsService>();
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+
+builder.Services.AddAuthentication()
     .AddMicrosoftIdentityWebApp(builder.Configuration)
     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes: ["api://testforoidc/.default"])
     .AddInMemoryTokenCaches();
