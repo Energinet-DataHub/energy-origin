@@ -41,7 +41,8 @@ builder.Services.AddAuthentication(options =>
 
         options.Authority = oidcConfig["Authority"];
         options.ClientId = oidcConfig["ClientId"];
-        // options.ClientSecret = oidcConfig["ClientSecret"];
+        options.MetadataAddress =
+            "https://login.microsoftonline.com/f7619355-6c67-4100-9a78-1847f30742e2/v2.0/.well-known/openid-configuration";
 
         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.ResponseType = OpenIdConnectResponseType.Code;
