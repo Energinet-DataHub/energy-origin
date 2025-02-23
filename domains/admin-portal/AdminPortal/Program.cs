@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -29,31 +30,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddScoped<IAggregationService, ActiveContractsService>();
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-    })
-    .AddCookie(options => options.ExpireTimeSpan = TimeSpan.FromMinutes(30))
-    .AddOpenIdConnect(options =>
-    {
-        var oidcConfig = builder.Configuration.GetSection("OpenIDConnectSettings");
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApp(builder.Configuration)
+    .EnableTokenAcquisitionToCallDownstreamApi()
+    .AddInMemoryTokenCaches();
 
-        options.Authority = oidcConfig["Authority"];
-        options.ClientId = oidcConfig["ClientId"];
-        options.MetadataAddress =
-            "https://login.microsoftonline.com/f7619355-6c67-4100-9a78-1847f30742e2/v2.0/.well-known/openid-configuration";
-
-        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.ResponseType = OpenIdConnectResponseType.Code;
-
-        options.SaveTokens = false;
-        options.GetClaimsFromUserInfoEndpoint = false;
-
-        options.MapInboundClaims = false;
-        options.CallbackPath = "/signin-oidc";
-        options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
-    });
 
 var requireAuthPolicy = new AuthorizationPolicyBuilder()
     .RequireAuthenticatedUser()
