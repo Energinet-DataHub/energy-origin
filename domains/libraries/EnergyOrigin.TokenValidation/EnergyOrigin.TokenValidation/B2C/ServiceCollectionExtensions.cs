@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EnergyOrigin.TokenValidation.b2c;
 
@@ -72,10 +73,48 @@ public static class ServiceCollectionExtensions
                 .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.CustomPolicyClientId }))
                 .Build();
             options.AddPolicy(Policy.B2CInternal, b2CInternalPolicy);
+
+            var adminPortalPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.B2CAuthenticationScheme)
+                .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.AdminPortalClientId }))
+                .Build();
+            options.AddPolicy(Policy.AdminPortal, adminPortalPolicy);
         });
 
         services.AddScoped<IdentityDescriptor>();
         services.AddScoped<AccessDescriptor>();
         services.AddSingleton<IAuthorizationHandler, TermsAcceptedRequirementHandler>();
+    }
+
+    public static void AddWorkloadIdentity(this IServiceCollection services)
+    {
+        services.AddAuthentication()
+            .AddJwtBearer(AuthenticationScheme.WorkloadIdentityScheme, options =>
+            {
+                options.MapInboundClaims = false;
+                var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
+                var azureAppId = Environment.GetEnvironmentVariable("AZURE_APP_ID");
+                options.Authority = $"https://login.microsoftonline.com/{tenantId}";
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidAudiences = new[] { azureAppId },
+                    ValidateAudience = true,
+                    ValidIssuers = new[] { $"https://login.microsoftonline.com/{tenantId}/v2.0" },
+                    ValidateIssuer = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true
+                };
+            });
+
+        services.AddAuthorization(options =>
+        {
+            var workloadPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.WorkloadIdentityScheme)
+                .Build();
+            options.AddPolicy(Policy.WorkloadIdentity, workloadPolicy);
+        });
     }
 }

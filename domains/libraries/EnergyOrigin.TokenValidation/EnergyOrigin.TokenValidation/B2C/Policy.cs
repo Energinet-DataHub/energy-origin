@@ -6,4 +6,6 @@ public static class Policy
     public const string B2CInternal = nameof(B2CInternal);
     public const string Frontend = nameof(Frontend);
     public const string FrontendWithoutTermsAccepted = nameof(FrontendWithoutTermsAccepted);
+    public const string AdminPortal = nameof(AdminPortal);
+    public const string WorkloadIdentity = nameof(WorkloadIdentity);
 }

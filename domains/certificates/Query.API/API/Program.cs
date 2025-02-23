@@ -139,6 +139,9 @@ builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).V
 builder.Services.AddB2C(b2COptions);
 
 
+builder.Services.AddWorkloadIdentity();
+
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
