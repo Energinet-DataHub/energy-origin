@@ -65,7 +65,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             {
                 services.AddTransient<IAuthenticationSchemeProvider, InterceptOidcAuthenticationSchemeProvider>();
                 services.AddAuthentication(InterceptOidcAuthenticationSchemeProvider.InterceptedScheme)
-                    .AddScheme<ImpersonatedAuthenticationSchemeOptions, T>("InterceptedScheme", schemeOptions =>
+                    .AddScheme<ImpersonatedAuthenticationSchemeOptions, T>(InterceptOidcAuthenticationSchemeProvider.InterceptedScheme, schemeOptions =>
                     {
                         schemeOptions.OriginalScheme = OpenIdConnectDefaults.AuthenticationScheme;
                         schemeOptions.Configure = configure;
