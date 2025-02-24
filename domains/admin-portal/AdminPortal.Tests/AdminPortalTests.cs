@@ -15,7 +15,7 @@ public class AdminPortalTests
     [Fact]
     public async Task Given_AggregationService_When_Called_Then_ReturnResponseWithActiveMeteringPoints()
     {
-        var aggregationService = Substitute.For<IAggregationService>();
+        var aggregationService = Substitute.For<IAggregationQuery>();
 
         var singleMeteringPoint = new MeteringPoint
         {
@@ -45,8 +45,8 @@ public class AdminPortalTests
     [Fact]
     public async Task Given_MatchingResultsFromUpstreamSubsystems_When_GetActiveContractsAsyncIsCalled_Then_ReturnsExpectedResults()
     {
-        var mockAuthorizationFacade = Substitute.For<IAuthorizationFacade>();
-        var mockCertificatesFacade = Substitute.For<ICertificatesFacade>();
+        var mockAuthorizationFacade = Substitute.For<IAuthorizationService>();
+        var mockCertificatesFacade = Substitute.For<ICertificatesService>();
         var organizationId = Guid.NewGuid();
         var organizationName = "Peter Producent A/S";
         var organizationTin = "11223344";
@@ -64,7 +64,7 @@ public class AdminPortalTests
         mockAuthorizationFacade.GetOrganizationsAsync().Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new ActiveContractsService(mockAuthorizationFacade, mockCertificatesFacade);
+        var service = new ActiveContractsQuery(mockAuthorizationFacade, mockCertificatesFacade);
 
         var result = await service.GetActiveContractsAsync();
 
@@ -78,8 +78,8 @@ public class AdminPortalTests
     [Fact]
     public async Task Given_UpstreamResultFromAuthorizationContainsAnOrganizationWithNoMatchingContractFromUpstreamCertificates_When_CallingGetActiveContractsAsync_Then_ReturnEmptyResponseInAdminPortal()
     {
-        var mockAuthorizationFacade = Substitute.For<IAuthorizationFacade>();
-        var mockCertificatesFacade = Substitute.For<ICertificatesFacade>();
+        var mockAuthorizationFacade = Substitute.For<IAuthorizationService>();
+        var mockCertificatesFacade = Substitute.For<ICertificatesService>();
 
         var predefinedOrganizations = new FirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>
         {
@@ -91,7 +91,7 @@ public class AdminPortalTests
         mockAuthorizationFacade.GetOrganizationsAsync().Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new ActiveContractsService(mockAuthorizationFacade, mockCertificatesFacade);
+        var service = new ActiveContractsQuery(mockAuthorizationFacade, mockCertificatesFacade);
 
         var result = await service.GetActiveContractsAsync();
 
@@ -101,8 +101,8 @@ public class AdminPortalTests
     [Fact]
     public async Task Given_ResultFromCertificatesContainsAContractWithNoMatchingOrganizationFromAuthorization_When_CallingGetActiveContractsAsync_Then_ReturnEmptyResponseInAdminPortal()
     {
-        var mockAuthorizationFacade = Substitute.For<IAuthorizationFacade>();
-        var mockCertificatesFacade = Substitute.For<ICertificatesFacade>();
+        var mockAuthorizationFacade = Substitute.For<IAuthorizationService>();
+        var mockCertificatesFacade = Substitute.For<ICertificatesService>();
 
         var predefinedOrganizations = new FirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>());
 
@@ -114,7 +114,7 @@ public class AdminPortalTests
         mockAuthorizationFacade.GetOrganizationsAsync().Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new ActiveContractsService(mockAuthorizationFacade, mockCertificatesFacade);
+        var service = new ActiveContractsQuery(mockAuthorizationFacade, mockCertificatesFacade);
 
         var result = await service.GetActiveContractsAsync();
 
@@ -124,8 +124,8 @@ public class AdminPortalTests
     [Fact]
     public async Task Given_MultipleContractsMatchingSingleOrganization_When_GetActiveContractsAsyncIsCalled_Then_ReturnsListOfMeteringPoints()
     {
-        var mockAuthorizationFacade = Substitute.For<IAuthorizationFacade>();
-        var mockCertificatesFacade = Substitute.For<ICertificatesFacade>();
+        var mockAuthorizationFacade = Substitute.For<IAuthorizationService>();
+        var mockCertificatesFacade = Substitute.For<ICertificatesService>();
         var organizationId = Guid.NewGuid();
         var organizationName = "Peter Producent A/S";
         var organizationTin = "11223344";
@@ -145,7 +145,7 @@ public class AdminPortalTests
         mockAuthorizationFacade.GetOrganizationsAsync().Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new ActiveContractsService(mockAuthorizationFacade, mockCertificatesFacade);
+        var service = new ActiveContractsQuery(mockAuthorizationFacade, mockCertificatesFacade);
 
         var result = await service.GetActiveContractsAsync();
 
@@ -169,8 +169,8 @@ public class AdminPortalTests
     [Fact]
     public async Task Given_OneContractAndTwoOrganizations_When_CallingGetActiveContractsAsync_Then_ReturnResponseWithMatchingMeteringPointsOnly()
     {
-        var mockAuthorizationFacade = Substitute.For<IAuthorizationFacade>();
-        var mockCertificatesFacade = Substitute.For<ICertificatesFacade>();
+        var mockAuthorizationFacade = Substitute.For<IAuthorizationService>();
+        var mockCertificatesFacade = Substitute.For<ICertificatesService>();
         var organizationId1 = Guid.NewGuid();
         var organizationId2 = Guid.NewGuid();
         var organizationName1 = "Peter Producent A/S";
@@ -192,7 +192,7 @@ public class AdminPortalTests
         mockAuthorizationFacade.GetOrganizationsAsync().Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new ActiveContractsService(mockAuthorizationFacade, mockCertificatesFacade);
+        var service = new ActiveContractsQuery(mockAuthorizationFacade, mockCertificatesFacade);
 
         var result = await service.GetActiveContractsAsync();
 

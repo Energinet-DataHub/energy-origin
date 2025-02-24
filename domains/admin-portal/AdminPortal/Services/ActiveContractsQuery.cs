@@ -3,27 +3,27 @@ using System.Threading.Tasks;
 using AdminPortal.Dtos;
 
 namespace AdminPortal.Services;
-public interface IAggregationService
+public interface IAggregationQuery
 {
     Task<ActiveContractsResponse> GetActiveContractsAsync();
 }
 
-public class ActiveContractsService : IAggregationService
+public class ActiveContractsQuery : IAggregationQuery
 {
-    private readonly IAuthorizationFacade _authorizationFacade;
-    private readonly ICertificatesFacade _certificatesFacade;
+    private readonly IAuthorizationService _authorizationService;
+    private readonly ICertificatesService _certificatesService;
 
-    public ActiveContractsService(IAuthorizationFacade authorizationFacade, ICertificatesFacade certificatesFacade)
+    public ActiveContractsQuery(IAuthorizationService authorizationService, ICertificatesService certificatesService)
     {
-        _authorizationFacade = authorizationFacade;
-        _certificatesFacade = certificatesFacade;
+        _authorizationService = authorizationService;
+        _certificatesService = certificatesService;
     }
 
     public async Task<ActiveContractsResponse> GetActiveContractsAsync()
     {
 
-        var organizations = await _authorizationFacade.GetOrganizationsAsync();
-        var contracts = await _certificatesFacade.GetContractsAsync();
+        var organizations = await _authorizationService.GetOrganizationsAsync();
+        var contracts = await _certificatesService.GetContractsAsync();
 
         var meteringPoints = contracts.Result
             .Join(organizations.Result,

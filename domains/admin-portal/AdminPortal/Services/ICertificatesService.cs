@@ -6,16 +6,16 @@ using AdminPortal.Dtos;
 
 namespace AdminPortal.Services;
 
-public interface ICertificatesFacade
+public interface ICertificatesService
 {
     Task<ContractsForAdminPortalResponse> GetContractsAsync();
 }
 
-public class CertificatesFacade : ICertificatesFacade
+public class CertificatesService : ICertificatesService
 {
     private readonly HttpClient _client;
 
-    public CertificatesFacade(HttpClient client)
+    public CertificatesService(HttpClient client)
     {
         _client = client;
     }

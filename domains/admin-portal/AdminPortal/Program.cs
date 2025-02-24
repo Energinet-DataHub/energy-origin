@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using IAuthorizationService = AdminPortal.Services.IAuthorizationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +27,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
-builder.Services.AddScoped<IAggregationService, ActiveContractsService>();
+builder.Services.AddScoped<IAggregationQuery, ActiveContractsQuery>();
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
 builder.Services.AddAuthentication(options =>
@@ -72,7 +73,7 @@ builder.Services.AddHttpClient("Msal")
             new MediaTypeWithQualityHeaderValue("application/json"));
     });
 
-builder.Services.AddHttpClient<IAuthorizationFacade, AuthorizationFacade>("AuthorizationClient", client =>
+builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("AuthorizationClient", client =>
     {
         client.BaseAddress = new Uri(builder.Configuration["Clients:Authorization"] ?? throw new ArgumentNullException($"Clients:Authorization configuration missing"));
     })
@@ -84,7 +85,7 @@ builder.Services.AddHttpClient<IAuthorizationFacade, AuthorizationFacade>("Autho
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
         ));
 
-builder.Services.AddHttpClient<ICertificatesFacade, CertificatesFacade>("CertificatesClient", client =>
+builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("CertificatesClient", client =>
     {
         client.BaseAddress = new Uri(builder.Configuration["Clients:Certificates"] ?? throw new ArgumentNullException($"Clients:Certificates configuration missing"));
     })

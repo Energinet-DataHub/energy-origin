@@ -6,16 +6,16 @@ using AdminPortal.Dtos;
 
 namespace AdminPortal.Services;
 
-public interface IAuthorizationFacade
+public interface IAuthorizationService
 {
     Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync();
 }
 
-public class AuthorizationFacade : IAuthorizationFacade
+public class AuthorizationService : IAuthorizationService
 {
     private readonly HttpClient _client;
 
-    public AuthorizationFacade(HttpClient client)
+    public AuthorizationService(HttpClient client)
     {
         _client = client;
     }

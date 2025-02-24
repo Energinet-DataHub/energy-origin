@@ -8,16 +8,16 @@ namespace AdminPortal.Controllers;
 [Authorize]
 public class ActiveContractsController : Controller
 {
-    private readonly IAggregationService _aggregationService;
+    private readonly IAggregationQuery _aggregationQuery;
 
-    public ActiveContractsController(IAggregationService aggregationService)
+    public ActiveContractsController(IAggregationQuery aggregationQuery)
     {
-        _aggregationService = aggregationService;
+        _aggregationQuery = aggregationQuery;
     }
 
     public async Task<IActionResult> Index()
     {
-        var response = await _aggregationService.GetActiveContractsAsync();
+        var response = await _aggregationQuery.GetActiveContractsAsync();
         return View(response.Results.MeteringPoints);
     }
 }

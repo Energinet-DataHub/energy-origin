@@ -24,10 +24,10 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            services.Remove(services.First(s => s.ServiceType == typeof(IAuthorizationFacade)));
-            services.Remove(services.First(s => s.ServiceType == typeof(ICertificatesFacade)));
-            services.AddScoped<IAuthorizationFacade, MockAuthorizationFacade>();
-            services.AddScoped<ICertificatesFacade, MockCertificatesFacade>();
+            services.Remove(services.First(s => s.ServiceType == typeof(IAuthorizationService)));
+            services.Remove(services.First(s => s.ServiceType == typeof(ICertificatesService)));
+            services.AddScoped<IAuthorizationService, MockAuthorizationService>();
+            services.AddScoped<ICertificatesService, MockCertificatesService>();
 
             services.AddTransient<IAuthenticationSchemeProvider, AutoFailSchemeProvider>();
             services.AddAuthentication(AutoFailSchemeProvider.AutoFailScheme)
@@ -35,7 +35,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         });
     }
 
-    private class MockAuthorizationFacade : IAuthorizationFacade
+    private class MockAuthorizationService : IAuthorizationService
     {
         public Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync()
         {
@@ -44,7 +44,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         }
     }
 
-    private class MockCertificatesFacade : ICertificatesFacade
+    private class MockCertificatesService : ICertificatesService
     {
         public Task<ContractsForAdminPortalResponse> GetContractsAsync()
         {
