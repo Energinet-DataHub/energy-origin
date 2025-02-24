@@ -61,6 +61,9 @@
         <EmbeddedResource Include="Migrations\Scripts\**\*.sql">
             <LogicalName>%(filename)%(extension)</LogicalName> <!-- Do not delete! Migration script names will not contain namespace -->
         </EmbeddedResource>
+        <EmbeddedResource Update="Migrations\Scripts\20250224-0020-MassTransitInboxOutbox.sql">
+          <LogicalName>20250121-0010-MassTransitInboxOutbox.sql</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>
