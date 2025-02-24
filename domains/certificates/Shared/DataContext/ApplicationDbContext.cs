@@ -44,7 +44,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
     public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
     public DbSet<MeteringPointTimeSeriesSlidingWindow> MeteringPointTimeSeriesSlidingWindows { get; set; }
-
 }
 
 // Some of the EF Core Tools commands (for example, the Migrations commands) require a derived DbContext instance to be created at design time
