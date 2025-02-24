@@ -24,7 +24,7 @@ public class DbMigratorTest : IClassFixture<PostgresContainer>
 
         var scripts = await GetAppliedMigrations();
         Assert.Equal(2, scripts.Count);
-        Assert.Equal("20250116-0001-InboxOutbox.sql", scripts[0]);
+        Assert.Equal("20250116-0001-NoOp1.sql", scripts[0]);
         Assert.Equal("20250116-0010-NoOp2.sql", scripts[1]);
     }
 
@@ -42,20 +42,20 @@ public class DbMigratorTest : IClassFixture<PostgresContainer>
     [Fact]
     public async Task GivenNewDatabase_WhenApplyingMigrationsWithTarget_EarlierMigrationsAreApplied()
     {
-        await _dbMigrator.MigrateAsync("20250116-0001-InboxOutbox.sql");
+        await _dbMigrator.MigrateAsync("20250116-0001-NoOp1.sql");
 
         var scripts = await GetAppliedMigrations();
         Assert.Single(scripts);
-        Assert.Equal("20250116-0001-InboxOutbox.sql", scripts[0]);
+        Assert.Equal("20250116-0001-NoOp1.sql", scripts[0]);
     }
 
     [Fact]
     public async Task GivenNewDatabase_WhenApplyingMigrations_ItIsPossibleToMigrateInTwoSteps()
     {
-        await _dbMigrator.MigrateAsync("20250116-0001-InboxOutbox.sql");
+        await _dbMigrator.MigrateAsync("20250116-0001-NoOp1.sql");
         var scripts = await GetAppliedMigrations();
         Assert.Single(scripts);
-        Assert.Equal("20250116-0001-InboxOutbox.sql", scripts[0]);
+        Assert.Equal("20250116-0001-NoOp1.sql", scripts[0]);
 
         await _dbMigrator.MigrateAsync("20250116-0010-NoOp2.sql");
         scripts = await GetAppliedMigrations();

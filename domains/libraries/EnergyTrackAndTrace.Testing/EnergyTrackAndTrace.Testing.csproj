@@ -15,8 +15,4 @@
     <PackageReference Include="xunit.extensibility.core" Version="2.9.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
-  </ItemGroup>
-
 </Project>
