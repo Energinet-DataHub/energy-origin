@@ -83,14 +83,14 @@ runs:
       run: |
         container_id=$(docker create ${{ env.LOWERCASED }}:${{ env.version }})
         mkdir -p artifacts
-        docker cp $container_id:/sboms/combined-sbom.xml artifacts/${{ env.LOWERCASED }}:${{ env.version }}.xml
+        docker cp $container_id:/sboms/combined-sbom.xml artifacts/${{ env.LOWERCASED }}-${{ env.version }}.xml
         docker rm $container_id
 
     - name: Upload SBOM artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.LOWERCASED }}:${{ env.version }}-sbom.xml
-        path: artifacts/${{ env.LOWERCASED }}:${{ env.version }}.xml
+        name: ${{ env.LOWERCASED }}-${{ env.version }}-sbom.xml
+        path: artifacts/${{ env.LOWERCASED }}-${{ env.version }}.xml
         compression-level: '0'
 
     - name: Scan image
