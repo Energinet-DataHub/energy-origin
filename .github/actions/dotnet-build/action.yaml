@@ -78,62 +78,24 @@ runs:
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
-    - name: Extract SBOM artifact
-      shell: bash
-      run: |
-        BASE_NAME=$(yq '.name' '${{ inputs.configuration }}')
-        FULL_IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/${BASE_NAME}" | tr '[:upper:]' '[:lower:]')
-        echo "name=${BASE_NAME}" >> $GITHUB_ENV
-        echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_ENV
-        CONTAINER_ID=$(docker create ${FULL_IMAGE_NAME}:${{ env.version }})
-        mkdir -p artifacts
-        docker cp $CONTAINER_ID:/sboms artifacts/
-        docker rm $CONTAINER_ID
-
-    - name: Upload SBOM artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.name }}-${{ env.version }}-sbom.xml
-        path: artifacts/sboms/combined-sbom.xml
-        compression-level: '0'
-
-    - name: Check unstable packages
-      shell: bash
-      run: |
-        python << 'EOF'
-        import xml.etree.ElementTree as ET
-        import re
-
-        # Adjust the namespace if needed; this is for CycloneDX 1.3
-        ns = {'cdx': 'http://cyclonedx.org/schema/bom/1.3'}
-
-        # Load the SBOM XML file
-        tree = ET.parse('artifacts/sboms/combined-sbom.xml')
-        root = tree.getroot()
-
-        # Regex to match pre-release versions (e.g. 1.2.3-alpha)
-        prerelease_regex = re.compile(r'^\d+\.\d+\.\d+-')
-
-        non_compliant = []
-
-        # Iterate over components in the SBOM
-        for comp in root.findall('.//cdx:component', ns):
-            version_elem = comp.find('cdx:version', ns)
-            if version_elem is None:
-                continue
-            version = version_elem.text.strip()
-            if prerelease_regex.match(version):
-                name_elem = comp.find('cdx:name', ns)
-                component_name = name_elem.text.strip() if name_elem is not None else "Unknown"
-                non_compliant.append(f"{component_name}: {version}")
-
-        if non_compliant:
-            print("Non-compliant (unstable/pre-release) packages found:")
-            for pkg in non_compliant:
-                print(pkg)
-        else:
-            print("All packages are compliant (no unstable/pre-release versions detected).")
-        EOF
+#    - name: Extract SBOM artifact
+#      shell: bash
+#      run: |
+#        BASE_NAME=$(yq '.name' '${{ inputs.configuration }}')
+#        FULL_IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/${BASE_NAME}" | tr '[:upper:]' '[:lower:]')
+#        echo "name=${BASE_NAME}" >> $GITHUB_ENV
+#        echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_ENV
+#        CONTAINER_ID=$(docker create ${FULL_IMAGE_NAME}:${{ env.version }})
+#        mkdir -p artifacts
+#        docker cp $CONTAINER_ID:/sboms artifacts/
+#        docker rm $CONTAINER_ID
+#
+#    - name: Upload SBOM artifact
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: ${{ env.name }}-${{ env.version }}-sbom.xml
+#        path: artifacts/sboms/combined-sbom.xml
+#        compression-level: '0'
 
     - name: Scan image
       uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v3
