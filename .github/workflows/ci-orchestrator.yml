@@ -19,11 +19,6 @@ jobs:
       - name: Setup variables
         run: exit 0
 
-  component-detection:
-    needs: setup
-    uses: ./.github/workflows/component-detection.yaml
-    secrets: inherit
-
   build-subsystems:
     needs: setup
     uses: ./.github/workflows/build-subsystems.yaml
@@ -60,7 +55,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [
-        component-detection,
         build-subsystems,
         check-licenses,
         dependabot-validate,
