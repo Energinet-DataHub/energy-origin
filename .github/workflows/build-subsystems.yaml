@@ -24,6 +24,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch and Upload SBOM
+        id: sbom
+        uses: ./.github/actions/fetch-and-upload-sbom/action.yaml
+
+      - name: Display Artifact URL
+        run: echo "SBOM artifact available at ${{ steps.sbom.outputs.artifact-url }}"
+
   test:
     needs: setup
     runs-on: ubuntu-latest
