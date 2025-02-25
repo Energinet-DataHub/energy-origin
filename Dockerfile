@@ -41,7 +41,7 @@ RUN mkdir -p /app && \
     dotnet tool install --global CycloneDX || true && \
     /root/.dotnet/tools/dotnet-CycloneDX ${PROJECT} -o /app/sbom.xml && \
     syft /src -o cyclonedx-xml=/app/docker-sbom.xml && \
-    cyclonedx merge --input-files /app/sbom.xml,/app/docker-sbom.xml --output-file /app/combined-sbom.xml
+    cyclonedx merge --input-files /app/sbom.xml /app/docker-sbom.xml --output-file /app/combined-sbom.xml
 
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-noble-chiseled-extra AS final
 WORKDIR /app
