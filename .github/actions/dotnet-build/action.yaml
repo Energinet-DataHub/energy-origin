@@ -1,32 +1,33 @@
-name: Dotnet - Build and Scan
-description: Build a dotnet project and scan for dependencies
+name: Dotnet - Build
+description: Build a dotnet project
 
 inputs:
   solution:
     description: Is the path to a solution file.
     required: true
+
   project:
     description: Is the path to a project file.
     required: true
+
   configuration:
     description: Is the path to a configuration file.
     required: true
+
   dry-run:
     description: Perform all actions but without pushing the image
     required: false
     default: "false"
+
   sdk-version:
     description: Is a complete sdk version in format x.y.zzz
     required: false
     default: ""
+
   runtime-version:
     description: Is a complete runtime version in format x.y.z
     required: false
     default: ""
-  strict-verification:
-    description: Fail the workflow if non-compliant packages are found
-    required: false
-    default: "false"
 
 runs:
   using: composite
@@ -39,7 +40,6 @@ runs:
         echo "DIRECTORY=$DIRECTORY" | tee -a $GITHUB_ENV
         echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
         echo "RUNTIME=$(jq -rc '.runtime.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
-
     - name: Overwrite - if given optional input
       shell: bash
       run: |
@@ -64,34 +64,15 @@ runs:
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v3
 
-    - name: Resolve container image name
+    - name: Resolve image name
       shell: bash
-      run: |
-        BASE_NAME=$(yq '.name' '${{ inputs.configuration }}')
-
-        FULL_IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/${BASE_NAME}" | tr '[:upper:]' '[:lower:]')
-
-        echo "name=${BASE_NAME}" >> $GITHUB_ENV
-        echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_ENV
-
-        echo "Image name: ${BASE_NAME}"
-        echo "Full image name: ${FULL_IMAGE_NAME}"
-        echo "Version/Tag: ${{ env.version }}"
-        echo "Full reference: ${FULL_IMAGE_NAME}:${{ env.version }}"
-
-    - name: Log in to the Container registry
-      uses: docker/login-action@5139682d94efc37792e6b54386b5b470a68a4737
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
-        ecr: false
+      run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
 
     - name: Build image
       uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v3
       with:
         dockerfile: Dockerfile
-        image-name: ${{ env.full_image_name }}
+        image-name: ${{ env.name }}
         image-tag: ${{ env.version }}
         docker-context: .
         dry-run: ${{ inputs.dry-run }}
@@ -100,113 +81,9 @@ runs:
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
-    - name: Generate SBOM with Syft
-      uses: anchore/sbom-action@v0
+    - name: Scan image
+      uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v3
       with:
-        image: ${{ env.full_image_name }}:${{ env.version }}
-        artifact-name: sbom-${{ env.name }}-${{ env.version }}
-        output-file: ./sbom.json
-        format: syft-json
-
-    - name: Analyze dependencies from SBOM
-      shell: bash
-      run: |
-        echo "Analyzing SBOM for non-compliant dependencies..."
-
-        echo "# Dependency Analysis" > dependency_analysis.txt
-
-        jq -r '.artifacts[] | select(.version != null) | "\(.name)|\(.version)|\(.type)"' sbom.json | sort > all_deps.txt
-
-        TOTAL_DEPS=$(wc -l < all_deps.txt)
-        echo "Total dependencies found: $TOTAL_DEPS" >> dependency_analysis.txt
-
-        echo "# Direct Dependencies" > direct_dependencies.txt
-        echo "Package Name | Version | Project File" >> direct_dependencies.txt
-        echo "-------------|---------|-------------" >> direct_dependencies.txt
-
-        find . -name "*.csproj" | while read -r csproj; do
-          PROJECT_NAME=$(basename "$csproj" .csproj)
-          PROJECT_PATH=$(dirname "$csproj")
-
-          grep -o '<PackageReference Include="[^"]*" Version="[^"]*"' "$csproj" | while read -r ref; do
-            PACKAGE_NAME=$(echo "$ref" | sed -n 's/.*Include="\([^"]*\)".*/\1/p')
-            PACKAGE_VERSION=$(echo "$ref" | sed -n 's/.*Version="\([^"]*\)".*/\1/p')
-
-            if [[ -n "$PACKAGE_NAME" && -n "$PACKAGE_VERSION" ]]; then
-              echo "$PACKAGE_NAME | $PACKAGE_VERSION | $PROJECT_NAME ($PROJECT_PATH)" >> direct_dependencies.txt
-            fi
-          done
-        done
-
-        grep -v "^#\|^-" direct_dependencies.txt | cut -d '|' -f 1 | tr -d ' ' > direct_dep_names.txt
-
-        touch non-compliant-packages.txt
-
-        echo "## Direct Dependencies" >> dependency_analysis.txt
-        echo "Package Name | Version | Type | Project" >> dependency_analysis.txt
-        echo "-------------|---------|------|--------" >> dependency_analysis.txt
-
-          while IFS='|' read -r name version type; do
-          if grep -q "^$name$" direct_dep_names.txt; then
-          PROJECT_INFO=$(grep -F "$name |" direct_dependencies.txt | head -1 | cut -d '|' -f 3)
-          echo "$name | $version | $type | $PROJECT_INFO" >> dependency_analysis.txt
-
-          if [[ "$version" =~ ^0\. || "$version" =~ ^v0\. ]]; then
-          echo "$name ($type): Version $version is below 1.0.0 - Defined in: $PROJECT_INFO" >> non-compliant-packages.txt
-          fi
-
-          if [[ "$version" == *-* ]]; then
-          echo "$name ($type): Version $version contains a dash - Defined in: $PROJECT_INFO" >> non-compliant-packages.txt
-          fi
-          fi
-          done < all_deps.txt
-
-          DIRECT_DEPS=$(grep -v "^#\|^-" dependency_analysis.txt | grep -v "Package Name" | wc -l || echo 0)
-          echo "" >> dependency_analysis.txt
-          echo "Direct dependencies found: $DIRECT_DEPS" >> dependency_analysis.txt
-
-          TRANSITIVE_DEPS=$((TOTAL_DEPS - DIRECT_DEPS))
-          echo "Transitive dependencies: $TRANSITIVE_DEPS" >> dependency_analysis.txt
-
-          if [[ -s non-compliant-packages.txt ]]; then
-          NON_COMPLIANT_COUNT=$(sort -u non-compliant-packages.txt | wc -l | tr -d ' ')
-
-          echo "" >> dependency_analysis.txt
-          echo "## Non-Compliant Dependencies" >> dependency_analysis.txt
-          echo "Found $NON_COMPLIANT_COUNT non-compliant direct dependencies:" >> dependency_analysis.txt
-          echo "" >> dependency_analysis.txt
-          sort -u non-compliant-packages.txt >> dependency_analysis.txt
-
-          echo "::warning::Found $NON_COMPLIANT_COUNT non-compliant direct dependencies!"
-          echo "::group::Non-compliant direct dependencies"
-          sort -u non-compliant-packages.txt
-          echo "::endgroup::"
-          echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
-          echo "has_non_compliant=true" >> $GITHUB_ENV
-          else
-          echo "" >> dependency_analysis.txt
-          echo "## Non-Compliant Dependencies" >> dependency_analysis.txt
-          echo "No non-compliant dependencies found." >> dependency_analysis.txt
-
-          echo "All dependencies are compliant!"
-          echo "non_compliant_count=0" >> $GITHUB_ENV
-          echo "has_non_compliant=false" >> $GITHUB_ENV
-          fi
-
-          echo "Dependency Analysis:"
-          cat dependency_analysis.txt
-
-        - name: Upload dependency analysis
-          uses: actions/upload-artifact@v4
-          with:
-            name: dependency-analysis-${{ env.name }}-${{ env.version }}
-            path: dependency_analysis.txt
-            compression-level: 0
-
-        - name: Upload non-compliant packages list
-          if: ${{ env.has_non_compliant == 'true' }}
-          uses: actions/upload-artifact@v4
-          with:
-            name: non-compliant-packages-${{ env.name }}-${{ env.version }}
-            path: non-compliant-packages.txt
-            compression-level: 0
+        image-name: ${{ env.name }}
+        image-tag: ${{ env.version }}
+        upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
