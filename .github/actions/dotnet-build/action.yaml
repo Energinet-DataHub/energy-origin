@@ -59,10 +59,6 @@ runs:
 
     - uses: actions/checkout@v4
 
-    - name: Fetch Dockerfile
-      shell: bash
-      run: cat ./Dockerfile > Dockerfile
-
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v3
 
