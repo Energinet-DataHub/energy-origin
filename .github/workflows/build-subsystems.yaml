@@ -32,7 +32,7 @@ jobs:
 
       - name: Fetch and Upload SBOM
         id: sbom
-        uses: ./.github/actions/fetch-and-upload-sbom/action.yaml
+        uses: ./.github/actions/fetch-and-upload-sbom
 
       - name: Display Artifact URL
         shell: bash
