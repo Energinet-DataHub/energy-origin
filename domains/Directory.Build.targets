@@ -7,14 +7,15 @@
         </ItemGroup>
 
         <PropertyGroup>
-            <_ErrorMessage>Build blocked: Prerelase or unstable NuGet package: </_ErrorMessage>
+            <_WarningMessage>Build blocked: Prerelease or unstable NuGet package</_WarningMessage>
         </PropertyGroup>
 
         <Warning File="$(MSBuildProjectFullPath)"
-                 Text="$(_ErrorMessage): %(UnwantedPackages.Identity) (%(UnwantedPackages.Version))"
+                 Text="$(_WarningMessage): %(UnwantedPackages.Identity) (%(UnwantedPackages.Version))"
                  Condition="'@(UnwantedPackages)' != ''" />
 
-        <Error Condition="'@(UnwantedPackages)' != ''"
-               Text="Build failed due to unwanted package versions. See warnings for details." />
+        <PropertyGroup Condition="'@(UnwantedPackages)' != ''">
+            <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        </PropertyGroup>
     </Target>
 </Project>
