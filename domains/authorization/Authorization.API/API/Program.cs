@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using API.Authorization;
-using API.Authorization.Exceptions;
 using API.Data;
 using API.Metrics;
 using API.Models;
@@ -9,6 +8,7 @@ using API.Options;
 using API.Repository;
 using API.Services;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Exceptions.Middleware;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;

@@ -31,7 +31,9 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IWall
 
         var consents = await AuthorizationClient.GetConsentsAsync();
         if (consents == null)
-            throw new BusinessException("Failed to get consents from authorization.");
+        {
+            throw new Exception("Failed to get consents from authorization.");
+        }
 
         (var SenderOrganizationId, var SenderTin, var SenderName) = GetOrganizationOnBehalfOf(command.SenderOrganizationId, consents);
         (var ReceiverOrganizationId, var ReceiverTin, var ReceiverName) = GetOrganizationOnBehalfOf(command.ReceiverOrganizationId, consents);
@@ -99,7 +101,4 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IWall
 
         return (organizationId, organizationTin, organizationName);
     }
-
-
 }
-

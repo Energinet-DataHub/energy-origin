@@ -1,11 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Authorization.Exceptions;
 using API.Data;
 using API.Models;
 using API.Repository;
-using MassTransit;
+using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,7 +33,7 @@ public class RevokeTermsCommandHandler(
 
         if (organization == null)
         {
-            throw new EntityNotFoundException(request.OrganizationId.ToString(), nameof(Organization));
+            throw new EntityNotFoundException(request.OrganizationId, typeof(Organization));
         }
 
         organization.RevokeTerms();

@@ -8,9 +8,9 @@ using API.Models;
 using API.Repository;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ForbiddenException = API.Authorization.Exceptions.ForbiddenException;
 using OrganizationId = EnergyOrigin.Domain.ValueObjects.OrganizationId;
 
 namespace API.Authorization._Features_;
