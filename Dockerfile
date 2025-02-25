@@ -1,4 +1,5 @@
 ARG SDK_VERSION
+ARG RUNTIME_VERSION
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-noble AS build
 ARG PROJECT
 ARG MIGRATIONS
