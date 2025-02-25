@@ -87,6 +87,11 @@ runs:
         curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
         syft version
 
+    - name: Install dotnet-project-licenses tool
+      shell: bash
+      run: |
+        dotnet tool install --global dotnet-project-licenses
+
     - name: Resolve image name and scan dependencies
       shell: bash
       run: |
@@ -114,45 +119,91 @@ runs:
 
         syft dir:app_files -o json > app_sbom.json
 
-        echo "Checking for non-compliant dependencies..."
+        echo "Extracting direct dependencies from solution..."
+        cd $(dirname '${{ inputs.solution }}')
+        dotnet restore
+
+        echo "# Direct Dependencies" > ../../direct_dependencies.txt
+        echo "Package Name | Version | Project File" >> ../../direct_dependencies.txt
+        echo "-------------|---------|-------------" >> ../../direct_dependencies.txt
+
+        find . -name "*.csproj" | while read -r csproj; do
+          PROJECT_NAME=$(basename "$csproj" .csproj)
+          echo "Analyzing project: $PROJECT_NAME"
+
+          dotnet project-licenses -i "$csproj" -j > project_deps.json
+
+          jq -r '.Packages[] | "\(.PackageName)|\(.PackageVersion)|\(.LicenseType)"' project_deps.json | while IFS='|' read -r name version license; do
+            echo "$name | $version | $PROJECT_NAME" >> ../../direct_dependencies.txt
+          done
+        done
+
+        cd ../../
 
         touch non-compliant-packages.txt
 
+        echo "Checking for non-compliant direct dependencies..."
+
+        grep -v "^#\|^-" direct_dependencies.txt | cut -d '|' -f 1 | tr -d ' ' > direct_dep_names.txt
+
         jq -r '.artifacts[] | select(.version != null) | "\(.name)|\(.version)|\(.type)"' app_sbom.json | while IFS='|' read -r name version type; do
+          # Skip if version is empty
           if [[ -z "$version" || "$version" == "null" ]]; then
             continue
           fi
 
-          if [[ "$version" =~ ^0\. || "$version" =~ ^v0\. ]]; then
-            echo "$name ($type): Version $version is below 1.0.0" >> non-compliant-packages.txt
-          fi
+          if grep -q "^$name$" direct_dep_names.txt; then
+            # Find which project this dependency is defined in
+            PROJECT_INFO=$(grep -F "$name |" direct_dependencies.txt | head -1 | cut -d '|' -f 3)
 
-          if [[ "$version" == *-* ]]; then
-            echo "$name ($type): Version $version contains a dash" >> non-compliant-packages.txt
+            if [[ "$version" =~ ^0\. || "$version" =~ ^v0\. ]]; then
+              echo "$name ($type): Version $version is below 1.0.0 - Defined in: $PROJECT_INFO" >> non-compliant-packages.txt
+            fi
+
+            if [[ "$version" == *-* ]]; then
+              echo "$name ($type): Version $version contains a dash - Defined in: $PROJECT_INFO" >> non-compliant-packages.txt
+            fi
           fi
         done
+
+        # Create a summary of direct vs. transitive dependencies
+        echo "# Dependency Summary" > dependency_summary.txt
+        TOTAL_DEPS=$(jq '.artifacts | length' app_sbom.json)
+        DIRECT_DEPS=$(wc -l < direct_dep_names.txt)
+        TRANSITIVE_DEPS=$((TOTAL_DEPS - DIRECT_DEPS))
+
+        echo "Total dependencies: $TOTAL_DEPS" >> dependency_summary.txt
+        echo "Direct dependencies: $DIRECT_DEPS" >> dependency_summary.txt
+        echo "Transitive dependencies: $TRANSITIVE_DEPS" >> dependency_summary.txt
+        echo "" >> dependency_summary.txt
+
+        # Add the direct dependencies list
+        cat direct_dependencies.txt >> dependency_summary.txt
+
+        echo "Dependency summary:"
+        cat dependency_summary.txt
 
         if [[ -s non-compliant-packages.txt ]]; then
           NON_COMPLIANT_COUNT=$(sort -u non-compliant-packages.txt | wc -l | tr -d ' ')
 
           if [[ "${{ inputs.strict-verification }}" == "true" ]]; then
-            echo "::error::Found $NON_COMPLIANT_COUNT non-compliant packages!"
-            echo "::group::Non-compliant packages"
+            echo "::error::Found $NON_COMPLIANT_COUNT non-compliant direct dependencies!"
+            echo "::group::Non-compliant direct dependencies"
             sort -u non-compliant-packages.txt
             echo "::endgroup::"
             echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
             echo "has_non_compliant=true" >> $GITHUB_ENV
             exit 1
           else
-            echo "::warning::Found $NON_COMPLIANT_COUNT non-compliant packages!"
-            echo "::group::Non-compliant packages"
+            echo "::warning::Found $NON_COMPLIANT_COUNT non-compliant direct dependencies!"
+            echo "::group::Non-compliant direct dependencies"
             sort -u non-compliant-packages.txt
             echo "::endgroup::"
             echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
             echo "has_non_compliant=true" >> $GITHUB_ENV
           fi
         else
-          echo "All packages are compliant!"
+          echo "All direct dependencies are compliant!"
           echo "non_compliant_count=0" >> $GITHUB_ENV
           echo "has_non_compliant=false" >> $GITHUB_ENV
         fi
