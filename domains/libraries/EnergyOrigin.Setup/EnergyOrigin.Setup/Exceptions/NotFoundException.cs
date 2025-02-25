@@ -1,10 +1,11 @@
 using System;
 
-namespace API.Transfer.Api.Exceptions;
+namespace EnergyOrigin.Setup.Exceptions;
 
 public class NotFoundException : Exception
 {
     protected NotFoundException(string str) : base(str)
     {
+
     }
 }

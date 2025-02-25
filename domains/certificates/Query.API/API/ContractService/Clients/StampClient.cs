@@ -72,7 +72,7 @@ public class StampClient : IStampClient
         if (!responseMessage.IsSuccessStatusCode)
         {
             var error = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
-            logger.LogError("Error response from Stamp: {Error}", error);
+            logger.LogError("Stamp error, StatusCode: {StatusCode} Content: {Content}", responseMessage.StatusCode, error);
             responseMessage.EnsureSuccessStatusCode();
         }
         return (await responseMessage.Content.ReadFromJsonAsync<T>(cancellationToken))!;
