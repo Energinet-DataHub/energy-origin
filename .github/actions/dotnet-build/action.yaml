@@ -83,7 +83,7 @@ runs:
       run: |
         container_id=$(docker create ${{ env.LOWERCASED }}:${{ env.version }})
         mkdir -p artifacts
-        docker cp $container_id:/sboms/combined-sbom.xml artifacts/combined-sbom.xml
+        docker cp $container_id:/sboms/combined-sbom.xml artifacts/${{ env.LOWERCASED }}:${{ env.version }}.xml
         docker rm $container_id
 
     - name: Upload SBOM artifact
