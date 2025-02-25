@@ -35,6 +35,7 @@ jobs:
         uses: ./.github/actions/fetch-and-upload-sbom/action.yaml
 
       - name: Display Artifact URL
+        shell: bash
         run: echo "SBOM artifact available at ${{ steps.sbom.outputs.artifact-url }}"
 
   test:
