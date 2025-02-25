@@ -34,15 +34,9 @@ runs:
         set +e
         ! test -z "${{ env.SDK }}"
 
-#    - name: Test
-#      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@test-minimal-logs
-#      with:
-#        path: ${{ env.DIRECTORY }}
-#        dotnet-version: ${{ env.SDK }}
-#        pin-version: true
-
-
     - name: Test
-      shell: bash
-      run: |
-        echo "Hello World"
+      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@test-minimal-logs
+      with:
+        path: ${{ env.DIRECTORY }}
+        dotnet-version: ${{ env.SDK }}
+        pin-version: true
