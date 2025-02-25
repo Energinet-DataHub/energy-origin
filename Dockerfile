@@ -5,14 +5,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-noble-chiseled-extra AS 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-noble AS build
 ARG PROJECT
 ARG MIGRATIONS
-## Tooling prerequisites CycloneDX Docker ##################
 ARG SYFT_RELEASE=1.13.0
 ARG SYFT_SHA256=65dd788271d8789e713fbef92464ab8ed01abb12643ad7d0f88af19df60c6bf3
 RUN curl -sLO https://github.com/anchore/syft/releases/download/v${SYFT_RELEASE}/syft_${SYFT_RELEASE}_linux_amd64.deb && \
   echo "${SYFT_SHA256} syft_${SYFT_RELEASE}_linux_amd64.deb" | sha256sum --check --status && \
   dpkg -i syft_${SYFT_RELEASE}_linux_amd64.deb && \
   rm syft_${SYFT_RELEASE}_linux_amd64.deb
-## CycloneDX CLI
 ARG CycloneDXCLIVersion=0.27.1
 RUN curl -LO https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${CycloneDXCLIVersion}/cyclonedx-linux-x64
 RUN chmod +x cyclonedx-linux-x64
