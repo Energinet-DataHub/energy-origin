@@ -83,19 +83,7 @@ runs:
         curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
         syft version
 
-    - name: Resolve container image name
-      shell: bash
-      run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.env.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
-    - name: Log in to the Container registry
-      uses: docker/login-action@5139682d94efc37792e6b54386b5b470a68a4737
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
-        ecr: false
-
-    - name: Extract application dependencies from image
+    - name: Resolve image name and scan dependencies
       shell: bash
       run: |
         # Get the base image name from the configuration
@@ -104,16 +92,19 @@ runs:
         # Create the full image name with registry prefix and lowercase it
         FULL_IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/${BASE_NAME}" | tr '[:upper:]' '[:lower:]')
 
-        # Set the environment variables
+        # Set the environment variables for later steps
         echo "name=${BASE_NAME}" >> $GITHUB_ENV
         echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_ENV
 
         echo "Image name: ${BASE_NAME}"
         echo "Full image name: ${FULL_IMAGE_NAME}"
-        echo "Scanning image ${{ env.full_image_name }}:${{ env.version }} for .NET dependencies..."
+        echo "Version/Tag: ${{ env.version }}"
+        echo "Full reference: ${FULL_IMAGE_NAME}:${{ env.version }}"
+
+        echo "Scanning image ${FULL_IMAGE_NAME}:${{ env.version }} for .NET dependencies..."
 
         # Create a container from the image but don't run it
-        CONTAINER_ID=$(docker create ${{ env.full_image_name }}:${{ env.version }})
+        CONTAINER_ID=$(docker create ${FULL_IMAGE_NAME}:${{ env.version }})
 
         # Create a directory to copy files to
         mkdir -p app_files
