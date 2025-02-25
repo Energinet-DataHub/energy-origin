@@ -81,7 +81,7 @@ runs:
     - name: Extract SBOM artifact
       shell: bash
       run: |
-        container_id=$(docker create --entrypoint "" ${{ env.LOWERCASED }}:${{ env.version }})
+        container_id=$(docker create ${{ env.LOWERCASED }}:${{ env.version }})
         mkdir -p artifacts
         docker cp $container_id:/sboms/combined-sbom.xml artifacts/combined-sbom.xml
         docker rm $container_id
