@@ -77,6 +77,9 @@ runs:
           PROJECT=${{ inputs.project }}
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
+          SBOM=true
+          BUILDKIT_SBOM_SCAN_CONTEXT=true
+          BUILDKIT_SBOM_SCAN_STAGE=base,build,final
 
 #    - name: Extract SBOM artifact
 #      shell: bash
