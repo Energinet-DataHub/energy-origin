@@ -5,25 +5,20 @@ inputs:
   solution:
     description: Is the path to a solution file.
     required: true
-
   project:
     description: Is the path to a project file.
     required: true
-
   configuration:
     description: Is the path to a configuration file.
     required: true
-
   dry-run:
     description: Perform all actions but without pushing the image
     required: false
     default: "false"
-
   sdk-version:
     description: Is a complete sdk version in format x.y.zzz
     required: false
     default: ""
-
   runtime-version:
     description: Is a complete runtime version in format x.y.z
     required: false
@@ -40,6 +35,7 @@ runs:
         echo "DIRECTORY=$DIRECTORY" | tee -a $GITHUB_ENV
         echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
         echo "RUNTIME=$(jq -rc '.runtime.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
+
     - name: Overwrite - if given optional input
       shell: bash
       run: |
@@ -80,6 +76,75 @@ runs:
           PROJECT=${{ inputs.project }}
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
+
+    - name: Install Syft
+      shell: bash
+      run: |
+        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+        syft version
+
+    - name: Extract application dependencies from image
+      shell: bash
+      run: |
+        echo "Scanning image ${{ env.name }}:${{ env.version }} for .NET dependencies..."
+
+        # Create a container from the image but don't run it
+        CONTAINER_ID=$(docker create ${{ env.name }}:${{ env.version }})
+
+        # Create a directory to copy files to
+        mkdir -p app_files
+
+        # Copy the application files from the container
+        docker cp $CONTAINER_ID:/app app_files/
+
+        # Remove the container
+        docker rm $CONTAINER_ID
+
+        # Generate SBOM for the application files
+        syft dir:app_files -o json > app_sbom.json
+
+        # Check for non-compliant dependencies
+        echo "Checking for non-compliant dependencies..."
+
+        # Create a file for non-compliant packages
+        touch non-compliant-packages.txt
+
+        # Process the SBOM to find non-compliant packages
+        jq -r '.artifacts[] | select(.version != null) | "\(.name)|\(.version)|\(.type)"' app_sbom.json | while IFS='|' read -r name version type; do
+          # Skip if version is empty
+          if [[ -z "$version" || "$version" == "null" ]]; then
+            continue
+          fi
+
+          # Check for version < 1.0.0
+          if [[ "$version" =~ ^0\. || "$version" =~ ^v0\. ]]; then
+            echo "$name ($type): Version $version is below 1.0.0" >> non-compliant-packages.txt
+          fi
+
+          # Check for dashes in version
+          if [[ "$version" == *-* ]]; then
+            echo "$name ($type): Version $version contains a dash" >> non-compliant-packages.txt
+          fi
+        done
+
+        # Count and report non-compliant packages
+        if [[ -s non-compliant-packages.txt ]]; then
+          NON_COMPLIANT_COUNT=$(sort -u non-compliant-packages.txt | wc -l | tr -d ' ')
+          echo "::error::Found $NON_COMPLIANT_COUNT non-compliant packages!"
+          echo "::group::Non-compliant packages"
+          sort -u non-compliant-packages.txt
+          echo "::endgroup::"
+          exit 1
+        else
+          echo "All packages are compliant!"
+        fi
+
+    - name: Upload SBOM as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-sbom-${{ env.name }}-${{ env.version }}
+        path: app_sbom.json
+        compression-level: 0
 
     - name: Scan image
       uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v3
