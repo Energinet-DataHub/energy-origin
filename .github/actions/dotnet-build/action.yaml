@@ -57,7 +57,6 @@ runs:
         ! test -z "${{ env.SDK }}"
         ! test -z "${{ env.RUNTIME }}"
 
-    - uses: actions/checkout@v4
 
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v3
