@@ -94,7 +94,7 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.LOWERCASED }}-${{ env.version }}-sbom.xml
-        path: artifacts/combined-sbom.xml
+        path: artifacts/sboms/combined-sbom.xml
         compression-level: '0'
 
     - name: Scan image
