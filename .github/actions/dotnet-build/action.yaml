@@ -81,10 +81,14 @@ runs:
     - name: Extract SBOM artifact
       shell: bash
       run: |
-        container_id=$(docker create ${{ env.LOWERCASED }}:${{ env.version }})
+        BASE_NAME=$(yq '.name' '${{ inputs.configuration }}')
+        FULL_IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/${BASE_NAME}" | tr '[:upper:]' '[:lower:]')
+        echo "name=${BASE_NAME}" >> $GITHUB_ENV
+        echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_ENV
+        CONTAINER_ID=$(docker create ${FULL_IMAGE_NAME}:${{ env.version }})
         mkdir -p artifacts
-        docker cp $container_id:/sboms/combined-sbom.xml artifacts/${{ env.LOWERCASED }}-${{ env.version }}.xml
-        docker rm $container_id
+        docker cp $CONTAINER_ID:/app/sboms artifacts/
+        docker rm $CONTAINER_ID
 
     - name: Upload SBOM artifact
       uses: actions/upload-artifact@v4
