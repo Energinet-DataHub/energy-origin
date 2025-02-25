@@ -32,7 +32,7 @@ RUN dotnet publish ${PROJECT} -c Release -o /app/publish
 RUN mkdir /app/sboms
 WORKDIR /app/sboms
 RUN /root/.dotnet/tools/dotnet-CycloneDX /app/publish/ -o .
-RUN syft scan mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-noble-chiseled -o cyclonedx-xml=./docker-sbom.xml
+RUN syft scan mcr.microsoft.com/dotnet/aspnet:8.0-noble-chiseled -o cyclonedx-xml=./docker-sbom.xml
 RUN cyclonedx-linux-x64 merge --input-files bom.xml docker-sbom.xml --output-file combined-sbom.xml
 WORKDIR /app/publish
 RUN rm -f appsettings.json appsettings.*.json || true
