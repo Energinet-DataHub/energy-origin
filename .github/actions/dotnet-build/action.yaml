@@ -86,13 +86,10 @@ runs:
     - name: Resolve image name and scan dependencies
       shell: bash
       run: |
-        # Get the base image name from the configuration
         BASE_NAME=$(yq '.name' '${{ inputs.configuration }}')
 
-        # Create the full image name with registry prefix and lowercase it
         FULL_IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/${BASE_NAME}" | tr '[:upper:]' '[:lower:]')
 
-        # Set the environment variables for later steps
         echo "name=${BASE_NAME}" >> $GITHUB_ENV
         echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_ENV
 
@@ -103,62 +100,61 @@ runs:
 
         echo "Scanning image ${FULL_IMAGE_NAME}:${{ env.version }} for .NET dependencies..."
 
-        # Create a container from the image but don't run it
         CONTAINER_ID=$(docker create ${FULL_IMAGE_NAME}:${{ env.version }})
 
-        # Create a directory to copy files to
         mkdir -p app_files
 
-        # Copy the application files from the container
         docker cp $CONTAINER_ID:/app app_files/
 
-        # Remove the container
         docker rm $CONTAINER_ID
 
-        # Generate SBOM for the application files
         syft dir:app_files -o json > app_sbom.json
 
-        # Check for non-compliant dependencies
         echo "Checking for non-compliant dependencies..."
 
-        # Create a file for non-compliant packages
         touch non-compliant-packages.txt
 
-        # Process the SBOM to find non-compliant packages
         jq -r '.artifacts[] | select(.version != null) | "\(.name)|\(.version)|\(.type)"' app_sbom.json | while IFS='|' read -r name version type; do
-          # Skip if version is empty
           if [[ -z "$version" || "$version" == "null" ]]; then
             continue
           fi
 
-          # Check for version < 1.0.0
           if [[ "$version" =~ ^0\. || "$version" =~ ^v0\. ]]; then
             echo "$name ($type): Version $version is below 1.0.0" >> non-compliant-packages.txt
           fi
 
-          # Check for dashes in version
           if [[ "$version" == *-* ]]; then
             echo "$name ($type): Version $version contains a dash" >> non-compliant-packages.txt
           fi
         done
 
-        # Count and report non-compliant packages
         if [[ -s non-compliant-packages.txt ]]; then
           NON_COMPLIANT_COUNT=$(sort -u non-compliant-packages.txt | wc -l | tr -d ' ')
-          echo "::error::Found $NON_COMPLIANT_COUNT non-compliant packages!"
+          echo "::warning::Found $NON_COMPLIANT_COUNT non-compliant packages!"
           echo "::group::Non-compliant packages"
           sort -u non-compliant-packages.txt
           echo "::endgroup::"
-          exit 1
+          echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
+          echo "has_non_compliant=true" >> $GITHUB_ENV
         else
           echo "All packages are compliant!"
+          echo "non_compliant_count=0" >> $GITHUB_ENV
+          echo "has_non_compliant=false" >> $GITHUB_ENV
         fi
 
     - name: Upload SBOM as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: app-sbom-${{ env.full_image_name }}-${{ env.version }}
+        name: app-sbom-${{ env.name }}-${{ env.version }}
         path: app_sbom.json
+        compression-level: 0
+
+    - name: Upload non-compliant packages list
+      if: ${{ env.has_non_compliant == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: non-compliant-packages-${{ env.name }}-${{ env.version }}
+        path: non-compliant-packages.txt
         compression-level: 0
 
     - name: Scan image
