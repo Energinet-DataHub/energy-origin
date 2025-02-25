@@ -93,7 +93,7 @@ runs:
     - name: Upload SBOM artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.LOWERCASED }}-${{ env.version }}-sbom.xml
+        name: ${{ env.name }}-${{ env.version }}-sbom.xml
         path: artifacts/sboms/combined-sbom.xml
         compression-level: '0'
 
