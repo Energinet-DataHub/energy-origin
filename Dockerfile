@@ -1,5 +1,7 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
+ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-noble-chiseled-extra AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-noble AS build
@@ -29,6 +31,8 @@ fi
 EOR
 
 FROM base AS final
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
+ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY --from=build /app/migrations /migrations/
