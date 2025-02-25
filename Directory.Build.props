@@ -1,7 +1,0 @@
-<Project>
-    <PropertyGroup>
-        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-        <EnableMSTestRunner>true</EnableMSTestRunner>
-        <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
-    </PropertyGroup>
-</Project>
