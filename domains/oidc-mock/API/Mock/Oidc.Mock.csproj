@@ -8,7 +8,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="jose-jwt" Version="5.0.0" />
-        <PackageReference Include="Grpc.Tools" Version="0.15.0"/>
+        <PackageReference Include="Grpc.Tools" Version="2.69.0-pre1"/>
 	</ItemGroup>
 
 </Project>

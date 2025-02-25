@@ -18,6 +18,5 @@
                  Code="PO1001"
                  Text="$(_WarningMessage): %(UnwantedPackages.Identity) (%(UnwantedPackages.Version))"
                  Condition="'@(UnwantedPackages)' != ''" />
-
     </Target>
 </Project>
