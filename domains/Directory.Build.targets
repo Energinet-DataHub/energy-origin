@@ -1,0 +1,20 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="BlockUnwantedDependencies" BeforeTargets="PrepareForBuild">
+        <ItemGroup>
+            <UnwantedPackages Include="@(PackageReference)"
+                              Condition="'%(PackageReference.Version)' != '' and
+                                        $([System.Text.RegularExpressions.Regex]::IsMatch('%(PackageReference.Version)', '^(0\.\d+\.\d+.*|.*-.*)'))" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <_ErrorMessage>Build blocked: Prerelase or unstable NuGet package: </_ErrorMessage>
+        </PropertyGroup>
+
+        <Warning File="$(MSBuildProjectFullPath)"
+                 Text="$(_ErrorMessage): %(UnwantedPackages.Identity) (%(UnwantedPackages.Version))"
+                 Condition="'@(UnwantedPackages)' != ''" />
+
+        <Error Condition="'@(UnwantedPackages)' != ''"
+               Text="Build failed due to unwanted package versions. See warnings for details." />
+    </Target>
+</Project>
