@@ -3,6 +3,5 @@
         <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
         <EnableMSTestRunner>true</EnableMSTestRunner>
         <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
-        <OutputType>Exe</OutputType>
     </PropertyGroup>
 </Project>
