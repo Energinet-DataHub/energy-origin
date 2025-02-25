@@ -83,6 +83,10 @@ runs:
         curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
         syft version
 
+    - name: Resolve container image name
+      shell: bash
+      run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.env.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
     - name: Log in to the Container registry
       uses: docker/login-action@5139682d94efc37792e6b54386b5b470a68a4737
       with:
@@ -94,10 +98,22 @@ runs:
     - name: Extract application dependencies from image
       shell: bash
       run: |
-        echo "Scanning image ${{ env.name }}:${{ env.version }} for .NET dependencies..."
+        # Get the base image name from the configuration
+        BASE_NAME=$(yq '.name' '${{ inputs.configuration }}')
+
+        # Create the full image name with registry prefix and lowercase it
+        FULL_IMAGE_NAME=$(echo "ghcr.io/${{ github.repository_owner }}/${BASE_NAME}" | tr '[:upper:]' '[:lower:]')
+
+        # Set the environment variables
+        echo "name=${BASE_NAME}" >> $GITHUB_ENV
+        echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_ENV
+
+        echo "Image name: ${BASE_NAME}"
+        echo "Full image name: ${FULL_IMAGE_NAME}"
+        echo "Scanning image ${{ env.full_image_name }}:${{ env.version }} for .NET dependencies..."
 
         # Create a container from the image but don't run it
-        CONTAINER_ID=$(docker create ${{ env.name }}:${{ env.version }})
+        CONTAINER_ID=$(docker create ${{ env.full_image_name }}:${{ env.version }})
 
         # Create a directory to copy files to
         mkdir -p app_files
@@ -150,7 +166,7 @@ runs:
     - name: Upload SBOM as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: app-sbom-${{ env.name }}-${{ env.version }}
+        name: app-sbom-${{ env.full_image_name }}-${{ env.version }}
         path: app_sbom.json
         compression-level: 0
 
