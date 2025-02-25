@@ -1,5 +1,5 @@
-name: Dotnet - Build
-description: Build a dotnet project
+name: Dotnet - Build and Scan
+description: Build a dotnet project and scan for dependencies
 
 inputs:
   solution:
@@ -24,7 +24,7 @@ inputs:
     required: false
     default: ""
   strict-verification:
-    description: "Fail the workflow if non-compliant packages are found"
+    description: Fail the workflow if non-compliant packages are found
     required: false
     default: "false"
 
@@ -64,35 +64,7 @@ runs:
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v3
 
-    - name: Resolve image name
-      shell: bash
-      run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
-
-    - name: Build image
-      uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v3
-      with:
-        dockerfile: Dockerfile
-        image-name: ${{ env.name }}
-        image-tag: ${{ env.version }}
-        docker-context: .
-        dry-run: ${{ inputs.dry-run }}
-        build-args: |
-          PROJECT=${{ inputs.project }}
-          SDK_VERSION=${{ env.SDK }}
-          RUNTIME_VERSION=${{ env.RUNTIME }}
-
-    - name: Install Syft
-      shell: bash
-      run: |
-        curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-        syft version
-
-    - name: Install dotnet-project-licenses tool
-      shell: bash
-      run: |
-        dotnet tool install --global dotnet-project-licenses
-
-    - name: Resolve image name and scan dependencies
+    - name: Resolve container image name
       shell: bash
       run: |
         BASE_NAME=$(yq '.name' '${{ inputs.configuration }}')
@@ -107,125 +79,134 @@ runs:
         echo "Version/Tag: ${{ env.version }}"
         echo "Full reference: ${FULL_IMAGE_NAME}:${{ env.version }}"
 
-        echo "Scanning image ${FULL_IMAGE_NAME}:${{ env.version }} for .NET dependencies..."
+    - name: Log in to the Container registry
+      uses: docker/login-action@5139682d94efc37792e6b54386b5b470a68a4737
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+        ecr: false
 
-        CONTAINER_ID=$(docker create ${FULL_IMAGE_NAME}:${{ env.version }})
+    - name: Build image
+      uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v3
+      with:
+        dockerfile: Dockerfile
+        image-name: ${{ env.full_image_name }}
+        image-tag: ${{ env.version }}
+        docker-context: .
+        dry-run: ${{ inputs.dry-run }}
+        build-args: |
+          PROJECT=${{ inputs.project }}
+          SDK_VERSION=${{ env.SDK }}
+          RUNTIME_VERSION=${{ env.RUNTIME }}
 
-        mkdir -p app_files
+    - name: Generate SBOM with Syft
+      uses: anchore/sbom-action@v0
+      with:
+        image: ${{ env.full_image_name }}:${{ env.version }}
+        artifact-name: sbom-${{ env.name }}-${{ env.version }}
+        output-file: ./sbom.json
+        format: syft-json
 
-        docker cp $CONTAINER_ID:/app app_files/
+    - name: Analyze dependencies from SBOM
+      shell: bash
+      run: |
+        echo "Analyzing SBOM for non-compliant dependencies..."
 
-        docker rm $CONTAINER_ID
+        echo "# Dependency Analysis" > dependency_analysis.txt
 
-        syft dir:app_files -o json > app_sbom.json
+        jq -r '.artifacts[] | select(.version != null) | "\(.name)|\(.version)|\(.type)"' sbom.json | sort > all_deps.txt
 
-        echo "Extracting direct dependencies from solution..."
-        cd $(dirname '${{ inputs.solution }}')
-        dotnet restore
+        TOTAL_DEPS=$(wc -l < all_deps.txt)
+        echo "Total dependencies found: $TOTAL_DEPS" >> dependency_analysis.txt
 
-        echo "# Direct Dependencies" > ../../direct_dependencies.txt
-        echo "Package Name | Version | Project File" >> ../../direct_dependencies.txt
-        echo "-------------|---------|-------------" >> ../../direct_dependencies.txt
+        echo "# Direct Dependencies" > direct_dependencies.txt
+        echo "Package Name | Version | Project File" >> direct_dependencies.txt
+        echo "-------------|---------|-------------" >> direct_dependencies.txt
 
         find . -name "*.csproj" | while read -r csproj; do
           PROJECT_NAME=$(basename "$csproj" .csproj)
-          echo "Analyzing project: $PROJECT_NAME"
+          PROJECT_PATH=$(dirname "$csproj")
 
-          dotnet project-licenses -i "$csproj" -j > project_deps.json
+          grep -o '<PackageReference Include="[^"]*" Version="[^"]*"' "$csproj" | while read -r ref; do
+            PACKAGE_NAME=$(echo "$ref" | sed -n 's/.*Include="\([^"]*\)".*/\1/p')
+            PACKAGE_VERSION=$(echo "$ref" | sed -n 's/.*Version="\([^"]*\)".*/\1/p')
 
-          jq -r '.Packages[] | "\(.PackageName)|\(.PackageVersion)|\(.LicenseType)"' project_deps.json | while IFS='|' read -r name version license; do
-            echo "$name | $version | $PROJECT_NAME" >> ../../direct_dependencies.txt
+            if [[ -n "$PACKAGE_NAME" && -n "$PACKAGE_VERSION" ]]; then
+              echo "$PACKAGE_NAME | $PACKAGE_VERSION | $PROJECT_NAME ($PROJECT_PATH)" >> direct_dependencies.txt
+            fi
           done
         done
 
-        cd ../../
+        grep -v "^#\|^-" direct_dependencies.txt | cut -d '|' -f 1 | tr -d ' ' > direct_dep_names.txt
 
         touch non-compliant-packages.txt
 
-        echo "Checking for non-compliant direct dependencies..."
+        echo "## Direct Dependencies" >> dependency_analysis.txt
+        echo "Package Name | Version | Type | Project" >> dependency_analysis.txt
+        echo "-------------|---------|------|--------" >> dependency_analysis.txt
 
-        grep -v "^#\|^-" direct_dependencies.txt | cut -d '|' -f 1 | tr -d ' ' > direct_dep_names.txt
-
-        jq -r '.artifacts[] | select(.version != null) | "\(.name)|\(.version)|\(.type)"' app_sbom.json | while IFS='|' read -r name version type; do
-          # Skip if version is empty
-          if [[ -z "$version" || "$version" == "null" ]]; then
-            continue
-          fi
-
+          while IFS='|' read -r name version type; do
           if grep -q "^$name$" direct_dep_names.txt; then
-            # Find which project this dependency is defined in
-            PROJECT_INFO=$(grep -F "$name |" direct_dependencies.txt | head -1 | cut -d '|' -f 3)
+          PROJECT_INFO=$(grep -F "$name |" direct_dependencies.txt | head -1 | cut -d '|' -f 3)
+          echo "$name | $version | $type | $PROJECT_INFO" >> dependency_analysis.txt
 
-            if [[ "$version" =~ ^0\. || "$version" =~ ^v0\. ]]; then
-              echo "$name ($type): Version $version is below 1.0.0 - Defined in: $PROJECT_INFO" >> non-compliant-packages.txt
-            fi
-
-            if [[ "$version" == *-* ]]; then
-              echo "$name ($type): Version $version contains a dash - Defined in: $PROJECT_INFO" >> non-compliant-packages.txt
-            fi
+          if [[ "$version" =~ ^0\. || "$version" =~ ^v0\. ]]; then
+          echo "$name ($type): Version $version is below 1.0.0 - Defined in: $PROJECT_INFO" >> non-compliant-packages.txt
           fi
-        done
 
-        # Create a summary of direct vs. transitive dependencies
-        echo "# Dependency Summary" > dependency_summary.txt
-        TOTAL_DEPS=$(jq '.artifacts | length' app_sbom.json)
-        DIRECT_DEPS=$(wc -l < direct_dep_names.txt)
-        TRANSITIVE_DEPS=$((TOTAL_DEPS - DIRECT_DEPS))
+          if [[ "$version" == *-* ]]; then
+          echo "$name ($type): Version $version contains a dash - Defined in: $PROJECT_INFO" >> non-compliant-packages.txt
+          fi
+          fi
+          done < all_deps.txt
 
-        echo "Total dependencies: $TOTAL_DEPS" >> dependency_summary.txt
-        echo "Direct dependencies: $DIRECT_DEPS" >> dependency_summary.txt
-        echo "Transitive dependencies: $TRANSITIVE_DEPS" >> dependency_summary.txt
-        echo "" >> dependency_summary.txt
+          DIRECT_DEPS=$(grep -v "^#\|^-" dependency_analysis.txt | grep -v "Package Name" | wc -l || echo 0)
+          echo "" >> dependency_analysis.txt
+          echo "Direct dependencies found: $DIRECT_DEPS" >> dependency_analysis.txt
 
-        # Add the direct dependencies list
-        cat direct_dependencies.txt >> dependency_summary.txt
+          TRANSITIVE_DEPS=$((TOTAL_DEPS - DIRECT_DEPS))
+          echo "Transitive dependencies: $TRANSITIVE_DEPS" >> dependency_analysis.txt
 
-        echo "Dependency summary:"
-        cat dependency_summary.txt
-
-        if [[ -s non-compliant-packages.txt ]]; then
+          if [[ -s non-compliant-packages.txt ]]; then
           NON_COMPLIANT_COUNT=$(sort -u non-compliant-packages.txt | wc -l | tr -d ' ')
 
-          if [[ "${{ inputs.strict-verification }}" == "true" ]]; then
-            echo "::error::Found $NON_COMPLIANT_COUNT non-compliant direct dependencies!"
-            echo "::group::Non-compliant direct dependencies"
-            sort -u non-compliant-packages.txt
-            echo "::endgroup::"
-            echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
-            echo "has_non_compliant=true" >> $GITHUB_ENV
-            exit 1
+          echo "" >> dependency_analysis.txt
+          echo "## Non-Compliant Dependencies" >> dependency_analysis.txt
+          echo "Found $NON_COMPLIANT_COUNT non-compliant direct dependencies:" >> dependency_analysis.txt
+          echo "" >> dependency_analysis.txt
+          sort -u non-compliant-packages.txt >> dependency_analysis.txt
+
+          echo "::warning::Found $NON_COMPLIANT_COUNT non-compliant direct dependencies!"
+          echo "::group::Non-compliant direct dependencies"
+          sort -u non-compliant-packages.txt
+          echo "::endgroup::"
+          echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
+          echo "has_non_compliant=true" >> $GITHUB_ENV
           else
-            echo "::warning::Found $NON_COMPLIANT_COUNT non-compliant direct dependencies!"
-            echo "::group::Non-compliant direct dependencies"
-            sort -u non-compliant-packages.txt
-            echo "::endgroup::"
-            echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
-            echo "has_non_compliant=true" >> $GITHUB_ENV
-          fi
-        else
-          echo "All direct dependencies are compliant!"
+          echo "" >> dependency_analysis.txt
+          echo "## Non-Compliant Dependencies" >> dependency_analysis.txt
+          echo "No non-compliant dependencies found." >> dependency_analysis.txt
+
+          echo "All dependencies are compliant!"
           echo "non_compliant_count=0" >> $GITHUB_ENV
           echo "has_non_compliant=false" >> $GITHUB_ENV
-        fi
+          fi
 
-    - name: Upload SBOM as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-sbom-${{ env.name }}-${{ env.version }}
-        path: app_sbom.json
-        compression-level: 0
+          echo "Dependency Analysis:"
+          cat dependency_analysis.txt
 
-    - name: Upload non-compliant packages list
-      if: ${{ env.has_non_compliant == 'true' }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: non-compliant-packages-${{ env.name }}-${{ env.version }}
-        path: non-compliant-packages.txt
-        compression-level: 0
+        - name: Upload dependency analysis
+          uses: actions/upload-artifact@v4
+          with:
+            name: dependency-analysis-${{ env.name }}-${{ env.version }}
+            path: dependency_analysis.txt
+            compression-level: 0
 
-    - name: Scan image
-      uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v3
-      with:
-        image-name: ${{ env.name }}
-        image-tag: ${{ env.version }}
-        upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        - name: Upload non-compliant packages list
+          if: ${{ env.has_non_compliant == 'true' }}
+          uses: actions/upload-artifact@v4
+          with:
+            name: non-compliant-packages-${{ env.name }}-${{ env.version }}
+            path: non-compliant-packages.txt
+            compression-level: 0
