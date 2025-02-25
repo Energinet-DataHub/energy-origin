@@ -25,6 +25,7 @@ fi
 EOR
 
 FROM build AS sbom
+WORKDIR /src/
 ARG SYFT_RELEASE=1.13.0
 ARG SYFT_SHA256=65dd788271d8789e713fbef92464ab8ed01abb12643ad7d0f88af19df60c6bf3
 RUN curl -sLO https://github.com/anchore/syft/releases/download/v${SYFT_RELEASE}/syft_${SYFT_RELEASE}_linux_amd64.deb && \
@@ -36,12 +37,12 @@ RUN curl -LO https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${Cyc
     chmod +x cyclonedx-linux-x64 && \
     mv cyclonedx-linux-x64 /usr/local/bin/cyclonedx && \
     cyclonedx --version
-RUN dotnet tool install --global CycloneDX || true && \
+RUN mkdir -p /app && \
+    dotnet tool install --global CycloneDX || true && \
     /root/.dotnet/tools/dotnet-CycloneDX ${PROJECT} -o /app/sbom.xml && \
-    syft . -o cyclonedx-xml=/app/docker-sbom.xml && \
+    syft /src -o cyclonedx-xml=/app/docker-sbom.xml && \
     cyclonedx merge --input-files /app/sbom.xml,/app/docker-sbom.xml --output-file /app/combined-sbom.xml
 
-ARG RUNTIME_VERSION
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-noble-chiseled-extra AS final
 WORKDIR /app
 COPY --from=build /app/publish .
