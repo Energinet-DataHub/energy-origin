@@ -57,9 +57,11 @@ runs:
         ! test -z "${{ env.SDK }}"
         ! test -z "${{ env.RUNTIME }}"
 
+    - uses: actions/checkout@v4
+
     - name: Fetch Dockerfile
       shell: bash
-      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/main/Dockerfile.simplified -O Dockerfile
+      run: cat ./Dockerfile > Dockerfile
 
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v3
@@ -80,6 +82,27 @@ runs:
           PROJECT=${{ inputs.project }}
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
+
+    - name: Build SBOM export stage
+      shell: bash
+      run: |
+        docker build --target export-sbom -t sbom-artifact -f Dockerfile .
+
+    - name: Extract SBOM artifact
+      shell: bash
+      run: |
+        container_id=$(docker create sbom-artifact)
+        mkdir -p artifacts
+        docker cp $container_id:/combined-sbom.xml ./artifacts/combined-sbom.xml
+        docker rm $container_id
+
+    - name: Upload SBOM artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: artifacts/combined-sbom.xml
+        compression-level: '0'
+
 
     - name: Scan image
       uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v3
