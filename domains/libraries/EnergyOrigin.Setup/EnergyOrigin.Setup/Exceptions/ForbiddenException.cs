@@ -1,10 +1,15 @@
 using System;
 
-namespace EnergyOrigin.TokenValidation.b2c;
+namespace EnergyOrigin.Setup.Exceptions;
 
 public class ForbiddenException : Exception
 {
     public ForbiddenException(string msg) : base(msg)
+    {
+
+    }
+
+    public ForbiddenException() : base("Not authorized to perform action")
     {
 
     }

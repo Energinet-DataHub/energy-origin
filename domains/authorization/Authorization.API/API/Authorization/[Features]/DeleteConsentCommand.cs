@@ -2,12 +2,12 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Authorization.Exceptions;
 using API.Data;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

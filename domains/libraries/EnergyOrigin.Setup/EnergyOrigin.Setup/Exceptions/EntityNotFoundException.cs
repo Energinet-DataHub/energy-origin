@@ -1,6 +1,6 @@
 using System;
 
-namespace API.Authorization.Exceptions;
+namespace EnergyOrigin.Setup.Exceptions;
 
 public class EntityNotFoundException : NotFoundException
 {

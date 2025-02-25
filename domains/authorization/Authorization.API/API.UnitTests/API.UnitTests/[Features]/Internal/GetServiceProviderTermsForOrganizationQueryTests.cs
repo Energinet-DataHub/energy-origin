@@ -1,8 +1,8 @@
 using API.Authorization._Features_.Internal;
-using API.Authorization.Exceptions;
 using API.Models;
 using API.UnitTests.Repository;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using FluentAssertions;
 
 namespace API.UnitTests._Features_.Internal;
