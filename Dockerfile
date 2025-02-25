@@ -40,7 +40,7 @@ RUN curl -LO https://github.com/CycloneDX/cyclonedx-cli/releases/download/v${Cyc
 RUN mkdir -p /sboms && chmod -R 777 /sboms && \
     dotnet tool install --global CycloneDX || true && \
     /root/.dotnet/tools/dotnet-CycloneDX ${PROJECT} -o /sboms && \
-    syft /src -o /app/docker-sbom.xml && \
+    syft /src -o cyclonedx-xml > /app/docker-sbom.xml && \
     cyclonedx merge --input-files /sboms/bom.xml /app/docker-sbom.xml --output-file /app/combined-sbom.xml
 
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-noble-chiseled-extra AS final
