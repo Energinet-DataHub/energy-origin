@@ -23,6 +23,10 @@ inputs:
     description: Is a complete runtime version in format x.y.z
     required: false
     default: ""
+  strict-verification:
+    description: "Fail the workflow if non-compliant packages are found"
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -130,12 +134,23 @@ runs:
 
         if [[ -s non-compliant-packages.txt ]]; then
           NON_COMPLIANT_COUNT=$(sort -u non-compliant-packages.txt | wc -l | tr -d ' ')
-          echo "::warning::Found $NON_COMPLIANT_COUNT non-compliant packages!"
-          echo "::group::Non-compliant packages"
-          sort -u non-compliant-packages.txt
-          echo "::endgroup::"
-          echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
-          echo "has_non_compliant=true" >> $GITHUB_ENV
+
+          if [[ "${{ inputs.strict-verification }}" == "true" ]]; then
+            echo "::error::Found $NON_COMPLIANT_COUNT non-compliant packages!"
+            echo "::group::Non-compliant packages"
+            sort -u non-compliant-packages.txt
+            echo "::endgroup::"
+            echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
+            echo "has_non_compliant=true" >> $GITHUB_ENV
+            exit 1
+          else
+            echo "::warning::Found $NON_COMPLIANT_COUNT non-compliant packages!"
+            echo "::group::Non-compliant packages"
+            sort -u non-compliant-packages.txt
+            echo "::endgroup::"
+            echo "non_compliant_count=${NON_COMPLIANT_COUNT}" >> $GITHUB_ENV
+            echo "has_non_compliant=true" >> $GITHUB_ENV
+          fi
         else
           echo "All packages are compliant!"
           echo "non_compliant_count=0" >> $GITHUB_ENV
