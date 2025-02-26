@@ -28,7 +28,7 @@ public class RegistryFixture : IAsyncLifetime
 
     private readonly IContainer registryContainer;
     private readonly IContainer verifierContainer;
-    private readonly RabbitMqContainer rabbitMqContainer;
+    private readonly global::Testcontainers.RabbitMq.RabbitMqContainer rabbitMqContainer;
     private readonly PostgreSqlContainer registryPostgresContainer;
     protected readonly INetwork Network;
     private readonly string rabbitMqImage = "rabbitmq:3.13-management";

@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
-using API.Authorization.Exceptions;
 using API.Models;
 using API.Repository;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using OrganizationId = API.ValueObjects.OrganizationId;
@@ -20,7 +20,7 @@ public class GetOrganizationQueryHandler(IOrganizationRepository organizationRep
 
         if (org is null)
         {
-            throw new EntityNotFoundException(request.OrganizationId.Value.ToString(), nameof(Organization));
+            throw new EntityNotFoundException(request.OrganizationId.Value, typeof(Organization));
         }
 
         return new GetOrganizationQueryResult(OrganizationId.Create(org.Id), org.Name, org.Tin);

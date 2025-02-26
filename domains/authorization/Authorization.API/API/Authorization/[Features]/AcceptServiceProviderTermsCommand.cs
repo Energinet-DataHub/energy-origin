@@ -1,10 +1,10 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Authorization.Exceptions;
 using API.Data;
+using API.Models;
 using API.Repository;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,7 +28,7 @@ public class AcceptServiceProviderTermsCommandHandler(
 
         if (usersAffiliatedOrganization == null)
         {
-            throw new EntityNotFoundException(nameof(usersAffiliatedOrganization), "Organization does not exist.");
+            throw new EntityNotFoundException(usersAffiliatedOrganizationsId, typeof(Organization));
         }
 
         if (!usersAffiliatedOrganization.ServiceProviderTermsAccepted)

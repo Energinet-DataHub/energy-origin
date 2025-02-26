@@ -13,7 +13,7 @@ Each subsystem workflow automates the test, build, and deployment process for a 
 Each workflow for a subsystem follows a standardized process:
 
 1. **Test**: The entire .NET solution is tested to ensure the integrity of the solution's codebase using a custom [dotnet-test](./dotnet-test.md) action.
-2. **Build**: Docker images are built for each project within the .NET solution using a standardized [Dockerfile](https://github.com/Energinet-DataHub/acorn-actions/Dockerfile.simplified) provided by Ratatosk, and a custom [dotnet-build](./dotnet-build.md) action.
+2. **Build**: Docker images are built for each project within the .NET solution using a standardized [Dockerfile](https://github.com/Energinet-DataHub/acorn-actions/Dockerfile.simplified) provided by Team Fusion, and a custom [dotnet-build](./dotnet-build.md) action.
 3. **Update**: If all tests pass and the images are built successfully, the workflow will:
     - Push the newly built images to the GitHub Container Registry (ghcr.io).
     - Update the Infrastructure as Code (IaC) repository, `eo-base`, with the names of the latest images. This allows ArgoCD to pull the updated images from the registry.

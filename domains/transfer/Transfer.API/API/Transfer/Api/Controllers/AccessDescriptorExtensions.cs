@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.TokenValidation.b2c;
 
 namespace API.Transfer.Api.Controllers;

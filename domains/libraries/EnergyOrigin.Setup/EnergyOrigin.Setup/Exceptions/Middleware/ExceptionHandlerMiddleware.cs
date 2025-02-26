@@ -4,11 +4,10 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace API.Transfer.Api.Exceptions;
+namespace EnergyOrigin.Setup.Exceptions.Middleware;
 
 public class ExceptionHandlerMiddleware
 {
@@ -61,3 +60,4 @@ public class Error
         Description = description;
     }
 }
+
