@@ -1,4 +1,5 @@
 using API.Options;
+using EnergyOrigin.Setup;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,7 @@ public static class ConfigurationExtensions
             .ValidateOnStart();
 
         builder.Logging.ClearProviders();
-        builder.Logging.AddSerilog(Log.Logger);
+        builder.AddSerilogWithoutOutboxLogs();
 
         var startup = new Startup(builder.Configuration);
         startup.ConfigureServices(builder.Services);

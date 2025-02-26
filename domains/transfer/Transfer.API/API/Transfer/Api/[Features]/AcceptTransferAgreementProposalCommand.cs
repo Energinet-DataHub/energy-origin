@@ -8,6 +8,7 @@ using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using EnergyOrigin.WalletClient;

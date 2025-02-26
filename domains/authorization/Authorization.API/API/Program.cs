@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using API.Authorization;
-using API.Authorization.Exceptions;
 using API.Data;
 using API.Metrics;
 using API.Models;
@@ -9,11 +8,13 @@ using API.Options;
 using API.Repository;
 using API.Services;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Exceptions.Middleware;
+using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.WalletClient;
-using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry;
-using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,63 +48,15 @@ builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddControllersWithEnumsAsStrings();
 
-builder.Services.AddSingleton<IConnection>(sp =>
-{
-    var options = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>();
 
-    var factory = new ConnectionFactory
-    {
-        HostName = options.Host,
-        Port = options.Port ?? 0,
-        UserName = options.Username,
-        Password = options.Password,
-        AutomaticRecoveryEnabled = true
-    };
-    return factory.CreateConnection();
-});
-
-builder.Services.AddHealthChecks()
-    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!)
-    .AddRabbitMQ();
-
-builder.Services.AddOptions<RabbitMqOptions>()
-    .BindConfiguration(RabbitMqOptions.RabbitMq)
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
-
-builder.Services.AddMassTransit(o =>
-{
-    o.SetKebabCaseEndpointNameFormatter();
-    o.AddConfigureEndpointsCallback((name, cfg) =>
-    {
-        if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
-            rmq.SetQuorumQueue(3);
-    });
-    o.UsingRabbitMq((context, cfg) =>
-    {
-        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-        var url = $"rabbitmq://{options.Host}:{options.Port}";
-
-
-        cfg.Host(new Uri(url), h =>
-        {
-            h.Username(options.Username);
-            h.Password(options.Password);
-        });
-        cfg.ConfigureEndpoints(context);
-    });
-    o.AddEntityFrameworkOutbox<ApplicationDbContext>(outboxConfigurator =>
-    {
-        outboxConfigurator.UsePostgres();
-        outboxConfigurator.UseBusOutbox();
-    });
-});
+builder.Services.AddDefaultHealthChecks();
 
 builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
-
 builder.Services.AddB2C(b2COptions);
+
 builder.Services.AddHttpContextAccessor();
 
 // Register DbContext and related services

@@ -59,8 +59,9 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
 
         return result switch
         {
-            GsrnNotFound => ValidationProblem(),
-            ContractAlreadyExists => ValidationProblem(statusCode: 409),
+            GsrnNotFound(var gsrn) => ValidationProblem(detail: $"GSRN {gsrn} was not found"),
+            CannotBeUsedForIssuingCertificates(var gsrn) => ValidationProblem(statusCode: 409, detail: $"GSRN {gsrn} cannot be used for issuing certificates"),
+            ContractAlreadyExists(var existing) => ValidationProblem(statusCode: 409, detail: $"{existing?.GSRN} already has an active contract"),
             CreateContractResult.Success(var createdContracts) => Created("",
                 new ContractList { Result = createdContracts.Select(Contract.CreateFrom).ToList() }),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(Contracts20240515Controller)}")

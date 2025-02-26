@@ -1,8 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
-using API.Authorization.Exceptions;
+using API.Models;
 using API.Repository;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +24,7 @@ public class GetServiceProviderTermsQueryHandler(
 
         if (organization == null)
         {
-            throw new EntityNotFoundException(nameof(organization), "Organization does not exist.");
+            throw new EntityNotFoundException(usersAffiliatedOrganizationsId, typeof(Organization));
         }
 
         return organization.ServiceProviderTermsAccepted;

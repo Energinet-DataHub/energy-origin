@@ -1,10 +1,10 @@
 using API.Authorization._Features_;
-using API.Authorization.Exceptions;
 using API.Data;
 using API.Models;
 using API.Repository;
 using API.UnitTests.Repository;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using FluentAssertions;
 using NSubstitute;
 

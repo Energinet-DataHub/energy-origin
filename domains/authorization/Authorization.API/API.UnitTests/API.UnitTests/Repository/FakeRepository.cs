@@ -1,8 +1,7 @@
-using API.Authorization.Exceptions;
 using API.Models;
 using API.Repository;
+using EnergyOrigin.Setup.Exceptions;
 using MockQueryable.EntityFrameworkCore;
-using MockQueryable.NSubstitute;
 
 namespace API.UnitTests.Repository;
 
@@ -15,7 +14,7 @@ public class FakeGenericRepository<TEntity> : IGenericRepository<TEntity> where 
         var entity = _entities.FirstOrDefault(e => e.Id == id);
         if (entity is null)
         {
-            throw new EntityNotFoundException(id.ToString(), typeof(TEntity).Name);
+            throw new EntityNotFoundException(id, typeof(TEntity));
         }
 
         return Task.FromResult(entity);
