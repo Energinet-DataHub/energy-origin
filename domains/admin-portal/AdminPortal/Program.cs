@@ -81,7 +81,7 @@ builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("Aut
         builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),
         builder.Configuration["ADMIN_PORTAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_SECRET not set"),
         builder.Configuration["ADMIN_PORTAL_TENANT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_TENANT_ID not set"),
-        new[] { $"https://datahubeouenerginet.onmicrosoft.com/{builder.Configuration["ADMIN_PORTAL_CLIENT_ID"]}/.default" },
+        new[] { $"{builder.Configuration["ADMIN_PORTAL_SCOPE"]}" },
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
         ));
 
@@ -93,7 +93,7 @@ builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("Certi
         builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),
         builder.Configuration["ADMIN_PORTAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_SECRET not set"),
         builder.Configuration["ADMIN_PORTAL_TENANT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_TENANT_ID not set"),
-        new[] { $"https://datahubeouenerginet.onmicrosoft.com/{builder.Configuration["ADMIN_PORTAL_CLIENT_ID"]}/.default" },
+        new[] { $"{builder.Configuration["ADMIN_PORTAL_SCOPE"]}" },
         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
     ));
 
