@@ -16,11 +16,11 @@ using MediatR;
 
 namespace API.Query.API.Controllers.Internal;
 
-[Authorize(Policy = Policy.B2CInternal)]
 [ApiController]
+[Authorize(Policy = Policy.AdminPortal)]
 [ApiVersionNeutral]
 [ApiExplorerSettings(IgnoreApi = true)]
-[Route("api/certificates/portal")]
+[Route("api/certificates/admin-portal")]
 public class InternalContractsController : ControllerBase
 {
     private readonly IMediator _mediator;

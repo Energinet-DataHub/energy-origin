@@ -52,7 +52,7 @@ public class Api : IAsyncLifetime
 
     public async Task<HttpResponseMessage> GetFirstPartyOrganizations()
     {
-        return await _client.GetAsync("/api/authorization/portal/first-party-organizations/");
+        return await _client.GetAsync("/api/authorization/admin-portal/first-party-organizations/");
     }
 
     public async Task<HttpResponseMessage> AcceptTerms()

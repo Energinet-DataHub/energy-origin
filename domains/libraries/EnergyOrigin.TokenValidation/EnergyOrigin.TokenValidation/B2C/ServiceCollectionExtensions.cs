@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,6 +70,13 @@ public static class ServiceCollectionExtensions
                 .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.CustomPolicyClientId }))
                 .Build();
             options.AddPolicy(Policy.B2CInternal, b2CInternalPolicy);
+
+            var adminPortalPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.B2CAuthenticationScheme)
+                .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.AdminPortalEnterpriseAppRegistrationObjectId }))
+                .Build();
+            options.AddPolicy(Policy.AdminPortal, adminPortalPolicy);
         });
 
         services.AddScoped<IdentityDescriptor>();

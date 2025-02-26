@@ -17,4 +17,7 @@ public class B2COptions
 
     [Required]
     public string CustomPolicyClientId { get; init; } = null!;
+
+    [Required]
+    public string AdminPortalEnterpriseAppRegistrationObjectId { get; init; } = null!;
 }

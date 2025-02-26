@@ -55,8 +55,8 @@ builder.Services.AddDefaultHealthChecks();
 builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
-
 builder.Services.AddB2C(b2COptions);
+
 builder.Services.AddHttpContextAccessor();
 
 // Register DbContext and related services
