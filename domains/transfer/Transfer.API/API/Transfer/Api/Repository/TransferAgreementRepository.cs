@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;
@@ -70,6 +71,21 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
             .TransferAgreements
             .Where(agreement => agreement.Id == id && (agreement.SenderId == organizationId || agreement.ReceiverTin == receiverTin))
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<TransferAgreement> GetTransferAgreement(Guid id, CancellationToken cancellationToken)
+    {
+        var transferAgreement = await context
+            .TransferAgreements
+            .Where(agreement => agreement.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (transferAgreement is null)
+        {
+            throw new EntityNotFoundException(id, typeof(TransferAgreement));
+        }
+
+        return transferAgreement;
     }
 
     public async Task<bool> HasDateOverlap(TransferAgreement transferAgreement, CancellationToken cancellationToken)
