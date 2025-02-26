@@ -74,7 +74,7 @@ public static class ServiceCollectionExtensions
             var adminPortalPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AuthenticationScheme.B2CAuthenticationScheme)
-                .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.AdminPortalClientId }))
+                .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.AdminPortalEnterpriseAppRegistrationObjectId }))
                 .Build();
             options.AddPolicy(Policy.AdminPortal, adminPortalPolicy);
         });

@@ -26,13 +26,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     internal string ConnectionString { get; set; } = "";
     internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
-    public readonly string AdminPortalClientId = "d216b90b-3872-498a-bc18-4941a0f4398e";
+    public readonly string AdminPortalEnterpriseAppRegistrationObjectId = "d216b90b-3872-498a-bc18-4941a0f4398e";
     public string WalletUrl { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
-        builder.UseSetting("B2C:AdminPortalClientId", AdminPortalClientId);
+        builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", AdminPortalEnterpriseAppRegistrationObjectId);
         builder.UseSetting("MitID:URI", "https://pp.netseidbroker.dk/op");
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
 

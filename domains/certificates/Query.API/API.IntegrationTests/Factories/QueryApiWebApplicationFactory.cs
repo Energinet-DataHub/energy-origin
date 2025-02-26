@@ -56,7 +56,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public RabbitMqOptions? RabbitMqOptions { get; set; }
     private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
-    public readonly Guid AdminPortalClientId = Guid.NewGuid();
+    public readonly Guid AdminPortalEnterpriseAppRegistrationObjectId = Guid.NewGuid();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -85,7 +85,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             "https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_MITID");
         builder.UseSetting("B2C:Audience", "f00b9b4d-3c59-4c40-b209-2ef87e509f54");
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
-        builder.UseSetting("B2C:AdminPortalClientId", AdminPortalClientId.ToString());
+        builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", AdminPortalEnterpriseAppRegistrationObjectId.ToString());
 
         builder.ConfigureTestServices(services =>
         {

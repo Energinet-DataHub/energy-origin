@@ -34,7 +34,7 @@ namespace API.IntegrationTests.Controllers.Internal
         public async Task Given_NoContracts_When_CallingApi_Then_Return200ok_With_EmptyContractsForAdminPortalResponse()
         {
             // Arrange
-            using var clientForInternalCalls = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalClientId, Guid.Empty);
+            using var clientForInternalCalls = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
             // Act
             var response = await clientForInternalCalls.GetAsync("/api/certificates/admin-portal/internal-contracts");
@@ -76,7 +76,7 @@ namespace API.IntegrationTests.Controllers.Internal
             await userCreatesAContract.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", insertedIntoDb);
 
             // Act
-            var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalClientId, Guid.Empty);
+            var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
             using var response = await adminPortalClient.GetAsync("api/certificates/admin-portal/internal-contracts");
 
             // Assert
