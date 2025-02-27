@@ -12,14 +12,15 @@ using MediatR;
 
 namespace API.Transfer.Api._Features_;
 
-public class GetConsentTransferAgreementsQueryHandler(IUnitOfWork unitOfWork, TransferAgreementStatusService transferAgreementStatusService) : IRequestHandler<GetConsentTransferAgreementsQuery, GetTransferAgreementQueryResult>
+public class GetConsentTransferAgreementsQueryHandler(IUnitOfWork unitOfWork, TransferAgreementStatusService transferAgreementStatusService)
+    : IRequestHandler<GetConsentTransferAgreementsQuery, GetTransferAgreementQueryResult>
 {
-
     public async Task<GetTransferAgreementQueryResult> Handle(GetConsentTransferAgreementsQuery request, CancellationToken cancellationToken)
     {
         var transferAgreements =
             await unitOfWork.TransferAgreementRepo.GetTransferAgreementsList(request.OrganizationIds, cancellationToken);
-        var transferAgreementProposals = await unitOfWork.TransferAgreementRepo.GetTransferAgreementProposals(request.OrganizationIds, cancellationToken);
+        var transferAgreementProposals =
+            await unitOfWork.TransferAgreementRepo.GetTransferAgreementProposals(request.OrganizationIds, cancellationToken);
 
         if (!transferAgreementProposals.Any() && !transferAgreements.Any())
         {
@@ -33,8 +34,8 @@ public class GetConsentTransferAgreementsQueryHandler(IUnitOfWork unitOfWork, Tr
             .ToList();
 
         var transferAgreementProposalDtos = transferAgreementProposals
-            .Select(x => new GetTransferAgreementQueryResultItem(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, string.Empty,
-                string.Empty, x.ReceiverCompanyTin?.Value, TransferAgreementTypeMapper.MapCreateTransferAgreementType(x.Type),
+            .Select(x => new GetTransferAgreementQueryResultItem(x.Id, x.StartDate.EpochSeconds, x.EndDate?.EpochSeconds, x.SenderCompanyName.Value,
+                x.SenderCompanyTin.Value, x.ReceiverCompanyTin?.Value, TransferAgreementTypeMapper.MapCreateTransferAgreementType(x.Type),
                 transferAgreementStatusService.GetTransferAgreementStatusFromProposal(x)))
             .ToList();
 
@@ -56,6 +57,4 @@ public record GetConsentTransferAgreementsQueryResultItem(
     TransferAgreementTypeDto Type,
     TransferAgreementStatus TransferAgreementStatus);
 
-
 public record GetConsentTransferAgreementsQueryResult(List<GetTransferAgreementQueryResultItem> Result);
-

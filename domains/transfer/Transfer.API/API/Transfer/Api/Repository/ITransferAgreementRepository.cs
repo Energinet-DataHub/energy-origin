@@ -10,6 +10,7 @@ public interface ITransferAgreementRepository
 {
     Task<TransferAgreement> AddTransferAgreementAndDeleteProposal(TransferAgreement newTransferAgreement, Guid proposalId, CancellationToken cancellationToken);
     Task<TransferAgreement> AddTransferAgreement(TransferAgreement newTransferAgreement, CancellationToken cancellationToken);
+    Task<TransferAgreement> GetTransferAgreement(Guid id, CancellationToken cancellationToken);
     Task<TransferAgreement?> GetTransferAgreement(Guid id, string subject, string tin, CancellationToken cancellationToken);
     Task<List<TransferAgreement>> GetTransferAgreementsList(Guid organizationId, string receiverTin, CancellationToken cancellationToken);
     Task<List<TransferAgreement>> GetTransferAgreementsList(IList<Guid> organizationIds,
