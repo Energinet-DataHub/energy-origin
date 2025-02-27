@@ -7,6 +7,7 @@ using API.UnitTests.Repository;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
 using MassTransit;
 using NSubstitute;
@@ -29,6 +30,8 @@ public class AcceptTermsCommandHandlerTests
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _publishEndpoint = Substitute.For<IPublishEndpoint>();
         _walletClient = Substitute.For<IWalletClient>();
+        _walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
+        { Metadata = new PageInfo() { Count = 0, Limit = 0, Offset = 0, Total = 0 }, Result = new List<WalletRecord>() });
         _walletClient.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new CreateWalletResponse() { WalletId = Guid.NewGuid() });
         _handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, _walletClient, _publishEndpoint);
     }
@@ -95,6 +98,8 @@ public class AcceptTermsCommandHandlerTests
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
         var walletClient = Substitute.For<IWalletClient>();
+        walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
+        { Metadata = new PageInfo() { Count = 0, Limit = 0, Offset = 0, Total = 0 }, Result = new List<WalletRecord>() });
 
         var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
 
