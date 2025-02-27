@@ -46,7 +46,7 @@ jobs:
         run: echo "solution=$(find domains -maxdepth 1 -name "*.sln")" | tee -a "$GITHUB_ENV"
 
       - name: Check license
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v3
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v4
         with:
           project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json
@@ -94,7 +94,7 @@ jobs:
           } >> $GITHUB_ENV
 
       - name: Validate project
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v3
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v4
         with:
           dotnet-version: ${{ matrix.build.sdkVersion }}
           pin-version: true
@@ -129,7 +129,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Push image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v3
+        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v4
         with:
           dockerfile: ${{ env.docker }}
           image-name: ${{ env.name }}
