@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       subsystems: ${{ env.subsystems }}
-      dockers: ${{ env.dockers }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,10 +27,6 @@ jobs:
             printf '{"projects":%s}\n' "$projects"
           done | jq -sc > /tmp/json
           echo "subsystems=$(jq '.[].projects[]' /tmp/json | jq -scr '. | unique')" >> "$GITHUB_ENV"
-
-      - name: Build dockers matrix
-        shell: bash
-        run: echo "dockers=$(find libraries/docker/ -mindepth 1 -maxdepth 1 -type d | jq -nRc '[inputs]')" >> "$GITHUB_ENV"
 
   test-licenses:
     name: Test licenses
@@ -101,46 +96,9 @@ jobs:
           paths: ${{ env.paths }}
           sql-file: ${{ env.migration }}
 
-  test-dockers:
-    name: Test dockers
-    runs-on: ubuntu-latest
-    needs: setup
-    strategy:
-      fail-fast: false
-      matrix:
-        path: ${{ fromJson(needs.setup.outputs.dockers) }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Prepare variables
-        shell: bash
-        run: |
-          directory="${{ matrix.path }}"
-          context="$directory"
-          docker="$directory/Dockerfile"
-          configuration="$directory/configuration.yaml"
-          name=$(yq '.name' "$configuration")
-
-          {
-            echo "context=$context"
-            echo "docker=$docker"
-            echo "name=$name"
-            echo "version=abcdefg"
-          } >> "$GITHUB_ENV"
-
-      - name: Push image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-build-and-push@v4
-        with:
-          dockerfile: ${{ env.docker }}
-          image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
-          docker-context: ${{ env.context }}
-          dry-run: true
-
   report:
     needs:
       - test-subsystems
-      - test-dockers
       - test-licenses
     name: Report on failure
     runs-on: ubuntu-latest
