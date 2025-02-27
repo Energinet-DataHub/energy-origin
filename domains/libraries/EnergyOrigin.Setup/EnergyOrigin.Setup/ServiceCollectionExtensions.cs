@@ -65,7 +65,6 @@ public static class ServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddProcessInstrumentation()
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint))
             .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
@@ -75,6 +74,7 @@ public static class ServiceCollectionExtensions
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
     }
 
+    // TODO: Make use of this method when Microsoft fixes GrpcClientInstrumentation: https://blog.codingmilitia.com/2024/05/13/where-are-my-traces-weird-dotnet-meets-opentelemetry-gotcha/
     public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracingWithGrpc(this IServiceCollection services, string serviceName,
         Uri oltpReceiverEndpoint)
     {
