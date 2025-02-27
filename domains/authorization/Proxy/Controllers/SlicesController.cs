@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Swagger;
@@ -82,31 +83,37 @@ public record ReceiveRequest()
     /// <summary>
     /// The public key of the receiving wallet.
     /// </summary>
+    [Required]
     public required byte[] PublicKey { get; init; }
 
     /// <summary>
     /// The sub-position of the publicKey used on the slice on the registry.
     /// </summary>
+    [Required]
     public required uint Position { get; init; }
 
     /// <summary>
     /// The id of the certificate.
     /// </summary>
+    [Required]
     public required FederatedStreamId CertificateId { get; init; }
 
     /// <summary>
     /// The quantity of the slice.
     /// </summary>
+    [Required]
     public required uint Quantity { get; init; }
 
     /// <summary>
     /// The random R used to generate the pedersen commitment with the quantitiy.
     /// </summary>
+    [Required]
     public required byte[] RandomR { get; init; }
 
     /// <summary>
     /// List of hashed attributes, their values and salts so the receiver can access the data.
     /// </summary>
+    [Required]
     public required IEnumerable<HashedAttribute> HashedAttributes { get; init; }
 }
 
@@ -119,16 +126,19 @@ public record HashedAttribute()
     /// <summary>
     /// The key of the attribute.
     /// </summary>
+    [Required]
     public required string Key { get; init; }
 
     /// <summary>
     /// The value of the attribute.
     /// </summary>
+    [Required]
     public required string Value { get; init; }
 
     /// <summary>
     /// The salt used to hash the attribute.
     /// </summary>
+    [Required]
     public required byte[] Salt { get; init; }
 }
 

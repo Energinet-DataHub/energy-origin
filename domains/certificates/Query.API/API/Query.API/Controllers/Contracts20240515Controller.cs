@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> CreateContract(
         [FromBody] CreateContracts createContracts,
-        [FromQuery] Guid organizationId,
+        [Required][FromQuery] Guid organizationId,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
@@ -77,7 +78,7 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
     [Route("api/certificates/contracts/{id}")]
     public async Task<ActionResult<Contract>> GetContract(
         [FromRoute] Guid id,
-        [FromQuery] Guid organizationId,
+        [Required][FromQuery] Guid organizationId,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
@@ -101,7 +102,7 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
     [ProducesResponseType(typeof(ContractList), 200)]
     [Route("api/certificates/contracts")]
     public async Task<ActionResult<ContractList>> GetAllContracts(
-        [FromQuery] Guid organizationId,
+        [Required][FromQuery] Guid organizationId,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)
     {
@@ -127,7 +128,7 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
     [Route("api/certificates/contracts")]
     public async Task<ActionResult> UpdateEndDate(
         [FromBody] EditContracts editContracts,
-        [FromQuery] Guid organizationId,
+        [Required][FromQuery] Guid organizationId,
         [FromServices] IValidator<EditContractEndDate> validator,
         [FromServices] IContractService service,
         CancellationToken cancellationToken)

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Swagger;
@@ -36,7 +37,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(CreateWalletResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public Task CreateWallet([FromBody] CreateWalletRequest request, [FromQuery] string? organizationId)
+    public Task CreateWallet([FromBody] CreateWalletRequest request, [Required][FromQuery] string organizationId)
     {
         throw new NotSupportedException("Currently not supporting creating extra wallets");
         //await ProxyClientCredentialsRequest("v1/wallets", organizationId);
@@ -56,7 +57,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(ResultList<WalletRecord, PageInfo>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task GetWallets([FromQuery] string? organizationId)
+    public async Task GetWallets([Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/wallets", organizationId);
     }
@@ -78,7 +79,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(WalletRecord), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task GetWallet([FromRoute] Guid walletId, [FromQuery] string? organizationId)
+    public async Task GetWallet([FromRoute] Guid walletId, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest($"v1/wallets/{walletId}", organizationId);
     }
@@ -93,7 +94,7 @@ public class WalletController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(CreateWalletEndpointResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task CreateWalletEndpoint([FromRoute] Guid walletId, [FromQuery] string? organizationId)
+    public async Task CreateWalletEndpoint([FromRoute] Guid walletId, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest($"v1/wallets/{walletId}/endpoints", organizationId);
     }
@@ -108,7 +109,7 @@ public class WalletController : ProxyBase
     [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    public async Task CreateExternalEndpoint([FromBody] CreateExternalEndpointRequest request, [FromQuery] string? organizationId)
+    public async Task CreateExternalEndpoint([FromBody] CreateExternalEndpointRequest request, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/external-endpoints", organizationId);
     }
@@ -120,7 +121,9 @@ public class WalletController : ProxyBase
 /// </summary>
 public record WalletRecord()
 {
+    [Required]
     public required Guid Id { get; init; }
+    [Required]
     public required string PublicKey { get; init; }
 }
 
@@ -166,11 +169,13 @@ public record CreateExternalEndpointRequest()
     /// <summary>
     /// The wallet reference to the wallet, one wants to create a link to.
     /// </summary>
+    [Required]
     public required WalletEndpointReference WalletReference { get; init; }
 
     /// <summary>
     /// The text reference for the wallet, one wants to create a link to.
     /// </summary>
+    [Required]
     public required string TextReference { get; init; }
 }
 
@@ -190,15 +195,18 @@ public record WalletEndpointReference()
     /// <summary>
     /// The version of the ReceiveSlice API.
     /// </summary>
+    [Required]
     public required int Version { get; init; } // The version of the Wallet protobuf API.
 
     /// <summary>
     /// The url endpoint of where the wallet is hosted.
     /// </summary>
+    [Required]
     public required Uri Endpoint { get; init; }
 
     /// <summary>
     /// The public key used to generate sub-public-keys for each slice.
     /// </summary>
+    [Required]
     public required string PublicKey { get; init; }
 }
