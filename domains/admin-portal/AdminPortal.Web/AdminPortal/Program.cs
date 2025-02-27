@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using AdminPortal.Options;
 using AdminPortal.Services;
 using AdminPortal.Utilities;
 using EnergyOrigin.Setup;
@@ -9,14 +10,28 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using IAuthorizationService = AdminPortal.Services.IAuthorizationService;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<AdminPortalOptions>().BindConfiguration(AdminPortalOptions.Prefix)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptions.Prefix)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddHealthChecks();
 builder.AddSerilog();
@@ -38,11 +53,11 @@ builder.Services.AddAuthentication(options =>
     .AddCookie(options => options.ExpireTimeSpan = TimeSpan.FromMinutes(30))
     .AddOpenIdConnect(options =>
     {
-        var oidcConfig = builder.Configuration.GetSection("OpenIDConnectSettings");
+        var oidcOptions = builder.Configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
 
-        options.Authority = oidcConfig["Authority"];
-        options.ClientId = oidcConfig["ClientId"];
-        options.ClientSecret = oidcConfig["ClientSecret"];
+        options.Authority = oidcOptions.Authority;
+        options.ClientId = oidcOptions.ClientId;
+        options.ClientSecret = oidcOptions.ClientSecret;
 
         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.ResponseType = OpenIdConnectResponseType.Code;
@@ -73,29 +88,39 @@ builder.Services.AddHttpClient("Msal")
             new MediaTypeWithQualityHeaderValue("application/json"));
     });
 
-builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("AuthorizationClient", client =>
+builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("CertificatesClient", (sp, client) =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["Clients:Authorization"] ?? throw new ArgumentNullException($"Clients:Authorization configuration missing"));
+        var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
+        client.BaseAddress = new Uri(clientUriOptions.Certificates);
     })
-    .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
-        builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),
-        builder.Configuration["ADMIN_PORTAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_SECRET not set"),
-        builder.Configuration["ADMIN_PORTAL_TENANT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_TENANT_ID not set"),
-        new[] { $"https://datahubeouenerginet.onmicrosoft.com/{builder.Configuration["ADMIN_PORTAL_CLIENT_ID"]}/.default" },
-        sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
-        ));
+    .AddHttpMessageHandler(sp =>
+    {
+        var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
+        return new ClientCredentialsTokenHandler(
+            options.ClientId,
+            options.ClientSecret,
+            options.TenantId,
+            new[] { options.Scope },
+            sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+        );
+    });
 
-builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("CertificatesClient", client =>
+builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("AuthorizationClient", (sp, client) =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["Clients:Certificates"] ?? throw new ArgumentNullException($"Clients:Certificates configuration missing"));
+        var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
+        client.BaseAddress = new Uri(clientUriOptions.Authorization);
     })
-    .AddHttpMessageHandler(sp => new ClientCredentialsTokenHandler(
-        builder.Configuration["ADMIN_PORTAL_CLIENT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_ID not set"),
-        builder.Configuration["ADMIN_PORTAL_CLIENT_SECRET"] ?? throw new InvalidOperationException("ADMIN_PORTAL_CLIENT_SECRET not set"),
-        builder.Configuration["ADMIN_PORTAL_TENANT_ID"] ?? throw new InvalidOperationException("ADMIN_PORTAL_TENANT_ID not set"),
-        new[] { $"https://datahubeouenerginet.onmicrosoft.com/{builder.Configuration["ADMIN_PORTAL_CLIENT_ID"]}/.default" },
-        sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
-    ));
+    .AddHttpMessageHandler(sp =>
+    {
+        var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
+        return new ClientCredentialsTokenHandler(
+            options.ClientId,
+            options.ClientSecret,
+            options.TenantId,
+            new[] { options.Scope },
+            sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+        );
+    });
 
 var app = builder.Build();
 
