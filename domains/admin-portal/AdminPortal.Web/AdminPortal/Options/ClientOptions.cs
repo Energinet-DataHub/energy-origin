@@ -7,8 +7,8 @@ public class ClientUriOptions
     public const string Prefix = "Endpoint";
 
     [Required]
-    public string Authorization { get; set; }
+    public string Authorization { get; set; } = null!;
 
     [Required]
-    public string Certificates { get; set; }
+    public string Certificates { get; set; } = null!;
 }
