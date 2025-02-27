@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Swagger;
@@ -31,7 +32,7 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer, PageInfoCursor>), StatusCodes.Status200OK)]
-    public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param, [FromQuery] string? organizationId)
+    public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/transfers/cursor", organizationId);
     }
@@ -50,7 +51,7 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer, PageInfo>), StatusCodes.Status200OK)]
-    public async Task GetTransfers([FromQuery] GetTransfersQueryParameters param, string? organizationId)
+    public async Task GetTransfers([FromQuery] GetTransfersQueryParameters param, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/transfers", organizationId);
     }
@@ -70,7 +71,7 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultList<AggregatedTransfers, PageInfo>), StatusCodes.Status200OK)]
-    public async Task AggregateTransfers([FromQuery] AggregateTransfersQueryParameters param, string? organizationId)
+    public async Task AggregateTransfers([FromQuery] AggregateTransfersQueryParameters param, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/aggregate-transfers", organizationId);
     }
@@ -89,7 +90,7 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status200OK)]
-    public async Task TransferCertificate([FromBody] TransferRequest request, string? organizationId)
+    public async Task TransferCertificate([FromBody] TransferRequest request, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/transfers", organizationId);
     }

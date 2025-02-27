@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
@@ -30,7 +31,7 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Claim, PageInfoCursor>), StatusCodes.Status200OK)]
-    public async Task GetClaimsCursor([FromQuery] GetClaimsQueryParametersCursor param, [FromQuery] string? organizationId)
+    public async Task GetClaimsCursor([FromQuery] GetClaimsQueryParametersCursor param, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/claims/cursor", organizationId);
     }
@@ -49,7 +50,7 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Claim, PageInfo>), StatusCodes.Status200OK)]
-    public async Task GetClaims([FromQuery] GetClaimsQueryParameters param, [FromQuery] string? organizationId)
+    public async Task GetClaims([FromQuery] GetClaimsQueryParameters param, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/claims", organizationId);
     }
@@ -70,7 +71,7 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultList<AggregatedClaims, PageInfo>), StatusCodes.Status200OK)]
-    public async Task AggregateClaims([FromQuery] AggregateClaimsQueryParameters param, [FromQuery] string? organizationId)
+    public async Task AggregateClaims([FromQuery] AggregateClaimsQueryParameters param, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/aggregate-claims", organizationId);
     }
@@ -90,7 +91,7 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status202Accepted)]
-    public async Task ClaimCertificate([FromBody] ClaimRequest request, [FromQuery] string? organizationId)
+    public async Task ClaimCertificate([FromBody] ClaimRequest request, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/claims", organizationId);
     }
