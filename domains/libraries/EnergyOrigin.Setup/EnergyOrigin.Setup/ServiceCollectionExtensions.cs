@@ -75,22 +75,22 @@ public static class ServiceCollectionExtensions
     }
 
     // TODO: Make use of this method when Microsoft fixes GrpcClientInstrumentation: https://blog.codingmilitia.com/2024/05/13/where-are-my-traces-weird-dotnet-meets-opentelemetry-gotcha/
-    public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracingWithGrpc(this IServiceCollection services, string serviceName,
-        Uri oltpReceiverEndpoint)
-    {
-        return services.AddOpenTelemetryMetricsAndTracing(serviceName, oltpReceiverEndpoint)
-            .WithTracing(traceBuilder =>
-            {
-                traceBuilder.AddGrpcClientInstrumentation(grpcOptions =>
-                {
-                    grpcOptions.SuppressDownstreamInstrumentation = true;
-                    grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
-                        activity.SetTag("requestVersion", httpRequestMessage.Version);
-                    grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
-                        activity.SetTag("responseVersion", httpResponseMessage.Version);
-                });
-            });
-    }
+    // public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracingWithGrpc(this IServiceCollection services, string serviceName,
+    //     Uri oltpReceiverEndpoint)
+    // {
+    //     return services.AddOpenTelemetryMetricsAndTracing(serviceName, oltpReceiverEndpoint)
+    //         .WithTracing(traceBuilder =>
+    //         {
+    //             traceBuilder.AddGrpcClientInstrumentation(grpcOptions =>
+    //             {
+    //                 grpcOptions.SuppressDownstreamInstrumentation = true;
+    //                 grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+    //                     activity.SetTag("requestVersion", httpRequestMessage.Version);
+    //                 grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+    //                     activity.SetTag("responseVersion", httpResponseMessage.Version);
+    //             });
+    //         });
+    // }
 
     public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit(this IServiceCollection services,
         string serviceName, Uri oltpReceiverEndpoint)
