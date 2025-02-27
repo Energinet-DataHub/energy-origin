@@ -53,6 +53,7 @@ public class SlicesController : ProxyBase
     /// The endpoint is verified to exists within the wallet system, otherwise a 404 will be returned.
     /// The endpoint will return 202 Accepted was initial validation has succeeded.
     /// The certificate-slice will further verified with data from the registry in a seperate thread.
+    /// This is only used in inter-wallet communication
     /// </remarks>
     /// <param name = "request" >Contains the data </param>
     /// <response code="202">The slice was accepted.</response>
