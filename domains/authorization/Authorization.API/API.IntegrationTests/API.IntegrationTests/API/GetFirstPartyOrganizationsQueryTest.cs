@@ -19,9 +19,7 @@ public class GetFirstPartyOrganizationsTest
         var connectionString = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(connectionString).Options;
 
-        _api = integrationTestFixture.WebAppFactory.CreateApi(
-            sub: integrationTestFixture.WebAppFactory.IssuerIdpClientId.ToString()
-        );
+        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: integrationTestFixture.WebAppFactory.AdminPortalEnterpriseAppRegistrationObjectId);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using API.MeteringPoints.Api.Models;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.MeteringPoints.Api;
@@ -16,5 +17,9 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<RelationDto>().HasKey(r => r.SubjectId);
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
     }
 }

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +13,7 @@ public static class ServiceCollectionExtensions
     public static void AddB2C(this IServiceCollection services, B2COptions b2COptions)
     {
 
-        services.AddAuthentication(defaultScheme: AuthenticationScheme.TokenValidation)
+        services.AddAuthentication(defaultScheme: AuthenticationScheme.B2CAuthenticationScheme)
             .AddJwtBearer(AuthenticationScheme.B2CAuthenticationScheme, options =>
             {
                 options.MapInboundClaims = false;
@@ -72,6 +70,13 @@ public static class ServiceCollectionExtensions
                 .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.CustomPolicyClientId }))
                 .Build();
             options.AddPolicy(Policy.B2CInternal, b2CInternalPolicy);
+
+            var adminPortalPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes(AuthenticationScheme.B2CAuthenticationScheme)
+                .AddRequirements(new ClaimsAuthorizationRequirement(ClaimType.Sub, new List<string> { b2COptions.AdminPortalEnterpriseAppRegistrationObjectId }))
+                .Build();
+            options.AddPolicy(Policy.AdminPortal, adminPortalPolicy);
         });
 
         services.AddScoped<IdentityDescriptor>();
