@@ -10,12 +10,14 @@ public class CreateContract
     /// Global Service Relation Number (GSRN) for the metering point
     /// </summary>
     [JsonPropertyName("gsrn")]
-    public required string GSRN { get; init; } = "";
+    [Required]
+    public string GSRN { get; init; } = "";
 
     /// <summary>
     /// Starting date for generation of certificates in Unix time seconds
     /// </summary>
-    public required long StartDate { get; init; }
+    [Required]
+    public long StartDate { get; init; }
 
     /// <summary>
     /// End date for generation of certificates in Unix time seconds. Set to null for no end date
