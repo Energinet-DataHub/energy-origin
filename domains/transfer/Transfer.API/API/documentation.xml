@@ -46,12 +46,11 @@
             <response code="200">Successful operation</response>
             <response code="400">You cannot Accept/Deny your own TransferAgreementProposal, you cannot Accept/Deny a TransferAgreementProposal for another company or this proposal has run out</response>
         </member>
-        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.DeleteTransferAgreementProposal(System.Guid,System.Guid,System.Threading.CancellationToken)">
+        <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.DeleteTransferAgreementProposal(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Delete TransferAgreementProposal
             </summary>
             <param name="id">Id of TransferAgreementProposal</param>
-            <param name="organizationId"></param>
             <param name="cancellationToken"></param>
             <response code="204">Successful operation</response>
         </member>
