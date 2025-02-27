@@ -74,7 +74,7 @@ public class Startup
         var otlpConfiguration = _configuration.GetSection(OtlpOptions.Prefix);
         var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-        services.AddOpenTelemetryMetricsAndTracingWithGrpc("Measurements.API", otlpOptions.ReceiverEndpoint);
+        services.AddOpenTelemetryMetricsAndTracing("Measurements.API", otlpOptions.ReceiverEndpoint);
 
         services.AddOptions<DataHubFacadeOptions>()
             .BindConfiguration(DataHubFacadeOptions.Prefix)
