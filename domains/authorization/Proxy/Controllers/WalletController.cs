@@ -122,9 +122,9 @@ public class WalletController : ProxyBase
 public record WalletRecord()
 {
     [Required]
-    public Guid Id { get; init; }
+    public required Guid Id { get; init; }
     [Required]
-    public string PublicKey { get; init; }
+    public required string PublicKey { get; init; }
 }
 
 /// <summary>
@@ -170,13 +170,13 @@ public record CreateExternalEndpointRequest()
     /// The wallet reference to the wallet, one wants to create a link to.
     /// </summary>
     [Required]
-    public WalletEndpointReference WalletReference { get; init; }
+    public required WalletEndpointReference WalletReference { get; init; }
 
     /// <summary>
     /// The text reference for the wallet, one wants to create a link to.
     /// </summary>
     [Required]
-    public string TextReference { get; init; }
+    public required string TextReference { get; init; }
 }
 
 /// <summary>
@@ -196,17 +196,17 @@ public record WalletEndpointReference()
     /// The version of the ReceiveSlice API.
     /// </summary>
     [Required]
-    public int Version { get; init; } // The version of the Wallet protobuf API.
+    public required int Version { get; init; } // The version of the Wallet protobuf API.
 
     /// <summary>
     /// The url endpoint of where the wallet is hosted.
     /// </summary>
     [Required]
-    public Uri Endpoint { get; init; }
+    public required Uri Endpoint { get; init; }
 
     /// <summary>
     /// The public key used to generate sub-public-keys for each slice.
     /// </summary>
     [Required]
-    public string PublicKey { get; init; }
+    public required string PublicKey { get; init; }
 }

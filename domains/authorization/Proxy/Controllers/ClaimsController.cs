@@ -128,7 +128,7 @@ public record AggregateClaimsQueryParameters
     /// The size of each bucket in the aggregation
     /// </summary>
     [Required]
-    public TimeAggregate TimeAggregate { get; init; }
+    public required TimeAggregate TimeAggregate { get; init; }
 
     /// <summary>
     /// The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.
@@ -164,13 +164,13 @@ public record AggregateClaimsQueryParameters
 public record Claim()
 {
     [Required]
-    public Guid ClaimId { get; init; }
+    public required Guid ClaimId { get; init; }
     [Required]
-    public uint Quantity { get; init; }
+    public required uint Quantity { get; init; }
     [Required]
-    public ClaimedCertificate ProductionCertificate { get; init; }
+    public required ClaimedCertificate ProductionCertificate { get; init; }
     [Required]
-    public ClaimedCertificate ConsumptionCertificate { get; init; }
+    public required ClaimedCertificate ConsumptionCertificate { get; init; }
 }
 
 
@@ -183,31 +183,31 @@ public record ClaimedCertificate()
     /// The id of the claimed certificate.
     /// </summary>
     [Required]
-    public FederatedStreamId FederatedStreamId { get; init; }
+    public required FederatedStreamId FederatedStreamId { get; init; }
 
     /// <summary>
     /// The start period of the claimed certificate.
     /// </summary>
     [Required]
-    public long Start { get; init; }
+    public required long Start { get; init; }
 
     /// <summary>
     /// The end period the claimed certificate.
     /// </summary>
     [Required]
-    public long End { get; init; }
+    public required long End { get; init; }
 
     /// <summary>
     /// The Grid Area of the claimed certificate.
     /// </summary>
     [Required]
-    public string GridArea { get; init; }
+    public required string GridArea { get; init; }
 
     /// <summary>
     /// The attributes of the claimed certificate.
     /// </summary>
     [Required]
-    public Dictionary<string, string> Attributes { get; init; }
+    public required Dictionary<string, string> Attributes { get; init; }
 }
 
 /// <summary>
@@ -219,19 +219,19 @@ public record ClaimRequest()
     /// The id of the production certificate to claim.
     /// </summary>
     [Required]
-    public FederatedStreamId ProductionCertificateId { get; init; }
+    public required FederatedStreamId ProductionCertificateId { get; init; }
 
     /// <summary>
     /// The id of the consumption certificate to claim.
     /// </summary>
     [Required]
-    public FederatedStreamId ConsumptionCertificateId { get; init; }
+    public required FederatedStreamId ConsumptionCertificateId { get; init; }
 
     /// <summary>
     /// The quantity of the certificates to claim.
     /// </summary>
     [Required]
-    public uint Quantity { get; init; }
+    public required uint Quantity { get; init; }
 }
 
 /// <summary>
@@ -243,7 +243,7 @@ public record ClaimResponse()
     /// The id of the claim request.
     /// </summary>
     [Required]
-    public Guid ClaimRequestId { get; init; }
+    public required Guid ClaimRequestId { get; init; }
 }
 
 /// <summary>
@@ -255,18 +255,18 @@ public record AggregatedClaims()
     /// The start of the aggregated period.
     /// </summary>
     [Required]
-    public long Start { get; init; }
+    public required long Start { get; init; }
 
     /// <summary>
     /// The end of the aggregated period.
     /// </summary>
     [Required]
-    public long End { get; init; }
+    public required long End { get; init; }
 
     /// <summary>
     /// The quantity of the aggregated claims.
     /// </summary>
     [Required]
-    public long Quantity { get; init; }
+    public required long Quantity { get; init; }
 }
 

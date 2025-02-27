@@ -84,37 +84,37 @@ public record ReceiveRequest()
     /// The public key of the receiving wallet.
     /// </summary>
     [Required]
-    public byte[] PublicKey { get; init; }
+    public required byte[] PublicKey { get; init; }
 
     /// <summary>
     /// The sub-position of the publicKey used on the slice on the registry.
     /// </summary>
     [Required]
-    public uint Position { get; init; }
+    public required uint Position { get; init; }
 
     /// <summary>
     /// The id of the certificate.
     /// </summary>
     [Required]
-    public FederatedStreamId CertificateId { get; init; }
+    public required FederatedStreamId CertificateId { get; init; }
 
     /// <summary>
     /// The quantity of the slice.
     /// </summary>
     [Required]
-    public uint Quantity { get; init; }
+    public required uint Quantity { get; init; }
 
     /// <summary>
     /// The random R used to generate the pedersen commitment with the quantitiy.
     /// </summary>
     [Required]
-    public byte[] RandomR { get; init; }
+    public required byte[] RandomR { get; init; }
 
     /// <summary>
     /// List of hashed attributes, their values and salts so the receiver can access the data.
     /// </summary>
     [Required]
-    public IEnumerable<HashedAttribute> HashedAttributes { get; init; }
+    public required IEnumerable<HashedAttribute> HashedAttributes { get; init; }
 }
 
 /// <summary>
@@ -127,19 +127,19 @@ public record HashedAttribute()
     /// The key of the attribute.
     /// </summary>
     [Required]
-    public string Key { get; init; }
+    public required string Key { get; init; }
 
     /// <summary>
     /// The value of the attribute.
     /// </summary>
     [Required]
-    public string Value { get; init; }
+    public required string Value { get; init; }
 
     /// <summary>
     /// The salt used to hash the attribute.
     /// </summary>
     [Required]
-    public byte[] Salt { get; init; }
+    public required byte[] Salt { get; init; }
 }
 
 /// <summary>
