@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,20 +8,17 @@ using API.Transfer.Api.Dto.Responses;
 using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
-using EnergyOrigin.ActivityLog.DataContext;
-using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjectOriginClients;
 
 namespace API.Transfer.Api.Controllers;
 
-[Authorize(Policy.Frontend)]
 [ApiController]
+[Authorize(Policy.Frontend)]
 [ApiVersion(ApiVersions.Version1)]
 [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [Route("api/transfer/transfer-agreements")]
@@ -47,27 +43,17 @@ public class TransferAgreementsController(
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 409)]
-    public async Task<ActionResult> Create(CreateTransferAgreement request, [FromQuery] Guid organizationId,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> Create(CreateTransferAgreement request, [FromQuery] Guid organizationId, CancellationToken cancellationToken)
     {
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        var organizationTin = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationCvr : null;
-        var organizationName = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationName : null;
-        var command = new AcceptTransferAgreementProposalCommand(request.TransferAgreementProposalId, organizationId,
-            organizationTin,
-            organizationName);
+        var command = new AcceptTransferAgreementProposalCommand(request.TransferAgreementProposalId, organizationId);
         var result = await mediator.Send(command, cancellationToken);
 
         return CreatedAtAction(nameof(Get), new { id = result.TransferAgreementId },
             ToTransferAgreementDto(result.TransferAgreementId, result.SenderTin, result.SenderName, result.ReceiverTin,
                 result.StartDate,
                 result.EndDate, result.Type));
-    }
-
-    private bool IsOwnOrganization(Guid organizationId)
-    {
-        return identityDescriptor.OrganizationId == organizationId;
     }
 
     [HttpGet("{id}")]
@@ -94,13 +80,11 @@ public class TransferAgreementsController(
     [ProducesResponseType(200)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
     [ProducesResponseType(typeof(void), 404)]
+    [ProducesResponseType(typeof(void), 403)]
     [ProducesResponseType(typeof(ValidationProblemDetails), 409)]
     public async Task<ActionResult<EditTransferAgreementEndDate>> EditEndDate([FromRoute] Guid id,
-        [FromBody] EditTransferAgreementEndDate request,
-        [FromQuery] Guid organizationId, CancellationToken cancellationToken)
+        [FromBody] EditTransferAgreementEndDate request, CancellationToken cancellationToken)
     {
-        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
-
         var validator = new EditTransferAgreementEndDateValidator();
 
         var validateResult = await validator.ValidateAsync(request);
@@ -110,79 +94,11 @@ public class TransferAgreementsController(
             return ValidationProblem(ModelState);
         }
 
-        var endDate = request.EndDate.HasValue
-            ? UnixTimestamp.Create(request.EndDate.Value)
-            : null;
+        var command = new EditTransferAgreementEndDateCommand(id, request.EndDate);
+        var result = await mediator.Send(command, cancellationToken);
 
-        var taRepo = unitOfWork.TransferAgreementRepo;
-        var transferAgreement =
-            await taRepo.GetTransferAgreement(id, organizationId.ToString(), identityDescriptor.OrganizationCvr!,
-                cancellationToken);
-
-        if (transferAgreement == null || transferAgreement.SenderId.Value != organizationId)
-        {
-            return NotFound();
-        }
-
-        if (transferAgreement.EndDate != null && transferAgreement.EndDate < UnixTimestamp.Now())
-        {
-            return ValidationProblem("Transfer agreement has expired");
-        }
-
-        var overlapQuery = new TransferAgreement
-        {
-            Id = transferAgreement.Id,
-            StartDate = transferAgreement.StartDate,
-            EndDate = endDate,
-            SenderId = transferAgreement.SenderId,
-            ReceiverTin = transferAgreement.ReceiverTin
-        };
-
-        if (await taRepo.HasDateOverlap(overlapQuery, cancellationToken))
-        {
-            return ValidationProblem("Transfer agreement date overlap", statusCode: 409);
-        }
-
-        transferAgreement.EndDate = endDate;
-
-        var response = TransferAgreementDtoMapper.MapTransferAgreement(transferAgreement);
-
-        await AppendAgreementEndDateChangedToActivityLog(identityDescriptor, transferAgreement);
-
-        await unitOfWork.SaveAsync();
-
+        var response = TransferAgreementDtoMapper.MapTransferAgreement(result.TransferAgreement);
         return Ok(response);
-    }
-
-    private async Task AppendAgreementEndDateChangedToActivityLog(IdentityDescriptor identity, TransferAgreement result)
-    {
-        // Receiver entry
-        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: identity.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: String.Empty,
-            organizationTin: result.ReceiverTin.Value,
-            organizationName: result.ReceiverName.Value,
-            otherOrganizationTin: identity.OrganizationCvr!,
-            otherOrganizationName: identity.OrganizationName,
-            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-            entityId: result.Id.ToString())
-        );
-
-        // Sender entry
-        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: identity.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: identity.Name,
-            organizationTin: identity.OrganizationCvr!,
-            organizationName: identity.OrganizationName,
-            otherOrganizationTin: result.ReceiverTin.Value,
-            otherOrganizationName: result.ReceiverName.Value,
-            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-            entityId: result.Id.ToString())
-        );
     }
 
     private static TransferAgreementDto ToTransferAgreementDto(Guid transferAgreementId, string senderTin,
@@ -239,18 +155,21 @@ public class TransferAgreementsController(
     [HttpPost("create/")]
     [ProducesResponseType(typeof(TransferAgreementDto), 200)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> CreateTransferAgreementDirectly(
-        [FromServices] IProjectOriginWalletClient walletClient,
-        [FromBody] CreateTransferAgreementRequest request)
+    public async Task<ActionResult> CreateTransferAgreementDirectly(CreateTransferAgreementRequest request)
     {
-        accessDescriptor.IsAuthorizedToOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
+        accessDescriptor.AssertAuthorizedToAccessOrganizations([request.SenderOrganizationId, request.ReceiverOrganizationId]);
 
-        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId,
-                request.SenderOrganizationId,
-                request.StartDate, request.EndDate, request.ReceiverOrganizationId, request.ReceiverTin,
-                request.ReceiverName, request.SenderTin,
-                request.SenderName, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)),
-            CancellationToken.None);
+        var validator = new CreateTransferAgreementValidator();
+
+        var validateResult = await validator.ValidateAsync(request);
+        if (!validateResult.IsValid)
+        {
+            validateResult.AddToModelState(ModelState);
+            return ValidationProblem(ModelState);
+        }
+
+        var command = await mediator.Send(new CreateTransferAgreementCommand(request.ReceiverOrganizationId, request.SenderOrganizationId,
+            request.StartDate, request.EndDate, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type)), CancellationToken.None);
 
         return CreatedAtAction(nameof(Get), new { id = command.TransferAgreementId }, ToTransferAgreementDto(
             command.TransferAgreementId,

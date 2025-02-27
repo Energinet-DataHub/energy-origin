@@ -34,7 +34,6 @@ public class TermsControllerTests
             context.SaveChanges();
         }
 
-
         var terms = context.Terms.First();
         var orgCvr = Tin.Create("12345678");
 

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using API;
 using API.MeteringPoints.Api;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -15,6 +17,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using NSubstitute;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
@@ -33,6 +36,8 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
     {
         builder.UseEnvironment("Development");
 
+        new DbMigrator(ConnectionString, typeof(Startup).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
 
         builder.UseSetting("B2C:B2CWellKnownUrl",
@@ -43,6 +48,7 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
             "https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_MITID");
         builder.UseSetting("B2C:Audience", "f00b9b4d-3c59-4c40-b209-2ef87e509f54");
         builder.UseSetting("B2C:CustomPolicyClientId", "a701d13c-2570-46fa-9aa2-8d81f0d8d60b");
+        builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", "8bb12660-aa0e-4eef-a4aa-d6cd62615201");
 
         MeteringPointClientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 

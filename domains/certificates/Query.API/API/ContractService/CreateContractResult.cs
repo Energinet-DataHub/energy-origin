@@ -7,7 +7,8 @@ public abstract record CreateContractResult
 {
     public record Success(List<CertificateIssuingContract> CertificateIssuingContracts) : CreateContractResult;
 
-    public record GsrnNotFound : CreateContractResult;
+    public record GsrnNotFound(string gsrn) : CreateContractResult;
+    public record CannotBeUsedForIssuingCertificates(string gsrn) : CreateContractResult;
 
     public record ContractAlreadyExists(CertificateIssuingContract? Existing) : CreateContractResult;
 

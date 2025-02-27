@@ -8,6 +8,7 @@ using API.Models;
 using API.Repository;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,7 +36,7 @@ public class GrantConsentToClientCommandHandler(
 
         if (clientOrganizationInfo == null)
         {
-            throw new EntityNotFoundException(command.IdpClientId.Value.ToString(), nameof(Client));
+            throw new EntityNotFoundException(command.IdpClientId.Value, typeof(Client));
         }
 
         if (clientOrganizationInfo.ServiceProviderTermsAccepted == false)

@@ -64,11 +64,6 @@
             List of hashed attributes, their values and salts so the receiver can access the data.
             </summary>
         </member>
-        <member name="P:API.ContractService.Clients.CreateWalletRequest.PrivateKey">
-            <summary>
-            The private key to import. If not provided, a private key will be generated.
-            </summary>
-        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
@@ -264,6 +259,9 @@
         </member>
         <member name="F:Meteringpoint.V1.MeteringPoint.MeteringPointAliasFieldNumber">
             <summary>Field number for the "metering_point_alias" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.PhysicalStatusOfMpFieldNumber">
+            <summary>Field number for the "physical_status_of_mp" field.</summary>
         </member>
         <member name="P:Meteringpoint.V1.Meteringpoint.Descriptor">
             <summary>Service descriptor</summary>

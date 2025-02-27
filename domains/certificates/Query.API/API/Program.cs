@@ -1,27 +1,39 @@
 using System;
 using System.Linq;
+using API.Configurations;
 using API.ContractService;
+using API.ContractService.Internal;
+using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Metrics;
 using API.Query.API;
+using API.UnitOfWork;
+using DataContext;
+using EnergyOrigin.ActivityLog;
+using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Health;
+using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.Setup.RabbitMq;
+using EnergyOrigin.Setup.Swagger;
+using EnergyOrigin.TokenValidation.b2c;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using API.Configurations;
-using API.MeasurementsSyncer;
-using DataContext;
-using EnergyOrigin.ActivityLog;
-using EnergyOrigin.TokenValidation.b2c;
-using API.IssuingContractCleanup;
-using API.MeasurementsSyncer.Metrics;
-using API.UnitOfWork;
-using Contracts;
-using EnergyOrigin.Setup;
-using MassTransit;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry;
-using EnergyOrigin.Setup.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (args.Contains("--migrate"))
+{
+    builder.AddSerilogWithoutOutboxLogs();
+    var migrateApp = builder.Build();
+    var dbMigrator = new DbMigrator(builder.Configuration.GetConnectionString("Postgres")!, typeof(ApplicationDbContext).Assembly,
+        migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
+    await dbMigrator.MigrateAsync();
+    return;
+}
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
@@ -38,9 +50,6 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
 builder.Services.AddOptions<StampOptions>().BindConfiguration(StampOptions.Stamp).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.Configure<RabbitMqOptions>(
-    builder.Configuration.GetSection(RabbitMqOptions.RabbitMq));
-
 builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
     {
         options.UseNpgsql(
@@ -51,44 +60,21 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
     optionsLifetime: ServiceLifetime.Singleton);
 builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
-builder.Services.AddMassTransit(
-    x =>
-    {
-        x.AddConfigureEndpointsCallback((name, cfg) =>
-        {
-            if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
-                rmq.SetQuorumQueue(3);
-        });
+builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
+{
+    x.AddConsumer<EnergyMeasuredIntegrationEventHandler, EnergyMeasuredIntegrationEventHandlerDefinition>();
+});
 
-        x.AddConsumer<EnergyMeasuredIntegrationEventHandler, EnergyMeasuredIntegrationEventHandlerDefinition>();
-
-        x.SetKebabCaseEndpointNameFormatter();
-
-        x.UsingRabbitMq((context, cfg) =>
-        {
-            var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-            var url = $"rabbitmq://{options.Host}:{options.Port}";
-
-            cfg.Host(new Uri(url), h =>
-            {
-                h.Username(options.Username);
-                h.Password(options.Password);
-            });
-            cfg.ConfigureEndpoints(context);
-        });
-        x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
-        {
-            o.UsePostgres();
-            o.UseBusOutbox();
-        });
-    }
-);
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-builder.Services.AddHealthChecks()
-    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("Postgres")!);
+builder.Services.AddDefaultHealthChecks();
 
 builder.Services.AddActivityLog(options => options.ServiceName = "certificates");
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblyContaining<GetContractsForAdminPortalQueryHandler>();
+});
+
 
 builder.Services.AddQueryApi();
 builder.Services.AddContractService();
@@ -105,7 +91,7 @@ builder.Services.AddB2C(b2COptions);
 
 var app = builder.Build();
 
-app.MapHealthChecks("/health");
+app.MapDefaultHealthChecks();
 
 app.AddSwagger("certificates");
 

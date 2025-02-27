@@ -1,9 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
-using API.Authorization.Exceptions;
 using API.Models;
 using API.Repository;
 using API.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +17,7 @@ public class GetClientQueryHandler(IClientRepository clientRepository)
                          .Query()
                          .FirstOrDefaultAsync(client => client.IdpClientId == request.IdpClientId,
                              cancellationToken: cancellationToken) ??
-                     throw new EntityNotFoundException(request.IdpClientId.Value.ToString(), nameof(Client));
+                     throw new EntityNotFoundException(request.IdpClientId.Value, typeof(Client));
         return new GetClientQueryResult(client.IdpClientId, client.Name, client.RedirectUrl);
     }
 }

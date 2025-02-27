@@ -6,8 +6,6 @@ using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using API.UnitOfWork;
 using Asp.Versioning;
-using DataContext.Models;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
@@ -26,6 +24,7 @@ namespace API.Transfer.Api.Controllers;
 [Route("api/transfer/transfer-agreement-proposals")]
 public class TransferAgreementProposalController(
     IValidator<CreateTransferAgreementProposal> createTransferAgreementProposalValidator,
+    IValidator<CreateTransferAgreementProposalRequest> createTransferAgreementProposalRequestValidator,
     IUnitOfWork unitOfWork,
     IdentityDescriptor identityDescriptor,
     AccessDescriptor accessDescriptor,
@@ -56,13 +55,7 @@ public class TransferAgreementProposalController(
             return ValidationProblem(ModelState);
         }
 
-        var senderTin = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationCvr : null;
-        var senderName = IsOwnOrganization(organizationId) ? identityDescriptor.OrganizationName : null;
-        var type = CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type);
-        var receiverTin = request.ReceiverTin;
-        var startDate = request.StartDate;
-        var endDate = request.EndDate;
-        var command = new CreateTransferAgreementProposalCommand(organizationId, senderTin, senderName, receiverTin, startDate, endDate, type);
+        var command = new CreateTransferAgreementProposalCommand(organizationId, request.ReceiverTin, request.StartDate, request.EndDate, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type));
         var result = await mediator.Send(command);
 
         var response = new TransferAgreementProposalResponse(
@@ -75,11 +68,6 @@ public class TransferAgreementProposalController(
         );
 
         return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = result.Id }, response);
-    }
-
-    private bool IsOwnOrganization(Guid organizationId)
-    {
-        return identityDescriptor.OrganizationId == organizationId;
     }
 
     /// <summary>
@@ -136,51 +124,45 @@ public class TransferAgreementProposalController(
     /// Delete TransferAgreementProposal
     /// </summary>
     /// <param name="id">Id of TransferAgreementProposal</param>
-    /// <param name="organizationId"></param>
     /// <param name="cancellationToken"></param>
     /// <response code="204">Successful operation</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(void), 204)]
     [ProducesResponseType(typeof(void), 404)]
-    public async Task<ActionResult> DeleteTransferAgreementProposal([FromRoute] Guid id, [FromQuery] Guid organizationId,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> DeleteTransferAgreementProposal([FromRoute] Guid id, CancellationToken cancellationToken)
     {
-        var proposal = await unitOfWork.TransferAgreementProposalRepo.GetNonExpiredTransferAgreementProposal(id, cancellationToken);
-
-        if (proposal == null)
-        {
-            return NotFound();
-        }
-
-        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
-
-        if (proposal.ReceiverCompanyTin != null && identityDescriptor.OrganizationCvr != proposal.ReceiverCompanyTin.Value)
-        {
-            return ValidationProblem("You cannot Deny a TransferAgreementProposal for another company");
-        }
-
-        await unitOfWork.TransferAgreementProposalRepo.DeleteTransferAgreementProposal(id, cancellationToken);
-        await AppendToActivityLog(identityDescriptor, proposal, ActivityLogEntry.ActionTypeEnum.Declined);
-
-        await unitOfWork.SaveAsync();
-
+        var command = new DeleteTransferAgreementProposalCommand(id);
+        await mediator.Send(command, cancellationToken);
         return NoContent();
     }
 
-    private async Task AppendToActivityLog(IdentityDescriptor identity, TransferAgreementProposal proposal,
-        ActivityLogEntry.ActionTypeEnum actionType)
+    [HttpPost("create/")]
+    [ProducesResponseType(typeof(TransferAgreementProposalResponse), 200)]
+    [ProducesResponseType(typeof(void), 404)]
+    public async Task<ActionResult> CreateTransferAgreementDirectly(CreateTransferAgreementProposalRequest request)
     {
-        await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: identity.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: identity.Name,
-            organizationTin: identity.OrganizationCvr!,
-            organizationName: identity.OrganizationName,
-            otherOrganizationTin: proposal.ReceiverCompanyTin?.Value ?? string.Empty,
-            otherOrganizationName: string.Empty,
-            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
-            actionType: actionType,
-            entityId: proposal.Id.ToString())
+        var organizationId = request.SenderOrganizationId;
+        accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+
+        var validateResult = await createTransferAgreementProposalRequestValidator.ValidateAsync(request);
+        if (!validateResult.IsValid)
+        {
+            validateResult.AddToModelState(ModelState);
+            return ValidationProblem(ModelState);
+        }
+
+        var command = new CreateTransferAgreementProposalCommand(organizationId, request.ReceiverTin, request.StartDate, request.EndDate, CreateTransferAgreementTypeMapper.MapCreateTransferAgreementType(request.Type));
+        var result = await mediator.Send(command);
+
+        var response = new TransferAgreementProposalResponse(
+            result.Id,
+            result.SenderOrganizationName,
+            result.ReceiverOrganizationTin,
+            result.StartDate,
+            result.EndDate,
+            TransferAgreementTypeMapper.MapCreateTransferAgreementType(result.Type)
         );
+
+        return CreatedAtAction(nameof(GetTransferAgreementProposal), new { id = result.Id }, response);
     }
 }

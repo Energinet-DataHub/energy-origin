@@ -50,6 +50,11 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/organization/" + organizationId);
     }
 
+    public async Task<HttpResponseMessage> GetFirstPartyOrganizations()
+    {
+        return await _client.GetAsync("/api/authorization/admin-portal/first-party-organizations/");
+    }
+
     public async Task<HttpResponseMessage> AcceptTerms()
     {
         return await _client.PostAsJsonAsync("/api/authorization/terms/accept", new { }, SerializerOptions);

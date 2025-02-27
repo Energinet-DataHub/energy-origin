@@ -22,7 +22,6 @@ jobs:
         with:
           solution: domains/authorization/Autorization.sln
           project: domains/authorization/Authorization.API/API/API.csproj
-          migrations: domains/authorization/migrations/API.sql
           configuration: domains/authorization/Authorization.API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
 

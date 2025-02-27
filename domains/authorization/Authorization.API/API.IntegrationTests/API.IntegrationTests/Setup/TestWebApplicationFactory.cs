@@ -4,8 +4,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using API.Models;
-using API.Options;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.Setup.RabbitMq;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
@@ -24,18 +26,23 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     internal string ConnectionString { get; set; } = "";
     internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
+    public readonly string AdminPortalEnterpriseAppRegistrationObjectId = "d216b90b-3872-498a-bc18-4941a0f4398e";
+    public string WalletUrl { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
+        builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", AdminPortalEnterpriseAppRegistrationObjectId);
         builder.UseSetting("MitID:URI", "https://pp.netseidbroker.dk/op");
+        builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
 
         builder.ConfigureTestServices(services =>
         {
             services.RemoveDbContext<ApplicationDbContext>();
             services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(ConnectionString); });
 
-            services.EnsureDbCreated<ApplicationDbContext>();
+            new DbMigrator(ConnectionString, typeof(Program).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+
             services.Configure<RabbitMqOptions>(options =>
             {
                 options.Host = RabbitMqOptions.Host;
@@ -82,6 +89,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             AuthenticationScheme.B2CClientCredentialsCustomPolicyAuthenticationScheme,
             typeof(TestAuthHandler));
         authenticationSchemeProvider.AddScheme(b2CClientCredentialsScheme);
+
     }
 
     public Api CreateApi(string sub = "", string name = "", string orgId = "", string orgIds = "", string subType = "", string orgCvr = "12345678",
@@ -125,7 +133,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
             new("org_ids", orgIds),
             new("sub_type", subType),
             new("org_cvr", orgCvr),
-            new("org_name", orgName),
+            new("org_name", orgName)
         };
         if (termsAccepted)
         {
@@ -168,13 +176,5 @@ public static class ServiceCollectionExtensions
         {
             services.Remove(descriptor);
         }
-    }
-
-    public static void EnsureDbCreated<T>(this IServiceCollection services) where T : DbContext
-    {
-        using var scope = services.BuildServiceProvider().CreateScope();
-        var serviceProvider = scope.ServiceProvider;
-        var context = serviceProvider.GetRequiredService<T>();
-        context.Database.EnsureCreated();
     }
 }

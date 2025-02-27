@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
+using API.Transfer.Api.Clients;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using DataContext;
@@ -44,6 +45,98 @@ public class TransferAgreementProposalsControllerTests
             .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", body);
 
         result.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task CreateUsingConsent()
+    {
+        var senderOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId,
+                "87654321",
+                "B",
+                Guid.NewGuid(),
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
+        var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
+        var result = await authenticatedClient
+            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
+
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task CreateDirectUsingConsent()
+    {
+        var senderOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId,
+                "87654321",
+                "B",
+                Guid.NewGuid(),
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
+        var body = new CreateTransferAgreementProposalRequest(senderOrganizationId, DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
+        var result = await authenticatedClient
+            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals/create", body);
+
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task GivenNoConsent_WhenCreatingDirectlyUsingOrgId_NotAuthorized()
+    {
+        var senderOrganizationId = Guid.NewGuid();
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var body = new CreateTransferAgreementProposalRequest(senderOrganizationId, DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "12334455");
+        var result = await authenticatedClient
+            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals/create", body);
+        result.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CreateUsingConsent_ShouldReturnBadRequest_WhenCurrentConsentUserIsSender()
+    {
+        var senderOrganizationId = Guid.NewGuid();
+
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrganizationId,
+                "87654321",
+                "B",
+                Guid.NewGuid(),
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrganizationId}");
+        var body = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, "87654321");
+        var result = await authenticatedClient
+            .PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrganizationId}", body);
+
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -408,6 +501,80 @@ public class TransferAgreementProposalsControllerTests
         var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{randomGuid}?organizationId={orgId}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GivenTransferAgreementProposal_WhenDeletingAsReceiver_ShouldDelete()
+    {
+        // Given TA proposal
+        var receiverTin = "32132137";
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
+        var postResponse = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
+        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
+
+        // When deleting as receiver
+        var receiverOrgId = Guid.NewGuid();
+        var receiverAuthenticatedClient = factory.CreateB2CAuthenticatedClient(sub, receiverOrgId, receiverTin);
+        var deleteResponse = await receiverAuthenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={receiverOrgId}");
+
+        // Should be deleted
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task GivenTransferAgreementProposal_WhenDeletingAsSender_ShouldDelete()
+    {
+        // Given TA proposal
+        var receiverTin = "32132137";
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
+        var postResponse = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
+        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
+
+        // When deleting as sender
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={orgId}");
+
+        // Should be deleted
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task GivenTransferAgreementProposal_WhenDeletingWithConsentToSender_ShouldDelete()
+    {
+        var senderOrgId = Guid.NewGuid();
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>()
+        {
+            new UserOrganizationConsentsResponseItem(
+                System.Guid.NewGuid(),
+                senderOrgId,
+                "87654321",
+                "B",
+                Guid.NewGuid(),
+                "12345678",
+                "A",
+                UnixTimestamp.Now().ToDateTimeOffset().ToUnixTimeSeconds()
+            )
+        };
+
+        // Given TA proposal
+        var receiverTin = "32132137";
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, orgIds: $"{senderOrgId.ToString()}");
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
+            UnixTimestamp.Now().AddDays(1).EpochSeconds, receiverTin);
+        var postResponse = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={senderOrgId}", request);
+        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
+
+        // When deleting with consent to sender, but still using own orgId
+        var deleteResponse = await authenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={orgId}");
+
+        // Should be deleted
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]

@@ -2,9 +2,8 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Authorization.Exceptions;
 using API.Models;
-using Microsoft.EntityFrameworkCore;
+using EnergyOrigin.Setup.Exceptions;
 
 namespace API.Repository;
 
@@ -16,7 +15,7 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     public async Task<T> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         return await Context.Set<T>().FindAsync(id, cancellationToken) ??
-               throw new EntityNotFoundException(id.ToString(), typeof(T).Name);
+               throw new EntityNotFoundException(id, typeof(T));
     }
 
     public async Task AddAsync(T entity, CancellationToken cancellationToken)

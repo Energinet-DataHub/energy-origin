@@ -7,8 +7,8 @@ namespace API.Measurements.Helpers
     public static class MeterTimeSeriesHelper
     {
         private const string TimeZoneId = "Romance Standard Time";
-        private const string HourlyMeasurementsOccurrence = "PT1H";
-        private const string QuarterlyMeasurementsOccurrence = "PT15M";
+        public const string HourlyMeasurementsOccurrence = "PT1H";
+        public const string QuarterlyMeasurementsOccurrence = "PT15M";
 
         public static DateTimeOffset ConvertDanishDateToDateTimeOffset(this string date)
         {
@@ -36,7 +36,7 @@ namespace API.Measurements.Helpers
                 return danishDate.AddMinutes(timePosition * 15).ToUnixTimeSeconds();
             }
 
-            throw new NotImplementedException($"Meter reading occurance '{meterReadingOccurrence}' is not implemented.");
+            throw new NotImplementedException($"Meter reading occurrence '{meterReadingOccurrence}' is not implemented.");
         }
 
         public static int GetQuantityFromMeterReading(string energyTimeSeriesMeasureUnit, string energyQuantity)
@@ -51,27 +51,27 @@ namespace API.Measurements.Helpers
             throw new NotImplementedException($"Measure unit '{energyTimeSeriesMeasureUnit}' not implemented!");
         }
 
-        public static EnergyQuantityValueQuality GetQuantityQualityFromMeterReading(string QuantityQuality)
+        public static EnergyQuantityValueQuality GetQuantityQualityFromMeterReading(string quantityQuality)
         {
 
-            if (QuantityQuality == "E01")
+            if (quantityQuality == "E01")
             {
                 return EnergyQuantityValueQuality.Measured;
             }
-            else if (QuantityQuality == "D01")
+            else if (quantityQuality == "D01")
             {
                 return EnergyQuantityValueQuality.Calculated;
             }
-            else if (QuantityQuality == "56")
+            else if (quantityQuality == "56")
             {
                 return EnergyQuantityValueQuality.Estimated;
             }
-            else if (QuantityQuality == "36")
+            else if (quantityQuality == "36")
             {
                 return EnergyQuantityValueQuality.Revised;
             }
 
-            throw new NotSupportedException($"QuantityQuality of type '{QuantityQuality}' not supported!");
+            throw new NotSupportedException($"QuantityQuality of type '{quantityQuality}' not supported!");
         }
 
         public static bool GetQuantityMissingFromMeterReading(string quantityMissingIndicator)

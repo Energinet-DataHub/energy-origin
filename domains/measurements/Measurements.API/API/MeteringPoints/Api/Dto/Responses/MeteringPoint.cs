@@ -2,10 +2,20 @@ using System;
 using System.Text.RegularExpressions;
 using API.MeteringPoints.Api.Dto.Responses.Enums;
 using API.MeteringPoints.Api.Models.Constants;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.MeteringPoints.Api.Dto.Responses;
 
-public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMeterType SubMeterType, Address Address, Technology Technology, bool CanBeUsedForIssuingCertificates, string Capacity)
+public record MeteringPoint(
+    string GSRN,
+    string GridArea,
+    MeterType Type,
+    SubMeterType SubMeterType,
+    Address Address,
+    Technology Technology,
+    [property: SwaggerSchema("Indicates if the metering point can be used for issuing certificates.")]
+    bool CanBeUsedForIssuingCertificates,
+    string Capacity)
 {
     public static MeteringPoint CreateFrom(Meteringpoint.V1.MeteringPoint result)
     {
@@ -25,13 +35,18 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
                 "DK"
             ),
             GetTechnology(result.AssetType),
-            GetCanBeUsedForIssuingCertificates(result.TypeOfMp, result.AssetType),
+            GetCanBeUsedForIssuingCertificates(result.TypeOfMp, result.AssetType, result.PhysicalStatusOfMp),
             result.Capacity
         );
     }
 
-    public static bool GetCanBeUsedForIssuingCertificates(string typeOfMp, string assetType)
+    public static bool GetCanBeUsedForIssuingCertificates(string typeOfMp, string assetType, string physicalStatusOfMp)
     {
+        if (physicalStatusOfMp != "E22")
+        {
+            return false;
+        }
+
         if (GetMeterType(typeOfMp) == MeterType.Production)
         {
             if (GetAssetType(assetType) != AssetTypeEnum.Other)
@@ -43,6 +58,7 @@ public record MeteringPoint(string GSRN, string GridArea, MeterType Type, SubMet
         {
             return true;
         }
+
 
         return false;
     }

@@ -1,5 +1,4 @@
-using API.Options;
-using Testcontainers.RabbitMq;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 
 namespace API.IntegrationTests.Setup;
 
@@ -12,25 +11,24 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 public class IntegrationTestFixture : IAsyncLifetime
 {
     public PostgresContainer PostgresContainer { get; } = new();
-    public RabbitMqContainer RabbitMqContainer { get; } = new RabbitMqBuilder().WithUsername("guest").WithPassword("guest").Build();
+    public ProjectOriginStack ProjectOriginStack { get; } = new();
+
+    public RabbitMqContainer RabbitMqContainer { get; } = new();
+
     public TestWebApplicationFactory WebAppFactory { get; private set; } = null!;
 
     public async Task InitializeAsync()
     {
         await PostgresContainer.InitializeAsync();
-        await RabbitMqContainer.StartAsync();
+        await ProjectOriginStack.InitializeAsync();
+        await RabbitMqContainer.InitializeAsync();
+
         var newDatabase = await PostgresContainer.CreateNewDatabase();
 
-        var connectionStringSplit = RabbitMqContainer.GetConnectionString().Split(":");
-        var rabbitMqOptions = new RabbitMqOptions
-        {
-            Host = connectionStringSplit[0],
-            Port = int.Parse(connectionStringSplit[^1].TrimEnd('/')),
-            Username = "guest",
-            Password = "guest"
-        };
+        var rabbitMqOptions = RabbitMqContainer.Options;
 
         WebAppFactory = new TestWebApplicationFactory();
+        WebAppFactory.WalletUrl = ProjectOriginStack.WalletUrl;
         WebAppFactory.ConnectionString = newDatabase.ConnectionString;
         WebAppFactory.SetRabbitMqOptions(rabbitMqOptions);
         await WebAppFactory.InitializeAsync();
@@ -40,6 +38,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     {
         await WebAppFactory.DisposeAsync();
         await PostgresContainer.DisposeAsync();
+        await ProjectOriginStack.DisposeAsync();
         await RabbitMqContainer.DisposeAsync();
     }
 }

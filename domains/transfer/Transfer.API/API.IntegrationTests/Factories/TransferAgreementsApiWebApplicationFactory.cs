@@ -6,12 +6,14 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using API.Transfer.Api.Clients;
 using API.Transfer.TransferAgreementProposalCleanup;
 using Asp.Versioning.ApiExplorer;
 using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.HostedService;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
@@ -23,8 +25,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using ProjectOriginClients;
+using EnergyOrigin.WalletClient;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Factories;
@@ -43,7 +46,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private const string CvrPassword = "SomePassword";
     public string CvrBaseUrl { get; set; } = "SomeUrl";
     public bool WithCleanupWorker { get; set; } = true;
-    public IProjectOriginWalletClient WalletClientMock { get; private set; } = Substitute.For<IProjectOriginWalletClient>();
+    public IWalletClient WalletClientMock { get; private set; } = Substitute.For<IWalletClient>();
 
     public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
     {
@@ -70,6 +73,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             "https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_MITID");
         builder.UseSetting("B2C:Audience", "f00b9b4d-3c59-4c40-b209-2ef87e509f54");
         builder.UseSetting("B2C:CustomPolicyClientId", "a701d13c-2570-46fa-9aa2-8d81f0d8d60b");
+        builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", "8bb12660-aa0e-4eef-a4aa-d6cd62615201");
 
         builder.ConfigureTestServices(s =>
         {
@@ -93,7 +97,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 o.Password = (string)connectionStringBuilder["Password"];
             });
 
-            s.Remove(s.First(sd => sd.ServiceType == typeof(IProjectOriginWalletClient)));
+            new DbMigrator(ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+
+            s.Remove(s.First(sd => sd.ServiceType == typeof(IWalletClient)));
             s.AddScoped(_ => WalletClientMock);
 
             if (!WithCleanupWorker)
@@ -102,6 +108,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
                 s.Remove(s.First(x => x.ImplementationType == typeof(TransferAgreementProposalCleanupService)));
                 s.Remove(s.First(x => x.ImplementationType == typeof(CleanupActivityLogsHostedService)));
             }
+
+            s.Remove(s.First(sd => sd.ServiceType == typeof(IAuthorizationClient)));
+            s.AddSingleton<IAuthorizationClient, MockAuthorizationClient>();
         });
     }
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;
@@ -35,11 +36,11 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
     {
         var agreements = await context.TransferAgreements.Where(t =>
                 t.SenderId == newTransferAgreement.SenderId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
         var transferAgreementNumber = agreements.Any() ? agreements.Max(ta => ta.TransferAgreementNumber) + 1 : 0;
         newTransferAgreement.TransferAgreementNumber = transferAgreementNumber;
 
-        await context.TransferAgreements.AddAsync(newTransferAgreement);
+        await context.TransferAgreements.AddAsync(newTransferAgreement, cancellationToken);
 
         return newTransferAgreement;
     }
@@ -72,9 +73,24 @@ public class TransferAgreementRepository(ApplicationDbContext context) : ITransf
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<TransferAgreement> GetTransferAgreement(Guid id, CancellationToken cancellationToken)
+    {
+        var transferAgreement = await context
+            .TransferAgreements
+            .Where(agreement => agreement.Id == id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (transferAgreement is null)
+        {
+            throw new EntityNotFoundException(id, typeof(TransferAgreement));
+        }
+
+        return transferAgreement;
+    }
+
     public async Task<bool> HasDateOverlap(TransferAgreement transferAgreement, CancellationToken cancellationToken)
     {
-        var overlappingAgreements = await context.TransferAgreements
+        var overlappingAgreements = await context.TransferAgreements.AsNoTracking()
             .Where(t => t.SenderId == transferAgreement.SenderId &&
                         t.ReceiverTin == transferAgreement.ReceiverTin &&
                         t.Id != transferAgreement.Id)

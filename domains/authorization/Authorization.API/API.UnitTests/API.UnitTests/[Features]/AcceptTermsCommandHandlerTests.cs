@@ -6,6 +6,7 @@ using API.Repository;
 using API.UnitTests.Repository;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
+using EnergyOrigin.WalletClient;
 using FluentAssertions;
 using MassTransit;
 using NSubstitute;
@@ -19,6 +20,7 @@ public class AcceptTermsCommandHandlerTests
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly AcceptTermsCommandHandler _handler;
+    private readonly IWalletClient _walletClient;
 
     public AcceptTermsCommandHandlerTests()
     {
@@ -26,7 +28,9 @@ public class AcceptTermsCommandHandlerTests
         _termsRepository = new FakeTermsRepository();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _publishEndpoint = Substitute.For<IPublishEndpoint>();
-        _handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, _publishEndpoint);
+        _walletClient = Substitute.For<IWalletClient>();
+        _walletClient.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new CreateWalletResponse() { WalletId = Guid.NewGuid() });
+        _handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, _walletClient, _publishEndpoint);
     }
 
     [Fact]
@@ -75,10 +79,27 @@ public class AcceptTermsCommandHandlerTests
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
         mockOrganizationRepository.Query().Returns(_ => throw new Exception("Test exception"));
         await using var mockUnitOfWork = Substitute.For<IUnitOfWork>();
-        var handler = new AcceptTermsCommandHandler(mockOrganizationRepository, _termsRepository, mockUnitOfWork, _publishEndpoint);
+        var handler = new AcceptTermsCommandHandler(mockOrganizationRepository, _termsRepository, mockUnitOfWork, _walletClient, _publishEndpoint);
 
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
         await mockUnitOfWork.DidNotReceive().CommitAsync();
+        await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WhenWalletNotCreated_RollsBackTransactionAndDoesNotPublishMessage()
+    {
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
+        await _organizationRepository.AddAsync(organization, CancellationToken.None);
+        await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
+
+        var walletClient = Substitute.For<IWalletClient>();
+
+        var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
+
+        await Assert.ThrowsAsync<WalletNotCreated>(() => handler.Handle(command, CancellationToken.None));
+        await _unitOfWork.DidNotReceive().CommitAsync();
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
     }
 
