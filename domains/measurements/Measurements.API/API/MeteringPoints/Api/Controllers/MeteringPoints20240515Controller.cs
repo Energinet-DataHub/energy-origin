@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using API.MeteringPoints.Api.Dto.Responses;
@@ -43,7 +44,7 @@ public class MeteringPoints20240515Controller : ControllerBase
     /// <response code="200">Successful operation</response>
     [HttpGet]
     [ProducesResponseType(typeof(GetMeteringPointsResponse), 200)]
-    public async Task<ActionResult> GetMeteringPoints([FromQuery] Guid organizationId)
+    public async Task<ActionResult> GetMeteringPoints([Required][FromQuery] Guid organizationId)
     {
         if (!_accessDescriptor.IsAuthorizedToOrganization(organizationId))
         {

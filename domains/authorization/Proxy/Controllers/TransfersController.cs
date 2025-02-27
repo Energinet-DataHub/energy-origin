@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Swagger;
@@ -31,7 +32,7 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer, PageInfoCursor>), StatusCodes.Status200OK)]
-    public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param, [FromQuery] string? organizationId)
+    public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/transfers/cursor", organizationId);
     }
@@ -50,7 +51,7 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer, PageInfo>), StatusCodes.Status200OK)]
-    public async Task GetTransfers([FromQuery] GetTransfersQueryParameters param, string? organizationId)
+    public async Task GetTransfers([FromQuery] GetTransfersQueryParameters param, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/transfers", organizationId);
     }
@@ -70,7 +71,7 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultList<AggregatedTransfers, PageInfo>), StatusCodes.Status200OK)]
-    public async Task AggregateTransfers([FromQuery] AggregateTransfersQueryParameters param, string? organizationId)
+    public async Task AggregateTransfers([FromQuery] AggregateTransfersQueryParameters param, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/aggregate-transfers", organizationId);
     }
@@ -89,7 +90,7 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status200OK)]
-    public async Task TransferCertificate([FromBody] TransferRequest request, string? organizationId)
+    public async Task TransferCertificate([FromBody] TransferRequest request, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest("v1/transfers", organizationId);
     }
@@ -125,11 +126,13 @@ public record AggregateTransfersQueryParameters
     /// <summary>
     /// The size of each bucket in the aggregation
     /// </summary>
+    [Required]
     public required TimeAggregate TimeAggregate { get; init; }
 
     /// <summary>
     /// The time zone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid time zones.
     /// </summary>
+    [Required]
     public required string TimeZone { get; init; }
 
     /// <summary>
@@ -159,11 +162,17 @@ public record AggregateTransfersQueryParameters
 /// </summary>
 public record Transfer()
 {
+    [Required]
     public required FederatedStreamId FederatedStreamId { get; init; }
+    [Required]
     public required string ReceiverId { get; init; }
+    [Required]
     public required long Quantity { get; init; }
+    [Required]
     public required long Start { get; init; }
+    [Required]
     public required long End { get; init; }
+    [Required]
     public required string GridArea { get; init; }
 }
 
@@ -175,21 +184,25 @@ public record TransferRequest()
     /// <summary>
     /// The federated stream id of the certificate to transfer.
     /// </summary>
+    [Required]
     public required FederatedStreamId CertificateId { get; init; }
 
     /// <summary>
     /// The id of the wallet to transfer the certificate to.
     /// </summary>
+    [Required]
     public required Guid ReceiverId { get; init; }
 
     /// <summary>
     /// The quantity of the certificate to transfer.
     /// </summary>
+    [Required]
     public required uint Quantity { get; init; }
 
     /// <summary>
     /// List of hashed attributes to transfer with the certificate.
     /// </summary>
+    [Required]
     public required string[] HashedAttributes { get; init; }
 }
 
@@ -201,6 +214,7 @@ public record TransferResponse()
     /// <summary>
     /// The id of the transfer request.
     /// </summary>
+    [Required]
     public required Guid TransferRequestId { get; init; }
 }
 
@@ -212,15 +226,18 @@ public record AggregatedTransfers()
     /// <summary>
     /// The start of the aggregated period.
     /// </summary>
+    [Required]
     public required long Start { get; init; }
 
     /// <summary>
     /// The end of the aggregated period.
     /// </summary>
+    [Required]
     public required long End { get; init; }
 
     /// <summary>
     /// The quantity of the aggregated transfers.
     /// </summary>
+    [Required]
     public required long Quantity { get; init; }
 }
