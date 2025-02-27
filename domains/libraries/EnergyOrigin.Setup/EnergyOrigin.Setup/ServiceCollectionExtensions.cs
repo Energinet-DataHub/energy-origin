@@ -65,7 +65,6 @@ public static class ServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddProcessInstrumentation()
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint))
             .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
@@ -73,23 +72,6 @@ public static class ServiceCollectionExtensions
                     .AddAspNetCoreInstrumentation()
                     .AddNpgsql()
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
-    }
-
-    public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracingWithGrpc(this IServiceCollection services, string serviceName,
-        Uri oltpReceiverEndpoint)
-    {
-        return services.AddOpenTelemetryMetricsAndTracing(serviceName, oltpReceiverEndpoint)
-            .WithTracing(traceBuilder =>
-            {
-                traceBuilder.AddGrpcClientInstrumentation(grpcOptions =>
-                {
-                    grpcOptions.SuppressDownstreamInstrumentation = true;
-                    grpcOptions.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
-                        activity.SetTag("requestVersion", httpRequestMessage.Version);
-                    grpcOptions.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
-                        activity.SetTag("responseVersion", httpResponseMessage.Version);
-                });
-            });
     }
 
     public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit(this IServiceCollection services,
