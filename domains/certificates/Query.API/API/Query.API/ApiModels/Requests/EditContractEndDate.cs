@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Query.API.ApiModels.Requests;
 
 public class EditContractEndDate
 {
+    [Required]
     public Guid Id { get; init; }
 
     /// <summary>
