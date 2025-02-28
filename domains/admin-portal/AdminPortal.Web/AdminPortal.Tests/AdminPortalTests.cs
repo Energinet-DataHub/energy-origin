@@ -215,15 +215,41 @@ public class AdminPortalTests
     }
 
     [Fact]
-    public async Task Given_UserIsAuthenticated_When_AccessingAdminPortal_Then_Return200OK()
+    public async Task Given_UserDoesNotHaveAtlasRole_When_AccessingAdminPortal_Then_Return401Unauthorized()
     {
         var factory = new TestWebApplicationFactory();
-        var client = factory.CreateAuthenticatedClient<GeneralUser>(new WebApplicationFactoryClientOptions(), 12345);
+        var client = factory.CreateAuthenticatedClient<GeneralUser>(
+            new WebApplicationFactoryClientOptions(),
+            12345,
+            [
+                "g-Team-Heimdal",
+                "g-Team-Fusion",
+                "g-Team-Raccoons",
+                "g-Team-Spectrum",
+                "g-Team-Mosaic"
+            ]);
 
         var response = await client.GetAsync("/ett-admin-portal/ActiveContracts");
-        var body = await response.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
 
-        Assert.Contains("Active Contracts", body);
+    [Fact]
+    public async Task Given_UserHasAtlasRole_When_AccessingAdminPortal_Then_Return200OK()
+    {
+        var factory = new TestWebApplicationFactory();
+        var client = factory.CreateAuthenticatedClient<GeneralUser>(
+            new WebApplicationFactoryClientOptions(),
+            12345,
+            [
+                "g-Team-Atlas",
+                "g-Team-Heimdal",
+                "g-Team-Fusion",
+                "g-Team-Raccoons",
+                "g-Team-Spectrum",
+                "g-Team-Mosaic"
+            ]);
+
+        var response = await client.GetAsync("/ett-admin-portal/ActiveContracts");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AdminPortal.Options;
 using AdminPortal.Services;
@@ -71,7 +73,8 @@ builder.Services.AddAuthentication(options =>
         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
         options.Events.OnTokenValidated = context =>
         {
-            if (context.Principal == null || !context.Principal.IsInRole("g-Team-Atlas"))
+            if (context.Principal == null || !context.Principal.Claims
+                    .Any(c => c.Type == ClaimTypes.Role && c.Value.Equals("g-Team-Atlas", StringComparison.OrdinalIgnoreCase)))
             {
                 context.Fail("Unauthorized, User is not a member of 'g-Team-Atlas' Security Group");
             }

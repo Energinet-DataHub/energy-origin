@@ -31,7 +31,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
             services.AddTransient<IAuthenticationSchemeProvider, AutoFailSchemeProvider>();
             services.AddAuthentication(AutoFailSchemeProvider.AutoFailScheme)
-                .AddScheme<AuthenticationSchemeOptions, AutoFailAuthHandler>(AutoFailSchemeProvider.AutoFailScheme, _ => { });
+                .AddScheme<AuthenticationSchemeOptions, AutoFailAuthHandler>(AutoFailSchemeProvider.AutoFailScheme,
+                    _ => { });
         });
     }
 
@@ -52,9 +53,15 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 new ContractsForAdminPortalResponse(new List<ContractsForAdminPortalResponseItem>()));
         }
     }
-    public HttpClient CreateAuthenticatedClient<T>(WebApplicationFactoryClientOptions options, int sessionId) where T : ImpersonatedUser
+
+    public HttpClient CreateAuthenticatedClient<T>(WebApplicationFactoryClientOptions options, int sessionId, List<string>? roles = null) where T : ImpersonatedUser
     {
-        return CreateLoggedInClient<T>(options, list => list.Add(new Claim("sessionid", sessionId.ToString())));
+        roles ??= new List<string> { "g-Team-Atlas" };
+        return CreateLoggedInClient<T>(options, claims =>
+        {
+            claims.Add(new Claim("sessionid", sessionId.ToString()));
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        });
     }
 
     private HttpClient CreateLoggedInClient<T>(WebApplicationFactoryClientOptions options, Action<List<Claim>> configure) where T : ImpersonatedUser
@@ -81,6 +88,8 @@ public abstract class ImpersonatedUser(
     UrlEncoder encoder)
     : AuthenticationHandler<ImpersonatedAuthenticationSchemeOptions>(options, logger, encoder)
 {
+    private const string RequiredSecurityGroup = "g-Team-Atlas";
+
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var claims = new List<Claim>
@@ -94,6 +103,12 @@ public abstract class ImpersonatedUser(
 
         var identity = new ClaimsIdentity(claims, OpenIdConnectDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
+
+        if (!principal.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value == RequiredSecurityGroup))
+        {
+            return Task.FromResult(AuthenticateResult.Fail("Unauthorized: User is not in the required security group."));
+        }
+
         var ticket = new AuthenticationTicket(principal, OpenIdConnectDefaults.AuthenticationScheme);
 
         return Task.FromResult(AuthenticateResult.Success(ticket));
