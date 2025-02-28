@@ -110,7 +110,7 @@ jobs:
         uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v4
         with:
           configurations: |
-            domains/admin-portal/AdminPortal.Web/AdminPortal/configuration.yaml
+            domains/admin-portal/AdminPortal.Web/configuration.yaml
             domains/authorization/Authorization.API/configuration.yaml
             domains/authorization/Proxy/configuration.yaml
             domains/certificates/Query.API/configuration.yaml
