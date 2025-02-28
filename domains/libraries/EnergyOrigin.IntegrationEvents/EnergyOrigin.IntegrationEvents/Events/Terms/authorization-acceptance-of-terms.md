@@ -11,8 +11,7 @@ by establishing a relation in Datahub 2 (DH2) system.
 
 ## Event Details
 
-Upon successful [terms acceptance](../../../../../doc/architecture/domains/authorization/features/accept-terms.md),
-the authorization subsystem publishes an OrgAcceptedTerms event,
+Upon successful acceptance of terms and conditions, the authorization subsystem publishes an OrgAcceptedTerms event,
 with the following information:
 
 ```csharp
@@ -25,7 +24,7 @@ public record OrgAcceptedTerms : IntegrationEvent
 ```
 
 ***Note:** Read more about how the Authorization subsystem uses this integration event record
-[here](../../../../../doc/architecture/domains/authorization/features/accept-terms.md)
+[here](../../../../../../doc/architecture/adr/0025-integration-events.md)
 
 ## Field Descriptions
 
