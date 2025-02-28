@@ -69,7 +69,6 @@ builder.Services.AddAuthentication(options =>
         options.MapInboundClaims = false;
         options.CallbackPath = "/signin-oidc";
         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
-        options.TokenValidationParameters.RoleClaimType = "role";
         options.Events.OnTokenValidated = context =>
         {
             if (context.Principal == null || !context.Principal.IsInRole("b8fbfff5-243a-4e1d-aab0-6cf8bc2db072"))
