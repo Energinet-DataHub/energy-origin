@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using AdminPortal.Options;
 using AdminPortal.Services;
 using AdminPortal.Utilities;
@@ -68,6 +69,15 @@ builder.Services.AddAuthentication(options =>
         options.MapInboundClaims = false;
         options.CallbackPath = "/signin-oidc";
         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
+        options.TokenValidationParameters.RoleClaimType = "groups";
+        options.Events.OnTokenValidated = context =>
+        {
+            if (context.Principal == null || !context.Principal.IsInRole("b8fbfff5-243a-4e1d-aab0-6cf8bc2db072"))
+            {
+                context.Fail("Unauthorized");
+            }
+            return Task.CompletedTask;
+        };
     });
 
 builder.Services.AddSingleton<MsalHttpClientFactoryAdapter>();
