@@ -71,9 +71,9 @@ builder.Services.AddAuthentication(options =>
         options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
         options.Events.OnTokenValidated = context =>
         {
-            if (context.Principal == null || !context.Principal.IsInRole("b8fbfff5-243a-4e1d-aab0-6cf8bc2db072"))
+            if (context.Principal == null || !context.Principal.IsInRole("g-Team-Atlas"))
             {
-                context.Fail("Unauthorized");
+                context.Fail("Unauthorized, User is not a member of 'g-Team-Atlas' Security Group");
             }
             return Task.CompletedTask;
         };
