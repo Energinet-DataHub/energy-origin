@@ -5,14 +5,16 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Proxy.Controllers;
 
 [ApiController]
 [Route("wallet-api")]
+[SwaggerTag("In the claim process, both quantity and time are taken into account - and if the entire production certificate is not 'used', a new 'slice' is created for the remaining quantity.")]
+
 public class ClaimsController : ProxyBase
 {
-
     public ClaimsController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
     {
     }

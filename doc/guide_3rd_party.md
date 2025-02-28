@@ -18,6 +18,25 @@ It is possible to initiate a grant consent user flow on the ETT website from ano
 
 Open API specification of Energy Track & Trace API can be accessed at <https://energytrackandtrace.dk/developer/>.
 
+### Versioning
+
+We are using a custom header in the style of X-API-Version=1.
+
+We only use simple numbers(1, 2, 3…) for versioning of the APIs.
+
+As part of our API versioning strategy, whenever a version is marked as deprecated, it will be done with a 6-month notice to allow consumers adequate time to migrate to the latest version. The following steps outline the deprecation approach:
+
+Sunset Header: When an API version is deprecated, responses will include a Sunset header that indicates the exact date and time when the version will no longer be supported. The date will be set 6 months in the future from the deprecation date. This practice follows the RFC 8594: The Sunset HTTP Header Field, which standardizes the use of the Sunset header to communicate the end-of-life date for resources.
+
+Supported and Deprecated Versions Headers: Every API response will include two headers:
+```
+Api-Supported-Versions: This header indicates the currently supported versions of the API. It will always reflect the latest available versions.
+
+Api-Deprecated-Versions: This header lists any API versions that are deprecated but still operational within the 6-month window.
+```
+
+
+
 ## Authorization
 
 All requests to Energy Track & Trace endpoints are authorized. All request must contain an Authorization header with a bearer token. Tokens can be obtained using a standard OAuth 2.0 `client-credentials` grant.

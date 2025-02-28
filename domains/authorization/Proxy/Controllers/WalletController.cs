@@ -84,6 +84,12 @@ public class WalletController : ProxyBase
         await ProxyClientCredentialsRequest($"v1/wallets/{walletId}", organizationId);
     }
 
+    /// <summary>
+    /// Creates a new wallet endpoint on the users wallet, which can be sent to other services to receive certificate-slices.
+    /// </summary>
+    /// <param name = "walletId" > The ID of the wallet to create the endpoint on.</param>
+    /// <response code="201">The wallet endpoint was created.</response>
+    /// <response code="401">If the user is not authenticated.</response>
     [HttpPost]
     [Route("wallets/{walletId}/endpoints")]
     [Produces("application/json")]
@@ -92,13 +98,19 @@ public class WalletController : ProxyBase
     [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(CreateWalletEndpointResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CreateWalletEndpointResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public async Task CreateWalletEndpoint([FromRoute] Guid walletId, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest($"v1/wallets/{walletId}/endpoints", organizationId);
     }
 
+    /// <summary>
+    /// Creates a new external endpoint for the user, which can user can use to send certficates to the other wallet.
+    /// </summary>
+    /// <response code="201">The external endpoint was created.</response>
+    /// <response code="400">If the wallet reference is invalid or if the wallet reference is to the same wallet as the user.</response>
+    /// <response code="401">If the user is not authenticated.</response>
     [HttpPost]
     [Route("external-endpoints")]
     [Produces("application/json")]
