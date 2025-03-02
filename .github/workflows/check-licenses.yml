@@ -23,8 +23,9 @@ jobs:
 
       - name: Check license
         if: ${{ steps.diff.outputs.pattern != '' }}
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@install-new-dotnet-9-sdk-to-actions
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v4
         with:
           project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json
           license-ignore-file: .ignored-licenses.json
+          tool-version: 3.1.1
