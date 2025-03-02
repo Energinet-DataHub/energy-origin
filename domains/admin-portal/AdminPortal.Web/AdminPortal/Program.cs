@@ -33,7 +33,17 @@ builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptio
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddHealthChecks();
+
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
+builder.Services.AddOpenTelemetryMetricsAndTracing("AdminPortal.Web", otlpOptions.ReceiverEndpoint);
+
 builder.AddSerilog();
 builder.Services.AddRazorPages();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
