@@ -4,8 +4,23 @@ using Oidc.Mock;
 using Oidc.Mock.Extensions;
 using Oidc.Mock.Jwt;
 using Oidc.Mock.Models;
+using Serilog;
+using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var loggerConfiguration = new LoggerConfiguration()
+    .Filter.ByExcluding("RequestPath like '/health%'")
+    .Filter.ByExcluding("RequestPath like '/metrics%'")
+    .Enrich.With(new SerilogSanitizationMiddleware.SanitizeLogEnricher())
+    .Destructure.With<SerilogSanitizationMiddleware.SanitizeLogDestructuringPolicy>();
+
+loggerConfiguration = builder.Environment.IsDevelopment()
+    ? loggerConfiguration.WriteTo.Console()
+    : loggerConfiguration.WriteTo.Console(new JsonFormatter());
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(loggerConfiguration.CreateLogger());
 
 // Ignore anti-forgery token on forms - it causes problems when PathBase is used
 builder.Services.AddRazorPages(options => options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()));
@@ -29,10 +44,6 @@ if (!string.IsNullOrWhiteSpace(builder.Configuration[Configuration.PathBaseKey])
         return next(context);
     });
 }
-
-// This middleware is used to log request/responses. With app.UseHttpLogging() it is not possible
-// to filter requests to health controller. Can be replaced by Serilog logging at a later point.
-app.UseMiddleware<RequestLoggerMiddleware>();
 
 app.UseStaticFiles();
 
