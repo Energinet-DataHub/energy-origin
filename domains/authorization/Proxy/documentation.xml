@@ -475,6 +475,7 @@
             The endpoint is verified to exists within the wallet system, otherwise a 404 will be returned.
             The endpoint will return 202 Accepted was initial validation has succeeded.
             The certificate-slice will further verified with data from the registry in a seperate thread.
+            This is only used in inter-wallet communication
             </remarks>
             <param name = "request" >Contains the data </param>
             <response code="202">The slice was accepted.</response>
@@ -742,6 +743,22 @@
             <response code="200">The wallet was found.</response>
             <response code="401">If the user is not authenticated.</response>
             <response code="404">If the wallet specified is not found for the user.</response>
+        </member>
+        <member name="M:Proxy.Controllers.WalletController.CreateWalletEndpoint(System.Guid,System.String)">
+            <summary>
+            Creates a new wallet endpoint on the users wallet, which can be sent to other services to receive certificate-slices.
+            </summary>
+            <param name = "walletId" > The ID of the wallet to create the endpoint on.</param>
+            <response code="201">The wallet endpoint was created.</response>
+            <response code="401">If the user is not authenticated.</response>
+        </member>
+        <member name="M:Proxy.Controllers.WalletController.CreateExternalEndpoint(Proxy.Controllers.CreateExternalEndpointRequest,System.String)">
+            <summary>
+            Creates a new external endpoint for the user, which can user can use to send certficates to the other wallet.
+            </summary>
+            <response code="201">The external endpoint was created.</response>
+            <response code="400">If the wallet reference is invalid or if the wallet reference is to the same wallet as the user.</response>
+            <response code="401">If the user is not authenticated.</response>
         </member>
         <member name="T:Proxy.Controllers.WalletRecord">
             <summary>
