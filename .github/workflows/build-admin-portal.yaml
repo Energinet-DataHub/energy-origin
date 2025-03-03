@@ -22,5 +22,5 @@ jobs:
         with:
           solution: domains/admin-portal/AdminPortal.sln
           project: domains/admin-portal/AdminPortal.Web/AdminPortal/AdminPortal.csproj
-          configuration: domains/admin-portal/AdminPortal.Web/AdminPortal/configuration.yaml
+          configuration: domains/admin-portal/AdminPortal.Web/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
