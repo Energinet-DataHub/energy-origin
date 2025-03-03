@@ -46,6 +46,7 @@ jobs:
           project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json
           license-ignore-file: .ignored-licenses.json
+          tool-version: 3.1.1
 
   test-subsystems:
     name: Test subsystems
