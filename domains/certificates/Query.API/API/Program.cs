@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using API.Configurations;
 using API.ContractService;
@@ -12,6 +11,7 @@ using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;

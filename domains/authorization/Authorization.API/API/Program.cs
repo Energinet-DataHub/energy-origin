@@ -11,6 +11,7 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Exceptions.Middleware;
 using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;

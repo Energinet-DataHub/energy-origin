@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace API.Shared.Options;
+namespace EnergyOrigin.Setup.OpenTelemetry;
 
 public class OtlpOptions
 {
