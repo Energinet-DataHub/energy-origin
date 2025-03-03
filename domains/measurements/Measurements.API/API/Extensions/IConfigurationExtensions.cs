@@ -1,10 +1,9 @@
-using API.Options;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.OpenTelemetry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace API.Extensions;
 

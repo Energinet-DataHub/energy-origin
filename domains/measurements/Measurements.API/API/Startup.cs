@@ -5,6 +5,7 @@ using API.MeteringPoints.Api.Consumer;
 using API.Options;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Health;
+using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
