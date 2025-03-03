@@ -15,8 +15,4 @@ It facilitates communication between different microservices and components, thr
 Specific integration events are defined as records, that inherit from IntegrationEvent,
 adding their own properties, as needed.
 
-- [Authorization: Acceptance of Terms](./doc/specific-events/authorization-acceptance-of-terms.md)
-
-### Integration guides for various message brokers:
-
-- [RabbitMQ using MassTransit's Transactional Outbox Pattern](./doc/specific-integration-guides/masstransit-rabbitmq.md)
+- [Authorization: Acceptance of Terms](../../../domains/libraries/EnergyOrigin.IntegrationEvents/EnergyOrigin.IntegrationEvents/Events/Terms/authorization-acceptance-of-terms.md)
