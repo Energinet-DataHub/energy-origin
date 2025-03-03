@@ -6,6 +6,7 @@ using ClaimAutomation.Worker.Metrics;
 using ClaimAutomation.Worker.Options;
 using DataContext;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.OpenTelemetry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
