@@ -32,4 +32,18 @@ public record Client(string ClientId, string ClientSecret, string RedirectUri)
         var result = Validate(clientId, redirectUri);
         return !result.isValid ? result : (true, string.Empty);
     }
+
+    public (bool isValid, string validationError) Validate(string? redirectUri)
+    {
+        var valid = true;
+        var error = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(redirectUri) || !string.Equals(new Uri(redirectUri).Host, new Uri(RedirectUri).Host, StringComparison.InvariantCultureIgnoreCase))
+        {
+            error = "Invalid redirect_uri";
+            valid = false;
+        }
+
+        return (valid, error);
+    }
 }
