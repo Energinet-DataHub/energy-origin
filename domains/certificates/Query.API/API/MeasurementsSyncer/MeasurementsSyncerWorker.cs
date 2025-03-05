@@ -47,6 +47,8 @@ public class MeasurementsSyncerWorker : BackgroundService
             await PerformPeriodicTask(stoppingToken);
             await Sleep(stoppingToken);
         }
+
+        _logger.LogInformation("MeasurementSyncer stopped");
     }
 
     private async Task PerformPeriodicTask(CancellationToken stoppingToken)
