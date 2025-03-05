@@ -15,8 +15,24 @@ public class RequestLoggerMiddleware
             return;
         }
 
-        logger.LogDebug("Request - (Scheme: {Scheme} Host: {Host}) {Method} (PathBase: {PathBase}) {Location}", req.Scheme, req.Host, req.Method, req.PathBase, $"{req.Path}{req.QueryString}");
+        logger.LogDebug("Request - (Scheme: {Scheme} Host: {Host}) {Method} (PathBase: {PathBase}) {Location}", req.Scheme, req.Host, req.Method, req.PathBase, $"{req.Path}{req.QueryString}".Sanitize());
         await next(httpContext);
         logger.LogDebug("Response - {StatusCode}", httpContext.Response.StatusCode);
+    }
+}
+
+public static class StringLoggerExtensions {
+
+    public static string Sanitize(this string input)
+    {
+        if (String.IsNullOrWhiteSpace(input))
+        {
+            return "";
+        }
+
+        return input
+            .Replace("\r", "")
+            .Replace("\n", "")
+            .Replace(Environment.NewLine, "");
     }
 }
