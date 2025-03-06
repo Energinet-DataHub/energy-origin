@@ -24,10 +24,17 @@ authSubsystem = group "Authorization Subsystem" {
 
     authDb = container "Database" {
         tags "Data Storage"
-        description "Stores user details and settings"
+        description "Stores user, organization, client and consent information"
         technology "PostgreSQL"
 
-        authApi -> this "Reads projected user data from"
+        authApi -> this "Reads and updates data"
+    }
+
+    walletProxy = container "Wallet proxy" {
+        description "Proxy for PO Wallet handling authorization"
+        
+        walletProxy -> poWallet "Forwards requests to"
+        apiGateway -> walletProxy "Forwards requests to"
     }
 }
 

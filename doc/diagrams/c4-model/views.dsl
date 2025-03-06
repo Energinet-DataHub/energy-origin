@@ -40,9 +40,9 @@ workspace extends "https://raw.githubusercontent.com/Energinet-DataHub/opengeh-a
             include ->dataHubFacadeSubsystem->
             autoLayout
         }
-        container ettDk "AuthContainers" {
-            title "[Container Context] Auth"
-            include ->authSubsystem-> dataHubFacadeApi->
+        container ettDk "AuthorizationContainers" {
+            title "[Container Context] Authorization"
+            include ->authSubsystem->
             autoLayout
         }
         container ettDk "MeasurementsContainers" {
