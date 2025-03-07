@@ -4,28 +4,20 @@ on:
   workflow_call: {}
 
 jobs:
-  check-licenses:
+  check-all-licenses:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: CodeReaper/find-diff-action@v3
-        id: diff
-        with:
-          paths: domains/*/ libraries/*/*/
-
       - uses: actions/checkout@v4
-        if: ${{ steps.diff.outputs.pattern != '' }}
 
-      - name: Build relevant project matrix
-        if: ${{ steps.diff.outputs.pattern != '' }}
-        shell: bash
-        run: echo "solution=$(find domains -maxdepth 1 -name "*.sln")" | tee -a "$GITHUB_ENV"
+      - name: 'Read allowed licenses from file'
+        id: allowed-licenses
+        run: |
+          ALLOWED_LICENSES=$(jq -r 'join(", ")' .allowed-licenses.json)
+          echo "licenses=$ALLOWED_LICENSES" >> $GITHUB_OUTPUT
+          echo "Using allowed licenses: $ALLOWED_LICENSES"
 
-      - name: Check license
-        if: ${{ steps.diff.outputs.pattern != '' }}
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v4
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v4
         with:
-          project-folder: ${{ env.solution }}
-          license-mapping-file: .mapped-licenses.json
-          license-ignore-file: .ignored-licenses.json
-          tool-version: 3.1.1
+          fail-on-severity: high
+          allow-licenses: ${{ steps.allowed-licenses.outputs.licenses }}
