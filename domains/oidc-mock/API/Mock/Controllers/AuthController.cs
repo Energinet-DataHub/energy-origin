@@ -61,11 +61,11 @@ public class AuthController : Controller
             client_secret = split[1];
         }
 
-        logger.LogDebug("connect/token: form data: {Data}", string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")));
+        logger.LogDebug("connect/token: form data: {Data}", string.Join("; ", Request.Form.Select(kvp => $"{kvp.Key}={kvp.Value}")).Sanitize());
 
         if (!string.Equals(grant_type, "authorization_code", StringComparison.InvariantCultureIgnoreCase))
         {
-            logger.LogDebug($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
+            logger.LogDebug("Invalid grant_type. Must be 'authorization_code', but was '{GrantType}'", grant_type.Sanitize());
             return BadRequest($"Invalid grant_type. Must be 'authorization_code', but was '{grant_type}'");
         }
 
@@ -115,7 +115,15 @@ public class AuthController : Controller
 
     [HttpGet]
     [Route("connect/endsession")]
-    public IActionResult logout(string post_logout_redirect_uri) => RedirectPreserveMethod(post_logout_redirect_uri);
+    public IActionResult logout(string post_logout_redirect_uri)
+    {
+        var (isValid, validationError) = clientCollection.Validate(post_logout_redirect_uri);
+        if (!isValid)
+        {
+            return BadRequest(validationError);
+        }
+        return RedirectPreserveMethod(post_logout_redirect_uri);
+    }
 
     [HttpGet]
     [Route(".well-known/openid-configuration")]
