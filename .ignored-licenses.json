@@ -1,5 +1,4 @@
 [
-    "jose-jwt",
     "MockQueryable.NSubstitute",
     "Microsoft.AspNet.WebApi.Client",
     "Testcontainers*",

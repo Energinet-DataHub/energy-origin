@@ -2,7 +2,6 @@
     "https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt": "Apache-2.0",
     "https://github.com/micro-elements/MicroElements.Swashbuckle.FluentValidation/blob/master/LICENSE": "MIT",
     "http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm": "MS-EULA",
-    "https://raw.github.com/dvsekhvalnov/jose-jwt/master/LICENSE": "MIT",
     "https://raw.githubusercontent.com/xunit/xunit/master/license.txt": "Apache-2.0",
     "https://aka.ms/deprecateLicenseUrl": "Apache-2.0"
 }
