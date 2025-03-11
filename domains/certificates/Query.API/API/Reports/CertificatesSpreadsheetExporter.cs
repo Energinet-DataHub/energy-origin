@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using API.ContractService.Clients;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
@@ -16,6 +15,7 @@ namespace API.Reports;
 public class CertificatesSpreadsheetExporter
 {
     private const string ExportFilename = "Certificates.xlsx";
+    private const int FetchBatchSize = 10000;
 
     private const string RegistryColumnHeader = "Registry";
     private const string StreamIdColumnHeader = "StreamId";
@@ -40,7 +40,7 @@ public class CertificatesSpreadsheetExporter
 
     public async Task<CertificatesSpreadsheet> Export(Guid ownerId, CancellationToken cancellationToken)
     {
-        var certificates = await _walletClient.GetGranularCertificates(ownerId, cancellationToken, null);
+        var certificates = await FetchCertificates(ownerId, cancellationToken);
 
         using (var memoryStream = new MemoryStream())
         {
@@ -72,7 +72,7 @@ public class CertificatesSpreadsheetExporter
                 AppendHeaderRow(sheetData, 1);
 
                 int index = 2;
-                foreach (var certificate in certificates!.Result)
+                foreach (var certificate in certificates)
                 {
                     AppendCertificateRow(sheetData, (uint)index, certificate);
                     index++;
@@ -81,6 +81,24 @@ public class CertificatesSpreadsheetExporter
 
             return new CertificatesSpreadsheet(ExportFilename, memoryStream.ToArray());
         }
+    }
+
+    private async Task<List<GranularCertificate>> FetchCertificates(Guid ownerId, CancellationToken cancellationToken)
+    {
+        var result = new List<GranularCertificate>();
+        var resultList = await _walletClient.GetGranularCertificates(ownerId, cancellationToken, FetchBatchSize)!;
+        result.AddRange(resultList!.Result);
+
+        if (resultList.Metadata.Total > FetchBatchSize)
+        {
+            for (int i = FetchBatchSize; i < resultList.Metadata.Total; i += FetchBatchSize)
+            {
+                var batchResultList = await _walletClient.GetGranularCertificates(ownerId, cancellationToken, FetchBatchSize, i);
+                result.AddRange(batchResultList!.Result);
+            }
+        }
+
+        return result;
     }
 
     private void AppendHeaderRow(SheetData sheetData, uint rowIndex)
