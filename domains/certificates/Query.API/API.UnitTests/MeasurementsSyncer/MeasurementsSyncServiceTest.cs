@@ -5,14 +5,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
 using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Clients.DataHub3;
+using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
+using API.Models;
 using DataContext.Models;
 using DataContext.ValueObjects;
-using DocumentFormat.OpenXml.Presentation;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
-using Measurements.V1;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -35,12 +36,13 @@ public class MeasurementsSyncServiceTest
         Guid.NewGuid(),
         new Technology("T12345", "T54321"));
 
-    private readonly Measurements.V1.Measurements.MeasurementsClient _fakeClient = Substitute.For<Measurements.V1.Measurements.MeasurementsClient>();
     private readonly ILogger<MeasurementsSyncService> _fakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly ISlidingWindowState _fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
     private readonly IMeasurementSyncPublisher _fakeMeasurementPublisher = Substitute.For<IMeasurementSyncPublisher>();
     private readonly MeasurementsSyncService _service;
     private readonly MeasurementsSyncOptions _options = new();
+    private readonly IDataHub3Client _dataHub3Client = Substitute.For<IDataHub3Client>();
+    private readonly IDataHubFacadeClient _dataHubFacadeClient = Substitute.For<IDataHubFacadeClient>();
 
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient =
         Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
@@ -49,9 +51,10 @@ public class MeasurementsSyncServiceTest
     {
         _options.MinimumAgeThresholdHours = 0;
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
-        _service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState, _fakeClient,
+        _service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState,
             new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options));
+            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options),
+            _dataHub3Client, _dataHubFacadeClient);
     }
 
     [Fact]
@@ -65,23 +68,24 @@ public class MeasurementsSyncServiceTest
 
         // Metering point is skipped
         response.Should().BeEmpty();
-        _ = _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        _ = _dataHub3Client.DidNotReceive().GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+
     }
 
     [Fact]
     public async Task FetchMeasurements_MeasurementsReceived_SyncPositionUpdated()
     {
         // Given synchronization point
-        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, UnixTimestamp.Create(_syncInfo.StartSyncDate));
+        var startSync = UnixTimestamp.Create(_syncInfo.StartSyncDate);
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, startSync);
 
         // When measurement is received
         var dateTo = UnixTimestamp.Now().RoundToLatestHour().EpochSeconds;
-        var measurement = Any.Measurement(_syncInfo.Gsrn, slidingWindow.SynchronizationPoint.EpochSeconds, 5);
-        var mockedResponse = new GetMeasurementsResponse { Measurements = { measurement } };
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, startSync.EpochSeconds, dateTo, 123);
 
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(mockedResponse);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         // Then sliding window is updated
@@ -95,14 +99,16 @@ public class MeasurementsSyncServiceTest
     public async Task FetchMeasurements_NoMeasurementsReceived_SlidingWindowIsNotUpdated()
     {
         // Given synchronization point
-        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, UnixTimestamp.Create(_syncInfo.StartSyncDate));
+        var startSync = UnixTimestamp.Create(_syncInfo.StartSyncDate);
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, startSync);
 
         // When no measurements fetched
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
 
-        var mockedResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(mockedResponse);
+        var dateTo = UnixTimestamp.Now().RoundToLatestHour().EpochSeconds;
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, startSync.EpochSeconds, dateTo, 123);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         // Then sliding window is not updated
@@ -118,17 +124,18 @@ public class MeasurementsSyncServiceTest
 
         // When 2 measurements where fetched
         var dateFrom = slidingWindow.SynchronizationPoint.EpochSeconds;
-        var measurement1 = Any.Measurement(_syncInfo.Gsrn, dateFrom, 5);
-        var measurement2 = Any.Measurement(_syncInfo.Gsrn, dateFrom + 3600, 7);
-        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement1, measurement2 } };
+        var pa1 = Any.PointAggregation(dateFrom, 5);
+        var pa2 = Any.PointAggregation(dateFrom + 3600, 7);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [pa1, pa2]);
+
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         // Then 2 measurements are published
-        await _fakeMeasurementPublisher.Received().PublishIntegrationEvents(Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+        await _fakeMeasurementPublisher.Received().PublishIntegrationEvents(Arg.Any<Meteringpoint.V1.MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Is<List<Measurement>>(measurements => measurements.Count == 2), Arg.Any<CancellationToken>());
     }
 
@@ -145,16 +152,13 @@ public class MeasurementsSyncServiceTest
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(meteringPointsResponse);
 
-        var measurementResponse = new GetMeasurementsResponse
-        {
-            Measurements = { Any.Measurement(_syncInfo.Gsrn, missingIntervals.From.EpochSeconds, 5) }
-        };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [Any.PointAggregation(missingIntervals.From.EpochSeconds, 5)]);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
     }
 
@@ -174,16 +178,13 @@ public class MeasurementsSyncServiceTest
             .Returns(meteringPointsResponse);
 
         // When getting measurement later than sync point (in the future)
-        var measurementResponse = new GetMeasurementsResponse
-        {
-            Measurements = { Any.Measurement(_syncInfo.Gsrn, now.AddHours(1).EpochSeconds, 5) }
-        };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [Any.PointAggregation(now.AddHours(1).EpochSeconds, 5)]);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         // Then measurement is filtered
         await _fakeMeasurementPublisher.DidNotReceive().PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
     }
 
@@ -215,26 +216,22 @@ public class MeasurementsSyncServiceTest
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(meteringPointsResponse);
 
-        var measurementOutsideThreshold = Any.Measurement(syncInfo.Gsrn, now.AddHours(-10).EpochSeconds, 7);
-        var measurementWithinThreshold = Any.Measurement(syncInfo.Gsrn, missingInterval.From.EpochSeconds, 5);
+        var paOutsideThreshold = Any.PointAggregation(now.AddHours(-10).EpochSeconds, 7);
+        var paWithinThreshold = Any.PointAggregation(missingInterval.From.EpochSeconds, 5);
 
-        var measurementResponse = new GetMeasurementsResponse
-        {
-            Measurements = { measurementOutsideThreshold, measurementWithinThreshold }
-        };
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [paOutsideThreshold, paWithinThreshold]);
 
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
-            .Returns(measurementResponse);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(),
             Arg.Any<MeteringPointSyncInfo>(),
             Arg.Is<List<Measurement>>(measurements =>
                 measurements.Count == 1 &&
-                measurements.Single().DateFrom == measurementWithinThreshold.DateFrom &&
-                measurements.Single().DateTo == measurementWithinThreshold.DateTo),
+                measurements.Single().DateFrom == paWithinThreshold.MinObservationTime &&
+                measurements.Single().DateTo == (paWithinThreshold.MinObservationTime + 3600)),
             Arg.Any<CancellationToken>());
     }
 
@@ -246,34 +243,34 @@ public class MeasurementsSyncServiceTest
         var slidingWindowSyncPoint = now.Add(TimeSpan.FromHours(-4));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, slidingWindowSyncPoint);
 
-        var measurement1 = Any.Measurement(_syncInfo.Gsrn, slidingWindowSyncPoint.EpochSeconds, 5);
-        var measurementResponse1 = new GetMeasurementsResponse { Measurements = { measurement1 } };
+        var pa1 = Any.PointAggregation(slidingWindowSyncPoint.EpochSeconds, 5);
+        var timeSeriesApiResponse1 = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [pa1]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(meteringPointsResponse);
 
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse1);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse1);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
 
         _fakeMeasurementPublisher.ClearReceivedCalls();
-        _fakeClient.ClearReceivedCalls();
+        _dataHub3Client.ClearReceivedCalls();
 
         _options.MinimumAgeThresholdHours = 20;
 
-        var measurement2 = Any.Measurement(_syncInfo.Gsrn, slidingWindowSyncPoint.AddHours(1).EpochSeconds, 5);
-        var measurementResponse2 = new GetMeasurementsResponse { Measurements = { measurement2 } };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse2);
+        var pa2 = Any.PointAggregation(slidingWindowSyncPoint.AddHours(1).EpochSeconds, 5);
+        var timeSeriesApiResponse2 = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [pa2]);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse2);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.DidNotReceive().PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
     }
 
@@ -288,20 +285,20 @@ public class MeasurementsSyncServiceTest
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(meteringPointsResponse);
 
-        var initialResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(initialResponse);
+        var initialResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, []);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(initialResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         _options.MinimumAgeThresholdHours = 0;
-        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-4)).EpochSeconds, 10);
-        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        var pa = Any.PointAggregation(now.Add(TimeSpan.FromHours(-4)).EpochSeconds, 10);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [pa]);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
     }
 
@@ -313,14 +310,13 @@ public class MeasurementsSyncServiceTest
         var syncPoint = now.Add(TimeSpan.FromHours(1));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint);
 
-        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-2)).EpochSeconds, 10);
-        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
+        var pa = Any.PointAggregation(now.Add(TimeSpan.FromHours(-2)).EpochSeconds, 10);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [pa]);
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>())
-            .Returns(measurementResponse);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -342,27 +338,27 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
 
-        var emptyMeasurementResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(emptyMeasurementResponse);
+        var emptyResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, []);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(emptyResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.DidNotReceive().PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
 
-        _fakeClient.ClearReceivedCalls();
+        _dataHub3Client.ClearReceivedCalls();
         _fakeMeasurementPublisher.ClearReceivedCalls();
 
         _options.MinimumAgeThresholdHours = 2;
-        var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-3)).EpochSeconds, 10);
-        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        var pa = Any.PointAggregation(now.Add(TimeSpan.FromHours(-3)).EpochSeconds, 10);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [pa]);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(), Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(), Arg.Any<CancellationToken>());
     }
 
@@ -383,26 +379,29 @@ public class MeasurementsSyncServiceTest
             MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, UnixTimestamp.Create(syncInfo.StartSyncDate));
 
         var dateFrom = slidingWindow.SynchronizationPoint.EpochSeconds;
-        var measurement1 = Any.Measurement(syncInfo.Gsrn, dateFrom, 5);
-        var measurement2 = Any.Measurement(syncInfo.Gsrn, dateFrom - TimeSpan.FromHours(200).Seconds, 7);
-        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement1, measurement2 } };
+        var pa1 = Any.PointAggregation(dateFrom, 5);
+
+        var pa2 = Any.PointAggregation(dateFrom - TimeSpan.FromHours(200).Seconds, 7);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [pa1, pa2]);
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
 
         _options.MinimumAgeThresholdHours = 168;
 
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(),
             Arg.Any<MeteringPointSyncInfo>(),
             Arg.Do<List<Measurement>>(measurements =>
             {
                 measurements.Should().HaveCount(1);
-                measurements[0].Should().BeEquivalentTo(measurement2);
+                measurements[0].DateFrom.Should().Be(pa2.MinObservationTime);
+                measurements[0].DateTo.Should().Be(pa2.MinObservationTime + 3600);
+                measurements[0].Quantity.Should().Be(pa2.AggregatedQuantity + 3600);
             }),
             Arg.Any<CancellationToken>());
     }
@@ -422,16 +421,13 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
 
-        var measurementResponse = new GetMeasurementsResponse
-        {
-            Measurements = { Any.Measurement(_syncInfo.Gsrn, missingIntervalOutsideThreshold.From.EpochSeconds, 5) }
-        };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, [Any.PointAggregation(missingIntervalOutsideThreshold.From.EpochSeconds, 5)]);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.DidNotReceive().PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(),
             Arg.Any<MeteringPointSyncInfo>(),
             Arg.Any<List<Measurement>>(),
             Arg.Any<CancellationToken>());
@@ -460,15 +456,16 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
 
-        var measurementResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(syncInfo.Gsrn, []);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
         // Then fetch to contract end (and not all the way to now-age)
-        var request = (GetMeasurementsRequest)_fakeClient.ReceivedWithAnyArgs(1).ReceivedCalls().First().GetArguments()[0]!;
-        request.DateFrom.Should().Be(contractStart.EpochSeconds);
-        request.DateTo.Should().Be(contractEnd.EpochSeconds);
+        var dateFrom = (long)_dataHub3Client.ReceivedWithAnyArgs(1).ReceivedCalls().First().GetArguments()[1]!;
+        var dateTo = (long)_dataHub3Client.ReceivedWithAnyArgs(1).ReceivedCalls().First().GetArguments()[2]!;
+        dateFrom.Should().Be(contractStart.EpochSeconds);
+        dateTo.Should().Be(contractEnd.EpochSeconds);
     }
 
     [Fact]
@@ -493,15 +490,16 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
 
-        var measurementResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(syncInfo.Gsrn, []);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
         // Then fetch to contract end (and not all the way to now-age)
-        var request = (GetMeasurementsRequest)_fakeClient.ReceivedWithAnyArgs(1).ReceivedCalls().First().GetArguments()[0]!;
-        request.DateFrom.Should().Be(contractStart.EpochSeconds);
-        request.DateTo.Should().Be(latestHour.AddHours(-_options.MinimumAgeThresholdHours).EpochSeconds);
+        var dateFrom = (long)_dataHub3Client.ReceivedWithAnyArgs(1).ReceivedCalls().First().GetArguments()[1]!;
+        var dateTo = (long)_dataHub3Client.ReceivedWithAnyArgs(1).ReceivedCalls().First().GetArguments()[2]!;
+        dateFrom.Should().Be(contractStart.EpochSeconds);
+        dateTo.Should().Be(latestHour.AddHours(-_options.MinimumAgeThresholdHours).EpochSeconds);
     }
 
     [Fact]
@@ -520,21 +518,21 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>()).Returns(meteringPointsResponse);
 
-        var measurementsWithinThreshold = new List<Measurement>();
+        var measurementsWithinThreshold = new List<PointAggregation>();
         var currentTime = syncStart;
         for (var i = 0; i < 168; i++)
         {
-            measurementsWithinThreshold.Add(Any.Measurement(_syncInfo.Gsrn, currentTime.EpochSeconds, 10));
+            measurementsWithinThreshold.Add(Any.PointAggregation(currentTime.EpochSeconds, 10));
             currentTime = currentTime.Add(TimeSpan.FromHours(1));
         }
 
-        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurementsWithinThreshold } };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, measurementsWithinThreshold);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(),
             Arg.Any<MeteringPointSyncInfo>(),
             Arg.Do<List<Measurement>>(publishedMeasurements =>
             {
@@ -570,25 +568,25 @@ public class MeasurementsSyncServiceTest
         var missingInterval = MeasurementInterval.Create(syncStart, now);
         slidingWindow.MissingMeasurements.Intervals.Add(missingInterval);
 
-        var measurementsWithinThreshold = new List<Measurement>();
+        var measurementsWithinThreshold = new List<PointAggregation>();
         var currentTime = syncStart;
         for (int i = 0; i < 96; i++)
         {
-            measurementsWithinThreshold.Add(Any.Measurement(syncInfo.Gsrn, currentTime.EpochSeconds, 10));
+            measurementsWithinThreshold.Add(Any.PointAggregation(currentTime.EpochSeconds, 10));
             currentTime = currentTime.Add(TimeSpan.FromHours(1));
         }
 
-        var measurementResponse = new GetMeasurementsResponse { Measurements = { measurementsWithinThreshold } };
+        var timeSeriesApiResponse = Any.TimeSeriesApiResponse(_syncInfo.Gsrn, measurementsWithinThreshold);
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
 
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>()).Returns(measurementResponse);
+        _dataHub3Client.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
         await _fakeMeasurementPublisher.Received(1).PublishIntegrationEvents(
-            Arg.Any<MeteringPoint>(),
+            Arg.Any<Meteringpoint.V1.MeteringPoint>(),
             Arg.Any<MeteringPointSyncInfo>(),
             Arg.Do<List<Measurement>>(publishedMeasurements =>
             {

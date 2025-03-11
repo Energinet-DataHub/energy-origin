@@ -7,16 +7,17 @@ using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Clients.DataHub3;
 using API.UnitTests;
 using DataContext.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
-using Measurements.V1;
 using Meteringpoint.V1;
 using NSubstitute;
 using Testing.Extensions;
 using Xunit;
+using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 
 namespace API.IntegrationTests;
 
@@ -50,25 +51,11 @@ public sealed class CertificateIssuingTests : TestBase
         factory.RegistryName = _integrationTestFixture.WebApplicationFactory.RegistryName;
         factory.MeasurementsSyncEnabled = true;
 
-        var measurementClientMock = Substitute.For<Measurements.V1.Measurements.MeasurementsClient>();
-        measurementClientMock.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(
-            new GetMeasurementsResponse
-            {
-                Measurements =
-                {
-                    new Measurement()
-                    {
-                        Gsrn = gsrn.Value,
-                        Quantity = 42,
-                        DateFrom = utcMidnight.ToUnixTimeSeconds(),
-                        DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
-                        Quality = EnergyQuantityValueQuality.Measured,
-                        QuantityMissing = false
-                    }
-                }
-            });
+        var dataHub3ClientMock = Substitute.For<IDataHub3Client>();
+        dataHub3ClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(
+            Any.TimeSeriesApiResponse(gsrn, [Any.PointAggregation(utcMidnight.ToUnixTimeSeconds(), 42)]));
 
-        factory.measurementsClient = measurementClientMock;
+        factory.dataHub3Client = dataHub3ClientMock;
         var meteringpointClientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
         var meteringPoint = new MeteringPoint
         {

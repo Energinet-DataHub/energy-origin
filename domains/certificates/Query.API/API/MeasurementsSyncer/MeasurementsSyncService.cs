@@ -4,11 +4,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
+using API.MeasurementsSyncer.Clients.DataHub3;
+using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
+using API.Models;
 using DataContext.Models;
+using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
-using Measurements.V1;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,27 +21,34 @@ namespace API.MeasurementsSyncer;
 public class MeasurementsSyncService
 {
     private readonly ISlidingWindowState _slidingWindowState;
-    private readonly Measurements.V1.Measurements.MeasurementsClient _measurementsClient;
     private readonly SlidingWindowService _slidingWindowService;
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics;
     private readonly IMeasurementSyncPublisher _measurementSyncPublisher;
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _meteringPointsClient;
     private readonly ILogger<MeasurementsSyncService> _logger;
     private readonly IOptions<MeasurementsSyncOptions> _options;
+    private readonly IDataHub3Client _dataHub3Client;
+    private readonly IDataHubFacadeClient _dataHubFacadeClient;
 
-    public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger, ISlidingWindowState slidingWindowState,
-        Measurements.V1.Measurements.MeasurementsClient measurementsClient, SlidingWindowService slidingWindowService,
-        IMeasurementSyncMetrics measurementSyncMetrics, IMeasurementSyncPublisher measurementSyncPublisher,
-        Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient, IOptions<MeasurementsSyncOptions> _measurementSyncOptions)
+    public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger,
+        ISlidingWindowState slidingWindowState,
+        SlidingWindowService slidingWindowService,
+        IMeasurementSyncMetrics measurementSyncMetrics,
+        IMeasurementSyncPublisher measurementSyncPublisher,
+        Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient,
+        IOptions<MeasurementsSyncOptions> measurementSyncOptions,
+        IDataHub3Client dataHub3Client,
+        IDataHubFacadeClient dataHubFacadeClient)
     {
         _logger = logger;
         _slidingWindowState = slidingWindowState;
-        _measurementsClient = measurementsClient;
         _slidingWindowService = slidingWindowService;
         _measurementSyncMetrics = measurementSyncMetrics;
         _measurementSyncPublisher = measurementSyncPublisher;
         _meteringPointsClient = meteringPointsClient;
-        _options = _measurementSyncOptions;
+        _options = measurementSyncOptions;
+        _dataHub3Client = dataHub3Client;
+        _dataHubFacadeClient = dataHubFacadeClient;
     }
 
     public async Task FetchAndPublishMeasurements(
@@ -46,11 +56,26 @@ public class MeasurementsSyncService
         MeteringPointTimeSeriesSlidingWindow slidingWindow,
         CancellationToken stoppingToken)
     {
+        var gsrn = new Gsrn(slidingWindow.GSRN);
+        var mpRelations = await _dataHubFacadeClient.ListCustomerRelations(syncInfo.MeteringPointOwner, [gsrn], stoppingToken);
+
+        if (mpRelations == null)
+        {
+            _logger.LogError("Something went wrong when getting relations for Gsrn: {gsrn}", slidingWindow.GSRN);
+            return;
+        }
+        if (!mpRelations.Result.HasValidRelationForGsrn(gsrn))
+        {
+            _logger.LogInformation("{GSRN} does not have a valid relation.", slidingWindow.GSRN);
+            return;
+        }
+
         var newSyncPoint = GetNextSyncPoint(syncInfo);
 
+        var ownedMps = await GetOwnedMeteringPoints(syncInfo);
+
         var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, newSyncPoint, stoppingToken);
-        var meteringPoints = await GetOwnedMeteringPoints(syncInfo);
-        var meteringPoint = meteringPoints.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
+        var meteringPoint = ownedMps.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
         if (meteringPoint.PhysicalStatusOfMp != "E22")
         {
             _logger.LogWarning("Metering point {GSRN} is not in status E22", slidingWindow.GSRN);
@@ -103,25 +128,39 @@ public class MeasurementsSyncService
 
         if (dateFrom < newSyncPoint.EpochSeconds)
         {
-            var request = new GetMeasurementsRequest
-            {
-                DateFrom = dateFrom,
-                DateTo = newSyncPoint.EpochSeconds,
-                Gsrn = slidingWindow.GSRN,
-                Subject = meteringPointOwner,
-                Actor = Guid.NewGuid().ToString()
-            };
-            var res = await _measurementsClient.GetMeasurementsAsync(request, cancellationToken: cancellationToken);
+            var gsrns = new List<Gsrn> { new (slidingWindow.GSRN) };
+            var mp = await _dataHub3Client.GetMeasurements(gsrns, dateFrom, newSyncPoint.EpochSeconds, cancellationToken);
 
+            if (mp == null)
+            {
+                _logger.LogInformation("No meteringPointData found for GSRN {GSRN} in period from {from} to: {to}", slidingWindow.GSRN,
+                    DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"), DateTimeOffset.FromUnixTimeSeconds(newSyncPoint.EpochSeconds).ToString("o"));
+                return [];
+            }
+
+            var days = mp.First().PointAggregationGroups;
+            var measurements = new List<Measurement>();
+            foreach (var day in days)
+            {
+                day.Value.PointAggregations.ForEach(x =>
+                    measurements.Add(new Measurement
+                    {
+                        Gsrn = slidingWindow.GSRN,
+                        DateFrom = x.MinObservationTime,
+                        DateTo = UnixTimestamp.Create(x.MinObservationTime).AddHours(1).EpochSeconds,
+                        Quantity = x.AggregatedQuantity,
+                        Quality = x.Quality.ToEnergyQuality(),
+                    }));
+            }
 
             _logger.LogInformation(
                 "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
-                res.Measurements.Count,
+                measurements.Count,
                 slidingWindow.GSRN,
                 DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"),
                 DateTimeOffset.FromUnixTimeSeconds(newSyncPoint.EpochSeconds).ToString("o"));
 
-            foreach (var measurement in res.Measurements)
+            foreach (var measurement in measurements)
             {
                 _logger.LogInformation(
                     "Fetched measurement for GSRN {GSRN} in period from {from} to: {to}, quantity {Quantity}, Quality {Quality}, QuantityMissing {QuantityMissing}",
@@ -130,11 +169,11 @@ public class MeasurementsSyncService
                     DateTimeOffset.FromUnixTimeSeconds(measurement.DateTo).ToString("o"),
                     measurement.Quantity,
                     measurement.Quality,
-                    measurement.QuantityMissing);
+                    measurement.IsQuantityMissing);
             }
 
-            // DH2 should not return measurements after newSyncPoint, but just in case
-            return res.Measurements.Where(m => m.DateTo <= newSyncPoint.EpochSeconds).ToList();
+            // DH3 should not return measurements after newSyncPoint, but just in case
+            return measurements.Where(m => m.DateTo <= newSyncPoint.EpochSeconds).ToList();
         }
 
         return new();
