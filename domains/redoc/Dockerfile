@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0.200-noble AS builder
+FROM mcr.microsoft.com/dotnet/sdk:9.0.201-noble AS builder
 
 WORKDIR /app
 COPY domains/authorization domains/authorization
