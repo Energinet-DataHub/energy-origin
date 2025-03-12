@@ -8,6 +8,8 @@ using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Clients.DataHub3;
+using API.MeasurementsSyncer.Clients.DataHubFacade;
+using API.Models;
 using API.UnitTests;
 using DataContext.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
@@ -54,8 +56,24 @@ public sealed class CertificateIssuingTests : TestBase
         var dataHub3ClientMock = Substitute.For<IDataHub3Client>();
         dataHub3ClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(
             Any.TimeSeriesApiResponse(gsrn, [Any.PointAggregation(utcMidnight.ToUnixTimeSeconds(), 42)]));
+        factory.DataHub3Client = dataHub3ClientMock;
 
-        factory.dataHub3Client = dataHub3ClientMock;
+        var dataHubFacadeClientMock = Substitute.For<IDataHubFacadeClient>();
+        dataHubFacadeClientMock
+            .ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(
+                new ListMeteringPointForCustomerCaResponse
+                {
+                    Result =
+                    [
+                        new()
+                        {
+                            MeteringPointId = gsrn.Value,
+                            ValidFromDate = DateTime.Now.AddHours(-1)
+                        }
+                    ]
+                });
+        factory.DataHubFacadeClient = dataHubFacadeClientMock;
+
         var meteringpointClientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
         var meteringPoint = new MeteringPoint
         {
@@ -72,7 +90,6 @@ public sealed class CertificateIssuingTests : TestBase
         {
             MeteringPoints = { meteringPoint }
         };
-
         meteringpointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
             .Returns(mockedMeteringPointsResponse);
         factory.MeteringpointClient = meteringpointClientMock;
@@ -90,7 +107,7 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.Start.Should().Be(utcMidnight.ToUnixTimeSeconds());
         granularCertificate.End.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
         granularCertificate.GridArea.Should().Be("DK1");
-        granularCertificate.Quantity.Should().Be(42);
+        granularCertificate.Quantity.Should().Be(42m.ToWattHours());
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
         granularCertificate.Attributes.Should().NotBeEmpty();
