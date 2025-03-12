@@ -128,7 +128,7 @@ public class MeasurementsSyncService
 
         if (dateFrom < newSyncPoint.EpochSeconds)
         {
-            var gsrns = new List<Gsrn> { new (slidingWindow.GSRN) };
+            var gsrns = new List<Gsrn> { new(slidingWindow.GSRN) };
             var mp = await _dataHub3Client.GetMeasurements(gsrns, dateFrom, newSyncPoint.EpochSeconds, cancellationToken);
 
             if (mp == null)
