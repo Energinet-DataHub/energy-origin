@@ -45,6 +45,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     private HttpClient? client;
     public string ConnectionString { get; set; } = "";
     public string MeasurementsUrl { get; set; } = "http://foo";
+    public string DataHub3Url { get; set; } = "http://dh3";
+    public string DataHubFacadeUrl { get; set; } = "http://dhfacade";
     public string WalletUrl { get; set; } = "bar";
     public string StampUrl { get; set; } = "baz";
     public string RegistryName { get; set; } = "TestRegistry";
@@ -72,6 +74,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("Stamp:Url", StampUrl);
         builder.UseSetting("Stamp:RegistryName", RegistryName);
+        builder.UseSetting("DataHub3:Url", DataHub3Url);
+        builder.UseSetting("DataHubFacade:Url", DataHubFacadeUrl);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");

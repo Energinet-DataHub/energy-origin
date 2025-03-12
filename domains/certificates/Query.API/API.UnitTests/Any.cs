@@ -65,10 +65,14 @@ public class Any
         var pags = new Dictionary<string, PointAggregationGroup>();
 
         var pasArray = pas.ToArray();
-        for (int i = 0; i < pas.Count; i += 24)
+        int totalChunks = (int)Math.Ceiling((double)pas.Count / 24);
+        for (int i = 0; i < totalChunks; i++)
         {
-            var buffer = new PointAggregation[24];
-            Array.Copy(pasArray, i, buffer, 0, 24);
+            int startIndex = i * 24;
+            int chunkSize = Math.Min(24, pas.Count - startIndex);
+
+            var buffer = new PointAggregation[chunkSize];
+            Array.Copy(pasArray, startIndex, buffer, 0, chunkSize);
 
             var pag = new PointAggregationGroup
             {
