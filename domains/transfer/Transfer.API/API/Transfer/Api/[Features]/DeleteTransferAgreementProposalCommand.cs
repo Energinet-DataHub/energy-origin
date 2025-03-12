@@ -69,7 +69,7 @@ public class DeleteTransferAgreementProposalCommandHandler : IRequestHandler<Del
 
     private bool IsReceiver(TransferAgreementProposal proposal)
     {
-        return proposal.ReceiverCompanyTin != null && _identityDescriptor.OrganizationCvr == proposal.ReceiverCompanyTin.Value;
+        return proposal.ReceiverCompanyTin == null || _identityDescriptor.OrganizationCvr == proposal.ReceiverCompanyTin.Value;
     }
 
     private async Task AppendToActivityLog(IdentityDescriptor identity, TransferAgreementProposal proposal,
