@@ -78,8 +78,8 @@ runs:
         dry-run: ${{ inputs.dry-run }}
         build-args: |
           PROJECT=${{ inputs.project }}
-          SDK_VERSION=${{ env.SDK }}
-          RUNTIME_VERSION=${{ env.RUNTIME }}
+          SDK_VERSION=9.0
+          RUNTIME_VERSION=9.0
 
     - name: Scan image
       uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v4
