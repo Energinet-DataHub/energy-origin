@@ -21,7 +21,8 @@ public class IntegrationTestFixture : IAsyncLifetime
         .WithUsername("postgres")
         .WithPassword("postgres")
         .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready"))
-        .WithCleanUp(true)
+        .WithReuse(true)
+        .WithLabel("reuse-id", "Authorization.API")
         .Build();
 
     public ProjectOriginStack ProjectOriginStack { get; } = new();
@@ -69,7 +70,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         await WebAppFactory.DisposeAsync();
         await RabbitMqContainer.DisposeAsync();
         await ProjectOriginStack.DisposeAsync();
-        await _postgresContainer.DisposeAsync();
+        await _postgresContainer.DisposeAsync().AsTask();
     }
 
     public async Task ResetDatabaseAsync()
