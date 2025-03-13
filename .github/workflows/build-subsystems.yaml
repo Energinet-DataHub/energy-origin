@@ -13,86 +13,157 @@ on:
         type: string
 
 jobs:
-  setup:
+  detect-subsystems:
+    name: Detect Subsystems
     runs-on: ubuntu-latest
     outputs:
-      admin-portal: ${{ steps.admin-portal.outputs.matches }}
-      authorization: ${{ steps.authorization.outputs.matches }}
-      certificates: ${{ steps.certificates.outputs.matches }}
-      measurements: ${{ steps.measurements.outputs.matches }}
-      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
-      openapi: ${{ steps.openapi.outputs.matches }}
-      transfer: ${{ steps.transfer.outputs.matches }}
+      subsystems: ${{ steps.build-matrix.outputs.subsystems }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v4
 
-  build-admin-portal:
-    needs: setup
-    uses: ./.github/workflows/build-admin-portal.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+      - name: Build subsystems matrix
+        id: build-matrix
+        shell: bash
+        run: |
 
-  build-authorization:
-    needs: setup
-    uses: ./.github/workflows/build-authorization.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          tmpfile=/tmp/final.json
+          echo "[" > $tmpfile
+          first_entry=true
 
-  build-certificates:
-    needs: setup
-    uses: ./.github/workflows/build-certificates.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          find domains/ -mindepth 2 -type f -name 'configuration.yaml' \
+            | grep -v '/redoc/' \
+            | while read configFile; do
 
-  build-measurements:
-    needs: setup
-    uses: ./.github/workflows/build-measurements.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+              subsystem="$(echo "$configFile" | cut -d'/' -f2)"
 
-  build-oidc-mock:
-    needs: setup
-    uses: ./.github/workflows/build-oidc-mock.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+              configDir=$(dirname "$configFile")
+              if [ -f "$configDir/global.json" ]; then
+                globalJson="$configDir/global.json"
+              elif [ -f "domains/$subsystem/global.json" ]; then
+                globalJson="domains/$subsystem/global.json"
+              else
+                globalJson="global.json"
+              fi
 
-  build-openapi:
-    needs: setup
-    uses: ./.github/workflows/build-openapi.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+              sdkVersion=$(jq -r '.sdk.version // empty' "$globalJson" 2>/dev/null || echo "")
+              runtimeVersion=$(jq -r '.runtime.version // empty' "$globalJson" 2>/dev/null || echo "")
 
-  build-transfer:
-    needs: setup
-    uses: ./.github/workflows/build-transfer.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+              find "$configDir" -type f -name "*.csproj" | while read csprojFile; do
+                entry=$(
+                  jq -n \
+                    --arg proj "$csprojFile" \
+                    --arg cfg "$configFile" \
+                    --arg sdk "$sdkVersion" \
+                    --arg rt "$runtimeVersion" \
+                    --arg subsys "$subsystem" \
+                    '{
+                      projectPath: $proj,
+                      configPath: $cfg,
+                      sdkVersion: $sdk,
+                      runtimeVersion: $rt,
+                      subsystem: $subsys
+                    }'
+                )
+
+                if [ "$first_entry" = true ]; then
+                  first_entry=false
+                else
+                  echo "," >> "$tmpfile"
+                fi
+
+                echo -n "$entry" >> "$tmpfile"
+              done
+            done
+
+          echo "]" >> "$tmpfile"
+
+          echo "Final matrix JSON:"
+          cat "$tmpfile"
+
+          echo "::set-output name=subsystems::$(cat $tmpfile)"
+
+  test-subsystems:
+    name: Test Subsystems
+    needs: detect-subsystems
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-subsystems.outputs.subsystems) }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Create dynamic solution
+        id: create-sln
+        shell: bash
+        run: |
+          SUBSYSTEM="${{ matrix.subsystem }}"
+          SOLUTION_NAME="$(tr '[:lower:]' '[:upper:]' <<< ${SUBSYSTEM:0:1})${SUBSYSTEM:1}"
+
+          rm -f "$SOLUTION_NAME.sln"
+          dotnet new sln -n "$SOLUTION_NAME"
+          find "domains/$SUBSYSTEM" -type f -name '*.csproj' | while read project; do
+            dotnet sln "$SOLUTION_NAME.sln" add "$project"
+          done
+          echo "SOLUTION_NAME=$SOLUTION_NAME" >> $GITHUB_ENV
+
+      - name: Test
+        uses: ./.github/actions/dotnet-test
+        with:
+          solution: ${{ env.SOLUTION_NAME }}.sln
+          sdk-version: ${{ matrix.sdkVersion }}
+
+  build-subsystems:
+    name: Build Subsystems
+    needs: detect-subsystems
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-subsystems.outputs.subsystems) }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Create dynamic solution
+        id: create-sln
+        shell: bash
+        run: |
+          SUBSYSTEM="${{ matrix.subsystem }}"
+          SOLUTION_NAME="$(tr '[:lower:]' '[:upper:]' <<< ${SUBSYSTEM:0:1})${SUBSYSTEM:1}"
+
+          rm -f "$SOLUTION_NAME.sln"
+          dotnet new sln -n "$SOLUTION_NAME"
+
+          find "domains/$SUBSYSTEM" -type f -name '*.csproj' | while read project; do
+            dotnet sln "$SOLUTION_NAME.sln" add "$project"
+          done
+
+          echo "SOLUTION_NAME=$SOLUTION_NAME" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        uses: ./.github/actions/dotnet-build
+        with:
+          solution: ${{ env.SOLUTION_NAME }}.sln
+          project: ${{ matrix.projectPath }}
+          configuration: ${{ matrix.configPath }}
+          dry-run: ${{ inputs.dry-run }}
+          sdk-version: ${{ matrix.sdkVersion }}
+          runtime-version: ${{ matrix.runtimeVersion }}
 
   update:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-      - build-admin-portal
-      - build-authorization
-      - build-certificates
-      - build-measurements
-      - build-oidc-mock
-      - build-openapi
-      - build-transfer
+      - test-subsystems
+      - build-subsystems
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
