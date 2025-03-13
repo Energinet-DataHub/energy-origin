@@ -86,8 +86,7 @@ public sealed class CertificateIssuingTests : TestBase
             MeteringPoints = { meteringPoint }
         };
 
-        meteringpointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
-            .Returns(mockedMeteringPointsResponse);
+        meteringpointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(mockedMeteringPointsResponse);
         factory.MeteringpointClient = meteringpointClientMock;
 
         var client = await factory.CreateWalletClient(orgId);

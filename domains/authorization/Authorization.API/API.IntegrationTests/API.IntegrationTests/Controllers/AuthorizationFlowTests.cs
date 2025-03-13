@@ -88,7 +88,7 @@ public class AuthorizationFlowTests
         var org = Organization.Create(Tin.Create(user.OrgCvr), OrganizationName.Create(user.OrgName));
         org.AcceptTerms(dbContext.Terms.First());
         dbContext.Organizations.Add(org);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var request = new AuthorizationUserRequest(
             Sub: user.Sub,
@@ -127,14 +127,14 @@ public class AuthorizationFlowTests
         var consent2 = OrganizationConsent.Create(organization2.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Organizations.AddAsync(organization2);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
-        await dbContext.OrganizationConsents.AddAsync(consent);
-        await dbContext.OrganizationConsents.AddAsync(consent2);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization2, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organizationWithClient, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(consent, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(consent2, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var getClientGrantedConsentsQueryHandler =
             new GetClientGrantedConsentsQueryHandler(new ClientRepository(dbContext));

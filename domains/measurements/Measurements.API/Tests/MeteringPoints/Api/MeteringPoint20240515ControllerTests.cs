@@ -41,7 +41,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
     {
         var client = _factory.CreateUnauthenticatedClient();
 
-        var response = await client.GetAsync($"api/measurements/meteringpoints?organizationId={Guid.NewGuid()}");
+        var response = await client.GetAsync($"api/measurements/meteringpoints?organizationId={Guid.NewGuid()}", TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -52,14 +52,13 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         var mockedResponse = new MeteringPointsResponse();
 
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
-            .Returns(mockedResponse);
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(mockedResponse);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}", TestContext.Current.CancellationToken);
 
         response.Should().NotBeNull();
         response!.Status.Should().Be(RelationStatus.Pending);
@@ -90,7 +89,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
             }
         };
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken)
             .Returns(mockedResponse);
 
         var subject = Guid.NewGuid();
@@ -108,7 +107,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         });
         dbContext.SaveChanges();
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}", TestContext.Current.CancellationToken);
 
         response.Should().NotBeNull();
         var settings = new VerifySettings();
@@ -163,14 +162,14 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         };
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken)
             .Returns(mockedResponse);
 
         var subjectId = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(subjectId, orgId);
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}", TestContext.Current.CancellationToken);
 
         response.Should().NotBeNull();
         var settings = new VerifySettings();
@@ -207,7 +206,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         string buildingNumber, string floor, string room)
     {
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>())
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken)
             .Returns(new MeteringPointsResponse
             {
                 MeteringPoints =
@@ -233,7 +232,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(subjectId, orgId);
 
-        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}");
+        var response = await client.GetFromJsonAsync<GetMeteringPointsResponse>($"api/measurements/meteringpoints?organizationId={orgId}", TestContext.Current.CancellationToken);
 
         response.Should().NotBeNull();
 

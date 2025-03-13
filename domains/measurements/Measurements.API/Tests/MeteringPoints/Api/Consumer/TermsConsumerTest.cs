@@ -41,11 +41,11 @@ public class TermsConsumerTest : IClassFixture<PostgresContainer>
         var dbContext = new ApplicationDbContext(contextOptions);
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
-        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
+        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(relationMock);
 
         var consumer = new TermsConsumer(dbContext, clientMock);
         await consumer.Consume(contextMock);
-        var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId);
+        var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId, TestContext.Current.CancellationToken);
         relation!.Status.Should().Be(RelationStatus.Created);
     }
 
@@ -62,13 +62,13 @@ public class TermsConsumerTest : IClassFixture<PostgresContainer>
         var dbContext = new ApplicationDbContext(contextOptions);
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
-        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
+        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(relationMock);
 
         var consumer = new TermsConsumer(dbContext, clientMock);
         await consumer.Consume(contextMock);
         await consumer.Consume(contextMock);
 
-        var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId);
+        var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId, TestContext.Current.CancellationToken);
         relation!.Status.Should().Be(RelationStatus.Created);
     }
 
@@ -85,11 +85,11 @@ public class TermsConsumerTest : IClassFixture<PostgresContainer>
         var dbContext = new ApplicationDbContext(contextOptions);
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
-        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>()).Returns(relationMock);
+        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(relationMock);
 
         var consumer = new TermsConsumer(dbContext, clientMock);
         await consumer.Consume(contextMock);
-        var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId);
+        var relation = await dbContext.Relations.SingleOrDefaultAsync(x => x.SubjectId == @event.SubjectId, TestContext.Current.CancellationToken);
         relation!.Status.Should().Be(RelationStatus.Pending);
     }
 }

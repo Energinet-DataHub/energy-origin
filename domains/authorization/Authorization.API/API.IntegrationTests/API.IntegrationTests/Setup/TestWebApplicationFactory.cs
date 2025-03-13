@@ -155,10 +155,10 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         return encodedAccessToken!;
     }
 
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         Server.Should().NotBeNull();
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     public new async Task DisposeAsync()

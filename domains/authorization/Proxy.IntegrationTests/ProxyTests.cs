@@ -25,7 +25,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
 
         // Act
         client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
-        var response = await client.GetAsync($"/wallet-api/wallets?organizationId={Guid.NewGuid()}");
+        var response = await client.GetAsync($"/wallet-api/wallets?organizationId={Guid.NewGuid()}", TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -58,8 +58,8 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
 
         // Act
-        var response = await client.PostAsync(endpoint, new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
-        var responseContent = await response.Content.ReadAsStringAsync();
+        var response = await client.PostAsync(endpoint, new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"), TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         responseContent.Should().Be("ok");
@@ -91,8 +91,8 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         var client = CreateUnauthenticatedClient();
 
         // Act
-        var response = await client.PostAsync($"{endpoint}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
-        var responseContent = await response.Content.ReadAsStringAsync();
+        var response = await client.PostAsync($"{endpoint}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"), TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -107,7 +107,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         var client = CreateClientWithOrgIds(new() { orgId });
 
         // Act
-        var response = await client.GetAsync($"wallet-api/wallets?organizationId={orgId}");
+        var response = await client.GetAsync($"wallet-api/wallets?organizationId={orgId}", TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -147,8 +147,8 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
 
         // Act
-        var response = await client.GetAsync($"{endpoint}?organizationId={orgIds[0]}{queryParameters}");
-        var responseContent = await response.Content.ReadAsStringAsync();
+        var response = await client.GetAsync($"{endpoint}?organizationId={orgIds[0]}{queryParameters}", TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -196,8 +196,8 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
 
         // Act
         client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
-        var response = await client.PostAsync($"/wallet-api{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"));
-        var responseContent = await response.Content.ReadAsStringAsync();
+        var response = await client.PostAsync($"/wallet-api{endpoint}?organizationId={orgIds[0]}", new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json"), TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

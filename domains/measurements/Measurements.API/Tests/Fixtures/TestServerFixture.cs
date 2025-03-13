@@ -28,7 +28,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Tests.Fixtures.TestServerHelpers;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Tests.Fixtures
 {

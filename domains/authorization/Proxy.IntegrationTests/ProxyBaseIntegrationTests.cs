@@ -29,7 +29,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
         request.Headers.Add("X-API-Version", ApiVersions.Version1);
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -45,7 +45,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var request = new HttpRequestMessage(HttpMethod.Get, $"/unknown/path?organizationId={organizationId}");
         request.Headers.Add("X-API-Version", ApiVersions.Version1);
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -60,7 +60,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -76,7 +76,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
         request.Headers.Add("X-API-Version", "13371337");
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -110,7 +110,7 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
         var request = new HttpRequestMessage(HttpMethod.Get, $"/wallet-api/certificates?organizationId={organizationId}");
         request.Headers.Add("X-API-Version", ApiVersions.Version1);
 
-        var response = await client.SendAsync(request);
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(statusCode);
     }

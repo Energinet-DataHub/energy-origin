@@ -28,7 +28,7 @@ public class IssuingContractCleanupTests
         var dbContext = GetDbContext();
 
         dbContext.Contracts.RemoveRange(dbContext.Contracts);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var expiredContract = new CertificateIssuingContract
         {
@@ -73,7 +73,7 @@ public class IssuingContractCleanupTests
             RecipientId = Guid.NewGuid()
         };
         dbContext.Contracts.AddRange(expiredContract, nullEndDateContract, endDateContract);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var contracts = await dbContext.RepeatedlyQueryUntilCountIsMet<CertificateIssuingContract>(2);
 
