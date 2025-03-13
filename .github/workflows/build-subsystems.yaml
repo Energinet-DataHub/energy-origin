@@ -26,45 +26,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-#      - name: detect authorization
-#        id: authorization
-#        uses: ./.github/actions/find-diff-action
-#        with:
-#          paths: domains/authorization/
-#
-#      - name: detect certificates
-#        id: certificates
-#        uses: ./.github/actions/find-diff-action
-#        with:
-#          paths: domains/certificates/
-#
-#      - name: detect measurements
-#        id: measurements
-#        uses: ./.github/actions/find-diff-action
-#        with:
-#          paths: domains/measurements/
-#
-#      - name: detect oidc-mock
-#        id: oidc-mock
-#        uses: ./.github/actions/find-diff-action
-#        with:
-#          paths: domains/oidc-mock/
-#
-#      - name: detect openapi
-#        id: openapi
-#        uses: ./.github/actions/find-diff-action
-#        with:
-#          paths: domains/redoc/
-#
-#      - name: detect transfer
-#        id: transfer
-#        uses: ./.github/actions/find-diff-action
-#        with:
-#          paths: domains/transfer/
-
   build-admin-portal:
     needs: setup
-#    if: needs.setup.outputs.admin-portal == 'true'
     uses: ./.github/workflows/build-admin-portal.yaml
     secrets: inherit
     with:
@@ -73,7 +36,6 @@ jobs:
 
   build-authorization:
     needs: setup
-#    if: needs.setup.outputs.authorization == 'true'
     uses: ./.github/workflows/build-authorization.yaml
     secrets: inherit
     with:
@@ -82,7 +44,6 @@ jobs:
 
   build-certificates:
     needs: setup
-#    if: needs.setup.outputs.certificates == 'true'
     uses: ./.github/workflows/build-certificates.yaml
     secrets: inherit
     with:
@@ -91,7 +52,6 @@ jobs:
 
   build-measurements:
     needs: setup
-#    if: needs.setup.outputs.measurements == 'true'
     uses: ./.github/workflows/build-measurements.yaml
     secrets: inherit
     with:
@@ -100,7 +60,6 @@ jobs:
 
   build-oidc-mock:
     needs: setup
-#    if: needs.setup.outputs.oidc-mock == 'true'
     uses: ./.github/workflows/build-oidc-mock.yaml
     secrets: inherit
     with:
@@ -109,7 +68,6 @@ jobs:
 
   build-openapi:
     needs: setup
-#    if: needs.setup.outputs.authorization == 'true' || needs.setup.outputs.certificates == 'true' || needs.setup.outputs.measurements == 'true' || needs.setup.outputs.open-api == 'true'
     uses: ./.github/workflows/build-openapi.yaml
     secrets: inherit
     with:
@@ -118,7 +76,6 @@ jobs:
 
   build-transfer:
     needs: setup
-#    if: needs.setup.outputs.transfer == 'true'
     uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
