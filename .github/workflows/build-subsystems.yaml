@@ -26,8 +26,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-  build-admin-portal:
+  dotnet-lint-solution:
     needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run dotnet lint
+        uses: ./.github/actions/dotnet-lint-solution
+        with:
+          path: "domains"
+
+  build-admin-portal:
     uses: ./.github/workflows/build-admin-portal.yaml
     secrets: inherit
     with:
@@ -86,6 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
+      - dotnet-lint-solution
       - build-admin-portal
       - build-authorization
       - build-certificates
