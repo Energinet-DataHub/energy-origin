@@ -13,6 +13,29 @@ on:
         type: string
 
 jobs:
+  test:
+    name: Test AdminPortal Subsystem
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+#        with:
+#          dotnet-version: '8.0.402'
+
+      - name: Create dynamic solution file for AdminPortal
+        shell: bash
+        run: |
+          rm -f EnergyTrackAndTrace.sln
+          dotnet new sln -n AdminPortal
+          find domains/admin-portal -name '*.csproj' | while read project; do
+            dotnet sln AdminPortal.sln add "$project"
+          done
+
+      - uses: ./.github/actions/dotnet-test
+        with:
+          solution: AdminPortal.sln
 
   build-api:
     runs-on: ubuntu-latest
