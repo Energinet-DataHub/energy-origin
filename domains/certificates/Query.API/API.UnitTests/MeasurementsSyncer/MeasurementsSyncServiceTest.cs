@@ -65,7 +65,7 @@ public class MeasurementsSyncServiceTest
 
         // Metering point is skipped
         response.Should().BeEmpty();
-        _ = _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken);
+        _ = _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -80,8 +80,8 @@ public class MeasurementsSyncServiceTest
         var mockedResponse = new GetMeasurementsResponse { Measurements = { measurement } };
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(mockedResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(mockedResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         // Then sliding window is updated
@@ -99,10 +99,10 @@ public class MeasurementsSyncServiceTest
 
         // When no measurements fetched
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         var mockedResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(mockedResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(mockedResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         // Then sliding window is not updated
@@ -123,8 +123,8 @@ public class MeasurementsSyncServiceTest
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement1, measurement2 } };
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         // Then 2 measurements are published
@@ -142,13 +142,13 @@ public class MeasurementsSyncServiceTest
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPositionFromLastRun, [missingIntervals]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         var measurementResponse = new GetMeasurementsResponse
         {
             Measurements = { Any.Measurement(_syncInfo.Gsrn, missingIntervals.From.EpochSeconds, 5) }
         };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -169,14 +169,14 @@ public class MeasurementsSyncServiceTest
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint, [missingIntervals]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         // When getting measurement later than sync point (in the future)
         var measurementResponse = new GetMeasurementsResponse
         {
             Measurements = { Any.Measurement(_syncInfo.Gsrn, now.AddHours(1).EpochSeconds, 5) }
         };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         // Then measurement is filtered
@@ -210,7 +210,7 @@ public class MeasurementsSyncServiceTest
             [missingInterval]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         var measurementOutsideThreshold = Any.Measurement(syncInfo.Gsrn, now.AddHours(-10).EpochSeconds, 7);
         var measurementWithinThreshold = Any.Measurement(syncInfo.Gsrn, missingInterval.From.EpochSeconds, 5);
@@ -220,7 +220,7 @@ public class MeasurementsSyncServiceTest
             Measurements = { measurementOutsideThreshold, measurementWithinThreshold }
         };
 
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
@@ -246,9 +246,9 @@ public class MeasurementsSyncServiceTest
         var measurementResponse1 = new GetMeasurementsResponse { Measurements = { measurement1 } };
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse1);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse1);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -263,7 +263,7 @@ public class MeasurementsSyncServiceTest
 
         var measurement2 = Any.Measurement(_syncInfo.Gsrn, slidingWindowSyncPoint.AddHours(1).EpochSeconds, 5);
         var measurementResponse2 = new GetMeasurementsResponse { Measurements = { measurement2 } };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse2);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse2);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -280,17 +280,17 @@ public class MeasurementsSyncServiceTest
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-10)));
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         var initialResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(initialResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(initialResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         _options.MinimumAgeThresholdHours = 0;
         var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-4)).EpochSeconds, 10);
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -311,8 +311,8 @@ public class MeasurementsSyncServiceTest
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -332,10 +332,10 @@ public class MeasurementsSyncServiceTest
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-10)));
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         var emptyMeasurementResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(emptyMeasurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(emptyMeasurementResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -349,7 +349,7 @@ public class MeasurementsSyncServiceTest
         _options.MinimumAgeThresholdHours = 2;
         var measurement = Any.Measurement(_syncInfo.Gsrn, now.Add(TimeSpan.FromHours(-3)).EpochSeconds, 10);
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurement } };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -382,8 +382,8 @@ public class MeasurementsSyncServiceTest
 
         _options.MinimumAgeThresholdHours = 168;
 
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
@@ -411,13 +411,13 @@ public class MeasurementsSyncServiceTest
         slidingWindow.MissingMeasurements.Intervals.Add(missingIntervalOutsideThreshold);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         var measurementResponse = new GetMeasurementsResponse
         {
             Measurements = { Any.Measurement(_syncInfo.Gsrn, missingIntervalOutsideThreshold.From.EpochSeconds, 5) }
         };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -449,10 +449,10 @@ public class MeasurementsSyncServiceTest
 
         // When fetching measurements
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         var measurementResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
@@ -482,10 +482,10 @@ public class MeasurementsSyncServiceTest
 
         // When fetching measurements
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         var measurementResponse = new GetMeasurementsResponse();
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 
@@ -509,7 +509,7 @@ public class MeasurementsSyncServiceTest
         slidingWindow.MissingMeasurements.Intervals.Add(missingInterval);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         var measurementsWithinThreshold = new List<Measurement>();
         var currentTime = syncStart;
@@ -520,7 +520,7 @@ public class MeasurementsSyncServiceTest
         }
 
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurementsWithinThreshold } };
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -572,8 +572,8 @@ public class MeasurementsSyncServiceTest
         var measurementResponse = new GetMeasurementsResponse { Measurements = { measurementsWithinThreshold } };
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
 
-        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
-        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(measurementResponse);
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
+        _fakeClient.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(measurementResponse);
 
         await _service.FetchAndPublishMeasurements(syncInfo, slidingWindow, CancellationToken.None);
 

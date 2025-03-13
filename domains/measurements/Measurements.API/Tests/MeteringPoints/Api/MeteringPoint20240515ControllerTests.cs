@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using API;
 using API.MeteringPoints.Api;
@@ -52,7 +53,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         var mockedResponse = new MeteringPointsResponse();
 
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(mockedResponse);
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(mockedResponse);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -89,7 +90,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
             }
         };
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken)
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
             .Returns(mockedResponse);
 
         var subject = Guid.NewGuid();
@@ -162,7 +163,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         };
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken)
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
             .Returns(mockedResponse);
 
         var subjectId = Guid.NewGuid();
@@ -206,7 +207,7 @@ public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPoi
         string buildingNumber, string floor, string room)
     {
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken)
+        clientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
             .Returns(new MeteringPointsResponse
             {
                 MeteringPoints =

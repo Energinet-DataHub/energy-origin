@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using API;
 using API.MeteringPoints.Api;
@@ -41,7 +42,7 @@ public class TermsConsumerTest : IClassFixture<PostgresContainer>
         var dbContext = new ApplicationDbContext(contextOptions);
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
-        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(relationMock);
+        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(relationMock);
 
         var consumer = new TermsConsumer(dbContext, clientMock);
         await consumer.Consume(contextMock);
@@ -62,7 +63,7 @@ public class TermsConsumerTest : IClassFixture<PostgresContainer>
         var dbContext = new ApplicationDbContext(contextOptions);
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
-        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(relationMock);
+        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(relationMock);
 
         var consumer = new TermsConsumer(dbContext, clientMock);
         await consumer.Consume(contextMock);
@@ -85,7 +86,7 @@ public class TermsConsumerTest : IClassFixture<PostgresContainer>
         var dbContext = new ApplicationDbContext(contextOptions);
 
         var clientMock = Substitute.For<Relation.V1.Relation.RelationClient>();
-        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(relationMock);
+        clientMock.CreateRelationAsync(Arg.Any<CreateRelationRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(relationMock);
 
         var consumer = new TermsConsumer(dbContext, clientMock);
         await consumer.Consume(contextMock);
