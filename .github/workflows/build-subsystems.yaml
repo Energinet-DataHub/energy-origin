@@ -16,7 +16,6 @@ jobs:
   detect-subsystems:
     name: Detect Subsystems
     runs-on: ubuntu-latest
-
     outputs:
       subsystems: ${{ steps.build-matrix.outputs.subsystems }}
 
@@ -28,9 +27,9 @@ jobs:
         id: build-matrix
         shell: bash
         run: |
-          set -e
+
           tmpfile=/tmp/final.json
-          echo "[" > "$tmpfile"
+          echo "[" > $tmpfile
           first_entry=true
 
           find domains/ -mindepth 2 -type f -name 'configuration.yaml' \
@@ -38,34 +37,33 @@ jobs:
             | while read configFile; do
 
               subsystem="$(echo "$configFile" | cut -d'/' -f2)"
-              configDir="$(dirname "$configFile")"
 
+              configDir=$(dirname "$configFile")
               if [ -f "$configDir/global.json" ]; then
                 globalJson="$configDir/global.json"
               elif [ -f "domains/$subsystem/global.json" ]; then
                 globalJson="domains/$subsystem/global.json"
               else
-                globalJson="global.json"  # fallback if none found locally
+                globalJson="global.json"
               fi
 
               sdkVersion=$(jq -r '.sdk.version // empty' "$globalJson" 2>/dev/null || echo "")
               runtimeVersion=$(jq -r '.runtime.version // empty' "$globalJson" 2>/dev/null || echo "")
 
               find "$configDir" -type f -name "*.csproj" | while read csprojFile; do
-                # Build a small JSON object
                 entry=$(
                   jq -n \
                     --arg proj "$csprojFile" \
                     --arg cfg "$configFile" \
                     --arg sdk "$sdkVersion" \
-                    --arg rt  "$runtimeVersion" \
-                    --arg sub "$subsystem" \
+                    --arg rt "$runtimeVersion" \
+                    --arg subsys "$subsystem" \
                     '{
                       projectPath: $proj,
-                      configPath:  $cfg,
-                      sdkVersion:  $sdk,
+                      configPath: $cfg,
+                      sdkVersion: $sdk,
                       runtimeVersion: $rt,
-                      subsystem:   $sub
+                      subsystem: $subsys
                     }'
                 )
 
@@ -84,17 +82,15 @@ jobs:
           echo "Final matrix JSON:"
           cat "$tmpfile"
 
-          echo "subsystems=$(cat /tmp/final.json)" >> "$GITHUB_OUTPUT"
+          echo "::set-output name=subsystems::$(cat $tmpfile)"
 
   test-subsystems:
     name: Test Subsystems
     needs: detect-subsystems
     runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.detect-subsystems.outputs.subsystems) }}
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -111,11 +107,9 @@ jobs:
 
           rm -f "$SOLUTION_NAME.sln"
           dotnet new sln -n "$SOLUTION_NAME"
-
           find "domains/$SUBSYSTEM" -type f -name '*.csproj' | while read project; do
             dotnet sln "$SOLUTION_NAME.sln" add "$project"
           done
-
           echo "SOLUTION_NAME=$SOLUTION_NAME" >> $GITHUB_ENV
 
       - name: Test
@@ -128,11 +122,9 @@ jobs:
     name: Build Subsystems
     needs: detect-subsystems
     runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.detect-subsystems.outputs.subsystems) }}
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -174,7 +166,6 @@ jobs:
       - build-subsystems
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
-
     steps:
       - uses: actions/checkout@v4
 
