@@ -13,120 +13,80 @@ on:
         type: string
 
 jobs:
-  detect-subsystems:
-    name: Detect Subsystems
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
-
     outputs:
-      subsystems: ${{ steps.build-matrix.outputs.subsystems }}
-
+      subsystems: ${{ env.subsystems }}
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Build subsystems matrix
-        id: build-matrix
         shell: bash
         run: |
-          set -e
-          tmpfile=/tmp/final.json
-          echo "[" > "$tmpfile"
-          first_entry=true
-
-          find domains/ -mindepth 2 -type f -name 'configuration.yaml' \
-            | grep -v '/redoc/' \
-            | while read configFile; do
-
-              subsystem="$(echo "$configFile" | cut -d'/' -f2)"
-              configDir="$(dirname "$configFile")"
-
-              if [ -f "$configDir/global.json" ]; then
-                globalJson="$configDir/global.json"
-              elif [ -f "domains/$subsystem/global.json" ]; then
-                globalJson="domains/$subsystem/global.json"
-              else
-                globalJson="global.json"  # fallback if none found locally
-              fi
-
-              sdkVersion=$(jq -r '.sdk.version // empty' "$globalJson" 2>/dev/null || echo "")
-              runtimeVersion=$(jq -r '.runtime.version // empty' "$globalJson" 2>/dev/null || echo "")
-
-              find "$configDir" -type f -name "*.csproj" | while read csprojFile; do
-                # Build a small JSON object
-                entry=$(
-                  jq -n \
-                    --arg proj "$csprojFile" \
-                    --arg cfg "$configFile" \
-                    --arg sdk "$sdkVersion" \
-                    --arg rt  "$runtimeVersion" \
-                    --arg sub "$subsystem" \
-                    '{
-                      projectPath: $proj,
-                      configPath:  $cfg,
-                      sdkVersion:  $sdk,
-                      runtimeVersion: $rt,
-                      subsystem:   $sub
-                    }'
-                )
-
-                if [ "$first_entry" = true ]; then
-                  first_entry=false
-                else
-                  echo "," >> "$tmpfile"
-                fi
-
-                echo -n "$entry" >> "$tmpfile"
-              done
-            done
-
-          echo "]" >> "$tmpfile"
-
-          echo "Final matrix JSON:"
-          cat "$tmpfile"
-
-          echo "subsystems=$(cat /tmp/final.json)" >> "$GITHUB_OUTPUT"
+          for subsystem in $(find domains/ -mindepth 1 -maxdepth 1 -type d | egrep -v '/redoc$'); do
+            [ -f "$subsystem/global.json" ] || cp "$subsystem/../../global.json" "$subsystem/global.json"
+            settings=$(jq -srec '.[0] | .path=$path' --arg path "$subsystem" "$subsystem/global.json")
+            sdk=$(printf '%s' "$settings" | jq -rce '.sdk.version')
+            runtime=$(printf '%s' "$settings" | jq -rce '.runtime.version')
+            csprojects=$(find "$subsystem" -mindepth 3 -maxdepth 3 -name "*.csproj" -exec dirname {} \; | egrep -v '[^\/]*/[^\/]*/Shared/[^\/]*' | egrep -v 'Tests$')
+            projects=$(while read project; do printf '{"path":"%s","configuration":"%s","sdkVersion":"%s","runtimeVersion":"%s"}' "$project" "$(dirname $project)/configuration.yaml" "$sdk" "$runtime"; done <<< $csprojects | jq -sc '.')
+            printf '{"projects":%s}\n' "$projects"
+          done | jq -sc > /tmp/json
+          echo "subsystems=$(jq '.[].projects[]' /tmp/json | jq -scr '. | unique')" >> "$GITHUB_ENV"
 
   test-subsystems:
-    name: Test Subsystems
-    needs: detect-subsystems
+    name: Test subsystems
     runs-on: ubuntu-latest
-
+    needs: setup
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.detect-subsystems.outputs.subsystems) }}
-
+      matrix:
+        build: ${{ fromJson(needs.setup.outputs.subsystems) }}
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-
-      - name: Create dynamic solution
-        id: create-sln
+      - name: Resolve
         shell: bash
+        env:
+          PROJECT: ${{ matrix.build.path }}
+          CONFIGURATION: ${{ matrix.build.configuration }}
         run: |
-          SUBSYSTEM="${{ matrix.subsystem }}"
-          SOLUTION_NAME="$(tr '[:lower:]' '[:upper:]' <<< ${SUBSYSTEM:0:1})${SUBSYSTEM:1}"
+          projects=$(dirname "$PROJECT")
+          domain=$(dirname "$projects")
+          name=$(yq '.name' "$CONFIGURATION")
+          service=${PROJECT#"$domain"}
+          path=$(find "$PROJECT" -name "*.csproj" | head -n1)
+          paths=$(for item in $(echo "$projects/"* "$projects"/../Shared); do test -d "$item" && find "$item" -name "*.csproj" || true; done)
+          migration="$domain/migrations/$(basename "$PROJECT").sql"
+          if [ ! -f "$migration" ]; then
+            migration=""
+          fi
 
-          rm -f "$SOLUTION_NAME.sln"
-          dotnet new sln -n "$SOLUTION_NAME"
+          EOF=$(head -c 20 /dev/random | md5sum | head -c 32)
+          {
+            printf "paths<<%s\n" "$EOF"
+            printf "%s\n" "$paths"
+            printf "%s\n" "$EOF"
+            echo "migration=${migration}"
+            echo "service=${service}"
+            echo "domain=${domain}"
+            echo "name=${name}"
+            echo "path=${path}"
+            echo "version=abcdefg"
+          } >> $GITHUB_ENV
 
-          find "domains/$SUBSYSTEM" -type f -name '*.csproj' | while read project; do
-            dotnet sln "$SOLUTION_NAME.sln" add "$project"
-          done
-
-          echo "SOLUTION_NAME=$SOLUTION_NAME" >> $GITHUB_ENV
-
-      - name: Test
-        uses: ./.github/actions/dotnet-test
+      - name: Validate project
+        uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate@v4
         with:
-          solution: ${{ env.SOLUTION_NAME }}.sln
-          sdk-version: ${{ matrix.sdkVersion }}
+          dotnet-version: ${{ matrix.build.sdkVersion }}
+          pin-version: true
+          paths: ${{ env.paths }}
+          sql-file: ${{ env.migration }}
 
   build-subsystems:
     name: Build Subsystems
-    needs: detect-subsystems
+    needs: setup
     runs-on: ubuntu-latest
 
     strategy:
