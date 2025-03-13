@@ -12,17 +12,19 @@ using ClientType = API.Models.ClientType;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AuthorizationControllerTests : IntegrationTestBase
+public class AuthorizationControllerTests
 {
     private readonly Api _api;
+    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AuthorizationControllerTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
+    public AuthorizationControllerTests(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = Fixture.WebAppFactory.ConnectionString;
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
 
-        _api = Fixture.WebAppFactory.CreateApi(sub: Fixture.WebAppFactory.IssuerIdpClientId.ToString());
+        _integrationTestFixture = integrationTestFixture;
+        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: _integrationTestFixture.WebAppFactory.IssuerIdpClientId.ToString());
     }
 
     [Fact]
@@ -56,7 +58,7 @@ public class AuthorizationControllerTests : IntegrationTestBase
     public async Task GivenNonExistingOrganization_WhenGettingConsent_ThenHttpOkAndTermsNotAccepted()
     {
         await using var dbContext = new ApplicationDbContext(_options);
-        var client = Client.Create(new IdpClientId(Fixture.WebAppFactory.IssuerIdpClientId), ClientName.Create("Internal Client"), ClientType.Internal, "https://localhost:5001");
+        var client = Client.Create(new IdpClientId(_integrationTestFixture.WebAppFactory.IssuerIdpClientId), ClientName.Create("Internal Client"), ClientType.Internal, "https://localhost:5001");
         await dbContext.Clients.AddAsync(client);
         await dbContext.SaveChangesAsync();
 

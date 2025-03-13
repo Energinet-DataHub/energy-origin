@@ -7,17 +7,19 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetServiceProviderTermsTest : IntegrationTestBase
+public class GetServiceProviderTermsTest
 {
     private readonly Api _api;
+    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetServiceProviderTermsTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
+    public GetServiceProviderTermsTest(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = Fixture.WebAppFactory.ConnectionString;
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
 
-        _api = Fixture.WebAppFactory.CreateApi();
+        _integrationTestFixture = integrationTestFixture;
+        _api = integrationTestFixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
@@ -35,7 +37,7 @@ public class GetServiceProviderTermsTest : IntegrationTestBase
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var api = Fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString());
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString());
         var response = await api.GetServiceProviderTerms();
         response.Should().Be200Ok();
     }

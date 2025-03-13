@@ -8,17 +8,19 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GrantConsentTest : IntegrationTestBase
+public class GrantConsentTest
 {
     private readonly Api _api;
+    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GrantConsentTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
+    public GrantConsentTest(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = Fixture.WebAppFactory.ConnectionString;
+        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
 
-        _api = Fixture.WebAppFactory.CreateApi();
+        _integrationTestFixture = integrationTestFixture;
+        _api = integrationTestFixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
@@ -52,7 +54,7 @@ public class GrantConsentTest : IntegrationTestBase
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var api = Fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organizationThatIsGrantingConsent.Tin!.Value);
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organizationThatIsGrantingConsent.Tin!.Value);
         var response = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
         response.Should().Be200Ok();
     }
@@ -71,7 +73,7 @@ public class GrantConsentTest : IntegrationTestBase
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var api = Fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
         response.Should().Be200Ok();
 
@@ -94,7 +96,7 @@ public class GrantConsentTest : IntegrationTestBase
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var api = Fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
         response.Should().Be200Ok();
     }
@@ -113,7 +115,7 @@ public class GrantConsentTest : IntegrationTestBase
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var api = Fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
         response.Should().Be403Forbidden();
     }
@@ -121,7 +123,7 @@ public class GrantConsentTest : IntegrationTestBase
     [Fact]
     public async Task GivenSubTypeNotUser_WhenGrantingConsent_HttpForbiddenIsReturned()
     {
-        var api = Fixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString(), termsAccepted: false);
+        var api = _integrationTestFixture.WebAppFactory.CreateApi(subType: SubjectType.External.ToString(), termsAccepted: false);
 
         var response = await api.GrantConsentToClient(Guid.NewGuid());
 
