@@ -22,23 +22,23 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 public class IntegrationTestFixture : IAsyncLifetime
 {
     public TransferAgreementsApiWebApplicationFactory Factory { get; private set; }
-    public PostgresContainer PostgresContainer { get; private set; }
+    public PostgresDatabase PostgresDatabase { get; private set; }
     public WireMockServer CvrWireMockServer { get; private set; }
 
     public IntegrationTestFixture()
     {
         Factory = new TransferAgreementsApiWebApplicationFactory();
-        PostgresContainer = new PostgresContainer();
+        PostgresDatabase = new PostgresDatabase();
         CvrWireMockServer = WireMockServer.Start();
     }
 
     public async Task InitializeAsync()
     {
-        await PostgresContainer.InitializeAsync();
+        await PostgresDatabase.InitializeAsync();
 
         SetupPoWalletClientMock();
 
-        Factory.ConnectionString = PostgresContainer.ConnectionString;
+        Factory.ConnectionString = (await PostgresDatabase.CreateNewDatabase()).ConnectionString;
         Factory.CvrBaseUrl = CvrWireMockServer.Url!;
         Factory.Start();
     }

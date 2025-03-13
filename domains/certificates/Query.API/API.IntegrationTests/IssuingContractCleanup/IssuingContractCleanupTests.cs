@@ -5,7 +5,6 @@ using API.IntegrationTests.Extensions;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
-using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -15,11 +14,11 @@ namespace API.IntegrationTests.IssuingContractCleanup;
 [Collection(IntegrationTestCollection.CollectionName)]
 public class IssuingContractCleanupTests
 {
-    private readonly PostgresContainer postgresContainer;
+    private readonly IntegrationTestFixture _integrationTestFixture;
 
     public IssuingContractCleanupTests(IntegrationTestFixture integrationTestFixture)
     {
-        postgresContainer = integrationTestFixture.PostgresContainer;
+        _integrationTestFixture = integrationTestFixture;
     }
 
     [Fact(Skip = "Contract clean up temporarily disabled")]
@@ -85,7 +84,7 @@ public class IssuingContractCleanupTests
 
     private ApplicationDbContext GetDbContext()
     {
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(postgresContainer.ConnectionString).Options;
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_integrationTestFixture.WebApplicationFactory.ConnectionString).Options;
         return new ApplicationDbContext(contextOptions);
     }
 }

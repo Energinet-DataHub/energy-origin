@@ -10,7 +10,7 @@ public class DbContextFactoryMock : IDbContextFactory<ApplicationDbContext>
 {
     private readonly DatabaseInfo _databaseInfo;
 
-    public DbContextFactoryMock(PostgresContainer dbContainer)
+    public DbContextFactoryMock(PostgresDatabase dbContainer)
     {
         _databaseInfo = dbContainer.CreateNewDatabase().GetAwaiter().GetResult();
         new DbMigrator(_databaseInfo.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();

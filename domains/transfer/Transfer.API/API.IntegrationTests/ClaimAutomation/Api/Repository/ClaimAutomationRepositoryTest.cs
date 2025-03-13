@@ -11,7 +11,7 @@ using Xunit;
 
 namespace API.IntegrationTests.ClaimAutomation.Api.Repository;
 
-public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClassFixture<PostgresContainer>
+public class ClaimAutomationRepositoryTest(PostgresDatabase postgresDatabase) : IClassFixture<PostgresDatabase>
 {
     [Fact]
     public async Task exception_is_thrown_when_duplicated_claim_automation_argument()
@@ -29,12 +29,13 @@ public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClass
 
     private async Task<ApplicationDbContext> CreateNewCleanDatabase()
     {
-        await container.InitializeAsync();
+        await postgresDatabase.InitializeAsync();
+        var database = await postgresDatabase.CreateNewDatabase();
 
-        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(container.ConnectionString)
+        var contextOptions = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(database.ConnectionString)
             .Options;
 
-        new DbMigrator(container.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
+        new DbMigrator(database.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
 
         var dbContext = new ApplicationDbContext(contextOptions);
         return dbContext;

@@ -22,7 +22,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
     private const string RabbitMqUsername = "guest";
     private const string RabbitMqPassword = "guest";
 
-    private readonly PostgresContainer _postgresContainer = new();
+    private readonly PostgresDatabase _postgresDatabase = new();
 
     private readonly RabbitMqContainer _rabbitMqContainer = new RabbitMqBuilder()
         .WithImage("rabbitmq:3.13-management")
@@ -150,8 +150,8 @@ public class RabbitMqConnectionTest : IAsyncLifetime
 
     private async Task<DatabaseInfo> StartPostgresDatabase()
     {
-        await _postgresContainer.InitializeAsync();
-        var databaseInfo = await _postgresContainer.CreateNewDatabase();
+        await _postgresDatabase.InitializeAsync();
+        var databaseInfo = await _postgresDatabase.CreateNewDatabase();
         return databaseInfo;
     }
 
@@ -225,7 +225,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _postgresContainer.DisposeAsync();
+        await _postgresDatabase.DisposeAsync();
         await _rabbitMqContainer.DisposeAsync();
     }
 }

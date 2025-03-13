@@ -18,13 +18,13 @@ using Xunit;
 
 namespace Tests.MeteringPoints.Api.Consumer;
 
-public class TermsConsumerTest : IClassFixture<PostgresContainer>
+public class TermsConsumerTest : IClassFixture<PostgresDatabase>
 {
     private readonly DatabaseInfo _databaseInfo;
 
-    public TermsConsumerTest(PostgresContainer postgresContainer)
+    public TermsConsumerTest(PostgresDatabase postgresDatabase)
     {
-        _databaseInfo = postgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
+        _databaseInfo = postgresDatabase.CreateNewDatabase().GetAwaiter().GetResult();
         new DbMigrator(_databaseInfo.ConnectionString, typeof(Startup).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
     }
 

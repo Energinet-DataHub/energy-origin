@@ -8,10 +8,10 @@ using Xunit;
 
 namespace Tests;
 
-public class HealthControllerTests : MeasurementsTestBase, IClassFixture<RabbitMqContainer>, IClassFixture<PostgresContainer>
+public class HealthControllerTests : MeasurementsTestBase, IClassFixture<RabbitMqContainer>, IClassFixture<PostgresDatabase>
 {
-    public HealthControllerTests(TestServerFixture<Startup> serverFixture, RabbitMqContainer rabbitMqContainer, PostgresContainer postgresContainer)
-        : base(serverFixture, rabbitMqContainer.Options, postgresContainer.ConnectionString)
+    public HealthControllerTests(TestServerFixture<Startup> serverFixture, RabbitMqContainer rabbitMqContainer, PostgresDatabase postgresDatabase)
+        : base(serverFixture, rabbitMqContainer.Options, postgresDatabase.CreateNewDatabase().Result.ConnectionString)
     {
     }
 

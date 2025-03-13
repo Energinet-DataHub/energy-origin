@@ -10,7 +10,7 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 
 public class IntegrationTestFixture : IAsyncLifetime
 {
-    public PostgresContainer PostgresContainer { get; } = new();
+    public PostgresDatabase PostgresDatabase { get; } = new();
     public ProjectOriginStack ProjectOriginStack { get; } = new();
 
     public RabbitMqContainer RabbitMqContainer { get; } = new();
@@ -19,11 +19,11 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await PostgresContainer.InitializeAsync();
+        await PostgresDatabase.InitializeAsync();
         await ProjectOriginStack.InitializeAsync();
         await RabbitMqContainer.InitializeAsync();
 
-        var newDatabase = await PostgresContainer.CreateNewDatabase();
+        var newDatabase = await PostgresDatabase.CreateNewDatabase();
 
         var rabbitMqOptions = RabbitMqContainer.Options;
 
@@ -37,7 +37,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await WebAppFactory.DisposeAsync();
-        await PostgresContainer.DisposeAsync();
+        await PostgresDatabase.DisposeAsync();
         await ProjectOriginStack.DisposeAsync();
         await RabbitMqContainer.DisposeAsync();
     }

@@ -13,20 +13,20 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 public class IntegrationTestFixture : IAsyncLifetime
 {
     public ClaimAutomationWorkerFactory ClaimAutomationWorker { get; private set; }
-    public PostgresContainer PostgresContainer { get; private set; }
+    public PostgresDatabase PostgresDatabase { get; private set; }
 
     public IntegrationTestFixture()
     {
         ClaimAutomationWorker = new ClaimAutomationWorkerFactory();
-        PostgresContainer = new PostgresContainer();
+        PostgresDatabase = new PostgresDatabase();
     }
 
     public async Task InitializeAsync()
     {
-        await PostgresContainer.InitializeAsync();
+        await PostgresDatabase.InitializeAsync();
 
         ClaimAutomationWorker = new ClaimAutomationWorkerFactory();
-        var db = await PostgresContainer.CreateNewDatabase();
+        var db = await PostgresDatabase.CreateNewDatabase();
         ClaimAutomationWorker.Database = db;
         ClaimAutomationWorker.Start();
     }
@@ -34,6 +34,6 @@ public class IntegrationTestFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await ClaimAutomationWorker.DisposeAsync();
-        await PostgresContainer.DisposeAsync();
+        await PostgresDatabase.DisposeAsync();
     }
 }

@@ -15,7 +15,7 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 public class IntegrationTestFixture : IAsyncLifetime
 {
     public QueryApiWebApplicationFactory WebApplicationFactory { get; private set; }
-    public PostgresContainer PostgresContainer { get; private set; }
+    public PostgresDatabase PostgresDatabase { get; private set; }
     private ProjectOriginStack ProjectOriginStack { get; set; }
     public RabbitMqContainer RabbitMqContainer { get; set; }
     public MeasurementsWireMock MeasurementsMock { get; private set; }
@@ -23,7 +23,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     public IntegrationTestFixture()
     {
         WebApplicationFactory = new QueryApiWebApplicationFactory();
-        PostgresContainer = new PostgresContainer();
+        PostgresDatabase = new PostgresDatabase();
         ProjectOriginStack = new ProjectOriginStack();
         RabbitMqContainer = new RabbitMqContainer();
         MeasurementsMock = new MeasurementsWireMock();
@@ -31,8 +31,8 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        PostgresContainer = new PostgresContainer();
-        await PostgresContainer.InitializeAsync();
+        PostgresDatabase = new PostgresDatabase();
+        await PostgresDatabase.InitializeAsync();
 
         ProjectOriginStack = new ProjectOriginStack();
         await ProjectOriginStack.InitializeAsync();
@@ -43,7 +43,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         MeasurementsMock = new MeasurementsWireMock();
 
         WebApplicationFactory = new QueryApiWebApplicationFactory();
-        WebApplicationFactory.ConnectionString = PostgresContainer.ConnectionString;
+        WebApplicationFactory.ConnectionString = PostgresDatabase.CreateNewDatabase().Result.ConnectionString;
         WebApplicationFactory.RabbitMqOptions = RabbitMqContainer.Options;
         WebApplicationFactory.MeasurementsUrl = MeasurementsMock.Url;
         WebApplicationFactory.WalletUrl = ProjectOriginStack.WalletUrl;
@@ -56,7 +56,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await WebApplicationFactory.DisposeAsync();
-        await PostgresContainer.DisposeAsync();
+        await PostgresDatabase.DisposeAsync();
         await ProjectOriginStack.DisposeAsync();
         await RabbitMqContainer.DisposeAsync();
         MeasurementsMock.Dispose();
