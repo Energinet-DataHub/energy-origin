@@ -13,25 +13,49 @@ on:
         type: string
 
 jobs:
-
-  build-api:
+  test:
+    name: Test Authorization Subsystem
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+
+      - name: Create dynamic solution file for Authorization
+        shell: bash
+        run: |
+          rm -f EnergyTrackAndTrace.sln
+          dotnet new sln -n Authorization
+          find domains/authorization -name '*.csproj' | while read project; do
+            dotnet sln Authorization.sln add "$project"
+          done
+
+      - uses: ./.github/actions/dotnet-test
+        with:
+          solution: Authorization.sln
+
+  build-api:
+    name: Build Authorization.API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/authorization/Autorization.sln
+          solution: Authorization.sln
           project: domains/authorization/Authorization.API/API/API.csproj
           configuration: domains/authorization/Authorization.API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
 
   build-proxy:
+    name: Build Authorization.Proxy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/authorization/Autorization.sln
+          solution: Authorization.sln
           project: domains/authorization/Proxy/Proxy.csproj
           configuration: domains/authorization/Proxy/configuration.yaml
           dry-run: ${{ inputs.dry-run }}

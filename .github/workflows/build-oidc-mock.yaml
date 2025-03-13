@@ -13,14 +13,36 @@ on:
         type: string
 
 jobs:
-  
+  test:
+    name: Test Oidc.Mock Subsystem
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+
+      - name: Create dynamic solution file for Oidc.Mock
+        shell: bash
+        run: |
+          rm -f EnergyTrackAndTrace.sln
+          dotnet new sln -n Oidc.Mock
+          find domains/oidc-mock -name '*.csproj' | while read project; do
+            dotnet sln Oidc.Mock.sln add "$project"
+          done
+
+      - uses: ./.github/actions/dotnet-test
+        with:
+          solution: Oidc.Mock.sln
+
   build-api:
+    name: Build Oidc.Mock
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/oidc-mock/Oidc.Mock.sln
+          solution: Oidc.Mock.sln
           project: domains/oidc-mock/API/Mock/Oidc.Mock.csproj
           configuration: domains/oidc-mock/API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}

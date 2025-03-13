@@ -3,10 +3,12 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using API.Models;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.RabbitMq;
+using EnergyOrigin.WalletClient;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -17,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
+using RichardSzalay.MockHttp;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Setup;
@@ -24,17 +27,22 @@ namespace API.IntegrationTests.Setup;
 public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     internal string ConnectionString { get; set; } = "";
-    internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
+    internal RabbitMqOptions RabbitMqOptions { get; set; } = new()
+    {
+        Host = "localhost",
+        Port = 5672,
+        Username = "guest",
+        Password = "guest"
+    };
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
     public readonly string AdminPortalEnterpriseAppRegistrationObjectId = "d216b90b-3872-498a-bc18-4941a0f4398e";
-    public string WalletUrl { get; set; } = "";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
         builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", AdminPortalEnterpriseAppRegistrationObjectId);
         builder.UseSetting("MitID:URI", "https://pp.netseidbroker.dk/op");
-        builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
+        builder.UseSetting("ProjectOrigin:WalletUrl", "http://fake-wallet-service");
 
         builder.ConfigureTestServices(services =>
         {
@@ -50,6 +58,42 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
                 options.Username = RabbitMqOptions.Username;
                 options.Password = RabbitMqOptions.Password;
             });
+
+            SetRabbitMqOptions(RabbitMqOptions);
+
+            var walletClientDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IWalletClient));
+            if (walletClientDescriptor != null)
+            {
+                services.Remove(walletClientDescriptor);
+            }
+
+            var mockHttp = new MockHttpMessageHandler();
+
+            var fakeWalletId = Guid.NewGuid();
+            var createWalletResponse = new CreateWalletResponse { WalletId = fakeWalletId };
+            var createWalletJson = JsonSerializer.Serialize(createWalletResponse);
+            mockHttp.When(HttpMethod.Post, "http://fake-wallet-service/v1/wallets")
+                .Respond("application/json", createWalletJson);
+
+            var getWalletsResponse = new
+            {
+                result = Array.Empty<WalletRecordDto>(),
+                metadata = new
+                {
+                    count = 0,
+                    offset = 0,
+                    limit = 0,
+                    total = 0
+                }
+            };
+            var getWalletsJson = JsonSerializer.Serialize(getWalletsResponse);
+            mockHttp.When(HttpMethod.Get, "http://fake-wallet-service/v1/wallets")
+                .Respond("application/json", getWalletsJson);
+
+            var fakeClient = mockHttp.ToHttpClient();
+            fakeClient.BaseAddress = new Uri("http://fake-wallet-service/");
+
+            services.AddSingleton<IWalletClient>(_ => new WalletClient(fakeClient));
         });
     }
 
