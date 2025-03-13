@@ -71,10 +71,10 @@ public class TransferEngineUtilityTest
     {
         // Given pending transaction
         var orgId = OrganizationId.Create(Guid.NewGuid());
-        await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now()));
+        await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now()), TestContext.Current.CancellationToken);
 
         // When checking for pending transactions
-        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId);
+        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId, TestContext.Current.CancellationToken);
 
         // Then has pending
         hasPendingTransactions.Should().BeTrue();
@@ -86,10 +86,10 @@ public class TransferEngineUtilityTest
         // Given pending transaction
         var senderOrgId = OrganizationId.Create(Guid.NewGuid());
         var receiverOrgId = OrganizationId.Create(Guid.NewGuid());
-        await _requestStatusRepository.Add(new RequestStatus(senderOrgId, receiverOrgId, Guid.NewGuid(), UnixTimestamp.Now()));
+        await _requestStatusRepository.Add(new RequestStatus(senderOrgId, receiverOrgId, Guid.NewGuid(), UnixTimestamp.Now()), TestContext.Current.CancellationToken);
 
         // When checking for pending transactions
-        var hasPendingTransactions = await _sut.HasPendingTransactions(receiverOrgId);
+        var hasPendingTransactions = await _sut.HasPendingTransactions(receiverOrgId, TestContext.Current.CancellationToken);
 
         // Then has pending
         hasPendingTransactions.Should().BeTrue();
@@ -100,13 +100,13 @@ public class TransferEngineUtilityTest
     {
         // Given pending transaction and updated status
         var orgId = OrganizationId.Create(Guid.NewGuid());
-        await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now().AddMinutes(-3)));
-        var request = (await _requestStatusRepository.GetByOrganization(orgId)).Single();
+        await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now().AddMinutes(-3)), TestContext.Current.CancellationToken);
+        var request = (await _requestStatusRepository.GetByOrganization(orgId, TestContext.Current.CancellationToken)).Single();
         _mockWalletClient.GetRequestStatus(Arg.Is(request.SenderId.Value), Arg.Is(request.RequestId), Arg.Any<CancellationToken>())
             .Returns(EnergyOrigin.WalletClient.RequestStatus.Completed);
 
         // When checking for pending transactions
-        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId);
+        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId, TestContext.Current.CancellationToken);
 
         // Then no pending transactions
         await _mockWalletClient.Received(1).GetRequestStatus(Arg.Is(request.SenderId.Value), Arg.Is(request.RequestId), Arg.Any<CancellationToken>());
@@ -119,10 +119,10 @@ public class TransferEngineUtilityTest
         // Given completed transaction
         var orgId = OrganizationId.Create(Guid.NewGuid());
         await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now().AddDays(-3),
-            Status.Completed));
+            Status.Completed), TestContext.Current.CancellationToken);
 
         // When checking for transaction status
-        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId);
+        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId, TestContext.Current.CancellationToken);
 
         // Then no pending transactions
         await _mockWalletClient.Received(0).GetRequestStatus(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
@@ -134,15 +134,15 @@ public class TransferEngineUtilityTest
     {
         // Given old pending transaction
         var orgId = OrganizationId.Create(Guid.NewGuid());
-        await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now().AddHours(-3)));
+        await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now().AddHours(-3)), TestContext.Current.CancellationToken);
 
         // When checking for transaction status
-        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId);
+        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId, TestContext.Current.CancellationToken);
 
         // Transaction is timed out, and no pending transactions
         await _mockWalletClient.Received(0).GetRequestStatus(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
         hasPendingTransactions.Should().BeFalse();
-        (await _requestStatusRepository.GetByOrganization(orgId)).SingleOrDefault()!.Status.Should().Be(Status.Timeout);
+        (await _requestStatusRepository.GetByOrganization(orgId, TestContext.Current.CancellationToken)).SingleOrDefault()!.Status.Should().Be(Status.Timeout);
     }
 
     [Fact]
@@ -150,14 +150,14 @@ public class TransferEngineUtilityTest
     {
         // Given very old pending transaction
         var orgId = OrganizationId.Create(Guid.NewGuid());
-        await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now().AddDays(-3)));
+        await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now().AddDays(-3)), TestContext.Current.CancellationToken);
 
         // When checking for transaction status
-        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId);
+        var hasPendingTransactions = await _sut.HasPendingTransactions(orgId, TestContext.Current.CancellationToken);
 
         // Transaction is deleted, and no pending transactions
         await _mockWalletClient.Received(0).GetRequestStatus(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
         hasPendingTransactions.Should().BeFalse();
-        (await _requestStatusRepository.GetByOrganization(orgId)).SingleOrDefault().Should().BeNull();
+        (await _requestStatusRepository.GetByOrganization(orgId, TestContext.Current.CancellationToken)).SingleOrDefault().Should().BeNull();
     }
 }

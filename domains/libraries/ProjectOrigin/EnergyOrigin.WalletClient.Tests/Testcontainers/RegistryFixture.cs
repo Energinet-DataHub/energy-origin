@@ -98,7 +98,7 @@ public class RegistryFixture : IAsyncLifetime
             .Build();
     }
 
-    public virtual async Task InitializeAsync()
+    public virtual async ValueTask InitializeAsync()
     {
         await rabbitMqImage.CreateAsync();
         await Network.CreateAsync();
@@ -107,7 +107,7 @@ public class RegistryFixture : IAsyncLifetime
         await registryContainer.StartAsync();
     }
 
-    public virtual async Task DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
         await registryContainer.StopAsync();
         await rabbitMqContainer.StopAsync();

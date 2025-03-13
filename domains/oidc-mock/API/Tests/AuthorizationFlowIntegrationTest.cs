@@ -46,7 +46,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
         };
 
         var requestUri = $"/Connect/Authorize{query}";
-        var authorizeResponse = await client.GetAsync(requestUri);
+        var authorizeResponse = await client.GetAsync(requestUri, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Redirect, authorizeResponse.StatusCode);
         var redirectLocation = authorizeResponse.Headers.Location!.OriginalString;
@@ -54,7 +54,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
         // Follow the redirect to the signin page
 
-        var signinPage = await client.GetAsync(redirectLocation);
+        var signinPage = await client.GetAsync(redirectLocation, TestContext.Current.CancellationToken);
         var signinDocument = await signinPage.GetHtmlDocument();
 
         Assert.Equal(HttpStatusCode.OK, signinPage.StatusCode);
@@ -84,13 +84,13 @@ public class AuthorizationFlowIntegrationTest : IDisposable
             { "grant_type", "authorization_code" },
             { "redirect_uri", redirectUri }
         });
-        var tokenResponse = await client.SendAsync(tokenRequest);
+        var tokenResponse = await client.SendAsync(tokenRequest, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, tokenResponse.StatusCode);
 
         // From the token response, extract id_token and userinfo_token
 
-        var tokenJson = await tokenResponse.Content.ReadAsStringAsync();
+        var tokenJson = await tokenResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var token = JsonDocument.Parse(tokenJson).RootElement;
 
         var idTokenJwt = token.GetProperty("id_token").GetString()!;
@@ -109,8 +109,8 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
         // Get JWK and verify signature
 
-        var jwkResponse = await client.GetAsync(".well-known/openid-configuration/jwks");
-        var jwkSet = JwkSet.FromJson(await jwkResponse.Content.ReadAsStringAsync(), new JsonMapper());
+        var jwkResponse = await client.GetAsync(".well-known/openid-configuration/jwks", TestContext.Current.CancellationToken);
+        var jwkSet = JwkSet.FromJson(await jwkResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken), new JsonMapper());
         var jwk = jwkSet.Keys.Single();
 
         Assert.NotNull(JWT.Decode(idTokenJwt, jwk));
@@ -118,7 +118,7 @@ public class AuthorizationFlowIntegrationTest : IDisposable
 
         // Logout
 
-        var logoutResponse = await client.PostAsync("/api/v1/session/logout", new StringContent(""));
+        var logoutResponse = await client.PostAsync("/api/v1/session/logout", new StringContent(""), TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
     }
 

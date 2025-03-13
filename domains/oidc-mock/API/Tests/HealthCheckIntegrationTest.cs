@@ -15,7 +15,7 @@ public class HealthCheckIntegrationTest
                 .UseEnvironment("Test")
                 .UseSetting(Configuration.UsersFilePathKey, "test-users.json"))
             .CreateClient();
-        var healthResponse = await client.GetAsync("/health");
+        var healthResponse = await client.GetAsync("/health", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, healthResponse.StatusCode);
     }
 }

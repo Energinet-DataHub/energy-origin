@@ -20,7 +20,6 @@ using Newtonsoft.Json;
 using VerifyTests;
 using VerifyXunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
@@ -52,7 +51,7 @@ public class TransferAgreementsControllerTests
         var authenticatedReceiverClient = factory.CreateB2CAuthenticatedClient(receiverSub, receiverOrgId, receiverTin);
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
         var response = await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrgId}",
-            transferAgreement);
+            transferAgreement, TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
@@ -73,7 +72,7 @@ public class TransferAgreementsControllerTests
         var authenticatedReceiverClient = factory.CreateB2CAuthenticatedClient(receiverSub, receiverOrgId, receiverTin);
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
         var response = await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrgId}",
-            transferAgreement);
+            transferAgreement, TestContext.Current.CancellationToken);
 
         // Response is OK, and transfer agreement is created with receiver id
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -99,14 +98,14 @@ public class TransferAgreementsControllerTests
 
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
 
-        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", transferAgreement);
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", transferAgreement, TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var taStr = await response.Content.ReadAsStringAsync();
+        var taStr = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var taDto = JsonConvert.DeserializeObject<TransferAgreementDto>(taStr);
 
-        var get = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/{taDto!.Id}?organizationId={orgId}");
+        var get = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/{taDto!.Id}?organizationId={orgId}", TestContext.Current.CancellationToken);
         get.StatusCode.Should().Be(HttpStatusCode.OK);
-        var taByIdStr = await get.Content.ReadAsStringAsync();
+        var taByIdStr = await get.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var taById = JsonConvert.DeserializeObject<TransferAgreementDto>(taByIdStr);
 
         taById!.ReceiverTin.Should().Be(subjectTin);
@@ -121,7 +120,7 @@ public class TransferAgreementsControllerTests
         var orgId = Guid.NewGuid();
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", transferAgreement);
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", transferAgreement, TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -136,7 +135,7 @@ public class TransferAgreementsControllerTests
         var createdProposalId = await CreateTransferAgreementProposal(orgId, authenticatedClient, proposalRequest);
 
         var request = new CreateTransferAgreement(createdProposalId);
-        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", request);
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", request, TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -164,7 +163,7 @@ public class TransferAgreementsControllerTests
         var receiverClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, tin: receiverTin.Value);
 
         var createRequest = new CreateTransferAgreement(taProposal.Id);
-        var response = await receiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", createRequest);
+        var response = await receiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", createRequest, TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -208,7 +207,7 @@ public class TransferAgreementsControllerTests
         var receiverClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value, tin: receiverTin.Value);
 
         var createSecondConnectionResponse = await receiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}",
-            new CreateTransferAgreement(secondTaProposal.Id));
+            new CreateTransferAgreement(secondTaProposal.Id), TestContext.Current.CancellationToken);
 
         createSecondConnectionResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
@@ -228,11 +227,11 @@ public class TransferAgreementsControllerTests
         var receiverOrgId = Guid.NewGuid();
         var authenticatedReceiverClient = factory.CreateB2CAuthenticatedClient(receiverSub, receiverOrgId, receiverTin);
         await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrgId}",
-            new CreateTransferAgreement(createdProposalId));
+            new CreateTransferAgreement(createdProposalId), TestContext.Current.CancellationToken);
 
         var getProposalResponse =
             await authenticatedReceiverClient.GetAsync(
-                $"api/transfer/transfer-agreement-proposals/{createdProposalId}?organizationId={receiverOrgId}");
+                $"api/transfer/transfer-agreement-proposals/{createdProposalId}?organizationId={receiverOrgId}", TestContext.Current.CancellationToken);
 
         getProposalResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -244,7 +243,7 @@ public class TransferAgreementsControllerTests
         var orgId = Guid.NewGuid();
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", new { });
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", new { }, TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -273,10 +272,10 @@ public class TransferAgreementsControllerTests
         });
 
         var newAuthenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
-        var get = await newAuthenticatedClient.GetAsync($"api/transfer/transfer-agreements/{id}?organizationId={orgId}");
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer/transfer-agreements/{id}?organizationId={orgId}", TestContext.Current.CancellationToken);
         get.EnsureSuccessStatusCode();
 
-        var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync());
+        var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
 
         var settings = new VerifySettings();
         settings.ScrubMembersWithType(typeof(long));
@@ -310,10 +309,10 @@ public class TransferAgreementsControllerTests
             fakeTransferAgreement
         });
 
-        var get = await newAuthenticatedClient.GetAsync($"api/transfer/transfer-agreements/{id}?organizationId={orgId}");
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer/transfer-agreements/{id}?organizationId={orgId}", TestContext.Current.CancellationToken);
         get.EnsureSuccessStatusCode();
 
-        var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync());
+        var getTransferAgreement = JsonConvert.DeserializeObject<TransferAgreementDto>(await get.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
         getTransferAgreement.Should().NotBeNull();
 
         getTransferAgreement.Should().NotBeNull();
@@ -351,7 +350,7 @@ public class TransferAgreementsControllerTests
         var sub = Guid.NewGuid();
         var newAuthenticatedClient = factory.CreateB2CAuthenticatedClient(sub, otherOrgId.Value, "66778899");
 
-        var get = await newAuthenticatedClient.GetAsync($"api/transfer/transfer-agreements/{id}?organizationId={otherOrgId}");
+        var get = await newAuthenticatedClient.GetAsync($"api/transfer/transfer-agreements/{id}?organizationId={otherOrgId}", TestContext.Current.CancellationToken);
         get.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -362,7 +361,7 @@ public class TransferAgreementsControllerTests
         var orgId = Guid.NewGuid();
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/1234?organizationId={orgId}");
+        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/1234?organizationId={orgId}", TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -373,7 +372,7 @@ public class TransferAgreementsControllerTests
         var orgId = Guid.NewGuid();
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/{Guid.NewGuid()}?organizationId={orgId}");
+        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/{Guid.NewGuid()}?organizationId={orgId}", TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -418,7 +417,7 @@ public class TransferAgreementsControllerTests
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(13).ToUnixTimeSeconds());
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
         var response = await authenticatedClient.PutAsync($"api/transfer/transfer-agreements/{transferAgreementId}?organizationId={orgId}",
-            JsonContent.Create(editEndDateRequest));
+            JsonContent.Create(editEndDateRequest), TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
@@ -451,11 +450,11 @@ public class TransferAgreementsControllerTests
 
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
         var response = await authenticatedClient.PutAsync($"api/transfer/transfer-agreements/{transferAgreementId}?organizationId={orgId}",
-            JsonContent.Create(editEndDateRequest));
+            JsonContent.Create(editEndDateRequest), TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var validationProblemContent = await response.Content.ReadAsStringAsync();
+        var validationProblemContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         validationProblemContent.Should().NotBeNullOrEmpty();
     }
@@ -472,7 +471,7 @@ public class TransferAgreementsControllerTests
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
         var response = await authenticatedClient.PutAsync($"api/transfer/transfer-agreements/{transferAgreementId}?organizationId={orgId}",
-            JsonContent.Create(editEndDateRequest));
+            JsonContent.Create(editEndDateRequest), TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -501,7 +500,7 @@ public class TransferAgreementsControllerTests
         var unAuthenticatedClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), Guid.NewGuid());
         var editEndDateRequest = new EditTransferAgreementEndDate(DateTimeOffset.UtcNow.AddDays(5).ToUnixTimeSeconds());
         var response = await unAuthenticatedClient.PutAsync($"api/transfer/transfer-agreements/{transferAgreementId}",
-            JsonContent.Create(editEndDateRequest));
+            JsonContent.Create(editEndDateRequest), TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -560,11 +559,11 @@ public class TransferAgreementsControllerTests
 
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
         var response = await authenticatedClient.PutAsync($"api/transfer/transfer-agreements/{agreementId}?organizationId={orgId}",
-            JsonContent.Create(request));
+            JsonContent.Create(request), TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>();
+        var updatedTransferAgreement = await response.Content.ReadFromJsonAsync<TransferAgreementDto>(TestContext.Current.CancellationToken);
         updatedTransferAgreement.Should().NotBeNull();
         updatedTransferAgreement!.EndDate.Should().Be(newEndDate);
     }
@@ -608,7 +607,7 @@ public class TransferAgreementsControllerTests
 
         var authenticatedClient =
             factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), Guid.NewGuid(), orgIds: $"{senderOrganizationId} {receiverOrganizationId}");
-        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request, TestContext.Current.CancellationToken);
 
         var transferAgreement = dbContext.TransferAgreements.SingleOrDefault(x => x.SenderId == OrganizationId.Create(senderOrganizationId));
 
@@ -654,7 +653,7 @@ public class TransferAgreementsControllerTests
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
 
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), senderOrganizationId, orgIds: $"{receiverOrganizationId}");
-        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request, TestContext.Current.CancellationToken);
 
         var transferAgreement = dbContext.TransferAgreements.SingleOrDefault(x => x.SenderId == OrganizationId.Create(senderOrganizationId));
 
@@ -699,7 +698,7 @@ public class TransferAgreementsControllerTests
         using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
 
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), senderOrganizationId, orgIds: $"{receiverOrganizationId}");
-        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request, TestContext.Current.CancellationToken);
 
         var transferAgreement = dbContext.TransferAgreements.SingleOrDefault(x => x.SenderId == OrganizationId.Create(senderOrganizationId));
 
@@ -764,7 +763,7 @@ public class TransferAgreementsControllerTests
 
         var authenticatedClient = factory.CreateB2CAuthenticatedClient(receiverOrganizationId, senderOrganizationId,
             orgIds: $"{senderOrganizationId}, {receiverOrganizationId}");
-        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request);
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements/create", request, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
@@ -878,10 +877,10 @@ public class TransferAgreementsControllerTests
 
         var authenticatedClient =
             factory.CreateB2CAuthenticatedClient(sub: sub, orgId: orgId.Value, orgIds: consentOrgId.Value.ToString(), tin: tin.Value);
-        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/overview/consent");
+        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/overview/consent", TestContext.Current.CancellationToken);
 
         response.EnsureSuccessStatusCode();
-        var transferAgreements = await response.Content.ReadAsStringAsync();
+        var transferAgreements = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var transferAgreementsResponse = JsonConvert.DeserializeObject<GetTransferAgreementQueryResult>(transferAgreements);
 
         transferAgreementsResponse.Should().NotBeNull();
@@ -982,10 +981,10 @@ public class TransferAgreementsControllerTests
 
         var authenticatedClient =
             factory.CreateB2CAuthenticatedClient(sub: sub, orgId: orgId.Value, orgIds: consentOrgId.Value.ToString(), tin: tin.Value);
-        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/overview?organizationId={orgId}");
+        var response = await authenticatedClient.GetAsync($"api/transfer/transfer-agreements/overview?organizationId={orgId}", TestContext.Current.CancellationToken);
 
         response.EnsureSuccessStatusCode();
-        var transferAgreements = await response.Content.ReadAsStringAsync();
+        var transferAgreements = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var transferAgreementsResponse = JsonConvert.DeserializeObject<GetTransferAgreementQueryResult>(transferAgreements);
 
         transferAgreementsResponse.Should().NotBeNull();
@@ -1048,7 +1047,7 @@ public class TransferAgreementsControllerTests
             factory.CreateB2CAuthenticatedClient(anySub, anyOrgId, anyTin, orgIds: $"{senderOrganizationId}, {receiverOrganizationId}");
         var transferAgreement = new CreateTransferAgreement(createdProposalId);
         var response = await authenticatedReceiverClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={receiverOrganizationId}",
-            transferAgreement);
+            transferAgreement, TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         using var scope = factory.Services.CreateScope();

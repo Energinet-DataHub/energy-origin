@@ -18,7 +18,7 @@ public class RuleExtensionsTests
         var now = DateTimeOffset.UtcNow;
         var nowInUnixTimeSeconds = now.ToUnixTimeSeconds();
 
-        var result = await validator.TestValidateAsync(new TestClass { Timestamp = nowInUnixTimeSeconds });
+        var result = await validator.TestValidateAsync(new TestClass { Timestamp = nowInUnixTimeSeconds }, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldNotHaveValidationErrorFor(cc => cc.Timestamp);
     }
@@ -32,7 +32,7 @@ public class RuleExtensionsTests
         var now = DateTimeOffset.UtcNow;
         var nowInUnitTimeMilliseconds = now.ToUnixTimeMilliseconds();
 
-        var result = await validator.TestValidateAsync(new TestClass { Timestamp = nowInUnitTimeMilliseconds });
+        var result = await validator.TestValidateAsync(new TestClass { Timestamp = nowInUnitTimeMilliseconds }, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldHaveValidationErrorFor(cc => cc.Timestamp);
     }
@@ -45,7 +45,7 @@ public class RuleExtensionsTests
 
         const long januaryFirstYear10000 = 253402300800L;
 
-        var result = await validator.TestValidateAsync(new TestClass { Timestamp = januaryFirstYear10000 });
+        var result = await validator.TestValidateAsync(new TestClass { Timestamp = januaryFirstYear10000 }, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldHaveValidationErrorFor(cc => cc.Timestamp);
     }
@@ -65,7 +65,7 @@ public class RuleExtensionsTests
         var validator = new InlineValidator<TestClass>();
         validator.RuleFor(c => c.GSRN).MustBeValidGsrn();
 
-        var result = await validator.TestValidateAsync(new TestClass { GSRN = invalidGsrn! });
+        var result = await validator.TestValidateAsync(new TestClass { GSRN = invalidGsrn! }, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldHaveValidationErrorFor(cc => cc.GSRN);
     }
@@ -77,7 +77,7 @@ public class RuleExtensionsTests
         var validator = new InlineValidator<TestClass>();
         validator.RuleFor(c => c.GSRN).MustBeValidGsrn();
 
-        var result = await validator.TestValidateAsync(new TestClass { GSRN = validGsrn });
+        var result = await validator.TestValidateAsync(new TestClass { GSRN = validGsrn }, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldNotHaveValidationErrorFor(cc => cc.GSRN);
     }

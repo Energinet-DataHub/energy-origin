@@ -37,11 +37,11 @@ namespace API.IntegrationTests.Controllers.Internal
             using var clientForInternalCalls = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
             // Act
-            var response = await clientForInternalCalls.GetAsync("/api/certificates/admin-portal/internal-contracts");
+            var response = await clientForInternalCalls.GetAsync("/api/certificates/admin-portal/internal-contracts", TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var contractsResponse = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>();
+            var contractsResponse = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(contractsResponse);
             Assert.Empty(contractsResponse.Result);
             Assert.IsType<ContractsForAdminPortalResponse>(contractsResponse);
@@ -73,15 +73,15 @@ namespace API.IntegrationTests.Controllers.Internal
                 }
             ]);
 
-            await userCreatesAContract.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", insertedIntoDb);
+            await userCreatesAContract.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", insertedIntoDb, cancellationToken: TestContext.Current.CancellationToken);
 
             // Act
             var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
-            using var response = await adminPortalClient.GetAsync("api/certificates/admin-portal/internal-contracts");
+            using var response = await adminPortalClient.GetAsync("api/certificates/admin-portal/internal-contracts", TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var internalContractsApiResponse = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>();
+            var internalContractsApiResponse = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>(cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(internalContractsApiResponse);
             Assert.NotEmpty(internalContractsApiResponse.Result);
             Assert.Equal(internalContractsApiResponse.Result.First().GSRN, insertedIntoDb.Contracts[0].GSRN);

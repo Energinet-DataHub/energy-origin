@@ -26,11 +26,11 @@ public class GetClientQueryTest
     {
         var client = Any.Client();
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Clients.AddAsync(client);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Clients.AddAsync(client, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         var response = await _api.GetClient(client.IdpClientId.Value);
         response.Should().Be200Ok();
-        var content = await response.Content.ReadFromJsonAsync<ClientResponse>();
+        var content = await response.Content.ReadFromJsonAsync<ClientResponse>(TestContext.Current.CancellationToken);
         content!.IdpClientId.Should().Be(client.IdpClientId.Value);
         content.Name.Should().Be(client.Name.Value);
         content.RedirectUrl.Should().Be(client.RedirectUrl);

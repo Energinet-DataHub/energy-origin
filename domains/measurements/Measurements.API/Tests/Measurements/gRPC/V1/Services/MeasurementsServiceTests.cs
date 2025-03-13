@@ -14,6 +14,7 @@ using VerifyXunit;
 using FluentAssertions;
 using VerifyTests;
 using System.Globalization;
+using System.Threading;
 using API.Measurements.Helpers;
 
 namespace Tests.Measurements.gRPC.V1.Services;
@@ -40,7 +41,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
 
         var mockedResponse = GenerateMeterTimeSeriesResponse(dateOfReading: dateFrom.AddDays(1).ToString("yyyy-MM-dd"));
 
-        clientMock.GetMeterTimeSeriesAsync(Arg.Any<MeterTimeSeriesRequest>())
+        clientMock.GetMeterTimeSeriesAsync(Arg.Any<MeterTimeSeriesRequest>(), cancellationToken: Arg.Any<CancellationToken>())
             .Returns(mockedResponse);
         _serverFixture.ConfigureTestServices += services =>
         {
@@ -59,7 +60,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
             DateTo = dateTo.ToUnixTimeSeconds(),
         };
 
-        var response = await client.GetMeasurementsAsync(request);
+        var response = await client.GetMeasurementsAsync(request, cancellationToken: TestContext.Current.CancellationToken);
 
         response.Should().NotBeNull();
         var settings = new VerifySettings();
@@ -90,7 +91,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
 
         var mockedResponse = GenerateMeterTimeSeriesResponse(quantities: quantities, dateOfReading: dateFrom.ToString("yyyy-MM-dd"));
 
-        clientMock.GetMeterTimeSeriesAsync(Arg.Any<MeterTimeSeriesRequest>())
+        clientMock.GetMeterTimeSeriesAsync(Arg.Any<MeterTimeSeriesRequest>(), cancellationToken: Arg.Any<CancellationToken>())
             .Returns(mockedResponse);
         _serverFixture.ConfigureTestServices += services =>
         {
@@ -109,7 +110,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
             DateTo = dateTo.ToUnixTimeSeconds(),
         };
 
-        var response = await client.GetMeasurementsAsync(request);
+        var response = await client.GetMeasurementsAsync(request, cancellationToken: TestContext.Current.CancellationToken);
 
         response.Should().NotBeNull();
         response.Measurements.Count.Should().Be(4);
@@ -183,7 +184,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
 
         var clientMock = Substitute.For<Metertimeseries.V1.MeterTimeSeries.MeterTimeSeriesClient>();
 
-        clientMock.GetMeterTimeSeriesAsync(Arg.Any<MeterTimeSeriesRequest>())
+        clientMock.GetMeterTimeSeriesAsync(Arg.Any<MeterTimeSeriesRequest>(), cancellationToken: Arg.Any<CancellationToken>())
             .Returns(mockedResponse);
         _serverFixture.ConfigureTestServices += services =>
         {
@@ -202,7 +203,7 @@ public class MeasurementsServiceTests : MeasurementsTestBase, IDisposable
             DateTo = dateTo.ToUnixTimeSeconds(),
         };
 
-        var response = await client.GetMeasurementsAsync(request);
+        var response = await client.GetMeasurementsAsync(request, cancellationToken: TestContext.Current.CancellationToken);
 
         response.Should().NotBeNull();
         response.Measurements.Count.Should().Be(48);

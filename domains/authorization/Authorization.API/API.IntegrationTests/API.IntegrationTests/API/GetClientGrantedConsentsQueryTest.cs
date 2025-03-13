@@ -36,14 +36,14 @@ public class GetClientGrantedConsentsQueryTest
         var organizationWithClient = Any.OrganizationWithClient(client: client);
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
-        await dbContext.OrganizationConsents.AddAsync(consent);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organizationWithClient, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(consent, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // When
         var response = await _api.GetClientConsents();
-        var result = await response.Content.ReadFromJsonAsync<ClientConsentsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<ClientConsentsResponse>(TestContext.Current.CancellationToken);
 
         // Then
         response.Should().Be200Ok();
@@ -62,14 +62,14 @@ public class GetClientGrantedConsentsQueryTest
         var organization = Any.Organization();
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
-        await dbContext.Organizations.AddAsync(organizationWithClient);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.OrganizationConsents.AddAsync(consent);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(organizationWithClient, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(consent, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // When
         var response = await _api.GetClientConsents();
-        var result = await response.Content.ReadFromJsonAsync<ClientConsentsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<ClientConsentsResponse>(TestContext.Current.CancellationToken);
 
         // Then
         response.Should().Be200Ok();

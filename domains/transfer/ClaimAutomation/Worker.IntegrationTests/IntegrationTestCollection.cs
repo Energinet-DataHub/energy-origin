@@ -21,7 +21,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         PostgresContainer = new PostgresContainer();
     }
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await PostgresContainer.InitializeAsync();
 
@@ -31,7 +31,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         ClaimAutomationWorker.Start();
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await ClaimAutomationWorker.DisposeAsync();
         await PostgresContainer.DisposeAsync();

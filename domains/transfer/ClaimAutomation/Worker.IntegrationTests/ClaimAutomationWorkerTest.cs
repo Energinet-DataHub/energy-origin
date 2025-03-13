@@ -37,7 +37,7 @@ public class ClaimAutomationWorkerTest
         await WaitForMigrations();
         await InsertClaimAutomationArgument();
 
-        var timeoutTask = Task.Delay(TimeSpan.FromMinutes(1));
+        var timeoutTask = Task.Delay(TimeSpan.FromMinutes(1), TestContext.Current.CancellationToken);
         await Task.WhenAny(timeoutTask, taskCompletedSource.Task);
 
         workerRunningTask.IsCompleted.Should().BeTrue();

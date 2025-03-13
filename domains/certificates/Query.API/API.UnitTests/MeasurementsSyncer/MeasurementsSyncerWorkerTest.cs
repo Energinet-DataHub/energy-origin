@@ -66,10 +66,10 @@ public class MeasurementsSyncerWorkerTest
 
         // Run worker and wait for completion or timeout
         var workerTask = _worker.StartAsync(tokenSource.Token);
-        await Task.WhenAny(workerTask, Task.Delay(TimeSpan.FromMinutes(2)));
+        await Task.WhenAny(workerTask, Task.Delay(TimeSpan.FromMinutes(2), cancellationToken: TestContext.Current.CancellationToken));
 
         // Assert no timeout and no data fetched
         Assert.True(workerTask.IsCompleted);
-        _ = _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        _ = _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: TestContext.Current.CancellationToken);
     }
 }

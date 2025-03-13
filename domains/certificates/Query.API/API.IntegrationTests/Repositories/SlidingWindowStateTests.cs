@@ -66,7 +66,7 @@ public class SlidingWindowStateTests
         await using (var dbContext = new ApplicationDbContext(_options))
         {
             dbContext.MeteringPointTimeSeriesSlidingWindows.Add(position);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
         await using var newDbContext = new ApplicationDbContext(_options);
@@ -87,7 +87,7 @@ public class SlidingWindowStateTests
         await using (var dbContext = new ApplicationDbContext(_options))
         {
             dbContext.MeteringPointTimeSeriesSlidingWindows.Add(position);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
         await using var newDbContext = new ApplicationDbContext(_options);
@@ -109,10 +109,10 @@ public class SlidingWindowStateTests
 
         await using var dbContext = new ApplicationDbContext(_options);
         dbContext.MeteringPointTimeSeriesSlidingWindows.Add(slidingWindow);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         await using var newDbContext = new ApplicationDbContext(_options);
-        var fetchedSlidingWindow = await newDbContext.MeteringPointTimeSeriesSlidingWindows.FirstAsync();
+        var fetchedSlidingWindow = await newDbContext.MeteringPointTimeSeriesSlidingWindows.FirstAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Single(fetchedSlidingWindow.MissingMeasurements.Intervals);
         Assert.Equal(missingInterval.First().From, fetchedSlidingWindow.MissingMeasurements.Intervals[0].From);
@@ -134,7 +134,7 @@ public class SlidingWindowStateTests
 
         await using var dbContext = new ApplicationDbContext(_options);
         dbContext.MeteringPointTimeSeriesSlidingWindows.Add(slidingWindow);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         List<Measurement> measurements =
         [

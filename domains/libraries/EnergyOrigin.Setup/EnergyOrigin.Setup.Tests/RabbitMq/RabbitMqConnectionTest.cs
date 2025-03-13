@@ -40,19 +40,19 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         var builder = ConfigureWebAppBuilder(databaseInfo);
         await using var app = builder.Build();
         app.MapDefaultHealthChecks();
-        await app.StartAsync();
+        await app.StartAsync(TestContext.Current.CancellationToken);
 
         // Health check is not ok
         await WaitForHealthEndpointResponse(HttpStatusCode.ServiceUnavailable);
 
         // When starting RabbitMQ
-        await _rabbitMqContainer.StartAsync();
+        await _rabbitMqContainer.StartAsync(TestContext.Current.CancellationToken);
 
         // Health check becomes ok
         await WaitForHealthEndpointResponse(HttpStatusCode.OK);
 
         // When stopping RabbitMQ
-        await _rabbitMqContainer.StopAsync();
+        await _rabbitMqContainer.StopAsync(TestContext.Current.CancellationToken);
 
         // Health check still ok
         await WaitForHealthEndpointResponse(HttpStatusCode.OK);
@@ -62,25 +62,25 @@ public class RabbitMqConnectionTest : IAsyncLifetime
     public async Task GivenMassTransitConfig_WhenSendingMessages_MessagesAreSentAndReceivedWhenRabbitMqConnectivityIsUp()
     {
         // Given application stack with active message producer
-        await _rabbitMqContainer.StartAsync();
+        await _rabbitMqContainer.StartAsync(TestContext.Current.CancellationToken);
         var databaseInfo = await StartPostgresDatabase();
         var builder = ConfigureWebAppBuilder(databaseInfo);
         builder.Services.AddHostedService<TestMessageProducer>();
         await using var app = builder.Build();
         app.MapDefaultHealthChecks();
-        await app.StartAsync();
+        await app.StartAsync(TestContext.Current.CancellationToken);
 
         // Health check is ok
         await WaitForHealthEndpointResponse(HttpStatusCode.OK);
 
         // When stopping RabbitMq
-        await _rabbitMqContainer.StopAsync();
+        await _rabbitMqContainer.StopAsync(TestContext.Current.CancellationToken);
 
         // Message producer should still be able to send messages
         await TestMessageProducer.MessagesSentTask;
 
         // When starting RabbitMq again
-        await _rabbitMqContainer.StartAsync();
+        await _rabbitMqContainer.StartAsync(TestContext.Current.CancellationToken);
 
         // Messages should be consumed
         await WaitForMessagesConsumed();
@@ -217,13 +217,13 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         }
     }
 
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         // Do nothing
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await _postgresContainer.DisposeAsync();
         await _rabbitMqContainer.DisposeAsync();

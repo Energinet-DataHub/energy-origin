@@ -15,7 +15,7 @@ public class CreateContractValidatorTests
 
         var now = DateTimeOffset.UtcNow;
         var result = await validator.TestValidateAsync(new CreateContract
-        { GSRN = "123456789032432", StartDate = now.ToUnixTimeSeconds() });
+        { GSRN = "123456789032432", StartDate = now.ToUnixTimeSeconds() }, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldNotHaveValidationErrorFor(cc => cc.StartDate);
     }
@@ -29,7 +29,7 @@ public class CreateContractValidatorTests
         var utcMidnight = now.Subtract(now.TimeOfDay);
 
         var result = await validator.TestValidateAsync(new CreateContract
-        { GSRN = "123456789032432", StartDate = utcMidnight.ToUnixTimeSeconds() });
+        { GSRN = "123456789032432", StartDate = utcMidnight.ToUnixTimeSeconds() }, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldNotHaveValidationErrorFor(cc => cc.StartDate);
     }
@@ -44,7 +44,7 @@ public class CreateContractValidatorTests
 
         var result =
             await validator.TestValidateAsync(new CreateContract
-            { GSRN = "123456789032432", StartDate = justBeforeUtcMidnight.ToUnixTimeSeconds() });
+            { GSRN = "123456789032432", StartDate = justBeforeUtcMidnight.ToUnixTimeSeconds() }, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldHaveValidationErrorFor(cc => cc.StartDate);
     }

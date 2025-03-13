@@ -20,12 +20,12 @@ public class PostgresContainer : IAsyncLifetime
 
     public string ConnectionString => TestContainer.GetConnectionString();
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await TestContainer.StartAsync();
     }
 
-    public Task DisposeAsync() => TestContainer.DisposeAsync().AsTask();
+    public ValueTask DisposeAsync() => TestContainer.DisposeAsync();
 
     public async Task<DatabaseInfo> CreateNewDatabase()
     {

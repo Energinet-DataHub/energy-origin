@@ -34,8 +34,8 @@ public class CreateClientTest
 
         // When
         var response = await _api.CreateClient(idpClientId, "Test Client", ClientType.Internal, "http://localhost:5000");
-        var client = await response.Content.ReadFromJsonAsync<CreateClientResponse>(_api.SerializerOptions);
-        var dbClient = await dbContext.Clients.FirstOrDefaultAsync(x => x.IdpClientId == new IdpClientId(idpClientId));
+        var client = await response.Content.ReadFromJsonAsync<CreateClientResponse>(_api.SerializerOptions, TestContext.Current.CancellationToken);
+        var dbClient = await dbContext.Clients.FirstOrDefaultAsync(x => x.IdpClientId == new IdpClientId(idpClientId), TestContext.Current.CancellationToken);
 
         // Then
         response.Should().Be201Created();
@@ -53,9 +53,9 @@ public class CreateClientTest
         Guid idpClientId = Guid.NewGuid();
 
         var response = await _api.CreateClient(idpClientId, "Test Client", ClientType.Internal, "http://localhost:5000");
-        var client = await response.Content.ReadFromJsonAsync<CreateClientResponse>(_api.SerializerOptions);
-        var dbClient = await dbContext.Clients.FirstOrDefaultAsync(x => x.IdpClientId == new IdpClientId(idpClientId));
-        var dbOrganization = await dbContext.Organizations.FirstOrDefaultAsync(o => o.Id == dbClient!.OrganizationId);
+        var client = await response.Content.ReadFromJsonAsync<CreateClientResponse>(_api.SerializerOptions, TestContext.Current.CancellationToken);
+        var dbClient = await dbContext.Clients.FirstOrDefaultAsync(x => x.IdpClientId == new IdpClientId(idpClientId), TestContext.Current.CancellationToken);
+        var dbOrganization = await dbContext.Organizations.FirstOrDefaultAsync(o => o.Id == dbClient!.OrganizationId, TestContext.Current.CancellationToken);
 
         response.Should().Be201Created();
         client!.Id.Should().Be(dbClient!.Id);
