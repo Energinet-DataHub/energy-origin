@@ -13,18 +13,16 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AuthorizationFlowTests
+public class AuthorizationFlowTests : IntegrationTestBase
 {
     private readonly Api _api;
-    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AuthorizationFlowTests(IntegrationTestFixture integrationTestFixture)
+    public AuthorizationFlowTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
-        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        var newDatabaseInfo = Fixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-        _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: _integrationTestFixture.WebAppFactory
+        _api = Fixture.WebAppFactory.CreateApi(sub: Fixture.WebAppFactory
             .IssuerIdpClientId.ToString());
     }
 
@@ -52,7 +50,7 @@ public class AuthorizationFlowTests
         var consentResponse1 = await _api.GetConsentForUser(request);
 
         // When
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.Sub.ToString(), orgCvr: user.OrgCvr,
+        var userApi = Fixture.WebAppFactory.CreateApi(sub: user.Sub.ToString(), orgCvr: user.OrgCvr,
             orgName: user.OrgName, termsAccepted: false);
         var termsResponse = await userApi.AcceptTerms();
         var consentResponse2 = await _api.GetConsentForUser(request);

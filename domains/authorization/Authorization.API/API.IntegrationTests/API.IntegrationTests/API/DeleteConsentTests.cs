@@ -9,19 +9,17 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class DeleteConsentTests
+public class DeleteConsentTests : IntegrationTestBase
 {
     private readonly Api _api;
-    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public DeleteConsentTests(IntegrationTestFixture integrationTestFixture)
+    public DeleteConsentTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
-        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        var newDatabaseInfo = Fixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
 
-        _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.WebAppFactory.CreateApi();
+        _api = Fixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
@@ -42,7 +40,7 @@ public class DeleteConsentTests
         await dbContext.OrganizationConsents.AddAsync(consent);
         await dbContext.SaveChangesAsync();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var userClient = Fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
 
         // When
         var response = await userClient.DeleteConsent(consent.Id);
@@ -73,7 +71,7 @@ public class DeleteConsentTests
         await dbContext.OrganizationConsents.AddAsync(consent);
         await dbContext.SaveChangesAsync();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: userOrganization.Tin!.Value);
+        var userClient = Fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: userOrganization.Tin!.Value);
 
         // When
         var response = await userClient.DeleteConsent(consent.Id);
@@ -95,7 +93,7 @@ public class DeleteConsentTests
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var userClient = Fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
 
         var randomGuidClientId = Guid.NewGuid();
 
@@ -133,7 +131,7 @@ public class DeleteConsentTests
 
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
+        var userClient = Fixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
 
         // When
         var response = await userClient.DeleteConsent(consent2.Id);
@@ -162,7 +160,7 @@ public class DeleteConsentTests
         await dbContext.Affiliations.AddAsync(affiliation);
         await dbContext.SaveChangesAsync();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
+        var userClient = Fixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var consentListResponse = await userClient.GetUserOrganizationConsents();
         consentListResponse.Should().Be200Ok();
 

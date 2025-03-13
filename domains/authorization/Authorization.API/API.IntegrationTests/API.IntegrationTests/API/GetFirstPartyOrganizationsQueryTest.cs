@@ -9,17 +9,17 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetFirstPartyOrganizationsTest
+public class GetFirstPartyOrganizationsTest : IntegrationTestBase
 {
     private readonly Api _api;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetFirstPartyOrganizationsTest(IntegrationTestFixture integrationTestFixture)
+    public GetFirstPartyOrganizationsTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
-        var connectionString = integrationTestFixture.WebAppFactory.ConnectionString;
+        var connectionString = Fixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(connectionString).Options;
 
-        _api = integrationTestFixture.WebAppFactory.CreateApi(sub: integrationTestFixture.WebAppFactory.AdminPortalEnterpriseAppRegistrationObjectId);
+        _api = Fixture.WebAppFactory.CreateApi(sub: Fixture.WebAppFactory.AdminPortalEnterpriseAppRegistrationObjectId);
     }
 
     [Fact]
