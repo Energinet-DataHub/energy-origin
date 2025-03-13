@@ -11,8 +11,8 @@
     <PackageReference Include="Testcontainers" Version="4.3.0" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.3.0" />
     <PackageReference Include="Testcontainers.RabbitMq" Version="3.10.0" />
-    <PackageReference Include="xunit.v3.assert" Version="2.0.0" />
-    <PackageReference Include="xunit.v3.extensibility.core" Version="2.0.0" />
+    <PackageReference Include="xunit.v3.assert" Version="1.1.0" />
+    <PackageReference Include="xunit.v3.extensibility.core" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
