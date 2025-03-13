@@ -1,8 +1,6 @@
-using DotNet.Testcontainers.Builders;
 using EnergyTrackAndTrace.Testing.Testcontainers;
-using Testcontainers.PostgreSql;
-using Npgsql;
 using Respawn;
+using Npgsql;
 using Respawn.Graph;
 
 namespace API.IntegrationTests.Setup;
@@ -15,61 +13,52 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 
 public class IntegrationTestFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
-        .WithImage("postgres:latest")
-        .WithDatabase("db")
-        .WithUsername("postgres")
-        .WithPassword("postgres")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready"))
-        .WithCleanUp(true)
-        .Build();
-
+    public PostgresContainer PostgresContainer { get; } = new();
     public ProjectOriginStack ProjectOriginStack { get; } = new();
     public RabbitMqContainer RabbitMqContainer { get; } = new();
 
-    public string ConnectionString { get; private set; } = null!;
-
     public TestWebApplicationFactory WebAppFactory { get; private set; } = null!;
+
+    private DatabaseInfo? _databaseInfo;
 
     private Respawner? _respawner;
 
     public async Task InitializeAsync()
     {
-        await _postgresContainer.StartAsync();
-        ConnectionString = _postgresContainer.GetConnectionString();
-
+        await PostgresContainer.InitializeAsync();
         await ProjectOriginStack.InitializeAsync();
         await RabbitMqContainer.InitializeAsync();
+
+        _databaseInfo = await PostgresContainer.CreateNewDatabase();
 
         WebAppFactory = new TestWebApplicationFactory
         {
             WalletUrl = ProjectOriginStack.WalletUrl,
-            ConnectionString = ConnectionString,
+            ConnectionString = _databaseInfo.ConnectionString,
         };
         WebAppFactory.SetRabbitMqOptions(RabbitMqContainer.Options);
-        await WebAppFactory.InitializeAsync(); // e.g. runs EF migrations etc.
+        await WebAppFactory.InitializeAsync();
 
-        using var conn = new NpgsqlConnection(ConnectionString);
-        await conn.OpenAsync();
+        await using var connection = new NpgsqlConnection(_databaseInfo.ConnectionString);
+        await connection.OpenAsync();
 
-        _respawner = await Respawner.CreateAsync(conn, new RespawnerOptions
+        _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
         {
-            DbAdapter = DbAdapter.Postgres,
-
             TablesToIgnore = new Table[]
             {
                 "__EFMigrationsHistory",
                 "Terms"
-            }
+            },
+            DbAdapter = DbAdapter.Postgres,
         });
     }
 
     public async Task DisposeAsync()
     {
         await WebAppFactory.DisposeAsync();
-        await RabbitMqContainer.DisposeAsync();
+        await PostgresContainer.DisposeAsync();
         await ProjectOriginStack.DisposeAsync();
-        await _postgresContainer.DisposeAsync();
+        await RabbitMqContainer.DisposeAsync();
     }
 
     public async Task ResetDatabaseAsync()
@@ -77,8 +66,11 @@ public class IntegrationTestFixture : IAsyncLifetime
         if (_respawner is null)
             throw new InvalidOperationException("Respawner not initialized yet.");
 
-        using var conn = new NpgsqlConnection(ConnectionString);
-        await conn.OpenAsync();
-        await _respawner.ResetAsync(conn);
+        if (_databaseInfo is null)
+            throw new InvalidOperationException("No test database was created.");
+
+        await using var connection = new NpgsqlConnection(_databaseInfo.ConnectionString);
+        await connection.OpenAsync();
+        await _respawner.ResetAsync(connection);
     }
 }
