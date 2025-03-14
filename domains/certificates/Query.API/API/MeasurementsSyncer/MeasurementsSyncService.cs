@@ -61,12 +61,17 @@ public class MeasurementsSyncService
 
         if (mpRelations == null)
         {
-            _logger.LogError("Something went wrong when getting relations for Gsrn: {gsrn}", slidingWindow.GSRN);
+            _logger.LogError("Something went wrong when getting relations for Gsrn: {Gsrn}", slidingWindow.GSRN);
             return;
         }
+        foreach (var rejection in mpRelations.Rejections)
+        {
+            _logger.LogError("Relation rejection detected! Gsrn: {Gsrn}, ErrorCode: {ErrorCode}, ErrorDetailName: {ErrorDetailName}, ErrorDetailValue: {ErrorDetailValue}", rejection.MeteringPointId, rejection.ErrorCode, rejection.ErrorDetailName, rejection.ErrorDetailValue);
+        }
+
         if (!mpRelations.Relations.HasValidRelationForGsrn(gsrn))
         {
-            _logger.LogInformation("{GSRN} does not have a valid relation.", slidingWindow.GSRN);
+            _logger.LogError("{Gsrn} does not have a valid relation.", slidingWindow.GSRN);
             return;
         }
 
