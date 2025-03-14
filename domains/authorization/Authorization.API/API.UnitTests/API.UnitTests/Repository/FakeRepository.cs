@@ -1,7 +1,7 @@
 using API.Models;
 using API.Repository;
 using EnergyOrigin.Setup.Exceptions;
-using MockQueryable.EntityFrameworkCore;
+using MockQueryable;
 
 namespace API.UnitTests.Repository;
 
