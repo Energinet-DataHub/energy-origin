@@ -11,6 +11,16 @@ public class ClientCollection
         _clients = clients;
     }
 
+    public (bool isValid, string validationError) Validate(string? redirectUri)
+    {
+        var result = _clients.FirstOrDefault(client => client.Validate(redirectUri).isValid);
+        if (result is not null)
+        {
+            return (true, "");
+        }
+        return (false, "No client validated redirect url");
+    }
+
     public (bool isValid, string validationError) Validate(string? clientId, string? redirectUri)
     {
         var client = FindClientFromClientId(clientId);

@@ -2,14 +2,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
+using OpenTelemetry;
 using Proxy;
 using Proxy.Options;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -21,7 +22,6 @@ builder.Services.AddSwaggerGen(c =>
     c.IgnoreObsoleteActions();
     c.DocumentFilter<WalletTagDocumentFilter>();
 });
-
 
 builder.Services.AddApiVersioning(options =>
     {
@@ -38,6 +38,16 @@ builder.Services.AddApiVersioning(options =>
         options.GroupNameFormat = "VVV";
         options.SubstituteApiVersionInUrl = true;
     });
+
+builder.AddSerilogWithoutOutboxLogs();
+
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+
+var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
+var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
+
+builder.Services.AddOpenTelemetryMetricsAndTracing("Proxy", otlpOptions.ReceiverEndpoint);
 
 var proxyOptions = builder.Configuration.GetSection(ProxyOptions.Prefix).Get<ProxyOptions>()!;
 builder.Services.AddOptions<ProxyOptions>()

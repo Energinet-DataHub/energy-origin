@@ -73,7 +73,7 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IWall
 
             await UnitOfWork.SaveAsync();
 
-            return new CreateTransferAgreementCommandResult(result.Id, result.SenderTin.Value, result.SenderName.Value,
+            return new CreateTransferAgreementCommandResult(result.Id, result.SenderName.Value, result.SenderTin.Value,
                 result.ReceiverTin.Value, result.StartDate.EpochSeconds, result.EndDate?.EpochSeconds, result.Type);
         }
         catch (DbUpdateException)
