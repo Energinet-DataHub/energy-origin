@@ -63,14 +63,15 @@ public sealed class CertificateIssuingTests : TestBase
             .ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(
                 new ListMeteringPointForCustomerCaResponse
                 {
-                    Result =
+                    Relations =
                     [
                         new()
                         {
                             MeteringPointId = gsrn.Value,
                             ValidFromDate = DateTime.Now.AddHours(-1)
                         }
-                    ]
+                    ],
+                    Rejections = []
                 });
         factory.DataHubFacadeClient = dataHubFacadeClientMock;
 

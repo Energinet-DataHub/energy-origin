@@ -64,7 +64,7 @@ public class MeasurementsSyncService
             _logger.LogError("Something went wrong when getting relations for Gsrn: {gsrn}", slidingWindow.GSRN);
             return;
         }
-        if (!mpRelations.Result.HasValidRelationForGsrn(gsrn))
+        if (!mpRelations.Relations.HasValidRelationForGsrn(gsrn))
         {
             _logger.LogInformation("{GSRN} does not have a valid relation.", slidingWindow.GSRN);
             return;
