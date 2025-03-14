@@ -8,9 +8,10 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Clients.DataHub3;
+using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.Query.API.ApiModels.Requests;
 using Asp.Versioning.ApiExplorer;
 using DataContext;
@@ -45,11 +46,14 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     private HttpClient? client;
     public string ConnectionString { get; set; } = "";
     public string MeasurementsUrl { get; set; } = "http://foo";
+    public string DataHub3Url { get; set; } = "http://dh3";
+    public string DataHubFacadeUrl { get; set; } = "http://dhfacade";
     public string WalletUrl { get; set; } = "bar";
     public string StampUrl { get; set; } = "baz";
     public string RegistryName { get; set; } = "TestRegistry";
     public bool MeasurementsSyncEnabled { get; set; } = false;
-    public Measurements.V1.Measurements.MeasurementsClient? measurementsClient { get; set; } = null;
+    public IDataHub3Client? DataHub3Client { get; set; } = null;
+    public IDataHubFacadeClient? DataHubFacadeClient { get; set; } = null;
     public Meteringpoint.V1.Meteringpoint.MeteringpointClient? MeteringpointClient { get; set; } = null;
 
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
@@ -72,6 +76,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Wallet:Url", WalletUrl);
         builder.UseSetting("Stamp:Url", StampUrl);
         builder.UseSetting("Stamp:RegistryName", RegistryName);
+        builder.UseSetting("DataHub3:Url", DataHub3Url);
+        builder.UseSetting("DataHubFacade:Url", DataHubFacadeUrl);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");
@@ -108,10 +114,16 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             if (!MeasurementsSyncEnabled)
                 services.Remove(services.First(s => s.ImplementationType == typeof(MeasurementsSyncerWorker)));
 
-            if (measurementsClient != null)
+            if (DataHub3Client != null)
             {
-                services.Remove(services.First(s => s.ServiceType == typeof(Measurements.V1.Measurements.MeasurementsClient)));
-                services.AddSingleton(measurementsClient);
+                services.Remove(services.First(s => s.ServiceType == typeof(IDataHub3Client)));
+                services.AddSingleton(DataHub3Client);
+            }
+
+            if (DataHubFacadeClient != null)
+            {
+                services.Remove(services.First(s => s.ServiceType == typeof(IDataHubFacadeClient)));
+                services.AddSingleton(DataHubFacadeClient);
             }
 
             if (MeteringpointClient != null)

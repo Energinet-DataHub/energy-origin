@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using API.MeasurementsSyncer;
+using API.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using FluentAssertions;
-using Measurements.V1;
 using Meteringpoint.V1;
 using Xunit;
 
@@ -56,7 +56,7 @@ public class EnergyMeasuredIntegrationEventMapperTest
         evt.Address.CityName.Should().NotBeEmpty();
         evt.Address.Postcode.Should().NotBeEmpty();
         evt.Address.StreetName.Should().NotBeEmpty();
-        evt.Quantity.Should().Be(measurement.Quantity);
+        evt.Quantity.Should().Be(measurement.Quantity.ToWattHours());
         evt.DateFrom.Should().Be(measurement.DateFrom);
         evt.DateTo.Should().Be(measurement.DateTo);
         evt.MeterType.Should().Be(syncInfo.MeteringPointType == MeteringPointType.Consumption ? MeterType.Consumption : MeterType.Production);

@@ -1,12 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
 using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Clients.DataHub3;
+using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.ValueObjects;
-using Measurements.V1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,7 +30,6 @@ public class MeasurementsSyncerWorkerTest
         Guid.NewGuid(),
         new Technology("T12345", "T54321"));
 
-    private readonly Measurements.V1.Measurements.MeasurementsClient _fakeClient = Substitute.For<Measurements.V1.Measurements.MeasurementsClient>();
     private readonly ILogger<MeasurementsSyncerWorker> _fakeLogger = Substitute.For<ILogger<MeasurementsSyncerWorker>>();
     private readonly ILogger<MeasurementsSyncService> _syncServiceFakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly IServiceScopeFactory _scopeFactory = Substitute.For<IServiceScopeFactory>();
@@ -40,12 +41,14 @@ public class MeasurementsSyncerWorkerTest
     private readonly MeasurementsSyncerWorker _worker;
     private readonly IMeasurementSyncPublisher _fakeMeasurementPublisher = Substitute.For<IMeasurementSyncPublisher>();
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
+    private readonly IDataHub3Client _dataHub3Client = Substitute.For<IDataHub3Client>();
+    private readonly IDataHubFacadeClient _dataHubFacadeClient = Substitute.For<IDataHubFacadeClient>();
 
     public MeasurementsSyncerWorkerTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
-        var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, _fakeClient, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, _options);
+        var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, new SlidingWindowService(measurementSyncMetrics),
+            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, _options, _dataHub3Client, _dataHubFacadeClient);
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
         _serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);
@@ -70,6 +73,6 @@ public class MeasurementsSyncerWorkerTest
 
         // Assert no timeout and no data fetched
         Assert.True(workerTask.IsCompleted);
-        _ = _fakeClient.DidNotReceive().GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>());
+        _ = _dataHub3Client.DidNotReceive().GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
     }
 }

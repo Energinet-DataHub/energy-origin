@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using EnergyOrigin.WalletClient;
-using ProjectOriginClients;
 
 namespace API.ContractService;
 
@@ -12,6 +11,7 @@ public static class Startup
 {
     public static void AddContractService(this IServiceCollection services)
     {
+        services.AddMeasurementsOptions();
         services.AddScoped<IContractService, ContractServiceImpl>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();

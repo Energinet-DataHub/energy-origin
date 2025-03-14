@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
+using API.Models;
 using API.UnitTests;
 using DataContext;
 using DataContext.Models;
@@ -13,7 +14,6 @@ using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Migrations;
 using FluentAssertions;
-using Measurements.V1;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -171,12 +171,11 @@ public class SlidingWindowStateTests
     {
         return new Measurement
         {
-            Quality = EnergyQuantityValueQuality.Measured,
+            Quality = EnergyQuality.Measured,
             DateFrom = from,
             DateTo = to,
             Gsrn = gsrn.Value,
-            Quantity = quantity,
-            QuantityMissing = false
+            Quantity = quantity
         };
     }
 

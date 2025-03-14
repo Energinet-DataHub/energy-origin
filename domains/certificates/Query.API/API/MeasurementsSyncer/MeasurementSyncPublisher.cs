@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Models;
 using MassTransit;
-using Measurements.V1;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
 
