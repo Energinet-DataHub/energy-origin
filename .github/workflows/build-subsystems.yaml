@@ -13,111 +13,123 @@ on:
         type: string
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      admin-portal: ${{ steps.admin-portal.outputs.matches }}
-      authorization: ${{ steps.authorization.outputs.matches }}
-      certificates: ${{ steps.certificates.outputs.matches }}
-      measurements: ${{ steps.measurements.outputs.matches }}
-      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
-      openapi: ${{ steps.openapi.outputs.matches }}
-      transfer: ${{ steps.transfer.outputs.matches }}
-    steps:
-      - uses: actions/checkout@v4
-
   dotnet-lint-solution:
-    needs: setup
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run dotnet lint
+      - name: Run dotnet format
         uses: ./.github/actions/dotnet-lint-solution
         with:
           path: "domains"
 
   test-subsystems:
+    name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        subsystem: [transfer, admin-portal, authorization, Measurements, certificates, oidc-mock]
+        subsystem: [transfer, admin-portal, authorization, measurements, certificates, oidc-mock]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
 
-      - name: Test ${{ matrix.subsystem }} subsystem
+      - name: ${{ format('{0}{1}', upper(substring(matrix.subsystem, 0, 1)), substring(matrix.subsystem, 1)) }}
         uses: ./.github/actions/dotnet-validate-solution
         with:
           subsystem: ${{ matrix.subsystem }}
           pin-version: "true"
 
-  build-admin-portal:
-    uses: ./.github/workflows/build-admin-portal.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+  build-images:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - subsystem: admin-portal
+            solution: domains/admin-portal/AdminPortal.sln
+            project: domains/admin-portal/AdminPortal.Web/AdminPortal/AdminPortal.csproj
+            configuration: domains/admin-portal/AdminPortal.Web/configuration.yaml
 
-  build-authorization:
-    needs: setup
-    uses: ./.github/workflows/build-authorization.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          # Authorization
+          - subsystem: authorization
+            solution: Authorization.sln
+            project: domains/authorization/Authorization.API/API/API.csproj
+            configuration: domains/authorization/Authorization.API/configuration.yaml
+            name: Authorization.API
 
-  build-certificates:
-    needs: setup
-    uses: ./.github/workflows/build-certificates.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          - subsystem: authorization
+            solution: Authorization.sln
+            project: domains/authorization/Proxy/Proxy.csproj
+            configuration: domains/authorization/Proxy/configuration.yaml
+            name: Authorization.Proxy
 
-  build-measurements:
-    needs: setup
-    uses: ./.github/workflows/build-measurements.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          # Certificates
+          - subsystem: certificates
+            solution: Certificates.sln
+            project: domains/certificates/Query.API/API/API.csproj
+            configuration: domains/certificates/Query.API/configuration.yaml
+            name: Query.API
 
-  build-oidc-mock:
-    needs: setup
-    uses: ./.github/workflows/build-oidc-mock.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+          # Measurements
+          - subsystem: measurements
+            solution: Measurements.sln
+            project: domains/measurements/Measurements.API/API/API.csproj
+            configuration: domains/measurements/Measurements.API/configuration.yaml
+            name: Measurements.API
 
+          # OIDC Mock
+          - subsystem: oidc-mock
+            solution: Oidc.Mock.sln
+            project: domains/oidc-mock/API/API.csproj
+            configuration: domains/oidc-mock/API/configuration.yaml
+            name: Oidc.Mock.API
+
+          # Transfer
+          - subsystem: transfer
+            solution: Transfer.sln
+            project: domains/transfer/Transfer.API/API/API.csproj
+            configuration: domains/transfer/Transfer.API/configuration.yaml
+            name: Transfer.API
+
+          - subsystem: transfer
+            solution: Transfer.sln
+            project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
+            configuration: domains/transfer/ClaimAutomation/configuration.yaml
+            name: ClaimAutomation.Worker
+
+          - subsystem: transfer
+            solution: Transfer.sln
+            project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
+            configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
+            name: TransferAutomation.Worker
+      fail-fast: false
+
+  # redoc
   build-openapi:
-    needs: setup
     uses: ./.github/workflows/build-openapi.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
-  build-transfer:
-    needs: setup
-    uses: ./.github/workflows/build-transfer.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ${{ matrix.project }}
+        uses: ./.github/actions/dotnet-build
+        with:
+          solution: ${{ matrix.solution }}
+          project: ${{ matrix.project }}
+          configuration: ${{ matrix.configuration }}
+          dry-run: ${{ inputs.dry-run }}
 
   update:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
       - dotnet-lint-solution
-      - build-admin-portal
-      - build-authorization
-      - build-certificates
-      - build-measurements
-      - build-oidc-mock
+      - test-subsystems
       - build-openapi
-      - build-transfer
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
