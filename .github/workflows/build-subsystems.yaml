@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: ${{ matrix.subsystem }}
+      - name: ${{ format('{0}{1}', toUpper(substring(matrix.subsystem, 0, 1)), substring(matrix.subsystem, 1)) }}
         uses: ./.github/actions/dotnet-validate-solution
         with:
           subsystem: ${{ matrix.subsystem }}
