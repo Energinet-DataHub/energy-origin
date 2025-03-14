@@ -25,7 +25,7 @@ public class ContractStateTest
 
     public ContractStateTest(IntegrationTestFixture integrationTestFixture)
     {
-        _dbContextFactoryMock = new DbContextFactoryMock(integrationTestFixture.PostgresContainer);
+        _dbContextFactoryMock = new DbContextFactoryMock(integrationTestFixture.PostgresDatabase);
         var options = Options.Create(new MeasurementsSyncOptions() { MinimumAgeThresholdHours = _minimumAgeThresholdHours });
         _sut = new ContractState(_dbContextFactoryMock, NullLogger<ContractState>.Instance, options);
     }

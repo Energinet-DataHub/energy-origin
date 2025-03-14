@@ -7,7 +7,7 @@ using Xunit;
 
 namespace EnergyTrackAndTrace.Testing.Testcontainers;
 
-public class PostgresContainer : IAsyncLifetime
+internal class PostgresContainer : IAsyncLifetime
 {
     public PostgreSqlContainer TestContainer { get; } = new PostgreSqlBuilder()
         .WithImage("postgres:latest")

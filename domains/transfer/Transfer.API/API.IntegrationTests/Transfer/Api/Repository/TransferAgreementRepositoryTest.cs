@@ -18,7 +18,7 @@ public class TransferAgreementRepositoryTest
 
     public TransferAgreementRepositoryTest(IntegrationTestFixture integrationTestFixture)
     {
-        var newDatabaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().Result;
+        var newDatabaseInfo = integrationTestFixture.PostgresDatabase.CreateNewDatabase().Result;
         options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo.ConnectionString).Options;
         new DbMigrator(newDatabaseInfo.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync()
             .Wait();

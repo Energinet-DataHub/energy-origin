@@ -13,7 +13,7 @@ namespace Worker.IntegrationTest;
 
 public class TransferAutomationApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgresContainer postgresContainer = new();
+    private readonly PostgresDatabase postgresDatabase = new();
 
     public HttpClient CreateUnauthenticatedClient()
     {
@@ -28,7 +28,7 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
 
         var connectionStringBuilder = new DbConnectionStringBuilder
         {
-            ConnectionString = postgresContainer.ConnectionString
+            ConnectionString = postgresDatabase.CreateNewDatabase().Result.ConnectionString
         };
         builder.UseSetting("Database:Host", (string)connectionStringBuilder["Host"]);
         builder.UseSetting("Database:Port", (string)connectionStringBuilder["Port"]);
@@ -42,7 +42,7 @@ public class TransferAutomationApplicationFactory : WebApplicationFactory<Progra
         });
     }
 
-    public Task InitializeAsync() => postgresContainer.InitializeAsync();
+    public Task InitializeAsync() => postgresDatabase.InitializeAsync();
 
-    async Task IAsyncLifetime.DisposeAsync() => await postgresContainer.DisposeAsync();
+    async Task IAsyncLifetime.DisposeAsync() => await postgresDatabase.DisposeAsync();
 }

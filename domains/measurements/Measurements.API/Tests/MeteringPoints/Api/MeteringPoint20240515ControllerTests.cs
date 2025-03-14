@@ -23,13 +23,13 @@ using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 
 namespace Tests.MeteringPoints.Api;
 
-public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>, IClassFixture<PostgresContainer>
+public class MeteringPoint20240515ControllerTests : IClassFixture<CustomMeterPointWebApplicationFactory<Startup>>, IClassFixture<PostgresDatabase>
 {
     private readonly CustomMeterPointWebApplicationFactory<Startup> _factory;
 
-    public MeteringPoint20240515ControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory, PostgresContainer postgresContainer)
+    public MeteringPoint20240515ControllerTests(CustomMeterPointWebApplicationFactory<Startup> factory, PostgresDatabase postgresDatabase)
     {
-        var databaseInfo = postgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
+        var databaseInfo = postgresDatabase.CreateNewDatabase().GetAwaiter().GetResult();
         new DbMigrator(databaseInfo.ConnectionString, typeof(Startup).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
         factory.ConnectionString = databaseInfo.ConnectionString;
         _factory = factory;

@@ -27,7 +27,7 @@ public class SlidingWindowStateTests
 
     public SlidingWindowStateTests(IntegrationTestFixture integrationTestFixture)
     {
-        var databaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
+        var databaseInfo = integrationTestFixture.PostgresDatabase.CreateNewDatabase().GetAwaiter().GetResult();
         new DbMigrator(databaseInfo.ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(databaseInfo.ConnectionString).Options;
     }

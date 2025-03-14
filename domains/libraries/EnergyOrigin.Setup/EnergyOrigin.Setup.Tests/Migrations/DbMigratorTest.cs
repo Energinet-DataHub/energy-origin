@@ -6,12 +6,12 @@ using Xunit;
 
 namespace EnergyOrigin.Setup.Tests.Migrations;
 
-public class DbMigratorTest : IClassFixture<PostgresContainer>
+public class DbMigratorTest : IClassFixture<PostgresDatabase>
 {
     private readonly DatabaseInfo _databaseInfo;
     private readonly DbMigrator _dbMigrator;
 
-    public DbMigratorTest(PostgresContainer postgresContainer)
+    public DbMigratorTest(PostgresDatabase postgresContainer)
     {
         _databaseInfo = postgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
         _dbMigrator = new DbMigrator(_databaseInfo.ConnectionString, typeof(DbMigratorTest).Assembly, NullLogger<DbMigrator>.Instance);
