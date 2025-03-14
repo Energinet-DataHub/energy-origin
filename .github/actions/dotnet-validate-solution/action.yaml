@@ -47,11 +47,6 @@ runs:
           exit 1
         fi
 
-    - name: Setup dotnet
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.SDK }}
-
     - name: Create dynamic solution file
       shell: bash
       run: |

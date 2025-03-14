@@ -15,16 +15,12 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    outputs:
-      admin-portal: ${{ steps.admin-portal.outputs.matches }}
-      authorization: ${{ steps.authorization.outputs.matches }}
-      certificates: ${{ steps.certificates.outputs.matches }}
-      measurements: ${{ steps.measurements.outputs.matches }}
-      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
-      openapi: ${{ steps.openapi.outputs.matches }}
-      transfer: ${{ steps.transfer.outputs.matches }}
     steps:
       - uses: actions/checkout@v4
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.102
 
   dotnet-lint-solution:
     needs: setup
@@ -37,6 +33,7 @@ jobs:
           path: "domains"
 
   test-subsystems:
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       matrix:
