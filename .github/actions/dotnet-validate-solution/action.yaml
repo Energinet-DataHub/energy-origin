@@ -67,4 +67,4 @@ runs:
         DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "true"
         TERM: "xterm"
         version: ""
-      run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=minimal" /p:ParallelizeAssemblies=true /p:ParallelizeTestCollections=true
+      run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=minimal" -p:ParallelizeAssembly=true -p:ParallelizeTestCollections=true
