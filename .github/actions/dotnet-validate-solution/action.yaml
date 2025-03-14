@@ -21,32 +21,6 @@ runs:
   using: composite
 
   steps:
-    - name: Load SDK version from global.json
-      shell: bash
-      id: load-sdk
-      run: |
-        DIRECTORY="domains/${{ inputs.subsystem }}"
-        test -f "$DIRECTORY/global.json" || echo "No global.json found in $DIRECTORY"
-        if [ -f "$DIRECTORY/global.json" ]; then
-          echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" >> $GITHUB_ENV
-          echo "DIRECTORY=$DIRECTORY" >> $GITHUB_ENV
-        fi
-
-    - name: Overwrite SDK version if provided
-      shell: bash
-      run: |
-        if [ ! -z "${{ inputs.sdk-version }}" ]; then
-          echo "SDK=${{ inputs.sdk-version }}" >> $GITHUB_ENV
-        fi
-
-    - name: Fail if SDK version is not present
-      shell: bash
-      run: |
-        if [ -z "${{ env.SDK }}" ]; then
-          echo "No SDK version found in global.json and none provided as input"
-          exit 1
-        fi
-
     - name: Create dynamic solution file
       shell: bash
       run: |
@@ -63,20 +37,6 @@ runs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
-
-    - name: Pin version
-      working-directory: ${{ env.DIRECTORY }}
-      shell: bash
-      if: ${{ inputs.pin-version == 'true' }}
-      run: printf '{"sdk":{"rollForward":"disable","version":"%s"}}' "${{ env.SDK }}" > global.json
-
-    - name: Print dotnet version
-      shell: bash
-      run: dotnet --version
-
-    - name: Print dotnet information
-      shell: bash
-      run: dotnet --info
 
     - name: Restore
       shell: bash
