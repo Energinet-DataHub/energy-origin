@@ -11,20 +11,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class GetConsentTests
+public class GetConsentTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>
 {
     private readonly Api _api;
-    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetConsentTests(IntegrationTestFixture integrationTestFixture)
+    public GetConsentTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
-        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        var newDatabaseInfo = Fixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
 
-        _integrationTestFixture = integrationTestFixture;
-        _api = integrationTestFixture.WebAppFactory.CreateApi();
+        _api = Fixture.WebAppFactory.CreateApi();
     }
 
     [Fact]
@@ -34,7 +31,7 @@ public class GetConsentTests
         var (idpUserId, tin) = await SeedData();
 
         // When
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString(), orgCvr: tin.Value);
+        var userClient = Fixture.WebAppFactory.CreateApi(sub: idpUserId.Value.ToString(), orgCvr: tin.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
         // Then
@@ -93,7 +90,7 @@ public class GetConsentTests
         // When
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
+        var userClient = Fixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: organization1.Tin!.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
         // Then
@@ -132,10 +129,10 @@ public class GetConsentTests
 
         await dbContext.SaveChangesAsync();
 
-        var userClient1 = _integrationTestFixture.WebAppFactory.CreateApi(sub: user1.IdpUserId.Value.ToString());
+        var userClient1 = Fixture.WebAppFactory.CreateApi(sub: user1.IdpUserId.Value.ToString());
         var response1 = await userClient1.GetUserOrganizationConsents();
 
-        var userClient2 = _integrationTestFixture.WebAppFactory.CreateApi(sub: user2.IdpUserId.Value.ToString());
+        var userClient2 = Fixture.WebAppFactory.CreateApi(sub: user2.IdpUserId.Value.ToString());
         var response2 = await userClient2.GetUserOrganizationConsents();
 
         response1.Should().Be200Ok();
@@ -173,7 +170,7 @@ public class GetConsentTests
         // When
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: userOrganization.Tin!.Value);
+        var userClient = Fixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: userOrganization.Tin!.Value);
         var response = await userClient.GetUserOrganizationConsents();
 
         // Then
@@ -212,7 +209,7 @@ public class GetConsentTests
         // When
         var userIdString = user.IdpUserId.Value.ToString();
 
-        var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: userOrganization.Tin!.Value);
+        var userClient = Fixture.WebAppFactory.CreateApi(sub: userIdString, orgCvr: userOrganization.Tin!.Value);
         var response = await userClient.GetUserOrganizationReceivedConsents();
 
         // Then

@@ -10,17 +10,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.Controllers;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class TermsControllerTests
+public class TermsControllerTests : IntegrationTestBase, IClassFixture<IntegrationTestFixture>
 {
-    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public TermsControllerTests(IntegrationTestFixture integrationTestFixture)
+    public TermsControllerTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
-        var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
+        var newDatabaseInfo = Fixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-        _integrationTestFixture = integrationTestFixture;
     }
 
     [Fact]
@@ -37,7 +34,7 @@ public class TermsControllerTests
         var terms = context.Terms.First();
         var orgCvr = Tin.Create("12345678");
 
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: orgCvr.Value, termsAccepted: false);
+        var userApi = Fixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: orgCvr.Value, termsAccepted: false);
 
         var response = await userApi.AcceptTerms();
 
@@ -71,7 +68,7 @@ public class TermsControllerTests
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
         await SeedOrganizationAndUser(organization, user);
 
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value,
+        var userApi = Fixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value,
             termsAccepted: false);
 
         var response = await userApi.AcceptTerms();
@@ -109,7 +106,7 @@ public class TermsControllerTests
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
         await SeedOrganizationAndUser(organization, user);
 
-        var userApi = _integrationTestFixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString(), termsAccepted: true);
+        var userApi = Fixture.WebAppFactory.CreateApi(sub: Any.Guid().ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString(), termsAccepted: true);
 
         // When
         var response = await userApi.RevokeTerms();

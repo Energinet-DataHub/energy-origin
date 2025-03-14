@@ -7,6 +7,8 @@ using API.Models;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.RabbitMq;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Testing;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -24,7 +26,13 @@ namespace API.IntegrationTests.Setup;
 public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     internal string ConnectionString { get; set; } = "";
-    internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
+    internal RabbitMqOptions RabbitMqOptions { get; set; } = new()
+    {
+        Host = "localhost",
+        Port = 5672,
+        Username = "guest",
+        Password = "guest"
+    };
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
     public readonly string AdminPortalEnterpriseAppRegistrationObjectId = "d216b90b-3872-498a-bc18-4941a0f4398e";
     public string WalletUrl { get; set; } = "";
@@ -34,10 +42,19 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
         builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", AdminPortalEnterpriseAppRegistrationObjectId);
         builder.UseSetting("MitID:URI", "https://pp.netseidbroker.dk/op");
-        builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
+        builder.UseSetting("ProjectOrigin:WalletUrl", "http://fake-wallet-address/");
 
         builder.ConfigureTestServices(services =>
         {
+            var descriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(IWalletClient));
+
+            if (descriptor != null)
+            {
+                services.Remove(descriptor);
+            }
+
+            services.AddTransient<IWalletClient, MockWalletClient>();
             services.RemoveDbContext<ApplicationDbContext>();
             services.AddDbContext<ApplicationDbContext>(options => { options.UseNpgsql(ConnectionString); });
 
@@ -50,6 +67,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
                 options.Username = RabbitMqOptions.Username;
                 options.Password = RabbitMqOptions.Password;
             });
+            SetRabbitMqOptions(RabbitMqOptions);
         });
     }
 

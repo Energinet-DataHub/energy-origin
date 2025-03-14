@@ -26,7 +26,7 @@ using OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (args.Contains("--migrate"))
+if (args.Contains("--migrate") && !builder.Configuration["SkipMigrations"]!.Equals("true", StringComparison.OrdinalIgnoreCase))
 {
     builder.AddSerilogWithoutOutboxLogs();
     var migrateApp = builder.Build();
