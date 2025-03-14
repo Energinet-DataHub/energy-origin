@@ -13,14 +13,15 @@ on:
         type: string
 
 jobs:
-
   build-api:
+    name: Build Query.API
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/certificates/Certificates.sln
+          solution: Certificates.sln
           project: domains/certificates/Query.API/API/API.csproj
           configuration: domains/certificates/Query.API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
