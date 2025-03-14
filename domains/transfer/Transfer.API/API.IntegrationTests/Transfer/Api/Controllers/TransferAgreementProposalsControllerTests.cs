@@ -525,6 +525,25 @@ public class TransferAgreementProposalsControllerTests
     }
 
     [Fact]
+    public async Task GivenTransferAgreementProposalWithoutReceiver_WhenDeleting_ShouldDelete()
+    {
+        // Given TA proposal
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var request = new CreateTransferAgreementProposal(UnixTimestamp.Now().AddMinutes(1).EpochSeconds, UnixTimestamp.Now().AddDays(1).EpochSeconds, null);
+        var postResponse = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreement-proposals?organizationId={orgId}", request);
+        postResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdProposal = await postResponse.Content.ReadFromJsonAsync<TransferAgreementProposalResponse>();
+
+        // When deleting
+        var receiverOrgId = Guid.NewGuid();
+        var receiverAuthenticatedClient = factory.CreateB2CAuthenticatedClient(sub, receiverOrgId);
+        var deleteResponse = await receiverAuthenticatedClient.DeleteAsync($"api/transfer/transfer-agreement-proposals/{createdProposal!.Id}?organizationId={receiverOrgId}");
+
+        // Should be deleted
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
     public async Task GivenTransferAgreementProposal_WhenDeletingAsSender_ShouldDelete()
     {
         // Given TA proposal
