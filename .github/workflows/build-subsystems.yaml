@@ -36,6 +36,21 @@ jobs:
         with:
           path: "domains"
 
+  test-subsystems:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        subsystem: [transfer, admin-portal, authorization, Measurements, certificates, oidc-mock]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test ${{ matrix.subsystem }} subsystem
+        uses: ./.github/actions/dotnet-validate-solution
+        with:
+          subsystem: ${{ matrix.subsystem }}
+          pin-version: "true"
+
   build-admin-portal:
     uses: ./.github/workflows/build-admin-portal.yaml
     secrets: inherit

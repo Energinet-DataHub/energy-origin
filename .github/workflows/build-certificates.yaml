@@ -13,28 +13,6 @@ on:
         type: string
 
 jobs:
-  test:
-    name: Test Certificates Subsystem
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-
-      - name: Create dynamic solution file for Certificates
-        shell: bash
-        run: |
-          rm -f EnergyTrackAndTrace.sln
-          dotnet new sln -n Certificates
-          find domains/certificates -name '*.csproj' | while read project; do
-            dotnet sln Certificates.sln add "$project"
-          done
-
-      - uses: ./.github/actions/dotnet-test
-        with:
-          solution: Certificates.sln
-
   build-api:
     name: Build Query.API
     runs-on: ubuntu-latest
