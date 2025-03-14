@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        subsystem: [transfer, admin-portal, authorization, Measurements, certificates, oidc-mock]
+        subsystem: [transfer, admin-portal, authorization, measurements, certificates, oidc-mock]
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
