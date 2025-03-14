@@ -13,14 +13,15 @@ on:
         type: string
 
 jobs:
-  
   build-api:
-    runs-on: ubuntu-latest
+    name: Build Measurements.API
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/measurements/Measurements.sln
+          solution: Measurements.sln
           project: domains/measurements/Measurements.API/API/API.csproj
           configuration: domains/measurements/Measurements.API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
