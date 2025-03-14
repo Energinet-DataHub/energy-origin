@@ -39,6 +39,14 @@ jobs:
           subsystem: ${{ matrix.subsystem }}
           pin-version: "true"
 
+  # redoc
+  build-openapi:
+    uses: ./.github/workflows/build-openapi.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
   build-images:
     name: Build
     runs-on: ubuntu-latest
@@ -103,14 +111,6 @@ jobs:
             configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
             name: TransferAutomation.Worker
       fail-fast: false
-
-  # redoc
-  build-openapi:
-    uses: ./.github/workflows/build-openapi.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
 
     steps:
       - uses: actions/checkout@v4
