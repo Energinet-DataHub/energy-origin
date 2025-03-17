@@ -178,7 +178,7 @@ public class MeasurementsSyncService
             }
 
             // DH3 should not return measurements after newSyncPoint, but just in case
-            return measurements.Where(m => m.DateTo <= newSyncPoint.EpochSeconds).ToList();
+            return measurements.Where(m => m.DateFrom >= dateFrom && m.DateTo <= newSyncPoint.EpochSeconds).ToList();
         }
 
         return new();
