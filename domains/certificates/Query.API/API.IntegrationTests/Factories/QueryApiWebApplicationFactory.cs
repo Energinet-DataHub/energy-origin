@@ -48,6 +48,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string MeasurementsUrl { get; set; } = "http://foo";
     public string DataHub3Url { get; set; } = "http://dh3";
     public string DataHubFacadeUrl { get; set; } = "http://dhfacade";
+    public string DataHubFacadeGrpcUrl { get; set; } = "http://dhfacadegrpc";
     public string WalletUrl { get; set; } = "bar";
     public string StampUrl { get; set; } = "baz";
     public string RegistryName { get; set; } = "TestRegistry";
@@ -68,7 +69,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("ConnectionStrings:Postgres", ConnectionString);
         builder.UseSetting("Measurements:Url", MeasurementsUrl);
         builder.UseSetting("Measurements:GrpcUrl", "http://foo");
-        builder.UseSetting("MeteringPoint:GrpcUrl", "http://foo");
         builder.UseSetting("MeasurementsSync:Disabled", "false");
         builder.UseSetting("MeasurementsSync:SleepType", "EveryThirdSecond");
         builder.UseSetting("MeasurementsSync:MinimumAgeThresholdHours", "0");
@@ -78,6 +78,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Stamp:RegistryName", RegistryName);
         builder.UseSetting("DataHub3:Url", DataHub3Url);
         builder.UseSetting("DataHubFacade:Url", DataHubFacadeUrl);
+        builder.UseSetting("DataHubFacade:GrpcUrl", DataHubFacadeGrpcUrl);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
         builder.UseSetting("RabbitMq:Username", RabbitMqOptions?.Username ?? "");
         builder.UseSetting("RabbitMq:Host", RabbitMqOptions?.Host ?? "localhost");

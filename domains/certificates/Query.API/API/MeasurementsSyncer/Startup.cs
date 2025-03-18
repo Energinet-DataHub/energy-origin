@@ -14,7 +14,6 @@ public static class Startup
     public static void AddMeasurementsSyncer(this IServiceCollection services)
     {
         services.MeasurementsSyncOptions();
-        services.AddMeteringPointsOptions();
         services.AddDataHub3Options();
         services.AddDataHubFacadeOptions();
 
@@ -30,7 +29,7 @@ public static class Startup
 
         services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
         {
-            var options = sp.GetRequiredService<IOptions<MeteringPointOptions>>().Value;
+            var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
             o.Address = new Uri(options.GrpcUrl);
         });
 

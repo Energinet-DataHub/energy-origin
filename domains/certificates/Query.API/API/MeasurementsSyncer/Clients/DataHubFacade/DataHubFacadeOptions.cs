@@ -9,6 +9,9 @@ public class DataHubFacadeOptions
 
     [Required]
     public string Url { get; set; } = "";
+
+    [Required]
+    public string GrpcUrl { get; set; } = "";
 }
 
 public static class OptionsExtensions
