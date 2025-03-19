@@ -77,6 +77,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Stamp:Url", StampUrl);
         builder.UseSetting("Stamp:RegistryName", RegistryName);
         builder.UseSetting("DataHub3:Url", DataHub3Url);
+        builder.UseSetting("DataHub3:EnableMock", "true");
         builder.UseSetting("DataHubFacade:Url", DataHubFacadeUrl);
         builder.UseSetting("DataHubFacade:GrpcUrl", DataHubFacadeGrpcUrl);
         builder.UseSetting("RabbitMq:Password", RabbitMqOptions?.Password ?? "");
