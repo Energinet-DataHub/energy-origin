@@ -17,6 +17,9 @@ public static class Startup
         services.AddDataHub3Options();
         services.AddDataHubFacadeOptions();
 
+        services.AddTransient<ITokenService, TokenService>();
+        services.AddTransient<AuthHeaderHandler, AuthHeaderHandler>();
+
         services.AddScoped<MeasurementsSyncService>();
         services.AddScoped<SlidingWindowService>();
         services.AddScoped<ISlidingWindowState, SlidingWindowState>();
@@ -43,6 +46,7 @@ public static class Startup
         {
             var options = sp.GetRequiredService<IOptions<DataHub3Options>>().Value;
             client.BaseAddress = new Uri(options.Url);
-        });
+            client.Timeout = TimeSpan.FromSeconds(300); // Databricks can autoscale under high load, which can take a long time. So this is so we don't lose the call if that happens.
+        }).AddHttpMessageHandler<AuthHeaderHandler>();
     }
 }

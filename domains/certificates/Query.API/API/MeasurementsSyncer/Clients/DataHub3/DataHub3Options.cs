@@ -8,6 +8,15 @@ public class DataHub3Options
 
     [Required]
     public string Url { get; set; } = "";
+    public string? TokenUrl { get; set; } = null!;
+
+
+    public string? ClientId { get; set; } = null!;
+    public string? ClientSecret { get; set; } = null!;
+    public string? Scope { get; set; } = null!;
+
+    [Required]
+    public bool EnableMock { get; set; } = false;
 }
 
 public static class OptionsExtensions
