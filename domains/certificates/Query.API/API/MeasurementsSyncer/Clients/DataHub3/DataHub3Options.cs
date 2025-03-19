@@ -13,7 +13,6 @@ public class DataHub3Options
 
     public string? ClientId { get; set; } = null!;
     public string? ClientSecret { get; set; } = null!;
-    public string? Scope { get; set; } = null!;
 
     [Required]
     public bool EnableMock { get; set; } = false;
