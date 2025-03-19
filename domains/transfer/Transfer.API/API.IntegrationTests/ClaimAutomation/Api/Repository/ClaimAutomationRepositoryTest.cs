@@ -21,7 +21,7 @@ public class ClaimAutomationRepositoryTest(PostgresContainer container) : IClass
         var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
 
         dbContext.ClaimAutomationArguments.Add(claimAutomationArgument);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         dbContext.ClaimAutomationArguments.Add(claimAutomationArgument);
         dbContext.Invoking(db => db.SaveChanges()).Should().Throw<DbUpdateException>();

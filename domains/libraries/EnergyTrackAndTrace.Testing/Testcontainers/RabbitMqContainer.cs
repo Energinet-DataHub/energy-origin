@@ -23,12 +23,12 @@ public class RabbitMqContainer : IAsyncLifetime
 
     public RabbitMqOptions Options => RabbitMqOptions.FromConnectionString(_rabbitMqContainer.GetConnectionString());
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await _rabbitMqContainer.StartAsync();
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await _rabbitMqContainer.DisposeAsync();
     }

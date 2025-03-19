@@ -209,7 +209,7 @@ public class AdminPortalTests
         var factory = new TestWebApplicationFactory();
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/ett-admin-portal/ActiveContracts");
+        var response = await client.GetAsync("/ett-admin-portal/ActiveContracts", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -220,8 +220,8 @@ public class AdminPortalTests
         var factory = new TestWebApplicationFactory();
         var client = factory.CreateAuthenticatedClient<GeneralUser>(new WebApplicationFactoryClientOptions(), 12345);
 
-        var response = await client.GetAsync("/ett-admin-portal/ActiveContracts");
-        var body = await response.Content.ReadAsStringAsync();
+        var response = await client.GetAsync("/ett-admin-portal/ActiveContracts", TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         Assert.Contains("Active Contracts", body);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

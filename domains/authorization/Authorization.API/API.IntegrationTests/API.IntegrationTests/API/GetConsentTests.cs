@@ -39,7 +39,7 @@ public class GetConsentTests
 
         // Then
         response.Should().Be200Ok();
-        var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
+        var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>(TestContext.Current.CancellationToken);
         result!.Result.Should().NotBeEmpty();
         var firstResult = result.Result.First();
         firstResult.ConsentId.Should().NotBeEmpty();
@@ -59,7 +59,7 @@ public class GetConsentTests
 
         response.Should().Be200Ok();
 
-        var deserializedResponse = await response.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>();
+        var deserializedResponse = await response.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>(TestContext.Current.CancellationToken);
 
         deserializedResponse!.Result.Should().BeEmpty();
     }
@@ -79,7 +79,7 @@ public class GetConsentTests
 
         await using var dbContext = new ApplicationDbContext(_options);
 
-        await dbContext.Users.AddAsync(user);
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
         await dbContext.Organizations.AddRangeAsync([organization1, organization2, organizationWithClient1, organizationWithClient2]);
 
         var affiliation1 = Affiliation.Create(user, organization1);
@@ -88,7 +88,7 @@ public class GetConsentTests
         await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
         await dbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // When
         var userIdString = user.IdpUserId.Value.ToString();
@@ -99,7 +99,7 @@ public class GetConsentTests
         // Then
         response.Should().Be200Ok();
 
-        var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
+        var result = await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>(TestContext.Current.CancellationToken);
 
         result!.Result.Count.Should().Be(1);
         var firstResult = result.Result.First();
@@ -121,16 +121,16 @@ public class GetConsentTests
 
         await using var dbContext = new ApplicationDbContext(_options);
         await dbContext.Users.AddRangeAsync(user1, user2);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organizationWithClient, TestContext.Current.CancellationToken);
 
         var affiliation1 = Affiliation.Create(user1, organization);
         var affiliation2 = Affiliation.Create(user2, organization);
 
         await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
-        await dbContext.OrganizationConsents.AddAsync(consent);
+        await dbContext.OrganizationConsents.AddAsync(consent, TestContext.Current.CancellationToken);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var userClient1 = _integrationTestFixture.WebAppFactory.CreateApi(sub: user1.IdpUserId.Value.ToString());
         var response1 = await userClient1.GetUserOrganizationConsents();
@@ -141,8 +141,8 @@ public class GetConsentTests
         response1.Should().Be200Ok();
         response2.Should().Be200Ok();
 
-        var result1 = await response1.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
-        var result2 = await response2.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>();
+        var result1 = await response1.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>(TestContext.Current.CancellationToken);
+        var result2 = await response2.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>(TestContext.Current.CancellationToken);
 
         result1.Should().BeEquivalentTo(result2);
     }
@@ -160,15 +160,15 @@ public class GetConsentTests
 
         await using var dbContext = new ApplicationDbContext(_options);
 
-        await dbContext.Users.AddAsync(user);
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
         await dbContext.Organizations.AddRangeAsync([userOrganization, organization1, organization2]);
 
         var affiliation = Affiliation.Create(user, userOrganization);
 
-        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
         await dbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // When
         var userIdString = user.IdpUserId.Value.ToString();
@@ -179,7 +179,7 @@ public class GetConsentTests
         // Then
         response.Should().Be200Ok();
 
-        var result = (await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>())!;
+        var result = (await response.Content.ReadFromJsonAsync<GetUserOrganizationConsentsQueryResult>(TestContext.Current.CancellationToken))!;
 
         result.Result.Count.Should().Be(2);
         result.Result.Should().Contain(c => c.GiverOrganizationId == userOrganization.Id && c.ReceiverOrganizationId == organization1.Id);
@@ -199,15 +199,15 @@ public class GetConsentTests
 
         await using var dbContext = new ApplicationDbContext(_options);
 
-        await dbContext.Users.AddAsync(user);
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
         await dbContext.Organizations.AddRangeAsync([userOrganization, organization1, organization2]);
 
         var affiliation = Affiliation.Create(user, userOrganization);
 
-        await dbContext.Affiliations.AddAsync(affiliation);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
         await dbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // When
         var userIdString = user.IdpUserId.Value.ToString();
@@ -218,7 +218,7 @@ public class GetConsentTests
         // Then
         response.Should().Be200Ok();
 
-        var result = (await response.Content.ReadFromJsonAsync<UserOrganizationConsentsReceivedResponse>())!;
+        var result = (await response.Content.ReadFromJsonAsync<UserOrganizationConsentsReceivedResponse>(TestContext.Current.CancellationToken))!;
 
         result.Result.Count().Should().Be(1);
         result.Result.Should().Contain(c => c.OrganizationId == organization2.Id);
