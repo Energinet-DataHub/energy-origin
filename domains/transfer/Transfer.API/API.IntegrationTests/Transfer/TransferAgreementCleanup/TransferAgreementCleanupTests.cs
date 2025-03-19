@@ -37,7 +37,7 @@ public class TransferAgreementCleanupTests
         using var scope = factory.Services.CreateScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.TransferAgreements.ExecuteDeleteAsync();
+        await dbContext.TransferAgreements.ExecuteDeleteAsync(TestContext.Current.CancellationToken);
 
         var expiredTa = new TransferAgreement
         {
@@ -79,7 +79,7 @@ public class TransferAgreementCleanupTests
         dbContext.TransferAgreements.Add(expiredTa);
         dbContext.TransferAgreements.Add(nullEndDateTa);
         dbContext.TransferAgreements.Add(endDateTa);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(2);
 
@@ -97,7 +97,7 @@ public class TransferAgreementCleanupTests
         using var scope = factory.Services.CreateScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.TransferAgreements.ExecuteDeleteAsync();
+        await dbContext.TransferAgreements.ExecuteDeleteAsync(TestContext.Current.CancellationToken);
 
         var expiredTa = new TransferAgreement
         {
@@ -113,7 +113,7 @@ public class TransferAgreementCleanupTests
         };
 
         dbContext.TransferAgreements.Add(expiredTa);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0, TimeSpan.FromSeconds(30));
         tas.Should().BeEmpty();
@@ -121,23 +121,23 @@ public class TransferAgreementCleanupTests
         var senderClient = factory.CreateAuthenticatedClient(sub.Value.ToString(), tin: tin.Value);
 
         var senderPost = await senderClient.PostAsJsonAsync("api/transfer/activity-log",
-            new ActivityLogEntryFilterRequest(null, null, null));
+            new ActivityLogEntryFilterRequest(null, null, null), TestContext.Current.CancellationToken);
         senderPost.StatusCode.Should().Be(HttpStatusCode.OK);
-        var senderLogResponseBody = await senderPost.Content.ReadAsStringAsync();
+        var senderLogResponseBody = await senderPost.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var senderLogs = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(senderLogResponseBody);
         senderLogs!.ActivityLogEntries.Should().ContainSingle();
 
         var receiverClient = factory.CreateAuthenticatedClient(Guid.NewGuid().ToString(), tin: receiverTin);
 
         var receiverPost = await receiverClient.PostAsJsonAsync("api/transfer/activity-log",
-            new ActivityLogEntryFilterRequest(null, null, null));
+            new ActivityLogEntryFilterRequest(null, null, null), TestContext.Current.CancellationToken);
         receiverPost.StatusCode.Should().Be(HttpStatusCode.OK);
-        var receiverLogResponseBody = await receiverPost.Content.ReadAsStringAsync();
+        var receiverLogResponseBody = await receiverPost.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var receiverLogs = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(receiverLogResponseBody);
         receiverLogs!.ActivityLogEntries.Should().ContainSingle();
 
         dbContext.TransferAgreements.RemoveRange(dbContext.TransferAgreements);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact(Skip = "Skip until new cleanup strategy is implemented")]
@@ -146,7 +146,7 @@ public class TransferAgreementCleanupTests
         using var scope = factory.Services.CreateScope();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await dbContext.TransferAgreements.ExecuteDeleteAsync();
+        await dbContext.TransferAgreements.ExecuteDeleteAsync(TestContext.Current.CancellationToken);
 
         var expiredTa = new TransferAgreement
         {
@@ -163,7 +163,7 @@ public class TransferAgreementCleanupTests
 
 
         dbContext.TransferAgreements.Add(expiredTa);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var tas = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreement>(0, TimeSpan.FromSeconds(30));
         tas.Should().BeEmpty();

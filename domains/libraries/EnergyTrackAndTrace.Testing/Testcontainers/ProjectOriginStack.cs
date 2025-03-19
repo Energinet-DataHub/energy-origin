@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Testcontainers.PostgreSql;
+using Xunit.Internal;
 
 namespace EnergyTrackAndTrace.Testing.Testcontainers;
 
@@ -110,13 +111,13 @@ public class ProjectOriginStack : RegistryFixture
     public string StampUrl =>
         new UriBuilder("http", _stampContainer.Value.Hostname, _stampContainer.Value.GetMappedPublicPort(StampHttpPort), StampPathBase).Uri.ToString();
 
-    public override async Task InitializeAsync()
+    public override async ValueTask InitializeAsync()
     {
-        await Task.WhenAll(base.InitializeAsync(), _walletPostgresContainer.StartAsync(), _stampPostgresContainer.StartAsync());
+        await Task.WhenAll(base.InitializeAsync().AsTask(), _walletPostgresContainer.StartAsync(), _stampPostgresContainer.StartAsync());
         await Task.WhenAll(_walletContainer.Value.StartAsync(), _stampContainer.Value.StartAsync());
     }
 
-    public override async Task DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
 

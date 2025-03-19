@@ -64,7 +64,7 @@ public class TransferAgreementProposalCleanupServiceTests
 
         dbContext.TransferAgreementProposals.Add(newInvitation);
         dbContext.TransferAgreementProposals.Add(oldInvitation);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var invitations = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreementProposal>(1);
 
@@ -92,16 +92,16 @@ public class TransferAgreementProposalCleanupServiceTests
         };
 
         dbContext.TransferAgreementProposals.Add(oldInvitation);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var invitations = await dbContext.RepeatedlyQueryUntilCountIsMet<TransferAgreementProposal>(0, TimeSpan.FromSeconds(30));
 
         invitations.Should().BeEmpty();
         var client = factory.CreateAuthenticatedClient(sub.ToString(), tin: tin.Value);
 
-        var post = await client.PostAsJsonAsync("api/transfer/activity-log", new ActivityLogEntryFilterRequest(null, null, null));
+        var post = await client.PostAsJsonAsync("api/transfer/activity-log", new ActivityLogEntryFilterRequest(null, null, null), TestContext.Current.CancellationToken);
         post.StatusCode.Should().Be(HttpStatusCode.OK);
-        var activityLogResponseBody = await post.Content.ReadAsStringAsync();
+        var activityLogResponseBody = await post.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var logs = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(activityLogResponseBody);
         logs!.ActivityLogEntries.Should().ContainSingle();
     }

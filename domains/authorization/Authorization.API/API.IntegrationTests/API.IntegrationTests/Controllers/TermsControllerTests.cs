@@ -43,11 +43,11 @@ public class TermsControllerTests
 
         response.Should().Be200Ok();
 
-        var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponse>(TestContext.Current.CancellationToken);
         result.Should().NotBeNull();
         result!.Message.Should().Be("Terms accepted successfully.");
 
-        var organization = await context.Organizations.FirstOrDefaultAsync(o => o.Tin == orgCvr);
+        var organization = await context.Organizations.FirstOrDefaultAsync(o => o.Tin == orgCvr, TestContext.Current.CancellationToken);
         organization.Should().NotBeNull();
         organization!.TermsAccepted.Should().BeTrue();
         organization.TermsVersion.Should().Be(terms.Version);
@@ -78,11 +78,11 @@ public class TermsControllerTests
 
         response.Should().Be200Ok();
 
-        var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<AcceptTermsResponse>(TestContext.Current.CancellationToken);
         result.Should().NotBeNull();
         result!.Message.Should().Be("Terms accepted successfully.");
 
-        var updatedOrganization = await context.Organizations.FirstOrDefaultAsync(o => o.Tin == orgCvr);
+        var updatedOrganization = await context.Organizations.FirstOrDefaultAsync(o => o.Tin == orgCvr, TestContext.Current.CancellationToken);
 
         updatedOrganization.Should().NotBeNull();
         updatedOrganization!.TermsAccepted.Should().BeTrue();
@@ -115,10 +115,10 @@ public class TermsControllerTests
         var response = await userApi.RevokeTerms();
 
         // Then
-        var updatedOrganization = await context.Organizations.FirstOrDefaultAsync(o => o.Id == organization.Id);
+        var updatedOrganization = await context.Organizations.FirstOrDefaultAsync(o => o.Id == organization.Id, TestContext.Current.CancellationToken);
 
         response.Should().Be200Ok();
-        var result = await response.Content.ReadFromJsonAsync<RevokeTermsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<RevokeTermsResponse>(TestContext.Current.CancellationToken);
         result!.Message.Should().Be("Terms revoked successfully.");
         updatedOrganization!.TermsAccepted.Should().BeFalse();
         updatedOrganization.TermsVersion.Should().BeNull();

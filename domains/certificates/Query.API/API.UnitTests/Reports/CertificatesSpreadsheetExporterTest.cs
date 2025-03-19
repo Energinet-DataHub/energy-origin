@@ -28,7 +28,7 @@ public class CertificatesSpreadsheetExporterTest
         var exportFilename = Path.GetTempPath() + spreadsheetData.Filename;
         File.Delete(exportFilename);
 
-        await File.WriteAllBytesAsync(exportFilename, spreadsheetData.Bytes);
+        await File.WriteAllBytesAsync(exportFilename, spreadsheetData.Bytes, TestContext.Current.CancellationToken);
 
         Assert.True(File.Exists(exportFilename));
         Assert.True(spreadsheetData.Bytes.Length > 0);

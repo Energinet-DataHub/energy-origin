@@ -48,11 +48,11 @@ public class GrantConsentTest
         organizationWithClient.AcceptServiceProviderTerms();
         var affiliation = Affiliation.Create(user, organizationThatIsGrantingConsent);
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organizationThatIsGrantingConsent);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(organizationWithClient, TestContext.Current.CancellationToken);
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organizationThatIsGrantingConsent, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organizationThatIsGrantingConsent.Tin!.Value);
         var response = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
@@ -67,11 +67,11 @@ public class GrantConsentTest
         var organization = Any.Organization();
         var affiliation = Affiliation.Create(user, organization);
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(organizationWithClient, TestContext.Current.CancellationToken);
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response = await api.GrantConsentToClient(organizationWithClient.Clients.First().IdpClientId.Value);
@@ -90,11 +90,11 @@ public class GrantConsentTest
         var organization = Any.Organization();
         var affiliation = Affiliation.Create(user, organization);
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(consentReceiverOrganization, TestContext.Current.CancellationToken);
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
@@ -109,11 +109,11 @@ public class GrantConsentTest
         var organization = Any.Organization();
         var affiliation = Affiliation.Create(user, organization);
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(consentReceiverOrganization, TestContext.Current.CancellationToken);
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var response = await api.GrantConsentToOrganization(consentReceiverOrganization.Id);
