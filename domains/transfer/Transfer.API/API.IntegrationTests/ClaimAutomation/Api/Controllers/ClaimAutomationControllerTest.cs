@@ -26,8 +26,8 @@ public class ClaimAutomationControllerTest
         var subject = Guid.NewGuid();
 
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
-        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
-        var result = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}");
+        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null, TestContext.Current.CancellationToken);
+        var result = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}", TestContext.Current.CancellationToken);
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
@@ -37,10 +37,10 @@ public class ClaimAutomationControllerTest
         var subject = Guid.NewGuid();
 
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
-        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
-        var result1 = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}");
+        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null, TestContext.Current.CancellationToken);
+        var result1 = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}", TestContext.Current.CancellationToken);
         result1.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        var result2 = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}");
+        var result2 = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}", TestContext.Current.CancellationToken);
         result2.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
@@ -49,7 +49,7 @@ public class ClaimAutomationControllerTest
     {
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var result = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}");
+        var result = await client.DeleteAsync($"api/claim-automation/stop?organizationId={orgId}", TestContext.Current.CancellationToken);
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
@@ -58,7 +58,7 @@ public class ClaimAutomationControllerTest
     {
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var result = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        var result = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null, TestContext.Current.CancellationToken);
         result.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
@@ -67,10 +67,10 @@ public class ClaimAutomationControllerTest
     {
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var result1 = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        var result1 = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null, TestContext.Current.CancellationToken);
         result1.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result2 = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        var result2 = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null, TestContext.Current.CancellationToken);
         result2.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
@@ -79,9 +79,9 @@ public class ClaimAutomationControllerTest
     {
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null, TestContext.Current.CancellationToken);
 
-        var result = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        var result = await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null, TestContext.Current.CancellationToken);
         result.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
@@ -90,9 +90,9 @@ public class ClaimAutomationControllerTest
     {
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null);
+        await client.PostAsync($"api/claim-automation/start?organizationId={orgId}", null, TestContext.Current.CancellationToken);
 
-        var result = await client.GetAsync($"api/claim-automation?organizationId={orgId}");
+        var result = await client.GetAsync($"api/claim-automation?organizationId={orgId}", TestContext.Current.CancellationToken);
         result.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -101,7 +101,7 @@ public class ClaimAutomationControllerTest
     {
         var client = factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var result = await client.GetAsync($"api/claim-automation?organizationId={orgId}");
+        var result = await client.GetAsync($"api/claim-automation?organizationId={orgId}", TestContext.Current.CancellationToken);
 
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

@@ -27,15 +27,15 @@ public class GetOrganizationQueryTest
         // Given organization
         var organization = Any.Organization();
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // When getting organization
         var response = await _api.GetOrganization(organization.Id);
 
         // Then
         response.Should().Be200Ok();
-        var content = await response.Content.ReadFromJsonAsync<OrganizationResponse>();
+        var content = await response.Content.ReadFromJsonAsync<OrganizationResponse>(TestContext.Current.CancellationToken);
         content!.OrganizationId.Should().Be(organization.Id);
         content.OrganizationName.Should().Be(organization.Name.Value);
     }

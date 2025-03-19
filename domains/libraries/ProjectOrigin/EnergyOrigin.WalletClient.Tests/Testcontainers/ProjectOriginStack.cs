@@ -58,13 +58,13 @@ public class ProjectOriginStack : RegistryFixture
 
     public string WalletUrl => new UriBuilder("http", walletContainer.Value.Hostname, walletContainer.Value.GetMappedPublicPort(WalletHttpPort), PathBase).Uri.ToString();
 
-    public override async Task InitializeAsync()
+    public override async ValueTask InitializeAsync()
     {
-        await Task.WhenAll(base.InitializeAsync(), postgresContainer.StartAsync());
+        await Task.WhenAll(base.InitializeAsync().AsTask(), postgresContainer.StartAsync());
         await walletContainer.Value.StartAsync();
     }
 
-    public override async Task DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
 

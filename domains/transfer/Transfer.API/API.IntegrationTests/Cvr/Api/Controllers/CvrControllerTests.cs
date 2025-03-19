@@ -45,11 +45,11 @@ public class CvrControllerTests
 
         using var client = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), Guid.NewGuid());
 
-        using var response = await client.PostAsJsonAsync("api/transfer/cvr", cvrNumbers);
+        using var response = await client.PostAsJsonAsync("api/transfer/cvr", cvrNumbers, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var jsonContent = await response.Content.ReadFromJsonAsync<CvrCompanyListResponse>();
+        var jsonContent = await response.Content.ReadFromJsonAsync<CvrCompanyListResponse>(TestContext.Current.CancellationToken);
 
         var settings = new VerifySettings();
         settings.DontScrubGuids();

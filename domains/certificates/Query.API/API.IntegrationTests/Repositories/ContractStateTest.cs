@@ -45,22 +45,22 @@ public class ContractStateTest
         var window = MeteringPointTimeSeriesSlidingWindow.Create(gsrn, syncPoint);
         dbContext.MeteringPointTimeSeriesSlidingWindows.Add(window);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Should not sync when 'now' is before contract start date
-        var syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2024, 11, 30, 23, 59, 0, TimeSpan.FromHours(1)));
+        var syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2024, 11, 30, 23, 59, 0, TimeSpan.FromHours(1)), TestContext.Current.CancellationToken);
         Assert.Empty(syncInfos);
 
         // Should sync when 'now' is before contract end date
-        syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 12, 31, 23, 59, 0, TimeSpan.FromHours(1)));
+        syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 12, 31, 23, 59, 0, TimeSpan.FromHours(1)), TestContext.Current.CancellationToken);
         Assert.Single(syncInfos);
 
         // Should sync when 'now' is after contract end and contract not 100% synced to the end
-        syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 1, 1, 0, 1, 0, TimeSpan.FromHours(1)));
+        syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 1, 1, 0, 1, 0, TimeSpan.FromHours(1)), TestContext.Current.CancellationToken);
         Assert.Single(syncInfos);
 
         // Should sync when 'now' is more than an hour after contract end and contract not 100% synced to the end
-        syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 1, 1, 3, 1, 0, TimeSpan.FromHours(1)));
+        syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 1, 1, 3, 1, 0, TimeSpan.FromHours(1)), TestContext.Current.CancellationToken);
         Assert.Single(syncInfos);
     }
 
@@ -79,10 +79,10 @@ public class ContractStateTest
         var window = MeteringPointTimeSeriesSlidingWindow.Create(gsrn, syncPoint);
         dbContext.MeteringPointTimeSeriesSlidingWindows.Add(window);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Should exclude fully synced contract
-        var syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 1, 1, 3, 1, 0, TimeSpan.FromHours(1)));
+        var syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 1, 1, 3, 1, 0, TimeSpan.FromHours(1)), TestContext.Current.CancellationToken);
         Assert.Empty(syncInfos);
     }
 
@@ -103,10 +103,10 @@ public class ContractStateTest
         var window = MeteringPointTimeSeriesSlidingWindow.Create(gsrn, syncPoint, measurementIntervals);
         dbContext.MeteringPointTimeSeriesSlidingWindows.Add(window);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Should include contract because of missing interval
-        var syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 1, 1, 3, 1, 0, TimeSpan.FromHours(1)));
+        var syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 1, 1, 3, 1, 0, TimeSpan.FromHours(1)), TestContext.Current.CancellationToken);
         Assert.Single(syncInfos);
     }
 
@@ -124,10 +124,10 @@ public class ContractStateTest
         var contractStart = UnixTimestamp.Now().AddHours(relativeContractStart);
         var contractEnd = relativeContractEnd is null ? null : UnixTimestamp.Now().AddHours(relativeContractEnd.Value);
         dbContext.Contracts.Add(Any.CertificateIssuingContract(gsrn, contractStart, contractEnd));
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // When getting sync info
-        var syncInfo = (await _sut.GetSyncInfos()).SingleOrDefault(si => si.Gsrn.Equals(gsrn));
+        var syncInfo = (await _sut.GetSyncInfos(TestContext.Current.CancellationToken)).SingleOrDefault(si => si.Gsrn.Equals(gsrn));
 
         // Contract is included or not
         if (isIncluded)
@@ -152,10 +152,10 @@ public class ContractStateTest
         dbContext.Contracts.Add(Any.CertificateIssuingContract(gsrn, contractStart, contractEnd));
         dbContext.MeteringPointTimeSeriesSlidingWindows.Add(MeteringPointTimeSeriesSlidingWindow.Create(gsrn, contractEnd,
             [MeasurementInterval.Create(contractStart, contractStart.AddHours(1))]));
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // When getting sync info
-        var syncInfo = (await _sut.GetSyncInfos()).FirstOrDefault(si => si.Gsrn.Equals(gsrn));
+        var syncInfo = (await _sut.GetSyncInfos(TestContext.Current.CancellationToken)).FirstOrDefault(si => si.Gsrn.Equals(gsrn));
 
         // Contract is included
         syncInfo.Should().NotBeNull();
@@ -172,10 +172,10 @@ public class ContractStateTest
         var contractEnd = UnixTimestamp.Now().AddHours(-10);
         dbContext.Contracts.Add(Any.CertificateIssuingContract(gsrn, contractStart, contractEnd));
         dbContext.MeteringPointTimeSeriesSlidingWindows.Add(MeteringPointTimeSeriesSlidingWindow.Create(gsrn, contractEnd, []));
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // When getting sync info
-        var syncInfo = (await _sut.GetSyncInfos()).FirstOrDefault(si => si.Gsrn.Equals(gsrn));
+        var syncInfo = (await _sut.GetSyncInfos(TestContext.Current.CancellationToken)).FirstOrDefault(si => si.Gsrn.Equals(gsrn));
 
         // Contract is included
         syncInfo.Should().BeNull();

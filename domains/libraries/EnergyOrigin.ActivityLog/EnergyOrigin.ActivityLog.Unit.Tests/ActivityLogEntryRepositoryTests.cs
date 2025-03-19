@@ -50,7 +50,7 @@ public class ActivityLogEntryRepositoryTests
 
         await _repository.AddActivityLogEntryAsync(entry);
 
-        await _dbContext.Received().Set<ActivityLogEntry>().AddAsync(entry);
+        await _dbContext.Received().Set<ActivityLogEntry>().AddAsync(entry, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -127,8 +127,8 @@ public class ActivityLogEntryRepositoryTests
                     ActivityLogEntry.ActionTypeEnum.Accepted,
                     "TestEntityId2"
                 )
-            });
-            await context.SaveChangesAsync();
+            }, TestContext.Current.CancellationToken);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
         await using (var context = new TestDbContext(options))

@@ -10,7 +10,7 @@ using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.Setup;
 using FluentAssertions;
 using Newtonsoft.Json;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api;
 

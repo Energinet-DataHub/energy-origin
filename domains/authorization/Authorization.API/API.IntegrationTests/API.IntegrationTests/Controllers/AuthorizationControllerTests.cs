@@ -44,7 +44,7 @@ public class AuthorizationControllerTests
 
         response.Should().Be200Ok();
 
-        var result = await response.Content.ReadFromJsonAsync<UserAuthorizationResponse>();
+        var result = await response.Content.ReadFromJsonAsync<UserAuthorizationResponse>(TestContext.Current.CancellationToken);
         result.Should().NotBeNull();
         result!.Sub.Should().Be(request.Sub);
         result.SubType.Should().Be("User");
@@ -59,8 +59,8 @@ public class AuthorizationControllerTests
     {
         await using var dbContext = new ApplicationDbContext(_options);
         var client = Client.Create(new IdpClientId(_integrationTestFixture.WebAppFactory.IssuerIdpClientId), ClientName.Create("Internal Client"), ClientType.Internal, "https://localhost:5001");
-        await dbContext.Clients.AddAsync(client);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Clients.AddAsync(client, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var request = new AuthorizationUserRequest(
             Sub: Guid.NewGuid(),
@@ -73,7 +73,7 @@ public class AuthorizationControllerTests
 
         response.Should().Be200Ok();
 
-        var result = await response.Content.ReadFromJsonAsync<UserAuthorizationResponse>();
+        var result = await response.Content.ReadFromJsonAsync<UserAuthorizationResponse>(TestContext.Current.CancellationToken);
         result.Should().NotBeNull();
         result!.Sub.Should().Be(request.Sub);
         result.SubType.Should().Be("User");

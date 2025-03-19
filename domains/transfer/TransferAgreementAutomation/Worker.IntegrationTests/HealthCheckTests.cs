@@ -16,7 +16,7 @@ public class HealthControllerTests : IClassFixture<TransferAutomationApplication
     [Fact]
     public async Task Health_ShouldReturnOk_WhenStarted()
     {
-        var response = await fixture.CreateUnauthenticatedClient().GetAsync("/health");
+        var response = await fixture.CreateUnauthenticatedClient().GetAsync("/health", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

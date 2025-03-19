@@ -31,11 +31,11 @@ public class GetServiceProviderTermsTest
         organization.AcceptServiceProviderTerms();
         var affiliation = Affiliation.Create(user, organization);
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(consentReceiverOrganization, TestContext.Current.CancellationToken);
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var api = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value, orgId: organization.Id.ToString());
         var response = await api.GetServiceProviderTerms();

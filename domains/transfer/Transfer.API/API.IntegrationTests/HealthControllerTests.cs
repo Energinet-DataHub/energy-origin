@@ -18,7 +18,7 @@ public class HealthControllerTests : IClassFixture<TransferAgreementsApiWebAppli
     public async Task Health_ShouldReturnOk_WhenStarted()
     {
         using var client = factory.CreateUnauthenticatedClient();
-        using var response = await client.GetAsync("/health");
+        using var response = await client.GetAsync("/health", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

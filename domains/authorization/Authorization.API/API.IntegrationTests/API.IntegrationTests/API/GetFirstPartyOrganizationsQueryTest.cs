@@ -29,15 +29,15 @@ public class GetFirstPartyOrganizationsTest
         var organization2 = Any.Organization(Any.Tin(), OrganizationName.Create("Brian Bolighaj A/S"));
 
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Organizations.AddAsync(organization1);
-        await dbContext.Organizations.AddAsync(organization2);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Organizations.AddAsync(organization1, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization2, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var response = await _api.GetFirstPartyOrganizations();
 
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
 
-        var content = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
+        var content = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>(TestContext.Current.CancellationToken);
 
         Assert.NotNull(content);
         Assert.IsType<FirstPartyOrganizationsResponse>(content);
