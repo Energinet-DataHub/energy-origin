@@ -54,6 +54,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 builder.Services.AddScoped<IAggregationQuery, ActiveContractsQuery>();
+builder.Services.AddScoped<IWhitelistedOrganizationsQuery, WhitelistedOrganizationsQuery>();
+
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
 builder.Services.AddAuthentication(options =>

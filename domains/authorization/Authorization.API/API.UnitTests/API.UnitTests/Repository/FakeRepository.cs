@@ -67,3 +67,4 @@ public class FakeUserRepository : FakeGenericRepository<User>, IUserRepository;
 public class FakeOrganizationConsentRepository : FakeGenericRepository<OrganizationConsent>, IOrganizationConsentRepository;
 
 public class FakeTermsRepository : FakeGenericRepository<Terms>, ITermsRepository;
+public class FakeWhitelistedRepository : FakeGenericRepository<Whitelisted>, IWhitelistedRepository;
