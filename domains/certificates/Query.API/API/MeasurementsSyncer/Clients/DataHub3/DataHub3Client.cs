@@ -17,12 +17,10 @@ public interface IDataHub3Client
 public class DataHub3Client : IDataHub3Client
 {
     private readonly HttpClient _client;
-    private readonly ILogger<DataHub3Client> _logger;
 
-    public DataHub3Client(HttpClient client, ILogger<DataHub3Client> logger)
+    public DataHub3Client(HttpClient client)
     {
         _client = client;
-        _logger = logger;
     }
 
     public async Task<MeteringPointData[]?> GetMeasurements(List<Gsrn> gsrns, long dateFromEpoch, long dateToEpoch, CancellationToken cancellationToken)
