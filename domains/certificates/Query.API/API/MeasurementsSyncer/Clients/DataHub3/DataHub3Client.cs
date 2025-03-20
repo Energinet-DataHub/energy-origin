@@ -29,8 +29,6 @@ public class DataHub3Client : IDataHub3Client
     {
         var meteringPointIds = string.Join(",", gsrns.Select(x => x.Value));
         var url = $"/ListAggregatedTimeSeries?meteringPointIds={meteringPointIds}&dateFromEpoch={dateFromEpoch}&dateToEpoch={dateToEpoch}&Aggregation=Hour";
-
-        _logger.LogInformation("GetMeasurements url: " + url);
         return await _client.GetFromJsonAsync<MeteringPointData[]>(url, cancellationToken: cancellationToken);
     }
 }
