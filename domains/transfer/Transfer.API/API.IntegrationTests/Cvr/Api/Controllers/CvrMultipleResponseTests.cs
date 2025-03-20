@@ -47,11 +47,11 @@ public class CvrMultipleResponseTests
         using var client = factory.CreateB2CAuthenticatedClient(Guid.NewGuid(), Guid.NewGuid());
 
 
-        using var response = await client.PostAsJsonAsync("api/transfer/cvr", wrongPlusRightCvr);
+        using var response = await client.PostAsJsonAsync("api/transfer/cvr", wrongPlusRightCvr, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var jsonContent = await response.Content.ReadFromJsonAsync<CvrCompanyListResponse>();
+        var jsonContent = await response.Content.ReadFromJsonAsync<CvrCompanyListResponse>(TestContext.Current.CancellationToken);
 
         var settings = new VerifySettings();
         settings.DontScrubGuids();

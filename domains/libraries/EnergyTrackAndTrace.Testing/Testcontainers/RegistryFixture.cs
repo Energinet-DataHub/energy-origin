@@ -110,7 +110,7 @@ public class RegistryFixture : IAsyncLifetime
             .Build();
     }
 
-    public virtual async Task InitializeAsync()
+    public virtual async ValueTask InitializeAsync()
     {
         await Network.CreateAsync();
         await rabbitMqContainer.StartWithLoggingAsync();
@@ -119,7 +119,7 @@ public class RegistryFixture : IAsyncLifetime
         await registryContainer.StartWithLoggingAsync();
     }
 
-    public virtual async Task DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
         await registryContainer.StopAsync();
         await registryPostgresContainer.StopAsync();

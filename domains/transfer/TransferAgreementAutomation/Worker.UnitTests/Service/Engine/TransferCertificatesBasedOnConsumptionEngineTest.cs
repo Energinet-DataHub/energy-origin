@@ -41,7 +41,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, null, null);
 
         // When transferring
-        await sut.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then transfer agreement is skipped (no certificates fetched)
         await mockWalletClient
@@ -62,8 +62,8 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
 
         // When transferring
         await requestStatusStore.Add(new RequestStatus(transferAgreement.SenderId, OrganizationId.Empty(), Guid.NewGuid(),
-            UnixTimestamp.Now().AddMinutes(-2)));
-        await sut.TransferCertificates(transferAgreement);
+            UnixTimestamp.Now().AddMinutes(-2)), TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then transfer agreement is skipped (no certificates fetched)
         await mockWalletClient
@@ -83,8 +83,8 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, receiverId, null);
 
         // When transferring
-        await requestStatusStore.Add(new RequestStatus(Any.OrganizationId(), receiverId, Guid.NewGuid(), UnixTimestamp.Now().AddMinutes(-2)));
-        await sut.TransferCertificates(transferAgreement);
+        await requestStatusStore.Add(new RequestStatus(Any.OrganizationId(), receiverId, Guid.NewGuid(), UnixTimestamp.Now().AddMinutes(-2)), TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then transfer agreement is skipped (no certificates fetched)
         await mockWalletClient
@@ -102,12 +102,12 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         // Given transfer agreement and a timed out transaction
         var receiverId = Any.OrganizationId();
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, receiverId, null);
-        await requestStatusStore.Add(new RequestStatus(Any.OrganizationId(), receiverId, Guid.NewGuid(), UnixTimestamp.Now().AddDays(-2)));
+        await requestStatusStore.Add(new RequestStatus(Any.OrganizationId(), receiverId, Guid.NewGuid(), UnixTimestamp.Now().AddDays(-2)), TestContext.Current.CancellationToken);
 
         // When transferring
         var cert = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production);
         SetupWalletServiceClient(receiverId.Value, [cert], new TransferResponse() { TransferRequestId = Guid.NewGuid() });
-        await sut.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then certificates are transferred
         await mockWalletClient
@@ -130,7 +130,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         SetupWalletServiceClient(transferAgreement.ReceiverId!.Value,
             [Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production)],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
-        await sut.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then no certificates are transferred
         await mockWalletClient
@@ -161,7 +161,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         SetupWalletServiceClient(transferAgreement.SenderId.Value, [senderProductionCert],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then certificates are transferred
         var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
@@ -188,7 +188,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
             [senderProductionCert1, senderProductionCert2, senderProductionCert3, senderProductionCert4],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then certificates are transferred
         var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
@@ -211,7 +211,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         SetupWalletServiceClient(transferAgreement.SenderId.Value, [senderProductionCert],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement);
+        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then certificates are transferred
         var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);

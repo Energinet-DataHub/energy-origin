@@ -17,7 +17,7 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     public TestWebApplicationFactory WebAppFactory { get; private set; } = null!;
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await PostgresContainer.InitializeAsync();
         await ProjectOriginStack.InitializeAsync();
@@ -34,7 +34,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         await WebAppFactory.InitializeAsync();
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await WebAppFactory.DisposeAsync();
         await PostgresContainer.DisposeAsync();

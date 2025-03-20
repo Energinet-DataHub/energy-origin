@@ -35,18 +35,18 @@ public class DeleteConsentTests
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
 
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
-        await dbContext.OrganizationConsents.AddAsync(consent);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organizationWithClient, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(consent, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
 
         // When
         var response = await userClient.DeleteConsent(consent.Id);
-        var deletedConsent = await dbContext.OrganizationConsents.FirstOrDefaultAsync(x => x.Id == consent.Id)!;
+        var deletedConsent = await dbContext.OrganizationConsents.FirstOrDefaultAsync(x => x.Id == consent.Id, TestContext.Current.CancellationToken)!;
 
         // Then
         response.Should().Be204NoContent();
@@ -65,13 +65,13 @@ public class DeleteConsentTests
         var consent = OrganizationConsent.Create(consentGiverOrganization.Id, consentReceiverOrganization.Id, DateTimeOffset.UtcNow);
 
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(userOrganization);
-        await dbContext.Organizations.AddAsync(consentGiverOrganization);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.Organizations.AddAsync(consentReceiverOrganization);
-        await dbContext.OrganizationConsents.AddAsync(consent);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(userOrganization, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(consentGiverOrganization, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(consentReceiverOrganization, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(consent, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: userOrganization.Tin!.Value);
 
@@ -90,10 +90,10 @@ public class DeleteConsentTests
         var affiliation = Affiliation.Create(user, organization);
 
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
 
@@ -123,13 +123,13 @@ public class DeleteConsentTests
         var affiliation2 = Affiliation.Create(user, organization2);
 
         await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Users.AddAsync(user);
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
         await dbContext.Organizations.AddRangeAsync([organization1, organization2, organizationWithClient1, organizationWithClient2]);
         await dbContext.Affiliations.AddRangeAsync([affiliation1, affiliation2]);
 
         await dbContext.OrganizationConsents.AddRangeAsync([consent1, consent2]);
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var userIdString = user.IdpUserId.Value.ToString();
 
@@ -155,18 +155,18 @@ public class DeleteConsentTests
 
         await using var dbContext = new ApplicationDbContext(_options);
 
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-        await dbContext.Organizations.AddAsync(organizationWithClient);
-        await dbContext.OrganizationConsents.AddAsync(consent);
-        await dbContext.Affiliations.AddAsync(affiliation);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organizationWithClient, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(consent, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var userClient = _integrationTestFixture.WebAppFactory.CreateApi(sub: user.IdpUserId.Value.ToString(), orgCvr: organization.Tin!.Value);
         var consentListResponse = await userClient.GetUserOrganizationConsents();
         consentListResponse.Should().Be200Ok();
 
-        var consentList = await consentListResponse.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>();
+        var consentList = await consentListResponse.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>(TestContext.Current.CancellationToken);
         consentList!.Result.Should().NotBeEmpty();
 
         // When
@@ -176,7 +176,7 @@ public class DeleteConsentTests
         // Then
         var consentListResponseAfterDeletion = await userClient.GetUserOrganizationConsents();
         consentListResponseAfterDeletion.Should().Be200Ok();
-        var consentListAfterDeletion = await consentListResponseAfterDeletion.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>();
+        var consentListAfterDeletion = await consentListResponseAfterDeletion.Content.ReadFromJsonAsync<UserOrganizationConsentsResponse>(TestContext.Current.CancellationToken);
         consentListAfterDeletion!.Result.Should().BeEmpty();
     }
 

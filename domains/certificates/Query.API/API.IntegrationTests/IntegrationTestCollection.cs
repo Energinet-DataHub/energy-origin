@@ -29,7 +29,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         MeasurementsMock = new MeasurementsWireMock();
     }
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         PostgresContainer = new PostgresContainer();
         await PostgresContainer.InitializeAsync();
@@ -53,7 +53,7 @@ public class IntegrationTestFixture : IAsyncLifetime
 
     public string WalletUrl => ProjectOriginStack.WalletUrl;
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await WebApplicationFactory.DisposeAsync();
         await PostgresContainer.DisposeAsync();

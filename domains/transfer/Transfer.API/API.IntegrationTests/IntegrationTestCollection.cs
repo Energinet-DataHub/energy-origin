@@ -32,7 +32,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         CvrWireMockServer = WireMockServer.Start();
     }
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         await PostgresContainer.InitializeAsync();
 
@@ -68,7 +68,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         return walletClientMock;
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await Factory.DisposeAsync();
     }
