@@ -1,19 +1,26 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using AdminPortal.Models;
 using AdminPortal.Options;
 using AdminPortal.Services;
 using AdminPortal.Utilities;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Health;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.OpenTelemetry;
+using EnergyOrigin.Setup.RabbitMq;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -22,30 +29,50 @@ using IAuthorizationService = AdminPortal.Services.IAuthorizationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix)
-    .ValidateDataAnnotations()
+if (args.Contains("--migrate"))
+{
+    builder.AddSerilogWithoutOutboxLogs();
+    var migrateApp = builder.Build();
+    var dbMigrator = new DbMigrator(builder.Configuration.GetConnectionString("Postgres")!, typeof(Program).Assembly,
+        migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
+    await dbMigrator.MigrateAsync();
+    return;
+}
+
+builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<AdminPortalOptions>().BindConfiguration(AdminPortalOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<AdminPortalOptions>().BindConfiguration(AdminPortalOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddHealthChecks();
+builder.Services.AddOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.RabbitMq).ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>();
+builder.Services.AddDbContext<ApplicationDbContext>(
+    options =>
+    {
+        options.UseNpgsql(
+            builder.Configuration.GetConnectionString("Postgres"),
+            _ => { }
+        );
+    });
+
+builder.Services.AddDefaultHealthChecks();
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("AdminPortal.Web", otlpOptions.ReceiverEndpoint);
 
-builder.AddSerilog();
+builder.AddSerilogWithoutOutboxLogs();
+
 builder.Services.AddRazorPages();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -134,6 +161,8 @@ builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("Aut
             sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
         );
     });
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 var app = builder.Build();
 
