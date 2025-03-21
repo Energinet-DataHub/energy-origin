@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Request;
 using AdminPortal.Services;
-using MassTransit.Mediator;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
