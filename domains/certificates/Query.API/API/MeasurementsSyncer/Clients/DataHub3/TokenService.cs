@@ -29,7 +29,7 @@ public class TokenService : ITokenService
             ["grant_type"] = "client_credentials",
             ["client_id"] = dataHub3Options.Value.ClientId!,
             ["client_secret"] = dataHub3Options.Value.ClientSecret!,
-            ["scope"] = "13803f8d-e346-4dae-9738-15fee9efc397/.default"
+            ["scope"] = dataHub3Options.Value.Scope!
         };
         _body = new FormUrlEncodedContent(bodyValues);
     }
