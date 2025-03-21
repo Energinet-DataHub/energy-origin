@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using AdminPortal.Models;
 using EnergyOrigin.IntegrationEvents.Events.OrganizationWhitelisted;
 using MassTransit;
 using MediatR;
@@ -13,15 +14,18 @@ namespace AdminPortal.Services;
 public class AddOrganizationToWhitelistCommandHandler : IRequestHandler<AddOrganizationToWhitelistCommand, bool>
 {
     private readonly IPublishEndpoint _publishEndpoint;
+    private readonly ApplicationDbContext _dbContext;
     private readonly IDistributedCache _cache;
     private readonly ILogger<AddOrganizationToWhitelistCommandHandler> _logger;
 
     public AddOrganizationToWhitelistCommandHandler(
         IPublishEndpoint publishEndpoint,
+        ApplicationDbContext dbContext,
         IDistributedCache cache,
         ILogger<AddOrganizationToWhitelistCommandHandler> logger)
     {
         _publishEndpoint = publishEndpoint;
+        _dbContext = dbContext;
         _cache = cache;
         _logger = logger;
     }
@@ -51,6 +55,8 @@ public class AddOrganizationToWhitelistCommandHandler : IRequestHandler<AddOrgan
             );
 
             await _publishEndpoint.Publish(integrationEvent, cancellationToken);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             await _cache.SetStringAsync(
                 idempotencyKey,
