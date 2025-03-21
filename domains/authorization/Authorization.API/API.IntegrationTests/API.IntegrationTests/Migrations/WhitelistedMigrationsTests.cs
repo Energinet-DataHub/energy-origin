@@ -40,8 +40,7 @@ public class WhitelistedMigrationsTests : IAsyncLifetime
         await using (var dbContext = new ApplicationDbContext(options))
         {
             var whitelistedRecords = await dbContext.Whitelisted.ToListAsync(TestContext.Current.CancellationToken);
-            Assert.All(organizations.Skip(1),
-                org => Assert.Contains(whitelistedRecords, w => w.Tin.Value == org.Tin?.Value));
+            Assert.DoesNotContain(whitelistedRecords, w => w.Tin.Value == organizations[0].Tin?.Value);
         }
     }
 
