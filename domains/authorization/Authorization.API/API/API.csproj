@@ -45,6 +45,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.ValueObjects\EnergyOrigin.Domain.ValueObjects.csproj" />
+      <ProjectReference Include="..\..\..\libraries\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents.csproj" />
       <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
       <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
       <ProjectReference Include="..\..\..\libraries\ProjectOrigin\EnergyOrigin.WalletClient\EnergyOrigin.WalletClient.csproj" />
@@ -54,5 +55,9 @@
         <EmbeddedResource Include="Migrations\Scripts\**\*.sql">
             <LogicalName>%(filename)%(extension)</LogicalName> <!-- Do not delete! Migration script names will not contain namespace -->
         </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="EventHandlers\" />
     </ItemGroup>
 </Project>
