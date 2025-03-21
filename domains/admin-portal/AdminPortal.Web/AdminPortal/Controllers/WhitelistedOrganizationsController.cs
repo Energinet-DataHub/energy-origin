@@ -45,5 +45,6 @@ public class WhitelistedOrganizationsController : Controller
             TempData["ErrorMessage"] = $"Failed to add organization: {ex.Message}";
         }
 
-        return RedirectToAction(nameof(Index), "WhitelistedOrganizations");    }
+        return RedirectToAction(nameof(Index), "WhitelistedOrganizations");
+    }
 }
