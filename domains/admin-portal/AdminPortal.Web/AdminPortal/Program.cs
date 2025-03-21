@@ -11,6 +11,7 @@ using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.RabbitMq;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -51,15 +52,32 @@ builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptio
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>();
-builder.Services.AddDbContext<ApplicationDbContext>(
-    options =>
+builder.Services.AddOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.RabbitMq).ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddMassTransit(o =>
+{
+    o.SetKebabCaseEndpointNameFormatter();
+    o.AddConfigureEndpointsCallback((_, cfg) =>
     {
-        options.UseNpgsql(
-            builder.Configuration.GetConnectionString("Postgres"),
-            _ => { }
-        );
+        if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+        {
+            rmq.SetQuorumQueue(3);
+        }
     });
+    o.UsingRabbitMq((context, cfg) =>
+    {
+        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+        var url = $"rabbitmq://{options.Host}:{options.Port}";
+
+        cfg.Host(new Uri(url), h =>
+        {
+            h.Username(options.Username);
+            h.Password(options.Password);
+        });
+        cfg.ConfigureEndpoints(context);
+    });
+});
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<AddOrganizationToWhitelistCommandHandler>());
