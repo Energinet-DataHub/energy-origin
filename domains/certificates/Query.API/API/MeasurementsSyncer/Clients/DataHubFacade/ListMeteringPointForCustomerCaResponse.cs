@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System;
+using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 
 namespace API.MeasurementsSyncer.Clients.DataHubFacade;
 
@@ -13,6 +15,11 @@ public class CustomerRelation
 {
     public required string MeteringPointId { get; init; }
     public required DateTime ValidFromDate { get; init; }
+
+    public bool IsValidGsrn(Gsrn gsrn)
+    {
+        return MeteringPointId == gsrn.Value && UnixTimestamp.Create(ValidFromDate) < UnixTimestamp.Now();
+    }
 }
 
 public class Rejection

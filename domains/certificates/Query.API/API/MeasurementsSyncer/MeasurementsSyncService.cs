@@ -69,7 +69,7 @@ public class MeasurementsSyncService
             _logger.LogError("Relation rejection detected! Gsrn: {Gsrn}, ErrorCode: {ErrorCode}, ErrorDetailName: {ErrorDetailName}, ErrorDetailValue: {ErrorDetailValue}", rejection.MeteringPointId, rejection.ErrorCode, rejection.ErrorDetailName, rejection.ErrorDetailValue);
         }
 
-        if (!mpRelations.Relations.HasValidRelationForGsrn(gsrn))
+        if (!mpRelations.Relations.Any(x => x.IsValidGsrn(gsrn)))
         {
             _logger.LogError("{Gsrn} does not have a valid relation.", slidingWindow.GSRN);
             return;
