@@ -93,29 +93,45 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Bootstrap form validation
+            const forms = document.querySelectorAll('.needs-validation');
+
+            // Table search and filtering functionality
             const searchInput = document.getElementById('searchInput');
             const clearButton = document.getElementById('clearSearch');
             const table = document.getElementById('organizationsTable');
             let filterTimeout;
 
+            // Form and modal elements
             const addOrganizationForm = document.getElementById('addOrganizationForm');
             const confirmAddBtn = document.getElementById('confirmAddBtn');
             const confirmYesBtn = document.getElementById('confirmYesBtn');
             const tinInput = document.getElementById('tin');
             const confirmTin = document.getElementById('confirmTin');
 
+            // Initialize Bootstrap validation
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+
+            // Handle the "Add Organization" button click
             confirmAddBtn.addEventListener('click', function() {
-                if (!tinInput.checkValidity()) {
-                    tinInput.classList.add('is-invalid');
+                // Manually trigger form validation
+                if (!addOrganizationForm.checkValidity()) {
+                    addOrganizationForm.classList.add('was-validated');
                     return;
                 }
 
-                tinInput.classList.remove('is-invalid');
+                // Show confirmation modal
                 confirmTin.textContent = tinInput.value;
-
                 const addModal = bootstrap.Modal.getInstance(document.getElementById('addOrganizationModal'));
                 addModal.hide();
-
                 const confirmModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
                 confirmModal.show();
             });
@@ -125,7 +141,7 @@
             });
 
             document.getElementById('addOrganizationModal').addEventListener('hidden.bs.modal', function () {
-                tinInput.classList.remove('is-invalid');
+                addOrganizationForm.classList.remove('was-validated');
             });
 
             document.querySelectorAll('#organizationsTable tbody td:nth-child(2), #organizationsTable tbody td:nth-child(3)')
