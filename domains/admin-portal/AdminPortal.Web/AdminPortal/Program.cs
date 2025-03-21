@@ -61,6 +61,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(
         );
     });
 
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssemblyContaining<AddOrganizationToWhitelistCommandHandler>());
+
 builder.Services.AddDefaultHealthChecks();
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
