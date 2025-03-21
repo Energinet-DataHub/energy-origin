@@ -1,0 +1,57 @@
+name: Dotnet Validate
+
+description: Lints and tests a domain.
+
+inputs:
+  subsystem:
+    description: The name of the subsystem (e.g., transfer, authorization)
+    required: true
+
+  sdk-version:
+    description: Is a complete sdk version in format x.y.zzz (optional override)
+    required: false
+    default: ""
+
+  pin-version:
+    description: Pin dotnet version
+    default: "false"
+    required: false
+
+runs:
+  using: composite
+
+  steps:
+    - name: Create dynamic solution file
+      shell: bash
+      run: |
+        rm -f EnergyTrackAndTrace.sln
+        dotnet new sln -n ${{ inputs.subsystem }}
+        find domains/${{ inputs.subsystem }} -name '*.csproj' | while read project; do
+          dotnet sln ${{ inputs.subsystem }}.sln add "$project"
+        done
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore
+      shell: bash
+      env:
+        version: ""
+      run: |
+        dotnet tool restore || true
+        dotnet restore ${{ inputs.subsystem }}.sln
+
+    - name: Test
+      shell: bash
+      env:
+        DOTNET_NOLOGO: "true"
+        DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+        DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "true"
+        TERM: "xterm"
+        version: ""
+      run: dotnet test ${{ inputs.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" -p:ParallelizeAssemblies=true -p:ParallelizeTestCollections=true
