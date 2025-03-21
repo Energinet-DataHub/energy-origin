@@ -5,7 +5,7 @@
                 <h5 class="modal-title" id="addOrganizationModalLabel">Add Organization to Whitelist</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="addOrganizationForm" asp-controller="WhitelistedOrganizations" asp-action="WhitelistFirstPartyOrganization" method="post" class="needs-validation" novalidate>
+            <form id="addOrganizationForm" asp-controller="WhitelistedOrganizations" method="post" class="needs-validation" novalidate>
                 @Html.AntiForgeryToken()
                 <div class="modal-body">
                     <div class="mb-3">

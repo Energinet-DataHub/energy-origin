@@ -30,6 +30,7 @@ public class WhitelistedOrganizationsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Route("WhitelistedOrganizations")]
     public async Task<IActionResult> WhitelistFirstPartyOrganization([FromForm] AddOrganizationToWhitelistRequest request)
     {
         try
