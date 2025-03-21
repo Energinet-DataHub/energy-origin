@@ -51,9 +51,6 @@ builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptio
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.RabbitMq).ValidateDataAnnotations()
-    .ValidateOnStart();
-
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>();
 builder.Services.AddDbContext<ApplicationDbContext>(
     options =>
