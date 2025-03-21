@@ -30,16 +30,6 @@ using IAuthorizationService = AdminPortal.Services.IAuthorizationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (args.Contains("--migrate"))
-{
-    builder.AddSerilogWithoutOutboxLogs();
-    var migrateApp = builder.Build();
-    var dbMigrator = new DbMigrator(builder.Configuration.GetConnectionString("Postgres")!, typeof(Program).Assembly,
-        migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
-    await dbMigrator.MigrateAsync();
-    return;
-}
-
 builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 

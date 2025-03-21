@@ -13,7 +13,6 @@
         <PackageReference Include="MediatR.Contracts" Version="2.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.2" />
         <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.7.1" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     </ItemGroup>
 
     <ItemGroup>
@@ -25,12 +24,6 @@
       <AdditionalFiles Include="Views\Login.cshtml" />
       <AdditionalFiles Include="Views\Logout.cshtml" />
       <AdditionalFiles Include="Views\SignedOut.cshtml" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="Migrations\20250121-0001-MassTransitInboxOutbox.sql">
-        <LogicalName>20250121-0001-MassTransitInboxOutbox.sql</LogicalName>
-      </EmbeddedResource>
     </ItemGroup>
 
 </Project>
