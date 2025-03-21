@@ -1,5 +1,7 @@
 using System;
 using API.Configurations;
+using API.MeasurementsSyncer.Clients.DataHub3;
+using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,8 +14,11 @@ public static class Startup
     public static void AddMeasurementsSyncer(this IServiceCollection services)
     {
         services.MeasurementsSyncOptions();
-        services.AddMeasurementsOptions();
-        services.AddMeteringPointsOptions();
+        services.AddDataHub3Options();
+        services.AddDataHubFacadeOptions();
+
+        services.AddTransient<ITokenService, TokenService>();
+        services.AddTransient<AuthHeaderHandler, AuthHeaderHandler>();
 
         services.AddScoped<MeasurementsSyncService>();
         services.AddScoped<SlidingWindowService>();
@@ -25,16 +30,23 @@ public static class Startup
         services.AddSingleton<IMeasurementSyncMetrics, MeasurementSyncMetrics>();
         services.AddHostedService<MeasurementsSyncerWorker>();
 
-        services.AddGrpcClient<Measurements.V1.Measurements.MeasurementsClient>((sp, o) =>
+        services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
         {
-            var options = sp.GetRequiredService<IOptions<MeasurementsOptions>>().Value;
+            var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
             o.Address = new Uri(options.GrpcUrl);
         });
 
-        services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
+        services.AddHttpClient<IDataHubFacadeClient, DataHubFacadeClient>((sp, client) =>
         {
-            var options = sp.GetRequiredService<IOptions<MeteringPointOptions>>().Value;
-            o.Address = new Uri(options.GrpcUrl);
+            var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
+            client.BaseAddress = new Uri(options.Url);
         });
+
+        services.AddHttpClient<IDataHub3Client, DataHub3Client>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<DataHub3Options>>().Value;
+            client.BaseAddress = new Uri(options.Url);
+            client.Timeout = TimeSpan.FromSeconds(300); // Databricks can autoscale under high load, which can take a long time. So this is so we don't lose the call if that happens.
+        }).AddHttpMessageHandler<AuthHeaderHandler>();
     }
 }

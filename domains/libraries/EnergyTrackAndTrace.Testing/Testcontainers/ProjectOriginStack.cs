@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
+using EnergyTrackAndTrace.Testing.Extensions;
 using Testcontainers.PostgreSql;
 using Xunit.Internal;
 
@@ -24,6 +27,7 @@ public class ProjectOriginStack : RegistryFixture
     private const string StampPathBase = "/stamp-api";
 
     private const string WalletAlias = "wallet-container";
+    private const string StampAlias = "stamp-container";
 
     public ProjectOriginStack()
     {
@@ -45,18 +49,47 @@ public class ProjectOriginStack : RegistryFixture
             .WithPortBinding(5432, true)
             .Build();
 
+
         _walletContainer = new Lazy<IContainer>(() =>
         {
             var connectionString = $"Host={_walletPostgresContainer.IpAddress};Port=5432;Database=postgres;Username=postgres;Password=postgres";
 
-            // Get an available port from system and use that as the host port
-            var udp = new UdpClient(0, AddressFamily.InterNetwork);
-            var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
+            var networkOptions = new NetworkOptions
+            {
+                DaysBeforeCertificatesExpire = 60
+            };
+            networkOptions.Registries.Add(RegistryName, new RegistryInfo
+            {
+                Url = RegistryContainerUrl,
+            });
+            networkOptions.Areas.Add("DK1", new AreaInfo
+            {
+                IssuerKeys = new List<KeyInfo>{
+                    new (){
+                        PublicKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText()))
+                    }
+                }
+            });
+            networkOptions.Areas.Add("DK2", new AreaInfo
+            {
+                IssuerKeys = new List<KeyInfo>{
+                    new (){
+                        PublicKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk2IssuerKey.ExportPkixText()))
+                    }
+                }
+            });
+            networkOptions.Issuers.Add(StampAlias, new IssuerInfo
+            {
+                StampUrl = new UriBuilder("http", StampAlias, StampHttpPort, StampPathBase).Uri.ToString()
+            });
+
+            var configFile = networkOptions.ToTempYamlFile();
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/wallet-server:1.5.6")
+                .WithImage("ghcr.io/project-origin/vault:2.0.1")
                 .WithNetwork(Network)
                 .WithNetworkAliases(WalletAlias)
+                .WithResourceMapping(configFile, "/app/tmp/")
                 .WithPortBinding(WalletHttpPort, true)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://{WalletAlias}:{WalletHttpPort}/")
@@ -69,6 +102,12 @@ public class ProjectOriginStack : RegistryFixture
                 .WithEnvironment("auth__type", "header")
                 .WithEnvironment("auth__header__headerName", "wallet-owner")
                 .WithEnvironment("auth__jwt__AllowAnyJwtToken", "true")
+                .WithEnvironment("Retry__RegistryTransactionStillProcessingRetryCount", "5")
+                .WithEnvironment("Retry__RegistryTransactionStillProcessingInitialIntervalSeconds", "1")
+                .WithEnvironment("Retry__RegistryTransactionStillProcessingIntervalIncrementSeconds", "5")
+                .WithEnvironment("Job__CheckForWithdrawnCertificatesIntervalInSeconds", "5")
+                .WithEnvironment("Job__ExpireCertificatesIntervalInSeconds", "5")
+                .WithEnvironment("network__ConfigurationUri", "file:///app/tmp/" + Path.GetFileName(configFile))
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(WalletHttpPort))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
@@ -83,8 +122,9 @@ public class ProjectOriginStack : RegistryFixture
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/stamp:3.0.0")
+                .WithImage("ghcr.io/project-origin/stamp:5.0.1")
                 .WithNetwork(Network)
+                .WithNetworkAliases(StampAlias)
                 .WithPortBinding(hostPort, StampHttpPort)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("RestApiOptions__PathBase", StampPathBase)

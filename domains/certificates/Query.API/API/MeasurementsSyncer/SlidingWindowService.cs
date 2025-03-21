@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using API.MeasurementsSyncer.Metrics;
+using API.Models;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
-using Measurements.V1;
 
 namespace API.MeasurementsSyncer;
 
@@ -34,12 +34,12 @@ public class SlidingWindowService
             .Where(m => m.Gsrn == window.GSRN)
             .Where(m =>
             {
-                if (m.QuantityMissing)
+                if (m.IsQuantityMissing)
                 {
                     _measurementSyncMetrics.AddFilterDueQuantityMissingFlag(1);
                 }
 
-                return !m.QuantityMissing;
+                return !m.IsQuantityMissing;
             })
             .Where(m =>
             {
@@ -66,7 +66,7 @@ public class SlidingWindowService
             })
             .Where(m =>
             {
-                if (m.Quality is EnergyQuantityValueQuality.Measured or EnergyQuantityValueQuality.Calculated)
+                if (m.Quality is EnergyQuality.Measured or EnergyQuality.Calculated)
                     return true;
 
                 _measurementSyncMetrics.AddFilterDueQuality(1);
@@ -286,7 +286,7 @@ public class SlidingWindowService
 
     private static bool IsMeasurementQuantityMissing(Measurement measurement)
     {
-        return measurement.QuantityMissing;
+        return measurement.IsQuantityMissing;
     }
 
     private static bool ContainsGapAfterLastMeasurement(UnixTimestamp newSyncEndPosition, Measurement lastMeasurement)

@@ -55,6 +55,11 @@ public class UnixTimestamp : ValueObject
         return new UnixTimestamp(timestamp.ToUnixTimeSeconds());
     }
 
+    public static UnixTimestamp Create(DateTime timestamp)
+    {
+        return Create(new DateTimeOffset(timestamp));
+    }
+
     public static UnixTimestamp Max(UnixTimestamp a, UnixTimestamp b)
     {
         return a.EpochSeconds > b.EpochSeconds ? a : b;
