@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using AdminPortal.Models;
 using EnergyOrigin.IntegrationEvents.Events.OrganizationWhitelisted;
 using MassTransit;
 using MediatR;
