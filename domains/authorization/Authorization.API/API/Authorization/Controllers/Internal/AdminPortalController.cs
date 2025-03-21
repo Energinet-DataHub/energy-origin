@@ -20,7 +20,7 @@ namespace API.Authorization.Controllers.Internal;
 public class AdminPortalController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
-    [Route("first-party-organizations/")] // First-Party == Organizations.Where(Tin.Value == null || string.Empty());
+    [Route("first-party-organizations/")]
     [ProducesResponseType(typeof(FirstPartyOrganizationsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(FirstPartyOrganizationsResponse), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetFirstPartyOrganizations(

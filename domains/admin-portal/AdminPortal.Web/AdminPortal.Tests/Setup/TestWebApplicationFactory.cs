@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using AdminPortal.Dtos;
+using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;

@@ -1,0 +1,46 @@
+<div class="modal fade" id="addOrganizationModal" tabindex="-1" aria-labelledby="addOrganizationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addOrganizationModalLabel">Add Organization to Whitelist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addOrganizationForm" asp-controller="WhitelistedOrganizations" asp-action="WhitelistFirstPartyOrganization" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="tin" class="form-label">TIN (8 digits)</label>
+                        <input type="text" class="form-control" id="tin" name="Tin"
+                               pattern="^\d{8}$" required
+                               placeholder="Enter 8-digit TIN">
+                        <div class="invalid-feedback">
+                            TIN must be exactly 8 digits.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmAddBtn">Add Organization</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Add Organization with TIN: <span id="confirmTin"></span> to Whitelist?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-primary" id="confirmYesBtn">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
