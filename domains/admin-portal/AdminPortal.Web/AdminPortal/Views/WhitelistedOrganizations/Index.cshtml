@@ -2,11 +2,30 @@
 
 <div class="container mt-4">
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white py-3">
+        <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
             <h2 class="h4 mb-0">Whitelisted Organizations</h2>
+            <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addOrganizationModal">
+                <i class="bi bi-plus-circle me-1"></i> Add Organization
+            </button>
         </div>
 
         <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
             <!-- Search and Filters Section -->
             <div class="mb-4">
                 <div class="row g-3 align-items-end">
@@ -52,6 +71,8 @@
     </div>
 </div>
 
+<partial name="_AddOrganizationModal" />
+
 <style>
     .filter-highlight {
         background-color: #fff3cd !important;
@@ -76,6 +97,37 @@
             const clearButton = document.getElementById('clearSearch');
             const table = document.getElementById('organizationsTable');
             let filterTimeout;
+
+            const addOrganizationForm = document.getElementById('addOrganizationForm');
+            const confirmAddBtn = document.getElementById('confirmAddBtn');
+            const confirmYesBtn = document.getElementById('confirmYesBtn');
+            const tinInput = document.getElementById('tin');
+            const confirmTin = document.getElementById('confirmTin');
+
+            confirmAddBtn.addEventListener('click', function() {
+                if (!tinInput.checkValidity()) {
+                    tinInput.classList.add('is-invalid');
+                    return;
+                }
+
+                tinInput.classList.remove('is-invalid');
+
+                confirmTin.textContent = tinInput.value;
+
+                const addModal = bootstrap.Modal.getInstance(document.getElementById('addOrganizationModal'));
+                addModal.hide();
+
+                const confirmModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                confirmModal.show();
+            });
+
+            confirmYesBtn.addEventListener('click', function() {
+                addOrganizationForm.submit();
+            });
+
+            document.getElementById('addOrganizationModal').addEventListener('hidden.bs.modal', function () {
+                tinInput.classList.remove('is-invalid');
+            });
 
             document.querySelectorAll('#organizationsTable tbody td:nth-child(2), #organizationsTable tbody td:nth-child(3)')
                 .forEach(cell => {

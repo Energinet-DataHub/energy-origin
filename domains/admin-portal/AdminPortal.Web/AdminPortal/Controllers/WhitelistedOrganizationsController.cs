@@ -21,6 +21,7 @@ public class WhitelistedOrganizationsController : Controller
 
     }
 
+    [HttpGet]
     public async Task<IActionResult> Index()
     {
         var whitelistedOrganizations = await _whitelistedOrganizationsQuery.GetWhitelistedOrganizationsAsync();
@@ -28,10 +29,20 @@ public class WhitelistedOrganizationsController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> WhitelistFirstPartyOrganization([FromForm] AddOrganizationToWhitelistRequest request)
     {
-        var command = new AddOrganizationToWhitelistCommand { Tin = request.Tin };
-        await _mediator.Send(command);
+        try
+        {
+            var command = new AddOrganizationToWhitelistCommand { Tin = request.Tin };
+            await _mediator.Send(command);
+
+            TempData["SuccessMessage"] = $"Organization with TIN {request.Tin} has been successfully added to the whitelist.";
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Failed to add organization: {ex.Message}";
+        }
 
         return RedirectToAction(nameof(Index));
     }
