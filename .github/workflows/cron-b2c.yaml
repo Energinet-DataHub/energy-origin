@@ -1,0 +1,13 @@
+name: Update B2C
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "*/10 * * * *"
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/update-b2c
+        

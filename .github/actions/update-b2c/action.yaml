@@ -1,0 +1,56 @@
+name: Update B2C
+description: Update B2C redirect URLs
+
+inputs:
+  azure-client-id:
+    description: Azure Client ID.
+    required: false
+    default: 291fedbd-35c0-4fcb-9088-498d0c96c50d
+  azure-tenant-id:
+    description: Azure Tenant ID.
+    required: false
+    default: d3803538-de83-47f3-bc72-54843a8592f2
+runs:
+  using: composite
+  steps:
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        client-id: ${{ inputs.azure-client-id }}
+        tenant-id: ${{ inputs.azure-tenant-id }}
+        allow-no-subscriptions: true
+    - name: Update redirect URLs
+      env: 
+        ettFrontendAppObjectId: 8b172c40-82a1-4d7c-b1d0-cd7eeb94d81b
+      shell: bash
+      run: |
+        az ad app show --id ${{ env.ettFrontendAppObjectId }}
+
+        previewBranches=$(git ls-remote https://github.com/Energinet-DataHub/eo-base-environment.git | grep "preview")
+        previewDnsPrefixes=$(echo "${previewBranches}" | cut -c 61- | tr '[:upper:]' '[:lower:]' | sed 's/[^0-9a-z]*//g')
+        previewRedirectUrlsEn=$(echo "${previewDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.p.acorn-dev.dk/en/callback|")
+        previewRedirectUrlsDa=$(echo "${previewDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.p.acorn-dev.dk/da/callback|")
+
+        vclusterBranches=$(git ls-remote https://github.com/Energinet-DataHub/eo-base-environment.git | grep "vcluster")
+        vclusterDnsPrefixes=$(echo "${vclusterBranches}" | cut -c 62- | tr '[:upper:]' '[:lower:]' | sed 's/[^0-9a-z]*//g')
+        vclusterRedirectUrlsEn=$(echo "${vclusterDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.v.acorn-dev.dk/en/callback|")
+        vclusterRedirectUrlsDa=$(echo "${vclusterDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.v.acorn-dev.dk/da/callback|")
+
+        redirectUrls=$(echo -e "${previewRedirectUrlsEn}\n${previewRedirectUrlsDa}\n${vclusterRedirectUrlsEn}\n${vclusterRedirectUrlsDa}")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://jwt.io")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttp://localhost:4200/da/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttp://localhost:4200/en/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://localhost:4200/da/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://localhost:4200/en/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://demo.energytrackandtrace.dk/da/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://demo.energytrackandtrace.dk/en/callback")
+
+        redirectUrlsJsonArray=$(echo "${redirectUrls}" | sed 's|^|"|' | sed 's|$|"|' | jq -s)
+
+        echo "${redirectUrlsJsonArray}"
+
+        az rest --method "patch" --uri "https://graph.microsoft.com/v1.0/applications/${{ env.ettFrontendAppObjectId }}" --headers "{'Content-Type': 'application/json'}" --body "{'spa': {'redirectUris': ${redirectUrlsJsonArray}}}" 
+
+        az ad app show --id ${{ env.ettFrontendAppObjectId }}
+
+            
