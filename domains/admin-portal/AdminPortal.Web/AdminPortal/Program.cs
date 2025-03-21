@@ -145,6 +145,11 @@ builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("Certi
         );
     });
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Path = "/ett-admin-portal"; // <--- important with UsePathBase
+});
+
 builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("AuthorizationClient", (sp, client) =>
     {
         var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
@@ -169,6 +174,7 @@ var app = builder.Build();
 app.MapHealthChecks("/health").AllowAnonymous();
 
 app.UseForwardedHeaders();
+app.UseSession();
 
 app.MapRazorPages();
 if (!app.Environment.IsDevelopment())
