@@ -14,12 +14,10 @@ public record WhitelistOrganizationCommand(Tin Tin) : IRequest;
 public class WhitelistOrganizationCommandHandler : IRequestHandler<WhitelistOrganizationCommand>
 {
     private readonly IWhitelistedRepository _whitelistedRepository;
-    private readonly IUnitOfWork _unitOfWork;
 
-    public WhitelistOrganizationCommandHandler(IWhitelistedRepository whitelistedRepository, IUnitOfWork unitOfWork)
+    public WhitelistOrganizationCommandHandler(IWhitelistedRepository whitelistedRepository)
     {
         _whitelistedRepository = whitelistedRepository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task Handle(WhitelistOrganizationCommand request, CancellationToken cancellationToken)
