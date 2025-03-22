@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using API.Data;
 using API.Models;
 using API.Repository;
 using EnergyOrigin.Domain.ValueObjects;
