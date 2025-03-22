@@ -1,8 +1,8 @@
 using API.Authorization._Features_.Internal;
-using API.Data;
 using API.Models;
 using API.Repository;
 using EnergyOrigin.Domain.ValueObjects;
+using MockQueryable;
 using NSubstitute;
 
 namespace API.UnitTests._Features_.Internal;
@@ -10,13 +10,11 @@ namespace API.UnitTests._Features_.Internal;
 public class WhitelistOrganizationCommandHandlerTests
 {
     private readonly IWhitelistedRepository _whitelistedRepository;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly WhitelistOrganizationCommandHandler _handler;
 
     public WhitelistOrganizationCommandHandlerTests()
     {
         _whitelistedRepository = Substitute.For<IWhitelistedRepository>();
-        _unitOfWork = Substitute.For<IUnitOfWork>();
         _handler = new WhitelistOrganizationCommandHandler(_whitelistedRepository);
     }
 
@@ -24,31 +22,38 @@ public class WhitelistOrganizationCommandHandlerTests
     public async Task Given_OrganizationDoesNotExist_WhenHandlingCommand_Then_AddsOrganizationToWhitelist()
     {
         var tin = Tin.Create("12345678");
-        _whitelistedRepository.Query().Returns(Enumerable.Empty<Whitelisted>().AsQueryable());
+
+        var mock = new List<Whitelisted>()
+            .AsQueryable()
+            .BuildMock();
+
+        _whitelistedRepository.Query().Returns(mock);
 
         var command = new WhitelistOrganizationCommand(tin);
 
         await _handler.Handle(command, CancellationToken.None);
 
-        await _unitOfWork.Received(1).BeginTransactionAsync();
-        await _whitelistedRepository.Received(1).AddAsync(Arg.Is<Whitelisted>(w => w.Tin == tin), Arg.Any<CancellationToken>());
-        await _unitOfWork.Received(1).CommitAsync();
+        await _whitelistedRepository.Received(1).AddAsync(
+            Arg.Is<Whitelisted>(w => w.Tin == tin),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task Given_OrganizationAlreadyExists_WhenHandlingCommand_Then_DoesNotAddAndCommits()
+    public async Task Given_OrganizationAlreadyExists_WhenHandlingCommand_Then_DoesNotAdd()
     {
         var tin = Tin.Create("12345678");
         var existing = Whitelisted.Create(tin);
 
-        _whitelistedRepository.Query().Returns(new[] { existing }.AsQueryable());
+        var mock = new List<Whitelisted> { existing }
+            .AsQueryable()
+            .BuildMock();
+
+        _whitelistedRepository.Query().Returns(mock);
 
         var command = new WhitelistOrganizationCommand(tin);
 
         await _handler.Handle(command, CancellationToken.None);
 
-        await _unitOfWork.Received(1).BeginTransactionAsync();
         await _whitelistedRepository.DidNotReceive().AddAsync(Arg.Any<Whitelisted>(), Arg.Any<CancellationToken>());
-        await _unitOfWork.Received(1).CommitAsync();
     }
 }
