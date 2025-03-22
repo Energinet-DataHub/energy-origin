@@ -50,7 +50,6 @@ builder.Services.AddOpenTelemetryMetricsAndTracing("Authorization.API", otlpOpti
 builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddControllersWithEnumsAsStrings();
-builder.Services.AddDbContextFactory<ApplicationDbContext>();
 
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
