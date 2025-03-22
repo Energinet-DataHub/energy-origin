@@ -17,7 +17,7 @@ public class WhitelistOrganizationCommandHandlerTests
     {
         _whitelistedRepository = Substitute.For<IWhitelistedRepository>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _handler = new WhitelistOrganizationCommandHandler(_whitelistedRepository, _unitOfWork);
+        _handler = new WhitelistOrganizationCommandHandler(_whitelistedRepository);
     }
 
     [Fact]
