@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using AdminPortal.Dtos;
+using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
 using AdminPortal.Tests.Setup;
 using Microsoft.AspNetCore.Mvc.Testing;

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace AdminPortal.Dtos;
+namespace AdminPortal.Dtos.Response;
 
 public record ContractsForAdminPortalResponseItem(
     string GSRN,

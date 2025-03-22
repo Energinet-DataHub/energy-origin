@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace AdminPortal.Dtos;
+namespace AdminPortal.Dtos.Response;
 
 public class WhitelistedOrganizationViewModel
 {

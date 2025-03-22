@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
-using AdminPortal.Dtos;
+using AdminPortal.Dtos.Response;
 
 namespace AdminPortal.Services;
 public interface IAggregationQuery

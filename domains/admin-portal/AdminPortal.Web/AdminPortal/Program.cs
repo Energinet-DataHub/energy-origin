@@ -1,19 +1,27 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using AdminPortal.Models;
 using AdminPortal.Options;
 using AdminPortal.Services;
 using AdminPortal.Utilities;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Health;
+using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.OpenTelemetry;
+using EnergyOrigin.Setup.RabbitMq;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -22,30 +30,57 @@ using IAuthorizationService = AdminPortal.Services.IAuthorizationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<AdminPortalOptions>().BindConfiguration(AdminPortalOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<AdminPortalOptions>().BindConfiguration(AdminPortalOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddHealthChecks();
+builder.Services.AddOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.RabbitMq).ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddMassTransit(o =>
+{
+    o.SetKebabCaseEndpointNameFormatter();
+    o.AddConfigureEndpointsCallback((_, cfg) =>
+    {
+        if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
+        {
+            rmq.SetQuorumQueue(3);
+        }
+    });
+    o.UsingRabbitMq((context, cfg) =>
+    {
+        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+        var url = $"rabbitmq://{options.Host}:{options.Port}";
+
+        cfg.Host(new Uri(url), h =>
+        {
+            h.Username(options.Username);
+            h.Password(options.Password);
+        });
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssemblyContaining<AddOrganizationToWhitelistCommandHandler>());
+
+builder.Services.AddDefaultHealthChecks();
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("AdminPortal.Web", otlpOptions.ReceiverEndpoint);
 
-builder.AddSerilog();
+builder.AddSerilogWithoutOutboxLogs();
+
 builder.Services.AddRazorPages();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -134,6 +169,8 @@ builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("Aut
             sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
         );
     });
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 var app = builder.Build();
 
