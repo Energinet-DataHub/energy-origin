@@ -24,8 +24,6 @@ public class WhitelistOrganizationCommandHandler : IRequestHandler<WhitelistOrga
 
     public async Task Handle(WhitelistOrganizationCommand request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
-
         var existingEntry = await _whitelistedRepository.Query()
             .FirstOrDefaultAsync(w => w.Tin == request.Tin, cancellationToken);
 
@@ -34,7 +32,5 @@ public class WhitelistOrganizationCommandHandler : IRequestHandler<WhitelistOrga
             var whitelisted = Whitelisted.Create(request.Tin);
             await _whitelistedRepository.AddAsync(whitelisted, cancellationToken);
         }
-
-        await _unitOfWork.CommitAsync();
     }
 }
