@@ -25,12 +25,12 @@ using Technology = API.ContractService.Clients.Technology;
 namespace API.IntegrationTests;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class ContractsV20240515Tests
+public class ContractsTests
 {
     private readonly QueryApiWebApplicationFactory factory;
     private readonly MeasurementsWireMock measurementsWireMock;
 
-    public ContractsV20240515Tests(IntegrationTestFixture integrationTestFixture)
+    public ContractsTests(IntegrationTestFixture integrationTestFixture)
     {
         factory = integrationTestFixture.WebApplicationFactory;
         measurementsWireMock = integrationTestFixture.MeasurementsMock;

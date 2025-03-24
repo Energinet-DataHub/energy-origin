@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using EnergyOrigin.Setup;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -30,7 +31,8 @@ public sealed class MeasurementsWireMock : IDisposable
         server.ResetMappings();
         var responseJson = BuildMeteringPointsResponse(meteringPoints);
         server
-            .Given(Request.Create().WithPath("/api/measurements/meteringpoints"))
+            .Given(Request.Create().WithPath("/api/measurements/meteringpoints")
+                .WithHeader(ApiVersions.HeaderName, ApiVersions.Version1))
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(responseJson));
     }
 
@@ -40,7 +42,8 @@ public sealed class MeasurementsWireMock : IDisposable
 
         var responseJson = BuildMeteringPointsResponse([(gsrn, type, technology ?? defaultTechnology, canBeUsedforIssuingCertificates)]);
         server
-            .Given(Request.Create().WithPath("/api/measurements/meteringpoints"))
+            .Given(Request.Create().WithPath("/api/measurements/meteringpoints")
+                .WithHeader(ApiVersions.HeaderName, ApiVersions.Version1))
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(responseJson));
     }
 

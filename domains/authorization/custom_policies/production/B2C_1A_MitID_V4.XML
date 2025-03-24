@@ -5,8 +5,8 @@
         xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
         PolicySchemaVersion="0.3.0.0"
         TenantId="datahubeopenerginet.onmicrosoft.com"
-        PolicyId="B2C_1A_MitID_v3"
-        PublicPolicyUri="http://datahubeopenerginet.onmicrosoft.com/B2C_1A_MitID_v3"
+        PolicyId="B2C_1A_MitID_V4"
+        PublicPolicyUri="http://datahubeopenerginet.onmicrosoft.com/B2C_1A_MitID_V4"
         DeploymentMode="Production"
         UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
 
@@ -252,7 +252,7 @@
                     <InputClaim ClaimTypeReferenceId="org_ids" TransformationClaimType="inputClaim"/>
                 </InputClaims>
                 <InputParameters>
-                    <InputParameter DataType="string" Id="delimiter" Value=" " />
+                    <InputParameter DataType="string" Id="delimiter" Value=" "/>
                 </InputParameters>
                 <OutputClaims>
                     <OutputClaim ClaimTypeReferenceId="org_ids_string" TransformationClaimType="outputClaim"/>
@@ -274,6 +274,31 @@
     </BuildingBlocks>
 
     <ClaimsProviders>
+
+        <ClaimsProvider>
+            <!-- The technical profile(s) defined in this section is required by the framework to be included in all custom policies. -->
+            <DisplayName>Trustframework Policy Engine TechnicalProfiles</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="TpEngine_c3bd4fe2-1775-4013-b91d-35f16d377d13">
+                    <DisplayName>Trustframework Policy Engine Default Technical Profile</DisplayName>
+                    <Protocol Name="None"/>
+                    <Metadata>
+                        <Item Key="url">{service:te}</Item>
+                    </Metadata>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Session management</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SM-Noop">
+                    <DisplayName>Noop Session Management Provider</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.SSO.NoopSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
         <ClaimsProvider>
             <DisplayName>Token Issuer</DisplayName>
             <TechnicalProfiles>
@@ -295,33 +320,16 @@
         </ClaimsProvider>
 
         <ClaimsProvider>
-            <!-- The technical profile(s) defined in this section is required by the framework to be included in all custom policies. -->
-            <DisplayName>Trustframework Policy Engine TechnicalProfiles</DisplayName>
-            <TechnicalProfiles>
-                <TechnicalProfile Id="TpEngine_c3bd4fe2-1775-4013-b91d-35f16d377d13">
-                    <DisplayName>Trustframework Policy Engine Default Technical Profile</DisplayName>
-                    <Protocol Name="None"/>
-                    <Metadata>
-                        <Item Key="url">{service:te}</Item>
-                    </Metadata>
-                </TechnicalProfile>
-            </TechnicalProfiles>
-        </ClaimsProvider>
-
-        <ClaimsProvider>
             <DisplayName>Azure AD Technical Profiles</DisplayName>
             <TechnicalProfiles>
 
                 <TechnicalProfile Id="AAD-UserWriteUsingAlternativeSecurityId">
                     <DisplayName>Azure Active Directory technical profile for handling social accounts</DisplayName>
-                    <Protocol Name="Proprietary"
-                              Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
-
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
                     <Metadata>
                         <Item Key="Operation">Write</Item>
                         <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">true</Item>
                     </Metadata>
-
                     <CryptographicKeys>
                         <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer"/>
                     </CryptographicKeys>
@@ -329,23 +337,20 @@
                         <InputClaim ClaimTypeReferenceId="alternativeSecurityId" PartnerClaimType="alternativeSecurityId" Required="true"/>
                     </InputClaims>
                     <PersistedClaims>
-                        <!-- Required claims -->
                         <PersistedClaim ClaimTypeReferenceId="alternativeSecurityId"/>
                         <PersistedClaim ClaimTypeReferenceId="userPrincipalName"/>
                         <PersistedClaim ClaimTypeReferenceId="displayName" DefaultValue="unknown"/>
-
-                        <!-- Optional claims -->
                     </PersistedClaims>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="objectId"/>
                         <OutputClaim ClaimTypeReferenceId="newUser" PartnerClaimType="newClaimsPrincipalCreated"/>
                     </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
 
                 <TechnicalProfile Id="AAD-UserReadUsingAlternativeSecurityId">
                     <DisplayName>Azure Active Directory</DisplayName>
-                    <Protocol Name="Proprietary"
-                              Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
                     <Metadata>
                         <Item Key="Operation">Read</Item>
                         <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">false</Item>
@@ -357,13 +362,11 @@
                         <InputClaim ClaimTypeReferenceId="alternativeSecurityId" PartnerClaimType="alternativeSecurityId" Required="true"/>
                     </InputClaims>
                     <OutputClaims>
-                        <!-- Required claims -->
                         <OutputClaim ClaimTypeReferenceId="objectId"/>
-
-                        <!-- Optional claims -->
                         <OutputClaim ClaimTypeReferenceId="userPrincipalName"/>
                         <OutputClaim ClaimTypeReferenceId="displayName"/>
                     </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
             </TechnicalProfiles>
         </ClaimsProvider>
@@ -398,22 +401,17 @@
                         <OutputClaimsTransformation ReferenceId="CreateUserPrincipalName"/>
                         <OutputClaimsTransformation ReferenceId="CreateAlternativeSecurityId"/>
                     </OutputClaimsTransformations>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
             </TechnicalProfiles>
         </ClaimsProvider>
 
         <ClaimsProvider>
-            <DisplayName>HTTP Request Technical Profiles</DisplayName>
+            <DisplayName>Authorization consent</DisplayName>
             <TechnicalProfiles>
-                <TechnicalProfile Id="SM-Noop">
-                    <DisplayName>Noop Session Management Provider</DisplayName>
-                    <Protocol Name="Proprietary"
-                              Handler="Web.TPEngine.SSO.NoopSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
-                </TechnicalProfile>
-
                 <TechnicalProfile Id="clientCredentialsMethod">
-                    <DisplayName>Check that the user has entered a valid access code by using Claims Transformations</DisplayName>
-                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <DisplayName>Self authentication</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
                     <Metadata>
                         <Item Key="ServiceUrl">https://login.microsoftonline.com/d44e264e-0b26-4428-b114-7db4e2d0ac95/oauth2/v2.0/token</Item> <!-- ETT: d44e264e-0b26-4428-b114-7db4e2d0ac95 change this to your TenantID  -->
                         <Item Key="SendClaimsIn">Form</Item>
@@ -425,19 +423,18 @@
                     <InputClaims>
                         <InputClaim ClaimTypeReferenceId="self_grant_type" PartnerClaimType="grant_type" DefaultValue="client_credentials"/>
                         <InputClaim ClaimTypeReferenceId="self_client_id" PartnerClaimType="client_id" DefaultValue="44d0d03c-bd3f-47a9-97b2-c13eb8d8e901"/> <!-- ett: ett-authorization-b2c client id: 44d0d03c-bd3f-47a9-97b2-c13eb8d8e901 -->
-                        <InputClaim ClaimTypeReferenceId="self_client_secret" PartnerClaimType="client_secret" DefaultValue="bTn..."/> <!-- ett: ett-authorization-b2c client secret: bTn...  -->
+                        <InputClaim ClaimTypeReferenceId="self_client_secret" PartnerClaimType="client_secret" DefaultValue="MNB..."/> <!-- ett: ett-authorization-b2c client secret: bTn...  -->
                         <InputClaim ClaimTypeReferenceId="self_scope" PartnerClaimType="scope" DefaultValue="https://datahubeopenerginet.onmicrosoft.com/energy-origin/.default"/>
                     </InputClaims>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="self_access_token" PartnerClaimType="access_token"/>
                     </OutputClaims>
-                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
 
                 <TechnicalProfile Id="userinfo">
-                    <DisplayName>Check that the user has entered a valid access code by using Claims Transformations</DisplayName>
-                    <Protocol Name="Proprietary"
-                              Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <DisplayName>Userinfo</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
                     <Metadata>
                         <Item Key="ServiceUrl">https://energytrackandtrace.dk/api/authorization/userinfo</Item>
                         <Item Key="AuthenticationType">Bearer</Item>
@@ -451,18 +448,18 @@
                         <InputClaim ClaimTypeReferenceId="mitIDBearerToken"/>
                     </InputClaims>
                     <OutputClaims>
-                        <OutputClaim ClaimTypeReferenceId="mitid_sub" />
-                        <OutputClaim ClaimTypeReferenceId="mitid_name" />
-                        <OutputClaim ClaimTypeReferenceId="email" />
-                        <OutputClaim ClaimTypeReferenceId="org_cvr" />
-                        <OutputClaim ClaimTypeReferenceId="org_name" />
+                        <OutputClaim ClaimTypeReferenceId="mitid_sub"/>
+                        <OutputClaim ClaimTypeReferenceId="mitid_name"/>
+                        <OutputClaim ClaimTypeReferenceId="email"/>
+                        <OutputClaim ClaimTypeReferenceId="org_cvr"/>
+                        <OutputClaim ClaimTypeReferenceId="org_name"/>
                     </OutputClaims>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
 
                 <TechnicalProfile Id="authorizationMethod">
-                    <DisplayName>Check that the user has entered a valid access code by using Claims Transformations</DisplayName>
-                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <DisplayName>Consent</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
                     <Metadata>
                         <Item Key="ServiceUrl">https://energytrackandtrace.dk/api/authorization/user-consent</Item>
                         <Item Key="SendClaimsIn">Body</Item>
@@ -483,7 +480,7 @@
                         <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
                         <OutputClaim ClaimTypeReferenceId="sub_type"/>
                         <OutputClaim ClaimTypeReferenceId="org_name"/>
-                        <OutputClaim ClaimTypeReferenceId="org_id" />
+                        <OutputClaim ClaimTypeReferenceId="org_id"/>
                         <OutputClaim ClaimTypeReferenceId="org_ids"/>
                         <OutputClaim ClaimTypeReferenceId="scope"/>
                         <OutputClaim ClaimTypeReferenceId="tos_accepted" PartnerClaimType="terms_accepted"/>
@@ -491,13 +488,13 @@
                     <OutputClaimsTransformations>
                         <OutputClaimsTransformation ReferenceId="OrgIdsAsStringTransformation"/>
                     </OutputClaimsTransformations>
-                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
 
                 <TechnicalProfile Id="ConditionalMitIDLogoutMethod">
-                    <DisplayName>Perform user logout in MitID, so a later logout-and-login in ETT will require re-authentication in MitID</DisplayName>
-                    <Protocol Name="Proprietary"
-                              Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
+                    <DisplayName>Perform user logout in MitID, so a later logout-and-login in ETT will require re-authentication in MitID
+                    </DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
                     <Metadata>
                         <Item Key="ServiceUrl">https://netseidbroker.dk/op/api/v1/session/logout</Item> <!-- From: https://netseidbroker.dk/op/swagger/index.html -->
                         <Item Key="AuthenticationType">Bearer</Item>
@@ -510,7 +507,7 @@
                     </Metadata>
                     <InputClaims>
                         <InputClaim ClaimTypeReferenceId="mitIDBearerToken" PartnerClaimType="access_token"/> <!-- Put in property 'access_token' in body of request -->
-                        <InputClaim ClaimTypeReferenceId="mitIDBearerToken" /> <!-- Needed for 'UseClaimAsBearerToken' defined above-->
+                        <InputClaim ClaimTypeReferenceId="mitIDBearerToken"/> <!-- Needed for 'UseClaimAsBearerToken' defined above-->
                     </InputClaims>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
@@ -594,7 +591,7 @@
     <RelyingParty>
         <DefaultUserJourney ReferenceId="MitIdJourney"/>
         <UserJourneyBehaviors>
-            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="126..." DeveloperMode="true" ClientEnabled="true" ServerEnabled="true" TelemetryVersion="1.0.0"/> <!-- ett: 126... change this to your ApplicationInsights InstrumentationKey -->
+            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="126..." DeveloperMode="false" ClientEnabled="true" ServerEnabled="true" TelemetryVersion="1.0.0"/> <!-- ett: 126... change this to your ApplicationInsights InstrumentationKey -->
         </UserJourneyBehaviors>
         <TechnicalProfile Id="ProductionPolicyProfile">
             <DisplayName>Production Policy Profile</DisplayName>
