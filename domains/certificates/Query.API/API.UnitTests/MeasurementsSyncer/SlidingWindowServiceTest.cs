@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
+using API.Models;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
-using Measurements.V1;
 using NSubstitute;
 using Testing.Helpers;
 using Xunit;
@@ -88,11 +88,10 @@ public class SlidingWindowServiceTest
         var measurements = new List<Measurement>
         {
             CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds, 10,
-                quantityMissing,
-                EnergyQuantityValueQuality.Measured),
+                quantityMissing ? EnergyQuality.Missing : EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(2)).EpochSeconds,
-                10, quantityMissing, EnergyQuantityValueQuality.Measured)
+                10, quantityMissing ? EnergyQuality.Missing : EnergyQuality.Measured)
         };
         var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
 
@@ -117,8 +116,7 @@ public class SlidingWindowServiceTest
         var measurements = new List<Measurement>
         {
             CreateMeasurement(_gsrn, _now.Add(TimeSpan.FromHours(-5)).EpochSeconds, _now.Add(TimeSpan.FromHours(-4)).EpochSeconds, 10,
-                quantityMissing,
-                EnergyQuantityValueQuality.Measured)
+                quantityMissing ? EnergyQuality.Missing : EnergyQuality.Measured)
         };
         var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
 
@@ -142,8 +140,7 @@ public class SlidingWindowServiceTest
         // Fake fetched measurements
         var measurements = Enumerable.Range(1, 15).Select(i =>
                 CreateMeasurement(_gsrn, _now.Add(TimeSpan.FromHours(-i - 1)).EpochSeconds, _now.Add(TimeSpan.FromHours(-i)).EpochSeconds, 10,
-                    quantityMissing,
-                    EnergyQuantityValueQuality.Measured))
+                    quantityMissing ? EnergyQuality.Missing : EnergyQuality.Measured))
             .ToList();
 
         var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
@@ -166,8 +163,7 @@ public class SlidingWindowServiceTest
         // Fake fetched measurements
         var measurements = Enumerable.Range(1, 15).Select(i =>
                 CreateMeasurement(_gsrn, _now.Add(TimeSpan.FromHours(-i - 1)).EpochSeconds, _now.Add(TimeSpan.FromHours(-i)).EpochSeconds, 10,
-                    quantityMissing,
-                    EnergyQuantityValueQuality.Measured))
+                    quantityMissing ? EnergyQuality.Missing : EnergyQuality.Measured))
             .ToList();
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
 
@@ -188,32 +184,31 @@ public class SlidingWindowServiceTest
         // Fake fetched measurements
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false,
-                EnergyQuantityValueQuality.Measured),
+            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(2)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(2)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(3)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(3)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(4)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(4)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(5)).EpochSeconds,
-                10, false, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(5)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(6)).EpochSeconds,
-                10, false, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(6)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(7)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(7)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(8)).EpochSeconds,
-                10, false, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(8)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(9)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
         };
 
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
@@ -240,17 +235,16 @@ public class SlidingWindowServiceTest
         // Fake fetched measurements
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, true,
-                EnergyQuantityValueQuality.Measured),
+            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(2)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(2)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(3)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(3)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(4)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
         };
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
 
@@ -272,8 +266,7 @@ public class SlidingWindowServiceTest
         // Fake fetched measurements
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromDays(1)).EpochSeconds, 10, false,
-                EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromDays(1)).EpochSeconds, 10, EnergyQuality.Measured)
         };
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
 
@@ -295,8 +288,7 @@ public class SlidingWindowServiceTest
         // Fake fetched measurements
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromDays(1)).EpochSeconds, newSynchronizationPoint.EpochSeconds, 10, false,
-                EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromDays(1)).EpochSeconds, newSynchronizationPoint.EpochSeconds, 10, EnergyQuality.Measured)
         };
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
 
@@ -337,13 +329,13 @@ public class SlidingWindowServiceTest
         var measurements = new List<Measurement>
         {
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(60)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(75)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured),
+                synchronizationPoint.Add(TimeSpan.FromMinutes(75)).EpochSeconds, 10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(75)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Calculated),
+                synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds, 10, EnergyQuality.Calculated),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured),
+                synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds, 10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(120)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Calculated)
+                synchronizationPoint.Add(TimeSpan.FromMinutes(120)).EpochSeconds, 10, EnergyQuality.Calculated)
         };
         var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
 
@@ -363,11 +355,11 @@ public class SlidingWindowServiceTest
         var measurements = new List<Measurement>
         {
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(60)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(75)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Estimated),
+                synchronizationPoint.Add(TimeSpan.FromMinutes(75)).EpochSeconds, 10, EnergyQuality.Estimated),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(75)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured),
+                synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds, 10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Calculated),
+                synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds, 10, EnergyQuality.Calculated),
         };
         var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
 
@@ -386,11 +378,11 @@ public class SlidingWindowServiceTest
         var measurements = new List<Measurement>
         {
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(60)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(75)).EpochSeconds, 0, false, EnergyQuantityValueQuality.Measured),
+                synchronizationPoint.Add(TimeSpan.FromMinutes(75)).EpochSeconds, 0, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(75)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured),
+                synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds, 10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromMinutes(90)).EpochSeconds,
-                synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds, uint.MaxValue, false, EnergyQuantityValueQuality.Calculated),
+                synchronizationPoint.Add(TimeSpan.FromMinutes(105)).EpochSeconds, uint.MaxValue, EnergyQuality.Calculated),
         };
         var measurementsToPublish = _sut.FilterMeasurements(window, measurements);
 
@@ -409,8 +401,7 @@ public class SlidingWindowServiceTest
         // Fake fetched measurements
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromMinutes(15)).EpochSeconds, 10, false,
-                EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromMinutes(15)).EpochSeconds, 10, EnergyQuality.Measured)
         };
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
 
@@ -431,32 +422,32 @@ public class SlidingWindowServiceTest
         // Fake fetched measurements
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds, 10, false,
-                EnergyQuantityValueQuality.Measured),
+            CreateMeasurement(_gsrn, synchronizationPoint.EpochSeconds, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds, 10,
+                EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(1)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(2)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(2)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(3)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(3)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(4)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(4)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(5)).EpochSeconds,
-                10, false, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(5)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(6)).EpochSeconds,
-                10, false, EnergyQuantityValueQuality.Measured),
+                10,EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(6)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(7)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(7)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(8)).EpochSeconds,
-                10, false, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Measured),
             CreateMeasurement(_gsrn, synchronizationPoint.Add(TimeSpan.FromHours(8)).EpochSeconds,
                 synchronizationPoint.Add(TimeSpan.FromHours(9)).EpochSeconds,
-                10, true, EnergyQuantityValueQuality.Measured),
+                10, EnergyQuality.Missing),
         };
 
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
@@ -476,7 +467,7 @@ public class SlidingWindowServiceTest
         // Fake fetched measurements
         var measurements = Enumerable.Range(-10, 8).Select(i =>
                 CreateMeasurement(_gsrn, _now.RoundToLatestHour().Add(TimeSpan.FromHours(i)).EpochSeconds,
-                    _now.RoundToLatestHour().Add(TimeSpan.FromHours(i + 1)).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured))
+                    _now.RoundToLatestHour().Add(TimeSpan.FromHours(i + 1)).EpochSeconds, 10, EnergyQuality.Measured))
             .ToList();
         _sut.UpdateSlidingWindow(window, measurements, newSynchronizationPoint);
 
@@ -567,12 +558,12 @@ public class SlidingWindowServiceTest
 
         // Measurement in existing missing interval
         var measurement1 = CreateMeasurement(_gsrn, missingIntervalStart.AddHours(1).EpochSeconds, missingIntervalStart.AddHours(2).EpochSeconds, 10,
-            false, EnergyQuantityValueQuality.Measured);
+            EnergyQuality.Measured);
         measurements.Add(measurement1);
 
         // Measurement before window sync point but outside missing interval
         var measurement2 = CreateMeasurement(_gsrn, missingIntervalEnd.AddHours(3).EpochSeconds, missingIntervalEnd.AddHours(4).EpochSeconds, 11,
-            false, EnergyQuantityValueQuality.Measured);
+            EnergyQuality.Measured);
         measurements.Add(measurement2);
 
         // New sync position earlier than window sync point
@@ -604,11 +595,11 @@ public class SlidingWindowServiceTest
 
         // Measurements before window sync point
         var measurement1 = CreateMeasurement(_gsrn, syncPoint.AddHours(-10).EpochSeconds, syncPoint.AddHours(-9).EpochSeconds, 10,
-            false, EnergyQuantityValueQuality.Measured);
+            EnergyQuality.Measured);
         measurements.Add(measurement1);
 
         var measurement2 = CreateMeasurement(_gsrn, syncPoint.AddHours(-13).EpochSeconds, syncPoint.AddHours(-12).EpochSeconds, 11,
-            false, EnergyQuantityValueQuality.Measured);
+            EnergyQuality.Measured);
         measurements.Add(measurement2);
 
         // New sync position earlier than window sync point
@@ -660,12 +651,10 @@ public class SlidingWindowServiceTest
         // When filtering and updating sliding window
         var measurements = new List<Measurement>();
         var beforeThreshold1 = missingIntervalStart.AddHours(10); // After missing interval, before window sync point
-        measurements.Add(CreateMeasurement(_gsrn, beforeThreshold1.EpochSeconds, beforeThreshold1.AddHours(1).EpochSeconds, 10, false,
-            EnergyQuantityValueQuality.Measured));
+        measurements.Add(CreateMeasurement(_gsrn, beforeThreshold1.EpochSeconds, beforeThreshold1.AddHours(1).EpochSeconds, 10, EnergyQuality.Measured));
 
         var afterThreshold1 = syncPoint.AddHours(2); // After window sync point
-        measurements.Add(CreateMeasurement(_gsrn, afterThreshold1.EpochSeconds, afterThreshold1.AddHours(1).EpochSeconds, 10, false,
-            EnergyQuantityValueQuality.Measured));
+        measurements.Add(CreateMeasurement(_gsrn, afterThreshold1.EpochSeconds, afterThreshold1.AddHours(1).EpochSeconds, 10, EnergyQuality.Measured));
 
         var filteredMeasurements = _sut.FilterMeasurements(window, measurements);
         _sut.UpdateSlidingWindow(window, measurements, newSyncPoint);
@@ -691,8 +680,7 @@ public class SlidingWindowServiceTest
 
         var initialMeasurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, startPositionOfMissingInterval.EpochSeconds, initialThreshold.EpochSeconds, 10, false,
-                EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, startPositionOfMissingInterval.EpochSeconds, initialThreshold.EpochSeconds, 10, EnergyQuality.Measured)
         };
         _sut.UpdateSlidingWindow(window, initialMeasurements, initialThreshold);
         Assert.Equal(initialThreshold, window.SynchronizationPoint);
@@ -700,7 +688,7 @@ public class SlidingWindowServiceTest
         var newThreshold = _now.RoundToLatestHour();
         var newMeasurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, initialThreshold.EpochSeconds, newThreshold.EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, initialThreshold.EpochSeconds, newThreshold.EpochSeconds, 10, EnergyQuality.Measured)
         };
         _sut.UpdateSlidingWindow(window, newMeasurements, newThreshold);
 
@@ -723,14 +711,14 @@ public class SlidingWindowServiceTest
         var measurement1StartTime = UnixTimestamp.Create(DateTimeOffset.Parse("2024-11-25T23:00:00.0000000+00:00"));
         var measurement1EndTime = UnixTimestamp.Create(DateTimeOffset.Parse("2024-11-26T00:00:00.0000000+00:00"));
         var measurement1Quantity = 70810000;
-        var measurement1 = CreateMeasurement(_gsrn, measurement1StartTime.EpochSeconds, measurement1EndTime.EpochSeconds, measurement1Quantity, false,
-            EnergyQuantityValueQuality.Measured);
+        var measurement1 = CreateMeasurement(_gsrn, measurement1StartTime.EpochSeconds, measurement1EndTime.EpochSeconds, measurement1Quantity,
+            EnergyQuality.Measured);
 
         var measurement2StartTime = UnixTimestamp.Create(DateTimeOffset.Parse("2024-11-26T00:00:00.0000000+00:00"));
         var measurement2EndTime = UnixTimestamp.Create(DateTimeOffset.Parse("2024-11-26T01:00:00.0000000+00:00"));
         var measurement2Quantity = 69600000;
-        var measurement2 = CreateMeasurement(_gsrn, measurement2StartTime.EpochSeconds, measurement2EndTime.EpochSeconds, measurement2Quantity, false,
-            EnergyQuantityValueQuality.Measured);
+        var measurement2 = CreateMeasurement(_gsrn, measurement2StartTime.EpochSeconds, measurement2EndTime.EpochSeconds, measurement2Quantity,
+            EnergyQuality.Measured);
 
         var allMeasurements = new List<Measurement> { measurement1, measurement2 };
 
@@ -752,7 +740,7 @@ public class SlidingWindowServiceTest
         // When updating sliding window with age restriction and measurement already published
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, now.AddHours(-20).EpochSeconds, now.AddHours(-19).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, now.AddHours(-20).EpochSeconds, now.AddHours(-19).EpochSeconds, 10, EnergyQuality.Measured)
         };
 
         var filteredMeasurements = _sut.FilterMeasurements(window, measurements);
@@ -776,7 +764,7 @@ public class SlidingWindowServiceTest
         // When updating sliding window with age restriction and measurement not published before
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, now.AddHours(-6).EpochSeconds, now.AddHours(-5).EpochSeconds, 10, false, EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, now.AddHours(-6).EpochSeconds, now.AddHours(-5).EpochSeconds, 10, EnergyQuality.Measured)
         };
 
         var filteredMeasurements = _sut.FilterMeasurements(window, measurements);
@@ -803,8 +791,8 @@ public class SlidingWindowServiceTest
         // When updating sliding window with age restriction and measurement not published before
         var measurements = new List<Measurement>
         {
-            CreateMeasurement(_gsrn, syncPoint.AddHours(-1).EpochSeconds, syncPoint.EpochSeconds, 11, false, EnergyQuantityValueQuality.Measured),
-            CreateMeasurement(_gsrn, syncPoint.EpochSeconds, syncPoint.AddHours(1).EpochSeconds, 22, false, EnergyQuantityValueQuality.Measured)
+            CreateMeasurement(_gsrn, syncPoint.AddHours(-1).EpochSeconds, syncPoint.EpochSeconds, 11, EnergyQuality.Measured),
+            CreateMeasurement(_gsrn, syncPoint.EpochSeconds, syncPoint.AddHours(1).EpochSeconds, 22, EnergyQuality.Measured)
         };
 
         var filteredMeasurements = _sut.FilterMeasurements(window, measurements);
@@ -819,7 +807,7 @@ public class SlidingWindowServiceTest
         filteredMeasurements.Should().HaveCount(2);
     }
 
-    private Measurement CreateMeasurement(Gsrn gsrn, long from, long to, long quantity, bool quantityMissing, EnergyQuantityValueQuality quality)
+    private Measurement CreateMeasurement(Gsrn gsrn, long from, long to, long quantity, EnergyQuality quality)
     {
         return new Measurement
         {
@@ -827,8 +815,7 @@ public class SlidingWindowServiceTest
             DateFrom = from,
             DateTo = to,
             Gsrn = gsrn.Value,
-            Quantity = quantity,
-            QuantityMissing = quantityMissing
+            Quantity = quantity
         };
     }
 }

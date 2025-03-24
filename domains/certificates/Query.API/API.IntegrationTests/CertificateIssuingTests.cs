@@ -7,16 +7,19 @@ using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
+using API.MeasurementsSyncer.Clients.DataHub3;
+using API.MeasurementsSyncer.Clients.DataHubFacade;
+using API.Models;
 using API.UnitTests;
 using DataContext.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
-using Measurements.V1;
 using Meteringpoint.V1;
 using NSubstitute;
 using Testing.Extensions;
 using Xunit;
+using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 
 namespace API.IntegrationTests;
 
@@ -50,25 +53,28 @@ public sealed class CertificateIssuingTests : TestBase
         factory.RegistryName = _integrationTestFixture.WebApplicationFactory.RegistryName;
         factory.MeasurementsSyncEnabled = true;
 
-        var measurementClientMock = Substitute.For<Measurements.V1.Measurements.MeasurementsClient>();
-        measurementClientMock.GetMeasurementsAsync(Arg.Any<GetMeasurementsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(
-            new GetMeasurementsResponse
-            {
-                Measurements =
-                {
-                    new Measurement()
-                    {
-                        Gsrn = gsrn.Value,
-                        Quantity = 42,
-                        DateFrom = utcMidnight.ToUnixTimeSeconds(),
-                        DateTo = utcMidnight.AddHours(1).ToUnixTimeSeconds(),
-                        Quality = EnergyQuantityValueQuality.Measured,
-                        QuantityMissing = false
-                    }
-                }
-            });
+        var dataHub3ClientMock = Substitute.For<IDataHub3Client>();
+        dataHub3ClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(
+            Any.TimeSeriesApiResponse(gsrn, [Any.PointAggregation(utcMidnight.ToUnixTimeSeconds(), 42)]));
+        factory.DataHub3Client = dataHub3ClientMock;
 
-        factory.measurementsClient = measurementClientMock;
+        var dataHubFacadeClientMock = Substitute.For<IDataHubFacadeClient>();
+        dataHubFacadeClientMock
+            .ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(
+                new ListMeteringPointForCustomerCaResponse
+                {
+                    Relations =
+                    [
+                        new()
+                        {
+                            MeteringPointId = gsrn.Value,
+                            ValidFromDate = DateTime.Now.AddHours(-1)
+                        }
+                    ],
+                    Rejections = []
+                });
+        factory.DataHubFacadeClient = dataHubFacadeClientMock;
+
         var meteringpointClientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
         var meteringPoint = new MeteringPoint
         {
@@ -102,7 +108,7 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.Start.Should().Be(utcMidnight.ToUnixTimeSeconds());
         granularCertificate.End.Should().Be(utcMidnight.AddHours(1).ToUnixTimeSeconds());
         granularCertificate.GridArea.Should().Be("DK1");
-        granularCertificate.Quantity.Should().Be(42);
+        granularCertificate.Quantity.Should().Be(42m.ToWattHours());
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
         granularCertificate.Attributes.Should().NotBeEmpty();
