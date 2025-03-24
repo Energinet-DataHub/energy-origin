@@ -33,4 +33,20 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
 
         return Ok(new FirstPartyOrganizationsResponse(responseItems));
     }
+
+    [HttpGet]
+    [Route("whitelisted-organizations/")]
+    [ProducesResponseType(typeof(WhitelistedOrganizationsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WhitelistedOrganizationsResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetWhitelistedOrganizations(
+        [FromServices] ILogger<AdminPortalController> logger, CancellationToken cancellationToken)
+    {
+        var queryResult = await mediator.Send(new GetWhitelistedOrganizationsQuery(), cancellationToken);
+
+        var responseItems = queryResult.Result
+            .Select(o => new WhitelistedOrganizationsResponseItem(o.OrganizationId, o.Tin))
+            .ToList();
+
+        return Ok(new WhitelistedOrganizationsResponse(responseItems));
+    }
 }

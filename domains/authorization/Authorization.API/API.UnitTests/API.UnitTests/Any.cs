@@ -28,6 +28,11 @@ public class Any
         return API.Models.Terms.Create(1);
     }
 
+    public static Whitelisted Whitelisted(Tin? tin = null)
+    {
+        return API.Models.Whitelisted.Create(tin ?? Tin());
+    }
+
     public static UserName Name()
     {
         return UserName.Create("Test Testesen");
