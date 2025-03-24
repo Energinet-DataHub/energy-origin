@@ -35,10 +35,16 @@ public class MeteringPointsClient : IMeteringPointsClient
         ValidateHttpContext();
         SetAuthorizationHeader();
         ValidateOwnerAndSubjectMatch(owner);
+        SetApiVersionHeader();
 
         var meteringPointsUrl = $"/api/measurements/meteringpoints?organizationId={owner}";
 
         return await httpClient.GetFromJsonAsync<MeteringPointsResponse>(meteringPointsUrl, jsonSerializerOptions, cancellationToken);
+    }
+
+    private void SetApiVersionHeader()
+    {
+        httpClient.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
     }
 
     private void SetAuthorizationHeader()
