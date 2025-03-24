@@ -18,9 +18,8 @@ namespace API.Cvr.Api.Controllers;
 [Authorize(Policy.Frontend)]
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
-[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [Route("api/transfer/cvr")]
-public class Cvr20240515Controller(CvrClient client) : Controller
+public class CvrController(CvrClient client) : Controller
 {
     /// <summary>
     /// Get CVR registered company information for multiple CVR numbers

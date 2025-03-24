@@ -17,7 +17,6 @@ public class MeteringPointsClient : IMeteringPointsClient
 {
     private readonly HttpClient httpClient;
     private readonly IHttpContextAccessor httpContextAccessor;
-    private const string DownstreamApiVersion = ApiVersions.Version20240515;
 
     private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
@@ -36,7 +35,6 @@ public class MeteringPointsClient : IMeteringPointsClient
         ValidateHttpContext();
         SetAuthorizationHeader();
         ValidateOwnerAndSubjectMatch(owner);
-        SetApiVersionHeader();
 
         var meteringPointsUrl = $"/api/measurements/meteringpoints?organizationId={owner}";
 
@@ -47,13 +45,6 @@ public class MeteringPointsClient : IMeteringPointsClient
     {
         httpClient.DefaultRequestHeaders.Authorization =
             AuthenticationHeaderValue.Parse(httpContextAccessor.HttpContext!.Request.Headers.Authorization!);
-    }
-
-    private void SetApiVersionHeader()
-    {
-        var downstreamApiVersion = DownstreamApiVersion;
-        httpClient.DefaultRequestHeaders.Remove("X-API-Version");
-        httpClient.DefaultRequestHeaders.Add("X-API-Version", downstreamApiVersion);
     }
 
     private void ValidateHttpContext()
@@ -76,11 +67,6 @@ public class MeteringPointsClient : IMeteringPointsClient
                 throw new HttpRequestException("Owner must match subject");
             }
         }
-    }
-
-    private bool IsBearerTokenIssuedByB2C()
-    {
-        return IdentityDescriptor.IsSupported(httpContextAccessor.HttpContext!);
     }
 }
 

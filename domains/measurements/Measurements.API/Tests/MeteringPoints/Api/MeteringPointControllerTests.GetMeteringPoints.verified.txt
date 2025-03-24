@@ -1,0 +1,22 @@
+﻿{
+  Result: [
+    {
+      GSRN: 1234567890123456,
+      GridArea: DK2,
+      Address: {
+        Address1: Street 1,
+        Address2: 1 1,
+        City: City,
+        PostalCode: 1234,
+        Country: DK
+      },
+      Technology: {
+        AibTechCode: T070000,
+        AibFuelCode: F00000000
+      },
+      CanBeUsedForIssuingCertificates: true,
+      Capacity: 12345678
+    }
+  ],
+  Status: Created
+}

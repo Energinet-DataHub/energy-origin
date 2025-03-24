@@ -4,7 +4,7 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="M:API.Cvr.Api.Controllers.Cvr20240515Controller.GetCvrCompanies(API.Cvr.Api.Dto.Requests.CvrRequestDto)">
+        <member name="M:API.Cvr.Api.Controllers.CvrController.GetCvrCompanies(API.Cvr.Api.Dto.Requests.CvrRequestDto)">
             <summary>
             Get CVR registered company information for multiple CVR numbers
             </summary>

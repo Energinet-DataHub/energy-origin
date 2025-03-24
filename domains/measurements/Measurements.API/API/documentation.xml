@@ -4,7 +4,7 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="M:API.MeteringPoints.Api.Controllers.MeteringPoints20240515Controller.GetMeteringPoints(System.Guid)">
+        <member name="M:API.MeteringPoints.Api.Controllers.MeteringPointsController.GetMeteringPoints(System.Guid)">
             <summary>
             Get metering points from DataHub2.0
             </summary>

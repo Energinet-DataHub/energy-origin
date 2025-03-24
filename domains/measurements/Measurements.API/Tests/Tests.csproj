@@ -44,13 +44,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="MeteringPoints\Api\MeteringPoint20240515ControllerTests.GetMeteringPoints.verified.txt">
+      <None Update="MeteringPoints\Api\MeteringPointControllerTests.GetMeteringPoints.verified.txt">
         <ParentFile>MeteringPointControllerTests</ParentFile>
-        <DependentUpon>MeteringPoint20240515ControllerTests.cs</DependentUpon>
+        <DependentUpon>MeteringPointControllerTests.cs</DependentUpon>
       </None>
-      <None Update="MeteringPoints\Api\MeteringPoint20240515ControllerTests.GetMeteringPoints_GivenChildMp_ExpectChildMpOmitted.verified.txt">
+      <None Update="MeteringPoints\Api\MeteringPointControllerTests.GetMeteringPoints_GivenChildMp_ExpectChildMpOmitted.verified.txt">
         <ParentFile>MeteringPointControllerTests</ParentFile>
-        <DependentUpon>MeteringPoint20240515ControllerTests.cs</DependentUpon>
+        <DependentUpon>MeteringPointControllerTests.cs</DependentUpon>
       </None>
       <None Update="MeteringPoints\Api\MeteringPoint20240515ControllerTests.NoMeteringPointsReturnsPendingRelation.verified.txt">
         <ParentFile>MeteringPointControllerTests</ParentFile>
