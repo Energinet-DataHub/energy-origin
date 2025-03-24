@@ -17,7 +17,6 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiVersion(ApiVersions.Version1)]
-[ApiVersion(ApiVersions.Version20230101, Deprecated = true)]
 public class ClientController : ControllerBase
 {
     private readonly IMediator _mediator;

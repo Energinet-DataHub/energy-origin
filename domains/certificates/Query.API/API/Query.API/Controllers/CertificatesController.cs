@@ -14,14 +14,13 @@ namespace API.Query.API.Controllers;
 [Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
-[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [ApiExplorerSettings(IgnoreApi = true)]
-public class Certificates20240515Controller : ControllerBase
+public class CertificatesController : ControllerBase
 {
     private readonly AccessDescriptor _accessDescriptor;
     private readonly CertificatesSpreadsheetExporter _exporter;
 
-    public Certificates20240515Controller(AccessDescriptor accessDescriptor, CertificatesSpreadsheetExporter exporter)
+    public CertificatesController(AccessDescriptor accessDescriptor, CertificatesSpreadsheetExporter exporter)
     {
         _accessDescriptor = accessDescriptor;
         _exporter = exporter;

@@ -104,8 +104,7 @@ app.MapControllers();
 
 var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
 app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
-    .HasApiVersion(ApiVersions.Version1AsInt)
-    .HasApiVersion(ApiVersions.Version20240515AsInt);
+    .HasApiVersion(ApiVersions.Version1AsInt);
 
 if (args.Contains("--swagger"))
 {

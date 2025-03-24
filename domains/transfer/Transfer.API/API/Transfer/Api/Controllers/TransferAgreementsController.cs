@@ -20,7 +20,6 @@ namespace API.Transfer.Api.Controllers;
 [ApiController]
 [Authorize(Policy.Frontend)]
 [ApiVersion(ApiVersions.Version1)]
-[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [Route("api/transfer/transfer-agreements")]
 public class TransferAgreementsController(
     IMediator mediator,

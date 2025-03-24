@@ -14,7 +14,6 @@ namespace API.Authorization.Controllers;
 [ApiController]
 
 [ApiVersion(ApiVersions.Version1)]
-[ApiVersion(ApiVersions.Version20230101, Deprecated = true)]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class TermsController(IMediator mediator, IdentityDescriptor identityDescriptor) : ControllerBase
 {
