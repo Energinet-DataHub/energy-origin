@@ -29,7 +29,7 @@ public class DataHub3Client : IDataHub3Client
     public async Task<MeteringPointData[]?> GetMeasurements(List<Gsrn> gsrns, long dateFromEpoch, long dateToEpoch, CancellationToken cancellationToken)
     {
         var meteringPointIds = string.Join(",", gsrns.Select(x => x.Value));
-        var url = $"/ListAggregatedTimeSeries?meteringPointIds={meteringPointIds}&dateFromEpoch={dateFromEpoch}&dateToEpoch={dateToEpoch}&Aggregation=Hour";
+        var url = $"ListAggregatedTimeSeries?meteringPointIds={meteringPointIds}&dateFromEpoch={dateFromEpoch}&dateToEpoch={dateToEpoch}&Aggregation=Hour";
 
         var baseUrl = _client.BaseAddress;
         _logger.LogError("Url: " + baseUrl + url);
