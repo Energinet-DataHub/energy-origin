@@ -19,7 +19,6 @@ namespace API.Authorization.Controllers;
 
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
-[ApiVersion(ApiVersions.Version20230101, Deprecated = true)]
 [Authorize(Policy.Frontend)]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class ConsentController(IMediator mediator, IdentityDescriptor identity) : ControllerBase

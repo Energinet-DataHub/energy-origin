@@ -19,16 +19,15 @@ namespace API.MeteringPoints.Api.Controllers;
 [Authorize(Policy.FrontendOr3rdParty)]
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
-[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
 [Route("api/measurements/meteringpoints")]
-public class MeteringPoints20240515Controller : ControllerBase
+public class MeteringPointsController : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
     private readonly ApplicationDbContext _dbContext;
     private readonly IdentityDescriptor _identityDescriptor;
     private readonly AccessDescriptor _accessDescriptor;
 
-    public MeteringPoints20240515Controller(Meteringpoint.V1.Meteringpoint.MeteringpointClient client, ApplicationDbContext dbContext,
+    public MeteringPointsController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client, ApplicationDbContext dbContext,
         IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor)
     {
         _client = client;
