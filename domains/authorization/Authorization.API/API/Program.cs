@@ -79,6 +79,9 @@ builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IOrganizationConsentRepository, OrganizationOrganizationConsentRepository>();
 builder.Services.AddScoped<ITermsRepository, TermsRepository>();
+builder.Services.AddScoped<IWhitelistedRepository, WhitelistedRepository>();
+
+// Metrics
 builder.Services.AddSingleton<IAuthorizationMetrics, AuthorizationMetrics>();
 
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using API.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
-using Measurements.V1;
 using Meteringpoint.V1;
 using Technology = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3.Technology;
 
@@ -30,7 +30,7 @@ public class EnergyMeasuredIntegrationEventMapper
             RecipientId: recipientId,
             DateFrom: measurement.DateFrom,
             DateTo: measurement.DateTo,
-            Quantity: measurement.Quantity,
+            Quantity: measurement.Quantity.ToWattHours(),
             Capacity: meteringPoint.Capacity,
             Technology: MapTechnology(technology),
             MeterType: MapMeterType(meteringPointType),
@@ -52,13 +52,12 @@ public class EnergyMeasuredIntegrationEventMapper
         return new Technology(technology?.FuelCode ?? "", technology?.TechCode ?? "");
     }
 
-    private Quality MapQuality(EnergyQuantityValueQuality quantity) =>
+    private Quality MapQuality(EnergyQuality quantity) =>
         quantity switch
         {
-            EnergyQuantityValueQuality.Measured => Quality.Measured,
-            EnergyQuantityValueQuality.Estimated => Quality.Estimated,
-            EnergyQuantityValueQuality.Calculated => Quality.Calculated,
-            EnergyQuantityValueQuality.Revised => Quality.Revised,
+            EnergyQuality.Measured => Quality.Measured,
+            EnergyQuality.Estimated => Quality.Estimated,
+            EnergyQuality.Calculated => Quality.Calculated,
             _ => throw new ArgumentOutOfRangeException(nameof(quantity), quantity, null)
         };
 }

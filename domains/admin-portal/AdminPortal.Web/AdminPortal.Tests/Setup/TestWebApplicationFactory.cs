@@ -42,6 +42,11 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             return Task.FromResult(
                 new FirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>()));
         }
+        public Task<WhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync()
+        {
+            return Task.FromResult(
+                new WhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>()));
+        }
     }
 
     private class MockCertificatesService : ICertificatesService

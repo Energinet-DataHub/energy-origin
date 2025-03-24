@@ -1,0 +1,147 @@
+@model List<AdminPortal.Dtos.WhitelistedOrganizationViewModel>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white py-3">
+            <h2 class="h4 mb-0">Whitelisted Organizations</h2>
+        </div>
+
+        <div class="card-body">
+            <!-- Search and Filters Section -->
+            <div class="mb-4">
+                <div class="row g-3 align-items-end">
+                    <!-- Search Box -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Search organizations</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-search text-secondary"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control border-start-0"
+                                   placeholder="Search across all columns..."
+                                   aria-label="Search">
+                            <button id="clearSearch" class="btn btn-outline-secondary" type="button">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive rounded-3">
+                <table class="table table-hover table-bordered mb-0" id="organizationsTable">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Organization ID</th>
+                        <th>TIN</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var org in Model)
+                    {
+                        <tr>
+                            <td class="fw-medium">@org.OrganizationId</td>
+                            <td>@org.Tin</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .filter-highlight {
+        background-color: #fff3cd !important;
+        font-weight: 500;
+    }
+    .sortable {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .sortable:hover {
+        background-color: #f8f9fa;
+    }
+    .table th {
+        white-space: nowrap;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const clearButton = document.getElementById('clearSearch');
+            const table = document.getElementById('organizationsTable');
+            let filterTimeout;
+
+            document.querySelectorAll('#organizationsTable tbody td:nth-child(2), #organizationsTable tbody td:nth-child(3)')
+                .forEach(cell => {
+                    cell.style.cursor = 'pointer';
+                    cell.addEventListener('click', function() {
+                        searchInput.value = this.textContent.trim();
+                        applyFilters();
+                    });
+                });
+
+            function debounce(func, delay) {
+                return function(...args) {
+                    clearTimeout(filterTimeout);
+                    filterTimeout = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            }
+
+            function highlightMatches(text, filter) {
+                if (!filter) return text;
+                const regex = new RegExp(`(${filter})`, 'gi');
+                return text.replace(regex, '<span class="filter-highlight">$1</span>');
+            }
+
+            const applyFilters = debounce(function() {
+                const globalFilter = searchInput.value.toLowerCase();
+
+                Array.from(table.rows).slice(1).forEach(row => {
+                    const cells = row.cells;
+                    let showRow = true;
+
+                    if (globalFilter) {
+                        const rowText = Array.from(cells).map(cell => cell.textContent).join(' ').toLowerCase();
+                        showRow = rowText.includes(globalFilter);
+                    }
+
+                    Array.from(cells).forEach(cell => {
+                        if (globalFilter) {
+                            cell.innerHTML = highlightMatches(cell.dataset.originalHtml || cell.textContent, globalFilter);
+                        } else {
+                            cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
+                        }
+                    });
+
+                    row.style.display = showRow ? '' : 'none';
+                });
+            }, 300);
+
+            searchInput.addEventListener('input', applyFilters);
+            clearButton.addEventListener('click', () => {
+                searchInput.value = '';
+                Array.from(table.rows).slice(1).forEach(row => {
+                    Array.from(row.cells).forEach(cell => {
+                        cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
+                    });
+                    row.style.display = '';
+                });
+                applyFilters();
+            });
+
+            Array.from(table.rows).slice(1).forEach(row => {
+                Array.from(row.cells).forEach(cell => {
+                    cell.dataset.originalHtml = cell.innerHTML;
+                });
+            });
+        });
+    </script>
+}
