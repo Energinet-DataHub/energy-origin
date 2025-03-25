@@ -58,6 +58,25 @@ public class MeasurementsSyncServiceTest
     }
 
     [Fact]
+    public async Task FetchMeasurements_EmptyList_NoDataFetched()
+    {
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(Any.Gsrn(), UnixTimestamp.Now());
+
+        var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
+        _dataHub3Client
+            .GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        var service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState,
+            new SlidingWindowService(measurementSyncMetrics),
+            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options),
+            _dataHub3Client, _dataHubFacadeClient);
+
+        var response = await service.FetchMeasurements(slidingWindow, _syncInfo.MeteringPointOwner, UnixTimestamp.Now().AddHours(1), CancellationToken.None);
+        response.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task FetchMeasurements_BeforeContractStartDate_NoDataFetched()
     {
         // Given synchronization point

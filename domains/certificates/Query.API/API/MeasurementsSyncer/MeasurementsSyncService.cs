@@ -136,14 +136,14 @@ public class MeasurementsSyncService
             var gsrns = new List<Gsrn> { new(slidingWindow.GSRN) };
             var mp = await _dataHub3Client.GetMeasurements(gsrns, dateFrom, newSyncPoint.EpochSeconds, cancellationToken);
 
-            if (mp == null)
+            if (mp == null || mp.Length == 0)
             {
                 _logger.LogInformation("No meteringPointData found for GSRN {GSRN} in period from {from} to: {to}", slidingWindow.GSRN,
                     DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"), DateTimeOffset.FromUnixTimeSeconds(newSyncPoint.EpochSeconds).ToString("o"));
                 return [];
             }
 
-            var days = mp.First().PointAggregationGroups;
+            var days = mp[0].PointAggregationGroups;
             var measurements = new List<Measurement>();
             foreach (var day in days)
             {
