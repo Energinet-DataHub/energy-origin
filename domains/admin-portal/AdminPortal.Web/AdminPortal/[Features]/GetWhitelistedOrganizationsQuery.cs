@@ -2,19 +2,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
+using AdminPortal.Services;
 
-namespace AdminPortal.Services;
+namespace AdminPortal._Features_;
 
 public interface IWhitelistedOrganizationsQuery
 {
     Task<List<WhitelistedOrganizationViewModel>> GetWhitelistedOrganizationsAsync();
 }
 
-public class WhitelistedOrganizationsQuery : IWhitelistedOrganizationsQuery
+public class GetWhitelistedOrganizationsQuery : IWhitelistedOrganizationsQuery
 {
     private readonly IAuthorizationService _authorizationService;
 
-    public WhitelistedOrganizationsQuery(IAuthorizationService authorizationService)
+    public GetWhitelistedOrganizationsQuery(IAuthorizationService authorizationService)
     {
         _authorizationService = authorizationService;
     }

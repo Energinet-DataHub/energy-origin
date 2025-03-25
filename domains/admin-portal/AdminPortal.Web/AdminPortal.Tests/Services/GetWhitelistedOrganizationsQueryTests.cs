@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AdminPortal._Features_;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
 using NSubstitute;
 
 namespace AdminPortal.Tests.Services;
 
-public class WhitelistedOrganizationsQueryTests
+public class GetWhitelistedOrganizationsQueryTests
 {
     [Fact]
     public async Task Given_NoWhitelistedOrganizations_When_GetWhitelistedOrganizationsAsyncIsCalled_Then_ReturnsEmptyList()
@@ -26,7 +27,7 @@ public class WhitelistedOrganizationsQueryTests
         mockAuthorizationService.GetWhitelistedOrganizationsAsync().Returns(Task.FromResult(predefinedOrganizations));
         mockAuthorizationService.GetWhitelistedOrganizationsAsync().Returns(Task.FromResult(predefinedWhitelistedOrgs));
 
-        var service = new WhitelistedOrganizationsQuery(mockAuthorizationService);
+        var service = new GetWhitelistedOrganizationsQuery(mockAuthorizationService);
 
         var result = await service.GetWhitelistedOrganizationsAsync();
 
@@ -57,7 +58,7 @@ public class WhitelistedOrganizationsQueryTests
         mockAuthorizationService.GetWhitelistedOrganizationsAsync().Returns(Task.FromResult(predefinedOrganizations));
         mockAuthorizationService.GetWhitelistedOrganizationsAsync().Returns(Task.FromResult(predefinedWhitelistedOrgs));
 
-        var service = new WhitelistedOrganizationsQuery(mockAuthorizationService);
+        var service = new GetWhitelistedOrganizationsQuery(mockAuthorizationService);
 
         var result = await service.GetWhitelistedOrganizationsAsync();
 

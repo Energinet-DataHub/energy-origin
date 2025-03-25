@@ -1,14 +1,12 @@
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using AdminPortal.Models;
+using AdminPortal._Features_;
 using AdminPortal.Options;
 using AdminPortal.Services;
 using AdminPortal.Utilities;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Health;
-using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.RabbitMq;
 using MassTransit;
@@ -17,11 +15,9 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web.UI;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -89,7 +85,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 builder.Services.AddScoped<IAggregationQuery, ActiveContractsQuery>();
-builder.Services.AddScoped<IWhitelistedOrganizationsQuery, WhitelistedOrganizationsQuery>();
+builder.Services.AddScoped<IWhitelistedOrganizationsQuery, GetWhitelistedOrganizationsQuery>();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
