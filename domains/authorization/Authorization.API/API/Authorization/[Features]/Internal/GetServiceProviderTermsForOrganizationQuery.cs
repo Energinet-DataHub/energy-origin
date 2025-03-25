@@ -11,7 +11,7 @@ namespace API.Authorization._Features_.Internal;
 
 public record GetServiceProviderTermsForOrganizationQuery(OrganizationId OrgId) : IRequest<bool>;
 
-public class GetServiceProviderTermsQueryHandler(
+public class GetSericeProviderTermsQueryHandler(
     IOrganizationRepository organizationRepository
 ) : IRequestHandler<GetServiceProviderTermsForOrganizationQuery, bool>
 {

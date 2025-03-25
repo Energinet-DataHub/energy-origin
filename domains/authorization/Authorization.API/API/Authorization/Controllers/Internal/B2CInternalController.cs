@@ -83,4 +83,18 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             commandResult.Scope,
             commandResult.TermsAccepted));
     }
+
+    [HttpPost]
+    [Route("whitelisted-organization")]
+    [SwaggerOperation(
+        Summary = "Gets whether an organization is whitelisted",
+        Description = "This endpoint is only used by Azure B2C"
+    )]
+    public async Task<ActionResult<bool>> GetIsWhitelistedOrganization(string tin)
+    {
+        var queryResult = await mediator.Send(new IsWhitelistedOrganizationQuery(tin));
+
+        // TODO: Return custom object
+        return Ok(queryResult);
+    }
 }
