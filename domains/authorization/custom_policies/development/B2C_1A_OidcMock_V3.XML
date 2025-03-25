@@ -5,8 +5,8 @@
         xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
         PolicySchemaVersion="0.3.0.0"
         TenantId="datahubeouenerginet.onmicrosoft.com"
-        PolicyId="B2C_1A_OidcMock_V2"
-        PublicPolicyUri="http://datahubeouenerginet.onmicrosoft.com/B2C_1A_OidcMock_V2"
+        PolicyId="B2C_1A_OidcMock_V3"
+        PublicPolicyUri="http://datahubeouenerginet.onmicrosoft.com/B2C_1A_OidcMock_V3"
         DeploymentMode="Development"
         UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
 
@@ -200,6 +200,42 @@
                 <UserHelpText/>
             </ClaimType>
 
+            <ClaimType Id="refreshTokenIssuedOnDateTime">
+                <DisplayName>refreshTokenIssuedOnDateTime</DisplayName>
+                <DataType>string</DataType>
+                <AdminHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</AdminHelpText>
+                <UserHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="refreshTokensValidFromDateTime">
+                <DisplayName>refreshTokensValidFromDateTime</DisplayName>
+                <DataType>string</DataType>
+                <AdminHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</AdminHelpText>
+                <UserHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="strongAuthenticationPhoneNumber">
+                <DisplayName>Phone Number</DisplayName>
+                <DataType>string</DataType>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+            <ClaimType Id="signInNames.emailAddress">
+                <DisplayName>Email Address</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Email address to use for signing in.</UserHelpText>
+                <UserInputType>TextBox</UserInputType>
+            </ClaimType>
+            <ClaimType Id="otherMails">
+                <DisplayName>Alternate Email Addresses</DisplayName>
+                <DataType>stringCollection</DataType>
+                <UserHelpText>Email addresses that can be used to contact the user.</UserHelpText>
+            </ClaimType>
+            <ClaimType Id="sub">
+                <DisplayName>Subject</DisplayName>
+                <DataType>string</DataType>
+                <DefaultPartnerClaimTypes>
+                    <Protocol Name="OpenIdConnect" PartnerClaimType="sub" />
+                </DefaultPartnerClaimTypes>
+                <UserHelpText/>
+            </ClaimType>
         </ClaimsSchema>
 
         <ClaimsTransformations>
@@ -245,6 +281,18 @@
                 <OutputClaims>
                     <OutputClaim ClaimTypeReferenceId="org_ids_string" TransformationClaimType="outputClaim"/>
                 </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="AssertRefreshTokenIssuedLaterThanValidFromDate" TransformationMethod="AssertDateTimeIsGreaterThan">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="refreshTokenIssuedOnDateTime" TransformationClaimType="leftOperand" />
+                    <InputClaim ClaimTypeReferenceId="refreshTokensValidFromDateTime" TransformationClaimType="rightOperand" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="AssertIfEqualTo" DataType="boolean" Value="false" />
+                    <InputParameter Id="AssertIfRightOperandIsNotPresent" DataType="boolean" Value="true" />
+                    <InputParameter Id="TreatAsEqualIfWithinMillseconds" DataType="int" Value="300000" />
+                </InputParameters>
             </ClaimsTransformation>
         </ClaimsTransformations>
 
@@ -452,6 +500,80 @@
             </TechnicalProfiles>
         </ClaimsProvider>
 
+        <ClaimsProvider>
+            <DisplayName>Refresh token journey</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="RefreshTokenReadAndSetup">
+                    <DisplayName>Trustframework Policy Engine Refresh Token Setup Technical Profile</DisplayName>
+                    <Protocol Name="None" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="refreshTokenIssuedOnDateTime" />
+
+                        <!-- Additional claims -->
+                        <!-- Output claims in RefreshTokenReadAndSetup must match the output claims in the OidcMockPolicyProfile -->
+                        <OutputClaim ClaimTypeReferenceId="name"/>
+                        <OutputClaim ClaimTypeReferenceId="org_cvr"/>
+                        <OutputClaim ClaimTypeReferenceId="org_name"/>
+                        <OutputClaim ClaimTypeReferenceId="org_id"/>
+                        <OutputClaim ClaimTypeReferenceId="org_ids_string" PartnerClaimType="org_ids"/>
+                        <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
+                        <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
+                        <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
+                        <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                        <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingObjectId-CheckRefreshTokenDate">
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="refreshTokensValidFromDateTime" />
+                        <OutputClaim ClaimTypeReferenceId="mapped_sub" PartnerClaimType="sub"/>
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="AssertRefreshTokenIssuedLaterThanValidFromDate" />
+                    </OutputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="AAD-UserReadUsingObjectId" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+
+                        <!-- Required claims -->
+                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
+
+                        <!-- Optional claims -->
+                        <OutputClaim ClaimTypeReferenceId="signInNames.emailAddress" />
+                        <OutputClaim ClaimTypeReferenceId="displayName" />
+                        <OutputClaim ClaimTypeReferenceId="otherMails" />
+                        <OutputClaim ClaimTypeReferenceId="givenName" />
+                        <OutputClaim ClaimTypeReferenceId="surname" />
+                    </OutputClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-Common">
+                    <DisplayName>Azure Active Directory</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.AzureActiveDirectoryProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+
+                    <!-- We need this here to suppress the SelfAsserted provider from invoking SSO on validation profiles. -->
+                    <IncludeInSso>false</IncludeInSso>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+
+        </ClaimsProvider>
     </ClaimsProviders>
 
     <UserJourneys>
@@ -502,17 +624,39 @@
                 <OrchestrationStep Order="7" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
             </OrchestrationSteps>
         </UserJourney>
+
+        <UserJourney Id="RedeemRefreshToken">
+            <PreserveOriginalAssertion>false</PreserveOriginalAssertion>
+            <OrchestrationSteps>
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="RefreshTokenSetupExchange" TechnicalProfileReferenceId="RefreshTokenReadAndSetup" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="CheckRefreshTokenDateFromAadExchange" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId-CheckRefreshTokenDate" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+                <OrchestrationStep Order="3" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+            </OrchestrationSteps>
+        </UserJourney>
+
     </UserJourneys>
 
     <RelyingParty>
         <DefaultUserJourney ReferenceId="OidcMockJourney"/>
+        <Endpoints>
+            <Endpoint Id="Token" UserJourneyReferenceId="RedeemRefreshToken"/>
+        </Endpoints>
         <UserJourneyBehaviors>
-            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="126..." DeveloperMode="true" ClientEnabled="true" ServerEnabled="true" TelemetryVersion="1.0.0"/>
+            <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="126..."  DeveloperMode="true" ClientEnabled="true" ServerEnabled="true" TelemetryVersion="1.0.0"/>
         </UserJourneyBehaviors>
         <TechnicalProfile Id="OidcMockPolicyProfile">
             <DisplayName>OidcMock Policy Profile</DisplayName>
             <Protocol Name="OpenIdConnect"/>
             <OutputClaims>
+                <!-- Output claims in the OidcMockPolicyProfile must match the output claims in RefreshTokenReadAndSetup -->
                 <OutputClaim ClaimTypeReferenceId="name"/>
                 <OutputClaim ClaimTypeReferenceId="org_cvr"/>
                 <OutputClaim ClaimTypeReferenceId="org_name"/>
@@ -522,6 +666,7 @@
                 <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
                 <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
         </TechnicalProfile>
