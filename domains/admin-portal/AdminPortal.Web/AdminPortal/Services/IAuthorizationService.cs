@@ -8,8 +8,9 @@ namespace AdminPortal.Services;
 
 public interface IAuthorizationService
 {
-    Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync();
-    Task<WhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync();
+    Task<GetFirstPartyOrganizationsResponse> GetOrganizationsHttpRequestAsync();
+    Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsHttpRequestAsync();
+    Task AddOrganizationToWhitelistHttpRequestAsync(string tin);
 }
 
 public class AuthorizationService : IAuthorizationService
@@ -21,19 +22,25 @@ public class AuthorizationService : IAuthorizationService
         _client = client;
     }
 
-    public async Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync()
+    public async Task<GetFirstPartyOrganizationsResponse> GetOrganizationsHttpRequestAsync()
     {
         var response = await _client.GetAsync("first-party-organizations/");
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<GetFirstPartyOrganizationsResponse>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
     }
 
-    public async Task<WhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync()
+    public async Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsHttpRequestAsync()
     {
         var response = await _client.GetAsync("whitelisted-organizations/");
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<WhitelistedOrganizationsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<GetWhitelistedOrganizationsResponse>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
+    }
+
+    public async Task AddOrganizationToWhitelistHttpRequestAsync(string tin)
+    {
+        var response = await _client.PostAsJsonAsync("whitelisted-organizations/", new { Tin = tin });
+        response.EnsureSuccessStatusCode();
     }
 }

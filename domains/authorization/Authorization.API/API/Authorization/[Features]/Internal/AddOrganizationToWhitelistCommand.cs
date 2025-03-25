@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using API.Data;
 using API.Models;
 using API.Repository;
 using EnergyOrigin.Domain.ValueObjects;
@@ -8,26 +9,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_.Internal;
 
-public record AddOrganizationToWhitelistCommand(Tin Tin) : IRequest;
-
-public class AddOrganizationToWhitelistCommandHandler : IRequestHandler<AddOrganizationToWhitelistCommand>
+public class AddOrganizationToWhitelistCommandHandler(
+    IWhitelistedRepository whitelistedRepository,
+    IUnitOfWork unitOfWork)
+    : IRequestHandler<AddOrganizationToWhitelistCommand>
 {
-    private readonly IWhitelistedRepository _whitelistedRepository;
-
-    public AddOrganizationToWhitelistCommandHandler(IWhitelistedRepository whitelistedRepository)
-    {
-        _whitelistedRepository = whitelistedRepository;
-    }
-
     public async Task Handle(AddOrganizationToWhitelistCommand request, CancellationToken cancellationToken)
     {
-        var existingEntry = await _whitelistedRepository.Query()
+        await unitOfWork.BeginTransactionAsync();
+
+        var checkIfOrganizationIsAlreadyWhitelisted = await whitelistedRepository.Query()
             .FirstOrDefaultAsync(w => w.Tin == request.Tin, cancellationToken);
 
-        if (existingEntry == null)
+        if (checkIfOrganizationIsAlreadyWhitelisted == null)
         {
             var whitelisted = Whitelisted.Create(request.Tin);
-            await _whitelistedRepository.AddAsync(whitelisted, cancellationToken);
+            await whitelistedRepository.AddAsync(whitelisted, cancellationToken);
         }
+
+        await unitOfWork.CommitAsync();
     }
 }
+
+public record AddOrganizationToWhitelistCommand(Tin Tin) : IRequest;
+

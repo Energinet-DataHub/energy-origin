@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,18 +22,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-
-        builder.ConfigureAppConfiguration((context, config) =>
-        {
-            var settings = new Dictionary<string, string>
-            {
-                { "RabbitMQ:Host", "your-rabbitmq-host" },
-                { "RabbitMQ:Port", "5673" },
-                { "RabbitMQ:User", "your-rabbitmq-user" },
-                { "RabbitMQ:Password", "your-rabbitmq-password" }
-            };
-            config.AddInMemoryCollection(settings!);
-        });
         builder.ConfigureServices(services =>
         {
             services.Remove(services.First(s => s.ServiceType == typeof(IAuthorizationService)));
@@ -50,15 +37,19 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
     private class MockAuthorizationService : IAuthorizationService
     {
-        public Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync()
+        public Task<GetFirstPartyOrganizationsResponse> GetOrganizationsHttpRequestAsync()
         {
             return Task.FromResult(
-                new FirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>()));
+                new GetFirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>()));
         }
-        public Task<WhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync()
+        public Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsHttpRequestAsync()
         {
             return Task.FromResult(
-                new WhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>()));
+                new GetWhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>()));
+        }
+        public Task AddOrganizationToWhitelistHttpRequestAsync(string tin)
+        {
+            return Task.CompletedTask;
         }
     }
 
@@ -70,6 +61,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 new ContractsForAdminPortalResponse(new List<ContractsForAdminPortalResponseItem>()));
         }
     }
+
     public HttpClient CreateAuthenticatedClient<T>(WebApplicationFactoryClientOptions options, int sessionId) where T : ImpersonatedUser
     {
         return CreateLoggedInClient<T>(options, list => list.Add(new Claim("sessionid", sessionId.ToString())));

@@ -10,4 +10,4 @@ public class WhitelistedOrganizationViewModel
 }
 
 public record WhitelistedOrganizationsResponseItem(Guid OrganizationId, string Tin);
-public record WhitelistedOrganizationsResponse(IEnumerable<WhitelistedOrganizationsResponseItem> Result);
+public record GetWhitelistedOrganizationsResponse(IEnumerable<WhitelistedOrganizationsResponseItem> Result);

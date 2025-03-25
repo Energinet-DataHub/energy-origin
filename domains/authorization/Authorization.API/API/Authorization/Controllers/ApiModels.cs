@@ -49,8 +49,11 @@ public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Res
 public record FirstPartyOrganizationsResponseItem(Guid OrganizationId, string OrganizationName, string Tin);
 public record FirstPartyOrganizationsResponse(IEnumerable<FirstPartyOrganizationsResponseItem> Result);
 
-public record WhitelistedOrganizationsResponseItem(Guid OrganizationId, string Tin);
-public record WhitelistedOrganizationsResponse(IEnumerable<WhitelistedOrganizationsResponseItem> Result);
+public record GetWhitelistedOrganizationsResponseItem(Guid OrganizationId, string Tin);
+public record GetWhitelistedOrganizationsResponse(IEnumerable<GetWhitelistedOrganizationsResponseItem> Result);
+
+public record AddOrganizationToWhitelistRequest(string Tin);
+public record AddOrganizationToWhitelistResponse(string Tin);
 
 public enum ClientType
 {

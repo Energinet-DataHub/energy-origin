@@ -11,18 +11,18 @@ public interface IWhitelistedOrganizationsQuery
     Task<List<WhitelistedOrganizationViewModel>> GetWhitelistedOrganizationsAsync();
 }
 
-public class GetWhitelistedOrganizationsQuery : IWhitelistedOrganizationsQuery
+public class GetWhitelistedOrganizationsQueryHandler : IWhitelistedOrganizationsQuery
 {
     private readonly IAuthorizationService _authorizationService;
 
-    public GetWhitelistedOrganizationsQuery(IAuthorizationService authorizationService)
+    public GetWhitelistedOrganizationsQueryHandler(IAuthorizationService authorizationService)
     {
         _authorizationService = authorizationService;
     }
 
     public async Task<List<WhitelistedOrganizationViewModel>> GetWhitelistedOrganizationsAsync()
     {
-        var whitelistedOrganizations = await _authorizationService.GetWhitelistedOrganizationsAsync();
+        var whitelistedOrganizations = await _authorizationService.GetWhitelistedOrganizationsHttpRequestAsync();
 
         var result = whitelistedOrganizations.Result
             .Select(whitelisted => new WhitelistedOrganizationViewModel

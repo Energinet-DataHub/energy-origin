@@ -1,32 +1,33 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
+using AdminPortal.Services;
 
-namespace AdminPortal.Services;
-public interface IAggregationQuery
+namespace AdminPortal._Features_;
+public interface IGetActiveContractsQuery
 {
-    Task<ActiveContractsResponse> GetActiveContractsAsync();
+    Task<GetActiveContractsResponse> GetActiveContractsQueryAsync();
 }
 
-public class ActiveContractsQuery : IAggregationQuery
+public class GetActiveContractsQueryHandler : IGetActiveContractsQuery
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICertificatesService _certificatesService;
 
-    public ActiveContractsQuery(IAuthorizationService authorizationService, ICertificatesService certificatesService)
+    public GetActiveContractsQueryHandler(IAuthorizationService authorizationService, ICertificatesService certificatesService)
     {
         _authorizationService = authorizationService;
         _certificatesService = certificatesService;
     }
 
-    public async Task<ActiveContractsResponse> GetActiveContractsAsync()
+    public async Task<GetActiveContractsResponse> GetActiveContractsQueryAsync()
     {
 
-        var organizations = await _authorizationService.GetOrganizationsAsync();
-        var contracts = await _certificatesService.GetContractsAsync();
+        var organizations = (await _authorizationService.GetOrganizationsHttpRequestAsync()).Result;
+        var contracts = (await _certificatesService.GetContractsAsync()).Result;
 
-        var meteringPoints = contracts.Result
-            .Join(organizations.Result,
+        var meteringPoints = contracts
+            .Join(organizations,
                 contract => contract.MeteringPointOwner,
                 org => org.OrganizationId.ToString(),
                 (contract, org) => new MeteringPoint
@@ -41,7 +42,7 @@ public class ActiveContractsQuery : IAggregationQuery
                 })
             .ToList();
 
-        return new ActiveContractsResponse
+        return new GetActiveContractsResponse
         {
             Results = new ResultsData { MeteringPoints = meteringPoints }
         };

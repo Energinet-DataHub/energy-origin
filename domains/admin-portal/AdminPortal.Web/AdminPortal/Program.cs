@@ -38,33 +38,6 @@ builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptio
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<RabbitMqOptions>().BindConfiguration(RabbitMqOptions.RabbitMq).ValidateDataAnnotations()
-    .ValidateOnStart();
-
-builder.Services.AddMassTransit(o =>
-{
-    o.SetKebabCaseEndpointNameFormatter();
-    o.AddConfigureEndpointsCallback((_, cfg) =>
-    {
-        if (cfg is IRabbitMqReceiveEndpointConfigurator rmq)
-        {
-            rmq.SetQuorumQueue(3);
-        }
-    });
-    o.UsingRabbitMq((context, cfg) =>
-    {
-        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-        var url = $"rabbitmq://{options.Host}:{options.Port}";
-
-        cfg.Host(new Uri(url), h =>
-        {
-            h.Username(options.Username);
-            h.Password(options.Password);
-        });
-        cfg.ConfigureEndpoints(context);
-    });
-});
-
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<AddOrganizationToWhitelistCommandHandler>());
 
@@ -84,8 +57,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
-builder.Services.AddScoped<IAggregationQuery, ActiveContractsQuery>();
-builder.Services.AddScoped<IWhitelistedOrganizationsQuery, GetWhitelistedOrganizationsQuery>();
+builder.Services.AddScoped<IGetActiveContractsQuery, GetActiveContractsQueryHandler>();
+builder.Services.AddScoped<IWhitelistedOrganizationsQuery, GetWhitelistedOrganizationsQueryHandler>();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
