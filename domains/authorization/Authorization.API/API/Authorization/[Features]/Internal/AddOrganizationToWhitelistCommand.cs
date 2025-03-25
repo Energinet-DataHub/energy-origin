@@ -8,18 +8,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_.Internal;
 
-public record WhitelistOrganizationCommand(Tin Tin) : IRequest;
+public record AddOrganizationToWhitelistCommand(Tin Tin) : IRequest;
 
-public class WhitelistOrganizationCommandHandler : IRequestHandler<WhitelistOrganizationCommand>
+public class AddOrganizationToWhitelistCommandHandler : IRequestHandler<AddOrganizationToWhitelistCommand>
 {
     private readonly IWhitelistedRepository _whitelistedRepository;
 
-    public WhitelistOrganizationCommandHandler(IWhitelistedRepository whitelistedRepository)
+    public AddOrganizationToWhitelistCommandHandler(IWhitelistedRepository whitelistedRepository)
     {
         _whitelistedRepository = whitelistedRepository;
     }
 
-    public async Task Handle(WhitelistOrganizationCommand request, CancellationToken cancellationToken)
+    public async Task Handle(AddOrganizationToWhitelistCommand request, CancellationToken cancellationToken)
     {
         var existingEntry = await _whitelistedRepository.Query()
             .FirstOrDefaultAsync(w => w.Tin == request.Tin, cancellationToken);

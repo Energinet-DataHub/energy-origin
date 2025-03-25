@@ -7,15 +7,15 @@ using NSubstitute;
 
 namespace API.UnitTests._Features_.Internal;
 
-public class WhitelistOrganizationCommandHandlerTests
+public class AddOrganizationToWhitelistCommandHandlerTests
 {
     private readonly IWhitelistedRepository _whitelistedRepository;
-    private readonly WhitelistOrganizationCommandHandler _handler;
+    private readonly AddOrganizationToWhitelistCommandHandler _handler;
 
-    public WhitelistOrganizationCommandHandlerTests()
+    public AddOrganizationToWhitelistCommandHandlerTests()
     {
         _whitelistedRepository = Substitute.For<IWhitelistedRepository>();
-        _handler = new WhitelistOrganizationCommandHandler(_whitelistedRepository);
+        _handler = new AddOrganizationToWhitelistCommandHandler(_whitelistedRepository);
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class WhitelistOrganizationCommandHandlerTests
 
         _whitelistedRepository.Query().Returns(mock);
 
-        var command = new WhitelistOrganizationCommand(tin);
+        var command = new AddOrganizationToWhitelistCommand(tin);
 
         await _handler.Handle(command, CancellationToken.None);
 
@@ -50,7 +50,7 @@ public class WhitelistOrganizationCommandHandlerTests
 
         _whitelistedRepository.Query().Returns(mock);
 
-        var command = new WhitelistOrganizationCommand(tin);
+        var command = new AddOrganizationToWhitelistCommand(tin);
 
         await _handler.Handle(command, CancellationToken.None);
 

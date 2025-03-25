@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using API.Authorization;
-using API.Authorization._Features_.Events;
+using API.Authorization._Events_;
 using API.Data;
 using API.Metrics;
 using API.Models;
@@ -53,7 +53,7 @@ builder.Services.AddControllersWithEnumsAsStrings();
 
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
-    x.AddConsumer<OrganizationWhitelistedIntegrationEventHandler, OrganizationWhitelistedIntegrationEventHandlerDefinition>();
+    x.AddConsumer<AddOrganizationToWhitelistIntegrationEventHandler, AddOrganizationToWhitelistIntegrationEventHandlerDefinition>();
 });
 
 builder.Services.AddDefaultHealthChecks();

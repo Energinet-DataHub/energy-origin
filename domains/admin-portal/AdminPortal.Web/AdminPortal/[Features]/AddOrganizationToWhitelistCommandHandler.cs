@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using EnergyOrigin.IntegrationEvents.Events.OrganizationWhitelisted;
+using EnergyOrigin.IntegrationEvents.Events.AddOrganizationToWhitelist;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
@@ -43,7 +43,7 @@ public class AddOrganizationToWhitelistCommandHandler : IRequestHandler<AddOrgan
             var traceId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
             var created = DateTimeOffset.UtcNow;
 
-            var integrationEvent = new OrganizationWhitelistedIntegrationEvent(
+            var integrationEvent = new AddOrganizationToWhitelistIntegrationEvent(
                 eventId,
                 traceId,
                 created,
@@ -61,14 +61,14 @@ public class AddOrganizationToWhitelistCommandHandler : IRequestHandler<AddOrgan
                 },
                 cancellationToken);
 
-            _logger.LogInformation("Published OrganizationWhitelistedIntegrationEvent for TIN {Tin} with EventId {EventId}",
+            _logger.LogInformation("Published AddOrganizationToWhitelistIntegrationEvent for TIN {Tin} with EventId {EventId}",
                 request.Tin, eventId);
 
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error publishing OrganizationWhitelistedIntegrationEvent for TIN {Tin}", request.Tin);
+            _logger.LogError(ex, "Error publishing AddOrganizationToWhitelistIntegrationEvent for TIN {Tin}", request.Tin);
             return false;
         }
     }
