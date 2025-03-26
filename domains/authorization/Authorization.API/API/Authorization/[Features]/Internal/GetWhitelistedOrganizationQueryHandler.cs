@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using API.Repository;
+using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +12,7 @@ public class GetWhitelistedOrganizationQueryHandler(IWhitelistedRepository white
 {
     public Task<bool> Handle(GetWhitelistedOrganizationQuery request, CancellationToken cancellationToken)
     {
-        return whitelistedRepository.Query().AnyAsync(w => w.Tin.Value == request.Tin, cancellationToken);
+        return whitelistedRepository.Query().AnyAsync(w => w.Tin == Tin.Create(request.Tin), cancellationToken);
     }
 }
 
