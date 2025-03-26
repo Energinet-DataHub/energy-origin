@@ -1,15 +1,12 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using AdminPortal._Features_;
 using AdminPortal.Options;
 using AdminPortal.Services;
 using AdminPortal.Utilities;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.OpenTelemetry;
-using EnergyOrigin.Setup.RabbitMq;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -54,8 +51,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
-builder.Services.AddScoped<IGetActiveContractsQuery, GetActiveContractsQueryHandler>();
-builder.Services.AddScoped<IWhitelistedOrganizationsQuery, GetWhitelistedOrganizationsQueryHandler>();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
@@ -168,4 +163,6 @@ app.MapControllerRoute(
 
 app.Run();
 
-public partial class Program { }
+public partial class Program
+{
+}

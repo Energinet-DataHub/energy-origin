@@ -1,0 +1,9 @@
+<div hidden="hidden">
+    <form id="removeOrganizationForm" asp-controller="WhitelistedOrganizations" asp-action="RemoveOrganizationFromWhitelist" method="post"
+          class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+        <input type="text" class="form-control" id="removeTin" name="tin"
+               pattern="^\d{8}$" required
+               placeholder="Enter 8-digit TIN">
+    </form>
+</div>

@@ -1,17 +1,23 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
+using MediatR;
 
 namespace AdminPortal._Features_;
 
-public interface IWhitelistedOrganizationsQuery
+public class GetWhitelistedOrganizationsQuery : IRequest<WhitelistedOrganizationsQueryResult>
 {
-    Task<List<WhitelistedOrganizationViewModel>> GetWhitelistedOrganizationsAsync();
 }
 
-public class GetWhitelistedOrganizationsQueryHandler : IWhitelistedOrganizationsQuery
+public class WhitelistedOrganizationsQueryResult(List<WhitelistedOrganizationViewModel> viewModel)
+{
+    public List<WhitelistedOrganizationViewModel> ViewModel { get; } = viewModel;
+}
+
+public class GetWhitelistedOrganizationsQueryHandler : IRequestHandler<GetWhitelistedOrganizationsQuery, WhitelistedOrganizationsQueryResult>
 {
     private readonly IAuthorizationService _authorizationService;
 
@@ -20,9 +26,9 @@ public class GetWhitelistedOrganizationsQueryHandler : IWhitelistedOrganizations
         _authorizationService = authorizationService;
     }
 
-    public async Task<List<WhitelistedOrganizationViewModel>> GetWhitelistedOrganizationsAsync()
+    public async Task<WhitelistedOrganizationsQueryResult> Handle(GetWhitelistedOrganizationsQuery request, CancellationToken cancellationToken)
     {
-        var whitelistedOrganizations = await _authorizationService.GetWhitelistedOrganizationsHttpRequestAsync();
+        var whitelistedOrganizations = await _authorizationService.GetWhitelistedOrganizationsAsync(cancellationToken);
 
         var result = whitelistedOrganizations.Result
             .Select(whitelisted => new WhitelistedOrganizationViewModel
@@ -32,6 +38,6 @@ public class GetWhitelistedOrganizationsQueryHandler : IWhitelistedOrganizations
             })
             .ToList();
 
-        return result;
+        return new WhitelistedOrganizationsQueryResult(result);
     }
 }
