@@ -22,8 +22,7 @@ namespace API.Query.API.Controllers;
 [Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
-[ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
-public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
+public class ContractsController(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
 {
     /// <summary>
     /// Create contracts that activates granular certificate generation for a metering point
@@ -65,7 +64,7 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
             ContractAlreadyExists(var existing) => ValidationProblem(statusCode: 409, detail: $"{existing?.GSRN} already has an active contract"),
             CreateContractResult.Success(var createdContracts) => Created("",
                 new ContractList { Result = createdContracts.Select(Contract.CreateFrom).ToList() }),
-            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(Contracts20240515Controller)}")
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }
 
@@ -164,7 +163,7 @@ public class Contracts20240515Controller(IdentityDescriptor identityDescriptor, 
             EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
             OverlappingContract => ValidationProblem(statusCode: 409),
             SetEndDateResult.Success => Ok(),
-            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(Contracts20240515Controller)}")
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }
 }

@@ -15,6 +15,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Client> Clients { get; set; }
     public DbSet<OrganizationConsent> OrganizationConsents { get; set; }
     public DbSet<Terms> Terms { get; set; }
+    public DbSet<Whitelisted> Whitelisted { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +27,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         ConfigureClientTable(modelBuilder);
         ConfigureUserTable(modelBuilder);
         ConfigureTermsTable(modelBuilder);
+        ConfigureWhitelistedTable(modelBuilder);
 
         modelBuilder.AddTransactionalOutboxEntities();
     }
@@ -112,6 +114,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(x => x.ConsentReceiverOrganizationId);
 
         modelBuilder.Entity<OrganizationConsent>().HasIndex(x => new { x.ConsentReceiverOrganizationId, x.ConsentGiverOrganizationId }).IsUnique();
+    }
+
+    private static void ConfigureWhitelistedTable(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Whitelisted>().Property(w => w.Tin)
+            .HasConversion(new TinValueConverter())
+            .IsRequired();
+
+        modelBuilder.Entity<Whitelisted>().HasIndex(w => w.Tin).IsUnique();
     }
 
     private static void ConfigureTermsTable(ModelBuilder modelBuilder)

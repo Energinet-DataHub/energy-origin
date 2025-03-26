@@ -64,7 +64,6 @@ public class SlicesController : ProxyBase
     [Produces("application/json")]
     [AllowAnonymous]
     [ApiVersion(ApiVersions.Version1)]
-    [ApiVersion(ApiVersions.Version20240515, Deprecated = true)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status202Accepted)]
