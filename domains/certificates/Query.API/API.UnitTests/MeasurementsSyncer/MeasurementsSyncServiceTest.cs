@@ -128,7 +128,7 @@ public class MeasurementsSyncServiceTest
         var relationsResponse = new ListMeteringPointForCustomerCaResponse
         {
             Relations = [],
-            Rejections = [new Rejection { ErrorCode = "LMC-001", MeteringPointId = _syncInfo.Gsrn.Value, ErrorDetailName = "SomeDetail", ErrorDetailValue = "SomeValue"}]
+            Rejections = [new Rejection { ErrorCode = "LMC-001", MeteringPointId = _syncInfo.Gsrn.Value, ErrorDetailName = "SomeDetail", ErrorDetailValue = "SomeValue" }]
         };
         _dataHubFacadeClient.ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(relationsResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
