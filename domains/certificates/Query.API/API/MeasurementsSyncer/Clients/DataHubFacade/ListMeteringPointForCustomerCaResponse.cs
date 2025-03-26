@@ -31,6 +31,6 @@ public class Rejection
 
     public bool IsLmc001Error()
     {
-        return ErrorCode == "LMC-001";
+        return ErrorCode.ToUpper() == "LMC-001";
     }
 }

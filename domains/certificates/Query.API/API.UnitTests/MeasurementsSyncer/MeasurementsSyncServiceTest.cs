@@ -20,7 +20,6 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using Testing.Extensions;
 using Xunit;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.UnitTests.MeasurementsSyncer;
