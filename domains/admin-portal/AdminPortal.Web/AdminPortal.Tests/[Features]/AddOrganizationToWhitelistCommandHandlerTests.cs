@@ -18,11 +18,10 @@ public class AddOrganizationToWhitelistCommandHandlerTests
         var testTin = Tin.Create("12345678");
         var command = new AddOrganizationToWhitelistCommand { Tin = testTin };
 
-        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
+        await handler.Handle(command, TestContext.Current.CancellationToken);
 
         await mockAuthorizationService.Received(1)
             .AddOrganizationToWhitelistHttpRequestAsync(testTin);
-        Assert.True(result);
     }
 
     [Fact]
