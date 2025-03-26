@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,12 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     {
         ArgumentNullException.ThrowIfNull(entity);
         Context.Set<T>().Remove(entity);
+    }
+
+    public void RemoveRange(IEnumerable<T> entities)
+    {
+        ArgumentNullException.ThrowIfNull(entities);
+        Context.Set<T>().RemoveRange(entities);
     }
 
     public void Update(T entity)

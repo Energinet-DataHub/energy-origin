@@ -62,6 +62,11 @@
                         <tr>
                             <td class="fw-medium">@org.OrganizationId</td>
                             <td>@org.Tin</td>
+                            <td>
+                                <button id="removeOrganizationButton" type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#removeOrganizationModal" onclick="showConfirmationModal('Remove ' + @org.Tin + ' from whitelist', () => {})">
+                                    <i class="bi bi-plus-circle me-1"></i> Remove
+                                </button>
+                            </td>
                         </tr>
                     }
                     </tbody>
@@ -102,9 +107,11 @@
 
             const addOrganizationForm = document.getElementById('addOrganizationForm');
             const confirmAddBtn = document.getElementById('confirmAddBtn');
-            const confirmYesBtn = document.getElementById('confirmYesBtn');
+            //const confirmYesBtn = document.getElementById('confirmYesBtn');
             const tinInput = document.getElementById('tin');
-            const confirmTin = document.getElementById('confirmTin');
+            //const confirmTin = document.getElementById('confirmTin');
+
+            const removeOrganizationButton = document.getElementById('removeOrganizationButton');
 
             Array.prototype.slice.call(forms).forEach(function (form) {
                 form.addEventListener('submit', function (event) {
@@ -116,21 +123,30 @@
                 }, false);
             });
 
+            function showConfirmationModal(message, confirmCallback) {
+                $('#confirmationMessage').text(message);
+                $('#confirmationModal').modal('show');
+
+                $('#confirmButton').off('click').on('click', function() {
+                    $('#confirmationModal').modal('hide');
+                    if (confirmCallback) {
+                        confirmCallback();
+                    }
+                });
+            }
+
             confirmAddBtn.addEventListener('click', function() {
                 if (!addOrganizationForm.checkValidity()) {
                     addOrganizationForm.classList.add('was-validated');
                     return;
                 }
 
-                confirmTin.textContent = tinInput.value;
+                //confirmTin.textContent = tinInput.value;
                 const addModal = bootstrap.Modal.getInstance(document.getElementById('addOrganizationModal'));
                 addModal.hide();
-                const confirmModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-                confirmModal.show();
-            });
-
-            confirmYesBtn.addEventListener('click', function() {
-                addOrganizationForm.submit();
+                //const confirmModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+                //confirmModal.show();
+                showConfirmationModal("Add organization with TIN: " + tinInput.value + " to whitelist?", () => {addOrganizationForm.submit();})
             });
 
             document.getElementById('addOrganizationModal').addEventListener('hidden.bs.modal', function () {
