@@ -24,7 +24,7 @@ public class GetActiveContractsQueryHandler : IGetActiveContractsQuery
     {
 
         var organizations = (await _authorizationService.GetOrganizationsHttpRequestAsync()).Result;
-        var contracts = (await _certificatesService.GetContractsAsync()).Result;
+        var contracts = (await _certificatesService.GetContractsHttpRequestAsync()).Result;
 
         var meteringPoints = contracts
             .Join(organizations,

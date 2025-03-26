@@ -49,18 +49,18 @@ public class GetActiveContractsQueryHandlerTests
         var organizationName = "Peter Producent A/S";
         var organizationTin = "11223344";
 
-        var predefinedOrganizations = new GetFirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>
+        var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>
         {
             new(organizationId, organizationName, organizationTin)
         });
 
-        var predefinedContracts = new ContractsForAdminPortalResponse(new List<ContractsForAdminPortalResponseItem>
+        var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
         {
             new("123456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
         mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
-        mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
+        mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
         var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 
@@ -79,15 +79,15 @@ public class GetActiveContractsQueryHandlerTests
         var mockAuthorizationFacade = Substitute.For<IAuthorizationService>();
         var mockCertificatesFacade = Substitute.For<ICertificatesService>();
 
-        var predefinedOrganizations = new GetFirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>
+        var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>
         {
             new(Guid.NewGuid(), "Peter Producent A/S", "11223344")
         });
 
-        var predefinedContracts = new ContractsForAdminPortalResponse(new List<ContractsForAdminPortalResponseItem>());
+        var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>());
 
         mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
-        mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
+        mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
         var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 
@@ -102,15 +102,15 @@ public class GetActiveContractsQueryHandlerTests
         var mockAuthorizationFacade = Substitute.For<IAuthorizationService>();
         var mockCertificatesFacade = Substitute.For<ICertificatesService>();
 
-        var predefinedOrganizations = new GetFirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>());
+        var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>());
 
-        var predefinedContracts = new ContractsForAdminPortalResponse(new List<ContractsForAdminPortalResponseItem>
+        var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
         {
             new("123456789012345678", Guid.NewGuid().ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
         mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
-        mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
+        mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
         var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 
@@ -128,12 +128,12 @@ public class GetActiveContractsQueryHandlerTests
         var organizationName = "Peter Producent A/S";
         var organizationTin = "11223344";
 
-        var predefinedOrganizations = new GetFirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>
+        var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>
         {
             new(organizationId, organizationName, organizationTin)
         });
 
-        var predefinedContracts = new ContractsForAdminPortalResponse(new List<ContractsForAdminPortalResponseItem>
+        var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
         {
             new("123456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption),
             new("223456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Production),
@@ -141,7 +141,7 @@ public class GetActiveContractsQueryHandlerTests
         });
 
         mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
-        mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
+        mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
         var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 
@@ -176,19 +176,19 @@ public class GetActiveContractsQueryHandlerTests
         var organizationTin1 = "11223344";
         var organizationTin2 = "55667788";
 
-        var predefinedOrganizations = new GetFirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>
+        var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>
         {
             new(organizationId1, organizationName1, organizationTin1),
             new(organizationId2, organizationName2, organizationTin2)
         });
 
-        var predefinedContracts = new ContractsForAdminPortalResponse(new List<ContractsForAdminPortalResponseItem>
+        var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
         {
             new("123456789012345678", organizationId1.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
         mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
-        mockCertificatesFacade.GetContractsAsync().Returns(Task.FromResult(predefinedContracts));
+        mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
         var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 

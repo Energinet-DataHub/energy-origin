@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace AdminPortal.Dtos.Response;
 
-public record ContractsForAdminPortalResponseItem(
+public record GetContractsForAdminPortalResponseItem(
     string GSRN,
     string MeteringPointOwner,
     long Created,
@@ -13,7 +13,7 @@ public record ContractsForAdminPortalResponseItem(
     MeteringPointType MeteringPointType
 );
 
-public record ContractsForAdminPortalResponse(IEnumerable<ContractsForAdminPortalResponseItem> Result);
+public record GetContractsForAdminPortalResponse(IEnumerable<GetContractsForAdminPortalResponseItem> Result);
 
 public enum MeteringPointType
 {

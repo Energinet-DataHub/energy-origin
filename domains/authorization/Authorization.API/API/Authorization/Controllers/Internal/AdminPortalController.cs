@@ -9,7 +9,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace API.Authorization.Controllers.Internal;
 
@@ -24,8 +23,7 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
     [Route("first-party-organizations/")]
     [ProducesResponseType(typeof(FirstPartyOrganizationsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(FirstPartyOrganizationsResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetFirstPartyOrganizations(
-        [FromServices] ILogger<AdminPortalController> logger, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetFirstPartyOrganizations(CancellationToken cancellationToken)
     {
         var queryResult = await mediator.Send(new GetFirstPartyOrganizationsQuery(), cancellationToken);
 
@@ -39,8 +37,7 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
     [Route("whitelisted-organizations/")]
     [ProducesResponseType(typeof(GetWhitelistedOrganizationsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(GetWhitelistedOrganizationsResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetWhitelistedOrganizations(
-        [FromServices] ILogger<AdminPortalController> logger, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetWhitelistedOrganizations(CancellationToken cancellationToken)
     {
         var queryResult = await mediator.Send(new GetWhitelistedOrganizationsQuery(), cancellationToken);
 
@@ -57,9 +54,7 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddOrganizationToWhitelist(
-        [FromBody] AddOrganizationToWhitelistRequest request,
-        [FromServices] ILogger<AdminPortalController> logger,
-        CancellationToken cancellationToken)
+        [FromBody] AddOrganizationToWhitelistRequest request, CancellationToken cancellationToken)
     {
         await mediator.Send(new AddOrganizationToWhitelistCommand(Tin.Create(request.Tin)), cancellationToken);
 

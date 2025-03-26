@@ -3,14 +3,15 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
+using EnergyOrigin.Domain.ValueObjects;
 
 namespace AdminPortal.Services;
 
 public interface IAuthorizationService
 {
-    Task<GetFirstPartyOrganizationsResponse> GetOrganizationsHttpRequestAsync();
+    Task<GetOrganizationsResponse> GetOrganizationsHttpRequestAsync();
     Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsHttpRequestAsync();
-    Task AddOrganizationToWhitelistHttpRequestAsync(string tin);
+    Task AddOrganizationToWhitelistHttpRequestAsync(Tin tin);
 }
 
 public class AuthorizationService : IAuthorizationService
@@ -22,11 +23,11 @@ public class AuthorizationService : IAuthorizationService
         _client = client;
     }
 
-    public async Task<GetFirstPartyOrganizationsResponse> GetOrganizationsHttpRequestAsync()
+    public async Task<GetOrganizationsResponse> GetOrganizationsHttpRequestAsync()
     {
         var response = await _client.GetAsync("first-party-organizations/");
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<GetFirstPartyOrganizationsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<GetOrganizationsResponse>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
     }
 
@@ -38,7 +39,7 @@ public class AuthorizationService : IAuthorizationService
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
     }
 
-    public async Task AddOrganizationToWhitelistHttpRequestAsync(string tin)
+    public async Task AddOrganizationToWhitelistHttpRequestAsync(Tin tin)
     {
         var response = await _client.PostAsJsonAsync("whitelisted-organizations/", new { Tin = tin });
         response.EnsureSuccessStatusCode();

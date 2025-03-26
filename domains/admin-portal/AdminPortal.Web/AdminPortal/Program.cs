@@ -38,9 +38,6 @@ builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptio
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssemblyContaining<AddOrganizationToWhitelistCommandHandler>());
-
 builder.Services.AddDefaultHealthChecks();
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);

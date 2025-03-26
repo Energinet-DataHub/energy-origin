@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using AdminPortal._Features_;
 using AdminPortal.Dtos.Request;
+using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,6 @@ public class WhitelistedOrganizationsController : Controller
     {
         _whitelistedOrganizationsQuery = whitelistedOrganizationsQuery;
         _mediator = mediator;
-
     }
 
     [HttpGet]
@@ -35,7 +35,7 @@ public class WhitelistedOrganizationsController : Controller
     {
         try
         {
-            var command = new AddOrganizationToWhitelistCommand { Tin = request.Tin };
+            var command = new AddOrganizationToWhitelistCommand { Tin = Tin.Create(request.Tin) };
             await _mediator.Send(command);
 
             TempData["SuccessMessage"] = $"Organization with TIN {request.Tin} has been successfully added to the whitelist.";

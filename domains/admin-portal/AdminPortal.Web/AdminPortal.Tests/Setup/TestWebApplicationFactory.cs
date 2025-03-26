@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Hosting;
@@ -37,17 +38,17 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
     private class MockAuthorizationService : IAuthorizationService
     {
-        public Task<GetFirstPartyOrganizationsResponse> GetOrganizationsHttpRequestAsync()
+        public Task<GetOrganizationsResponse> GetOrganizationsHttpRequestAsync()
         {
             return Task.FromResult(
-                new GetFirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>()));
+                new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>()));
         }
         public Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsHttpRequestAsync()
         {
             return Task.FromResult(
-                new GetWhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>()));
+                new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>()));
         }
-        public Task AddOrganizationToWhitelistHttpRequestAsync(string tin)
+        public Task AddOrganizationToWhitelistHttpRequestAsync(Tin tin)
         {
             return Task.CompletedTask;
         }
@@ -55,10 +56,10 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
     private class MockCertificatesService : ICertificatesService
     {
-        public Task<ContractsForAdminPortalResponse> GetContractsAsync()
+        public Task<GetContractsForAdminPortalResponse> GetContractsHttpRequestAsync()
         {
             return Task.FromResult(
-                new ContractsForAdminPortalResponse(new List<ContractsForAdminPortalResponseItem>()));
+                new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>()));
         }
     }
 

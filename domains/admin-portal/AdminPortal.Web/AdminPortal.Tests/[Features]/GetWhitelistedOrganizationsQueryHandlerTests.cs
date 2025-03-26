@@ -17,12 +17,12 @@ public class GetWhitelistedOrganizationsQueryHandlerTests
         var organizationId = Guid.NewGuid();
         var organizationTin = "12345678";
 
-        var predefinedOrganizations = new GetWhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>
+        var predefinedOrganizations = new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>
         {
             new(organizationId, organizationTin)
         });
 
-        var predefinedWhitelistedOrgs = new GetWhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>());
+        var predefinedWhitelistedOrgs = new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>());
 
         mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
         mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedWhitelistedOrgs));
@@ -43,13 +43,13 @@ public class GetWhitelistedOrganizationsQueryHandlerTests
         var organizationTin1 = "12345678";
         var organizationTin2 = "87654321";
 
-        var predefinedOrganizations = new GetWhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>
+        var predefinedOrganizations = new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>
         {
             new(organizationId1, organizationTin1),
             new(organizationId2, organizationTin2)
         });
 
-        var predefinedWhitelistedOrgs = new GetWhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>
+        var predefinedWhitelistedOrgs = new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>
         {
             new(organizationId1, organizationTin1),
             new(organizationId2, organizationTin2)

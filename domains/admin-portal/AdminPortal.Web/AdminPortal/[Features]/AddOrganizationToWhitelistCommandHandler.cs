@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal.Services;
+using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 
 namespace AdminPortal._Features_;
@@ -16,19 +17,12 @@ public class AddOrganizationToWhitelistCommandHandler : IRequestHandler<AddOrgan
 
     public async Task<bool> Handle(AddOrganizationToWhitelistCommand request, CancellationToken cancellationToken)
     {
-        try
-        {
-            await _authorizationService.AddOrganizationToWhitelistHttpRequestAsync(request.Tin);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        await _authorizationService.AddOrganizationToWhitelistHttpRequestAsync(request.Tin);
+        return true;
     }
 }
 
 public class AddOrganizationToWhitelistCommand : IRequest<bool>
 {
-    public string Tin { get; init; } = string.Empty;
+    public Tin Tin { get; init; } = Tin.Empty();
 }
