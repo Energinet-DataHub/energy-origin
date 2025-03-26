@@ -108,7 +108,7 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 app.AddSwagger("authorization");
-app.MapHealthChecks("/health").AllowAnonymous();
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 
