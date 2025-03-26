@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using Testing.Extensions;
 using Xunit;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.UnitTests.MeasurementsSyncer;
@@ -43,6 +44,7 @@ public class MeasurementsSyncServiceTest
     private readonly MeasurementsSyncOptions _options = new();
     private readonly IDataHub3Client _dataHub3Client = Substitute.For<IDataHub3Client>();
     private readonly IDataHubFacadeClient _dataHubFacadeClient = Substitute.For<IDataHubFacadeClient>();
+    private readonly IContractState _contractState = Substitute.For<IContractState>();
 
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient =
         Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
@@ -54,7 +56,7 @@ public class MeasurementsSyncServiceTest
         _service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState,
             new SlidingWindowService(measurementSyncMetrics),
             new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options),
-            _dataHub3Client, _dataHubFacadeClient);
+            _dataHub3Client, _dataHubFacadeClient, _contractState);
     }
 
     [Fact]
@@ -70,7 +72,7 @@ public class MeasurementsSyncServiceTest
         var service = new MeasurementsSyncService(_fakeLogger, _fakeSlidingWindowState,
             new SlidingWindowService(measurementSyncMetrics),
             new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, Options.Create(_options),
-            _dataHub3Client, _dataHubFacadeClient);
+            _dataHub3Client, _dataHubFacadeClient, _contractState);
 
         var response = await service.FetchMeasurements(slidingWindow, _syncInfo.MeteringPointOwner, UnixTimestamp.Now().AddHours(1), CancellationToken.None);
         response.Should().BeEmpty();
@@ -116,6 +118,24 @@ public class MeasurementsSyncServiceTest
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         _ = _dataHub3Client.DidNotReceive().GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FetchAndPublishMeasurements_RelationContainsLmc001Rejection_ContractAndSlidingWindowIsDeleted()
+    {
+        var startSync = UnixTimestamp.Create(_syncInfo.StartSyncDate);
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, startSync);
+        var relationsResponse = new ListMeteringPointForCustomerCaResponse
+        {
+            Relations = [],
+            Rejections = [new Rejection { ErrorCode = "LMC-001", MeteringPointId = _syncInfo.Gsrn.Value, ErrorDetailName = "SomeDetail", ErrorDetailValue = "SomeValue"}]
+        };
+        _dataHubFacadeClient.ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(relationsResponse);
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        await _contractState.Received(1).DeleteContractAndSlidingWindow(Arg.Is<Gsrn>(x => x == _syncInfo.Gsrn));
+        await _dataHub3Client.DidNotReceive().GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+        await _fakeSlidingWindowState.DidNotReceive().UpsertSlidingWindow(Arg.Any<MeteringPointTimeSeriesSlidingWindow>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
