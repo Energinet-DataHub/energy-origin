@@ -93,7 +93,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
     )]
     public async Task<ActionResult<bool>> GetIsWhitelistedOrganization([FromBody] WhitelistedOrganizationRequest request)
     {
-        var isWhitelisted = await mediator.Send(new GetWhitelistedOrganizationQuery(request.Tin));
+        var isWhitelisted = await mediator.Send(new GetWhitelistedOrganizationQuery(request.OrgCvr));
         if (isWhitelisted)
         {
             return Ok();

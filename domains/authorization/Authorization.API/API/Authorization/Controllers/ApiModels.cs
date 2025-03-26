@@ -37,7 +37,7 @@ public record UserAuthorizationResponse(
 );
 
 public record WhitelistedOrganizationRequest(
-    [property: JsonPropertyName("tin")] string Tin
+    [property: JsonPropertyName("org_cvr")] string OrgCvr
 );
 
 // B2C error model - https://learn.microsoft.com/en-us/azure/active-directory-b2c/restful-technical-profile#returning-validation-error-message
