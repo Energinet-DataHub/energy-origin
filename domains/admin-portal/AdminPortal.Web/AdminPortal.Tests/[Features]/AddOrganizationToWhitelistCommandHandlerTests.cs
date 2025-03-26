@@ -16,12 +16,12 @@ public class AddOrganizationToWhitelistCommandHandlerTests
         var mockAuthorizationService = Substitute.For<IAuthorizationService>();
         var handler = new AddOrganizationToWhitelistCommandHandler(mockAuthorizationService);
         var testTin = Tin.Create("12345678");
-        var command = new AddOrganizationToWhitelistCommand { Tin = testTin };
+        var command = new AddOrganizationToWhitelistCommand(testTin);
 
         await handler.Handle(command, TestContext.Current.CancellationToken);
 
         await mockAuthorizationService.Received(1)
-            .AddOrganizationToWhitelistHttpRequestAsync(testTin);
+            .AddOrganizationToWhitelistAsync(testTin, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -30,10 +30,10 @@ public class AddOrganizationToWhitelistCommandHandlerTests
         var mockAuthorizationService = Substitute.For<IAuthorizationService>();
         var handler = new AddOrganizationToWhitelistCommandHandler(mockAuthorizationService);
         var testTin = Tin.Create("12345678");
-        var command = new AddOrganizationToWhitelistCommand { Tin = testTin };
+        var command = new AddOrganizationToWhitelistCommand(testTin);
 
         mockAuthorizationService
-            .When(x => x.AddOrganizationToWhitelistHttpRequestAsync(testTin))
+            .When(x => x.AddOrganizationToWhitelistAsync(testTin, Arg.Any<CancellationToken>()))
             .Do(_ => throw new HttpRequestException("Simulated API failure"));
 
         await Assert.ThrowsAsync<HttpRequestException>(() =>

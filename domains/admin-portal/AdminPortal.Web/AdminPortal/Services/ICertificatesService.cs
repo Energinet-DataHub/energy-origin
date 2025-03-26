@@ -22,6 +22,11 @@ public class CertificatesService : ICertificatesService
 
     public async Task<GetContractsForAdminPortalResponse> GetContractsHttpRequestAsync()
     {
+        // return new GetContractsForAdminPortalResponse(new[]
+        // {
+        //     new GetContractsForAdminPortalResponseItem("75123", "321", DateTimeOffset.Now.ToUnixTimeSeconds(), DateTimeOffset.Now.ToUnixTimeSeconds(), null,
+        //         MeteringPointType.Production)
+        // });
         var response = await _client.GetAsync("internal-contracts/");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<GetContractsForAdminPortalResponse>();

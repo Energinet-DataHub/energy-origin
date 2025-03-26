@@ -54,8 +54,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
-builder.Services.AddScoped<IGetActiveContractsQuery, GetActiveContractsQueryHandler>();
-builder.Services.AddScoped<IWhitelistedOrganizationsQuery, GetWhitelistedOrganizationsQueryHandler>();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
@@ -103,10 +101,10 @@ builder.Services.AddHttpClient("Msal")
     });
 
 builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("CertificatesClient", (sp, client) =>
-    {
-        var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
-        client.BaseAddress = new Uri(clientUriOptions.Certificates);
-    })
+{
+    var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
+    client.BaseAddress = new Uri(clientUriOptions.Certificates);
+})
     .AddHttpMessageHandler(sp =>
     {
         var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
@@ -120,21 +118,21 @@ builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("Certi
     });
 
 builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("AuthorizationClient", (sp, client) =>
-    {
-        var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
-        client.BaseAddress = new Uri(clientUriOptions.Authorization);
-    })
-    .AddHttpMessageHandler(sp =>
-    {
-        var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
-        return new ClientCredentialsTokenHandler(
-            options.ClientId,
-            options.ClientSecret,
-            options.TenantId,
-            new[] { options.Scope },
-            sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
-        );
-    });
+{
+    var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
+    client.BaseAddress = new Uri(clientUriOptions.Authorization);
+})
+.AddHttpMessageHandler(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
+    return new ClientCredentialsTokenHandler(
+        options.ClientId,
+        options.ClientSecret,
+        options.TenantId,
+        new[] { options.Scope },
+        sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+    );
+});
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
@@ -152,6 +150,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
     RequestPath = "/ett-admin-portal"

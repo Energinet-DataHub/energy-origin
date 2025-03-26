@@ -101,7 +101,7 @@ public class GetConsentForUserQueryHandlerTests
         result.TermsAccepted.Should().BeTrue();
         _fakeUserRepository.Query().Count().Should().Be(1);
         organization.Affiliations.Any(a => a.User.IdpUserId.Value == command.Sub).Should().BeTrue();
-        await _fakeUnitOfWork.Received(1).CommitAsync();
+        await _fakeUnitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public class GetConsentForUserQueryHandlerTests
         result.TermsAccepted.Should().BeTrue();
         _fakeUserRepository.Query().Count().Should().Be(1);
         organization.Affiliations.Count.Should().Be(1);
-        await _fakeUnitOfWork.Received(1).CommitAsync();
+        await _fakeUnitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class GetConsentForUserQueryHandlerTests
 
         var command = new GetConsentForUserCommand(Guid.NewGuid(), "Test User", "Test Org", "12345678");
 
-        await _fakeUnitOfWork.DidNotReceive().CommitAsync();
+        await _fakeUnitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
     }
 }

@@ -6,22 +6,23 @@ using MediatR;
 
 namespace AdminPortal._Features_;
 
-public class AddOrganizationToWhitelistCommand(Tin tin) : IRequest
+public class RemoveOrganizationFromWhitelistCommand(Tin tin) : IRequest
 {
     public Tin Tin { get; } = tin;
 }
 
-public class AddOrganizationToWhitelistCommandHandler : IRequestHandler<AddOrganizationToWhitelistCommand>
+public class RemoveOrganizationFromWhitelistCommandHandler : IRequestHandler<RemoveOrganizationFromWhitelistCommand>
 {
     private readonly IAuthorizationService _authorizationService;
 
-    public AddOrganizationToWhitelistCommandHandler(IAuthorizationService authorizationService)
+    public RemoveOrganizationFromWhitelistCommandHandler(IAuthorizationService authorizationService)
     {
         _authorizationService = authorizationService;
     }
 
-    public async Task Handle(AddOrganizationToWhitelistCommand command, CancellationToken cancellationToken)
+    public async Task Handle(RemoveOrganizationFromWhitelistCommand command, CancellationToken cancellationToken)
     {
         await _authorizationService.AddOrganizationToWhitelistAsync(command.Tin, cancellationToken);
     }
 }
+
