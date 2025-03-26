@@ -41,7 +41,7 @@ public class AuthorizationService : IAuthorizationService
 
     public async Task AddOrganizationToWhitelistHttpRequestAsync(Tin tin)
     {
-        var response = await _client.PostAsJsonAsync("whitelisted-organizations/", new { Tin = tin });
+        var response = await _client.PostAsJsonAsync("whitelisted-organizations/", new { Tin = tin.Value });
         response.EnsureSuccessStatusCode();
     }
 }

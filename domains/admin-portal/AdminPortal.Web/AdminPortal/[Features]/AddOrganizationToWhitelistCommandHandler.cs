@@ -15,9 +15,9 @@ public class AddOrganizationToWhitelistCommandHandler : IRequestHandler<AddOrgan
         _authorizationService = authorizationService;
     }
 
-    public async Task Handle(AddOrganizationToWhitelistCommand request, CancellationToken cancellationToken)
+    public async Task Handle(AddOrganizationToWhitelistCommand command, CancellationToken cancellationToken)
     {
-        await _authorizationService.AddOrganizationToWhitelistHttpRequestAsync(request.Tin);
+        await _authorizationService.AddOrganizationToWhitelistHttpRequestAsync(command.Tin);
     }
 }
 
