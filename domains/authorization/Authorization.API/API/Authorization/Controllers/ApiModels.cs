@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using API.Authorization._Features_.Internal;
+using Microsoft.AspNetCore.Http;
 
 namespace API.Authorization.Controllers;
 
@@ -23,7 +24,7 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("org_id")] Guid OrgId,
     [property: JsonPropertyName("org_ids")] IEnumerable<Guid> OrgIds,
     [property: JsonPropertyName("scope")] string Scope
-    );
+);
 
 public record UserAuthorizationResponse(
     [property: JsonPropertyName("sub")] Guid Sub,
@@ -33,6 +34,17 @@ public record UserAuthorizationResponse(
     [property: JsonPropertyName("org_ids")] IEnumerable<Guid> OrgIds,
     [property: JsonPropertyName("scope")] string Scope,
     [property: JsonPropertyName("terms_accepted")] bool TermsAccepted
+);
+
+public record WhitelistedOrganizationRequest(
+    [property: JsonPropertyName("tin")] string Tin
+);
+
+// B2C error model - https://learn.microsoft.com/en-us/azure/active-directory-b2c/restful-technical-profile#returning-validation-error-message
+public record AuthorizationErrorResponse(
+    [property: JsonPropertyName("userMessage")] string UserMessage,
+    [property: JsonPropertyName("version")] string Version = "1.0",
+    [property: JsonPropertyName("status")] int Status = StatusCodes.Status409Conflict
 );
 
 public record GrantConsentToClientRequest(Guid IdpClientId);
