@@ -9,6 +9,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace API.Authorization.Controllers.Internal;
 
@@ -56,8 +58,19 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> AddOrganizationToWhitelist(
         [FromBody] AddOrganizationToWhitelistRequest request, CancellationToken cancellationToken)
     {
-        await mediator.Send(new AddOrganizationToWhitelistCommand(Tin.Create(request.Tin)), cancellationToken);
+        try
+        {
+            await mediator.Send(new AddOrganizationToWhitelistCommand(Tin.Create(request.Tin)), cancellationToken);
+        }
+        catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+        {
+        }
 
         return StatusCode(StatusCodes.Status201Created, new AddOrganizationToWhitelistResponse(request.Tin));
+    }
+
+    private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+    {
+        return ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
     }
 }
