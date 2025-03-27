@@ -149,13 +149,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UsePathBase("/ett-admin-portal");
-app.MapHealthChecks("/health").AllowAnonymous();
 app.UseHttpsRedirection();
 app.UseStaticFiles(new StaticFileOptions
 {
     RequestPath = "/ett-admin-portal"
 });
+app.UsePathBase("/ett-admin-portal");
+app.MapHealthChecks("/health").AllowAnonymous();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
