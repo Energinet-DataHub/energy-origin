@@ -1,5 +1,6 @@
 using System;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Xunit;
 

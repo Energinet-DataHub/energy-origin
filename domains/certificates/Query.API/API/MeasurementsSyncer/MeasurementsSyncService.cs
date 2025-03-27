@@ -9,10 +9,12 @@ using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using API.Models;
+using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using Meteringpoint.V1;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -29,6 +31,7 @@ public class MeasurementsSyncService
     private readonly IOptions<MeasurementsSyncOptions> _options;
     private readonly IDataHub3Client _dataHub3Client;
     private readonly IDataHubFacadeClient _dataHubFacadeClient;
+    private readonly IContractState _contractState;
 
     public MeasurementsSyncService(ILogger<MeasurementsSyncService> logger,
         ISlidingWindowState slidingWindowState,
@@ -38,7 +41,8 @@ public class MeasurementsSyncService
         Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient,
         IOptions<MeasurementsSyncOptions> measurementSyncOptions,
         IDataHub3Client dataHub3Client,
-        IDataHubFacadeClient dataHubFacadeClient)
+        IDataHubFacadeClient dataHubFacadeClient,
+        IContractState contractState)
     {
         _logger = logger;
         _slidingWindowState = slidingWindowState;
@@ -49,6 +53,7 @@ public class MeasurementsSyncService
         _options = measurementSyncOptions;
         _dataHub3Client = dataHub3Client;
         _dataHubFacadeClient = dataHubFacadeClient;
+        _contractState = contractState;
     }
 
     public async Task FetchAndPublishMeasurements(
@@ -66,7 +71,14 @@ public class MeasurementsSyncService
         }
         foreach (var rejection in mpRelations.Rejections)
         {
-            _logger.LogError("Relation rejection detected! Gsrn: {Gsrn}, ErrorCode: {ErrorCode}, ErrorDetailName: {ErrorDetailName}, ErrorDetailValue: {ErrorDetailValue}", rejection.MeteringPointId, rejection.ErrorCode, rejection.ErrorDetailName, rejection.ErrorDetailValue);
+            _logger.LogError("Relation rejection detected. Gsrn: {Gsrn}, ErrorCode: {ErrorCode}, ErrorDetailName: {ErrorDetailName}, ErrorDetailValue: {ErrorDetailValue}", rejection.MeteringPointId, rejection.ErrorCode, rejection.ErrorDetailName, rejection.ErrorDetailValue);
+        }
+
+        if (mpRelations.Rejections.Any(x => x.IsLmc001Error()))
+        {
+            _logger.LogError("LMC-001 error detected. {Gsrn} does not have a relation. Deleting issuing contract and sliding window for this Gsrn.", slidingWindow.GSRN);
+            await _contractState.DeleteContractAndSlidingWindow(new Gsrn(mpRelations.Rejections.First(x => x.IsLmc001Error()).MeteringPointId));
+            return;
         }
 
         if (!mpRelations.Relations.Any(x => x.IsValidGsrn(gsrn)))

@@ -9,6 +9,7 @@ using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -43,12 +44,13 @@ public class MeasurementsSyncerWorkerTest
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
     private readonly IDataHub3Client _dataHub3Client = Substitute.For<IDataHub3Client>();
     private readonly IDataHubFacadeClient _dataHubFacadeClient = Substitute.For<IDataHubFacadeClient>();
+    private readonly IContractState _contractState = Substitute.For<IContractState>();
 
     public MeasurementsSyncerWorkerTest()
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, _options, _dataHub3Client, _dataHubFacadeClient);
+            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, _options, _dataHub3Client, _dataHubFacadeClient, _contractState);
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
         _serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);
