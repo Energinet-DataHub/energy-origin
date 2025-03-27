@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using AdminPortal.Services;
+using AdminPortal._Features_;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,16 +8,16 @@ namespace AdminPortal.Controllers;
 [Authorize]
 public class ActiveContractsController : Controller
 {
-    private readonly IAggregationQuery _aggregationQuery;
+    private readonly IGetActiveContractsQuery _getActiveContractsQuery;
 
-    public ActiveContractsController(IAggregationQuery aggregationQuery)
+    public ActiveContractsController(IGetActiveContractsQuery getActiveContractsQuery)
     {
-        _aggregationQuery = aggregationQuery;
+        _getActiveContractsQuery = getActiveContractsQuery;
     }
 
     public async Task<IActionResult> Index()
     {
-        var response = await _aggregationQuery.GetActiveContractsAsync();
+        var response = await _getActiveContractsQuery.GetActiveContractsQueryAsync();
         return View(response.Results.MeteringPoints);
     }
 }

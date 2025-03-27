@@ -1,11 +1,15 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using AdminPortal._Features_;
 using AdminPortal.Options;
 using AdminPortal.Services;
 using AdminPortal.Utilities;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.OpenTelemetry;
+using EnergyOrigin.Setup.RabbitMq;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -22,30 +26,27 @@ using IAuthorizationService = AdminPortal.Services.IAuthorizationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<AdminPortalOptions>().BindConfiguration(AdminPortalOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<AdminPortalOptions>().BindConfiguration(AdminPortalOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
-    .ValidateDataAnnotations()
+builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddHealthChecks();
+builder.Services.AddDefaultHealthChecks();
 
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("AdminPortal.Web", otlpOptions.ReceiverEndpoint);
 
-builder.AddSerilog();
+builder.AddSerilogWithoutOutboxLogs();
+
 builder.Services.AddRazorPages();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -53,8 +54,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
-builder.Services.AddScoped<IAggregationQuery, ActiveContractsQuery>();
-builder.Services.AddScoped<IWhitelistedOrganizationsQuery, WhitelistedOrganizationsQuery>();
+builder.Services.AddScoped<IGetActiveContractsQuery, GetActiveContractsQueryHandler>();
+builder.Services.AddScoped<IWhitelistedOrganizationsQuery, GetWhitelistedOrganizationsQueryHandler>();
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
@@ -135,9 +136,9 @@ builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("Aut
         );
     });
 
-var app = builder.Build();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
-app.MapHealthChecks("/health").AllowAnonymous();
+var app = builder.Build();
 
 app.UseForwardedHeaders();
 
@@ -154,6 +155,7 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/ett-admin-portal"
 });
 app.UsePathBase("/ett-admin-portal");
+app.MapHealthChecks("/health").AllowAnonymous();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
