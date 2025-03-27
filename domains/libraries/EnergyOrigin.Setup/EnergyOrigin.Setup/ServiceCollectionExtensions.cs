@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
@@ -51,20 +52,27 @@ public static class ServiceCollectionExtensions
     {
         var openTelemetryBuilder = services.AddOpenTelemetry()
             .ConfigureResource(resource => resource
-                .AddService(serviceName: serviceName, serviceInstanceId: Environment.MachineName));
+                .AddService(serviceName: serviceName)
+                .AddAttributes(new Dictionary<string, object>
+                {
+                    { "host.name", Environment.MachineName }
+                })
+            );
 
         return openTelemetryBuilder
             .WithMetrics(meterProviderBuilder =>
                 meterProviderBuilder
-                    .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddProcessInstrumentation()
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint))
             .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
-                    .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
                     .AddNpgsql()
+                    .AddSource(serviceName)
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
     }
 
