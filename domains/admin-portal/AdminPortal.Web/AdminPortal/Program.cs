@@ -140,6 +140,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Pr
 
 var app = builder.Build();
 
+app.MapHealthChecks("/health").AllowAnonymous();
+
 app.UseForwardedHeaders();
 
 app.MapRazorPages();
@@ -155,7 +157,7 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/ett-admin-portal"
 });
 app.UsePathBase("/ett-admin-portal");
-app.MapHealthChecks("/health").AllowAnonymous();
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
