@@ -18,8 +18,14 @@ public class AddOrganizationToWhitelistCommandHandler(
     {
         await unitOfWork.BeginTransactionAsync();
 
-        var whitelisted = Whitelisted.Create(request.Tin);
-        await whitelistedRepository.AddAsync(whitelisted, cancellationToken);
+        var checkIfOrganizationIsAlreadyWhitelisted = await whitelistedRepository.Query()
+            .FirstOrDefaultAsync(w => w.Tin == request.Tin, cancellationToken);
+
+        if (checkIfOrganizationIsAlreadyWhitelisted == null)
+        {
+            var whitelisted = Whitelisted.Create(request.Tin);
+            await whitelistedRepository.AddAsync(whitelisted, cancellationToken);
+        }
 
         await unitOfWork.CommitAsync();
     }
