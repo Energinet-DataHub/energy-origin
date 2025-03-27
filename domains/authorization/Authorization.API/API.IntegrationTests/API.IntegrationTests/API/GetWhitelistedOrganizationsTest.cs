@@ -43,10 +43,10 @@ public class GetWhitelistedOrganizationsTest
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var content = await response.Content
-            .ReadFromJsonAsync<WhitelistedOrganizationsResponse>(TestContext.Current.CancellationToken);
+            .ReadFromJsonAsync<GetWhitelistedOrganizationsResponse>(TestContext.Current.CancellationToken);
 
         Assert.NotNull(content);
-        Assert.IsType<WhitelistedOrganizationsResponse>(content);
+        Assert.IsType<GetWhitelistedOrganizationsResponse>(content);
         Assert.Contains(content.Result, item =>
             item.OrganizationId == whitelisted1.Id &&
             item.Tin == whitelisted1.Tin.Value

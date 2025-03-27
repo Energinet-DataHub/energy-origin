@@ -2,14 +2,16 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using AdminPortal.Dtos;
+using AdminPortal.Dtos.Response;
+using EnergyOrigin.Domain.ValueObjects;
 
 namespace AdminPortal.Services;
 
 public interface IAuthorizationService
 {
-    Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync();
-    Task<WhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync();
+    Task<GetOrganizationsResponse> GetOrganizationsHttpRequestAsync();
+    Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsHttpRequestAsync();
+    Task AddOrganizationToWhitelistHttpRequestAsync(Tin tin);
 }
 
 public class AuthorizationService : IAuthorizationService
@@ -21,19 +23,25 @@ public class AuthorizationService : IAuthorizationService
         _client = client;
     }
 
-    public async Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync()
+    public async Task<GetOrganizationsResponse> GetOrganizationsHttpRequestAsync()
     {
         var response = await _client.GetAsync("first-party-organizations/");
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<FirstPartyOrganizationsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<GetOrganizationsResponse>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
     }
 
-    public async Task<WhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync()
+    public async Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsHttpRequestAsync()
     {
         var response = await _client.GetAsync("whitelisted-organizations/");
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<WhitelistedOrganizationsResponse>();
+        var result = await response.Content.ReadFromJsonAsync<GetWhitelistedOrganizationsResponse>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
+    }
+
+    public async Task AddOrganizationToWhitelistHttpRequestAsync(Tin tin)
+    {
+        var response = await _client.PostAsJsonAsync("whitelisted-organizations/", new { Tin = tin.Value });
+        response.EnsureSuccessStatusCode();
     }
 }

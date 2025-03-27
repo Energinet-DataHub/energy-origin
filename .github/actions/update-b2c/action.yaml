@@ -1,0 +1,72 @@
+name: Update B2C
+description: Update B2C redirect URLs
+
+inputs:
+  azure-tenant-id:
+    description: Azure Tenant ID.
+    required: true
+  azure-client-id:
+    description: Azure Client ID.
+    required: true
+  azure-client-secret:
+    description: Azure Client secret.
+    required: true
+  github-client-id:
+    description: Github Client ID.
+    required: true
+  github-client-secret:
+    description: Github Client secret.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: "{ \"clientSecret\": \"${{ inputs.azure-client-secret }}\", \"tenantId\": \"${{ inputs.azure-tenant-id }}\", \"clientId\": \"${{ inputs.azure-client-id }}\"}"
+        allow-no-subscriptions: true
+        
+    - name: Generate Github token
+      uses: Energinet-DataHub/.github/.github/actions/github-create-token@v13
+      id: generate_token
+      with:
+        app_id: ${{ inputs.github-client-id }}
+        private_key: ${{ inputs.github-client-secret }}
+
+    - name: Update redirect URLs
+      env: 
+        ettFrontendAppObjectId: 8b172c40-82a1-4d7c-b1d0-cd7eeb94d81b
+        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+      shell: bash
+      run: |
+        # Get all eo-base branches
+        branches=$(gh api repos/Energinet-DataHub/eo-base-environment/branches --paginate --jq '.[].name')
+
+        # Build redirect URLs for preview branches
+        previewBranches=$(echo "${branches}" | grep "preview")
+        previewDnsPrefixes=$(echo "${previewBranches}" | cut -c 8- | tr '[:upper:]' '[:lower:]' | sed 's/[^0-9a-z]*//g')
+        previewRedirectUrlsEn=$(echo "${previewDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.p.acorn-dev.dk/en/callback|")
+        previewRedirectUrlsDa=$(echo "${previewDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.p.acorn-dev.dk/da/callback|")
+
+        # Build redirect URLs for vcluster branches
+        vclusterBranches=$(echo "${branches}" | grep "vcluster")
+        vclusterDnsPrefixes=$(echo "${vclusterBranches}" | cut -c 9- | tr '[:upper:]' '[:lower:]' | sed 's/[^0-9a-z]*//g')
+        vclusterRedirectUrlsEn=$(echo "${vclusterDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.v.acorn-dev.dk/en/callback|")
+        vclusterRedirectUrlsDa=$(echo "${vclusterDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.v.acorn-dev.dk/da/callback|")
+
+        # Add generic redirect URLs
+        redirectUrls=$(echo -e "${previewRedirectUrlsEn}\n${previewRedirectUrlsDa}\n${vclusterRedirectUrlsEn}\n${vclusterRedirectUrlsDa}")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://jwt.io")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttp://localhost:4200/da/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttp://localhost:4200/en/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://localhost:4200/da/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://localhost:4200/en/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://demo.energytrackandtrace.dk/da/callback")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://demo.energytrackandtrace.dk/en/callback")
+
+        # Build json aray of redirect urls and update B2C
+        redirectUrlsJsonArray=$(echo "${redirectUrls}" | sed 's|^|"|' | sed 's|$|"|' | jq -s)
+        az rest --method "patch" --uri "https://graph.microsoft.com/v1.0/applications/${{ env.ettFrontendAppObjectId }}" --headers "{'Content-Type': 'application/json'}" --body "{'spa': {'redirectUris': ${redirectUrlsJsonArray}}}" 
+
+        # Dump app configuration
+        az ad app show --id ${{ env.ettFrontendAppObjectId }}
