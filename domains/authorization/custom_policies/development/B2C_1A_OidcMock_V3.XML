@@ -438,7 +438,7 @@
         </ClaimsProvider>
 
         <ClaimsProvider>
-            <DisplayName>Authorization consents</DisplayName>
+            <DisplayName>Authorization consents and organization whitelist</DisplayName>
             <TechnicalProfiles>
                 <TechnicalProfile Id="clientCredentialsMethod">
                     <DisplayName>Self authentication</DisplayName>
@@ -497,6 +497,24 @@
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
 
+                <TechnicalProfile Id="validateOrganizationWhitelisted">
+                    <DisplayName>Check that the organization is whitelisted</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">/https://demo.energytrackandtrace.dk/api/authorization/whitelisted-organization</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                        <Item Key="AuthenticationType">Bearer</Item>
+                        <Item Key="UseClaimAsBearerToken">self_access_token</Item>
+                        <Item Key="DebugMode">true</Item>
+                        <Item Key="DefaultUserMessageIfRequestFailed">Failed to obtain whitelist information.</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="self_access_token"/>
+                        <InputClaim ClaimTypeReferenceId="org_cvr" />
+                    </InputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
+                </TechnicalProfile>
             </TechnicalProfiles>
         </ClaimsProvider>
 
@@ -621,7 +639,13 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="7" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
+                <OrchestrationStep Order="7" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="8" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
             </OrchestrationSteps>
         </UserJourney>
 
@@ -633,12 +657,26 @@
                         <ClaimsExchange Id="RefreshTokenSetupExchange" TechnicalProfileReferenceId="RefreshTokenReadAndSetup" />
                     </ClaimsExchanges>
                 </OrchestrationStep>
+
                 <OrchestrationStep Order="2" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="CheckRefreshTokenDateFromAadExchange" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId-CheckRefreshTokenDate" />
                     </ClaimsExchanges>
                 </OrchestrationStep>
-                <OrchestrationStep Order="3" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
             </OrchestrationSteps>
         </UserJourney>
 
