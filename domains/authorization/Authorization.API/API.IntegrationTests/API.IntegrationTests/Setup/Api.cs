@@ -86,6 +86,11 @@ public class Api : IAsyncLifetime
         return await _client.PostAsJsonAsync("/api/authorization/user-consent/", request, SerializerOptions);
     }
 
+    public async Task<HttpResponseMessage> GetIsWhitelistedOrganization(WhitelistedOrganizationRequest request)
+    {
+        return await _client.PostAsJsonAsync("/api/authorization/whitelisted-organization/", request, SerializerOptions);
+    }
+
     public async Task<HttpResponseMessage> CreateClient(Guid idpClientId, string name, ClientType clientType,
         string redirectUrl)
     {

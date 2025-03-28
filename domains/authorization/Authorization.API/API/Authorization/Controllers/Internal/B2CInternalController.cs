@@ -5,6 +5,7 @@ using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
@@ -82,5 +83,26 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             commandResult.OrgIds,
             commandResult.Scope,
             commandResult.TermsAccepted));
+    }
+
+    [HttpPost]
+    [Route("whitelisted-organization")]
+    [SwaggerOperation(
+        Summary = "Gets whether an organization is whitelisted",
+        Description = "This endpoint is only used by Azure B2C"
+    )]
+    public async Task<ActionResult<bool>> GetIsWhitelistedOrganization([FromBody] WhitelistedOrganizationRequest request)
+    {
+        var isWhitelisted = await mediator.Send(new GetWhitelistedOrganizationQuery(request.OrgCvr));
+        if (isWhitelisted)
+        {
+            return Ok();
+        }
+
+        return new ObjectResult(
+            new AuthorizationErrorResponse("Organization not whitelisted"))
+        {
+            StatusCode = StatusCodes.Status403Forbidden
+        };
     }
 }

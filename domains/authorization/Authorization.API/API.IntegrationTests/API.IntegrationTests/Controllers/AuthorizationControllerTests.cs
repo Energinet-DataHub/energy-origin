@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
@@ -83,25 +84,6 @@ public class AuthorizationControllerTests
         result.TermsAccepted.Should().BeFalse();
     }
 
-    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext)
-    {
-        if (!dbContext.Terms.Any())
-        {
-            dbContext.Terms.Add(Terms.Create(1));
-            dbContext.SaveChanges();
-        }
-
-        var user = Any.User();
-        var organization = Any.Organization(Any.Tin());
-        organization.AcceptTerms(dbContext.Terms.First());
-
-        await dbContext.Users.AddAsync(user);
-        await dbContext.Organizations.AddAsync(organization);
-
-        await dbContext.SaveChangesAsync();
-
-        return (user.IdpUserId, organization.Tin!, organization.Name);
-    }
 
     [Fact]
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenAffiliationIsCreated()
@@ -121,5 +103,58 @@ public class AuthorizationControllerTests
         response.Should().Be200Ok();
 
         dbContext.Affiliations.Where(x => x.Organization.Tin == tin).ToList().Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task GivenExistingTinThatIsWhitelisted_WhenCheckingWhitelist_ThenHttpOk()
+    {
+        await using var dbContext = new ApplicationDbContext(_options);
+
+        var organization = Any.Organization(Any.Tin());
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Whitelisted.AddAsync(Whitelisted.Create(organization.Tin!), TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var request = new WhitelistedOrganizationRequest(organization.Tin!.Value);
+
+        var response = await _api.GetIsWhitelistedOrganization(request);
+
+        response.Should().Be200Ok();
+    }
+
+    [Fact]
+    public async Task GivenExistingTinThatIsNotWhitelisted_WhenCheckingWhitelist_ThenHttpForbidden()
+    {
+        await using var dbContext = new ApplicationDbContext(_options);
+
+        var organization = Any.Organization(Any.Tin());
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var request = new WhitelistedOrganizationRequest(organization.Tin!.Value);
+
+        var response = await _api.GetIsWhitelistedOrganization(request);
+
+        response.Should().HaveHttpStatusCode(HttpStatusCode.Forbidden);
+    }
+
+    private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext)
+    {
+        if (!dbContext.Terms.Any())
+        {
+            dbContext.Terms.Add(Terms.Create(1));
+            dbContext.SaveChanges();
+        }
+
+        var user = Any.User();
+        var organization = Any.Organization(Any.Tin());
+        organization.AcceptTerms(dbContext.Terms.First());
+
+        await dbContext.Users.AddAsync(user);
+        await dbContext.Organizations.AddAsync(organization);
+
+        await dbContext.SaveChangesAsync();
+
+        return (user.IdpUserId, organization.Tin!, organization.Name);
     }
 }
