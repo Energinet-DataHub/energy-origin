@@ -1,0 +1,22 @@
+name: Update B2C
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "*/15 * * * *"
+  pull_request:
+
+jobs:
+  update:
+    name: Update
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/update-b2c
+        with:
+          azure-tenant-id: d3803538-de83-47f3-bc72-54843a8592f2
+          azure-client-id: 291fedbd-35c0-4fcb-9088-498d0c96c50d
+          azure-client-secret: ${{ secrets.ENERGY_TRACK_AND_TRACE_B2C_CLIENT_SECRET_DEMO }}
+          github-client-id: ${{ secrets.EO_BASE_ENVIRONMENT_READER_APP_ID }}
+          github-client-secret: ${{ secrets.EO_BASE_ENVIRONMENT_READER_PRIVATEKEY }}
+        

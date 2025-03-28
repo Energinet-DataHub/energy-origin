@@ -180,4 +180,37 @@ public class ContractStateTest
         // Contract is included
         syncInfo.Should().BeNull();
     }
+
+    [Fact]
+    public async Task DeleteContractAndSlidingWindow_WhenMoreThanOneOfEachOnSameGsrn_DeleteContractAndSlidingWindowMatchingTheGsrn()
+    {
+        // Given ended contract with no missing measurements
+        await using var dbContext = _dbContextFactoryMock.CreateDbContext();
+        var gsrn1 = Any.Gsrn();
+        var gsrn2 = Any.Gsrn();
+        var firstContractEnd = UnixTimestamp.Now().AddHours(-10);
+        dbContext.Contracts.Add(Any.CertificateIssuingContract(gsrn1, UnixTimestamp.Now().AddHours(-20), firstContractEnd, contractNumber: 0));
+        dbContext.Contracts.Add(Any.CertificateIssuingContract(gsrn1, UnixTimestamp.Now().AddHours(-40), UnixTimestamp.Now().AddHours(-30), contractNumber: 1));
+        dbContext.Contracts.Add(Any.CertificateIssuingContract(gsrn2, UnixTimestamp.Now().AddHours(-20), UnixTimestamp.Now().AddHours(-10)));
+
+        dbContext.MeteringPointTimeSeriesSlidingWindows.Add(MeteringPointTimeSeriesSlidingWindow.Create(gsrn1, firstContractEnd, []));
+        dbContext.MeteringPointTimeSeriesSlidingWindows.Add(MeteringPointTimeSeriesSlidingWindow.Create(gsrn2, firstContractEnd, []));
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await _sut.DeleteContractAndSlidingWindow(gsrn1);
+
+        var syncInfo = (await _sut.GetSyncInfos(TestContext.Current.CancellationToken)).FirstOrDefault(si => si.Gsrn.Equals(gsrn1));
+
+        syncInfo.Should().BeNull();
+
+        var gsrn1Contracts = dbContext.Contracts.Where(x => x.GSRN == gsrn1.Value).ToList();
+        var gsrn2Contracts = dbContext.Contracts.Where(x => x.GSRN == gsrn2.Value).ToList();
+
+        gsrn1Contracts.Should().BeEmpty();
+        gsrn2Contracts.Should().HaveCount(1);
+
+        var gsrn1SlidingWindows = dbContext.MeteringPointTimeSeriesSlidingWindows.Where(x => x.GSRN == gsrn1.Value).ToList();
+
+        gsrn1SlidingWindows.Should().BeEmpty();
+    }
 }

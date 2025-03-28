@@ -5,8 +5,9 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using AdminPortal.Dtos;
+using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Hosting;
@@ -37,26 +38,31 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
     private class MockAuthorizationService : IAuthorizationService
     {
-        public Task<FirstPartyOrganizationsResponse> GetOrganizationsAsync()
+        public Task<GetOrganizationsResponse> GetOrganizationsHttpRequestAsync()
         {
             return Task.FromResult(
-                new FirstPartyOrganizationsResponse(new List<FirstPartyOrganizationsResponseItem>()));
+                new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>()));
         }
-        public Task<WhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync()
+        public Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsHttpRequestAsync()
         {
             return Task.FromResult(
-                new WhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>()));
+                new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>()));
+        }
+        public Task AddOrganizationToWhitelistHttpRequestAsync(Tin tin)
+        {
+            return Task.CompletedTask;
         }
     }
 
     private class MockCertificatesService : ICertificatesService
     {
-        public Task<ContractsForAdminPortalResponse> GetContractsAsync()
+        public Task<GetContractsForAdminPortalResponse> GetContractsHttpRequestAsync()
         {
             return Task.FromResult(
-                new ContractsForAdminPortalResponse(new List<ContractsForAdminPortalResponseItem>()));
+                new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>()));
         }
     }
+
     public HttpClient CreateAuthenticatedClient<T>(WebApplicationFactoryClientOptions options, int sessionId) where T : ImpersonatedUser
     {
         return CreateLoggedInClient<T>(options, list => list.Add(new Claim("sessionid", sessionId.ToString())));
