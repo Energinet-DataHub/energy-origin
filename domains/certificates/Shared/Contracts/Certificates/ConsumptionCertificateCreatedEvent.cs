@@ -1,5 +1,6 @@
 using System;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 
 namespace Contracts.Certificates;
 

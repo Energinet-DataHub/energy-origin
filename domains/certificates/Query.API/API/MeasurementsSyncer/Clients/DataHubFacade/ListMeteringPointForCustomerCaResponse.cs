@@ -28,4 +28,9 @@ public class Rejection
     public required string ErrorCode { get; set; }
     public required string ErrorDetailName { get; set; }
     public required string ErrorDetailValue { get; set; }
+
+    public bool IsLmc001Error()
+    {
+        return ErrorCode.ToUpper() == "LMC-001";
+    }
 }
