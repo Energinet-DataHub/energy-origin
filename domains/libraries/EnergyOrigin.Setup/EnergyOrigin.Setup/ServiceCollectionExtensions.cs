@@ -59,14 +59,16 @@ public static class ServiceCollectionExtensions
         return openTelemetryBuilder
             .WithMetrics(meterProviderBuilder =>
                 meterProviderBuilder
-                    .AddMeter("Metrics.EnergyTrackAndTrace")
                     .SetExemplarFilter(ExemplarFilterType.TraceBased)
+                    .AddMeter("Metrics.EnergyTrackAndTrace")
                     .AddView(
                         "http.server.request.duration",
-                        new ExplicitBucketHistogramConfiguration { Boundaries = [0.01, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 90, 120, 180, 300] })
+                        new ExplicitBucketHistogramConfiguration
+                            { Boundaries = [0.01, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 90, 120, 180, 300] })
                     .AddView(
                         "http.client.request.duration",
-                        new ExplicitBucketHistogramConfiguration { Boundaries = [0.01, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 90, 120, 180, 300] })
+                        new ExplicitBucketHistogramConfiguration
+                            { Boundaries = [0.01, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 90, 120, 180, 300] })
                     .SetExemplarFilter(ExemplarFilterType.TraceBased)
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
@@ -76,13 +78,17 @@ public static class ServiceCollectionExtensions
                     {
                         exporterOptions.Endpoint = oltpReceiverEndpoint;
                         exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
-                        }))
-                        .WithTracing(tracerProviderBuilder =>
+                    }))
+            .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddNpgsql()
-                    .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
+                    .AddOtlpExporter((exporterOptions) =>
+                    {
+                        exporterOptions.Endpoint = oltpReceiverEndpoint;
+                        exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    }));
     }
 
 
