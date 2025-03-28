@@ -52,7 +52,6 @@ public static class ServiceCollectionExtensions
     public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracing(this IServiceCollection services, string serviceName,
         Uri oltpReceiverEndpoint)
     {
-        Telemetry.InitializeForService(serviceName);
         var openTelemetryBuilder = services.AddOpenTelemetry()
             .ConfigureResource(resource => resource
                 .AddService(serviceName: serviceName, serviceInstanceId: Environment.MachineName));
@@ -60,7 +59,15 @@ public static class ServiceCollectionExtensions
         return openTelemetryBuilder
             .WithMetrics(meterProviderBuilder =>
                 meterProviderBuilder
-                    .SetExemplarFilter(ExemplarFilterType.AlwaysOn)
+                    .AddMeter("Metrics.EnergyTrackAndTrace")
+                    .SetExemplarFilter(ExemplarFilterType.TraceBased)
+                    .AddView(
+                        "http.server.request.duration",
+                        new ExplicitBucketHistogramConfiguration { Boundaries = [0.01, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 90, 120, 180, 300] })
+                    .AddView(
+                        "http.client.request.duration",
+                        new ExplicitBucketHistogramConfiguration { Boundaries = [0.01, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 90, 120, 180, 300] })
+                    .SetExemplarFilter(ExemplarFilterType.TraceBased)
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddHttpClientInstrumentation()
@@ -72,21 +79,10 @@ public static class ServiceCollectionExtensions
                         }))
                         .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
-                    .AddSource(serviceName)
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddNpgsql()
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
-    }
-
-    public static class Telemetry
-    {
-        public static ActivitySource ActivitySource { get; private set; } = default!;
-
-        public static void InitializeForService(string serviceName)
-        {
-            ActivitySource = new ActivitySource(serviceName);
-        }
     }
 
 
