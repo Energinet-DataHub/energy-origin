@@ -29,7 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 if (args.Contains("--migrate"))
 {
-    builder.AddSerilogWithoutOutboxLogs();
+    builder.AddOpenTelemetryLogging();
     builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix)
         .ValidateDataAnnotations()
         .ValidateOnStart();
@@ -44,7 +44,7 @@ if (args.Contains("--migrate"))
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilog();
+builder.AddOpenTelemetryLogging();
 
 builder.Services.AddScoped<IBearerTokenService, WebContextBearerTokenService>();
 builder.Services.AddHttpClient<IAuthorizationClient, AuthorizationClient>(client =>

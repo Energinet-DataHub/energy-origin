@@ -142,7 +142,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         builder.Services.AddMassTransitAndRabbitMq<TestDbContext>(x => { x.AddConsumer<TestMessageConsumer>(); });
         builder.Services.AddDbContext<TestDbContext>(options => { options.UseNpgsql(databaseInfo.ConnectionString); });
         builder.Services.AddHealthChecks();
-        builder.AddSerilog();
+        builder.AddOpenTelemetryLogging();
 
         builder.Configuration.GetSection("urls").Value = ServiceBaseAddress;
         return builder;

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
@@ -21,6 +22,20 @@ public static class WebApplicationBuilderExtensions
 
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(console.CreateLogger());
+    }
+
+    public static void AddOpenTelemetryLogging(this WebApplicationBuilder builder)
+    {
+        builder.Logging.ClearProviders();
+
+        builder.Logging.AddOpenTelemetry(options =>
+        {
+            options.IncludeFormattedMessage = true;
+            options.IncludeScopes = true;
+            options.ParseStateValues = true;
+
+            options.AddConsoleExporter();
+        });
     }
 
     public static void AddSerilogWithoutOutboxLogs(this WebApplicationBuilder builder)

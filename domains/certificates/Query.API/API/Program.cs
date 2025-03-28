@@ -27,7 +27,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 if (args.Contains("--migrate"))
 {
-    builder.AddSerilogWithoutOutboxLogs();
+    builder.AddOpenTelemetryLogging();
     var migrateApp = builder.Build();
     var dbMigrator = new DbMigrator(builder.Configuration.GetConnectionString("Postgres")!, typeof(ApplicationDbContext).Assembly,
         migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
@@ -38,7 +38,7 @@ if (args.Contains("--migrate"))
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilogWithoutOutboxLogs();
+builder.AddOpenTelemetryLogging();
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("Certificates.API", otlpOptions.ReceiverEndpoint)
     .WithMetrics(metricsBuilder => metricsBuilder.AddMeter(MeasurementSyncMetrics.MetricName));

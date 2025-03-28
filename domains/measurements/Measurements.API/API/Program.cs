@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 if (args.Contains("--migrate"))
 {
-    builder.AddSerilogWithoutOutboxLogs();
+    builder.AddOpenTelemetryLogging();
     var migrateApp = builder.Build();
     var dbMigrator = new DbMigrator(builder.Configuration.GetConnectionString("Postgres")!, typeof(Program).Assembly,
         migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
