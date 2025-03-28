@@ -596,7 +596,7 @@
                         <OutputClaim ClaimTypeReferenceId="refreshTokenIssuedOnDateTime" />
 
                         <!-- Additional claims -->
-                        <!-- Output claims in RefreshTokenReadAndSetup must match the output claims in the OidcMockPolicyProfile -->
+                        <!-- Output claims in RefreshTokenReadAndSetup must match the output claims in the ProductionPolicyProfile -->
                         <OutputClaim ClaimTypeReferenceId="mitid_name" PartnerClaimType="name"/>
                         <OutputClaim ClaimTypeReferenceId="email"/>
                         <OutputClaim ClaimTypeReferenceId="org_cvr"/>
@@ -782,6 +782,7 @@
             <DisplayName>Production Policy Profile</DisplayName>
             <Protocol Name="OpenIdConnect"/>
             <OutputClaims>
+                <!-- Output claims in the ProductionPolicyProfile must match the output claims in RefreshTokenReadAndSetup -->
                 <OutputClaim ClaimTypeReferenceId="mitid_name" PartnerClaimType="name"/>
                 <OutputClaim ClaimTypeReferenceId="email"/>
                 <OutputClaim ClaimTypeReferenceId="org_cvr"/>
