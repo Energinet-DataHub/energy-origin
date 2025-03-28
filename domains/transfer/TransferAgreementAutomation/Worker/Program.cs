@@ -24,7 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddOpenTelemetryLogging();
+builder.AddSerilog();
 
 builder.Services.AddOptions<TransferAgreementAutomationOptions>().BindConfiguration(TransferAgreementAutomationOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();

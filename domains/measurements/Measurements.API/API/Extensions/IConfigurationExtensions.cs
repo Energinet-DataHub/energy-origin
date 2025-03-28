@@ -22,7 +22,7 @@ public static class ConfigurationExtensions
             .ValidateOnStart();
 
         builder.Logging.ClearProviders();
-        builder.AddOpenTelemetryLogging();
+        builder.AddSerilogWithoutOutboxLogs();
 
         var startup = new Startup(builder.Configuration);
         startup.ConfigureServices(builder.Services);

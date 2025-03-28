@@ -45,7 +45,7 @@ var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.Services.AddOpenTelemetryMetricsAndTracing("AdminPortal.Web", otlpOptions.ReceiverEndpoint);
 
-builder.AddOpenTelemetryLogging();
+builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddRazorPages();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
