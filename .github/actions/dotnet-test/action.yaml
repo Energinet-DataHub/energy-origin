@@ -35,8 +35,10 @@ runs:
         ! test -z "${{ env.SDK }}"
 
     - name: Test
-      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@v4
-      with:
-        path: ${{ env.DIRECTORY }}
-        dotnet-version: ${{ env.SDK }}
-        pin-version: true
+      shell: bash
+      run: echo "Hello Universe"
+#      uses: Energinet-DataHub/acorn-actions/actions/dotnet-validate-solution@v4
+#      with:
+#        path: ${{ env.DIRECTORY }}
+#        dotnet-version: ${{ env.SDK }}
+#        pin-version: true

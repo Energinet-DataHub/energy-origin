@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -50,31 +52,43 @@ public static class ServiceCollectionExtensions
     public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracing(this IServiceCollection services, string serviceName,
         Uri oltpReceiverEndpoint)
     {
+        Telemetry.InitializeForService(serviceName);
         var openTelemetryBuilder = services.AddOpenTelemetry()
             .ConfigureResource(resource => resource
-                .AddService(serviceName: serviceName)
-                .AddAttributes(new Dictionary<string, object>
-                {
-                    { "host.name", Environment.MachineName }
-                })
-            );
+                .AddService(serviceName: serviceName, serviceInstanceId: Environment.MachineName));
 
         return openTelemetryBuilder
             .WithMetrics(meterProviderBuilder =>
                 meterProviderBuilder
+                    .SetExemplarFilter(ExemplarFilterType.AlwaysOn)
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddProcessInstrumentation()
-                    .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint))
-            .WithTracing(tracerProviderBuilder =>
+                    .AddOtlpExporter((exporterOptions) =>
+                    {
+                        exporterOptions.Endpoint = oltpReceiverEndpoint;
+                        exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
+                        }))
+                        .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
+                    .AddSource(serviceName)
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddNpgsql()
-                    .AddSource(serviceName)
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
     }
+
+    public static class Telemetry
+    {
+        public static ActivitySource ActivitySource { get; private set; } = default!;
+
+        public static void InitializeForService(string serviceName)
+        {
+            ActivitySource = new ActivitySource(serviceName);
+        }
+    }
+
 
     public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit(this IServiceCollection services,
         string serviceName, Uri oltpReceiverEndpoint)
