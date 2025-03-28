@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
-namespace AdminPortal.Dtos;
+namespace AdminPortal.Dtos.Response;
 
-public class ActiveContractsResponse
+public class GetActiveContractsResponse
 {
     public required ResultsData Results { get; set; }
 }

@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace DataContext.ValueObjects;
+namespace EnergyOrigin.Domain.ValueObjects;
 
 public partial class Gsrn : ValueObject
 {
@@ -18,11 +16,6 @@ public partial class Gsrn : ValueObject
             throw new ArgumentException("GSRN must be 18 characters long and start with 57. value: " + value);
 
         Value = value;
-    }
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Value;
     }
 
     public override string ToString()

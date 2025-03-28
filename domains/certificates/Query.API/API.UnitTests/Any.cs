@@ -147,13 +147,14 @@ public class Any
         };
     }
 
-    public static CertificateIssuingContract CertificateIssuingContract(Gsrn gsrn, UnixTimestamp start, UnixTimestamp? end)
+    public static CertificateIssuingContract CertificateIssuingContract(Gsrn gsrn, UnixTimestamp start, UnixTimestamp? end, int contractNumber = 0)
     {
         return new CertificateIssuingContract()
         {
             GSRN = gsrn.Value,
             StartDate = start.ToDateTimeOffset(),
-            EndDate = end?.ToDateTimeOffset()
+            EndDate = end?.ToDateTimeOffset(),
+            ContractNumber = contractNumber
         };
     }
 }

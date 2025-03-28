@@ -3,12 +3,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Authorization._Features_.Internal;
 using Asp.Versioning;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace API.Authorization.Controllers.Internal;
 
@@ -23,8 +25,7 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
     [Route("first-party-organizations/")]
     [ProducesResponseType(typeof(FirstPartyOrganizationsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(FirstPartyOrganizationsResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetFirstPartyOrganizations(
-        [FromServices] ILogger<AdminPortalController> logger, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetFirstPartyOrganizations(CancellationToken cancellationToken)
     {
         var queryResult = await mediator.Send(new GetFirstPartyOrganizationsQuery(), cancellationToken);
 
@@ -36,17 +37,28 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
 
     [HttpGet]
     [Route("whitelisted-organizations/")]
-    [ProducesResponseType(typeof(WhitelistedOrganizationsResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(WhitelistedOrganizationsResponse), StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetWhitelistedOrganizations(
-        [FromServices] ILogger<AdminPortalController> logger, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(GetWhitelistedOrganizationsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetWhitelistedOrganizationsResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetWhitelistedOrganizations(CancellationToken cancellationToken)
     {
         var queryResult = await mediator.Send(new GetWhitelistedOrganizationsQuery(), cancellationToken);
 
         var responseItems = queryResult.Result
-            .Select(o => new WhitelistedOrganizationsResponseItem(o.OrganizationId, o.Tin))
+            .Select(o => new GetWhitelistedOrganizationsResponseItem(o.OrganizationId, o.Tin))
             .ToList();
 
-        return Ok(new WhitelistedOrganizationsResponse(responseItems));
+        return Ok(new GetWhitelistedOrganizationsResponse(responseItems));
+    }
+
+    [HttpPost]
+    [Route("whitelisted-organizations/")]
+    [ProducesResponseType(typeof(AddOrganizationToWhitelistResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> AddOrganizationToWhitelist(
+        [FromBody] AddOrganizationToWhitelistRequest request, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new AddOrganizationToWhitelistCommand(Tin.Create(request.Tin)), cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, new AddOrganizationToWhitelistResponse(request.Tin));
     }
 }
