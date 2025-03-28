@@ -71,6 +71,10 @@ A client will be authenticated to work in the context of its own organization. I
 
 Our use of the Client Credentials flow is described by Microsoft in the following article [Client Credentials Grant](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow).
 
+## Organization whitelist
+
+
+
 ## API Specifications
 
 - [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization+v1).
@@ -182,7 +186,7 @@ sequenceDiagram
 
     B2C->>Backend: Request User Consent
     activate Backend
-    
+
     Backend->>Backend: Handle User and Organization Data
     Backend->>Backend: Check and Update Terms Acceptance
 
@@ -209,7 +213,7 @@ sequenceDiagram
 
     User->>EO: Delete Consent
     EO->>Backend: Delete Consent
-    
+
     activate Backend
 
     Backend->>Backend: Verify User Affiliation
@@ -222,6 +226,30 @@ sequenceDiagram
         Backend->>EO: Report User Not Affiliated
     else Consent Not Found
         Backend->>EO: Report Consent Not Found
+    end
+
+    deactivate Backend
+```
+
+### Check if organization is whitelisted
+
+The whitelist Authorization API endpoint is responsbile for checking whether an organization has been whitelisted to use ETT. The validation is done using the organizations 'Tin' (CVR).
+This endpoint is designed to be called from the custom policies running in Azure B2C. The custom policies are the only authorized callers of this endpoint.
+
+```mermaid
+sequenceDiagram
+    participant B2C as Azure B2C
+    participant Backend as Authorization Subsystem
+
+    B2C->>Backend: Check if organization is whitelisted
+    activate Backend
+
+    Backend->>Backend: Validate if organization is whitelisted using 'Tin' (CVR)
+
+    Backend->>B2C: Return success (200 Ok)
+
+    alt Error Occurs
+        Backend-->>B2C: Return Error Response
     end
 
     deactivate Backend
