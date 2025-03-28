@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace EnergyOrigin.IntegrationEvents.Events.OrganizationRemovedFromWhitelist;
+namespace EnergyOrigin.IntegrationEvents.Events.OrganizationRemovedFromWhitelist.V1;
 
 public record OrganizationRemovedFromWhitelist : IntegrationEvent
 {
