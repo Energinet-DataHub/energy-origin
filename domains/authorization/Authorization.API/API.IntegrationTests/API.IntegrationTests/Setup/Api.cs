@@ -60,6 +60,12 @@ public class Api : IAsyncLifetime
         return await _client.GetAsync("/api/authorization/admin-portal/whitelisted-organizations/");
     }
 
+    public async Task<HttpResponseMessage> AddOrganizationToWhitelist(string tin)
+    {
+        var request = new AddOrganizationToWhitelistRequest(tin);
+        return await _client.PostAsJsonAsync("/api/authorization/admin-portal/whitelisted-organizations/", request, SerializerOptions);
+    }
+
     public async Task<HttpResponseMessage> AcceptTerms()
     {
         return await _client.PostAsJsonAsync("/api/authorization/terms/accept", new { }, SerializerOptions);

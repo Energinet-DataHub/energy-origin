@@ -4,16 +4,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Authorization.Exceptions;
+using API.Data;
 using API.Models;
 using API.Repository;
-using API.ValueObjects;
-using API.Data;
 using EnergyOrigin.Domain.ValueObjects;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using MassTransit;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
 using EnergyOrigin.WalletClient;
+using MassTransit;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 

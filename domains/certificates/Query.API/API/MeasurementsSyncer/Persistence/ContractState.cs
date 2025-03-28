@@ -9,6 +9,7 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -31,6 +32,19 @@ public class ContractState : IContractState
     public async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(CancellationToken cancellationToken = default)
     {
         return await GetSyncInfos(DateTimeOffset.UtcNow, cancellationToken);
+    }
+
+    public async Task DeleteContractAndSlidingWindow(Gsrn gsrn)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
+        var contractsToDelete = dbContext.Contracts.Where(x => x.GSRN == gsrn.Value);
+        dbContext.Contracts.RemoveRange(contractsToDelete);
+
+        var slidingWindowsToDelete = dbContext.MeteringPointTimeSeriesSlidingWindows.Where(x => x.GSRN == gsrn.Value);
+        dbContext.MeteringPointTimeSeriesSlidingWindows.RemoveRange(slidingWindowsToDelete);
+
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task<IReadOnlyList<MeteringPointSyncInfo>> GetSyncInfos(DateTimeOffset time, CancellationToken cancellationToken = default)
