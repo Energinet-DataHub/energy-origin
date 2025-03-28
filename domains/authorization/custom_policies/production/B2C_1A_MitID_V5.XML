@@ -597,7 +597,8 @@
 
                         <!-- Additional claims -->
                         <!-- Output claims in RefreshTokenReadAndSetup must match the output claims in the OidcMockPolicyProfile -->
-                        <OutputClaim ClaimTypeReferenceId="name"/>
+                        <OutputClaim ClaimTypeReferenceId="mitid_name" PartnerClaimType="name"/>
+                        <OutputClaim ClaimTypeReferenceId="email"/>
                         <OutputClaim ClaimTypeReferenceId="org_cvr"/>
                         <OutputClaim ClaimTypeReferenceId="org_name"/>
                         <OutputClaim ClaimTypeReferenceId="org_id"/>
@@ -791,6 +792,7 @@
                 <OutputClaim ClaimTypeReferenceId="scope"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type"/>
                 <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
         </TechnicalProfile>
