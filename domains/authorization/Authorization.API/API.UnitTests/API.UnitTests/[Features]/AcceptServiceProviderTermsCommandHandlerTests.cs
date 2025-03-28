@@ -35,7 +35,7 @@ public class AcceptServiceProviderTermsCommandHandlerTests
         var updatedOrganization = _organizationRepository.Query().FirstOrDefault(o => o.Id == organization.Id);
         updatedOrganization.Should().NotBeNull();
         updatedOrganization!.ServiceProviderTermsAccepted.Should().BeTrue();
-        await _unitOfWork.Received(1).CommitAsync();
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class AcceptServiceProviderTermsCommandHandlerTests
         var handler = new AcceptServiceProviderTermsCommandHandler(mockOrganizationRepository, mockUnitOfWork);
 
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
-        await mockUnitOfWork.DidNotReceive().CommitAsync();
+        await mockUnitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -61,6 +61,6 @@ public class AcceptServiceProviderTermsCommandHandlerTests
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
         await action.Should().ThrowAsync<EntityNotFoundException>();
-        await _unitOfWork.DidNotReceive().CommitAsync();
+        await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 }

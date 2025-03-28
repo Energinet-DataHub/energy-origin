@@ -15,7 +15,7 @@ public record CreateClientCommandHandler(IUnitOfWork UnitOfWork, IClientReposito
 {
     public async Task<CreateClientCommandResult> Handle(CreateClientCommand request, CancellationToken cancellationToken)
     {
-        await UnitOfWork.BeginTransactionAsync();
+        await UnitOfWork.BeginTransactionAsync(cancellationToken);
         var client = Client.Create(request.IdpClientId, request.Name, request.ClientType, request.RedirectUrl);
         var organization = Organization.Create(null, OrganizationName.Create(request.Name.Value));
         client.SetOrganization(OrganizationId.Create(organization.Id));

@@ -40,6 +40,14 @@ public class FakeGenericRepository<TEntity> : IGenericRepository<TEntity> where 
         }
     }
 
+    public void RemoveRange(IEnumerable<TEntity> entities)
+    {
+        foreach (var entity in entities)
+        {
+            Remove(entity);
+        }
+    }
+
     public void Update(TEntity entity)
     {
         var existingEntity = _entities.FirstOrDefault(e => e.Id == entity.Id);

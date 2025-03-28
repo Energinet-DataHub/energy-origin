@@ -21,7 +21,7 @@ public class DeleteConsentCommandHandler(
 {
     public async Task Handle(DeleteConsentCommand request, CancellationToken cancellationToken)
     {
-        await unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         var idpUserId = IdpUserId.Create(request.IdpUserId);
         var userOrgCvrClaim = Tin.Create(request.OrgCvr);
@@ -53,7 +53,7 @@ public class DeleteConsentCommandHandler(
         }
 
         organizationConsentRepository.Remove(organizationConsent);
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
     }
 }
 
