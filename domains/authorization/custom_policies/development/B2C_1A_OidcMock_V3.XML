@@ -501,7 +501,7 @@
                     <DisplayName>Check that the organization is whitelisted</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
-                        <Item Key="ServiceUrl">/https://demo.energytrackandtrace.dk/api/authorization/whitelisted-organization</Item>
+                        <Item Key="ServiceUrl">https://demo.energytrackandtrace.dk/api/authorization/whitelisted-organization</Item>
                         <Item Key="SendClaimsIn">Body</Item>
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="UseClaimAsBearerToken">self_access_token</Item>
