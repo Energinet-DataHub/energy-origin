@@ -3,6 +3,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using API.Cvr;
+using API.Events;
+using API.Options;
 using API.Transfer;
 using API.Transfer.Api.Clients;
 using API.UnitOfWork;
@@ -12,6 +14,7 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Exceptions.Middleware;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.OpenTelemetry;
+using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -24,6 +27,7 @@ using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
 using Polly.Retry;
+using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +49,13 @@ var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.AddSerilog();
+builder.Services.AddOptions<RetryOptions>()
+    .BindConfiguration(RetryOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+
+builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
+{
+    x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler, TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
+});
 
 builder.Services.AddScoped<IBearerTokenService, WebContextBearerTokenService>();
 builder.Services.AddHttpClient<IAuthorizationClient, AuthorizationClient>(client =>

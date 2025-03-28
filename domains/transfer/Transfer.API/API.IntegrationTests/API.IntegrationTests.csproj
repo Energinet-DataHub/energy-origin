@@ -40,11 +40,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\authorization\Authorization.API\API.UnitTests\API.UnitTests\API.UnitTests.csproj" />
         <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.ValueObjects.Tests\EnergyOrigin.Domain.ValueObjects.Tests.csproj" />
         <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
         <ProjectReference Include="..\..\..\libraries\EnergyTrackAndTrace.Testing\EnergyTrackAndTrace.Testing.csproj" />
         <ProjectReference Include="..\..\Shared\Testing\Testing.csproj" />
+        <ProjectReference Include="..\API.UnitTests\API.UnitTests.csproj" />
         <ProjectReference Include="..\API\API.csproj" />
     </ItemGroup>
 
