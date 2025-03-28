@@ -3,18 +3,14 @@ using System.Threading.Tasks;
 using API.Options;
 using API.Transfer.Api._Features_;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.IntegrationEvents.Events.OrganizationRemovedFromWhitelist.V1;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Options;
 
 namespace API.Events;
 
-public record DummyOrganizationRemovedFromWhitelistEvent
-{
-    public required Guid OrganizationId { get; set; }
-}
-
-public class TransferOrganizationRemovedFromWhitelistEventHandler : IConsumer<DummyOrganizationRemovedFromWhitelistEvent>
+public class TransferOrganizationRemovedFromWhitelistEventHandler : IConsumer<OrganizationRemovedFromWhitelist>
 {
     private readonly IMediator _mediator;
 
@@ -23,7 +19,7 @@ public class TransferOrganizationRemovedFromWhitelistEventHandler : IConsumer<Du
         _mediator = mediator;
     }
 
-    public async Task Consume(ConsumeContext<DummyOrganizationRemovedFromWhitelistEvent> context)
+    public async Task Consume(ConsumeContext<OrganizationRemovedFromWhitelist> context)
     {
         var e = context.Message;
 
@@ -31,7 +27,6 @@ public class TransferOrganizationRemovedFromWhitelistEventHandler : IConsumer<Du
         await _mediator.Send(cmd);
     }
 }
-
 
 public class TransferOrganizationRemovedFromWhitelistEventHandlerDefinition : ConsumerDefinition<TransferOrganizationRemovedFromWhitelistEventHandler>
 {
