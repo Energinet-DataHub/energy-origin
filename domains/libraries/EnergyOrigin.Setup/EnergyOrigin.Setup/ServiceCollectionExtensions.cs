@@ -54,7 +54,9 @@ public static class ServiceCollectionExtensions
     {
         var openTelemetryBuilder = services.AddOpenTelemetry()
             .ConfigureResource(resource => resource
-                .AddService(serviceName: serviceName, serviceInstanceId: Environment.MachineName));
+                .AddService(serviceName: serviceName, serviceInstanceId: Environment.MachineName)
+                .AddContainerDetector()
+                .AddHostDetector());
 
         return openTelemetryBuilder
             .WithMetrics(meterProviderBuilder =>
