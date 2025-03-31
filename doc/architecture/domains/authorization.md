@@ -74,7 +74,7 @@ Our use of the Client Credentials flow is described by Microsoft in the followin
 ## Organization whitelist
 
 This section describes how the organization whitelist works.
-By default, no organizations have access to ETT. To get access, an organization must be added to the organization whitelist. An organization is whitelisted through the ETT Admin Portal. Specificially the organizaion 'TIN' is added to the whitelist.
+By default, no organizations have access to ETT. To get access, an organization must be added to the organization whitelist. An organization is whitelisted through the ETT Admin Portal. Specificially the organizaion 'Tin' is added to the whitelist.
 
 ### Login using MitID
 
