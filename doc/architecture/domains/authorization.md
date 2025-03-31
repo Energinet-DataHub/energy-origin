@@ -79,7 +79,7 @@ By default, no organizations have access to ETT. To get access, an organization 
 ### Login using MitID
 
 When a user logs in using MitID, the organization whitelist is checked during the login flow. The B2C custom policy calls an API endpoint in the Authorization subsystem to perform this check.
-If the organization has not been whitelist, then no access-token will be issued to the user and an error will be returned.
+If the organization has not been whitelisted, then no access-token will be issued to the user and an error will be returned.
 
 ### Refresh of access-token
 
