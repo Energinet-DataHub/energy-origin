@@ -29,6 +29,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using EnergyOrigin.WalletClient;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
+using EnergyOrigin.Setup.RabbitMq;
 
 namespace API.IntegrationTests.Factories;
 
@@ -47,6 +48,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public string CvrBaseUrl { get; set; } = "SomeUrl";
     public bool WithCleanupWorker { get; set; } = true;
     public IWalletClient WalletClientMock { get; private set; } = Substitute.For<IWalletClient>();
+    public RabbitMqOptions? RabbitMqOptions = null;
 
     public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
     {
@@ -78,6 +80,14 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("RabbitMq:Port", "5672");
         builder.UseSetting("RabbitMq:Username", "guest");
         builder.UseSetting("RabbitMq:Password", "guest");
+
+        if (RabbitMqOptions != null)
+        {
+            builder.UseSetting("RabbitMq:Host", RabbitMqOptions.Host);
+            builder.UseSetting("RabbitMq:Port", RabbitMqOptions.Port.ToString());
+            builder.UseSetting("RabbitMq:Username", RabbitMqOptions.Username);
+            builder.UseSetting("RabbitMq:Password", RabbitMqOptions.Password);
+        }
 
         builder.ConfigureTestServices(s =>
         {
