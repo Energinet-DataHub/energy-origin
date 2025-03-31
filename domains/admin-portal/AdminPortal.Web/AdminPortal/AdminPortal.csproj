@@ -8,12 +8,20 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MediatR" Version="12.4.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.2" />
         <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.7.1" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.ValueObjects\EnergyOrigin.Domain.ValueObjects.csproj" />
       <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Views\Login.cshtml" />
+      <AdditionalFiles Include="Views\Logout.cshtml" />
+      <AdditionalFiles Include="Views\SignedOut.cshtml" />
     </ItemGroup>
 
 </Project>

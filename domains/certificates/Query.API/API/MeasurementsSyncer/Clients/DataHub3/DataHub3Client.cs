@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 
 namespace API.MeasurementsSyncer.Clients.DataHub3;

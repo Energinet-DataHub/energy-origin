@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AdminPortal.Dtos;
+using AdminPortal._Features_;
+using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
 using NSubstitute;
 
-namespace AdminPortal.Tests.Services;
+namespace AdminPortal.Tests._Features_;
 
-public class WhitelistedOrganizationsQueryTests
+public class GetWhitelistedOrganizationsQueryHandlerTests
 {
     [Fact]
     public async Task Given_NoWhitelistedOrganizations_When_GetWhitelistedOrganizationsAsyncIsCalled_Then_ReturnsEmptyList()
@@ -16,17 +17,17 @@ public class WhitelistedOrganizationsQueryTests
         var organizationId = Guid.NewGuid();
         var organizationTin = "12345678";
 
-        var predefinedOrganizations = new WhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>
+        var predefinedOrganizations = new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>
         {
             new(organizationId, organizationTin)
         });
 
-        var predefinedWhitelistedOrgs = new WhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>());
+        var predefinedWhitelistedOrgs = new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>());
 
-        mockAuthorizationService.GetWhitelistedOrganizationsAsync().Returns(Task.FromResult(predefinedOrganizations));
-        mockAuthorizationService.GetWhitelistedOrganizationsAsync().Returns(Task.FromResult(predefinedWhitelistedOrgs));
+        mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
+        mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedWhitelistedOrgs));
 
-        var service = new WhitelistedOrganizationsQuery(mockAuthorizationService);
+        var service = new GetWhitelistedOrganizationsQueryHandler(mockAuthorizationService);
 
         var result = await service.GetWhitelistedOrganizationsAsync();
 
@@ -42,22 +43,22 @@ public class WhitelistedOrganizationsQueryTests
         var organizationTin1 = "12345678";
         var organizationTin2 = "87654321";
 
-        var predefinedOrganizations = new WhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>
+        var predefinedOrganizations = new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>
         {
             new(organizationId1, organizationTin1),
             new(organizationId2, organizationTin2)
         });
 
-        var predefinedWhitelistedOrgs = new WhitelistedOrganizationsResponse(new List<WhitelistedOrganizationsResponseItem>
+        var predefinedWhitelistedOrgs = new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>
         {
             new(organizationId1, organizationTin1),
             new(organizationId2, organizationTin2)
         });
 
-        mockAuthorizationService.GetWhitelistedOrganizationsAsync().Returns(Task.FromResult(predefinedOrganizations));
-        mockAuthorizationService.GetWhitelistedOrganizationsAsync().Returns(Task.FromResult(predefinedWhitelistedOrgs));
+        mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
+        mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedWhitelistedOrgs));
 
-        var service = new WhitelistedOrganizationsQuery(mockAuthorizationService);
+        var service = new GetWhitelistedOrganizationsQueryHandler(mockAuthorizationService);
 
         var result = await service.GetWhitelistedOrganizationsAsync();
 

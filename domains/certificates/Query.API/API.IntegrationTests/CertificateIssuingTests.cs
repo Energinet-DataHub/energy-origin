@@ -12,6 +12,7 @@ using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.Models;
 using API.UnitTests;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;

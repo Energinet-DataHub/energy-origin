@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 
 namespace DataContext.Models;
