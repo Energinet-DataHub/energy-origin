@@ -73,7 +73,19 @@ Our use of the Client Credentials flow is described by Microsoft in the followin
 
 ## Organization whitelist
 
+This section describes how the organization whitelist works.
+By default, no organizations have access to ETT. To get access, an organization must be added to the organization whitelist. An organization is whitelisted through the ETT Admin Portal. Specificially the organizaion 'TIN' is added to the whitelist.
 
+### Login using MitID
+
+When a user logs in using MitID, the organization whitelist is checked during the login flow. The B2C custom policy calls an API endpoint in the Authorization subsystem to perform this check.
+If the organization has not been whitelist, then no access-token will be issued to the user and an error will be returned.
+
+### Refresh of access-token
+
+After a user has successfully been issued an access-token, refresh-token and id-token during the login flow, the ETT frontend will subsequently attempt to get new access-tokens silently (without user involvement) using the refresh-token.
+During this refresh-token flow, the organization whitelist is also checked (using the same API endpoint as during the login flow).
+This means that when an organization is removed from the whitelist, users that are logged in for this organization will lose their access to the ETT web application as soon as their access-token expires (maximum 1 hour).
 
 ## API Specifications
 
