@@ -10,6 +10,7 @@ using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,6 +33,7 @@ public class MeasurementsSyncerWorkerTest
         new Technology("T12345", "T54321"));
 
     private readonly ILogger<MeasurementsSyncerWorker> _fakeLogger = Substitute.For<ILogger<MeasurementsSyncerWorker>>();
+    private readonly IBus _fakeBus = Substitute.For<IBus>();
     private readonly ILogger<MeasurementsSyncService> _syncServiceFakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly IServiceScopeFactory _scopeFactory = Substitute.For<IServiceScopeFactory>();
     private readonly IServiceScope _scope = Substitute.For<IServiceScope>();
@@ -54,7 +56,7 @@ public class MeasurementsSyncerWorkerTest
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
         _serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);
-        _worker = new MeasurementsSyncerWorker(_fakeLogger, _fakeContractState, _options, _scopeFactory);
+        _worker = new MeasurementsSyncerWorker(_fakeLogger, _fakeContractState, _options, _scopeFactory, _fakeBus);
     }
 
     [Fact]
