@@ -17,6 +17,7 @@ using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.WalletClient;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -52,7 +53,8 @@ builder.Services.AddControllersWithEnumsAsStrings();
 
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(cfg =>
 {
-    cfg.AddConsumer<AuthorizationOrganizationRemovedFromWhitelistEventHandler>();
+    cfg.AddConsumer<AuthorizationOrganizationRemovedFromWhitelistEventHandler,
+        AuthorizationOrganizationRemovedFromWhitelistEventHandlerDefinition>();
 });
 
 builder.Services.AddDefaultHealthChecks();
