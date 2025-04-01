@@ -3,6 +3,7 @@ using API.Models;
 using API.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using ClientType = API.Models.ClientType;
+using OrganizationId = EnergyOrigin.Domain.ValueObjects.OrganizationId;
 
 namespace API.UnitTests;
 
@@ -43,6 +44,11 @@ public class Any
         return System.Guid.NewGuid();
     }
 
+    public static DateTimeOffset DateTimeOffset()
+    {
+        return System.DateTimeOffset.Now;
+    }
+
     public static Tin Tin()
     {
         return EnergyOrigin.Domain.ValueObjects.Tin.Create(IntString(8));
@@ -66,9 +72,19 @@ public class Any
         return API.Models.Organization.Create(tin ?? Tin(), organizationName ?? OrganizationName());
     }
 
+    public static OrganizationId OrganizationId()
+    {
+        return EnergyOrigin.Domain.ValueObjects.OrganizationId.Create(Guid());
+    }
+
     public static IdpClientId IdpClientId()
     {
         return new IdpClientId(Guid());
+    }
+
+    public static ClientName ClientName()
+    {
+        return API.ValueObjects.ClientName.Create("client-" + IntString(10));
     }
 
     public static Client Client()
