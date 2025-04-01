@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using API.Authorization;
+using API.Authorization.EventHandlers;
 using API.Data;
 using API.Metrics;
 using API.Models;
@@ -49,7 +50,10 @@ builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddControllersWithEnumsAsStrings();
 
-builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>();
+builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(cfg =>
+{
+    cfg.AddConsumer<AuthorizationOrganizationRemovedFromWhitelistEventHandler>();
+});
 
 builder.Services.AddDefaultHealthChecks();
 

@@ -506,7 +506,8 @@
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="UseClaimAsBearerToken">self_access_token</Item>
                         <Item Key="DebugMode">true</Item>
-                        <Item Key="DefaultUserMessageIfRequestFailed">Failed to obtain whitelist information.</Item>
+                        <!-- c73c2d14-4463-41f2-9e5e-aee59b2a2189 = organization is not whitelisted-->
+                        <Item Key="DefaultUserMessageIfRequestFailed">c73c2d14-4463-41f2-9e5e-aee59b2a2189 - Failed to obtain whitelist information.</Item>
                         <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
                     </Metadata>
                     <InputClaims>

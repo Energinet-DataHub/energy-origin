@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal._Features_;
 using AdminPortal.Dtos.Response;
@@ -24,14 +25,14 @@ public class GetWhitelistedOrganizationsQueryHandlerTests
 
         var predefinedWhitelistedOrgs = new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>());
 
-        mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
-        mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedWhitelistedOrgs));
+        mockAuthorizationService.GetWhitelistedOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
+        mockAuthorizationService.GetWhitelistedOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedWhitelistedOrgs));
 
-        var service = new GetWhitelistedOrganizationsQueryHandler(mockAuthorizationService);
+        var handler = new GetWhitelistedOrganizationsQueryHandler(mockAuthorizationService);
 
-        var result = await service.GetWhitelistedOrganizationsAsync();
+        var result = await handler.Handle(new GetWhitelistedOrganizationsQuery(), CancellationToken.None);
 
-        Assert.Empty(result);
+        Assert.Empty(result.ViewModel);
     }
 
     [Fact]
@@ -55,19 +56,19 @@ public class GetWhitelistedOrganizationsQueryHandlerTests
             new(organizationId2, organizationTin2)
         });
 
-        mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
-        mockAuthorizationService.GetWhitelistedOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedWhitelistedOrgs));
+        mockAuthorizationService.GetWhitelistedOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
+        mockAuthorizationService.GetWhitelistedOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedWhitelistedOrgs));
 
-        var service = new GetWhitelistedOrganizationsQueryHandler(mockAuthorizationService);
+        var handler = new GetWhitelistedOrganizationsQueryHandler(mockAuthorizationService);
 
-        var result = await service.GetWhitelistedOrganizationsAsync();
+        var result = await handler.Handle(new GetWhitelistedOrganizationsQuery(), CancellationToken.None);
 
-        Assert.Equal(2, result.Count);
+        Assert.Equal(2, result.ViewModel.Count);
 
-        Assert.Equal(organizationId1, result[0].OrganizationId);
-        Assert.Equal(organizationTin1, result[0].Tin);
+        Assert.Equal(organizationId1, result.ViewModel[0].OrganizationId);
+        Assert.Equal(organizationTin1, result.ViewModel[0].Tin);
 
-        Assert.Equal(organizationId2, result[1].OrganizationId);
-        Assert.Equal(organizationTin2, result[1].Tin);
+        Assert.Equal(organizationId2, result.ViewModel[1].OrganizationId);
+        Assert.Equal(organizationTin2, result.ViewModel[1].Tin);
     }
 }
