@@ -58,7 +58,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         await WaitForHealthEndpointResponse(HttpStatusCode.OK);
     }
 
-    [Fact(Skip = "Flaky test")]
+    [Fact]
     public async Task GivenMassTransitConfig_WhenSendingMessages_MessagesAreSentAndReceivedWhenRabbitMqConnectivityIsUp()
     {
         // Given application stack with active message producer
