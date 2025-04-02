@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal._Features_;
 using AdminPortal.Dtos.Response;
@@ -10,36 +11,6 @@ namespace AdminPortal.Tests._Features_;
 
 public class GetActiveContractsQueryHandlerTests
 {
-    [Fact]
-    public async Task Given_AggregationService_When_Called_Then_ReturnResponseWithActiveMeteringPoints()
-    {
-        var aggregationService = Substitute.For<IGetActiveContractsQuery>();
-
-        var singleMeteringPoint = new MeteringPoint
-        {
-            GSRN = "123456789012345678",
-            Created = 1625097600,
-            StartDate = 1625097600,
-            EndDate = 1627689600,
-            MeteringPointType = MeteringPointType.Consumption,
-            OrganizationName = "Organization1",
-            Tin = "TIN123"
-        };
-
-        var expectedResponse = new GetActiveContractsResponse
-        {
-            Results = new ResultsData { MeteringPoints = new List<MeteringPoint> { singleMeteringPoint } }
-        };
-
-        aggregationService.GetActiveContractsQueryAsync().Returns(Task.FromResult(expectedResponse));
-
-        var result = await aggregationService.GetActiveContractsQueryAsync();
-
-        Assert.Single(result.Results.MeteringPoints);
-        Assert.Equal("123456789012345678", result.Results.MeteringPoints[0].GSRN);
-        Assert.Equal(MeteringPointType.Consumption, result.Results.MeteringPoints[0].MeteringPointType);
-    }
-
     [Fact]
     public async Task Given_MatchingResultsFromUpstreamSubsystems_When_GetActiveContractsAsyncIsCalled_Then_ReturnsExpectedResults()
     {
@@ -59,12 +30,12 @@ public class GetActiveContractsQueryHandlerTests
             new("123456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
-        mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
+        mockAuthorizationFacade.GetOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
+        var handler = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 
-        var result = await service.GetActiveContractsQueryAsync();
+        var result = await handler.Handle(new GetActiveContractsQuery(), CancellationToken.None);
 
         Assert.Single(result.Results.MeteringPoints);
         Assert.Equal("123456789012345678", result.Results.MeteringPoints[0].GSRN);
@@ -86,12 +57,12 @@ public class GetActiveContractsQueryHandlerTests
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>());
 
-        mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
+        mockAuthorizationFacade.GetOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
+        var handler = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 
-        var result = await service.GetActiveContractsQueryAsync();
+        var result = await handler.Handle(new GetActiveContractsQuery(), CancellationToken.None);
 
         Assert.Empty(result.Results.MeteringPoints);
     }
@@ -109,12 +80,12 @@ public class GetActiveContractsQueryHandlerTests
             new("123456789012345678", Guid.NewGuid().ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
-        mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
+        mockAuthorizationFacade.GetOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
+        var handler = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 
-        var result = await service.GetActiveContractsQueryAsync();
+        var result = await handler.Handle(new GetActiveContractsQuery(), CancellationToken.None);
 
         Assert.Empty(result.Results.MeteringPoints);
     }
@@ -140,12 +111,12 @@ public class GetActiveContractsQueryHandlerTests
             new("323456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
-        mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
+        mockAuthorizationFacade.GetOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
+        var handler = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 
-        var result = await service.GetActiveContractsQueryAsync();
+        var result = await handler.Handle(new GetActiveContractsQuery(), CancellationToken.None);
 
         Assert.Equal(3, result.Results.MeteringPoints.Count);
         Assert.Equal("123456789012345678", result.Results.MeteringPoints[0].GSRN);
@@ -187,12 +158,12 @@ public class GetActiveContractsQueryHandlerTests
             new("123456789012345678", organizationId1.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
-        mockAuthorizationFacade.GetOrganizationsHttpRequestAsync().Returns(Task.FromResult(predefinedOrganizations));
+        mockAuthorizationFacade.GetOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
         mockCertificatesFacade.GetContractsHttpRequestAsync().Returns(Task.FromResult(predefinedContracts));
 
-        var service = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
+        var handler = new GetActiveContractsQueryHandler(mockAuthorizationFacade, mockCertificatesFacade);
 
-        var result = await service.GetActiveContractsQueryAsync();
+        var result = await handler.Handle(new GetActiveContractsQuery(), CancellationToken.None);
 
         Assert.Single(result.Results.MeteringPoints);
         Assert.Equal("123456789012345678", result.Results.MeteringPoints[0].GSRN);

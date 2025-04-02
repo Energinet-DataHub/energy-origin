@@ -71,6 +71,22 @@ A client will be authenticated to work in the context of its own organization. I
 
 Our use of the Client Credentials flow is described by Microsoft in the following article [Client Credentials Grant](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow).
 
+## Organization whitelist
+
+This section describes how the organization whitelist works.
+By default, no organizations have access to ETT. To get access, an organization must be added to the organization whitelist. An organization is whitelisted through the ETT Admin Portal. Specificially the organizaion 'Tin' is added to the whitelist.
+
+### Login using MitID
+
+When a user logs in using MitID, the organization whitelist is checked during the login flow. The B2C custom policy calls an API endpoint in the Authorization subsystem to perform this check.
+If the organization has not been whitelisted, then no access-token will be issued to the user and an error will be returned.
+
+### Refresh of access-token
+
+After a user has successfully been issued an access-token, refresh-token and id-token during the login flow, the ETT frontend will subsequently attempt to get new access-tokens silently (without user involvement) using the refresh-token.
+During this refresh-token flow, the organization whitelist is also checked (using the same API endpoint as during the login flow).
+This means that when an organization is removed from the whitelist, users that are logged in for this organization will lose their access to the ETT web application as soon as their access-token expires (maximum 1 hour).
+
 ## API Specifications
 
 - [Authorization API](https://demo.energytrackandtrace.dk/swagger/?urls.primaryName=Authorization+v1).
@@ -182,7 +198,7 @@ sequenceDiagram
 
     B2C->>Backend: Request User Consent
     activate Backend
-    
+
     Backend->>Backend: Handle User and Organization Data
     Backend->>Backend: Check and Update Terms Acceptance
 
@@ -209,7 +225,7 @@ sequenceDiagram
 
     User->>EO: Delete Consent
     EO->>Backend: Delete Consent
-    
+
     activate Backend
 
     Backend->>Backend: Verify User Affiliation
@@ -222,6 +238,30 @@ sequenceDiagram
         Backend->>EO: Report User Not Affiliated
     else Consent Not Found
         Backend->>EO: Report Consent Not Found
+    end
+
+    deactivate Backend
+```
+
+### Check if organization is whitelisted
+
+The whitelist Authorization API endpoint is responsbile for checking whether an organization has been whitelisted to use ETT. The validation is done using the organizations 'Tin' (CVR).
+This endpoint is designed to be called from the custom policies running in Azure B2C. The custom policies are the only authorized callers of this endpoint.
+
+```mermaid
+sequenceDiagram
+    participant B2C as Azure B2C
+    participant Backend as Authorization Subsystem
+
+    B2C->>Backend: Check if organization is whitelisted
+    activate Backend
+
+    Backend->>Backend: Validate if organization is whitelisted using 'Tin' (CVR)
+
+    Backend->>B2C: Return success (200 Ok)
+
+    alt Error Occurs
+        Backend-->>B2C: Return Error Response
     end
 
     deactivate Backend

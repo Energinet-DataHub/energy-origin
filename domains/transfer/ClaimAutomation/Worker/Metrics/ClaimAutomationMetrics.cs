@@ -17,9 +17,9 @@ public class ClaimAutomationMetrics : IClaimAutomationMetrics
     {
         var meter = new Meter(MetricName);
 
-        NumberOfClaimsOnLastRun = meter.CreateObservableGauge<int>("claims-on-last-run", () => numberOfClaimsOnLastRun);
-        TotalClaimedCertificatesOnLastRun = meter.CreateObservableGauge<int>("total-claimed-certificates-on-last-run", () => totalClaimedCertificatesOnLastRun);
-        NumberOfCertificatesWithClaimErrors = meter.CreateObservableGauge<int>("certificates-with-claim-error", () => numberOfCertificatesWithClaimErrors);
+        NumberOfClaimsOnLastRun = meter.CreateObservableGauge<int>("ett_claim_automation_claims_on_last_run", () => numberOfClaimsOnLastRun);
+        TotalClaimedCertificatesOnLastRun = meter.CreateObservableGauge<int>("ett_claim_automation_total_claimed_certificates_on_last_run", () => totalClaimedCertificatesOnLastRun);
+        NumberOfCertificatesWithClaimErrors = meter.CreateObservableGauge<int>("ett_claim_automation_certificates_with_claim_error", () => numberOfCertificatesWithClaimErrors);
     }
 
     public void AddClaim() =>

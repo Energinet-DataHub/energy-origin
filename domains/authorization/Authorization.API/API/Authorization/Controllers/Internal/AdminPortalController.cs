@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
 namespace API.Authorization.Controllers.Internal;
@@ -60,5 +62,15 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
     {
         await mediator.Send(new AddOrganizationToWhitelistCommand(Tin.Create(request.Tin)), cancellationToken);
         return StatusCode(StatusCodes.Status201Created, new AddOrganizationToWhitelistResponse(request.Tin));
+    }
+
+    [HttpDelete]
+    [Route("whitelisted-organizations/{tin}")]
+    public async Task<IActionResult> RemoveOrganizationFromWhitelist([FromRoute][Required] string tin, [FromServices] ILogger<AdminPortalController> logger,
+        CancellationToken cancellationToken)
+    {
+        var cmd = new RemoveFromWhitelistCommand(tin);
+        await mediator.Send(cmd, cancellationToken);
+        return Ok();
     }
 }

@@ -1,15 +1,16 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
+using MediatR;
 
 namespace AdminPortal._Features_;
-public interface IGetActiveContractsQuery
+public class GetActiveContractsQuery : IRequest<GetActiveContractsResponse>
 {
-    Task<GetActiveContractsResponse> GetActiveContractsQueryAsync();
 }
 
-public class GetActiveContractsQueryHandler : IGetActiveContractsQuery
+public class GetActiveContractsQueryHandler : IRequestHandler<GetActiveContractsQuery, GetActiveContractsResponse>
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly ICertificatesService _certificatesService;
@@ -20,10 +21,9 @@ public class GetActiveContractsQueryHandler : IGetActiveContractsQuery
         _certificatesService = certificatesService;
     }
 
-    public async Task<GetActiveContractsResponse> GetActiveContractsQueryAsync()
+    public async Task<GetActiveContractsResponse> Handle(GetActiveContractsQuery request, CancellationToken cancellationToken)
     {
-
-        var organizations = (await _authorizationService.GetOrganizationsHttpRequestAsync()).Result;
+        var organizations = (await _authorizationService.GetOrganizationsAsync(cancellationToken)).Result;
         var contracts = (await _certificatesService.GetContractsHttpRequestAsync()).Result;
 
         var meteringPoints = contracts

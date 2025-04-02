@@ -58,7 +58,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         await WaitForHealthEndpointResponse(HttpStatusCode.OK);
     }
 
-    [Fact(Skip = "Flaky test")]
+    [Fact]
     public async Task GivenMassTransitConfig_WhenSendingMessages_MessagesAreSentAndReceivedWhenRabbitMqConnectivityIsUp()
     {
         // Given application stack with active message producer
@@ -185,7 +185,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
     private async Task WaitForMessagesConsumed()
     {
         var expectedMessageCount = 10;
-        var timeoutSeconds = 30;
+        var timeoutSeconds = 60;
         var timeout = DateTimeOffset.UtcNow.AddSeconds(timeoutSeconds);
 
         while (DateTimeOffset.UtcNow < timeout)
