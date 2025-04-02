@@ -74,16 +74,11 @@ public class MeasurementsSyncService
             _logger.LogError("Relation rejection detected. Gsrn: {Gsrn}, ErrorCode: {ErrorCode}, ErrorDetailName: {ErrorDetailName}, ErrorDetailValue: {ErrorDetailValue}", rejection.MeteringPointId, rejection.ErrorCode, rejection.ErrorDetailName, rejection.ErrorDetailValue);
         }
 
-        if (mpRelations.Rejections.Any(x => x.IsLmc001Error()))
-        {
-            _logger.LogError("LMC-001 error detected. {Gsrn} does not have a relation. Deleting issuing contract and sliding window for this Gsrn.", slidingWindow.GSRN);
-            await _contractState.DeleteContractAndSlidingWindow(new Gsrn(mpRelations.Rejections.First(x => x.IsLmc001Error()).MeteringPointId));
-            return;
-        }
-
         if (!mpRelations.Relations.Any(x => x.IsValidGsrn(gsrn)))
         {
-            _logger.LogError("{Gsrn} does not have a valid relation.", slidingWindow.GSRN);
+            _logger.LogError("{Gsrn} does not have a relation. Deleting issuing contract and sliding window for this Gsrn.", slidingWindow.GSRN);
+            await _contractState.DeleteContractAndSlidingWindow(gsrn);
+
             return;
         }
 

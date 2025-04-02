@@ -45,7 +45,7 @@ public class AcceptTermsCommandHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         _organizationRepository.Query().Count().Should().Be(1);
-        await _unitOfWork.Received(1).CommitAsync();
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
         await _publishEndpoint.Received(1).Publish(Arg.Is<OrgAcceptedTerms>(
             (OrgAcceptedTerms msg) =>
                 msg.Tin == command.OrgCvr &&
@@ -66,7 +66,7 @@ public class AcceptTermsCommandHandlerTests
 
         organization.TermsAccepted.Should().BeTrue();
         organization.TermsVersion.Should().Be(1);
-        await _unitOfWork.Received(1).CommitAsync();
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
         await _publishEndpoint.Received(1).Publish(Arg.Is<OrgAcceptedTerms>(
             msg =>
                 msg.Tin == command.OrgCvr &&
@@ -85,7 +85,7 @@ public class AcceptTermsCommandHandlerTests
         var handler = new AcceptTermsCommandHandler(mockOrganizationRepository, _termsRepository, mockUnitOfWork, _walletClient, _publishEndpoint);
 
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
-        await mockUnitOfWork.DidNotReceive().CommitAsync();
+        await mockUnitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
     }
 
@@ -104,7 +104,7 @@ public class AcceptTermsCommandHandlerTests
         var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
 
         await Assert.ThrowsAsync<WalletNotCreated>(() => handler.Handle(command, CancellationToken.None));
-        await _unitOfWork.DidNotReceive().CommitAsync();
+        await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
     }
 
@@ -116,7 +116,7 @@ public class AcceptTermsCommandHandlerTests
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
         await action.Should().ThrowAsync<InvalidConfigurationException>();
-        await _unitOfWork.DidNotReceive().CommitAsync();
+        await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
     }
 }

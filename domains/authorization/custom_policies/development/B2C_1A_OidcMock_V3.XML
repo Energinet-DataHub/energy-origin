@@ -212,11 +212,6 @@
                 <AdminHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</AdminHelpText>
                 <UserHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</UserHelpText>
             </ClaimType>
-            <ClaimType Id="strongAuthenticationPhoneNumber">
-                <DisplayName>Phone Number</DisplayName>
-                <DataType>string</DataType>
-                <UserInputType>TextBox</UserInputType>
-            </ClaimType>
             <ClaimType Id="signInNames.emailAddress">
                 <DisplayName>Email Address</DisplayName>
                 <DataType>string</DataType>
@@ -506,7 +501,8 @@
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="UseClaimAsBearerToken">self_access_token</Item>
                         <Item Key="DebugMode">true</Item>
-                        <Item Key="DefaultUserMessageIfRequestFailed">Failed to obtain whitelist information.</Item>
+                        <!-- c73c2d14-4463-41f2-9e5e-aee59b2a2189 = organization is not whitelisted-->
+                        <Item Key="DefaultUserMessageIfRequestFailed">c73c2d14-4463-41f2-9e5e-aee59b2a2189 - Failed to obtain whitelist information.</Item>
                         <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
                     </Metadata>
                     <InputClaims>
@@ -562,18 +558,6 @@
                     <InputClaims>
                         <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
                     </InputClaims>
-                    <OutputClaims>
-
-                        <!-- Required claims -->
-                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
-
-                        <!-- Optional claims -->
-                        <OutputClaim ClaimTypeReferenceId="signInNames.emailAddress" />
-                        <OutputClaim ClaimTypeReferenceId="displayName" />
-                        <OutputClaim ClaimTypeReferenceId="otherMails" />
-                        <OutputClaim ClaimTypeReferenceId="givenName" />
-                        <OutputClaim ClaimTypeReferenceId="surname" />
-                    </OutputClaims>
                     <IncludeTechnicalProfile ReferenceId="AAD-Common" />
                 </TechnicalProfile>
 

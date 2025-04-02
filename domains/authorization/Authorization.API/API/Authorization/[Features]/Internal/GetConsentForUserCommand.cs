@@ -40,7 +40,7 @@ public class GetConsentForUserQueryHandler(
     {
         const string scope = "dashboard production meters certificates wallet";
         const string subType = "User";
-        await unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         var orgTin = Tin.Create(command.OrgCvr);
         var organization = await organizationRepository.Query()
@@ -105,7 +105,7 @@ public class GetConsentForUserQueryHandler(
             .Select(consent => consent.ConsentGiverOrganizationId)
             .ToListAsync(cancellationToken);
 
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
 
         metrics.AddUniqueUserLogin(organization.Id.ToString(), user.IdpUserId);
 

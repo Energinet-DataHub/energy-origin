@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
@@ -38,17 +39,22 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
     private class MockAuthorizationService : IAuthorizationService
     {
-        public Task<GetOrganizationsResponse> GetOrganizationsHttpRequestAsync()
+        public Task<GetOrganizationsResponse> GetOrganizationsAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(
                 new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>()));
         }
-        public Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsHttpRequestAsync()
+        public Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(
                 new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>()));
         }
-        public Task AddOrganizationToWhitelistHttpRequestAsync(Tin tin)
+        public Task AddOrganizationToWhitelistAsync(Tin tin, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveOrganizationFromWhitelistAsync(Tin tin, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

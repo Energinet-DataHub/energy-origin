@@ -28,7 +28,7 @@ public class AcceptTermsCommandHandler(
 {
     public async Task Handle(AcceptTermsCommand request, CancellationToken cancellationToken)
     {
-        await unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         var usersOrganizationsCvr = Tin.Create(request.OrgCvr);
 
@@ -68,7 +68,7 @@ public class AcceptTermsCommandHandler(
             request.UserId
         ), cancellationToken);
 
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
     }
 
     private async Task EnsureWalletExistsAsync(Guid organizationId)

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using API.Authorization;
+using API.Authorization.EventHandlers;
 using API.Data;
 using API.Metrics;
 using API.Models;
@@ -16,6 +17,7 @@ using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.WalletClient;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -49,7 +51,11 @@ builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddControllersWithEnumsAsStrings();
 
-builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>();
+builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(cfg =>
+{
+    cfg.AddConsumer<AuthorizationOrganizationRemovedFromWhitelistEventHandler,
+        AuthorizationOrganizationRemovedFromWhitelistEventHandlerDefinition>();
+});
 
 builder.Services.AddDefaultHealthChecks();
 

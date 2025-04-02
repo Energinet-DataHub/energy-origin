@@ -1,5 +1,16 @@
 @model List<AdminPortal.Dtos.Response.WhitelistedOrganizationViewModel>
 
+<script>
+    function onRemoveTinClicked(tin) {
+        showConfirmationModal('Remove ' + tin + ' from whitelist', () => {
+            let tinFormElement = document.getElementById("removeTin");
+            let form = document.getElementById("removeOrganizationForm");
+            tinFormElement.value = tin
+            form.submit();
+        });
+    }
+</script>
+
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
@@ -62,6 +73,11 @@
                         <tr>
                             <td class="fw-medium">@org.OrganizationId</td>
                             <td>@org.Tin</td>
+                            <td>
+                                <button id="removeOrganizationButton" type="button" class="btn btn-light" onclick="onRemoveTinClicked(@org.Tin)">
+                                    <i class="bi bi-minus-circle me-1"></i> Remove
+                                </button>
+                            </td>
                         </tr>
                     }
                     </tbody>
@@ -71,7 +87,9 @@
     </div>
 </div>
 
+<partial name="_ConfirmationModal" />
 <partial name="_AddOrganizationModal" />
+<partial name="_RemoveOrganizationModal" />
 
 <style>
     .filter-highlight {
@@ -102,9 +120,7 @@
 
             const addOrganizationForm = document.getElementById('addOrganizationForm');
             const confirmAddBtn = document.getElementById('confirmAddBtn');
-            const confirmYesBtn = document.getElementById('confirmYesBtn');
             const tinInput = document.getElementById('tin');
-            const confirmTin = document.getElementById('confirmTin');
 
             Array.prototype.slice.call(forms).forEach(function (form) {
                 form.addEventListener('submit', function (event) {
@@ -122,29 +138,14 @@
                     return;
                 }
 
-                confirmTin.textContent = tinInput.value;
                 const addModal = bootstrap.Modal.getInstance(document.getElementById('addOrganizationModal'));
                 addModal.hide();
-                const confirmModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-                confirmModal.show();
-            });
-
-            confirmYesBtn.addEventListener('click', function() {
-                addOrganizationForm.submit();
+                showConfirmationModal("Add organization with TIN: " + tinInput.value + " to whitelist?", () => {addOrganizationForm.submit();})
             });
 
             document.getElementById('addOrganizationModal').addEventListener('hidden.bs.modal', function () {
                 addOrganizationForm.classList.remove('was-validated');
             });
-
-            document.querySelectorAll('#organizationsTable tbody td:nth-child(2), #organizationsTable tbody td:nth-child(3)')
-                .forEach(cell => {
-                    cell.style.cursor = 'pointer';
-                    cell.addEventListener('click', function() {
-                        searchInput.value = this.textContent.trim();
-                        applyFilters();
-                    });
-                });
 
             function debounce(func, delay) {
                 return function(...args) {
