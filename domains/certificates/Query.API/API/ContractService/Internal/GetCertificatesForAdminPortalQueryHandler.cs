@@ -18,7 +18,7 @@ public class GetContractsForAdminPortalQueryHandler(
     {
         var resultItems = await unitOfWork.CertificateIssuingContractRepo.Query()
             .AsNoTracking()
-            .Where(c => c.StartDate <= DateTimeOffset.UtcNow  && (c.EndDate == null || c.EndDate >= DateTimeOffset.UtcNow))
+            .Where(c => c.StartDate <= DateTimeOffset.UtcNow && (c.EndDate == null || c.EndDate >= DateTimeOffset.UtcNow))
             .GroupBy(c => c.GSRN)
             .Select(g =>
                     g.OrderByDescending(x => x.Created)

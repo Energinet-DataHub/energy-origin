@@ -102,17 +102,17 @@ builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("Certi
     var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
     client.BaseAddress = new Uri(clientUriOptions.Certificates);
 });
-    // .AddHttpMessageHandler(sp =>
-    // {
-    //     var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
-    //     return new ClientCredentialsTokenHandler(
-    //         options.ClientId,
-    //         options.ClientSecret,
-    //         options.TenantId,
-    //         new[] { options.Scope },
-    //         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
-    //     );
-    // });
+// .AddHttpMessageHandler(sp =>
+// {
+//     var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
+//     return new ClientCredentialsTokenHandler(
+//         options.ClientId,
+//         options.ClientSecret,
+//         options.TenantId,
+//         new[] { options.Scope },
+//         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+//     );
+// });
 
 builder.Services.AddHttpClient<IMeasurementsService, MeasurementsService>("MeasurementsClient", (sp, client) =>
 {
@@ -125,17 +125,17 @@ builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("Aut
     var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
     client.BaseAddress = new Uri(clientUriOptions.Authorization);
 });
-    // .AddHttpMessageHandler(sp =>
-    // {
-    //     var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
-    //     return new ClientCredentialsTokenHandler(
-    //         options.ClientId,
-    //         options.ClientSecret,
-    //         options.TenantId,
-    //         new[] { options.Scope },
-    //         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
-    //     );
-    // });
+// .AddHttpMessageHandler(sp =>
+// {
+//     var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
+//     return new ClientCredentialsTokenHandler(
+//         options.ClientId,
+//         options.ClientSecret,
+//         options.TenantId,
+//         new[] { options.Scope },
+//         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+//     );
+// });
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 

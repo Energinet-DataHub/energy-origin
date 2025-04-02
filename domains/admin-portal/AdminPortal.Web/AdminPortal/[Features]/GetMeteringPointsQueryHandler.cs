@@ -15,7 +15,7 @@ public class GetMeteringPointsQuery : IRequest<GetMeteringPointsQueryResult>
 
 }
 
-public class GetMeteringPointsQueryResult(List<GetMeteringPointsQueryResultItem>  viewModel)
+public class GetMeteringPointsQueryResult(List<GetMeteringPointsQueryResultItem> viewModel)
 {
     public List<GetMeteringPointsQueryResultItem> ViewModel = viewModel;
 }

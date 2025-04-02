@@ -33,7 +33,7 @@ public class CvrControllerTests
     }
 
     [Fact]
-    public async Task  GetCvrCompanies_WhenCorrectCvrNumbers_ShouldReturnCvrInfo()
+    public async Task GetCvrCompanies_WhenCorrectCvrNumbers_ShouldReturnCvrInfo()
     {
         var cvrNumbers = new CvrRequestDto(new List<string> { "10150817" });
         cvrWireMock
