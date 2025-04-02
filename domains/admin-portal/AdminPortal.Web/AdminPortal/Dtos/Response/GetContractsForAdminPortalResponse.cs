@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using AdminPortal.Models;
 
 namespace AdminPortal.Dtos.Response;
 
@@ -15,8 +16,4 @@ public record GetContractsForAdminPortalResponseItem(
 
 public record GetContractsForAdminPortalResponse(IEnumerable<GetContractsForAdminPortalResponseItem> Result);
 
-public enum MeteringPointType
-{
-    Consumption,
-    Production
-}
+

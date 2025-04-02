@@ -1,0 +1,264 @@
+﻿@model List<AdminPortal._Features_.GetMeteringPointsQueryResultItem>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white py-3">
+            <h2 class="h4 mb-0">Meteringpoints</h2>
+        </div>
+
+        <div class="card-body">
+            <!-- Search and Filters Section -->
+            <div class="mb-4">
+                <div class="row g-3 align-items-end">
+                    <!-- Search Box -->
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Search Meteringpoints</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-search text-secondary"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control border-start-0"
+                                   placeholder="Search across all columns..."
+                                   aria-label="Search">
+                            <button id="clearSearch" class="btn btn-outline-secondary" type="button">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Column Filters -->
+                    <div class="col-md-6">
+                        <div class="row g-2">
+                            <div class="col">
+                                <label class="form-label text-muted small">Filter by Type</label>
+                                <select class="form-select column-filter" data-column="1">
+                                    <option value="">All Types</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive rounded-3">
+                <table class="table table-hover table-bordered mb-0" id="contractsTable">
+                    <thead class="table-light">
+                    <tr>
+                        <th>GSRN</th>
+                        <th>Type</th>
+                        <th>Organization</th>
+                        <th>Tin</th>
+                        <th>Active Contract</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var point in Model)
+                    {
+                        <tr>
+                            <td class="fw-medium">@point.GSRN</td>
+                            <td class="fw-medium">@point.MeterType</td>
+                            <td class="fw-medium">@point.OrganizationName</td>
+                            <td class="fw-medium">@point.Tin</td>
+                            <td class="fw-medium">@point.ActiveContract</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .filter-highlight {
+        background-color: #fff3cd !important;
+        font-weight: 500;
+    }
+    .sortable {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .sortable:hover {
+        background-color: #f8f9fa;
+    }
+    .table th {
+        white-space: nowrap;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const clearButton = document.getElementById('clearSearch');
+            const table = document.getElementById('contractsTable');
+            const columnFilters = document.querySelectorAll('.column-filter');
+            let filterTimeout;
+
+            document.querySelectorAll('#contractsTable tbody td:nth-child(3), #contractsTable tbody td:nth-child(4)')
+                .forEach(cell => {
+                    cell.style.cursor = 'pointer';
+                    cell.addEventListener('click', function() {
+                        searchInput.value = this.textContent.trim();
+                        applyFilters();
+                    });
+                });
+
+            function initColumnFilters() {
+                const columns = Array.from(table.rows[0].cells).map((_, i) => i);
+
+                columns.forEach(colIndex => {
+                    const columnData = Array.from(table.rows).slice(1).map(row => {
+                        const cell = row.cells[colIndex];
+                        return cell.textContent.trim().toLowerCase();
+                    });
+
+                    const uniqueValues = [...new Set(columnData)];
+                    const filter = document.querySelector(`.column-filter[data-column="${colIndex}"]`);
+
+                    if (filter) {
+                        uniqueValues.sort().forEach(value => {
+                            const option = document.createElement('option');
+                            option.value = value;
+                            option.textContent = value;
+                            filter.appendChild(option);
+                        });
+                    }
+                });
+            }
+
+            function debounce(func, delay) {
+                return function(...args) {
+                    clearTimeout(filterTimeout);
+                    filterTimeout = setTimeout(() => {
+                        func.apply(this, args);
+                    }, delay);
+                };
+            }
+
+            function highlightMatches(text, filter) {
+                if (!filter) return text;
+                const regex = new RegExp(`(${filter})`, 'gi');
+                return text.replace(regex, '<span class="filter-highlight">$1</span>');
+            }
+
+            const applyFilters = debounce(function() {
+                const globalFilter = searchInput.value.toLowerCase();
+                const columnFiltersState = Array.from(columnFilters).map(filter => ({
+                    index: parseInt(filter.dataset.column),
+                    value: filter.value.toLowerCase()
+                }));
+
+                Array.from(table.rows).slice(1).forEach(row => {
+                    const cells = row.cells;
+                    let showRow = true;
+
+                    columnFiltersState.forEach(filter => {
+                        const cellText = cells[filter.index].textContent.toLowerCase();
+                        if (filter.value && cellText !== filter.value) {
+                            showRow = false;
+                        }
+                    });
+
+                    if (showRow && globalFilter) {
+                        const rowText = Array.from(cells).map(cell => cell.textContent).join(' ').toLowerCase();
+                        showRow = rowText.includes(globalFilter);
+                    }
+
+                    Array.from(cells).forEach((cell, index) => {
+                        if (index === 1) {
+                            // Always force the badge markup for the MeteringPointType field.
+                            // Here we use the original text stored in a data attribute (or fallback to cell.textContent)
+                            const originalText = cell.dataset.originalText || cell.textContent;
+                            cell.innerHTML = `<span class="badge bg-info">${originalText}</span>`;
+                        } else {
+                            if (globalFilter) {
+                                cell.innerHTML = highlightMatches(cell.dataset.originalHtml || cell.textContent, globalFilter);
+                            } else {
+                                cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
+                            }
+                        }
+});
+
+                    row.style.display = showRow ? '' : 'none';
+                });
+            }, 300);
+
+            searchInput.addEventListener('input', applyFilters);
+            clearButton.addEventListener('click', () => {
+                searchInput.value = '';
+                columnFilters.forEach(filter => filter.value = '');
+                Array.from(table.rows).slice(1).forEach(row => {
+                    Array.from(row.cells).forEach((cell, index) => {
+                        if (index === 1) {
+                            const originalText = cell.dataset.originalText || cell.textContent.trim();
+                            cell.innerHTML = `<span class="badge bg-info">${originalText}</span>`;
+                        } else {
+                            cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
+                        }
+                    });
+                    row.style.display = '';
+                });
+                applyFilters();
+            });
+
+            columnFilters.forEach(filter => filter.addEventListener('change', applyFilters));
+
+            const dateColumns = [4, 5, 6];
+            const tableHeaders = document.querySelectorAll('#contractsTable thead th');
+
+            dateColumns.forEach(colIndex => {
+                const header = tableHeaders[colIndex];
+                header.style.cursor = 'pointer';
+                header.setAttribute('data-sort-order', 'asc');
+
+                header.addEventListener('click', function() {
+                    tableHeaders.forEach(th => {
+                        th.classList.remove('sort-asc', 'sort-desc');
+                        const icon = th.querySelector('i');
+                        if (icon) {
+                            icon.className = 'bi bi-arrow-down-up text-muted ms-1';
+                        }
+                    });
+
+                    let currentSortOrder = header.getAttribute('data-sort-order') || 'asc';
+                    const newSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+                    header.setAttribute('data-sort-order', newSortOrder);
+                    const icon = header.querySelector('i');
+                    icon.className = newSortOrder === 'asc'
+                        ? 'bi bi-arrow-up text-primary ms-1'
+                        : 'bi bi-arrow-down text-primary ms-1';
+
+
+                    sortTableByColumn(colIndex, newSortOrder);
+                });
+            });
+
+            function sortTableByColumn(colIndex, sortOrder) {
+                const tbody = table.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                rows.sort((rowA, rowB) => {
+                    const cellA = rowA.cells[colIndex];
+                    const cellB = rowB.cells[colIndex];
+
+                    let tsA = cellA.getAttribute('data-timestamp');
+                    let tsB = cellB.getAttribute('data-timestamp');
+
+                    tsA = tsA ? parseInt(tsA, 10) : 0;
+                    tsB = tsB ? parseInt(tsB, 10) : 0;
+
+                    return sortOrder === 'asc' ? tsA - tsB : tsB - tsA;
+                });
+
+                while (tbody.firstChild) {
+                    tbody.removeChild(tbody.firstChild);
+                }
+                rows.forEach(row => tbody.appendChild(row));
+            }
+
+            initColumnFilters();
+        });
+    </script>
+}

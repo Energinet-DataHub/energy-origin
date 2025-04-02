@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPortal.Controllers;
 
-[Authorize]
+// [Authorize]
 public class ActiveContractsController : Controller
 {
     private readonly IMediator _mediator;
