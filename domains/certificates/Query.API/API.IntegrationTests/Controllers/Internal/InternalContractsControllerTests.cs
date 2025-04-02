@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
@@ -15,77 +14,100 @@ using EnergyOrigin.WalletClient;
 using Testing.Helpers;
 using Xunit;
 
-namespace API.IntegrationTests.Controllers.Internal
+namespace API.IntegrationTests.Controllers.Internal;
+
+[Collection(IntegrationTestCollection.CollectionName)]
+public class InternalContractsControllerTests : TestBase
 {
-    public class InternalContractsControllerTests : IClassFixture<IntegrationTestFixture>
+    private readonly IntegrationTestFixture _fixture;
+    private readonly QueryApiWebApplicationFactory _factory;
+    private readonly MeasurementsWireMock _measurementsWireMock;
+
+    public InternalContractsControllerTests(IntegrationTestFixture fixture) : base(fixture)
     {
-        private readonly IntegrationTestFixture _fixture;
-        private readonly QueryApiWebApplicationFactory _factory;
-        private readonly MeasurementsWireMock _measurementsWireMock;
+        _fixture = fixture;
+        _factory = fixture.WebApplicationFactory;
+        _measurementsWireMock = fixture.MeasurementsMock;
+    }
 
-        public InternalContractsControllerTests(IntegrationTestFixture fixture)
-        {
-            _fixture = fixture;
-            _factory = fixture.WebApplicationFactory;
-            _measurementsWireMock = fixture.MeasurementsMock;
-        }
+    [Fact]
+    public async Task Given_NoContracts_When_CallingApi_Then_Return200ok_With_EmptyContractsForAdminPortalResponse()
+    {
+        // Get cancellation token from test context
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-        [Fact]
-        public async Task Given_NoContracts_When_CallingApi_Then_Return200ok_With_EmptyContractsForAdminPortalResponse()
-        {
-            // Arrange
-            using var clientForInternalCalls = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+        using var clientForInternalCalls = _factory.CreateB2CAuthenticatedClient(
+            _factory.AdminPortalEnterpriseAppRegistrationObjectId,
+            Guid.Empty);
 
-            // Act
-            var response = await clientForInternalCalls.GetAsync("/api/certificates/admin-portal/internal-contracts", TestContext.Current.CancellationToken);
+        // Pass cancellation token to GetAsync
+        var response = await clientForInternalCalls.GetAsync(
+            "/api/certificates/admin-portal/internal-contracts",
+            cancellationToken);
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var contractsResponse = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>(cancellationToken: TestContext.Current.CancellationToken);
-            Assert.NotNull(contractsResponse);
-            Assert.Empty(contractsResponse.Result);
-            Assert.IsType<ContractsForAdminPortalResponse>(contractsResponse);
-        }
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        [Fact]
-        public async Task Given_ContractsExist_When_CallingInternalContractsEndpoints_Then_Return200ok_With_PopulatedContractsForAdminPortalResponse()
-        {
-            // Arrange
-            var gsrn = GsrnHelper.GenerateRandom();
-            _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        // Pass cancellation token to ReadFromJsonAsync
+        var contractsResponse = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>(
+            cancellationToken: cancellationToken);
 
-            var subject = Guid.NewGuid();
-            var orgId = Guid.NewGuid();
+        Assert.NotNull(contractsResponse);
+        Assert.Empty(contractsResponse.Result);
+        Assert.IsType<ContractsForAdminPortalResponse>(contractsResponse);
+    }
 
-            var walletHttpClient = new HttpClient();
-            walletHttpClient.BaseAddress = new Uri(_fixture.WalletUrl);
-            var walletClient = new WalletClient(walletHttpClient);
-            await walletClient.CreateWallet(orgId, CancellationToken.None);
+    [Fact]
+    public async Task Given_ContractsExist_When_CallingInternalContractsEndpoints_Then_Return200ok_With_PopulatedContractsForAdminPortalResponse()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-            using var userCreatesAContract = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var gsrn = GsrnHelper.GenerateRandom();
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
-            var insertedIntoDb = new CreateContracts([
-                new CreateContract
-                {
-                    GSRN = gsrn,
-                    StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
-                    EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
-                }
-            ]);
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
 
-            await userCreatesAContract.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", insertedIntoDb, cancellationToken: TestContext.Current.CancellationToken);
+        var walletHttpClient = new HttpClient();
+        walletHttpClient.BaseAddress = new Uri(_fixture.WalletUrl);
+        var walletClient = new WalletClient(walletHttpClient);
 
-            // Act
-            var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
-            using var response = await adminPortalClient.GetAsync("api/certificates/admin-portal/internal-contracts", TestContext.Current.CancellationToken);
+        await walletClient.CreateWallet(orgId, cancellationToken);
 
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var internalContractsApiResponse = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>(cancellationToken: TestContext.Current.CancellationToken);
-            Assert.NotNull(internalContractsApiResponse);
-            Assert.NotEmpty(internalContractsApiResponse.Result);
-            Assert.Equal(internalContractsApiResponse.Result.First().GSRN, insertedIntoDb.Contracts[0].GSRN);
-            Assert.IsType<ContractsForAdminPortalResponse>(internalContractsApiResponse);
-        }
+        using var userCreatesAContract = _factory.CreateB2CAuthenticatedClient(
+            subject,
+            orgId,
+            apiVersion: ApiVersions.Version1);
+
+        var insertedIntoDb = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrn,
+                StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            }
+        ]);
+
+        await userCreatesAContract.PostAsJsonAsync(
+            $"api/certificates/contracts?organizationId={orgId}",
+            insertedIntoDb,
+            cancellationToken);
+
+        var adminPortalClient = _factory.CreateB2CAuthenticatedClient(
+            _factory.AdminPortalEnterpriseAppRegistrationObjectId,
+            Guid.Empty);
+
+        using var response = await adminPortalClient.GetAsync(
+            "api/certificates/admin-portal/internal-contracts",
+            cancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var internalContractsApiResponse = await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>(
+            cancellationToken: cancellationToken);
+
+        Assert.NotNull(internalContractsApiResponse);
+        Assert.NotEmpty(internalContractsApiResponse.Result);
+        Assert.Equal(internalContractsApiResponse.Result.First().GSRN, insertedIntoDb.Contracts[0].GSRN);
+        Assert.IsType<ContractsForAdminPortalResponse>(internalContractsApiResponse);
     }
 }
