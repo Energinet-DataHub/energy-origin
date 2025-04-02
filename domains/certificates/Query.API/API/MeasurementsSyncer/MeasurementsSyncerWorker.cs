@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using EnergyOrigin.Setup.RabbitMq;
 
 namespace API.MeasurementsSyncer;
 
@@ -23,20 +24,23 @@ public class MeasurementsSyncerWorker : BackgroundService
     private readonly ILogger<MeasurementsSyncerWorker> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly MeasurementsSyncOptions _options;
-    private readonly IBus _bus;
+    private readonly IBusControl _busControl;
+    private readonly RabbitMqOptions _rabbitOptions;
 
     public MeasurementsSyncerWorker(
         ILogger<MeasurementsSyncerWorker> logger,
         IContractState contractState,
         IOptions<MeasurementsSyncOptions> options,
         IServiceScopeFactory scopeFactory,
-        IBus bus)
+        IBusControl busControl,
+        IOptions<RabbitMqOptions> rabbitOptions)
     {
         _contractState = contractState;
         _logger = logger;
         _scopeFactory = scopeFactory;
         _options = options.Value;
-        _bus = bus;
+        _busControl = busControl;
+        _rabbitOptions = rabbitOptions.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,7 +51,7 @@ public class MeasurementsSyncerWorker : BackgroundService
             return;
         }
 
-        await ProcessDeletionQueue(stoppingToken);
+        await DrainDeletionQueue(stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -59,9 +63,11 @@ public class MeasurementsSyncerWorker : BackgroundService
         _logger.LogInformation("MeasurementSyncer stopped");
     }
 
-    private async Task ProcessDeletionQueue(CancellationToken stoppingToken)
+    private async Task DrainDeletionQueue(CancellationToken stoppingToken)
     {
-        var handle = _bus.ConnectReceiveEndpoint("deletion-tasks-drain", cfg =>
+        var queueName = "deletion-tasks-drain";
+
+        var handle = _busControl.ConnectReceiveEndpoint(queueName, cfg =>
         {
             cfg.PrefetchCount = 100;
             cfg.Handler<EnqueueContractAndSlidingWindowDeletionTaskMessage>(async context =>
