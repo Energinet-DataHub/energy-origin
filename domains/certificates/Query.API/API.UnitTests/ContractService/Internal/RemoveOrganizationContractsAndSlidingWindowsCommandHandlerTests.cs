@@ -66,8 +66,8 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
 
         var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
-                mockSlidingWindowState.Query()
-            .Returns(Enumerable.Empty<MeteringPointTimeSeriesSlidingWindow>().AsQueryable().BuildMock());
+        mockSlidingWindowState.Query()
+    .Returns(Enumerable.Empty<MeteringPointTimeSeriesSlidingWindow>().AsQueryable().BuildMock());
 
         var mockUnitOfWork = Substitute.For<IUnitOfWork>();
         mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
