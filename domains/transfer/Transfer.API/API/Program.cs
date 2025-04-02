@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Text.Json.Serialization;
 using API.Cvr;
 using API.Events;
-using API.Options;
 using API.Transfer;
 using API.Transfer.Api.Clients;
 using API.UnitOfWork;
@@ -49,8 +48,6 @@ var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
 builder.AddSerilog();
-builder.Services.AddOptions<RetryOptions>()
-    .BindConfiguration(RetryOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
 
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {

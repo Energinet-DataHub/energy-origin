@@ -1,12 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using API.Options;
 using API.Transfer.Api._Features_;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.OrganizationRemovedFromWhitelist.V1;
 using MassTransit;
 using MediatR;
-using Microsoft.Extensions.Options;
 
 namespace API.Events;
 
@@ -30,13 +28,6 @@ public class TransferOrganizationRemovedFromWhitelistEventHandler : IConsumer<Or
 
 public class TransferOrganizationRemovedFromWhitelistEventHandlerDefinition : ConsumerDefinition<TransferOrganizationRemovedFromWhitelistEventHandler>
 {
-    private readonly RetryOptions _retryOptions;
-
-    public TransferOrganizationRemovedFromWhitelistEventHandlerDefinition(IOptions<RetryOptions> retryOptions)
-    {
-        _retryOptions = retryOptions.Value;
-    }
-
     protected override void ConfigureConsumer(
         IReceiveEndpointConfigurator endpointConfigurator,
         IConsumerConfigurator<TransferOrganizationRemovedFromWhitelistEventHandler> consumerConfigurator,
@@ -44,6 +35,6 @@ public class TransferOrganizationRemovedFromWhitelistEventHandlerDefinition : Co
     )
     {
         endpointConfigurator.UseMessageRetry(r => r
-            .Incremental(_retryOptions.DefaultFirstLevelRetryCount, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
+            .Incremental(5, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
     }
 }
