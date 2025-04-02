@@ -3,18 +3,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Configurations;
-using API.ContractService.Internal;
-using API.EventHandlers;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using EnergyOrigin.Domain.ValueObjects;
-using MassTransit;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using EnergyOrigin.Setup.RabbitMq;
 
 namespace API.MeasurementsSyncer;
 
@@ -24,23 +19,17 @@ public class MeasurementsSyncerWorker : BackgroundService
     private readonly ILogger<MeasurementsSyncerWorker> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly MeasurementsSyncOptions _options;
-    private readonly IBusControl _busControl;
-    private readonly RabbitMqOptions _rabbitOptions;
 
     public MeasurementsSyncerWorker(
         ILogger<MeasurementsSyncerWorker> logger,
         IContractState contractState,
         IOptions<MeasurementsSyncOptions> options,
-        IServiceScopeFactory scopeFactory,
-        IBusControl busControl,
-        IOptions<RabbitMqOptions> rabbitOptions)
+        IServiceScopeFactory scopeFactory)
     {
         _contractState = contractState;
         _logger = logger;
         _scopeFactory = scopeFactory;
         _options = options.Value;
-        _busControl = busControl;
-        _rabbitOptions = rabbitOptions.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -51,8 +40,6 @@ public class MeasurementsSyncerWorker : BackgroundService
             return;
         }
 
-        await DrainDeletionQueue(stoppingToken);
-
         while (!stoppingToken.IsCancellationRequested)
         {
             _logger.LogInformation("MeasurementSyncer running job");
@@ -61,34 +48,6 @@ public class MeasurementsSyncerWorker : BackgroundService
         }
 
         _logger.LogInformation("MeasurementSyncer stopped");
-    }
-
-    private async Task DrainDeletionQueue(CancellationToken stoppingToken)
-    {
-        var queueName = "deletion-tasks-drain";
-
-        var handle = _busControl.ConnectReceiveEndpoint(queueName, cfg =>
-        {
-            cfg.PrefetchCount = 100;
-            cfg.Handler<EnqueueContractAndSlidingWindowDeletionTaskMessage>(async context =>
-            {
-                using var scope = _scopeFactory.CreateScope();
-                var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-
-                var orgId = context.Message.OrganizationId;
-                _logger.LogInformation("Draining deletion for OrganizationId {OrganizationId}", orgId);
-
-                await mediator.Send(new RemoveOrganizationContractsAndSlidingWindowsCommand(orgId), stoppingToken);
-            });
-        });
-
-        await handle.Ready;
-
-        _logger.LogInformation("Waiting to drain deletion queue...");
-        await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-
-        await handle.StopAsync(stoppingToken);
-        _logger.LogInformation("Finished draining deletion queue");
     }
 
     private async Task PerformPeriodicTask(CancellationToken stoppingToken)

@@ -10,8 +10,6 @@ using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Setup.RabbitMq;
-using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,7 +32,6 @@ public class MeasurementsSyncerWorkerTest
         new Technology("T12345", "T54321"));
 
     private readonly ILogger<MeasurementsSyncerWorker> _fakeLogger = Substitute.For<ILogger<MeasurementsSyncerWorker>>();
-    private readonly IBusControl _fakeBusControl = Substitute.For<IBusControl>();
     private readonly ILogger<MeasurementsSyncService> _syncServiceFakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly IServiceScopeFactory _scopeFactory = Substitute.For<IServiceScopeFactory>();
     private readonly IServiceScope _scope = Substitute.For<IServiceScope>();
@@ -47,8 +44,6 @@ public class MeasurementsSyncerWorkerTest
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
     private readonly IDataHub3Client _dataHub3Client = Substitute.For<IDataHub3Client>();
     private readonly IDataHubFacadeClient _dataHubFacadeClient = Substitute.For<IDataHubFacadeClient>();
-    private readonly IOptions<RabbitMqOptions> _rabbitMqOptions = Substitute.For<IOptions<RabbitMqOptions>>();
-
     private readonly IContractState _contractState = Substitute.For<IContractState>();
 
     public MeasurementsSyncerWorkerTest()
@@ -59,7 +54,7 @@ public class MeasurementsSyncerWorkerTest
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
         _serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);
-        _worker = new MeasurementsSyncerWorker(_fakeLogger, _fakeContractState, _options, _scopeFactory, _fakeBusControl, _rabbitMqOptions);
+        _worker = new MeasurementsSyncerWorker(_fakeLogger, _fakeContractState, _options, _scopeFactory);
     }
 
     [Fact]

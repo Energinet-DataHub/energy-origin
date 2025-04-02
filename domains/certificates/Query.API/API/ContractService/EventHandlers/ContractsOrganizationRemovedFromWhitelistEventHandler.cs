@@ -1,30 +1,33 @@
 using System;
 using System.Threading.Tasks;
+using API.ContractService.Internal;
 using EnergyOrigin.IntegrationEvents.Events.OrganizationRemovedFromWhitelist.V1;
 using MassTransit;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace API.EventHandlers;
-public record EnqueueContractAndSlidingWindowDeletionTaskMessage(Guid OrganizationId);
+namespace API.ContractService.EventHandlers;
 
 public class ContractsOrganizationRemovedFromWhitelistEventHandler(
     ILogger<ContractsOrganizationRemovedFromWhitelistEventHandler> logger,
-    IPublishEndpoint publishEndpoint)
+    IMediator mediator)
     : IConsumer<OrganizationRemovedFromWhitelist>
 {
     public async Task Consume(ConsumeContext<OrganizationRemovedFromWhitelist> context)
     {
         var orgId = context.Message.OrganizationId;
 
-        logger.LogInformation("Publishing EnqueueContractAndSlidingWindowDeletionTaskMessage for OrganizationId {OrganizationId} via transactional outbox", orgId);
-        await publishEndpoint.Publish(new EnqueueContractAndSlidingWindowDeletionTaskMessage(orgId), context.CancellationToken);
+        logger.LogInformation("Organization {orgId} removed from whitelist, removing all contracts and slidingWindows", orgId);
+        var removeContractsAndSlidingWindowsCommand = new RemoveOrganizationContractsAndSlidingWindowsCommand(orgId);
+        await mediator.Send(removeContractsAndSlidingWindowsCommand, context.CancellationToken);
     }
 }
 
-public class OrganizationRemovedFromWhitelistEventHandlerDefinition : ConsumerDefinition<ContractsOrganizationRemovedFromWhitelistEventHandler>
+public class ContractsOrganizationRemovedFromWhitelistEventHandlerDefinition : ConsumerDefinition<ContractsOrganizationRemovedFromWhitelistEventHandler>
 {
     protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<ContractsOrganizationRemovedFromWhitelistEventHandler> consumerConfigurator, IRegistrationContext context)
     {
-        endpointConfigurator.UseMessageRetry(r => r.Incremental(5, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
+        endpointConfigurator.UseMessageRetry(r =>
+            r.Incremental(5, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
     }
 }
