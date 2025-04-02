@@ -45,7 +45,8 @@ public class ContractsOrganizationRemovedFromWhitelistEventHandlerTests
                 .SelectAsync<OrganizationRemovedFromWhitelist>(TestContext.Current.CancellationToken).FirstOrDefault();
 
             Assert.NotNull(consumed);
-            Assert.True(await consumerHarness.Consumed.Any<OrganizationRemovedFromWhitelist>(TestContext.Current.CancellationToken));        }
+            Assert.True(await consumerHarness.Consumed.Any<OrganizationRemovedFromWhitelist>(TestContext.Current.CancellationToken));
+        }
         finally
         {
             await harness.Stop();
