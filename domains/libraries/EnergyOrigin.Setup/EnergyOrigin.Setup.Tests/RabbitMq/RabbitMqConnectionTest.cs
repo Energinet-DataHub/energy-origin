@@ -82,6 +82,9 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         // When starting RabbitMq again
         await _rabbitMqContainer.StartAsync(TestContext.Current.CancellationToken);
 
+        // Wait for health check to confirm RabbitMQ is up again
+        await WaitForHealthEndpointResponse(HttpStatusCode.OK);
+
         // Messages should be consumed
         await WaitForMessagesConsumed();
     }
