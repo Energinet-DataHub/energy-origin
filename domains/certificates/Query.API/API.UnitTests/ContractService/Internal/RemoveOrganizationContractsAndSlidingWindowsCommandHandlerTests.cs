@@ -24,18 +24,17 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         var command = new RemoveOrganizationContractsAndSlidingWindowsCommand(organizationId);
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
-        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
-
-        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
         mockContractRepo.Query().Returns(Enumerable.Empty<CertificateIssuingContract>().AsQueryable().BuildMock());
+
+        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         mockSlidingWindowState.Query()
             .Returns(Enumerable.Empty<MeteringPointTimeSeriesSlidingWindow>().AsQueryable().BuildMock());
 
-        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(
-            mockContractRepo,
-            mockSlidingWindowState,
-            mockUnitOfWork);
+        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
+        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
+        mockUnitOfWork.SlidingWindowState.Returns(mockSlidingWindowState);
+
+        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(mockUnitOfWork);
 
         var result = await handler.Handle(command, CancellationToken.None);
 
@@ -64,18 +63,18 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         };
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
-        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
-
-        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
         mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
-        mockSlidingWindowState.Query()
+
+        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
+                mockSlidingWindowState.Query()
             .Returns(Enumerable.Empty<MeteringPointTimeSeriesSlidingWindow>().AsQueryable().BuildMock());
 
-        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(
-            mockContractRepo,
-            mockSlidingWindowState,
-            mockUnitOfWork);
+        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
+        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
+        mockUnitOfWork.SlidingWindowState.Returns(mockSlidingWindowState);
+
+
+        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(mockUnitOfWork);
 
         var result = await handler.Handle(command, CancellationToken.None);
 
@@ -118,17 +117,16 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         var slidingWindows = new List<MeteringPointTimeSeriesSlidingWindow> { slidingWindow1, slidingWindow2 };
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
-        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
-
-        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
         mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
+
+        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         mockSlidingWindowState.Query().Returns(slidingWindows.AsQueryable().BuildMock());
 
-        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(
-            mockContractRepo,
-            mockSlidingWindowState,
-            mockUnitOfWork);
+        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
+        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
+        mockUnitOfWork.SlidingWindowState.Returns(mockSlidingWindowState);
+
+        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(mockUnitOfWork);
 
         var result = await handler.Handle(command, CancellationToken.None);
 
@@ -168,17 +166,16 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         var slidingWindows = new List<MeteringPointTimeSeriesSlidingWindow> { slidingWindow1 };
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
-        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
-
-        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
         mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
+
+        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         mockSlidingWindowState.Query().Returns(slidingWindows.AsQueryable().BuildMock());
 
-        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(
-            mockContractRepo,
-            mockSlidingWindowState,
-            mockUnitOfWork);
+        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
+        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
+        mockUnitOfWork.SlidingWindowState.Returns(mockSlidingWindowState);
+
+        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(mockUnitOfWork);
 
         var result = await handler.Handle(command, CancellationToken.None);
 
@@ -222,17 +219,16 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
             { slidingWindow1, slidingWindow2, slidingWindow3 };
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
-        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
-
-        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
         mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
+
+        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         mockSlidingWindowState.Query().Returns(slidingWindows.AsQueryable().BuildMock());
 
-        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(
-            mockContractRepo,
-            mockSlidingWindowState,
-            mockUnitOfWork);
+        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
+        mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
+        mockUnitOfWork.SlidingWindowState.Returns(mockSlidingWindowState);
+
+        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(mockUnitOfWork);
 
         var result = await handler.Handle(command, CancellationToken.None);
 
@@ -261,17 +257,12 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         var command = new RemoveOrganizationContractsAndSlidingWindowsCommand(organizationId);
         var expectedException = new Exception("Transaction failed");
 
-        var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         var mockUnitOfWork = Substitute.For<IUnitOfWork>();
 
         mockUnitOfWork.BeginTransactionAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromException(expectedException));
 
-        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(
-            mockContractRepo,
-            mockSlidingWindowState,
-            mockUnitOfWork);
+        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(mockUnitOfWork);
 
         var exception = await Assert.ThrowsAsync<Exception>(() =>
             handler.Handle(command, CancellationToken.None));

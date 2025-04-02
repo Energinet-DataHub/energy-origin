@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.ContractService.Repositories;
-using API.MeasurementsSyncer.Persistence;
 using API.UnitOfWork;
 using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
@@ -21,8 +19,6 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandResult
 }
 
 public class RemoveOrganizationContractsAndSlidingWindowsCommandHandler(
-    ICertificateIssuingContractRepository certificateIssuingContractRepository,
-    ISlidingWindowState slidingWindowState,
     IUnitOfWork unitOfWork)
     : IRequestHandler<RemoveOrganizationContractsAndSlidingWindowsCommand, RemoveOrganizationContractsAndSlidingWindowsCommandResult>
 {
@@ -39,18 +35,18 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandler(
 
         var gsrns = contracts.Select(c => c.GSRN).Distinct().ToList();
 
-        var slidingWindows = await slidingWindowState.Query()
+        var slidingWindows = await unitOfWork.SlidingWindowState.Query()
             .Where(sw => gsrns.Contains(sw.GSRN))
             .ToListAsync(cancellationToken);
 
         if (contracts.Count > 0)
         {
-            certificateIssuingContractRepository.RemoveRange(contracts);
+            unitOfWork.CertificateIssuingContractRepo.RemoveRange(contracts);
         }
 
         if (slidingWindows.Count > 0)
         {
-            slidingWindowState.RemoveRange(slidingWindows);
+            unitOfWork.SlidingWindowState.RemoveRange(slidingWindows);
         }
 
         await unitOfWork.CommitAsync(cancellationToken);
