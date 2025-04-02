@@ -42,9 +42,7 @@ public class GetMeteringPointsQueryHandler(
                 meteringpoint.MeterType,
                 meteringpoint.OrganizationName,
                 meteringpoint.Tin,
-                contracts.Result.Any(contract => contract.GSRN == meteringpoint.GSRN &&
-                                                contract.StartDate < DateTimeOffset.UtcNow.ToUnixTimeSeconds() &&
-                                                (contract.EndDate == null || contract.EndDate >= DateTimeOffset.UtcNow.ToUnixTimeSeconds()))
+                contracts.Result.Any(contract => contract.GSRN == meteringpoint.GSRN)
                 ))
             .ToList();
 
