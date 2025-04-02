@@ -212,11 +212,6 @@
                 <AdminHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</AdminHelpText>
                 <UserHelpText>Used to determine if the user should be permitted to reauthenticate silently via their existing refresh token.</UserHelpText>
             </ClaimType>
-            <ClaimType Id="strongAuthenticationPhoneNumber">
-                <DisplayName>Phone Number</DisplayName>
-                <DataType>string</DataType>
-                <UserInputType>TextBox</UserInputType>
-            </ClaimType>
             <ClaimType Id="signInNames.emailAddress">
                 <DisplayName>Email Address</DisplayName>
                 <DataType>string</DataType>
@@ -563,18 +558,6 @@
                     <InputClaims>
                         <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
                     </InputClaims>
-                    <OutputClaims>
-
-                        <!-- Required claims -->
-                        <OutputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
-
-                        <!-- Optional claims -->
-                        <OutputClaim ClaimTypeReferenceId="signInNames.emailAddress" />
-                        <OutputClaim ClaimTypeReferenceId="displayName" />
-                        <OutputClaim ClaimTypeReferenceId="otherMails" />
-                        <OutputClaim ClaimTypeReferenceId="givenName" />
-                        <OutputClaim ClaimTypeReferenceId="surname" />
-                    </OutputClaims>
                     <IncludeTechnicalProfile ReferenceId="AAD-Common" />
                 </TechnicalProfile>
 
