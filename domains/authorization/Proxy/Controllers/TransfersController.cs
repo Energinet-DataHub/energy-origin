@@ -196,7 +196,8 @@ public record TransferRequest()
     public required uint Quantity { get; init; }
 
     /// <summary>
-    /// List of hashed attributes to transfer with the certificate.
+    /// List of hashed attributes names to transfer with the certificate.
+    /// Can be empty array if no hashed attributes are to be transferred.
     /// </summary>
     [Required]
     public required string[] HashedAttributes { get; init; }
