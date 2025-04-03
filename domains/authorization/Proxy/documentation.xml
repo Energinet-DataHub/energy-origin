@@ -672,7 +672,8 @@
         </member>
         <member name="P:Proxy.Controllers.TransferRequest.HashedAttributes">
             <summary>
-            List of hashed attributes to transfer with the certificate.
+            List of hashed attributes names to transfer with the certificate.
+            Can be empty array if no hashed attributes are to be transferred.
             </summary>
         </member>
         <member name="T:Proxy.Controllers.TransferResponse">
