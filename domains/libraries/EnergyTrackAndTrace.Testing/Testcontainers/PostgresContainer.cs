@@ -15,6 +15,7 @@ public class PostgresContainer : IAsyncLifetime
         .WithUsername("postgres")
         .WithPassword("postgres")
         .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready").UntilPortIsAvailable(5432))
+        .WithPortBinding(PostgreSqlBuilder.PostgreSqlPort, true)
         .WithCleanUp(true)
         .Build();
 
