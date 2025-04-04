@@ -55,7 +55,7 @@ jobs:
       - name: Run specific test (Iteration ${{ matrix.iteration }})
         run: |
           echo "Running test iteration ${{ matrix.iteration }} of 100"
-          dotnet test domains/libraries/EnergyOrigin.Setup/EnergyOrigin.Setup.Tests/EnergyOrigin.Setup.Tests.csproj --filter "FullyQualifiedName~RabbitMqConnectionTest" --configuration Release -warnaserror --logger:"console;verbosity=minimal" -p:ParallelizeAssemblies=true -p:ParallelizeTestCollections=true
+          dotnet test domains/libraries/EnergyOrigin.Setup/EnergyOrigin.Setup.Tests/EnergyOrigin.Setup.Tests.csproj --filter "FullyQualifiedName~RabbitMqConnectionTest" --configuration Release -warnaserror --logger:"console;verbosity=minimal" -p:ParallelizeAssemblies=false -p:ParallelizeTestCollections=false
 
   build-admin-portal:
     needs: test
