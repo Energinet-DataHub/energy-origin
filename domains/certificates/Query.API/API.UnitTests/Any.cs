@@ -157,4 +157,16 @@ public class Any
             ContractNumber = contractNumber
         };
     }
+
+    public static MeteringPointTimeSeriesSlidingWindow MeteringPointTimeSeriesSlidingWindow(
+        Gsrn? gsrn = null,
+        UnixTimestamp? syncPoint = null,
+        List<MeasurementInterval>? intervals = null)
+    {
+        return DataContext.Models.MeteringPointTimeSeriesSlidingWindow.Create(
+            gsrn ?? Gsrn(),
+            syncPoint ?? UnixTimestamp.Create(DateTimeOffset.UtcNow.ToUnixTimeSeconds()),
+            intervals ?? new List<MeasurementInterval>()
+        );
+    }
 }

@@ -1,9 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.MeasurementsSyncer.Persistence;
 
@@ -15,6 +19,13 @@ public class SlidingWindowState : ISlidingWindowState
     {
         _dbContext = dbContext;
     }
+
+    public void RemoveRange(IEnumerable<MeteringPointTimeSeriesSlidingWindow> meteringPointTimeSeriesSlidingWindows)
+    {
+        ArgumentNullException.ThrowIfNull(meteringPointTimeSeriesSlidingWindows);
+        _dbContext.Set<MeteringPointTimeSeriesSlidingWindow>().RemoveRange(meteringPointTimeSeriesSlidingWindows);
+    }
+
 
     public async Task<MeteringPointTimeSeriesSlidingWindow> GetSlidingWindowStartTime(MeteringPointSyncInfo syncInfo,
         CancellationToken cancellationToken)
@@ -52,6 +63,11 @@ public class SlidingWindowState : ISlidingWindowState
         {
             await _dbContext.MeteringPointTimeSeriesSlidingWindows.AddAsync(slidingWindow, cancellationToken);
         }
+    }
+
+    public IQueryable<MeteringPointTimeSeriesSlidingWindow> Query()
+    {
+        return _dbContext.MeteringPointTimeSeriesSlidingWindows.AsQueryable();
     }
 
     private bool IsTracked(MeteringPointTimeSeriesSlidingWindow slidingWindow)

@@ -43,9 +43,14 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
     public Task<List<CertificateIssuingContract>> GetAllByIds(List<Guid> ids, CancellationToken cancellationToken) =>
         dbContext.Contracts.Where(x => ids.Contains(x.Id)).ToListAsync(cancellationToken);
 
+    public void RemoveRange(IEnumerable<CertificateIssuingContract> certificateIssuingContracts)
+    {
+        ArgumentNullException.ThrowIfNull(certificateIssuingContracts);
+        dbContext.Set<CertificateIssuingContract>().RemoveRange(certificateIssuingContracts);
+    }
+
     public IQueryable<CertificateIssuingContract> Query()
     {
         return dbContext.Contracts.AsQueryable();
     }
-
 }
