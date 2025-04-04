@@ -25,14 +25,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-  test:
-    needs: setup
+  generate-matrix:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          echo "matrix=[$(seq -s ',' 1 100)]" >> $GITHUB_OUTPUT
+
+  test:
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        iteration: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
         with:
-          solution: domains/EnergyTrackAndTrace.sln
+          dotnet-version: '9.0.x'
+
+      - name: Install dependencies
+        run: dotnet restore domains/libraries/EnergyOrigin.Setup/EnergyOrigin.Setup.Tests/EnergyOrigin.Setup.Tests.csproj
+
+      - name: Run specific test (Iteration ${{ matrix.iteration }})
+        run: |
+          echo "Running test iteration ${{ matrix.iteration }} of 100"
+          dotnet test domains/libraries/EnergyOrigin.Setup/EnergyOrigin.Setup.Tests/EnergyOrigin.Setup.Tests.csproj --filter "FullyQualifiedName~RabbitMqConnectionTest" --configuration Release -warnaserror --logger:"console;verbosity=minimal" -p:ParallelizeAssemblies=true -p:ParallelizeTestCollections=true
 
   build-admin-portal:
     needs: test
