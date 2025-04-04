@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -51,21 +52,34 @@ public static class ServiceCollectionExtensions
     {
         var openTelemetryBuilder = services.AddOpenTelemetry()
             .ConfigureResource(resource => resource
-                .AddService(serviceName: serviceName, serviceInstanceId: Environment.MachineName));
+                .AddService(serviceName: serviceName, serviceInstanceId: Environment.MachineName)
+                .AddContainerDetector()
+                .AddHostDetector());
 
         return openTelemetryBuilder
             .WithMetrics(meterProviderBuilder =>
                 meterProviderBuilder
+                    .SetExemplarFilter(ExemplarFilterType.TraceBased)
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint))
+                    .AddPrometheusExporter()
+                    .AddOtlpExporter((exporterOptions) =>
+                    {
+                        exporterOptions.Endpoint = oltpReceiverEndpoint;
+                        exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    }))
             .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
+                    .AddSource(serviceName)
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddNpgsql()
-                    .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
+                    .AddOtlpExporter((exporterOptions) =>
+                    {
+                        exporterOptions.Endpoint = oltpReceiverEndpoint;
+                        exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    }));
     }
 
     public static IOpenTelemetryBuilder AddOpenTelemetryMetricsAndTracingWithGrpcAndMassTransit(this IServiceCollection services,

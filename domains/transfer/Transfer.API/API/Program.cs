@@ -125,6 +125,7 @@ var app = builder.Build();
 app.MapHealthChecks("/health");
 
 app.AddSwagger("transfer");
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
