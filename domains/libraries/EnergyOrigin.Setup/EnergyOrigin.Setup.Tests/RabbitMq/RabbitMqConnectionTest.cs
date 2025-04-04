@@ -36,7 +36,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         .WithUsername(RabbitMqUsername)
         .WithPassword(RabbitMqPassword)
         .WithPortBinding(25672, 5672)
-        .WithPortBinding(35672, 15672)
+        .WithPortBinding(15672, true)
         .Build();
 
     [Fact]
