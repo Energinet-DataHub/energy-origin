@@ -13,7 +13,7 @@ using ClientType = API.Models.ClientType;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AuthorizationControllerTests: IntegrationTestBase
+public class AuthorizationControllerTests : IntegrationTestBase
 {
     private readonly Api _api;
     private readonly IntegrationTestFixture _integrationTestFixture;
