@@ -2,6 +2,7 @@ using DataContext.Models;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects.Converters;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataContext;
@@ -48,6 +49,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<TransferAgreementProposal>().Property(o => o.EndDate).HasConversion(new NullableUnixTimestampValueToDateTimeOffsetConverter());
         modelBuilder.Entity<TransferAgreementProposal>().Property(o => o.SenderCompanyName).HasConversion(new OrganizationNameValueConverter());
         modelBuilder.Entity<TransferAgreementProposal>().Property(o => o.SenderCompanyId).HasConversion(new OrganizationIdValueConverter());
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
 
         modelBuilder.AddActivityLogEntry();
     }
