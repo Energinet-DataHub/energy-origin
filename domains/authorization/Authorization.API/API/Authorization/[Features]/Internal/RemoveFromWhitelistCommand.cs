@@ -21,9 +21,8 @@ public class RemoveFromWhitelistCommandResult
 }
 
 public class RemoveOrganizationFromWhitelistCommandHandler(
-    IWhitelistedRepository whitelistRepository,
-    IPublishEndpoint publishEndpoint,
-    IUnitOfWork unitOfWork)
+    IWhitelistedRepository whitelistRepository, IOrganizationRepository organizationRepository,
+    IPublishEndpoint publishEndpoint, IUnitOfWork unitOfWork)
     : IRequestHandler<RemoveFromWhitelistCommand, RemoveFromWhitelistCommandResult>
 {
     public async Task<RemoveFromWhitelistCommandResult> Handle(RemoveFromWhitelistCommand request, CancellationToken cancellationToken)
@@ -39,11 +38,15 @@ public class RemoveOrganizationFromWhitelistCommandHandler(
 
         whitelistRepository.Remove(existingWhitelistEntry);
 
-        var removedEvent = OrganizationRemovedFromWhitelist.Create(existingWhitelistEntry.Id, existingWhitelistEntry.Tin.Value);
-        await publishEndpoint.Publish(removedEvent, cancellationToken);
+        var existingOrganization = await organizationRepository.Query().SingleOrDefaultAsync(org => org.Tin == request.Tin, cancellationToken);
+
+        if (existingOrganization is not null)
+        {
+            var removedEvent = OrganizationRemovedFromWhitelist.Create(existingOrganization.Id, existingWhitelistEntry.Tin.Value);
+            await publishEndpoint.Publish(removedEvent, cancellationToken);
+        }
 
         await unitOfWork.CommitAsync(cancellationToken);
-
         return new RemoveFromWhitelistCommandResult();
     }
 }
