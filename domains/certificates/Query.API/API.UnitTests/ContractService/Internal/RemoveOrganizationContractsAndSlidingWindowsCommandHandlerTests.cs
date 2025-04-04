@@ -199,24 +199,23 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         var organizationIdString = organizationId.ToString();
         var command = new RemoveOrganizationContractsAndSlidingWindowsCommand(organizationId);
 
-        var gsrn1 = Any.Gsrn();
-        var gsrn2 = Any.Gsrn();
-        var gsrn3 = Any.Gsrn();
-
-        var contracts = new List<CertificateIssuingContract>
-        {
-            new CertificateIssuingContract { GSRN = gsrn1.ToString(), MeteringPointOwner = organizationIdString },
-            new CertificateIssuingContract { GSRN = gsrn2.ToString(), MeteringPointOwner = organizationIdString }
-        };
+        var orgMeteringPoint1 = Any.Gsrn();
+        var orgMeteringPoint2 = Any.Gsrn();
+        var anotherOrgsMeteringPoint = Any.Gsrn();
 
         var timestamp = UnixTimestamp.Now();
 
-        var slidingWindow1 = MeteringPointTimeSeriesSlidingWindow.Create(gsrn1, timestamp);
-        var slidingWindow2 = MeteringPointTimeSeriesSlidingWindow.Create(gsrn2, timestamp);
-        var slidingWindow3 = MeteringPointTimeSeriesSlidingWindow.Create(gsrn3, timestamp);
+        var contract1 = Any.CertificateIssuingContract(orgMeteringPoint1, start: timestamp, end: null);
+        var contract2 = Any.CertificateIssuingContract(orgMeteringPoint2, start: timestamp, end: null);
+        contract1.MeteringPointOwner = organizationIdString;
+        contract2.MeteringPointOwner = organizationIdString;
 
-        var slidingWindows = new List<MeteringPointTimeSeriesSlidingWindow>
-            { slidingWindow1, slidingWindow2, slidingWindow3 };
+        var slidingWindow1 = Any.MeteringPointTimeSeriesSlidingWindow(orgMeteringPoint1, timestamp);
+        var slidingWindow2 = Any.MeteringPointTimeSeriesSlidingWindow(orgMeteringPoint2, timestamp);
+        var slidingWindow3 = Any.MeteringPointTimeSeriesSlidingWindow(anotherOrgsMeteringPoint, timestamp); // Should not be removed
+
+        var contracts = new List<CertificateIssuingContract> { contract1, contract2 };
+        var slidingWindows = new List<MeteringPointTimeSeriesSlidingWindow> { slidingWindow1, slidingWindow2, slidingWindow3 };
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
         mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
@@ -246,7 +245,7 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         {
             var list = actual.ToList();
             Assert.Equal(2, list.Count);
-            Assert.DoesNotContain(list, sw => sw.GSRN == gsrn3.ToString());
+            Assert.DoesNotContain(list, sw => sw.GSRN == anotherOrgsMeteringPoint.ToString());
         }));
     }
 
