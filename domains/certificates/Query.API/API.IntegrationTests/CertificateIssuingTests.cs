@@ -30,7 +30,7 @@ public sealed class CertificateIssuingTests : TestBase
     private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly MeasurementsWireMock _measurementsWireMock;
 
-    public CertificateIssuingTests(IntegrationTestFixture integrationTestFixture)
+    public CertificateIssuingTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         _integrationTestFixture = integrationTestFixture;
         _measurementsWireMock = integrationTestFixture.MeasurementsMock;

@@ -13,7 +13,6 @@ on:
         type: string
 
 jobs:
- 
   build-api:
     name: Build Transfer.API
     runs-on: ubuntu-latest
@@ -21,31 +20,31 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/transfer/Transfer.sln
+          solution: Transfer.sln
           project: domains/transfer/Transfer.API/API/API.csproj
           configuration: domains/transfer/Transfer.API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
 
   build-claim-automation:
-    name: Build ClaimAutomation
+    name: Build ClaimAutomation.Worker
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/transfer/Transfer.sln
+          solution: Transfer.sln
           project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
           configuration: domains/transfer/ClaimAutomation/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
 
   build-transfer-automation:
-    name: Build TransferAutomation
+    name: Build TransferAutomation.Worker
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/transfer/Transfer.sln
+          solution: Transfer.sln
           project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
           configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
           dry-run: ${{ inputs.dry-run }}

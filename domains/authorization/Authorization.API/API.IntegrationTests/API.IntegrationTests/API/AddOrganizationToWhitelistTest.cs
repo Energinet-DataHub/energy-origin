@@ -9,12 +9,12 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AddOrganizationToWhitelistTest
+public class AddOrganizationToWhitelistTest : IntegrationTestBase
 {
     private readonly Api _api;
     private readonly ApplicationDbContext _db;
 
-    public AddOrganizationToWhitelistTest(IntegrationTestFixture integrationTestFixture)
+    public AddOrganizationToWhitelistTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         var connectionString = integrationTestFixture.WebAppFactory.ConnectionString;
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()

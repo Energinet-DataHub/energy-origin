@@ -8,12 +8,12 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API.Data;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class UnitOfWorkTest
+public class UnitOfWorkTest : IntegrationTestBase
 {
     private DatabaseInfo _databaseInfo;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public UnitOfWorkTest(IntegrationTestFixture integrationTestFixture)
+    public UnitOfWorkTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         _databaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_databaseInfo.ConnectionString).Options;

@@ -1,0 +1,43 @@
+name: Dotnet Lint Solution
+description: Lints the entire EnergyTrackAndTrace solution.
+
+inputs:
+  path:
+    description: "Path to the solution file (e.g. domains/EnergyTrackAndTrace.sln)"
+    required: true
+
+  dotnet-version:
+    description: "The dotnet version to use"
+    required: false
+
+runs:
+  using: composite
+
+  steps:
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Restore
+      working-directory: ${{ inputs.path }}
+      shell: bash
+      env:
+        version: ""
+      run: |
+        dotnet tool restore || true
+        dotnet restore
+
+    - name: Lint
+      working-directory: ${{ inputs.path }}
+      shell: bash
+      env:
+        version: ""
+      run: dotnet format --verify-no-changes -v diag

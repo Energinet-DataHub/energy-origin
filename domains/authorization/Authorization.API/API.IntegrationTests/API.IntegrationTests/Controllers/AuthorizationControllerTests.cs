@@ -13,13 +13,13 @@ using ClientType = API.Models.ClientType;
 namespace API.IntegrationTests.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class AuthorizationControllerTests
+public class AuthorizationControllerTests : IntegrationTestBase
 {
     private readonly Api _api;
     private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public AuthorizationControllerTests(IntegrationTestFixture integrationTestFixture)
+    public AuthorizationControllerTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
