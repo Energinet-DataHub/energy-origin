@@ -16,6 +16,13 @@ using RabbitMqContainer = Testcontainers.RabbitMq.RabbitMqContainer;
 
 namespace EnergyOrigin.Setup.Tests.RabbitMq;
 
+[CollectionDefinition(CollectionName)]
+public class RabbitMqTestCollection : ICollectionFixture<RabbitMqTestCollection>
+{
+    public const string CollectionName = nameof(RabbitMqTestCollection);
+}
+
+[Collection(nameof(RabbitMqConnectionTest))]
 public class RabbitMqConnectionTest : IAsyncLifetime
 {
     private const string ServiceBaseAddress = "http://localhost:5001";
@@ -185,7 +192,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
     private async Task WaitForMessagesConsumed()
     {
         var expectedMessageCount = 10;
-        var timeoutSeconds = 60;
+        var timeoutSeconds = 30;
         var timeout = DateTimeOffset.UtcNow.AddSeconds(timeoutSeconds);
 
         while (DateTimeOffset.UtcNow < timeout)
