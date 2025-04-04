@@ -8,13 +8,13 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GrantConsentTest
+public class GrantConsentTest : IntegrationTestBase
 {
     private readonly Api _api;
     private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GrantConsentTest(IntegrationTestFixture integrationTestFixture)
+    public GrantConsentTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
