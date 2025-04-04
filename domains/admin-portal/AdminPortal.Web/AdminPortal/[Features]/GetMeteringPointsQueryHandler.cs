@@ -37,13 +37,20 @@ public class GetMeteringPointsQueryHandler(
         var contracts = await certificatesService.GetContractsHttpRequestAsync();
 
         var result = meteringpoints.Result
-            .Select(meteringpoint => new GetMeteringPointsQueryResultItem(
-                meteringpoint.GSRN,
-                meteringpoint.MeterType,
-                meteringpoint.OrganizationName,
-                meteringpoint.Tin,
-                contracts.Result.Any(contract => contract.GSRN == meteringpoint.GSRN)
-                ))
+            .Select(meteringpoint =>
+            {
+                var contract = contracts.Result.FirstOrDefault(contract => contract.GSRN == meteringpoint.GSRN);
+                var organizationName = organizations.Result.FirstOrDefault(org => org.OrganizationId.ToString() == contract?.MeteringPointOwner)?.OrganizationName;
+                var Tin = organizations.Result.FirstOrDefault(org => org.OrganizationId.ToString() == contract?.MeteringPointOwner)?.Tin;
+                new GetMeteringPointsQueryResultItem(
+                    meteringpoint.GSRN,
+                    meteringpoint.MeterType,
+                    meteringpoint.OrganizationName,
+                    meteringpoint.Tin,
+                    contracts.Result.Any(contract => contract.GSRN == meteringpoint.GSRN)
+                );
+            }
+                )
             .ToList();
 
         return new GetMeteringPointsQueryResult(result);
