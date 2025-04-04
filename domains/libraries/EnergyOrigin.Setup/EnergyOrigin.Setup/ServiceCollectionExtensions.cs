@@ -63,8 +63,7 @@ public static class ServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddPrometheusExporter()
-                    .AddOtlpExporter((exporterOptions) =>
+                    .AddOtlpExporter(exporterOptions =>
                     {
                         exporterOptions.Endpoint = oltpReceiverEndpoint;
                         exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
@@ -75,7 +74,7 @@ public static class ServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddNpgsql()
-                    .AddOtlpExporter((exporterOptions) =>
+                    .AddOtlpExporter(exporterOptions =>
                     {
                         exporterOptions.Endpoint = oltpReceiverEndpoint;
                         exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
