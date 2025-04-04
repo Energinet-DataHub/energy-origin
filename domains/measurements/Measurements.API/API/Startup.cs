@@ -1,5 +1,4 @@
 using System;
-using API.Measurements.gRPC.V1.Services;
 using API.MeteringPoints.Api;
 using API.MeteringPoints.Api.Consumer;
 using API.Options;
@@ -12,7 +11,6 @@ using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MassTransit;
-using Metertimeseries.V1;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -86,11 +84,6 @@ public class Startup
             var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
             o.Address = new Uri(options.Url);
         });
-        services.AddGrpcClient<MeterTimeSeries.MeterTimeSeriesClient>((sp, o) =>
-        {
-            var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
-            o.Address = new Uri(options.Url);
-        });
 
         services.AddGrpcClient<Relation.V1.Relation.RelationClient>((sp, o) =>
         {
@@ -118,7 +111,6 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapGrpcService<MeasurementsService>();
             endpoints.MapControllers();
             endpoints.MapDefaultHealthChecks();
         });
