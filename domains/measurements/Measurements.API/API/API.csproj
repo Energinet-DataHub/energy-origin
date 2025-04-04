@@ -38,7 +38,6 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.2" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.3" />
-        <PackageReference Include="OpenTelemetry" Version="1.11.1" />
     </ItemGroup>
     <ItemGroup>
         <None Update="documentation.xml">
