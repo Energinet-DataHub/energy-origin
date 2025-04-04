@@ -6,9 +6,9 @@
     <members>
         <member name="M:API.MeteringPoints.Api.Controllers.Internal.InternalMeteringpointsController.GetMeteringPoints(System.Collections.Generic.List{System.Guid})">
             <summary>
-            Get metering points from DataHub2.0
+            Get as a post. Get metering points from DataHub2.0
             </summary>
-            <response code="200">Successful operation</response>
+            <response code="200">Successful operation</response>[ApiController]
         </member>
         <member name="M:API.MeteringPoints.Api.Controllers.MeteringPointsController.GetMeteringPoints(System.Guid)">
             <summary>
