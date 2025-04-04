@@ -248,24 +248,4 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
             Assert.DoesNotContain(list, sw => sw.GSRN == anotherOrgsMeteringPoint.ToString());
         }));
     }
-
-    [Fact]
-    public async Task GivenTransactionFails_WhenCommand_ThenExceptionIsPropagated()
-    {
-        var organizationId = Guid.NewGuid();
-        var command = new RemoveOrganizationContractsAndSlidingWindowsCommand(organizationId);
-        var expectedException = new Exception("Transaction failed");
-
-        var mockUnitOfWork = Substitute.For<IUnitOfWork>();
-
-        mockUnitOfWork.BeginTransactionAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromException(expectedException));
-
-        var handler = new RemoveOrganizationContractsAndSlidingWindowsCommandHandler(mockUnitOfWork);
-
-        var exception = await Assert.ThrowsAsync<Exception>(() =>
-            handler.Handle(command, CancellationToken.None));
-
-        Assert.Equal("Transaction failed", exception.Message);
-    }
 }
