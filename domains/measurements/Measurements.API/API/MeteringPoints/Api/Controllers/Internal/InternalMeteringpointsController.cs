@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -6,12 +6,20 @@ using System.Threading.Tasks;
 using API.MeteringPoints.Api.Dto.Responses;
 using API.MeteringPoints.Api.Dto.Responses.Enums;
 using API.MeteringPoints.Api.Models;
+using Asp.Versioning;
+using EnergyOrigin.TokenValidation.b2c;
 using Meteringpoint.V1;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MeteringPoint = API.MeteringPoints.Api.Dto.Responses.MeteringPoint;
 
 namespace API.MeteringPoints.Api.Controllers.Internal;
 
+[ApiController]
+[Authorize(Policy = Policy.AdminPortal)]
+[ApiVersionNeutral]
+[ApiExplorerSettings(IgnoreApi = true)]
+[Route("api/measurements/admin-portal")]
 public class InternalMeteringpointsController : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
@@ -24,10 +32,11 @@ public class InternalMeteringpointsController : ControllerBase
     }
 
     /// <summary>
-    /// Get metering points from DataHub2.0
+    /// Get as a post. Get metering points from DataHub2.0
     /// </summary>
-    /// <response code="200">Successful operation</response>
+    /// <response code="200">Successful operation</response>[ApiController]
     [HttpPost]
+    [Route("internal-meteringpoints")]
     [ProducesResponseType(typeof(GetMeteringPointsResponse), 200)]
     public async Task<ActionResult> GetMeteringPoints([Required][FromBody] List<Guid> organizationIds)
     {
@@ -44,11 +53,7 @@ public class InternalMeteringpointsController : ControllerBase
 
             var meteringPoints = response.MeteringPoints
                 .Where(mp => MeteringPoint.GetMeterType(mp.TypeOfMp) != MeterType.Child)
-                .Select(mp => new MeteringPoint
-                {
-                    GSRN = mp.MeteringPointId,
-                    Type = MeteringPoint.GetMeterType(mp.TypeOfMp),
-                })
+                .Select(MeteringPoint.CreateFrom)
                 .ToList();
 
             allMeteringPoints.AddRange(meteringPoints);

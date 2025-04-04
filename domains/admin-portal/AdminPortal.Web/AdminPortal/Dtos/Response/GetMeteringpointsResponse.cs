@@ -5,4 +5,4 @@ namespace AdminPortal.Dtos.Response;
 
 public record GetMeteringpointsResponse(List<GetMeteringPointsResponseItem> Result);
 
-public record GetMeteringPointsResponseItem(string GSRN, MeteringPointType MeterType, string OrganizationName, string Tin);
+public record GetMeteringPointsResponseItem(string GSRN, MeteringPointType MeterType, string ConsumerCvr);

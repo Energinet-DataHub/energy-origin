@@ -40,15 +40,19 @@ public class GetMeteringPointsQueryHandler(
         var result = meteringpoints.Result
             .Select(meteringpoint =>
             {
-                var contract = contracts.Result.FirstOrDefault(contract => contract.GSRN == meteringpoint.GSRN);
-                var organizationName = organizations.Result.FirstOrDefault(org => org.OrganizationId.ToString() == contract?.MeteringPointOwner)?.OrganizationName;
-                var Tin = organizations.Result.FirstOrDefault(org => org.OrganizationId.ToString() == contract?.MeteringPointOwner)?.Tin;
-                new GetMeteringPointsQueryResultItem(
+                var organization = organizations
+                    .Result
+                    .First(org => org.Tin.ToString() == meteringpoint.ConsumerCvr);
+                var activeContract = contracts
+                    .Result
+                    .Any(contract => contract.GSRN == meteringpoint.GSRN);
+
+                return new GetMeteringPointsQueryResultItem(
                     meteringpoint.GSRN,
                     meteringpoint.MeterType,
-                    meteringpoint.OrganizationName,
-                    meteringpoint.Tin,
-                    contracts.Result.Any(contract => contract.GSRN == meteringpoint.GSRN)
+                    organization.OrganizationName,
+                    organization.Tin,
+                    activeContract
                 );
             }
                 )
