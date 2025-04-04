@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
+using AdminPortal.Models;
 
 namespace AdminPortal.Services;
 
@@ -22,6 +23,7 @@ public class CertificatesService : ICertificatesService
 
     public async Task<GetContractsForAdminPortalResponse> GetContractsHttpRequestAsync()
     {
+        // return new GetContractsForAdminPortalResponse(new[] { new GetContractsForAdminPortalResponseItem("1", "2", DateTimeOffset.Now.ToUnixTimeSeconds(), DateTimeOffset.Now.ToUnixTimeSeconds(), null, MeteringPointType.Production) }); var response = await _client.GetAsync("internal-contracts/");
         var response = await _client.GetAsync("internal-contracts/");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<GetContractsForAdminPortalResponse>();

@@ -13,6 +13,7 @@ public record MeteringPoint(
     SubMeterType SubMeterType,
     Address Address,
     Technology Technology,
+    string ConsumerCvr,
     [property: SwaggerSchema("Indicates if the metering point can be used for issuing certificates.")]
     bool CanBeUsedForIssuingCertificates,
     string Capacity)
@@ -35,6 +36,7 @@ public record MeteringPoint(
                 "DK"
             ),
             GetTechnology(result.AssetType),
+            result.ConsumerCvr,
             GetCanBeUsedForIssuingCertificates(result.TypeOfMp, result.AssetType, result.PhysicalStatusOfMp),
             result.Capacity
         );
