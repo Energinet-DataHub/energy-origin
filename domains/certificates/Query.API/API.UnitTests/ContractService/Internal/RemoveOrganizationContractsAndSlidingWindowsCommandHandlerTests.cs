@@ -24,7 +24,9 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         var command = new RemoveOrganizationContractsAndSlidingWindowsCommand(organizationId);
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockContractRepo.Query().Returns(Enumerable.Empty<CertificateIssuingContract>().AsQueryable().BuildMock());
+        mockContractRepo
+            .GetAllMeteringPointOwnerContracts(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<CertificateIssuingContract>>(new List<CertificateIssuingContract>()));
 
         var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         mockSlidingWindowState.Query()
@@ -63,7 +65,9 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         };
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
+        mockContractRepo
+            .GetAllMeteringPointOwnerContracts(organizationIdString, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<CertificateIssuingContract>>(contracts));
 
         var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         mockSlidingWindowState.Query()
@@ -116,11 +120,13 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
 
         var slidingWindows = new List<MeteringPointTimeSeriesSlidingWindow> { slidingWindow1, slidingWindow2 };
 
-        var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
-
         var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         mockSlidingWindowState.Query().Returns(slidingWindows.AsQueryable().BuildMock());
+
+        var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
+        mockContractRepo
+            .GetAllMeteringPointOwnerContracts(organizationIdString, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<CertificateIssuingContract>>(contracts));
 
         var mockUnitOfWork = Substitute.For<IUnitOfWork>();
         mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockContractRepo);
@@ -166,7 +172,9 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         var slidingWindows = new List<MeteringPointTimeSeriesSlidingWindow> { slidingWindow1 };
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
+        mockContractRepo
+            .GetAllMeteringPointOwnerContracts(organizationIdString, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<CertificateIssuingContract>>(contracts));
 
         var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         mockSlidingWindowState.Query().Returns(slidingWindows.AsQueryable().BuildMock());
@@ -218,7 +226,9 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandlerTests
         var slidingWindows = new List<MeteringPointTimeSeriesSlidingWindow> { slidingWindow1, slidingWindow2, slidingWindow3 };
 
         var mockContractRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockContractRepo.Query().Returns(contracts.AsQueryable().BuildMock());
+        mockContractRepo
+            .GetAllMeteringPointOwnerContracts(organizationIdString, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<CertificateIssuingContract>>(contracts));
 
         var mockSlidingWindowState = Substitute.For<ISlidingWindowState>();
         mockSlidingWindowState.Query().Returns(slidingWindows.AsQueryable().BuildMock());

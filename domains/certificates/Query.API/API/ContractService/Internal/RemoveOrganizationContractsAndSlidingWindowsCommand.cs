@@ -29,9 +29,8 @@ public class RemoveOrganizationContractsAndSlidingWindowsCommandHandler(
         await unitOfWork.BeginTransactionAsync(cancellationToken);
         var organizationId = request.OrganizationId.Value.ToString();
 
-        var contracts = await unitOfWork.CertificateIssuingContractRepo.Query()
-            .Where(x => x.MeteringPointOwner == organizationId)
-            .ToListAsync(cancellationToken);
+        var contracts = await unitOfWork.CertificateIssuingContractRepo
+            .GetAllMeteringPointOwnerContracts(organizationId, cancellationToken);
 
         var gsrns = contracts.Select(c => c.GSRN).Distinct().ToList();
 
