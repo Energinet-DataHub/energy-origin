@@ -24,6 +24,7 @@ using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
 using EnergyOrigin.WalletClient;
+using EnergyTrackAndTrace.Testing;
 using FluentAssertions;
 using Grpc.Net.Client;
 using MassTransit;
@@ -35,6 +36,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using WalletClient;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 using Technology = API.ContractService.Clients.Technology;
 
@@ -62,6 +64,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
     public readonly Guid AdminPortalEnterpriseAppRegistrationObjectId = Guid.NewGuid();
+
+    private static readonly FakeWalletStampClient FakeWalletStampClient = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -141,9 +145,13 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
                 options.DefaultForbidScheme = AuthenticationScheme.B2CAuthenticationScheme;
             });
 
+            services.Remove(services.First(s => s.ServiceType == typeof(IWalletClient)));
+            services.AddSingleton<IWalletClient>(FakeWalletStampClient);
+            services.Remove(services.First(s => s.ServiceType == typeof(IStampClient)));
+            services.AddSingleton<IStampClient>(FakeWalletStampClient);
+
             new DbMigrator(ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
         });
-
     }
 
     public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
@@ -209,11 +217,9 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public async Task<IWalletClient> CreateWalletClient(string orgId)
     {
-        var client = new HttpClient();
-        client.BaseAddress = new Uri(WalletUrl);
-        var wallet = new WalletClient(client);
-        await wallet.CreateWallet(Guid.Parse(orgId), CancellationToken.None);
-        return wallet;
+        var walletClient = Services.GetService<IWalletClient>()!;
+        await walletClient.CreateWallet(Guid.Parse(orgId), CancellationToken.None);
+        return walletClient;
     }
 
     public IBus GetMassTransitBus() => Services.GetRequiredService<IBus>();

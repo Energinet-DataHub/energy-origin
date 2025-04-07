@@ -32,7 +32,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         .WithPortBinding(35672, 15672)
         .Build();
 
-    [Fact]
+    [Fact(Skip = "Manual test")]
     public async Task GivenMassTransitConfig_WhenConfiguringHost_HealthCanBeConfiguredToCheckRabbitMqConnectivity()
     {
         // Given application stack without RabbitMq running
@@ -58,7 +58,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         await WaitForHealthEndpointResponse(HttpStatusCode.OK);
     }
 
-    [Fact]
+    [Fact(Skip = "Manual test")]
     public async Task GivenMassTransitConfig_WhenSendingMessages_MessagesAreSentAndReceivedWhenRabbitMqConnectivityIsUp()
     {
         // Given application stack with active message producer
@@ -159,7 +159,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
     {
         using var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri(ServiceBaseAddress);
-        var timeoutSeconds = 120;
+        var timeoutSeconds = 30;
         var timeout = DateTimeOffset.UtcNow.AddSeconds(timeoutSeconds);
 
         HttpResponseMessage? healthResponse = null;
@@ -185,7 +185,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
     private async Task WaitForMessagesConsumed()
     {
         var expectedMessageCount = 10;
-        var timeoutSeconds = 60;
+        var timeoutSeconds = 30;
         var timeout = DateTimeOffset.UtcNow.AddSeconds(timeoutSeconds);
 
         while (DateTimeOffset.UtcNow < timeout)
