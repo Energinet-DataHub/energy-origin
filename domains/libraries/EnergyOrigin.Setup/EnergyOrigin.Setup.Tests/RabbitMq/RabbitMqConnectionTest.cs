@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using RabbitMQ.Client;
 using Testcontainers.RabbitMq;
 using Xunit;
 using RabbitMqContainer = Testcontainers.RabbitMq.RabbitMqContainer;
@@ -35,34 +36,37 @@ public class RabbitMqConnectionTest : IAsyncLifetime
     [Fact]
     public async Task GivenMassTransitConfig_WhenConfiguringHost_HealthCanBeConfiguredToCheckRabbitMqConnectivity()
     {
-        // Given application stack without RabbitMq running
+        // Given application stack WITHOUT RabbitMQ running
         var databaseInfo = await StartPostgresDatabase();
         var builder = ConfigureWebAppBuilder(databaseInfo);
         await using var app = builder.Build();
         app.MapDefaultHealthChecks();
         await app.StartAsync(TestContext.Current.CancellationToken);
 
-        // Health check is not ok
+        // Confirm health check is not OK (RabbitMQ is not started)
         await WaitForHealthEndpointResponse(HttpStatusCode.ServiceUnavailable);
 
         // When starting RabbitMQ
         await _rabbitMqContainer.StartAsync(TestContext.Current.CancellationToken);
+        VerifyRabbitMqIsOpen();
 
-        // Health check becomes ok
+        // Health check becomes OK
         await WaitForHealthEndpointResponse(HttpStatusCode.OK);
 
         // When stopping RabbitMQ
         await _rabbitMqContainer.StopAsync(TestContext.Current.CancellationToken);
 
-        // Health check still ok
+        // Health check remains OK due to MassTransit outbox buffering (it’s not forced “down”)
         await WaitForHealthEndpointResponse(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GivenMassTransitConfig_WhenSendingMessages_MessagesAreSentAndReceivedWhenRabbitMqConnectivityIsUp()
     {
-        // Given application stack with active message producer
+        // Given application stack WITH active message producer
         await _rabbitMqContainer.StartAsync(TestContext.Current.CancellationToken);
+        VerifyRabbitMqIsOpen(); // <-- Official approach: ensure readiness
+
         var databaseInfo = await StartPostgresDatabase();
         var builder = ConfigureWebAppBuilder(databaseInfo);
         builder.Services.AddHostedService<TestMessageProducer>();
@@ -70,20 +74,31 @@ public class RabbitMqConnectionTest : IAsyncLifetime
         app.MapDefaultHealthChecks();
         await app.StartAsync(TestContext.Current.CancellationToken);
 
-        // Health check is ok
+        // Health check is OK (RabbitMQ started)
         await WaitForHealthEndpointResponse(HttpStatusCode.OK);
 
-        // When stopping RabbitMq
+        // When stopping RabbitMQ
         await _rabbitMqContainer.StopAsync(TestContext.Current.CancellationToken);
 
-        // Message producer should still be able to send messages
+        // The producer can still send messages (outbox buffering)
         await TestMessageProducer.MessagesSentTask;
 
-        // When starting RabbitMq again
+        // When starting RabbitMQ again
         await _rabbitMqContainer.StartAsync(TestContext.Current.CancellationToken);
+        VerifyRabbitMqIsOpen(); // <-- Official approach again
 
-        // Messages should be consumed
+        // Outbox messages should now be consumed
         await WaitForMessagesConsumed();
+    }
+
+    private void VerifyRabbitMqIsOpen()
+    {
+        var connectionFactory = new ConnectionFactory
+        {
+            Uri = new Uri(_rabbitMqContainer.GetConnectionString())
+        };
+        using var connection = connectionFactory.CreateConnection();
+        Assert.True(connection.IsOpen, "Expected RabbitMQ container to accept connections but it was not open.");
     }
 
     public class TestMessageProducer(IServiceScopeFactory scopeFactory) : BackgroundService
@@ -97,6 +112,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
                 using var scope = scopeFactory.CreateScope();
                 await using var dbContext = scope.ServiceProvider.GetService<TestDbContext>()!;
                 var publishEndpoint = scope.ServiceProvider.GetService<IPublishEndpoint>()!;
+
                 foreach (var i in Enumerable.Range(0, 10))
                 {
                     var msg = new TestMessage($"TestMessage({i})");
@@ -139,8 +155,14 @@ public class RabbitMqConnectionTest : IAsyncLifetime
             options.Username = RabbitMqUsername;
             options.Password = RabbitMqPassword;
         });
-        builder.Services.AddMassTransitAndRabbitMq<TestDbContext>(x => { x.AddConsumer<TestMessageConsumer>(); });
-        builder.Services.AddDbContext<TestDbContext>(options => { options.UseNpgsql(databaseInfo.ConnectionString); });
+        builder.Services.AddMassTransitAndRabbitMq<TestDbContext>(x =>
+        {
+            x.AddConsumer<TestMessageConsumer>();
+        });
+        builder.Services.AddDbContext<TestDbContext>(options =>
+        {
+            options.UseNpgsql(databaseInfo.ConnectionString);
+        });
         builder.Services.AddHealthChecks();
         builder.AddSerilog();
 
@@ -157,75 +179,57 @@ public class RabbitMqConnectionTest : IAsyncLifetime
 
     private async Task WaitForHealthEndpointResponse(HttpStatusCode expectedStatusCode)
     {
-        using var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri(ServiceBaseAddress);
-        var timeoutSeconds = 120;
+        using var httpClient = new HttpClient { BaseAddress = new Uri(ServiceBaseAddress) };
+        const int timeoutSeconds = 120;
         var timeout = DateTimeOffset.UtcNow.AddSeconds(timeoutSeconds);
 
         HttpResponseMessage? healthResponse = null;
 
         while (DateTimeOffset.UtcNow < timeout)
         {
-            var healthEndpoint = "health";
-
-            healthResponse = await httpClient.GetAsync(healthEndpoint);
-
-            if (healthResponse.StatusCode == expectedStatusCode)
-            {
-                return;
-            }
-
+            healthResponse = await httpClient.GetAsync("health");
+            if (healthResponse.StatusCode == expectedStatusCode) return;
             await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
         throw new Exception(
-            $"Health endpoint did not return status code (ready={expectedStatusCode}) within {timeoutSeconds} seconds, last status code was (ready={healthResponse?.StatusCode})");
+            $"Health endpoint did not return status code ({expectedStatusCode}) within {timeoutSeconds} seconds. " +
+            $"Last response status code was {healthResponse?.StatusCode}.");
     }
 
     private async Task WaitForMessagesConsumed()
     {
-        var expectedMessageCount = 10;
-        var timeoutSeconds = 60;
+        const int expectedMessageCount = 10;
+        const int timeoutSeconds = 60;
         var timeout = DateTimeOffset.UtcNow.AddSeconds(timeoutSeconds);
 
         while (DateTimeOffset.UtcNow < timeout)
         {
-            if (TestMessageConsumer.MessageConsumedCount >= expectedMessageCount)
-            {
-                return;
-            }
-
+            if (TestMessageConsumer.MessageConsumedCount >= expectedMessageCount) return;
             await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
-        throw new Exception($"Did not consume {expectedMessageCount} messages within {timeoutSeconds} seconds");
+        throw new Exception($"Did not consume {expectedMessageCount} messages within {timeoutSeconds} seconds.");
     }
 
-    public class TestDbContext : DbContext
-    {
-        public TestDbContext(DbContextOptions<TestDbContext> options) : base(options)
-        {
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.AddInboxStateEntity();
-            modelBuilder.AddOutboxMessageEntity();
-            modelBuilder.AddOutboxStateEntity();
-        }
-    }
-
-    public ValueTask InitializeAsync()
-    {
-        // Do nothing
-        return ValueTask.CompletedTask;
-    }
+    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
     public async ValueTask DisposeAsync()
     {
         await _postgresContainer.DisposeAsync();
         await _rabbitMqContainer.DisposeAsync();
+    }
+
+    public class TestDbContext : DbContext
+    {
+        public TestDbContext(DbContextOptions<TestDbContext> options) : base(options) { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.AddInboxStateEntity();
+            modelBuilder.AddOutboxMessageEntity();
+            modelBuilder.AddOutboxStateEntity();
+        }
     }
 }
