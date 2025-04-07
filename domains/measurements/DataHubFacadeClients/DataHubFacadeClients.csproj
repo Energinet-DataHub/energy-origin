@@ -31,7 +31,6 @@
 		  <OutputDir>obj\Debug/net8.0/</OutputDir>
 		  <Generator>MSBuild:Compile</Generator>
 		</Protobuf>
-		<Protobuf Include="Protos\MeterTimeSeries\V1\metertimeseries.proto" GrpcServices="Client" />
 		<Protobuf Include="Protos\Relation\V1\relation.proto" GrpcServices="Client" />
 	</ItemGroup>
 </Project>

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPortal.Controllers;
 
-// [Authorize]
+[Authorize]
 public class WhitelistedOrganizationsController : Controller
 {
     private readonly IMediator _mediator;

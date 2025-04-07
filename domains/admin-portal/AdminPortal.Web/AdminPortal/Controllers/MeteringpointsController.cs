@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPortal.Controllers;
 
+[Authorize]
 public class MeteringpointsController(IMediator mediator) : Controller
 {
     public async Task<IActionResult> Index(CancellationToken cancellationToken)

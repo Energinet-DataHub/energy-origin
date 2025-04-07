@@ -63,7 +63,6 @@
                 <table class="table table-hover table-bordered mb-0" id="organizationsTable">
                     <thead class="table-light">
                     <tr>
-                        <th>Organization ID</th>
                         <th>TIN</th>
                     </tr>
                     </thead>
@@ -71,7 +70,6 @@
                     @foreach (var org in Model)
                     {
                         <tr>
-                            <td class="fw-medium">@org.OrganizationId</td>
                             <td>@org.Tin</td>
                             <td>
                                 <button id="removeOrganizationButton" type="button" class="btn btn-light" onclick="onRemoveTinClicked(@org.Tin)">
