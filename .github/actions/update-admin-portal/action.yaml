@@ -1,0 +1,90 @@
+﻿name: Update B2C Admin Portal Redirect URLs
+description: Add dynamic preview/vcluster redirect URLs plus admin portal sign-in/sign-out to Azure B2C
+
+inputs:
+  azure-tenant-id:
+    description: Azure Tenant ID.
+    required: true
+  azure-client-id:
+    description: Azure Client ID.
+    required: true
+  azure-client-secret:
+    description: Azure Client secret.
+    required: true
+  github-client-id:
+    description: Github Client ID.
+    required: true
+  github-client-secret:
+    description: Github Client secret.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: >
+          {
+            "clientId": "${{ inputs.azure-client-id }}",
+            "tenantId": "${{ inputs.azure-tenant-id }}",
+            "clientSecret": "${{ inputs.azure-client-secret }}"
+          }
+        allow-no-subscriptions: true
+
+    - name: Generate Github token
+      uses: Energinet-DataHub/.github/.github/actions/github-create-token@v13
+      id: generate_token
+      with:
+        app_id: ${{ inputs.github-client-id }}
+        private_key: ${{ inputs.github-client-secret }}
+
+    - name: Update admin portal redirect URLs
+      env:
+        # This is the new admin portal App Registration you mentioned
+        ettAdminAppObjectId: 47163084-5a94-4b0f-bce6-2e6b5c6ef106
+        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+      shell: bash
+      run: |
+        set -e
+
+        # 1) Fetch all environment branches from 'eo-base-environment' repo
+        branches=$(gh api repos/Energinet-DataHub/eo-base-environment/branches --paginate --jq '.[].name')
+        echo "Found branches:"
+        echo "${branches}"
+
+        # 2) Build admin portal redirect URLs for preview branches
+        previewBranches=$(echo "${branches}" | grep "preview" || true)
+        previewDnsPrefixes=$(echo "${previewBranches}" | cut -c 8- | tr '[:upper:]' '[:lower:]' | sed 's/[^0-9a-z]*//g')
+        adminPortalPreviewSignInUris=$(echo "${previewDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.p.acorn-dev.dk/ett-admin-portal/signin-oidc|")
+        adminPortalPreviewSignOutUris=$(echo "${previewDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.p.acorn-dev.dk/ett-admin-portal/signout-callback-oidc|")
+
+        # 3) Build admin portal redirect URLs for vcluster branches
+        vclusterBranches=$(echo "${branches}" | grep "vcluster" || true)
+        vclusterDnsPrefixes=$(echo "${vclusterBranches}" | cut -c 9- | tr '[:upper:]' '[:lower:]' | sed 's/[^0-9a-z]*//g')
+        adminPortalVclusterSignInUris=$(echo "${vclusterDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.v.acorn-dev.dk/ett-admin-portal/signin-oidc|")
+        adminPortalVclusterSignOutUris=$(echo "${vclusterDnsPrefixes}" | sed "s|^|https://energytrackandtrace-dk.|" | sed "s|$|.v.acorn-dev.dk/ett-admin-portal/signout-callback-oidc|")
+
+        # 4) Combine them into one big list
+        #    Also add the two custom URLs for "preview/admin-portal-dynamic" you mentioned specifically
+        #    (If that branch name literally is "admin-portal-dynamic" after "preview/", we can add them directly)
+        redirectUrls=$(echo -e "${adminPortalPreviewSignInUris}\n${adminPortalPreviewSignOutUris}\n${adminPortalVclusterSignInUris}\n${adminPortalVclusterSignOutUris}")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://energytrackandtrace-dk.adminportaldynamic.p.acorn-dev.dk/ett-admin-portal/signin-oidc")
+        redirectUrls=$(echo -e "${redirectUrls}\nhttps://energytrackandtrace-dk.4341removetaonremovefromwhitelist.p.acorn-dev.dk/ett-admin-portal/signout-callback-oidc")
+
+        # 5) Convert lines to JSON array
+        #    e.g. "https://... \n https://..." --> ["https://...", "https://..."]
+        redirectUrlsJsonArray=$(echo "${redirectUrls}" | sed '/^$/d' | sed 's|^|"|' | sed 's|$|"|' | jq -s)
+        echo "Calculated redirect URLs:"
+        echo "${redirectUrlsJsonArray}" | jq '.'
+
+        # 6) Patch the B2C app to set spa.redirectUris
+        echo "Patching application ${ettAdminAppObjectId} with these redirect URIs..."
+        az rest --method patch \
+          --uri "https://graph.microsoft.com/v1.0/applications/${ettAdminAppObjectId}" \
+          --headers "{'Content-Type': 'application/json'}" \
+          --body "{'spa': {'redirectUris': ${redirectUrlsJsonArray}}}"
+
+        # 7) Dump final config
+        echo "Updated app registration =>"
+        az ad app show --id "${ettAdminAppObjectId}"
