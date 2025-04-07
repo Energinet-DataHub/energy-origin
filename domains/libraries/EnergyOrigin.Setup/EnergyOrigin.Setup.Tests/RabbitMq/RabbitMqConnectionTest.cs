@@ -200,7 +200,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
     private async Task WaitForMessagesConsumed()
     {
         const int expectedMessageCount = 10;
-        const int timeoutSeconds = 60;
+        const int timeoutSeconds = 30;
         var timeout = DateTimeOffset.UtcNow.AddSeconds(timeoutSeconds);
 
         while (DateTimeOffset.UtcNow < timeout)

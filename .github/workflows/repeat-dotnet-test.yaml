@@ -1,0 +1,44 @@
+﻿name: Repeat .NET Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Solution, project, test class, or test method"
+        required: true
+      iterations:
+        description: "Number of repetitions"
+        required: false
+        default: "10"
+
+jobs:
+  repeat-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.x"
+
+      - shell: bash
+        run: |
+          set -e
+          t="${{ github.event.inputs.target }}"
+          n=${{ github.event.inputs.iterations }}
+
+          if [[ $t == *.sln || $t == *.csproj ]]; then
+            p=$t
+          else
+            class_name=$(echo "$t" | cut -d. -f1)
+            file_path=$(grep -rl "class $class_name" . --include=*.cs | head -n1)
+            [[ -z "$file_path" ]] && echo "❌ Could not find class $class_name in source." && exit 1
+            p=$(dirname "$file_path" | while read d; do find "$d" -maxdepth 1 -name '*.csproj'; done | head -n1)
+            [[ -z "$p" ]] && echo "❌ Could not find .csproj for $class_name." && exit 1
+            f="--filter FullyQualifiedName~$t"
+          fi
+
+          for i in $(seq 1 $n); do
+            echo "🔁 Run #$i"
+            dotnet test "$p" --no-build $f --logger:\"console;verbosity=normal\" || exit 1
+          done
