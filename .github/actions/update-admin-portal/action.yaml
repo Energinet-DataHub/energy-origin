@@ -41,7 +41,6 @@ runs:
 
     - name: Update admin portal redirect URLs
       env:
-        # This is the new admin portal App Registration you mentioned
         ettAdminAppObjectId: 47163084-5a94-4b0f-bce6-2e6b5c6ef106
         GH_TOKEN: ${{ steps.generate_token.outputs.token }}
       shell: bash
