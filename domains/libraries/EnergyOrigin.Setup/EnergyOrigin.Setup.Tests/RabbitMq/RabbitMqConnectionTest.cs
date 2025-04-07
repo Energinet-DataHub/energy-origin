@@ -65,7 +65,7 @@ public class RabbitMqConnectionTest : IAsyncLifetime
     {
         // Given application stack WITH active message producer
         await _rabbitMqContainer.StartAsync(TestContext.Current.CancellationToken);
-        VerifyRabbitMqIsOpen(); // <-- Official approach: ensure readiness
+        VerifyRabbitMqIsOpen();
 
         var databaseInfo = await StartPostgresDatabase();
         var builder = ConfigureWebAppBuilder(databaseInfo);
