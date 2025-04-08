@@ -1,6 +1,7 @@
 using System.Linq;
 using API.Configurations;
 using API.ContractService;
+using API.ContractService.EventHandlers;
 using API.ContractService.Internal;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
@@ -63,6 +64,7 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>();
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
     x.AddConsumer<EnergyMeasuredIntegrationEventHandler, EnergyMeasuredIntegrationEventHandlerDefinition>();
+    x.AddConsumer<ContractsOrganizationRemovedFromWhitelistEventHandler, ContractsOrganizationRemovedFromWhitelistEventHandlerDefinition>();
 });
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -73,6 +75,7 @@ builder.Services.AddActivityLog(options => options.ServiceName = "certificates")
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblyContaining<GetContractsForAdminPortalQueryHandler>();
+    cfg.RegisterServicesFromAssemblyContaining<RemoveOrganizationContractsAndSlidingWindowsCommandHandler>();
 });
 
 
