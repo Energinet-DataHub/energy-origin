@@ -17,13 +17,14 @@ using Xunit;
 
 namespace API.IntegrationTests.Controllers.Internal;
 
-public class InternalContractsControllerTests : IClassFixture<IntegrationTestFixture>
+[Collection(IntegrationTestCollection.CollectionName)]
+public class InternalContractsControllerTests : TestBase
 {
     private readonly IntegrationTestFixture _fixture;
     private readonly QueryApiWebApplicationFactory _factory;
     private readonly MeasurementsWireMock _measurementsWireMock;
 
-    public InternalContractsControllerTests(IntegrationTestFixture fixture)
+    public InternalContractsControllerTests(IntegrationTestFixture fixture) : base(fixture)
     {
         _fixture = fixture;
         _factory = fixture.WebApplicationFactory;
