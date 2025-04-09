@@ -118,6 +118,16 @@ builder.Services.AddHttpClient<IMeasurementsService, MeasurementsService>("Measu
 {
     var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
     client.BaseAddress = new Uri(clientUriOptions.Measurements);
+}).AddHttpMessageHandler(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
+    return new ClientCredentialsTokenHandler(
+        options.ClientId,
+        options.ClientSecret,
+        options.TenantId,
+        new[] { options.Scope },
+        sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+    );
 });
 
 builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("AuthorizationClient", (sp, client) =>
@@ -157,7 +167,6 @@ app.UseStaticFiles(new StaticFileOptions
 {
     RequestPath = "/ett-admin-portal"
 });
-// app.UseStaticFiles();
 app.UsePathBase("/ett-admin-portal");
 
 app.UseRouting();

@@ -23,11 +23,9 @@ namespace API.MeteringPoints.Api.Controllers.Internal;
 public class InternalMeteringpointsController : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
-    private readonly ApplicationDbContext _dbContext;
 
-    public InternalMeteringpointsController(ApplicationDbContext dbContext, Meteringpoint.V1.Meteringpoint.MeteringpointClient client)
+    public InternalMeteringpointsController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client)
     {
-        _dbContext = dbContext;
         _client = client;
     }
 
