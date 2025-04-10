@@ -24,7 +24,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Graph;
+using Microsoft.Identity.Web;
+using Microsoft.OpenApi.Models;
 using OpenTelemetry;
+using WebApplication = Microsoft.AspNetCore.Builder.WebApplication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +67,12 @@ builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).V
     .ValidateOnStart();
 var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
 builder.Services.AddB2C(b2COptions);
+
+builder.Services.AddAuthentication(OpenApiConstants.Bearer)
+    .AddMicrosoftIdentityWebApp(builder.Configuration)
+    .EnableTokenAcquisitionToCallDownstreamApi()
+    .AddMicrosoftGraphAppOnly(autenticationProvider => new GraphServiceClient(autenticationProvider))
+    .AddInMemoryTokenCaches();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -108,6 +118,9 @@ builder.Services.AddHttpClient<IMitIDService, MitIDService>((serviceProvider, cl
     var options = serviceProvider.GetRequiredService<IOptions<MitIDOptions>>().Value;
     client.BaseAddress = options.URI;
 });
+
+builder.Services.AddScoped<ICredentialService, CredentialService>();
+builder.Services.AddScoped<IGraphServiceClientWrapper, GraphServiceClientWrapper>();
 
 var app = builder.Build();
 
