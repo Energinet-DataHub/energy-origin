@@ -11,13 +11,13 @@ using ClientType = API.Models.ClientType;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetClientGrantedConsentsQueryTest
+public class GetClientGrantedConsentsQueryTest : IntegrationTestBase
 {
     private readonly Api _api;
     private readonly Guid _sub;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetClientGrantedConsentsQueryTest(IntegrationTestFixture integrationTestFixture)
+    public GetClientGrantedConsentsQueryTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         var connectionString = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(connectionString).Options;
