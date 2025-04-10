@@ -1,6 +1,6 @@
 name: Dotnet Validate
 
-description: Lints and tests a domain.
+description: Tests a subsystem
 
 inputs:
   subsystem:
