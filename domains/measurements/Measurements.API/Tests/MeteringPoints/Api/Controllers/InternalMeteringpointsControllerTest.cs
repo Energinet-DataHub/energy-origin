@@ -63,10 +63,10 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
 
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
         clientMock.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest()
-                {
-                    Actor = "Ett-admin-portal",
-                    Subject = orgId.ToString()
-                },
+        {
+            Actor = "Ett-admin-portal",
+            Subject = orgId.ToString()
+        },
                 cancellationToken: Arg.Any<CancellationToken>())
             .Throws(new Exception());
 
