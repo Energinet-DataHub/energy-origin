@@ -1,0 +1,77 @@
+﻿{
+  Result: [
+    {
+      GSRN: 1234567890123456,
+      GridArea: DK2,
+      Address: {
+        Address1: Street 1,
+        Address2: 1 1,
+        City: City,
+        PostalCode: 1234,
+        Country: DK
+      },
+      Technology: {
+        AibTechCode: T070000,
+        AibFuelCode: F00000000
+      },
+      ConsumerCvr: 12345678,
+      CanBeUsedForIssuingCertificates: true,
+      Capacity: 12345678
+    },
+    {
+      GSRN: 12345678901234512,
+      GridArea: DK2,
+      Address: {
+        Address1: Street 1,
+        Address2: 1 1,
+        City: City,
+        PostalCode: 1234,
+        Country: DK
+      },
+      Technology: {
+        AibTechCode: T070000,
+        AibFuelCode: F00000000
+      },
+      ConsumerCvr: 12345678,
+      CanBeUsedForIssuingCertificates: true,
+      Capacity: 12345678
+    },
+    {
+      GSRN: 12341236,
+      GridArea: DK2,
+      Address: {
+        Address1: Street 1,
+        Address2: 1 1,
+        City: City,
+        PostalCode: 1234,
+        Country: DK
+      },
+      Technology: {
+        AibTechCode: T070000,
+        AibFuelCode: F00000000
+      },
+      ConsumerCvr: 87654321,
+      CanBeUsedForIssuingCertificates: true,
+      Capacity: 12345678
+    },
+    {
+      GSRN: 14,
+      GridArea: DK2,
+      Type: Production,
+      Address: {
+        Address1: Street 1,
+        Address2: 1 1,
+        City: City,
+        PostalCode: 1234,
+        Country: DK
+      },
+      Technology: {
+        AibTechCode: T070000,
+        AibFuelCode: F00000000
+      },
+      ConsumerCvr: 87654321,
+      CanBeUsedForIssuingCertificates: false,
+      Capacity: 12345678
+    }
+  ]
+}
