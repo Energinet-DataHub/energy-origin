@@ -27,7 +27,7 @@ public static class Startup
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-        services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
+        services.AddHttpClient<IWalletClient, EnergyOrigin.WalletClient.WalletClient>((sp, c) =>
         {
             var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
             c.BaseAddress = new Uri(options.WalletUrl);

@@ -93,7 +93,7 @@ builder.Services.AddSingleton<IAuthorizationMetrics, AuthorizationMetrics>();
 builder.Services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
     .ValidateDataAnnotations().ValidateOnStart();
 
-builder.Services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
+builder.Services.AddHttpClient<IWalletClient, EnergyOrigin.WalletClient.WalletClient>((sp, c) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     c.BaseAddress = new Uri(options.WalletUrl);

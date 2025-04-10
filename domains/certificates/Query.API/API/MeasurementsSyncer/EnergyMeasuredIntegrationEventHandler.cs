@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using API.ContractService.Clients;
 using API.MeasurementsSyncer.Metrics;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
+using EnergyOrigin.WalletClient.Models;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using ProjectOriginClients.Models;
-using HashedAttribute = API.ContractService.Clients.HashedAttribute;
+using WalletClient;
+using HashedAttribute = WalletClient.HashedAttribute;
 using MeterType = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3.MeterType;
 
 namespace API.MeasurementsSyncer;
