@@ -11,6 +11,7 @@ using EnergyOrigin.TokenValidation.b2c;
 using Meteringpoint.V1;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using MeteringPoint = API.MeteringPoints.Api.Dto.Responses.MeteringPoint;
 
 namespace API.MeteringPoints.Api.Controllers.Internal;
@@ -23,10 +24,12 @@ namespace API.MeteringPoints.Api.Controllers.Internal;
 public class InternalMeteringpointsController : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
+    private readonly ILogger<InternalMeteringpointsController> _logger;
 
-    public InternalMeteringpointsController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client)
+    public InternalMeteringpointsController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client, ILogger<InternalMeteringpointsController> logger)
     {
         _client = client;
+        _logger = logger;
     }
 
     /// <summary>
@@ -47,14 +50,21 @@ public class InternalMeteringpointsController : ControllerBase
                 Subject = organizationId.ToString(),
                 Actor = "Ett-admin-portal"
             };
-            var response = await _client.GetOwnedMeteringPointsAsync(request);
+            try
+            {
+                var response = await _client.GetOwnedMeteringPointsAsync(request);
 
-            var meteringPoints = response.MeteringPoints
-                .Where(mp => MeteringPoint.GetMeterType(mp.TypeOfMp) != MeterType.Child)
-                .Select(MeteringPoint.CreateFrom)
-                .ToList();
+                var meteringPoints = response.MeteringPoints
+                    .Where(mp => MeteringPoint.GetMeterType(mp.TypeOfMp) != MeterType.Child)
+                    .Select(MeteringPoint.CreateFrom)
+                    .ToList();
 
-            allMeteringPoints.AddRange(meteringPoints);
+                allMeteringPoints.AddRange(meteringPoints);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("Could not get metering points for organization {OrganizationId}: {Message}", organizationId, e.Message);
+            }
         }
 
         return Ok(new GetInternalMeteringPointsResponse(allMeteringPoints));

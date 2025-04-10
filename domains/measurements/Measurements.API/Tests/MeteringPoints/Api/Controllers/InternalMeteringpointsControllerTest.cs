@@ -13,6 +13,7 @@ using Meteringpoint.V1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Tests.Extensions;
 using VerifyXunit;
 using Xunit;
@@ -52,6 +53,32 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
 
         var result = await response.Content.ReadFromJsonAsync<GetInternalMeteringPointsResponse>(cancellationToken: TestContext.Current.CancellationToken);
         await Verifier.Verify(result);
+    }
+
+    [Fact]
+    public async Task GetMeteringPoints_ListOfOrganizationDatahubThrowsException_NoMeteringpointsIsAdded()
+    {
+        var orgId = Guid.NewGuid();
+        var client = _factory.CreateB2CAuthenticatedClient(Guid.Parse(_factory.AdminPortalEnterpriseAppRegistrationObjectId), orgId);
+
+        var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
+        clientMock.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest()
+                {
+                    Actor = "Ett-admin-portal",
+                    Subject = orgId.ToString()
+                },
+                cancellationToken: Arg.Any<CancellationToken>())
+            .Throws(new Exception());
+
+        var response = await client.PostAsJsonAsync(
+            "api/measurements/admin-portal/internal-meteringpoints",
+            new List<Guid>() { orgId },
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<GetInternalMeteringPointsResponse>(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Empty(result!.Result);
     }
 
     [Fact]
