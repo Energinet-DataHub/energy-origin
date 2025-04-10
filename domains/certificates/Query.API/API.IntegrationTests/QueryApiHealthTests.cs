@@ -14,7 +14,7 @@ public class QueryApiHealthTests : TestBase
     private readonly QueryApiWebApplicationFactory factory;
     private readonly IntegrationTestFixture _integrationTestFixture;
 
-    public QueryApiHealthTests(IntegrationTestFixture integrationTestFixture)
+    public QueryApiHealthTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         factory = integrationTestFixture.WebApplicationFactory;
         _integrationTestFixture = integrationTestFixture;

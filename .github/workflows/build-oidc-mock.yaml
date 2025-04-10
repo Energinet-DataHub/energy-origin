@@ -13,14 +13,14 @@ on:
         type: string
 
 jobs:
-  
   build-api:
+    name: Build Oidc.Mock
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dotnet-build
         with:
-          solution: domains/oidc-mock/Oidc.Mock.sln
+          solution: Oidc.Mock.sln
           project: domains/oidc-mock/API/Mock/Oidc.Mock.csproj
           configuration: domains/oidc-mock/API/configuration.yaml
           dry-run: ${{ inputs.dry-run }}

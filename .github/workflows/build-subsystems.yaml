@@ -13,29 +13,32 @@ on:
         type: string
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      admin-portal: ${{ steps.admin-portal.outputs.matches }}
-      authorization: ${{ steps.authorization.outputs.matches }}
-      certificates: ${{ steps.certificates.outputs.matches }}
-      measurements: ${{ steps.measurements.outputs.matches }}
-      oidc-mock: ${{ steps.oidc-mock.outputs.matches }}
-      transfer: ${{ steps.transfer.outputs.matches }}
+
+  dotnet-lint-solution:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run dotnet lint
+        uses: ./.github/actions/dotnet-lint-solution
+        with:
+          path: "domains"
+
+  test-subsystems:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
 
-  test:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/dotnet-test
+      - name: Test ${{ matrix.subsystem }} subsystem
+        uses: ./.github/actions/dotnet-validate-solution
         with:
-          solution: domains/EnergyTrackAndTrace.sln
+          subsystem: ${{ matrix.subsystem }}
+          pin-version: "true"
 
   build-admin-portal:
-    needs: test
     uses: ./.github/workflows/build-admin-portal.yaml
     secrets: inherit
     with:
@@ -43,7 +46,6 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
-    needs: test
     uses: ./.github/workflows/build-authorization.yaml
     secrets: inherit
     with:
@@ -51,7 +53,6 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-certificates:
-    needs: test
     uses: ./.github/workflows/build-certificates.yaml
     secrets: inherit
     with:
@@ -59,7 +60,6 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-measurements:
-    needs: test
     uses: ./.github/workflows/build-measurements.yaml
     secrets: inherit
     with:
@@ -67,24 +67,21 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-oidc-mock:
-    needs: test
     uses: ./.github/workflows/build-oidc-mock.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
-  build-transfer:
-    needs: test
-    uses: ./.github/workflows/build-transfer.yaml
+  build-openapi:
+    uses: ./.github/workflows/build-openapi.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
-  build-openapi:
-    needs: test
-    uses: ./.github/workflows/build-openapi.yaml
+  build-transfer:
+    uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run }}
@@ -94,13 +91,15 @@ jobs:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
+      - dotnet-lint-solution
+      - test-subsystems
       - build-admin-portal
       - build-authorization
       - build-certificates
       - build-measurements
       - build-oidc-mock
-      - build-transfer
       - build-openapi
+      - build-transfer
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:

@@ -9,12 +9,12 @@ using Microsoft.EntityFrameworkCore;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class GetClientQueryTest
+public class GetClientQueryTest : IntegrationTestBase
 {
     private readonly Api _api;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public GetClientQueryTest(IntegrationTestFixture integrationTestFixture)
+    public GetClientQueryTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
