@@ -74,7 +74,7 @@ public class GetMeteringPointsQueryHandler(
             return new GetMeteringPointsQueryResult(result);
 
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return new GetMeteringPointsQueryResult([]);
         }
