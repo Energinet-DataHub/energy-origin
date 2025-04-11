@@ -66,7 +66,13 @@ public class FakeGenericRepository<TEntity> : IGenericRepository<TEntity> where 
     }
 }
 
-public class FakeClientRepository : FakeGenericRepository<Client>, IClientRepository;
+public class FakeClientRepository : FakeGenericRepository<Client>, IClientRepository
+{
+    public Task<bool> ExternalClientHasAccessThroughOrganization(Guid clientId, Guid organizationId)
+    {
+        return Task.FromResult(true);
+    }
+}
 
 public class FakeOrganizationRepository : FakeGenericRepository<Organization>, IOrganizationRepository;
 
