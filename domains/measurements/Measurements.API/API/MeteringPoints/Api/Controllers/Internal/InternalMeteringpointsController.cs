@@ -24,53 +24,35 @@ namespace API.MeteringPoints.Api.Controllers.Internal;
 public class InternalMeteringpointsController : ControllerBase
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _client;
-    private readonly ILogger<InternalMeteringpointsController> _logger;
 
-    public InternalMeteringpointsController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client, ILogger<InternalMeteringpointsController> logger)
+    public InternalMeteringpointsController(Meteringpoint.V1.Meteringpoint.MeteringpointClient client)
     {
         _client = client;
-        _logger = logger;
     }
 
     /// <summary>
-    /// Get as a post. Get metering points from DataHub2.0
+    /// Get metering points from DataHub2.0
     /// </summary>
     /// <response code="200">Successful operation</response>[ApiController]
-    [HttpPost]
+    [HttpGet]
     [Route("internal-meteringpoints")]
     [ProducesResponseType(typeof(GetMeteringPointsResponse), 200)]
-    public async Task<ActionResult> GetMeteringPoints([Required][FromBody] List<Guid> organizationIds)
+    public async Task<ActionResult> GetMeteringPoints([Required] [FromQuery] Guid organizationId)
     {
-        var allMeteringPoints = new List<MeteringPoint>();
-
-        foreach (Guid organizationId in organizationIds)
+        var request = new OwnedMeteringPointsRequest
         {
-            var request = new OwnedMeteringPointsRequest
-            {
-                Subject = organizationId.ToString(),
-                Actor = "Ett-admin-portal"
-            };
-            try
-            {
-                var response = await _client.GetOwnedMeteringPointsAsync(request);
+            Subject = organizationId.ToString(),
+            Actor = "Ett-admin-portal"
+        };
 
-                var meteringPoints = response.MeteringPoints
-                    .Where(mp => MeteringPoint.GetMeterType(mp.TypeOfMp) != MeterType.Child)
-                    .Select(MeteringPoint.CreateFrom)
-                    .ToList();
+        var response = await _client.GetOwnedMeteringPointsAsync(request);
 
-                allMeteringPoints.AddRange(meteringPoints);
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning("Could not get metering points for organization {OrganizationId}: {Message}", organizationId, e.Message);
-            }
-        }
-
-        return Ok(new GetInternalMeteringPointsResponse(allMeteringPoints));
+        var meteringPoints = response.MeteringPoints
+            .Where(mp => MeteringPoint.GetMeterType(mp.TypeOfMp) != MeterType.Child)
+            .Select(MeteringPoint.CreateFrom)
+            .ToList();
+        return Ok(new GetInternalMeteringPointsResponse(meteringPoints));
     }
-
 }
 
 public record GetInternalMeteringPointsResponse(List<MeteringPoint> Result);
-

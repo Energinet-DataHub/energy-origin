@@ -23,9 +23,8 @@ public class MeasurementsService(HttpClient client) : IMeasurementsService
         //     new GetMeteringPointsResponseItem("1", MeteringPointType.Consumption),
         //     new GetMeteringPointsResponseItem("2", MeteringPointType.Production)
         // });
-        client.DefaultRequestHeaders.Add(ApiVersions.HeaderName, ApiVersions.Version1);
 
-        var response = await client.GetAsync($"meteringpoints?organizationId={organizationId}");
+        var response = await client.GetAsync($"internal-meteringpoints?organizationId={organizationId}");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<GetMeteringpointsResponse>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
