@@ -37,7 +37,7 @@ public class InternalMeteringpointsController : ControllerBase
     [HttpGet]
     [Route("internal-meteringpoints")]
     [ProducesResponseType(typeof(GetMeteringPointsResponse), 200)]
-    public async Task<ActionResult> GetMeteringPoints([Required] [FromQuery] Guid organizationId)
+    public async Task<ActionResult> GetMeteringPoints([Required][FromQuery] Guid organizationId)
     {
         var request = new OwnedMeteringPointsRequest
         {

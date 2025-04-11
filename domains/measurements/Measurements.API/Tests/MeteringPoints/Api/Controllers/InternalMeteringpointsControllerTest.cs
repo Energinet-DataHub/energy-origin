@@ -36,17 +36,15 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
 
 
     [Fact]
-    public async Task GetMeteringPoints_ListOfOrganizationIds_ReturnsListOfMeteringpoints()
+    public async Task GetMeteringPoints_WithOrganizationId_ReturnsListOfMeteringpoints()
     {
         var orgId = Guid.NewGuid();
-        var orgId1 = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(Guid.Parse(_factory.AdminPortalEnterpriseAppRegistrationObjectId), orgId);
 
-        SetupMockedMeteringPointsResponse(orgId, orgId1);
+        SetupMockedMeteringPointsResponse(orgId);
 
-        var response = await client.PostAsJsonAsync(
-            "api/measurements/admin-portal/internal-meteringpoints",
-            new List<Guid>() { orgId, orgId1 },
+        var response = await client.GetAsync(
+            "api/measurements/admin-portal/internal-meteringpoints?organizationId=" + orgId,
             cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -55,31 +53,6 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
         await Verifier.Verify(result);
     }
 
-    [Fact]
-    public async Task GetMeteringPoints_ListOfOrganizationDatahubThrowsException_NoMeteringpointsIsAdded()
-    {
-        var orgId = Guid.NewGuid();
-        var client = _factory.CreateB2CAuthenticatedClient(Guid.Parse(_factory.AdminPortalEnterpriseAppRegistrationObjectId), orgId);
-
-        var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        clientMock.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest()
-        {
-            Actor = "Ett-admin-portal",
-            Subject = orgId.ToString()
-        },
-                cancellationToken: Arg.Any<CancellationToken>())
-            .Throws(new Exception());
-
-        var response = await client.PostAsJsonAsync(
-            "api/measurements/admin-portal/internal-meteringpoints",
-            new List<Guid>() { orgId },
-            cancellationToken: TestContext.Current.CancellationToken);
-
-        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
-
-        var result = await response.Content.ReadFromJsonAsync<GetInternalMeteringPointsResponse>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.Empty(result!.Result);
-    }
 
     [Fact]
     public async Task GetMeteringPoints_ListOfOrganizationIdsNoMeteringpoints_ReturnsEmptyList()
@@ -97,9 +70,8 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
 
         var client = _factory.CreateB2CAuthenticatedClient(Guid.Parse(_factory.AdminPortalEnterpriseAppRegistrationObjectId), orgId);
 
-        var response = await client.PostAsJsonAsync(
-            "api/measurements/admin-portal/internal-meteringpoints",
-            new List<Guid>() { orgId },
+        var response = await client.GetAsync(
+            "api/measurements/admin-portal/internal-meteringpoints?organizationId=" + orgId,
             cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
@@ -108,7 +80,7 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
         Assert.Empty(result!.Result);
     }
 
-    private void SetupMockedMeteringPointsResponse(Guid orgId, Guid orgId1)
+    private void SetupMockedMeteringPointsResponse(Guid orgId)
     {
         var mockedResponse = new MeteringPointsResponse
         {
@@ -148,44 +120,6 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
                 }
             }
         };
-        var mockedResponse1 = new MeteringPointsResponse
-        {
-            MeteringPoints =
-            {
-                new MeteringPoint
-                {
-                    MeteringPointId = "12341236",
-                    TypeOfMp = "E17",
-                    SubtypeOfMp = "D01",
-                    StreetName = "Street",
-                    BuildingNumber = "1",
-                    FloorId = "1",
-                    RoomId = "1",
-                    CityName = "City",
-                    Postcode = "1234",
-                    AssetType = "E17",
-                    Capacity = "12345678",
-                    PhysicalStatusOfMp = "E22",
-                    ConsumerCvr = "87654321"
-                },
-                new MeteringPoint
-                {
-                    MeteringPointId = "14",
-                    TypeOfMp = "E18",
-                    SubtypeOfMp = "D01",
-                    StreetName = "Street",
-                    BuildingNumber = "1",
-                    FloorId = "1",
-                    RoomId = "1",
-                    CityName = "City",
-                    Postcode = "1234",
-                    AssetType = "E17",
-                    Capacity = "12345678",
-                    PhysicalStatusOfMp = "E22",
-                    ConsumerCvr = "87654321"
-                }
-            }
-        };
         var clientMock = _factory.Services.GetRequiredService<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
         clientMock.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest()
         {
@@ -194,12 +128,5 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
         },
                 cancellationToken: Arg.Any<CancellationToken>())
             .Returns(mockedResponse);
-        clientMock.GetOwnedMeteringPointsAsync(new OwnedMeteringPointsRequest()
-        {
-            Actor = "Ett-admin-portal",
-            Subject = orgId1.ToString()
-        },
-                cancellationToken: Arg.Any<CancellationToken>())
-            .Returns(mockedResponse1);
     }
 }
