@@ -10,7 +10,6 @@ public record GetContractsForAdminPortalResponseItem(
     long Created,
     long StartDate,
     long? EndDate,
-    [property: JsonConverter(typeof(JsonStringEnumConverter))]
     MeteringPointType MeteringPointType
 );
 
