@@ -70,7 +70,7 @@
                     @foreach (var org in Model)
                     {
                         <tr>
-                            <td onclick="window.location.href='/Meteringpoints?tin=@org.Tin'">@org.Tin</td>
+                            <td onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Tin</td>
                             <td>
                                 <button id="removeOrganizationButton" type="button" class="btn btn-light" onclick="onRemoveTinClicked(@org.Tin)">
                                     <i class="bi bi-minus-circle me-1"></i> Remove
