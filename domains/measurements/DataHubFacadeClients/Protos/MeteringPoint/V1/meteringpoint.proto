@@ -32,4 +32,5 @@ message MeteringPoint {
   string consumer_start_date = 15;
   string metering_point_alias = 16;
   string physical_status_of_mp = 17;
+  string consumer_Cvr = 18;
 }

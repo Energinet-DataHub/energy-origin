@@ -28,8 +28,10 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         {
             services.Remove(services.First(s => s.ServiceType == typeof(IAuthorizationService)));
             services.Remove(services.First(s => s.ServiceType == typeof(ICertificatesService)));
+            services.Remove(services.First(s => s.ServiceType == typeof(IMeasurementsService)));
             services.AddScoped<IAuthorizationService, MockAuthorizationService>();
             services.AddScoped<ICertificatesService, MockCertificatesService>();
+            services.AddScoped<IMeasurementsService, MockMeasurementsService>();
 
             services.AddTransient<IAuthenticationSchemeProvider, AutoFailSchemeProvider>();
             services.AddAuthentication(AutoFailSchemeProvider.AutoFailScheme)
@@ -66,6 +68,15 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         {
             return Task.FromResult(
                 new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>()));
+        }
+    }
+
+    private class MockMeasurementsService : IMeasurementsService
+    {
+        public Task<GetMeteringpointsResponse> GetMeteringPointsHttpRequestAsync(Guid organizationIds)
+        {
+            return Task.FromResult(
+                new GetMeteringpointsResponse(new List<GetMeteringPointsResponseItem>()));
         }
     }
 
