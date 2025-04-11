@@ -6,6 +6,7 @@ using AdminPortal._Features_;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Models;
 using AdminPortal.Services;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -46,7 +47,8 @@ public class GetMeteringPointsQueryHandlerTest
         var handler = new GetMeteringPointsQueryHandler(
             _measurementsService,
             _authorizationService,
-            _certificatesService
+            _certificatesService,
+            Substitute.For<ILogger<GetMeteringPointsQueryHandler>>()
         );
         var query = new GetMeteringPointsQuery(tin);
         var result = await handler.Handle(query, CancellationToken.None);
@@ -86,7 +88,8 @@ public class GetMeteringPointsQueryHandlerTest
         var handler = new GetMeteringPointsQueryHandler(
             _measurementsService,
             _authorizationService,
-            _certificatesService
+            _certificatesService,
+            Substitute.For<ILogger<GetMeteringPointsQueryHandler>>()
         );
 
         var query = new GetMeteringPointsQuery("12345678");
