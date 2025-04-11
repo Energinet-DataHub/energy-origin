@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal.Models;
@@ -33,8 +32,7 @@ public record GetMeteringPointsQueryResultItem(
 public class GetMeteringPointsQueryHandler(
     IMeasurementsService measurementsService,
     IAuthorizationService authorizationService,
-    ICertificatesService certificatesService,
-    ILogger<GetMeteringPointsQueryHandler> logger)
+    ICertificatesService certificatesService)
     : IRequestHandler<GetMeteringPointsQuery, GetMeteringPointsQueryResult>
 {
     public async Task<GetMeteringPointsQueryResult> Handle(GetMeteringPointsQuery request,
@@ -42,17 +40,12 @@ public class GetMeteringPointsQueryHandler(
     {
         var organizations = await authorizationService.GetOrganizationsAsync(cancellationToken);
 
-        logger.LogInformation("Get organizations: {@Organizations}", JsonSerializer.Serialize(organizations.Result));
-
         var selectedOrganization = organizations
             .Result
             .SingleOrDefault(org => org.Tin == request.Tin);
 
-        logger.LogInformation("Selected organization: {@Organization}", JsonSerializer.Serialize(selectedOrganization));
-
         if (selectedOrganization == null)
         {
-            logger.LogWarning("Could not find organization {Tin}", request.Tin);
             return new GetMeteringPointsQueryResult([]);
         }
 
@@ -60,8 +53,6 @@ public class GetMeteringPointsQueryHandler(
         {
             var meteringpoints =
                 await measurementsService.GetMeteringPointsHttpRequestAsync(selectedOrganization.OrganizationId);
-
-            logger.LogInformation("Meteringpoints: {@Meteringpoints}", JsonSerializer.Serialize(meteringpoints));
 
             var contracts = await certificatesService.GetContractsHttpRequestAsync();
 
@@ -75,7 +66,7 @@ public class GetMeteringPointsQueryHandler(
 
                         return new GetMeteringPointsQueryResultItem(
                             meteringpoint.GSRN,
-                            meteringpoint.MeterType,
+                            meteringpoint.Type,
                             selectedOrganization.OrganizationName,
                             selectedOrganization.Tin,
                             activeContract
@@ -86,9 +77,8 @@ public class GetMeteringPointsQueryHandler(
             return new GetMeteringPointsQueryResult(result);
 
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            logger.LogWarning("Could not get metering points for organization {OrganizationId}: {Message}", selectedOrganization.OrganizationId, e.Message);
             return new GetMeteringPointsQueryResult([]);
         }
     }

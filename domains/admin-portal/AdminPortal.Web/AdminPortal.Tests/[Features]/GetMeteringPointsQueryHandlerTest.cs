@@ -47,8 +47,7 @@ public class GetMeteringPointsQueryHandlerTest
         var handler = new GetMeteringPointsQueryHandler(
             _measurementsService,
             _authorizationService,
-            _certificatesService,
-            Substitute.For<ILogger<GetMeteringPointsQueryHandler>>()
+            _certificatesService
         );
         var query = new GetMeteringPointsQuery(tin);
         var result = await handler.Handle(query, CancellationToken.None);
@@ -88,8 +87,7 @@ public class GetMeteringPointsQueryHandlerTest
         var handler = new GetMeteringPointsQueryHandler(
             _measurementsService,
             _authorizationService,
-            _certificatesService,
-            Substitute.For<ILogger<GetMeteringPointsQueryHandler>>()
+            _certificatesService
         );
 
         var query = new GetMeteringPointsQuery("12345678");

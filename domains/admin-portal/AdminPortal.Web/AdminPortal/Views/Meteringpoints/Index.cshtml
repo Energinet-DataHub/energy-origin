@@ -30,7 +30,7 @@
                         <div class="row g-2">
                             <div class="col">
                                 <label class="form-label text-muted small">Filter by Type</label>
-                                <select class="form-select column-filter" data-column="1">
+                                <select class="form-select column-filter" data-column="3">
                                     <option value="">All Types</option>
                                 </select>
                             </div>
@@ -41,7 +41,7 @@
 
             <!-- Table -->
             <div class="table-responsive rounded-3">
-                <table class="table table-hover table-bordered mb-0" id="contractsTable">
+                <table class="table table-hover table-bordered mb-0" id="meteringpointsTable">
                     <thead class="table-light">
                     <tr>
                         <th>Organization</th>
@@ -58,7 +58,7 @@
                             <td class="fw-medium">@point.OrganizationName</td>
                             <td class="fw-medium">@point.Tin</td>
                             <td class="fw-medium">@point.GSRN</td>
-                            <td class="fw-medium">@point.MeterType</td>
+                            <td><span class="badge bg-info">@point.MeterType</span></td>
                             @if (point.ActiveContract)
                             {
                                 <td class="fw-medium">Yes</td>
@@ -81,13 +81,6 @@
         background-color: #fff3cd !important;
         font-weight: 500;
     }
-    .sortable {
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    .sortable:hover {
-        background-color: #f8f9fa;
-    }
     .table th {
         white-space: nowrap;
     }
@@ -98,11 +91,11 @@
         document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const clearButton = document.getElementById('clearSearch');
-            const table = document.getElementById('contractsTable');
+            const table = document.getElementById('meteringpointsTable');
             const columnFilters = document.querySelectorAll('.column-filter');
             let filterTimeout;
 
-            document.querySelectorAll('#contractsTable tbody td:nth-child(3), #contractsTable tbody td:nth-child(4)')
+            document.querySelectorAll('#meteringpointsTable tbody td:nth-child(3), #meteringpointsTable tbody td:nth-child(4)')
                 .forEach(cell => {
                     cell.style.cursor = 'pointer';
                     cell.addEventListener('click', function() {
@@ -173,7 +166,7 @@
                     }
 
                     Array.from(cells).forEach((cell, index) => {
-                        if (index === 1) {
+                        if (index === 3) {
                             // Always force the badge markup for the MeteringPointType field.
                             // Here we use the original text stored in a data attribute (or fallback to cell.textContent)
                             const originalText = cell.dataset.originalText || cell.textContent;
@@ -197,7 +190,7 @@
                 columnFilters.forEach(filter => filter.value = '');
                 Array.from(table.rows).slice(1).forEach(row => {
                     Array.from(row.cells).forEach((cell, index) => {
-                        if (index === 1) {
+                        if (index === 3) {
                             const originalText = cell.dataset.originalText || cell.textContent.trim();
                             cell.innerHTML = `<span class="badge bg-info">${originalText}</span>`;
                         } else {
@@ -210,59 +203,6 @@
             });
 
             columnFilters.forEach(filter => filter.addEventListener('change', applyFilters));
-
-            const dateColumns = [4, 5, 6];
-            const tableHeaders = document.querySelectorAll('#contractsTable thead th');
-
-            dateColumns.forEach(colIndex => {
-                const header = tableHeaders[colIndex];
-                header.style.cursor = 'pointer';
-                header.setAttribute('data-sort-order', 'asc');
-
-                header.addEventListener('click', function() {
-                    tableHeaders.forEach(th => {
-                        th.classList.remove('sort-asc', 'sort-desc');
-                        const icon = th.querySelector('i');
-                        if (icon) {
-                            icon.className = 'bi bi-arrow-down-up text-muted ms-1';
-                        }
-                    });
-
-                    let currentSortOrder = header.getAttribute('data-sort-order') || 'asc';
-                    const newSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
-                    header.setAttribute('data-sort-order', newSortOrder);
-                    const icon = header.querySelector('i');
-                    icon.className = newSortOrder === 'asc'
-                        ? 'bi bi-arrow-up text-primary ms-1'
-                        : 'bi bi-arrow-down text-primary ms-1';
-
-
-                    sortTableByColumn(colIndex, newSortOrder);
-                });
-            });
-
-            function sortTableByColumn(colIndex, sortOrder) {
-                const tbody = table.querySelector('tbody');
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-
-                rows.sort((rowA, rowB) => {
-                    const cellA = rowA.cells[colIndex];
-                    const cellB = rowB.cells[colIndex];
-
-                    let tsA = cellA.getAttribute('data-timestamp');
-                    let tsB = cellB.getAttribute('data-timestamp');
-
-                    tsA = tsA ? parseInt(tsA, 10) : 0;
-                    tsB = tsB ? parseInt(tsB, 10) : 0;
-
-                    return sortOrder === 'asc' ? tsA - tsB : tsB - tsA;
-                });
-
-                while (tbody.firstChild) {
-                    tbody.removeChild(tbody.firstChild);
-                }
-                rows.forEach(row => tbody.appendChild(row));
-            }
 
             initColumnFilters();
         });
