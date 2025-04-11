@@ -24,7 +24,7 @@ public class MeasurementsServiceTest
 
         var mockHttp = new MockHttpMessageHandler();
 
-        mockHttp.When("http://localhost/api/measurements/meteringpoints?organizationId=" + organizationId)
+        mockHttp.When("http://localhost/meteringpoints?organizationId=" + organizationId)
             .Respond(HttpStatusCode.OK, new StringContent(JsonConvert.SerializeObject(mockResponse)));
         var client = mockHttp.ToHttpClient();
         client.BaseAddress = new Uri("http://localhost");
@@ -42,7 +42,7 @@ public class MeasurementsServiceTest
         var organizationId = Guid.NewGuid();
 
         var mockHttp = new MockHttpMessageHandler();
-        mockHttp.When("http://localhost/api/measurements/meteringpoints?organizationId=" + organizationId)
+        mockHttp.When("http://localhost/meteringpoints?organizationId=" + organizationId)
             .Respond(HttpStatusCode.OK, new StringContent(JsonConvert.SerializeObject(mockResponse)));
         var client = mockHttp.ToHttpClient();
         client.BaseAddress = new Uri("http://localhost");
