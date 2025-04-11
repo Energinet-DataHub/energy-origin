@@ -29,11 +29,11 @@ public class GetMeteringPointsQueryHandlerTest
                 new(Guid.NewGuid(), "TestOrg1", tin1)
             }));
 
-        _measurementsService.GetMeteringPointsHttpRequestAsync(Arg.Any<List<Guid>>())
+        _measurementsService.GetMeteringPointsHttpRequestAsync(Arg.Any<Guid>())
             .Returns(new GetMeteringpointsResponse(new List<GetMeteringPointsResponseItem>()
             {
-                new("GSRN", MeteringPointType.Production, tin),
-                new("GSRN1", MeteringPointType.Production, tin1),
+                new("GSRN", MeteringPointType.Production),
+                new("GSRN1", MeteringPointType.Production),
             }));
 
         _certificatesService.GetContractsHttpRequestAsync()
@@ -48,7 +48,7 @@ public class GetMeteringPointsQueryHandlerTest
             _authorizationService,
             _certificatesService
         );
-        var query = new GetMeteringPointsQuery();
+        var query = new GetMeteringPointsQuery(tin);
         var result = await handler.Handle(query, CancellationToken.None);
 
         Assert.NotNull(result);
@@ -67,8 +67,8 @@ public class GetMeteringPointsQueryHandlerTest
             {
                 Assert.Equal("GSRN1", item.GSRN);
                 Assert.Equal(MeteringPointType.Production, item.MeterType);
-                Assert.Equal("87654321", item.Tin);
-                Assert.Equal("TestOrg1", item.OrganizationName);
+                Assert.Equal("12345678", item.Tin);
+                Assert.Equal("TestOrg", item.OrganizationName);
                 Assert.False(item.ActiveContract);
             });
     }
@@ -78,7 +78,7 @@ public class GetMeteringPointsQueryHandlerTest
     {
         _authorizationService.GetOrganizationsAsync(CancellationToken.None)
             .Returns(new GetOrganizationsResponse([]));
-        _measurementsService.GetMeteringPointsHttpRequestAsync(Arg.Any<List<Guid>>())
+        _measurementsService.GetMeteringPointsHttpRequestAsync(Arg.Any<Guid>())
             .Returns(new GetMeteringpointsResponse([]));
         _certificatesService.GetContractsHttpRequestAsync()
             .Returns(new GetContractsForAdminPortalResponse([]));
@@ -89,7 +89,7 @@ public class GetMeteringPointsQueryHandlerTest
             _certificatesService
         );
 
-        var query = new GetMeteringPointsQuery();
+        var query = new GetMeteringPointsQuery("12345678");
         var result = await handler.Handle(query, CancellationToken.None);
         Assert.Empty(result.ViewModel);
     }

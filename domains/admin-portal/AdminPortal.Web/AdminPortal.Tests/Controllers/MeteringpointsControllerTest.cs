@@ -15,7 +15,7 @@ public class MeteringpointsControllerTest
         var factory = new TestWebApplicationFactory();
         var client = factory.CreateAuthenticatedClient<GeneralUser>(new WebApplicationFactoryClientOptions(), 12345);
 
-        var response = await client.GetAsync("Meteringpoints", TestContext.Current.CancellationToken);
+        var response = await client.GetAsync("Meteringpoints?Tin=12345678", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }

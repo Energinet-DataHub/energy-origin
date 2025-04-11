@@ -29,9 +29,9 @@
                     <div class="col-md-6">
                         <div class="row g-2">
                             <div class="col">
-                                <label class="form-label text-muted small">Filter by Tin</label>
-                                <select class="form-select column-filter" data-column="3">
-                                    <option value="">All Tin</option>
+                                <label class="form-label text-muted small">Filter by Type</label>
+                                <select class="form-select column-filter" data-column="1">
+                                    <option value="">All Types</option>
                                 </select>
                             </div>
                         </div>
@@ -44,10 +44,10 @@
                 <table class="table table-hover table-bordered mb-0" id="contractsTable">
                     <thead class="table-light">
                     <tr>
-                        <th>GSRN</th>
-                        <th>Type</th>
                         <th>Organization</th>
                         <th>Tin</th>
+                        <th>GSRN</th>
+                        <th>Type</th>
                         <th>Issuing certificates</th>
                     </tr>
                     </thead>
@@ -55,13 +55,16 @@
                     @foreach (var point in Model)
                     {
                         <tr>
-                            <td class="fw-medium">@point.GSRN</td>
-                            <td class="fw-medium">@point.MeterType</td>
                             <td class="fw-medium">@point.OrganizationName</td>
                             <td class="fw-medium">@point.Tin</td>
-                            @if (point.ActiveContract) {
+                            <td class="fw-medium">@point.GSRN</td>
+                            <td class="fw-medium">@point.MeterType</td>
+                            @if (point.ActiveContract)
+                            {
                                 <td class="fw-medium">Yes</td>
-                            } else {
+                            }
+                            else
+                            {
                                 <td class="fw-medium">No</td>
                             }
                         </tr>

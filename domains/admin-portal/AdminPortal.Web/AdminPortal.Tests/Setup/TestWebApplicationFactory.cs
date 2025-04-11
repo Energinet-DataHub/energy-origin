@@ -73,7 +73,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
     private class MockMeasurementsService : IMeasurementsService
     {
-        public Task<GetMeteringpointsResponse> GetMeteringPointsHttpRequestAsync(List<Guid> organizationIds)
+        public Task<GetMeteringpointsResponse> GetMeteringPointsHttpRequestAsync(Guid organizationIds)
         {
             return Task.FromResult(
                 new GetMeteringpointsResponse(new List<GetMeteringPointsResponseItem>()));

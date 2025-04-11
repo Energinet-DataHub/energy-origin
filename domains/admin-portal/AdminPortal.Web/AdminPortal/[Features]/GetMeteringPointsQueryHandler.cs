@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,7 +9,7 @@ using MediatR;
 
 namespace AdminPortal._Features_;
 
-public class GetMeteringPointsQuery : IRequest<GetMeteringPointsQueryResult>
+public record GetMeteringPointsQuery(string Tin) : IRequest<GetMeteringPointsQueryResult>
 {
 }
 
@@ -36,33 +37,46 @@ public class GetMeteringPointsQueryHandler(
         CancellationToken cancellationToken)
     {
         var organizations = await authorizationService.GetOrganizationsAsync(cancellationToken);
-        var meteringpoints =
-            await measurementsService.GetMeteringPointsHttpRequestAsync(organizations.Result
-                .Select(x => x.OrganizationId).ToList());
+        var selectedOrganization = organizations
+            .Result
+            .SingleOrDefault(org => org.Tin == request.Tin);
 
-        var contracts = await certificatesService.GetContractsHttpRequestAsync();
+        if (selectedOrganization == null)
+        {
+            return new GetMeteringPointsQueryResult([]);
+        }
 
-        var result = meteringpoints.Result
-            .Select(meteringpoint =>
-                {
-                    var organization = organizations
-                        .Result
-                        .First(org => org.Tin.ToString() == meteringpoint.ConsumerCvr);
-                    var activeContract = contracts
-                        .Result
-                        .Any(contract => contract.GSRN == meteringpoint.GSRN);
+        try
+        {
+            var meteringpoints =
+                await measurementsService.GetMeteringPointsHttpRequestAsync(selectedOrganization.OrganizationId);
 
-                    return new GetMeteringPointsQueryResultItem(
-                        meteringpoint.GSRN,
-                        meteringpoint.MeterType,
-                        organization.OrganizationName,
-                        organization.Tin,
-                        activeContract
-                    );
-                }
-            )
-            .ToList();
+            var contracts = await certificatesService.GetContractsHttpRequestAsync();
 
-        return new GetMeteringPointsQueryResult(result);
+            var result = meteringpoints.Result
+                .Select(meteringpoint =>
+                    {
+
+                        var activeContract = contracts
+                            .Result
+                            .Any(contract => contract.GSRN == meteringpoint.GSRN);
+
+                        return new GetMeteringPointsQueryResultItem(
+                            meteringpoint.GSRN,
+                            meteringpoint.MeterType,
+                            selectedOrganization.OrganizationName,
+                            selectedOrganization.Tin,
+                            activeContract
+                        );
+                    }
+                )
+                .ToList();
+            return new GetMeteringPointsQueryResult(result);
+
+        }
+        catch (Exception e)
+        {
+            return new GetMeteringPointsQueryResult([]);
+        }
     }
 }

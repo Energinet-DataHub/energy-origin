@@ -10,14 +10,19 @@ namespace AdminPortal.Services;
 
 public interface IMeasurementsService
 {
-    Task<GetMeteringpointsResponse> GetMeteringPointsHttpRequestAsync(List<Guid> organizationIds);
+    Task<GetMeteringpointsResponse> GetMeteringPointsHttpRequestAsync(Guid organizationId);
 }
 
 public class MeasurementsService(HttpClient client) : IMeasurementsService
 {
-    public async Task<GetMeteringpointsResponse> GetMeteringPointsHttpRequestAsync(List<Guid> organizationIds)
+    public async Task<GetMeteringpointsResponse> GetMeteringPointsHttpRequestAsync(Guid organizationId)
     {
-        var response = await client.PostAsJsonAsync("internal-meteringpoints/", organizationIds);
+        // return new GetMeteringpointsResponse(new List<GetMeteringPointsResponseItem>()
+        // {
+        //     new GetMeteringPointsResponseItem("1", MeteringPointType.Consumption),
+        //     new GetMeteringPointsResponseItem("2", MeteringPointType.Production)
+        // });
+        var response = await client.GetAsync($"api/measurements/meteringpoints?organizationId={organizationId}");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<GetMeteringpointsResponse>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
