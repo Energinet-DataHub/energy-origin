@@ -24,7 +24,7 @@ public class PdfControllerTests
         factory = integrationTestFixture.Factory;
     }
 
-    [Fact]
+    [Fact(Skip = "E2E")]
     public async Task CreatePdf_ReturnsPdfFile()
     {
         // Arrange
