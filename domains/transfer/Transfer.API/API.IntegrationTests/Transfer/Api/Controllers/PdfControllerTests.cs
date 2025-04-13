@@ -48,7 +48,6 @@ public class PdfControllerTests
 
         var pdfBytes = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
 
-        // PDF files always start with "%PDF"
         var pdfHeader = Encoding.ASCII.GetString(pdfBytes.AsSpan(0, 4));
         Assert.Equal("%PDF", pdfHeader);
     }
