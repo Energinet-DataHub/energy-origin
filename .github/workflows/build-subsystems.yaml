@@ -59,6 +59,13 @@ jobs:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
+  build-html-pdf-generator:
+    uses: ./.github/workflows/build-html-pdf-generator.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
   build-measurements:
     uses: ./.github/workflows/build-measurements.yaml
     secrets: inherit
@@ -96,6 +103,7 @@ jobs:
       - build-admin-portal
       - build-authorization
       - build-certificates
+      - build-html-pdf-generator
       - build-measurements
       - build-oidc-mock
       - build-openapi
@@ -113,6 +121,7 @@ jobs:
             domains/authorization/Authorization.API/configuration.yaml
             domains/authorization/Proxy/configuration.yaml
             domains/certificates/Query.API/configuration.yaml
+            domains/html-pdf-generator/configuration.yaml
             domains/measurements/Measurements.API/configuration.yaml
             domains/oidc-mock/API/configuration.yaml
             domains/transfer/Transfer.API/configuration.yaml
