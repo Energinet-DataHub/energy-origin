@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using API.IntegrationTests.Factories;
+using API.IntegrationTests.Setup.Factories;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using NSubstitute;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
-using EnergyOrigin.WalletClient;
-using EnergyOrigin.WalletClient.Models;
 using WireMock.Server;
 using Xunit;
 
-namespace API.IntegrationTests;
+namespace API.IntegrationTests.Setup.Fixtures;
 
 [CollectionDefinition(CollectionName)]
 public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixture>
@@ -22,6 +22,7 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 public class IntegrationTestFixture : IAsyncLifetime
 {
     public TransferAgreementsApiWebApplicationFactory Factory { get; private set; }
+    public PdfGeneratorContainer PdfGeneratorContainer { get; private set; }
     public PostgresContainer PostgresContainer { get; private set; }
     public WireMockServer CvrWireMockServer { get; private set; }
 
@@ -33,18 +34,21 @@ public class IntegrationTestFixture : IAsyncLifetime
         PostgresContainer = new PostgresContainer();
         RabbitMqContainer = new RabbitMqContainer();
         CvrWireMockServer = WireMockServer.Start();
+        PdfGeneratorContainer = new PdfGeneratorContainer();
     }
 
     public async ValueTask InitializeAsync()
     {
         await PostgresContainer.InitializeAsync();
         await RabbitMqContainer.InitializeAsync();
+        await PdfGeneratorContainer.InitializeAsync();
 
         SetupPoWalletClientMock();
 
         Factory.ConnectionString = PostgresContainer.ConnectionString;
         Factory.CvrBaseUrl = CvrWireMockServer.Url!;
         Factory.RabbitMqOptions = RabbitMqContainer.Options;
+        Factory.PdfUrl = $"{PdfGeneratorContainer.Url}/generate-pdf";
         Factory.Start();
     }
 

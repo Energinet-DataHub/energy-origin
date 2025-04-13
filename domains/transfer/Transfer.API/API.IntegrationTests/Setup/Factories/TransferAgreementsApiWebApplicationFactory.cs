@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using API.IntegrationTests.Tools;
 using API.Transfer.Api.Clients;
 using API.Transfer.TransferAgreementProposalCleanup;
 using Asp.Versioning.ApiExplorer;
@@ -14,9 +15,11 @@ using EnergyOrigin.ActivityLog;
 using EnergyOrigin.ActivityLog.HostedService;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Migrations;
+using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.TokenValidation.b2c;
 using EnergyOrigin.TokenValidation.Utilities;
 using EnergyOrigin.TokenValidation.Values;
+using EnergyOrigin.WalletClient;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -27,17 +30,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using EnergyOrigin.WalletClient;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
-using EnergyOrigin.Setup.RabbitMq;
 
-namespace API.IntegrationTests.Factories;
+namespace API.IntegrationTests.Setup.Factories;
 
 public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     public string ConnectionString { get; set; } = "";
 
     private string WalletUrl { get; set; } = "http://foo";
+
+    public string PdfUrl { get; set; } = "http://placeholder.io/pdf";
 
     private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
@@ -62,6 +65,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("Otlp:ReceiverEndpoint", OtlpReceiverEndpoint);
         builder.UseSetting("TransferAgreementProposalCleanupService:SleepTime", "00:00:03");
         builder.UseSetting("TransferAgreementCleanup:SleepTime", "00:00:03");
+        builder.UseSetting("Pdf:Url", PdfUrl);
         builder.UseSetting("Cvr:BaseUrl", CvrBaseUrl);
         builder.UseSetting("Cvr:User", CvrUser);
         builder.UseSetting("Cvr:Password", CvrPassword);
@@ -91,14 +95,14 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
         builder.ConfigureTestServices(s =>
         {
-            s.Configure<ActivityLogOptions>(options =>
+            OptionsServiceCollectionExtensions.Configure<ActivityLogOptions>(s, options =>
             {
                 options.ServiceName = "transfer";
                 options.CleanupActivityLogsOlderThanInDays = -1;
                 options.CleanupIntervalInSeconds = 3;
             });
 
-            s.Configure<DatabaseOptions>(o =>
+            OptionsServiceCollectionExtensions.Configure<DatabaseOptions>(s, o =>
             {
                 var connectionStringBuilder = new DbConnectionStringBuilder
                 {
@@ -113,18 +117,18 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
             new DbMigrator(ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
 
-            s.Remove(s.First(sd => sd.ServiceType == typeof(IWalletClient)));
-            s.AddScoped(_ => WalletClientMock);
+            s.Remove(Enumerable.First<ServiceDescriptor>(s, sd => sd.ServiceType == typeof(IWalletClient)));
+            ServiceCollectionServiceExtensions.AddScoped(s, _ => WalletClientMock);
 
             if (!WithCleanupWorker)
             {
-                s.Remove(s.First(x => x.ImplementationType == typeof(TransferAgreementProposalCleanupWorker)));
-                s.Remove(s.First(x => x.ImplementationType == typeof(TransferAgreementProposalCleanupService)));
-                s.Remove(s.First(x => x.ImplementationType == typeof(CleanupActivityLogsHostedService)));
+                s.Remove(Enumerable.First<ServiceDescriptor>(s, x => x.ImplementationType == typeof(TransferAgreementProposalCleanupWorker)));
+                s.Remove(Enumerable.First<ServiceDescriptor>(s, x => x.ImplementationType == typeof(TransferAgreementProposalCleanupService)));
+                s.Remove(Enumerable.First<ServiceDescriptor>(s, x => x.ImplementationType == typeof(CleanupActivityLogsHostedService)));
             }
 
-            s.Remove(s.First(sd => sd.ServiceType == typeof(IAuthorizationClient)));
-            s.AddSingleton<IAuthorizationClient, MockAuthorizationClient>();
+            s.Remove(Enumerable.First<ServiceDescriptor>(s, sd => sd.ServiceType == typeof(IAuthorizationClient)));
+            ServiceCollectionServiceExtensions.AddSingleton<IAuthorizationClient, MockAuthorizationClient>(s);
         });
     }
 
