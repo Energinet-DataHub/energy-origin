@@ -1,0 +1,8 @@
+{
+  "name": "html-pdf-generator",
+  "version": "0.0.0",
+  "dependencies": {
+    "express": "^5.1.0",
+    "playwright-core": "^1.51.1"
+  }
+}
