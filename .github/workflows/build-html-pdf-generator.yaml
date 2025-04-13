@@ -32,7 +32,7 @@ jobs:
           dockerfile: ./domains/html-pdf-generator/Dockerfile
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
-          docker-context: .
+          docker-context: ./domains/html-pdf-generator
           dry-run: ${{ inputs.dry-run }}
 
       - name: Scan image
