@@ -25,7 +25,6 @@ public class IntegrationTestFixture : IAsyncLifetime
     public PdfGeneratorContainer PdfGeneratorContainer { get; private set; }
     public PostgresContainer PostgresContainer { get; private set; }
     public WireMockServer CvrWireMockServer { get; private set; }
-
     public RabbitMqContainer RabbitMqContainer { get; private set; }
 
     public IntegrationTestFixture()

@@ -19,7 +19,6 @@ public class PdfGeneratorContainer : IAsyncLifetime
         var image = new ImageFromDockerfileBuilder()
             .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), "html-pdf-generator")
             .WithDockerfile("Dockerfile")
-            .WithDeleteIfExists(true)
             .Build();
 
         await image.CreateAsync();
@@ -30,7 +29,6 @@ public class PdfGeneratorContainer : IAsyncLifetime
             .WithPortBinding(PdfServicePort, true)
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilMessageIsLogged("Server started"))
-            .WithAutoRemove(true)
             .Build();
 
         await _container.StartAsync();

@@ -62,8 +62,4 @@
           <DependentUpon>CvrController20240515Tests.cs</DependentUpon>
         </None>
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Factories\" />
-	</ItemGroup>
 </Project>
