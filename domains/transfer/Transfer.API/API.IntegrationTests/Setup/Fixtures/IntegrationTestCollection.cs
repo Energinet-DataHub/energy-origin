@@ -22,7 +22,6 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 public class IntegrationTestFixture : IAsyncLifetime
 {
     public TransferAgreementsApiWebApplicationFactory Factory { get; private set; }
-    public PdfGeneratorContainer PdfGeneratorContainer { get; private set; }
     public PostgresContainer PostgresContainer { get; private set; }
     public WireMockServer CvrWireMockServer { get; private set; }
     public RabbitMqContainer RabbitMqContainer { get; private set; }
@@ -33,21 +32,18 @@ public class IntegrationTestFixture : IAsyncLifetime
         PostgresContainer = new PostgresContainer();
         RabbitMqContainer = new RabbitMqContainer();
         CvrWireMockServer = WireMockServer.Start();
-        PdfGeneratorContainer = new PdfGeneratorContainer();
     }
 
     public async ValueTask InitializeAsync()
     {
         await PostgresContainer.InitializeAsync();
         await RabbitMqContainer.InitializeAsync();
-        await PdfGeneratorContainer.InitializeAsync();
 
         SetupPoWalletClientMock();
 
         Factory.ConnectionString = PostgresContainer.ConnectionString;
         Factory.CvrBaseUrl = CvrWireMockServer.Url!;
         Factory.RabbitMqOptions = RabbitMqContainer.Options;
-        Factory.PdfUrl = $"{PdfGeneratorContainer.Url}/generate-pdf";
         Factory.Start();
     }
 
