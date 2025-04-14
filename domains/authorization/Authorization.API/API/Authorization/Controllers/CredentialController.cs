@@ -92,6 +92,6 @@ public class CredentialController(
 
         await mediator.Send(new DeleteCredentialCommand(clientId, keyId, identityDescriptor.OrganizationId));
 
-        return Ok();
+        return NoContent();
     }
 }
