@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Http.Json;
 using API.IntegrationTests.Setup.Factories;
 using API.IntegrationTests.Setup.Fixtures;
+using API.IntegrationTests.Setup.Tooling;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects.Tests;
 using Newtonsoft.Json;

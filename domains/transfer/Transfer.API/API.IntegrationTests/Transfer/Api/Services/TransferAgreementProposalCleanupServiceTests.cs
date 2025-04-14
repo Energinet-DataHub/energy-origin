@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Setup.Factories;
 using API.IntegrationTests.Setup.Fixtures;
+using API.IntegrationTests.Setup.Tooling;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.ActivityLog.API;

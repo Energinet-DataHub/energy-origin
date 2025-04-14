@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using API.IntegrationTests.Tools;
+using API.IntegrationTests.Setup.Tooling;
 using API.Transfer.Api.Clients;
 using API.Transfer.TransferAgreementProposalCleanup;
 using Asp.Versioning.ApiExplorer;

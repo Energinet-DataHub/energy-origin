@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
-namespace API.IntegrationTests.Tools;
+namespace API.IntegrationTests.Setup.Tooling;
 
 public class IntegrationTestB2CAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {

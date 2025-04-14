@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using API.IntegrationTests.Setup.Factories;
 using API.IntegrationTests.Setup.Fixtures;
+using API.IntegrationTests.Setup.Tooling;
 using API.Transfer.Api.Clients;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;

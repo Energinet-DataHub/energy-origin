@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using DataContext;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.IntegrationTests;
+namespace API.IntegrationTests.Setup.Tooling;
 
 public static class DbContextExtension
 {
