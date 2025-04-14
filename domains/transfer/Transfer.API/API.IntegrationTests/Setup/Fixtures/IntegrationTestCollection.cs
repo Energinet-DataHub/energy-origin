@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Setup.Factories;
@@ -23,6 +24,7 @@ public class IntegrationTestFixture : IAsyncLifetime
 {
     public TransferAgreementsApiWebApplicationFactory Factory { get; private set; }
     public PostgresContainer PostgresContainer { get; private set; }
+    public WireMockServer PdfGeneratorWireMock { get; private set; }
     public WireMockServer CvrWireMockServer { get; private set; }
     public RabbitMqContainer RabbitMqContainer { get; private set; }
 
@@ -31,6 +33,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         Factory = new TransferAgreementsApiWebApplicationFactory();
         PostgresContainer = new PostgresContainer();
         RabbitMqContainer = new RabbitMqContainer();
+        PdfGeneratorWireMock = WireMockServer.Start();
         CvrWireMockServer = WireMockServer.Start();
     }
 
@@ -44,6 +47,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         Factory.ConnectionString = PostgresContainer.ConnectionString;
         Factory.CvrBaseUrl = CvrWireMockServer.Url!;
         Factory.RabbitMqOptions = RabbitMqContainer.Options;
+        Factory.PdfUrl = $"{PdfGeneratorWireMock.Url}/generate-pdf";
         Factory.Start();
     }
 
@@ -70,6 +74,11 @@ public class IntegrationTestFixture : IAsyncLifetime
             .Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
 
         return walletClientMock;
+    }
+
+    public TestCaseContext CreateIsolatedPdfTest([CallerMemberName] string testName = "")
+    {
+        return new TestCaseContext(Factory, PdfGeneratorWireMock, testName);
     }
 
     public async ValueTask DisposeAsync()
