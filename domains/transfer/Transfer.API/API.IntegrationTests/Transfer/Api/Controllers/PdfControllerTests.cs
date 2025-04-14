@@ -23,7 +23,7 @@ public class PdfControllerTests
     [Fact]
     public async Task ReturnsPdf()
     {
-        await using var test = _fixture.CreateIsolatedPdfTest();
+        await using var test = _fixture.CreateIsolatedWireMockTest();
 
         test.StubRequest(
             req => req.WithPath("/generate-pdf").UsingPost(),
@@ -49,7 +49,7 @@ public class PdfControllerTests
     [Fact]
     public async Task ReturnsErrorFromPdfService()
     {
-        await using var test = _fixture.CreateIsolatedPdfTest();
+        await using var test = _fixture.CreateIsolatedWireMockTest();
 
         test.StubRequest(
             req => req.WithPath("/generate-pdf").UsingPost(),

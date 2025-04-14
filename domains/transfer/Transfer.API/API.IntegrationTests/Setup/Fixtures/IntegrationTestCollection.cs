@@ -76,7 +76,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         return walletClientMock;
     }
 
-    public TestCaseContext CreateIsolatedPdfTest([CallerMemberName] string testName = "")
+    public TestCaseContext CreateIsolatedWireMockTest([CallerMemberName] string testName = "")
     {
         return new TestCaseContext(Factory, PdfGeneratorWireMock, testName);
     }
