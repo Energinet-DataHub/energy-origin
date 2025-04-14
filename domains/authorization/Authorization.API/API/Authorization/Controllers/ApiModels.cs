@@ -126,13 +126,13 @@ public record UserinfoResponse(
 public record CreateCredentialResponse(
     string? Hint,
     Guid KeyId,
-    long? StartDateTime,
-    long? EndDateTime,
+    long? StartDate,
+    long? EndDate,
     string? Secret);
 
 public record GetCredentialsResponse(IEnumerable<GetCredentialsResponseItem> Result);
 public record GetCredentialsResponseItem(
     string? Hint,
     Guid KeyId,
-    long? StartDateTime,
-    long? EndDateTime);
+    long? StartDate,
+    long? EndDate);
