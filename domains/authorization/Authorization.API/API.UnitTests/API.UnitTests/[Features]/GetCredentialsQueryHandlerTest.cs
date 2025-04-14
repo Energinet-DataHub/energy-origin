@@ -2,6 +2,7 @@ using API.Authorization._Features_;
 using API.Models;
 using API.Repository;
 using API.Services;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Exceptions;
 using NSubstitute;
 
@@ -65,7 +66,9 @@ public class GetCredentialsQueryHandlerTest
         var getCredentialsQueryResults = result.ToList();
         Assert.Equal(hint, getCredentialsQueryResults.FirstOrDefault()!.Hint);
         Assert.Equal(keyId, getCredentialsQueryResults.FirstOrDefault()!.KeyId);
-        Assert.Equal(startDateTime, getCredentialsQueryResults.FirstOrDefault()!.StartDateTime);
-        Assert.Equal(endDateTime, getCredentialsQueryResults.FirstOrDefault()!.EndDateTime);
+        Assert.Equal(UnixTimestamp.Create(startDateTime).EpochSeconds,
+            getCredentialsQueryResults.FirstOrDefault()!.StartDateTime);
+        Assert.Equal(UnixTimestamp.Create(endDateTime).EpochSeconds,
+            getCredentialsQueryResults.FirstOrDefault()!.EndDateTime);
     }
 }

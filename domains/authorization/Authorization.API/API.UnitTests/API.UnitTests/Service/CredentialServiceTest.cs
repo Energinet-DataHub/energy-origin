@@ -1,4 +1,5 @@
 using API.Services;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Exceptions;
 using Microsoft.Graph.Applications.Item.AddPassword;
 using Microsoft.Graph.Applications.Item.RemovePassword;
@@ -98,8 +99,12 @@ public class CredentialServiceTest
         var clientCredentials = result.ToList();
         Assert.Equal(passwordCredential.Hint, clientCredentials.First().Hint);
         Assert.Equal(passwordCredential.KeyId, clientCredentials.First().KeyId);
-        Assert.Equal(passwordCredential.StartDateTime, clientCredentials.First().StartDateTime);
-        Assert.Equal(passwordCredential.EndDateTime, clientCredentials.First().EndDateTime);
+        Assert.Equal(UnixTimestamp.Create(
+            (DateTimeOffset)passwordCredential.StartDateTime),
+            clientCredentials.First().StartDateTime);
+        Assert.Equal(UnixTimestamp.Create(
+            (DateTimeOffset)passwordCredential.EndDateTime),
+            clientCredentials.First().EndDateTime);
         Assert.Null(clientCredentials.First().Secret);
     }
 
@@ -258,8 +263,12 @@ public class CredentialServiceTest
         // Assert
         Assert.Equal(passwordCredential.Hint, result.Hint);
         Assert.Equal(passwordCredential.KeyId, result.KeyId);
-        Assert.Equal(passwordCredential.StartDateTime, result.StartDateTime);
-        Assert.Equal(passwordCredential.EndDateTime, result.EndDateTime);
+        Assert.Equal(UnixTimestamp.Create(
+            (DateTimeOffset)passwordCredential.StartDateTime),
+            result.StartDateTime);
+        Assert.Equal(UnixTimestamp.Create(
+            (DateTimeOffset)passwordCredential.EndDateTime),
+            result.EndDateTime);
         Assert.Equal(passwordCredential.SecretText, result.Secret);
     }
 

@@ -2,6 +2,7 @@ using API.Authorization._Features_;
 using API.Models;
 using API.Repository;
 using API.Services;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Exceptions;
 using NSubstitute;
 
@@ -61,8 +62,8 @@ public class CreateCredentialCommandHandlerTest
         // Assert
         Assert.Equal(hint, result.Hint);
         Assert.Equal(keyId, result.KeyId);
-        Assert.Equal(startDateTime, result.StartDateTime);
-        Assert.Equal(endDateTime, result.EndDateTime);
+        Assert.Equal(UnixTimestamp.Create(startDateTime).EpochSeconds, result.StartDateTime);
+        Assert.Equal(UnixTimestamp.Create(endDateTime).EpochSeconds, result.EndDateTime);
         Assert.Equal(secret, result.Secret);
     }
 }

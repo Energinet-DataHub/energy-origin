@@ -23,8 +23,8 @@ public class CreateCredentialCommandHandler(ICredentialService credentialService
         }
 
         var credential = await credentialService.CreateCredential(command.ClientId, cancellationToken);
-        return new CreateCredentialCommandResult(credential.Hint, credential.KeyId, credential.StartDateTime,
-            credential.EndDateTime, credential.Secret);
+        return new CreateCredentialCommandResult(credential.Hint, credential.KeyId, credential.StartDateTime?.EpochSeconds,
+            credential.EndDateTime?.EpochSeconds, credential.Secret);
     }
 }
 
@@ -33,6 +33,6 @@ public record CreateCredentialCommand(Guid ClientId, Guid OrganizationId) : IReq
 public record CreateCredentialCommandResult(
     string? Hint,
     Guid KeyId,
-    DateTimeOffset? StartDateTime,
-    DateTimeOffset? EndDateTime,
+    long? StartDateTime,
+    long? EndDateTime,
     string? Secret);

@@ -27,14 +27,15 @@ public class GetCredentialsQueryHandler(ICredentialService credentialService, IC
         var credentials = await credentialService.GetCredentials(request.ClientId, cancellationToken);
 
         return credentials.Select(credential => new GetCredentialsQueryResult(credential.Hint, credential.KeyId,
-            credential.StartDateTime, credential.EndDateTime)).ToList();
+            credential.StartDateTime?.EpochSeconds, credential.EndDateTime?.EpochSeconds)).ToList();
     }
 }
 
-public record GetCredentialsQuery(Guid ClientId, Guid OrganizationId) : IRequest<IEnumerable<GetCredentialsQueryResult>>;
+public record GetCredentialsQuery(Guid ClientId, Guid OrganizationId)
+    : IRequest<IEnumerable<GetCredentialsQueryResult>>;
 
 public record GetCredentialsQueryResult(
     string? Hint,
     Guid KeyId,
-    DateTimeOffset? StartDateTime,
-    DateTimeOffset? EndDateTime);
+    long? StartDateTime,
+    long? EndDateTime);

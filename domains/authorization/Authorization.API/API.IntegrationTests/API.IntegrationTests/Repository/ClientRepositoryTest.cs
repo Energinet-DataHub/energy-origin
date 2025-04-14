@@ -26,7 +26,7 @@ public class ClientRepositoryTest
     public async Task GivenClient_ThatIsExternalAndHasAccessThroughOrganization_ReturnTrue()
     {
         // Arrange
-        var client = Client.Create(Any.IdpClientId(), new ClientName("ClientName"), ClientType.External,
+        var client = Client.Create(Any.IdpClientId(), ClientName.Create("ClientName"), ClientType.External,
             "https://redirect.url");
 
         var organization = Any.OrganizationWithClient(client: client);
@@ -48,9 +48,9 @@ public class ClientRepositoryTest
     public async Task GivenClient_ThatIsExternalAndDoesNotHaveAccessThroughOrganization_ReturnFalse()
     {
         // Arrange
-        var client = Client.Create(Any.IdpClientId(), new ClientName("ClientName"), ClientType.External,
+        var client = Client.Create(Any.IdpClientId(), ClientName.Create("ClientName"), ClientType.External,
             "https://redirect.url");
-        var clientTwo = Client.Create(Any.IdpClientId(), new ClientName("ClientName"), ClientType.External,
+        var clientTwo = Client.Create(Any.IdpClientId(), ClientName.Create("ClientName"), ClientType.External,
             "https://redirect.url");
         var organization = Any.OrganizationWithClient(client: client);
         var organizationTwo = Any.OrganizationWithClient(client: clientTwo);
@@ -74,7 +74,7 @@ public class ClientRepositoryTest
     public async Task GivenClient_ThatIsNotExternalAndHasAccessThroughOrganization_ReturnFalse()
     {
         // Arrange
-        var client = Client.Create(Any.IdpClientId(), new ClientName("ClientName"), ClientType.Internal,
+        var client = Client.Create(Any.IdpClientId(), ClientName.Create("ClientName"), ClientType.Internal,
             "https://redirect.url");
 
         var organization = Any.OrganizationWithClient(client: client);
