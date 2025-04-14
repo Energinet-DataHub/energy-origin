@@ -14,7 +14,7 @@ namespace API.Services;
 public interface ICredentialService
 {
     public Task<IEnumerable<ClientCredential>> GetCredentials(Guid applicationId, CancellationToken cancellationToken);
-    public Task<ClientCredential> CreateCredential(Guid applicationId, CancellationToken cancellationToken);
+    public Task<ConfidentialClientCredetial> CreateCredential(Guid applicationId, CancellationToken cancellationToken);
     public Task DeleteCredential(Guid applicationId, Guid keyId, CancellationToken cancellationToken);
 }
 
@@ -42,7 +42,7 @@ public class CredentialService(IGraphServiceClientWrapper graphWrapper) : ICrede
         return clientCredentials;
     }
 
-    public async Task<ClientCredential> CreateCredential(Guid applicationId, CancellationToken cancellationToken)
+    public async Task<ConfidentialClientCredetial> CreateCredential(Guid applicationId, CancellationToken cancellationToken)
     {
         var application = await GetApplication(applicationId, cancellationToken);
 
@@ -65,7 +65,7 @@ public class CredentialService(IGraphServiceClientWrapper graphWrapper) : ICrede
                 throw new BusinessException("Could not create credential for client.");
             }
 
-            return ClientCredential.Create(result.Hint, (Guid)result.KeyId,
+            return ConfidentialClientCredetial.Create(result.Hint, (Guid)result.KeyId,
                 result.StartDateTime,
                 result.EndDateTime, result.SecretText);
         }

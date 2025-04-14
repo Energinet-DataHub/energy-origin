@@ -105,7 +105,6 @@ public class CredentialServiceTest
         Assert.Equal(UnixTimestamp.Create(
             (DateTimeOffset)passwordCredential.EndDateTime),
             clientCredentials.First().EndDateTime);
-        Assert.Null(clientCredentials.First().Secret);
     }
 
     [Fact]

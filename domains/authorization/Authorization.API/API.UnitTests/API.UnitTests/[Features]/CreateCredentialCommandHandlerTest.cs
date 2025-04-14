@@ -54,7 +54,7 @@ public class CreateCredentialCommandHandlerTest
         var keyId = Guid.NewGuid();
         var secret = "secret";
         _credentialService.CreateCredential(clientId, CancellationToken.None)
-            .Returns(ClientCredential.Create(hint, keyId, startDateTime, endDateTime, secret));
+            .Returns(ConfidentialClientCredetial.Create(hint, keyId, startDateTime, endDateTime, secret));
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
