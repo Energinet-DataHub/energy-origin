@@ -16,7 +16,7 @@ namespace API.UnitTests.Transfer.Api._Features_;
 public class GeneratePdfCommandTests
 {
     [Fact]
-    public async Task Handle_ReturnsPdfResult_WhenResponseIsSuccessful()
+    public async Task Given_ValidInput_When_SendingHtmlRequestUpstream_Then_PdfIsGenerated_And_ReturnedToClientWith200OK()
     {
         var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes("<html><body><h1>Hello, PDF!</h1></body></html>"));
         var command = new GeneratePdfCommand(base64Html);
@@ -44,7 +44,7 @@ public class GeneratePdfCommandTests
     }
 
     [Fact]
-    public async Task Handle_ReturnsErrorResult_WhenResponseIsUnsuccessful()
+    public async Task Given_ValidInput_When_UpstreamReturnsError_Then_ResponseIsSentToClientWith400BadRequest()
     {
         // Arrange
         var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes("<html><body><h1>Hello, PDF!</h1></body></html>"));
@@ -74,7 +74,7 @@ public class GeneratePdfCommandTests
     }
 
     [Fact]
-    public async Task Handle_ThrowsException_WhenBase64HtmlIsInvalid()
+    public async Task Given_InvalidInput_When_TryParseFails_Then_ResponseIsSentToClientWith400BadRequest()
     {
         // Arrange
         var invalidBase64Html = "InvalidBase64";
@@ -84,7 +84,12 @@ public class GeneratePdfCommandTests
         var pdfOptions = Options.Create(new PdfOptions { Url = "http://example.com" });
         var handler = new GeneratePdfCommandHandler(httpClient, pdfOptions);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<FormatException>(() => handler.Handle(command, CancellationToken.None));
+        // Act
+        var result = await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(400, result.StatusCode);
+        Assert.Equal("The provided HTML must be valid, and base64 encoded.", result.ErrorContent);
     }
 }

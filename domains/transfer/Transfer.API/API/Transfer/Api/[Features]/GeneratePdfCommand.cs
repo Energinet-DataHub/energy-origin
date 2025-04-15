@@ -1,11 +1,14 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.Setup.Pdf;
 using MediatR;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 
 namespace API.Transfer.Api._Features_;
@@ -17,17 +20,41 @@ public class GeneratePdfCommandHandler(HttpClient httpClient, IOptions<PdfOption
 
     public async Task<GeneratePdfResult> Handle(GeneratePdfCommand request, CancellationToken cancellationToken)
     {
-        var html = Encoding.UTF8.GetString(Convert.FromBase64String(request.Base64Html));
-        var response = await httpClient.PostAsJsonAsync(_pdfOptions.Url, new { Html = html }, cancellationToken);
+        string html;
 
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var pdfBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-            return new GeneratePdfResult(true, PdfBytes: pdfBytes);
+            html = Encoding.UTF8.GetString(Convert.FromBase64String(request.Base64Html));
+        }
+        catch (FormatException)
+        {
+            return new GeneratePdfResult(
+                false,
+                StatusCode: 400,
+                ErrorContent: "The provided HTML must be valid, and base64 encoded.",
+                PdfBytes: null);
         }
 
-        var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-        return new GeneratePdfResult(false, StatusCode: (int)response.StatusCode, ErrorContent: errorContent);
+        if (string.IsNullOrWhiteSpace(html) || !html.TrimStart().StartsWith("<"))
+        {
+            return new GeneratePdfResult(
+                false,
+                StatusCode: 400,
+                ErrorContent: "The provided HTML must be valid, and base64 encoded.",
+                PdfBytes: null);
+        }
+        var response = await httpClient.PostAsJsonAsync(_pdfOptions.Url, new { Html = html }, cancellationToken);
+
+        if ((int)response.StatusCode >= 400 && (int)response.StatusCode < 600)
+        {
+            return new GeneratePdfResult(
+                false,
+                StatusCode: 400,
+                ErrorContent: await response.Content.ReadAsStringAsync(cancellationToken));
+        }
+
+        var pdfBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        return new GeneratePdfResult(true, PdfBytes: pdfBytes);
     }
 }
 

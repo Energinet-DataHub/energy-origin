@@ -21,7 +21,7 @@ public class PdfControllerTests
     }
 
     [Fact]
-    public async Task ReturnsPdf()
+    public async Task Given_ValidInput_When_SendingHtmlRequestUpstream_Then_PdfIsGeneratedAndReturnedToClientWith200OK()
     {
         await using var test = _fixture.CreateIsolatedWireMockTest();
 
@@ -47,22 +47,42 @@ public class PdfControllerTests
     }
 
     [Fact]
-    public async Task ReturnsErrorFromPdfService()
+    public async Task Given_UpstreamPdfGeneratorReturn500_When_HandlingException_Then_MapAndReturnAs400BadRequest()
     {
         await using var test = _fixture.CreateIsolatedWireMockTest();
 
         test.StubRequest(
             req => req.WithPath("/generate-pdf").UsingPost(),
-            res => res.WithStatusCode(500));
+            res => res
+                .WithStatusCode(500));
 
-        var html = "<html><body><h1>Error</h1></body></html>";
-        var requestBody = new { Base64Html = html }; // Client forgets to base64 Encode
+        var html = "<html><body><h1>Hello!</h1></body></html>";
+        var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(html));
+        var requestBody = new { Base64Html = base64Html };
 
         var url = $"api/transfer/pdf/generate?organizationId={test.OrganizationId.Value}";
 
         var response = await test.Client.PostAsJsonAsync(url, requestBody,
             cancellationToken: TestContext.Current.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Given_ClientProvidedInvalidInput_When_Base64DecodeIntoHtmlFails_Then_MapAndReturnAs400BadRequest()
+    {
+        var sub = Guid.NewGuid();
+        var orgId = sub;
+        using var client = _fixture.Factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var html = "<html><body><h1>Error</h1></body></html>";
+        var requestBody = new { Base64Html = html };
+
+        var url = $"api/transfer/pdf/generate?organizationId={orgId}";
+
+        var response = await client.PostAsJsonAsync(url, requestBody,
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }
