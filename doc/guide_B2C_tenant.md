@@ -14,9 +14,9 @@ The following prerequiresites must be addressed before starting the configuratio
 
 ### App registrations
 
-Create registrations for `ett-authorization-b2c` client. This client will be used by custom policies to make requests to `Authorization` service.
-
 #### B2C app registration
+
+Create registration for `ett-authorization-b2c` client. This client will be used by custom policies to make requests to `Authorization` service.
 
 Navigate to `App registrations`.
 
@@ -38,7 +38,7 @@ The object id will be used as subject in access tokens issued with client creden
 
 ![New b2c app registration enterprise app oid](images/App_registration_b2c_enterprise_app_oid.png)
 
-#### Add secret
+##### Add secret
 
 Navigate to newly created app registration. Values for tenant-id and client-id can be found on this page. These values are needed later. Click `Add a certificate or secret`.
 
@@ -56,7 +56,7 @@ The generated secret value will not be available later. Make sure to copy the va
 
 ![New b2c certificate](images/App_registration_b2c_certificate_secret_value.png)
 
-#### Application id
+##### Application id
 
 Add an application id to the newly registered application. Click `Add an Application ID URI`.
 
@@ -70,7 +70,7 @@ Get application id url (used in scope when performing a client credentials flow)
 
 ![New b2c certificate](images/App_registration_b2c_application_id_get.png)
 
-#### Test client credentials
+##### Test client credentials
 
 Test client-credentials flow is working for the newly created app registration. The following REST script can be modified to perform the test. Fill in the missing values aquired previously in this guide.
 
@@ -127,6 +127,105 @@ Add permissions to app registration.
 Grant admin consent to permissions.
 
 ![Frontend app registration permissions](images/App_registration_frontend_permissions_admin_consent.png)
+
+#### Authorization app registration
+
+Create the app registration `ett-internal-authorization-secrets`. This client will be used by the Authorization subsystem to call the Microsoft Graph API.
+
+Specificially it will be used to get/create/delete secrets in app registrations for third-party clients.
+
+Navigate to `App registrations`.
+
+![App registrations](images/App_registrations.png)
+
+Click `New registration`.
+
+![New app registration](images/App_registrations_new.png)
+
+Enter `ett-internal-authorization-secrets` in `Name`.
+
+Under `Supported account types`, choose `Accounts in this organizational directory only (Single tenant)`.
+
+Uncheck `Grant admin consent to openid and offline_access permission` checkbox. Finally click `Register`.
+
+![App registrations](images/authorization/appregistration-new.png)
+
+##### Add secret
+
+Navigate to newly created app registration. Values for tenant-id and client-id can be found on this page. These values are needed later. Click `Add a certificate or secret`.
+
+![App registration created](images/authorization/appregistration-created.png)
+
+Click `New client secret`.
+
+![New secret](images/authorization/appregistration-newsecret.png)
+
+Give the secret a `Description` and set `Expires` to two years in the future (maximum expiration). Click `Add`.
+
+![Secret setup](images/authorization/appregistration-secret.png)
+
+The generated secret value will not be available later. Make sure to copy the value now and store it somewhere secure.
+
+![Secret created](images/authorization/appregistration-secretcreated.png)
+
+##### Add API permission
+
+Navigate to `API permissions`.
+
+![Navigate to API permissions](images/authorization/appregistration-permissions.png)
+
+Click `Add a permission` and select `Microsoft Graph`.
+
+![Add graph permissions](images/authorization/appregistration-permissionsgraph.png)
+
+Click `Application permissions` and add the permission `Application.ReadWrite.All`.
+
+![Application permissions](images/authorization/appregistration-permissionsapp.png)
+
+Grant admin consent to the newly added permission.
+
+![Navigate to API permissions](images/authorization/appregistration-permissionsconsent.png)
+
+##### Test client credentials
+
+Test that it's possible to get an access-token that can be used for the Microsoft Graph API. The following REST script can be modified to perform the test. Fill in the missing values aquired previously in this guide.
+
+```rest
+@grantType = client_credentials
+@clientId = <fill-in>
+@clientSecret = <fill-in>
+@scope = https://graph.microsoft.com/.default
+@tenantId = <fill-in>
+###
+
+# @name tokenResponse
+POST https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type={{grantType}}
+&client_id={{clientId}}
+&client_secret={{clientSecret}}
+&scope={{scope}}
+```
+
+##### Seal secret and add to Authorization sub system
+
+Seal the secret from the app registration using the [how-to guide](https://github.com/Energinet-DataHub/eo-base-environment/blob/main/docs/guides/how-to-seal-a-secret.md).
+
+- name: `b2c-appregistration-secrets`
+- namespace: `eo`
+- secret-key name: `ETT_INTERNAL_AUTHORIZATION_SECRETS_SECRET`
+
+Add the sealed secret to the specific Authorization sub system environment in the repository `eo-base-environment`.
+
+##### Add AzureAd data to configmap
+
+Add the following data to the specific Authorization sub system environment configmap (`authorization-cm`), in the repository `eo-base-environment`.
+
+- AzureAd__Instance: https://login.microsoftonline.com/
+- AzureAd__ClientId: `<fill-in>`
+- AzureAd__TenantId: `<fill-in>`
+- AzureAd__ClientCredentials__0__SourceType: ClientSecret
 
 ### Deploy custom policies
 
