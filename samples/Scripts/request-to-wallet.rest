@@ -1,6 +1,0 @@
-### Get wallets with authorization and organizationId
-GET https://{DOMAIN_NAME_HERE}/wallet-api/v1/wallets?organizationId={GUID_HERE}
-Authorization: "Bearer ey..."
-
-
-
