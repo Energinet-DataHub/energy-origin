@@ -1,0 +1,5 @@
+name: eo-html-pdf-generator
+repo: ghcr.io/energinet-datahub
+references:
+  - file: k8s/energy-origin-apps/html-pdf-generator/base/deployment.yaml
+    path: .spec.template.spec.containers[] | select(.name == "html-pdf-generator") | .image

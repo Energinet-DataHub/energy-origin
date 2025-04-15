@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.Transfer.Api.Clients;
-using EnergyOrigin.Domain.ValueObjects;
 
-namespace API.IntegrationTests;
+namespace API.IntegrationTests.Setup.Tooling;
 
 public class MockAuthorizationClient : IAuthorizationClient
 {
