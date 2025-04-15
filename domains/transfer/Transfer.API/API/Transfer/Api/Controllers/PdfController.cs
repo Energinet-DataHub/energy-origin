@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using API.Transfer.Api._Features_;
 using Asp.Versioning;
@@ -6,6 +7,7 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -40,8 +42,8 @@ public class PdfController : ControllerBase
     /// <response code="403">Caller is not authorized to access the specified organization</response>
     [HttpPost]
     [Produces("application/pdf")]
-    [ProducesResponseType(typeof(void), 400)]
-    [ProducesResponseType(typeof(void), 403)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [Route("api/transfer/pdf/generate")]
     [SwaggerOperation(
         Summary = "Generates a PDF from HTML",
@@ -55,6 +57,6 @@ public class PdfController : ControllerBase
 
         return result.IsSuccess
             ? File(result.PdfBytes!, "application/pdf")
-            : StatusCode(result.StatusCode!.Value, result.ErrorContent);
+            : BadRequest();
     }
 }
