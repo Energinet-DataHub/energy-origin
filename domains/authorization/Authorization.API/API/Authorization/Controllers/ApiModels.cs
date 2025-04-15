@@ -122,3 +122,17 @@ public record UserinfoResponse(
     [property: JsonPropertyName("org_cvr")] string OrgCvr,
     [property: JsonPropertyName("org_name")] string OrgName
 );
+
+public record CreateCredentialResponse(
+    string? Hint,
+    Guid KeyId,
+    long? StartDate,
+    long? EndDate,
+    string? Secret);
+
+public record GetCredentialsResponse(IEnumerable<GetCredentialsResponseItem> Result);
+public record GetCredentialsResponseItem(
+    string? Hint,
+    Guid KeyId,
+    long? StartDate,
+    long? EndDate);
