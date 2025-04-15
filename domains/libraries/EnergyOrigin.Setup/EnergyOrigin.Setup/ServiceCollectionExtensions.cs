@@ -56,7 +56,6 @@ public static class ServiceCollectionExtensions
         return openTelemetryBuilder
             .WithMetrics(meterProviderBuilder =>
                 meterProviderBuilder
-                    .SetExemplarFilter(ExemplarFilterType.TraceBased)
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
