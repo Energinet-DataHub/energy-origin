@@ -10,7 +10,9 @@ In this document code examples are shown in `C#`, and all requests target the de
 
 Before following this guide, you need to complete an onboarding process with Energinet Energy Track & Trace (ETT). As part of this process you will receive credentials for machine-to-machine integration. These credentials consist of a `client-id` and a `client-secret`.
 
-The value of `client-secret` must be kept secret at all times. Use appropriate measures to store it securily while developing and deploying client systems.
+The initial `client-secret` you receive will **only be valid for one month**. There is a Credentials API that must be used to generate a new `client-secret`. Secrets that aregenerated through this API will be valid for one year. A client can have two `client-secrets` configured.
+
+The value of the `client-secret(s)` must be kept secret at all times. Use appropriate measures to store them securily while developing and deploying client systems.
 
 It is possible to initiate a grant consent user flow on the ETT website from another website. In order for the flow to redirect the user back to the original website after granting consent, ETT will need a valid `redirect-url`. See [Consent](#consent) section. This `redirect-url` can be provided to Energinet as part of the onboarding process.
 
