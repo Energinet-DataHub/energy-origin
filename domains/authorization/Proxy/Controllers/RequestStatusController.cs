@@ -11,7 +11,7 @@ namespace Proxy.Controllers;
 [Route("wallet-api")]
 public class RequestStatusController : ProxyBase
 {
-    public RequestStatusController(IHttpClientFactory httpClientFactory, HttpContextAccessor? httpContextAccessor)
+    public RequestStatusController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor)
         : base(httpClientFactory, httpContextAccessor)
     {
     }
@@ -27,7 +27,7 @@ public class RequestStatusController : ProxyBase
     /// <response code="400">The user is not authenticated.</response>
     /// <response code="404">Status not found.</response>
     [HttpGet]
-    [Route("v1/request-status/{requestId}")]
+    [Route("request-status/{requestId}")]
     [Produces("application/json")]
     [Authorize(policy: Policy.FrontendOr3rdParty)]
     [ApiVersion(ApiVersions.Version1)]
