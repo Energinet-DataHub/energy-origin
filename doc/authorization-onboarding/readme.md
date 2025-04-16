@@ -16,7 +16,9 @@ Onboarding clients to Demo:
   * Run: doc\onboarding-test-client.rest (test that new client can login and that client can make call to our api's)
 * Deliver Client Id + Client Secret to customer securely
 
-Same steps for Prod, just with other URL's. At the moment we have issue, that clients onboarded on VClusters also need to be onboarded on Demo, since Azure B2C always ask DEMO if client exists before login.
+Almost the same steps for Prod, just with other URL's and the **initial client secret must be set to an expiration of one month**.
+
+At the moment we have issue, that clients onboarded on VClusters also need to be onboarded on Demo, since Azure B2C always ask DEMO if client exists before login.
 
 ## Detailed with screenshots guide
 
@@ -46,7 +48,9 @@ to get into overview of client secrets.
 
 ![client secrtes](client_secrets.png)
 
-Here we can click on "New Client Secret", to create a a new client secret. The description isn't that important and we will stick with default 6 months expire date for now.
+Here we can click on "New Client Secret", to create a a new client secret. The description isn't that important.
+
+The client secret should have a 6 months expiration in demo and a **1 month expiration in prod**.
 
 ![save secret](save_secret.png)
 
@@ -68,4 +72,4 @@ Test of client
   * Login as created client
   * Test client can make API calls. (Get list of consents. Will be empty Result list.)
 
-With everything tested we just need to deliver Client ID and Client Secret to the contact person in a securely manor.
+With everything tested we just need to deliver Client ID and Client Secret to the contact person in a secure manner.

@@ -29,7 +29,11 @@ public class CredentialController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status404NotFound)]
     [SwaggerOperation(
         Summary = "Create credential",
-        Description = "Creates a single credential for a client"
+        Description = """
+                      Creates a single credential for a client and returns the client secret as part of the response.
+
+                      It is only possible to have two credentials configured.
+                      """
     )]
     public async Task<ActionResult<CreateCredentialResponse>> CreateCredential([FromRoute] Guid clientId)
     {
@@ -54,7 +58,11 @@ public class CredentialController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status404NotFound)]
     [SwaggerOperation(
         Summary = "Gets credentials",
-        Description = "Gets all credentials for a client"
+        Description = """
+                      Gets all credentials for a client. The client secret is not returned as part of the credential.
+
+                      Use the KeyId that is returned in the response to delete a credential.
+                      """
     )]
     public async Task<ActionResult<GetCredentialsResponse>> GetCredentials([FromRoute] Guid clientId)
     {
@@ -81,7 +89,11 @@ public class CredentialController(
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status404NotFound)]
     [SwaggerOperation(
         Summary = "Deletes credential",
-        Description = "Deletes a single credential for a client"
+        Description = """
+                      Deletes a single credential for a client.
+
+                      Make sure you have another credential created before calling this endpoint, to guarentee that you can continue calling the Energy Track & Trace API.
+                      """
     )]
     public async Task<ActionResult> DeleteCredential([FromRoute] Guid clientId, [FromRoute] Guid keyId)
     {
