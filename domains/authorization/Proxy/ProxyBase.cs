@@ -115,7 +115,14 @@ public class ProxyBase : ControllerBase
     /// <param name="organizationId"></param>
     protected async Task ProxyClientCredentialsRequest(string path, string? organizationId)
     {
-        AccessDescriptor accessDescriptor = new AccessDescriptor(new IdentityDescriptor(_httpContextAccessor!));
+        if (_httpContextAccessor is null)
+        {
+            Forbidden();
+            return;
+        }
+
+        var accessDescriptor = new AccessDescriptor(new IdentityDescriptor(_httpContextAccessor));
+
         if (string.IsNullOrEmpty(organizationId))
         {
             Forbidden();
