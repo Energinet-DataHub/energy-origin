@@ -34,7 +34,7 @@ public class RequestStatusController : ProxyBase
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task GetRequestStatus([FromRoute] Guid requestId, [Required] [FromQuery] string organizationId)
+    public async Task GetRequestStatus([FromRoute] Guid requestId, [Required][FromQuery] string organizationId)
     {
         await ProxyClientCredentialsRequest($"v1/request-status/{requestId}", organizationId);
     }
