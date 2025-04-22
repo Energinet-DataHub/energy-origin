@@ -27,8 +27,6 @@ public class AuthorizationService : IAuthorizationService
 
     public async Task<GetOrganizationsResponse> GetOrganizationsAsync(CancellationToken cancellationToken)
     {
-        // return new GetOrganizationsResponse(new[]
-        //     { new GetOrganizationsResponseItem(Guid.NewGuid(), "test", "12345678") });
         var response = await _client.GetAsync("first-party-organizations/", cancellationToken);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<GetOrganizationsResponse>(cancellationToken);
@@ -37,8 +35,6 @@ public class AuthorizationService : IAuthorizationService
 
     public async Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync(CancellationToken cancellationToken)
     {
-        // return new GetWhitelistedOrganizationsResponse(new[]
-        //     { new GetWhitelistedOrganizationsResponseItem(Guid.NewGuid(), "12345678") });
         var response = await _client.GetAsync("whitelisted-organizations/", cancellationToken);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<GetWhitelistedOrganizationsResponse>(cancellationToken);

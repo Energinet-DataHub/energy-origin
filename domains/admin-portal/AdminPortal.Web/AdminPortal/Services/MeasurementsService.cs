@@ -18,12 +18,6 @@ public class MeasurementsService(HttpClient client) : IMeasurementsService
 {
     public async Task<GetMeteringpointsResponse> GetMeteringPointsHttpRequestAsync(Guid organizationId)
     {
-        // return new GetMeteringpointsResponse(new List<GetMeteringPointsResponseItem>()
-        // {
-        //     new GetMeteringPointsResponseItem("1", MeteringPointType.Consumption),
-        //     new GetMeteringPointsResponseItem("2", MeteringPointType.Production)
-        // });
-
         var response = await client.GetAsync($"internal-meteringpoints?organizationId={organizationId}");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<GetMeteringpointsResponse>();

@@ -168,7 +168,6 @@ app.UseStaticFiles(new StaticFileOptions
 {
     RequestPath = "/ett-admin-portal"
 });
-// app.UseStaticFiles();
 app.UsePathBase("/ett-admin-portal");
 
 app.UseRouting();
