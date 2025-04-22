@@ -111,7 +111,7 @@ var response = await httpClient.SendAsync(request);
 var credentialResponse = await response.Content.ReadFromJsonAsync<CreateCredentialResponse>();
 ```
 
-The result should look something like the `JSON` response below. A list of organizations that have granted you consent to act on their behalf.
+The result should look something like the `JSON` response below. A new credential with a secret _(secret has been redacted)_ that is valid for one year.
 
 ```json
 {
