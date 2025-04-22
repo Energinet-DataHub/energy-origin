@@ -37,8 +37,6 @@ Api-Supported-Versions: This header indicates the currently supported versions o
 Api-Deprecated-Versions: This header lists any API versions that are deprecated but still operational within the 6-month window.
 ```
 
-
-
 ## Authorization
 
 All requests to Energy Track & Trace endpoints are authorized. All request must contain an Authorization header with a bearer token. Tokens can be obtained using a standard OAuth 2.0 `client-credentials` grant.
@@ -85,7 +83,47 @@ var accessToken = responseBody!.AccessToken;
 var accessTokenExpiryTime = DateTime.UtcNow.AddSeconds(responseBody.ExpiresIn);
 ```
 
-## Consent
+## API usage
+
+All API endpoints in ETT are versioned using a header based versioning scheme. A request must contain an `X-API-Version` header with a value matching the desired version of the endpoint to use.
+
+Refer to OpenAPI spec for a description of available API endpoints.
+
+## Get new Credential
+
+The initial credentials you received are only valid for one month. To generate a new set of credentials with a `client-secret` that is valid for one year, use the endpoint <https://demo.energytrackandtrace.dk/developer#tag/Credential/paths/~1api~1authorization~1clients~1%7BclientId%7D~1credentials/post>
+
+### C# example: Get new Credential
+
+```csharp
+var token = "<access-token>"; // Access token obtained with client-credentials
+
+var clientId = "04fde00d-77c8-44dc-bb26-bd5f697b0788";
+var httpClient = new HttpClient();
+
+var request = new HttpRequestMessage(HttpMethod.Post,
+    $"https://demo.energytrackandtrace.dk/api/authorization/clients/{clientId}/credentials");
+
+request.Headers.Authorization = new AuthenticationHeaderValue("bearer", token);
+request.Headers.Add("X-API-Version", "1");
+
+var response = await httpClient.SendAsync(request);
+var credentialResponse = await response.Content.ReadFromJsonAsync<CreateCredentialResponse>();
+```
+
+The result should look something like the `JSON` response below. A list of organizations that have granted you consent to act on their behalf.
+
+```json
+{
+    "hint": "1yF",
+    "keyId": "692675d2-0fe8-42a2-91d3-b5720781ab10",
+    "startDate": 1745314015,
+    "endDate": 1776850015,
+    "secret": "<secret>"
+}
+```
+
+## Grant consent
 
 When making requests to the API, and accessing resources, you will need consent from the organization owning the resources. Consent is granted by a user affiliated with the organization. Consent is granted using the ETT website.
 
@@ -107,11 +145,7 @@ sequenceDiagram
 
 In order to start the grant consent user flow, redirect the user to the following page: `https://energytrackandtrace.dk/da/onboarding?client-id=<client-id>&redirect-url=<redirect url>`. The redirect URL may contain parameters to allow state propagation. After completing the flow and granting consent, the user is redirected to `<redirect-url>`.
 
-## API usage
-
-All API endpoints in ETT are versioned using a header based versioning scheme. A request must contain an `X-API-Version` header with a value matching the desired version of the endpoint to use.
-
-Refer to OpenAPI spec for a description of available API endpoints.
+## Consent
 
 Most API's takes an organization id as query param and is used to specify which organization to act on behalf of. The available organizations are given by the consents granted to you as a 3rd party client. A list of consenting organizations can be found with a `GET` request to `api/authorization/client/consents`, providing a valid access token that identifies you as a 3rd party client.
 
