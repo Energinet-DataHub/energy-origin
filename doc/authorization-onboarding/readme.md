@@ -18,7 +18,7 @@ Onboarding clients to Demo:
 
 Almost the same steps for Prod, just with other URL's and the **initial client secret must be set to an expiration of one month**.
 
-At the moment we have issue, that clients onboarded on VClusters also need to be onboarded on Demo, since Azure B2C always ask DEMO if client exists before login.
+At the moment we have the issue, that clients onboarded on VClusters also need to be onboarded on Demo, since Azure B2C always ask DEMO if client exists before login.
 
 ## Detailed with screenshots guide
 
