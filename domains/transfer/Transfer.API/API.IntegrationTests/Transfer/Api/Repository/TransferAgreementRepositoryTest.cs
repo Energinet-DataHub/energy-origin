@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using API.IntegrationTests.Setup.Fixtures;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;

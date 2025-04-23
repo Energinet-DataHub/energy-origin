@@ -13,6 +13,7 @@ using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Exceptions.Middleware;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.OpenTelemetry;
+using EnergyOrigin.Setup.Pdf;
 using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
@@ -53,6 +54,8 @@ builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
     x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler, TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
 });
+
+builder.Services.AddPdfOptions();
 
 builder.Services.AddScoped<IBearerTokenService, WebContextBearerTokenService>();
 builder.Services.AddHttpClient<IAuthorizationClient, AuthorizationClient>(client =>
