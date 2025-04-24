@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
+using AdminPortal.Models;
 
 namespace AdminPortal.Services;
 

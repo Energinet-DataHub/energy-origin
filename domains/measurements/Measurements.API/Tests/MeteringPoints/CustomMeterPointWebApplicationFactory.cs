@@ -29,7 +29,7 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
     public string ConnectionString { get; set; } = "";
 
     private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
-
+    public readonly string AdminPortalEnterpriseAppRegistrationObjectId = "8bb12660-aa0e-4eef-a4aa-d6cd62615201";
     public Meteringpoint.V1.Meteringpoint.MeteringpointClient MeteringPointClientMock { get; private set; } = null!;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -48,7 +48,7 @@ public class CustomMeterPointWebApplicationFactory<TStartup> : WebApplicationFac
             "https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_MITID");
         builder.UseSetting("B2C:Audience", "f00b9b4d-3c59-4c40-b209-2ef87e509f54");
         builder.UseSetting("B2C:CustomPolicyClientId", "a701d13c-2570-46fa-9aa2-8d81f0d8d60b");
-        builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", "8bb12660-aa0e-4eef-a4aa-d6cd62615201");
+        builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", AdminPortalEnterpriseAppRegistrationObjectId);
 
         MeteringPointClientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
 
