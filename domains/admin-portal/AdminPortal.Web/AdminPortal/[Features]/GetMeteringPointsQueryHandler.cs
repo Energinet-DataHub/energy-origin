@@ -32,7 +32,8 @@ public record GetMeteringPointsQueryResultItem(
 public class GetMeteringPointsQueryHandler(
     IMeasurementsService measurementsService,
     IAuthorizationService authorizationService,
-    ICertificatesService certificatesService)
+    ICertificatesService certificatesService,
+    ILogger<GetMeteringPointsQueryHandler> logger)
     : IRequestHandler<GetMeteringPointsQuery, GetMeteringPointsQueryResult>
 {
     public async Task<GetMeteringPointsQueryResult> Handle(GetMeteringPointsQuery request,
@@ -53,6 +54,11 @@ public class GetMeteringPointsQueryHandler(
         {
             var meteringpoints =
                 await measurementsService.GetMeteringPointsHttpRequestAsync(selectedOrganization.OrganizationId);
+
+            if (meteringpoints.Result.Count == 0)
+            {
+                return new GetMeteringPointsQueryResult([]);
+            }
 
             var contracts = await certificatesService.GetContractsHttpRequestAsync();
 
@@ -77,8 +83,9 @@ public class GetMeteringPointsQueryHandler(
             return new GetMeteringPointsQueryResult(result);
 
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            logger.LogError("Something went wrong when getting metering points: {Message}", e.Message);
             return new GetMeteringPointsQueryResult([]);
         }
     }
