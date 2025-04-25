@@ -19,4 +19,5 @@ public static class EnergyTagAttributeKeys
     public const string EnergyTagProductionDeviceCommercialOperationDate = "energyTag_ProductionDeviceCommercialOperationDate";
     public const string EnergyTagEnergyCarrier = "energyTag_EnergyCarrier";
     public const string EnergyTagGcIssueDeviceType = "energyTag_GcIssueDeviceType";
+    public const string EnergyTagDisclosure = "energyTag_Disclosure";
 }
