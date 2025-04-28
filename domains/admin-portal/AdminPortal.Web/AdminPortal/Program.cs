@@ -114,6 +114,23 @@ builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("Certi
         );
     });
 
+builder.Services.AddHttpClient<IMeasurementsService, MeasurementsService>("MeasurementsClient", (sp, client) =>
+    {
+        var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
+        client.BaseAddress = new Uri(clientUriOptions.Measurements);
+    })
+    .AddHttpMessageHandler(sp =>
+    {
+        var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
+        return new ClientCredentialsTokenHandler(
+            options.ClientId,
+            options.ClientSecret,
+            options.TenantId,
+            new[] { options.Scope },
+            sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
+        );
+    });
+
 builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("AuthorizationClient", (sp, client) =>
     {
         var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;

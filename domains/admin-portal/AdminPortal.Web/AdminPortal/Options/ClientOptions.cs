@@ -11,4 +11,7 @@ public class ClientUriOptions
 
     [Required]
     public string Certificates { get; set; } = null!;
+
+    [Required]
+    public string Measurements { get; set; } = null!;
 }
