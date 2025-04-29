@@ -61,10 +61,10 @@ runs:
 
         body=$(printf '%s\n' "${urls[@]}" | jq -Rs 'split("\n")[:-1]')
 
-        az rest -m PATCH \
-          -u "https://graph.microsoft.com/v1.0/applications/${{ env.ettFrontendAppObjectId }}" \
-          -H 'Content-Type: application/json' \
-          -b "{\"spa\":{\"redirectUris\":$body}}"
+        az rest \
+          --method "patch" \
+          --uri    "https://graph.microsoft.com/v1.0/applications/${{ env.ettFrontendAppObjectId }}" \
+          --headers "{'Content-Type': 'application/json'}" \
+          --body   "{\"spa\":{\"redirectUris\":$body}}"
 
         az ad app show --id "${{ env.ettFrontendAppObjectId }}"
-
