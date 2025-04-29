@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Granulære Oprindelsesgarantier</title>
+        <style>
+            :root {
+                /* Color variables */
+                --dark-blue-text: #002433;
+                --secondary-color: #555;
+                --grey-background-color: #F9FAFB;
+                --text-color: #333;
+
+                --logo-height: 64px;
+            }
+
+            body {
+                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+
+                width: 595px;
+                height: 842px;
+                padding: 16px 16px;
+
+            }
+
+            .top {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 10px 16px;
+            }
+
+            .company-name {
+                font-size: 12px;
+                color: var(--dark-blue-text);
+                font-weight: 700;
+                letter-spacing: 0.1em;
+            }
+
+            .company-cvr {
+                font-size: 12px;
+                color: var(--dark-blue-text);
+                letter-spacing: 0.1em;
+            }
+
+            .header {
+                margin: 14px;
+
+                .subtitle {
+                    font-size: 12px;
+                    margin-top: 0;
+                    margin-bottom: 10px;
+                    color: var(--dark-blue-text);
+                    letter-spacing: 0.1em;
+                }
+
+                h1 {
+                    color: var(--dark-blue-text);
+                    font-size: 47px;
+                    font-weight: 700;
+                    margin: 0
+                }
+            }
+
+            .chart {
+                background-color: var(--grey-background-color);
+                padding: 16px;
+            }
+
+            .chart-header {
+                display: flex;
+                justify-content: space-between;
+
+            }
+
+            .hourly-coverage {
+                display: flex;
+                flex-direction: column;
+
+                .title {
+                    font-size: 12px;
+                    color: var(--dark-blue-text);
+                    font-weight: 400;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                }
+
+                .value {
+                    font-size: 54px;
+                    color: var(--dark-blue-text);
+                    font-weight: 700;
+                }
+            }
+
+            .period {
+                display: flex;
+                flex-direction: column;
+
+                .title {
+                    font-size: 12px;
+                    color: var(--dark-blue-text);
+                    font-weight: 400;
+                    text-align: end;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                }
+
+                .value {
+                    font-size: 12px;
+                    color: var(--dark-blue-text);
+                    font-weight: 700;
+                    text-align: end;
+
+                }
+            }
+
+            .chart-image {
+                margin-bottom: 20px;
+            }
+
+            /* Temporary styling for mock graph*/
+            .bar-chart {
+                position: relative;
+                margin-top: -30px;
+                width: 100%;
+            }
+
+            .hour-numbers {
+                width: 100%;
+            }
+
+            .legend {
+                height: 100%;
+            }
+
+            .other-coverage {
+                display: flex;
+                justify-content: space-between;
+                span {
+                    font-size: 10px;
+                    color: var(--dark-blue-text);
+                }
+            }
+
+            .details {
+                margin: 16px;
+            }
+
+            .sections {
+                display: flex;
+                flex-direction: row;
+                gap: 20px;
+
+                .section-column {
+                    min-width: 120px;
+                    .section-title {
+                        margin: 0;
+                    }
+
+                    ul {
+                        list-style-type: none;
+                        padding: 0;
+                        margin: 0;
+                        li {
+                            font-size: 10px;
+                        }
+                    }
+                }
+            }
+
+            .description {
+                font-size: 10px;
+                color: var(--dark-blue-text);
+                margin-bottom: 12px;
+            }
+
+            .logo-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 14px;
+                min-height: var(--logo-height);
+                max-height: var(--logo-height);
+                padding: 0 16px;
+
+                background-color: var(--grey-background-color);
+
+                .logo {
+                    width: 110px;
+                    max-height: var(--logo-height);
+                    margin: 0 20px
+                }
+            }
+
+            .disclaimer {
+                p {
+                    padding: 0 32px;
+                    font-size: 6.3px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="top">
+            <p class="company-name">Novo Nordisk</p>
+            <p class="company-cvr">CVR 12345678</p>
+        </div>
+        <div class="header">
+            <p class="subtitle">Markedsrapport baseret på</p>
+            <h1>Granulære oprindelsesgarantier</h1>
+        </div>
+
+        <div class="chart">
+            <div class="chart-header">
+                <div class="hourly-coverage">
+                    <span class="title">Timedækning</span>
+                    <span class="value">50%</span>
+                </div>
+                <div class="period">
+                    <span class="title">For perioden</span>
+                    <span class="value">ÅRET 2024</span>
+                </div>
+            </div>
+            <!-- Chart will be dynamically inserted here -->
+            <div class="chart-image">
+                <!-- Mocked Chart-->
+                <img class="bar-chart" src="mock-report-chart.png" alt="Chart">
+                <img class="hour-numbers" src="hour-numbers.png" alt="Time Tal">
+                <img class="legend" src="legend.png" alt="<Legend>">
+            </div>
+            <div class="other-coverage">
+                <span id="daily-coverage">Dagsdækning: 61%</span>
+                <span id="weekly-coverage">Ugedækning: 72%</span>
+                <span id="monthly-coverage">Månedsdækning: 79%</span>
+                <span id="annual-coverage">Årsdækning: 85%</span>
+            </div>
+        </div>
+
+        <div class="details">
+            <p class="description">Granulære Oprindelsesgarantier er udelukkende udstedt på basis af sol- og vindproduktion.
+                Herunder kan du se en fordeling af geografisk oprindelse, teknologityper samt andelen fra statsstøttede
+                producenter.</p>
+
+            <div class="sections">
+                <div class="section-column">
+                    <h6 class="section-title">Kommuner</h6>
+                    <ul>
+                        <li>Aabenraa: 50%</li>
+                        <li>Ringkøbing-Skjern: 25%</li>
+                        <li>Lolland: 20%</li>
+                        <li>Andre kommuner: 5%</li>
+                    </ul>
+                </div>
+                <div class="section-column">
+                    <h6 class="section-title">Teknologi</h6>
+                    <ul>
+                        <li>Solenergi: 38%</li>
+                        <li>Vindenergi: 62%</li>
+                    </ul>
+                </div>
+                <div class="section-column">
+                    <h6 class="section-title">Andel fra statsstøttede producenter</h6>
+                    <ul>
+                        <li>Ikke statsstøttede: 95%</li>
+                        <li>Statsstøttede: 5%</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="logo-container">
+            <img class="logo" src="energinet-logo.svg" alt="Energinet Logo">
+            <img class="logo" src="energy-track-and-trace-logo.png" alt="Energy Track and Trace Logo">
+            <img class="logo" src="energy-tag-logo.svg" alt="Energy Tag Logo">
+        </div>
+
+        <div class="disclaimer">
+            <p>Data grundlag & Godkendelse. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
+                Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
+                sit amet risus. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio
+                sem nec elit. </p>
+        </div>
+    </body>
+</html>
+
+
+
+
+
+
+
+
+
