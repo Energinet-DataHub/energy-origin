@@ -22,6 +22,7 @@ public class IntegrationTestFixture : IAsyncLifetime
 {
     public QueryApiWebApplicationFactory WebApplicationFactory { get; private set; }
     public PostgresContainer PostgresContainer { get; private set; }
+    private ProjectOriginStack ProjectOriginStack { get; set; }
     public RabbitMqContainer RabbitMqContainer { get; set; }
     public MeasurementsWireMock MeasurementsMock { get; private set; }
     private Respawner? _respawner;
@@ -30,6 +31,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     {
         WebApplicationFactory = new QueryApiWebApplicationFactory();
         PostgresContainer = new PostgresContainer();
+        ProjectOriginStack = new ProjectOriginStack();
         RabbitMqContainer = new RabbitMqContainer();
         MeasurementsMock = new MeasurementsWireMock();
     }
@@ -38,6 +40,9 @@ public class IntegrationTestFixture : IAsyncLifetime
     {
         PostgresContainer = new PostgresContainer();
         await PostgresContainer.InitializeAsync();
+
+        ProjectOriginStack = new ProjectOriginStack();
+        await ProjectOriginStack.InitializeAsync();
 
         RabbitMqContainer = new RabbitMqContainer();
         await RabbitMqContainer.InitializeAsync();
@@ -48,8 +53,8 @@ public class IntegrationTestFixture : IAsyncLifetime
         WebApplicationFactory.ConnectionString = PostgresContainer.ConnectionString;
         WebApplicationFactory.RabbitMqOptions = RabbitMqContainer.Options;
         WebApplicationFactory.MeasurementsUrl = MeasurementsMock.Url;
-        WebApplicationFactory.WalletUrl = "http://non-existing"; //ProjectOriginStack.WalletUrl;
-        WebApplicationFactory.StampUrl = "http://non-existing"; //ProjectOriginStack.StampUrl;
+        WebApplicationFactory.WalletUrl = ProjectOriginStack.WalletUrl;
+        WebApplicationFactory.StampUrl = ProjectOriginStack.StampUrl;
         WebApplicationFactory.Start();
         await using var connection = new NpgsqlConnection(WebApplicationFactory.ConnectionString);
         await connection.OpenAsync();
@@ -71,7 +76,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         });
     }
 
-    public string WalletUrl => "http://non-existing"; //ProjectOriginStack.WalletUrl;
+    public string WalletUrl => ProjectOriginStack.WalletUrl;
 
     public async ValueTask DisposeAsync()
     {
