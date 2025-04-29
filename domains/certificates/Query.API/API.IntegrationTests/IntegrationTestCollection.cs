@@ -82,6 +82,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     {
         await WebApplicationFactory.DisposeAsync();
         await PostgresContainer.DisposeAsync();
+        await ProjectOriginStack.DisposeAsync();
         await RabbitMqContainer.DisposeAsync();
         MeasurementsMock.Dispose();
     }
