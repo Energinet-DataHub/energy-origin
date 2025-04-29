@@ -40,6 +40,7 @@ runs:
         echo "DIRECTORY=$DIRECTORY" | tee -a $GITHUB_ENV
         echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
         echo "RUNTIME=$(jq -rc '.runtime.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
+
     - name: Overwrite - if given optional input
       shell: bash
       run: |

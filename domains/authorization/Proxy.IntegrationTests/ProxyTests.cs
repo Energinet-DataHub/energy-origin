@@ -3,7 +3,6 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
 using FluentAssertions;
 using Proxy.Controllers;
 using Proxy.IntegrationTests.Setup;
@@ -123,6 +122,7 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
     [InlineData("/wallet-api/aggregate-claims", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
     [InlineData("/wallet-api/transfers", "")]
     [InlineData("/wallet-api/aggregate-transfers", "&TimeAggregate=hour&TimeZone=UTC&Start=1622505600&End=1625097600")]
+    [InlineData("/wallet-api/request-status/f07743a2-744b-4df4-9320-c132f36333dc", "")]
     public async Task GivenB2C_WhenV20240515GetEndpointsAreUsed_ThenAppendQueryParameterAsWalletOwnerHeader(string endpoint, string queryParameters)
     {
         // Arrange

@@ -21,4 +21,58 @@ public class AccessDescriptorTest
 
         sut.IsAuthorizedToOrganization(Guid.Empty).Should().BeFalse();
     }
+
+    [Fact]
+    public void GivenAnExternalClient_WhenOrgIdIsPresent_ShouldReturnTrue()
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimType.OrgId, Guid.NewGuid().ToString()),
+            new(ClaimType.SubType, "External")
+        };
+
+        var contextAccessor = IdentityDescriptorTest.BuildContextAccessor(claims);
+        var identityDescriptor = new IdentityDescriptor(contextAccessor);
+        var sut = new AccessDescriptor(identityDescriptor);
+
+        // Act/Assert
+        sut.IsExternalClientAuthorized().Should().BeTrue();
+    }
+
+    [Fact]
+    public void GivenAnNonExternalClient_WhenOrgIdIsPresent_ShouldReturnFalse()
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimType.OrgId, Guid.NewGuid().ToString()),
+            new(ClaimType.SubType, "Internal")
+        };
+
+        var contextAccessor = IdentityDescriptorTest.BuildContextAccessor(claims);
+        var identityDescriptor = new IdentityDescriptor(contextAccessor);
+        var sut = new AccessDescriptor(identityDescriptor);
+
+        // Act/Assert
+        sut.IsExternalClientAuthorized().Should().BeFalse();
+    }
+
+    [Fact]
+    public void GivenAnExternalClient_WhenOrgIdIsNotPresent_ShouldReturnFalse()
+    {
+        // Arrange
+        var claims = new List<Claim>
+        {
+            new(ClaimType.OrgId, Guid.Empty.ToString()),
+            new(ClaimType.SubType, "External")
+        };
+
+        var contextAccessor = IdentityDescriptorTest.BuildContextAccessor(claims);
+        var identityDescriptor = new IdentityDescriptor(contextAccessor);
+        var sut = new AccessDescriptor(identityDescriptor);
+
+        // Act/Assert
+        sut.IsExternalClientAuthorized().Should().BeFalse();
+    }
 }

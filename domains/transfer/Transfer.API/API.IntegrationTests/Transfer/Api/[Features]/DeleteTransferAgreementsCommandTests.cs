@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.IntegrationTests.Setup.Fixtures;
 using DataContext;
 using EnergyOrigin.Setup.Migrations;
 using Microsoft.EntityFrameworkCore;

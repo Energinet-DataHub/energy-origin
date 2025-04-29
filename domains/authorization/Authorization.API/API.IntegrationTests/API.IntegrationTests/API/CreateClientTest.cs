@@ -11,13 +11,13 @@ using ClientType = API.Authorization.Controllers.ClientType;
 namespace API.IntegrationTests.API;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class CreateClientTest
+public class CreateClientTest : IntegrationTestBase
 {
     private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly Api _api;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public CreateClientTest(IntegrationTestFixture integrationTestFixture)
+    public CreateClientTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         _integrationTestFixture = integrationTestFixture;
         var connectionString = integrationTestFixture.WebAppFactory.ConnectionString;

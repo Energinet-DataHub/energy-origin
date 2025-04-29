@@ -4,6 +4,66 @@
         <name>API</name>
     </assembly>
     <members>
+        <member name="P:API.ContractService.Clients.CreateCertificateRequest.RecipientId">
+            <summary>
+            The recipient id of the certificate.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CreateCertificateRequest.RegistryName">
+            <summary>
+            The registry used to issues the certificate.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CreateCertificateRequest.MeteringPointId">
+            <summary>
+            The id of the metering point used to produce the certificate.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CreateCertificateRequest.Certificate">
+            <summary>
+            The certificate to issue.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CertificateDto.Id">
+            <summary>
+            The id of the certificate.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CertificateDto.Type">
+            <summary>
+            The type of certificate (production or consumption).
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CertificateDto.Quantity">
+            <summary>
+            The quantity available on the certificate.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CertificateDto.Start">
+            <summary>
+            The start of the period for which the certificate is valid.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CertificateDto.End">
+            <summary>
+            The end of the period for which the certificate is valid.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CertificateDto.GridArea">
+            <summary>
+            The Grid Area of the certificate.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CertificateDto.ClearTextAttributes">
+            <summary>
+            Attributes of the certificate that is not hashed.
+            </summary>
+        </member>
+        <member name="P:API.ContractService.Clients.CertificateDto.HashedAttributes">
+            <summary>
+            List of hashed attributes, their values and salts so the receiver can access the data.
+            </summary>
+        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point

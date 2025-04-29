@@ -70,6 +70,7 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueDeviceType, "Production");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProducedEnergySource, measurementEvent.Technology.AibFuelCode);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProducedEnergyTechnology, measurementEvent.Technology.AibTechCode);
+            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes");
         }
         else
         {

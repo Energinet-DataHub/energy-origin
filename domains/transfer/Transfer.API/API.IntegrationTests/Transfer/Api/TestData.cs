@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Xml;
+using API.IntegrationTests.Setup.Tooling;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
