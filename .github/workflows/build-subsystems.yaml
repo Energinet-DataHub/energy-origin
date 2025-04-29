@@ -23,7 +23,7 @@ jobs:
         with:
           path: "domains"
 
-  test-subsystems:
+  test-subsystems-exclude-e2e:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -32,11 +32,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Test ${{ matrix.subsystem }} subsystem
+      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
         uses: ./.github/actions/dotnet-validate-solution
         with:
           subsystem: ${{ matrix.subsystem }}
           pin-version: "true"
+          test-filter: "Category!=E2ETest"
 
   build-admin-portal:
     uses: ./.github/workflows/build-admin-portal.yaml
@@ -99,7 +100,7 @@ jobs:
     name: Update environment
     needs:
       - dotnet-lint-solution
-      - test-subsystems
+      - test-subsystems-exclude-e2e
       - build-admin-portal
       - build-authorization
       - build-certificates

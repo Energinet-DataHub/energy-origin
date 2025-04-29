@@ -15,6 +15,7 @@ using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using EnergyOrigin.WalletClient.Models;
+using EnergyTrackAndTrace.Testing.Attributes;
 using FluentAssertions;
 using Meteringpoint.V1;
 using NSubstitute;
@@ -37,6 +38,7 @@ public sealed class CertificateIssuingTests : TestBase
     }
 
     [Fact]
+    [E2ETest]
     public async Task MeasurementsSyncerSendsMeasurementsToStamp_ExpectInWallet()
     {
         var gsrn = Any.Gsrn();
