@@ -47,8 +47,6 @@ runs:
           https://demo.energytrackandtrace.dk/{da,en}/callback
         )
 
-        gh api repos/Energinet-DataHub/eo-base-environment/branches \
-          --paginate --jq '.[].name' | tr '[:upper:]' '[:lower:]' |
         while read -r b; do
           case $b in
             preview*)  p=p d=${b#preview}  ;;
@@ -57,14 +55,15 @@ runs:
           esac
           d=${d//[^0-9a-z]/}
           urls+=(https://energytrackandtrace-dk.$d.$p.acorn-dev.dk/{en,da}/callback)
-        done
+        done < <(gh api repos/Energinet-DataHub/eo-base-environment/branches \
+                  --paginate --jq '.[].name' | tr '[:upper:]' '[:lower:]')
 
         body=$(printf '%s\n' "${urls[@]}" | jq -Rs 'split("\n")[:-1]')
 
         az rest \
-          --method "patch" \
+          --method PATCH \
           --uri    "https://graph.microsoft.com/v1.0/applications/${{ env.ettFrontendAppObjectId }}" \
-          --headers "{'Content-Type': 'application/json'}" \
+          --headers "Content-Type=application/json" \
           --body   "{\"spa\":{\"redirectUris\":$body}}"
 
         az ad app show --id "${{ env.ettFrontendAppObjectId }}"
