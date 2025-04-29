@@ -35,6 +35,7 @@ runs:
 
     - name: Update redirect URLs
       env:
+        ettFrontendAppObjectId: 8b172c40-82a1-4d7c-b1d0-cd7eeb94d81b
         GH_TOKEN: ${{ steps.generate_token.outputs.token }}
       shell: bash
       run: |
