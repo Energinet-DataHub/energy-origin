@@ -14,7 +14,7 @@ using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace EnergyOrigin.WalletClient;
 
-public class WalletClient(HttpClient client, ILogger<WalletClient> logger) : IWalletClient
+public class WalletClient(HttpClient client) : IWalletClient
 {
     private const string WalletOwnerHeader = "wallet-owner";
 
