@@ -86,7 +86,7 @@ public class ProjectOriginStack : RegistryFixture
             var configFile = networkOptions.ToTempYamlFile();
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/vault:2.0.1")
+                .WithImage("ghcr.io/project-origin/vault:2.0.5-rc.1")
                 .WithNetwork(Network)
                 .WithNetworkAliases(WalletAlias)
                 .WithResourceMapping(configFile, "/app/tmp/")

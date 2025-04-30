@@ -1,5 +1,5 @@
 using EnergyOrigin.WalletClient.Models;
-using EnergyOrigin.WalletClient.Tests.Testcontainers;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
