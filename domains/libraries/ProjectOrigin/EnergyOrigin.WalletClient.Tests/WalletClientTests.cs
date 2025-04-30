@@ -1,18 +1,22 @@
 using EnergyOrigin.WalletClient.Models;
 using EnergyOrigin.WalletClient.Tests.Testcontainers;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Xunit;
 
 namespace EnergyOrigin.WalletClient.Tests;
 
 public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<ProjectOriginStack>
 {
+    ILogger<WalletClient> _logger = Substitute.For<ILogger<WalletClient>>();
+
     [Fact]
     public async Task CreateAndGetWallets()
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, _logger);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -29,7 +33,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, _logger);
 
         var wallets = await walletClient.GetWallets(ownerSubject, new CancellationToken());
 
@@ -42,7 +46,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, _logger);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -58,7 +62,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, _logger);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -79,7 +83,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, _logger);
 
         var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
@@ -117,7 +121,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, _logger);
 
         //This does not go well in the wallet since we haven't sent the certificate to the registry first,
         //and since the certificates does not appear in the wallet, but for this test we don't care
@@ -153,7 +157,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, _logger);
 
         //I cannot send any certificates to the wallet since I can't send to the registry first
         var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: int.MaxValue, skip: 0);
@@ -167,7 +171,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     {
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
-        var walletClient = new WalletClient(httpClient);
+        var walletClient = new WalletClient(httpClient, _logger);
 
         //I cannot send any certificates to the wallet since I can't send to the registry first
         var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: null);
