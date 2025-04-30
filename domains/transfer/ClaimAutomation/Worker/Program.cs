@@ -53,7 +53,7 @@ builder.Services.AddScoped<IShuffler, Shuffler>();
 builder.Services.AddHostedService<ClaimWorker>();
 builder.Services.AddSingleton<AutomationCache>();
 builder.Services.AddSingleton<IClaimAutomationMetrics, ClaimAutomationMetrics>();
-builder.Services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
+builder.Services.AddHttpClient<IWalletClient, EnergyOrigin.WalletClient.WalletClient>((sp, c) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     c.BaseAddress = new Uri(options.WalletUrl);

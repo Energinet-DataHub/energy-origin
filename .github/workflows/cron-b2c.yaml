@@ -19,4 +19,4 @@ jobs:
           azure-client-secret: ${{ secrets.ENERGY_TRACK_AND_TRACE_B2C_CLIENT_SECRET_DEMO }}
           github-client-id: ${{ secrets.EO_BASE_ENVIRONMENT_READER_APP_ID }}
           github-client-secret: ${{ secrets.EO_BASE_ENVIRONMENT_READER_PRIVATEKEY }}
-        
+
