@@ -12,6 +12,8 @@ using API.Query.API.Controllers.Internal;
 using DataContext.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.WalletClient;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Testing.Helpers;
 using Xunit;
 
@@ -23,6 +25,7 @@ public class InternalContractsControllerTests : TestBase
     private readonly IntegrationTestFixture _fixture;
     private readonly QueryApiWebApplicationFactory _factory;
     private readonly MeasurementsWireMock _measurementsWireMock;
+    private readonly ILogger<WalletClient> _logger = Substitute.For<ILogger<WalletClient>>();
 
     public InternalContractsControllerTests(IntegrationTestFixture fixture) : base(fixture)
     {
@@ -56,7 +59,7 @@ public class InternalContractsControllerTests : TestBase
 
         var walletHttpClient = new HttpClient();
         walletHttpClient.BaseAddress = new Uri(_fixture.WalletUrl);
-        var walletClient = new WalletClient(walletHttpClient);
+        var walletClient = new WalletClient(walletHttpClient, _logger);
         await walletClient.CreateWallet(orgId, CancellationToken.None);
 
         using var userCreatesAContract = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
