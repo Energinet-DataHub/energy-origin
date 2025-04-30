@@ -33,7 +33,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new HttpRequestException(message: $"Failed to create wallet {request}. Error: {error}",  inner: null, statusCode: response.StatusCode);
+            throw new HttpRequestException(message: $"Failed to create wallet {request}. Error: {error}", inner: null, statusCode: response.StatusCode);
         }
 
         return await ParseResponse<CreateWalletResponse>(response, cancellationToken);
