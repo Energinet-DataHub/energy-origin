@@ -89,6 +89,8 @@ public sealed class CertificateIssuingTests : TestBase
             CityName = "cityName",
             Postcode = "postcode",
             StreetName = "streetName",
+            MunicipalityCode = "101", // Copenhagen
+            CitySubDivisionName = "vesterbro"
         };
         var mockedMeteringPointsResponse = new MeteringPointsResponse
         {
@@ -115,7 +117,7 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
         granularCertificate.Attributes.Should().NotBeEmpty();
-        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Danmark");
+        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Danmark", meteringPoint.MunicipalityCode, meteringPoint.CitySubDivisionName);
         granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
             { EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet" },
@@ -134,7 +136,9 @@ public sealed class CertificateIssuingTests : TestBase
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A" },
             { EnergyTagAttributeKeys.EnergyTagEnergyCarrier, "Electricity" },
             { EnergyTagAttributeKeys.EnergyTagGcIssueDeviceType, "Production" },
-            { EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes" }
+            { EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes" },
+            { "municipality_code", meteringPoint.MunicipalityCode },
+            { "city_sub_division_name", meteringPoint.CitySubDivisionName }
         });
     }
 }

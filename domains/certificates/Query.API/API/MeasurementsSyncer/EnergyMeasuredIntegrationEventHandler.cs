@@ -56,7 +56,6 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceUniqueIdentification, Value = measurementEvent.GSRN });
             hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, Value = measurementEvent.Address.ToString() });
             hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, Value = measurementEvent.Capacity });
-
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, measurementEvent.GridArea);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagCountry, "Denmark");
@@ -71,6 +70,8 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProducedEnergySource, measurementEvent.Technology.AibFuelCode);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProducedEnergyTechnology, measurementEvent.Technology.AibTechCode);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes");
+            clearTextAttributes.Add("municipality_code", measurementEvent.Address.MunicipalityCode);
+            clearTextAttributes.Add("city_sub_division_name", measurementEvent.Address.CitySubDivisionName);
         }
         else
         {

@@ -86,6 +86,8 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                     AssetType = "E17",
                     Capacity = "12345678",
                     PhysicalStatusOfMp = "E22",
+                    MunicipalityCode = "101", // Copenhagen
+                    CitySubDivisionName = "vesterbro",
                 }
             }
         };
@@ -142,7 +144,9 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                     Postcode = "1234",
                     AssetType = "E17",
                     Capacity = "12345678",
-                    PhysicalStatusOfMp = "E22"
+                    PhysicalStatusOfMp = "E22",
+                    MunicipalityCode = "101", // Copenhagen
+                    CitySubDivisionName = "vesterbro",
                 },
                 new MeteringPoint
                 {
@@ -157,7 +161,9 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                     Postcode = "1234",
                     AssetType = "E17",
                     Capacity = "12345678",
-                    PhysicalStatusOfMp = "E22"
+                    PhysicalStatusOfMp = "E22",
+                    MunicipalityCode = "101", // Copenhagen
+                    CitySubDivisionName = "vesterbro",
                 }
             }
         };
@@ -224,7 +230,9 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                         CityName = "City",
                         Postcode = "1234",
                         AssetType = "E17",
-                        Capacity = "12345678"
+                        Capacity = "12345678",
+                        MunicipalityCode = "101", // Copenhagen
+                        CitySubDivisionName = "vesterbro"
                     }
                 }
             });
@@ -241,5 +249,7 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
         response.Result.First().Address.Address2!.Trim().Should().Be(response.Result.First().Address.Address2);
         response.Result.First().Address.Address1.Should().NotContain("  ");
         response.Result.First().Address.Address2.Should().NotContain("  ");
+        response.Result.First().Address.MunicipalityCode.Should().Be("101");
+        response.Result.First().Address.CitySubDivisionName.Should().Be("vesterbro");
     }
 }
