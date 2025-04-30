@@ -33,7 +33,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new HttpRequestException($"Failed to create wallet {request}. Error: {error}");
+            throw new HttpRequestException(message: $"Failed to create wallet {request}. Error: {error}",  inner: null, statusCode: response.StatusCode);
         }
 
         return await ParseResponse<CreateWalletResponse>(response, cancellationToken);
@@ -48,7 +48,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new HttpRequestException($"Failed to get wallets for owner {ownerSubject}. Error: {error}");
+            throw new HttpRequestException(message: $"Failed to get wallets for owner {ownerSubject}. Error: {error}", inner: null, statusCode: response.StatusCode);
         }
 
         var dto = await ParseResponse<ResultList<WalletRecordDto>>(response, cancellationToken);
@@ -88,7 +88,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         if (!res.IsSuccessStatusCode)
         {
             var error = await res.Content.ReadAsStringAsync(cancellationToken);
-            throw new HttpRequestException($"Failed to create externalendpoint {request}. Error: {error}");
+            throw new HttpRequestException(message: $"Failed to create externalendpoint {request}. Error: {error}", inner: null, statusCode: res.StatusCode);
         }
         if (res == null || res.Content == null)
             throw new HttpRequestException("Failed to create wallet external endpoint.");
@@ -105,7 +105,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new HttpRequestException($"Failed to get requestStatus {requestId}. Error: {error}");
+            throw new HttpRequestException(message: $"Failed to get requestStatus {requestId}. Error: {error}", inner: null, statusCode: response.StatusCode);
         }
         var responseObj = await response.Content.ReadFromJsonAsync<RequestStatusResponse>(cancellationToken);
         return responseObj!.Status;
@@ -121,7 +121,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new HttpRequestException($"Failed to create wallet endpoint. Error: {error}");
+            throw new HttpRequestException(message: $"Failed to create wallet endpoint. Error: {error}", inner: null, statusCode: response.StatusCode);
         }
         if (response == null || response.Content == null)
             throw new HttpRequestException("Failed to create wallet endpoint.");
@@ -149,7 +149,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         if (!res.IsSuccessStatusCode)
         {
             var error = await res.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Failed to transfer {requestStr}. Error: {error}");
+            throw new HttpRequestException(message: $"Failed to transfer {requestStr}. Error: {error}", inner: null, statusCode: res.StatusCode);
         }
 
         if (res == null || res.Content == null)
@@ -175,7 +175,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         if (!res.IsSuccessStatusCode)
         {
             var error = await res.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Failed to claim {requestStr}. Error: {error}");
+            throw new HttpRequestException(message: $"Failed to claim {requestStr}. Error: {error}", inner: null, statusCode: res.StatusCode);
         }
 
         return (await res.Content.ReadFromJsonAsync<ClaimResponse>())!;
