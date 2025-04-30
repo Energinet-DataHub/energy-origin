@@ -8,12 +8,13 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.WalletClient.Models;
+using Microsoft.Extensions.Logging;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace EnergyOrigin.WalletClient;
 
-public class WalletClient(HttpClient client) : IWalletClient
+public class WalletClient(HttpClient client, ILogger<WalletClient> logger) : IWalletClient
 {
     private const string WalletOwnerHeader = "wallet-owner";
 
@@ -143,10 +144,12 @@ public class WalletClient(HttpClient client) : IWalletClient
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
         var res = await client.PostAsync("v1/claims", content);
-        res.EnsureSuccessStatusCode();
-
-        if (res == null || res.Content == null)
-            throw new HttpRequestException("Failed to claim certificates.");
+        if (!res.IsSuccessStatusCode)
+        {
+            logger.LogError("StatusCode: {StatusCode} Reason: {Reason}", res.StatusCode, res.ReasonPhrase);
+            var error = await res.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Failed to claim {requestStr}. Error: {error}");
+        }
 
         return (await res.Content.ReadFromJsonAsync<ClaimResponse>())!;
     }
