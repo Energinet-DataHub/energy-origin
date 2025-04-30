@@ -22,10 +22,15 @@ public class DisableWalletCommandCommandHandler : IRequestHandler<DisableWalletC
     {
         var walletsResponse = await _walletClient.GetWallets(request.OrganizationId.Value, cancellationToken);
 
-        if (!walletsResponse.Result.Any())
+        var nonDisabledWallets = walletsResponse.Result.Where(x => x.DisabledDate == null).ToList();
+
+        if (!nonDisabledWallets.Any())
             return;
 
-
+        foreach (var wallet in nonDisabledWallets)
+        {
+            await _walletClient.DisableWallet(wallet.Id, request.OrganizationId.Value, cancellationToken);
+        }
     }
 }
 

@@ -47,7 +47,8 @@ public class WalletClient(HttpClient client) : IWalletClient
             Result = Enumerable.Select<WalletRecordDto, WalletRecord>(dto.Result, r => new WalletRecord
             {
                 Id = r.Id,
-                PublicKey = new Secp256k1Algorithm().ImportHDPublicKey(r.PublicKey)
+                PublicKey = new Secp256k1Algorithm().ImportHDPublicKey(r.PublicKey),
+                DisabledDate = r.DisabledDate
             }).ToList(),
             Metadata = dto.Metadata
         };
@@ -210,12 +211,14 @@ public record WalletRecord()
 {
     public required Guid Id { get; init; }
     public required IHDPublicKey PublicKey { get; init; }
+    public required long? DisabledDate { get; init; }
 }
 
 public record WalletRecordDto()
 {
     public required Guid Id { get; init; }
     public required byte[] PublicKey { get; init; }
+    public required long? DisabledDate { get; init; }
 }
 
 public record CreateWalletRequest()
