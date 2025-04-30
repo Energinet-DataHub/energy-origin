@@ -4,9 +4,13 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using API.Models;
+using API.Options;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.RabbitMq;
+using EnergyOrigin.WalletClient;
+using EnergyOrigin.WalletClient.Models;
+using EnergyTrackAndTrace.Testing;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -27,7 +31,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
     public readonly string AdminPortalEnterpriseAppRegistrationObjectId = "d216b90b-3872-498a-bc18-4941a0f4398e";
-    public string WalletUrl { get; set; } = "";
+    public string WalletUrl { get; set; } = "http://non-existing-wallet";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -50,6 +54,9 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
                 options.Username = RabbitMqOptions.Username;
                 options.Password = RabbitMqOptions.Password;
             });
+
+            services.Remove(services.First(s => s.ServiceType == typeof(IWalletClient)));
+            services.AddSingleton<IWalletClient, FakeWalletStampClient>();
         });
     }
 
@@ -178,3 +185,4 @@ public static class ServiceCollectionExtensions
         }
     }
 }
+
