@@ -24,7 +24,7 @@ public class FakeWalletStampClient : IWalletClient, IStampClient
 
     public Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken)
     {
-        var walletRecord = new WalletRecord() { Id = Guid.NewGuid(), PublicKey = Substitute.For<IHDPublicKey>() };
+        var walletRecord = new WalletRecord() { Id = Guid.NewGuid(), PublicKey = Substitute.For<IHDPublicKey>(), DisabledDate = null };
         if (!_wallets.ContainsKey(ownerSubject))
         {
             _wallets.Add(ownerSubject, new List<WalletRecord>());
@@ -87,6 +87,11 @@ public class FakeWalletStampClient : IWalletClient, IStampClient
             Metadata = new PageInfo() { Count = _certificates.Count, Limit = Int32.MaxValue, Offset = 0, Total = _certificates.Count },
             Result = _certificates
         });
+    }
+
+    public Task<DisableWalletResponse> DisableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 
     public Task<CreateRecipientResponse> CreateRecipient(WalletEndpointReference walletEndpointReference, CancellationToken cancellationToken)
