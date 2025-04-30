@@ -15,6 +15,7 @@ using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using EnergyOrigin.WalletClient.Models;
+using EnergyTrackAndTrace.Testing.Attributes;
 using FluentAssertions;
 using Meteringpoint.V1;
 using NSubstitute;
@@ -37,6 +38,7 @@ public sealed class CertificateIssuingTests : TestBase
     }
 
     [Fact]
+    [E2ETest]
     public async Task MeasurementsSyncerSendsMeasurementsToStamp_ExpectInWallet()
     {
         var gsrn = Any.Gsrn();
@@ -96,7 +98,7 @@ public sealed class CertificateIssuingTests : TestBase
         meteringpointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(mockedMeteringPointsResponse);
         factory.MeteringpointClient = meteringpointClientMock;
 
-        var client = await factory.CreateWalletClient(orgId);
+        var client = await factory.CreateWallet(orgId);
 
         factory.Start();
 

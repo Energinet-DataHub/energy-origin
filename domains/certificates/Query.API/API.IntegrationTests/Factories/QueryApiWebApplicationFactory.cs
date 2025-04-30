@@ -34,7 +34,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 using Technology = API.ContractService.Clients.Technology;
 
@@ -206,11 +208,13 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return _client;
     }
 
-    public async Task<IWalletClient> CreateWalletClient(string orgId)
+    public async Task<IWalletClient> CreateWallet(string orgId)
     {
+        ILogger<EnergyOrigin.WalletClient.WalletClient> _logger = Substitute.For<ILogger<EnergyOrigin.WalletClient.WalletClient>>();
+
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
-        var wallet = new EnergyOrigin.WalletClient.WalletClient(client);
+        var wallet = new EnergyOrigin.WalletClient.WalletClient(client, _logger);
         await wallet.CreateWallet(Guid.Parse(orgId), CancellationToken.None);
         return wallet;
     }
