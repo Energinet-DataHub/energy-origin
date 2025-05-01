@@ -1,6 +1,8 @@
 using EnergyOrigin.WalletClient.Models;
 using EnergyOrigin.WalletClient.Tests.Testcontainers;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Xunit;
 
 namespace EnergyOrigin.WalletClient.Tests;

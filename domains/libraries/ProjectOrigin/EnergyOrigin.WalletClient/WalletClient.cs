@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.WalletClient.Models;
+using Microsoft.Extensions.Logging;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
@@ -28,6 +29,13 @@ public class WalletClient(HttpClient client) : IWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
         var response = await client.PostAsync("v1/wallets", content, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to create wallet {request}. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
+
         return await ParseResponse<CreateWalletResponse>(response, cancellationToken);
     }
 
@@ -36,6 +44,13 @@ public class WalletClient(HttpClient client) : IWalletClient
         SetOwnerHeader(ownerSubject);
 
         var response = await client.GetAsync("v1/wallets", cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to get wallets for owner {ownerSubject}. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
+
         var dto = await ParseResponse<ResultList<WalletRecordDto>>(response, cancellationToken);
         return MapGetWalletsDto(dto);
     }
@@ -70,8 +85,11 @@ public class WalletClient(HttpClient client) : IWalletClient
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
         var res = await client.PostAsync("v1/external-endpoints", content);
-        res.EnsureSuccessStatusCode();
-
+        if (!res.IsSuccessStatusCode)
+        {
+            var error = await res.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to create externalendpoint {request}. Error: {error}", inner: null, statusCode: res.StatusCode);
+        }
         if (res == null || res.Content == null)
             throw new HttpRequestException("Failed to create wallet external endpoint.");
 
@@ -84,7 +102,11 @@ public class WalletClient(HttpClient client) : IWalletClient
         SetOwnerHeader(ownerSubject);
         var response = await client.GetAsync($"v1/request-status/{requestId}", cancellationToken);
 
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to get requestStatus {requestId}. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
         var responseObj = await response.Content.ReadFromJsonAsync<RequestStatusResponse>(cancellationToken);
         return responseObj!.Status;
     }
@@ -96,8 +118,11 @@ public class WalletClient(HttpClient client) : IWalletClient
 
         var response = await client.PostAsync($"v1/wallets/{walletId}/endpoints", null, cancellationToken);
 
-        response.EnsureSuccessStatusCode();
-
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to create wallet endpoint. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
         if (response == null || response.Content == null)
             throw new HttpRequestException("Failed to create wallet endpoint.");
 
@@ -121,7 +146,11 @@ public class WalletClient(HttpClient client) : IWalletClient
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
         var res = await client.PostAsync("v1/transfers", content);
-        res.EnsureSuccessStatusCode();
+        if (!res.IsSuccessStatusCode)
+        {
+            var error = await res.Content.ReadAsStringAsync();
+            throw new HttpRequestException(message: $"Failed to transfer {requestStr}. Error: {error}", inner: null, statusCode: res.StatusCode);
+        }
 
         if (res == null || res.Content == null)
             throw new HttpRequestException("Failed to transfer certificate.");
@@ -143,10 +172,11 @@ public class WalletClient(HttpClient client) : IWalletClient
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
         var res = await client.PostAsync("v1/claims", content);
-        res.EnsureSuccessStatusCode();
-
-        if (res == null || res.Content == null)
-            throw new HttpRequestException("Failed to claim certificates.");
+        if (!res.IsSuccessStatusCode)
+        {
+            var error = await res.Content.ReadAsStringAsync();
+            throw new HttpRequestException(message: $"Failed to claim {requestStr}. Error: {error}", inner: null, statusCode: res.StatusCode);
+        }
 
         return (await res.Content.ReadFromJsonAsync<ClaimResponse>())!;
     }
@@ -181,7 +211,6 @@ public class WalletClient(HttpClient client) : IWalletClient
             throw new HttpRequestException("Null response");
         }
 
-        responseMessage.EnsureSuccessStatusCode();
         return (await responseMessage.Content.ReadFromJsonAsync<T>(cancellationToken))!;
     }
 

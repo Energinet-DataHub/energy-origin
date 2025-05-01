@@ -13,6 +13,7 @@ using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using WalletClient;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
 using Technology = DataContext.ValueObjects.Technology;
