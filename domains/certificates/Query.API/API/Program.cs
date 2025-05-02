@@ -50,7 +50,7 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
     .ValidateOnStart();
 builder.Services.AddOptions<StampOptions>().BindConfiguration(StampOptions.Stamp).ValidateDataAnnotations()
     .ValidateOnStart();
-
+// num nmu
 builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
     {
         options.UseNpgsql(
