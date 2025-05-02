@@ -36,15 +36,21 @@ runs:
     - name: Update redirect URLs
       env:
         ettFrontendAppObjectId: 8b172c40-82a1-4d7c-b1d0-cd7eeb94d81b
+        ettAdminAppObjectId: bd61bda6-a717-465c-8b84-4eab8fb41f56
         GH_TOKEN: ${{ steps.generate_token.outputs.token }}
       shell: bash
       run: |
         set -euo pipefail
 
-        urls=(
+        frontend_urls=(
           https://jwt.io
           http{,s}://localhost:4200/{da,en}/callback
           https://demo.energytrackandtrace.dk/{da,en}/callback
+        )
+
+        admin_urls=(
+          https://demo.energytrackandtrace.dk/ett-admin-portal/signin-oidc
+          https://demo.energytrackandtrace.dk/ett-admin-portal/signout-callback-oidc
         )
 
         while read -r b; do
@@ -54,16 +60,30 @@ runs:
             *) continue ;;
           esac
           d=${d//[^0-9a-z]/}
-          urls+=(https://energytrackandtrace-dk.$d.$p.acorn-dev.dk/{en,da}/callback)
+
+          frontend_urls+=(https://energytrackandtrace-dk.$d.$p.acorn-dev.dk/{en,da}/callback)
+
+          admin_urls+=(
+            https://energytrackandtrace-dk.$d.$p.acorn-dev.dk/ett-admin-portal/signin-oidc
+            https://energytrackandtrace-dk.$d.$p.acorn-dev.dk/ett-admin-portal/signout-callback-oidc
+          )
+
         done < <(gh api repos/Energinet-DataHub/eo-base-environment/branches \
                   --paginate --jq '.[].name' | tr '[:upper:]' '[:lower:]')
 
-        body=$(printf '%s\n' "${urls[@]}" | jq -Rs 'split("\n")[:-1]')
-
+        frontend_body=$(printf '%s\n' "${frontend_urls[@]}" | jq -Rs 'split("\n")[:-1]')
         az rest \
           --method PATCH \
           --uri    "https://graph.microsoft.com/v1.0/applications/${{ env.ettFrontendAppObjectId }}" \
           --headers "Content-Type=application/json" \
-          --body   "{\"spa\":{\"redirectUris\":$body}}"
+          --body   "{\"spa\":{\"redirectUris\":$frontend_body}}"
+
+        admin_body=$(printf '%s\n' "${admin_urls[@]}" | jq -Rs 'split("\n")[:-1]')
+        az rest \
+          --method PATCH \
+          --uri    "https://graph.microsoft.com/v1.0/applications/${{ env.ettAdminAppObjectId }}" \
+          --headers "Content-Type=application/json" \
+          --body   "{\"web\":{\"redirectUris\":$admin_body}}"
 
         az ad app show --id "${{ env.ettFrontendAppObjectId }}"
+        az ad app show --id "${{ env.ettAdminAppObjectId }}"
