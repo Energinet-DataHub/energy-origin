@@ -22,7 +22,17 @@ public class EnergyMeasuredIntegrationEventMapper
     private EnergyMeasuredIntegrationEvent MapToIntegrationEvent(MeteringPoint meteringPoint, MeteringPointType meteringPointType, string gridArea,
         DataContext.ValueObjects.Technology? technology, Guid recipientId, Measurement measurement)
     {
-        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Danmark");
+        var address = new Address(
+            meteringPoint.StreetName,
+            meteringPoint.BuildingNumber,
+            meteringPoint.FloorId,
+            meteringPoint.RoomId,
+            meteringPoint.Postcode,
+            meteringPoint.CityName,
+            "Danmark",
+            meteringPoint.MunicipalityCode,
+            meteringPoint.CitySubDivisionName
+            );
         return new EnergyMeasuredIntegrationEvent(
             GSRN: measurement.Gsrn,
             Address: address,

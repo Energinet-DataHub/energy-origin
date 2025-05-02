@@ -41,9 +41,20 @@ public record Address
     public string Postcode { get; }
     public string CityName { get; }
     public string Country { get; }
+    public string MunicipalityCode { get; }
+    public string CitySubDivisionName { get; }
 
 
-    public Address(string streetName, string buildingNumber, string floor, string room, string postcode, string cityName, string country)
+    public Address(string streetName,
+        string buildingNumber,
+        string floor,
+        string room,
+        string postcode,
+        string cityName,
+        string country,
+        string municipalityCode,
+        string citySubDivisionName
+        )
     {
         StreetName = streetName.Trim();
         BuildingNumber = buildingNumber.Trim();
@@ -52,6 +63,8 @@ public record Address
         Postcode = postcode.Trim();
         CityName = cityName.Trim();
         Country = country.Trim();
+        MunicipalityCode = municipalityCode.Trim();
+        CitySubDivisionName = citySubDivisionName.Trim();
     }
 
     public override string ToString()
