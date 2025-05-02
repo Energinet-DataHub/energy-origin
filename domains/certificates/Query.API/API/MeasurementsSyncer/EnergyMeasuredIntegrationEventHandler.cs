@@ -71,7 +71,6 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProducedEnergyTechnology, measurementEvent.Technology.AibTechCode);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes");
             clearTextAttributes.Add("municipality_code", measurementEvent.Address.MunicipalityCode);
-            clearTextAttributes.Add("city_sub_division_name", measurementEvent.Address.CitySubDivisionName);
         }
         else
         {

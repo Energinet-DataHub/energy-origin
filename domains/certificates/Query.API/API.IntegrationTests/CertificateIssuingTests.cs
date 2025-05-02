@@ -137,8 +137,7 @@ public sealed class CertificateIssuingTests : TestBase
             { EnergyTagAttributeKeys.EnergyTagEnergyCarrier, "Electricity" },
             { EnergyTagAttributeKeys.EnergyTagGcIssueDeviceType, "Production" },
             { EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes" },
-            { "municipality_code", meteringPoint.MunicipalityCode },
-            { "city_sub_division_name", meteringPoint.CitySubDivisionName }
+            { "municipality_code", meteringPoint.MunicipalityCode }
         });
     }
 }
