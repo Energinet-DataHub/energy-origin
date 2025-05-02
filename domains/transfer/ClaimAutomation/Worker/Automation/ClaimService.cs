@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ClaimAutomation.Api.Repositories;
@@ -46,17 +48,25 @@ public class ClaimService(
 
                     foreach (var certGrp in certificatesGrouped)
                     {
-                        var productionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Production).ToList();
-                        var consumptionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Consumption).ToList();
-                        logger.LogInformation("Claiming {productionCerts} production certs and {consumptionCerts} consumption certs for {subjectId}",
-                            productionCerts.Count, consumptionCerts.Count, subjectId);
+                        var productionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Production)
+                            .ToList();
+                        var consumptionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Consumption)
+                            .ToList();
                         await Claim(subjectId, consumptionCerts, productionCerts);
                     }
                 }
             }
             catch (Exception e)
             {
-                logger.LogError("Something went wrong with the ClaimService: {exception}", e);
+                switch (e)
+                {
+                    case HttpRequestException { StatusCode: HttpStatusCode.BadRequest }:
+                        logger.LogWarning("Wallet returned bad request: {exception}", e);
+                        break;
+                    default:
+                        logger.LogError("Something went wrong with the ClaimService: {exception}", e);
+                        break;
+                }
             }
 
             await Sleep(stoppingToken);
@@ -92,10 +102,16 @@ public class ClaimService(
     {
         while (productionCertificates.Any(x => x.Quantity > 0) && consumptionCertificates.Any(x => x.Quantity > 0))
         {
+
             var productionCert = productionCertificates.First(x => x.Quantity > 0);
             var consumptionCert = consumptionCertificates.First(x => x.Quantity > 0);
 
             var quantity = Math.Min(productionCert.Quantity, consumptionCert.Quantity);
+            logger.LogInformation("Claiming Quanitity: {Quantity}. " +
+                                  "Consumption Certificate: {ConsumptionCert} Consumption Quantity: {ConsumptionCertQuanitity}. " +
+                                  "Production Certificate: {ProductionCert}. Production Quantity: {ProductionQuantity}" +
+                                  "Organization: {SubjectId}",
+                quantity, consumptionCert.FederatedStreamId.StreamId, consumptionCert.Quantity, productionCert.FederatedStreamId.StreamId, productionCert.Quantity, subjectId);
 
             await walletClient.ClaimCertificates(subjectId, consumptionCert, productionCert, quantity);
             SetClaimAttempt(consumptionCert.FederatedStreamId.StreamId.ToString());

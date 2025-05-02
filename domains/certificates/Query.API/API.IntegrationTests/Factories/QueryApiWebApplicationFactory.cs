@@ -210,11 +210,9 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
     public async Task<IWalletClient> CreateWallet(string orgId)
     {
-        ILogger<EnergyOrigin.WalletClient.WalletClient> _logger = Substitute.For<ILogger<EnergyOrigin.WalletClient.WalletClient>>();
-
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
-        var wallet = new EnergyOrigin.WalletClient.WalletClient(client, _logger);
+        var wallet = new EnergyOrigin.WalletClient.WalletClient(client);
         await wallet.CreateWallet(Guid.Parse(orgId), CancellationToken.None);
         return wallet;
     }
