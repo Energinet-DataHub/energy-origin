@@ -90,7 +90,10 @@ builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
     (sp, options) =>
     {
         options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString(),
-            providerOptions => providerOptions.EnableRetryOnFailure()
+            providerOptions => providerOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorCodesToAdd: null)
         );
     },
     optionsLifetime: ServiceLifetime.Singleton);
