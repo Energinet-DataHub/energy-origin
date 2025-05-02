@@ -205,10 +205,11 @@ public class WalletClient(HttpClient client) : IWalletClient
 
         var response = await client.PostAsync($"v1/wallets/{walletId}/disable", null, cancellationToken);
 
-        response.EnsureSuccessStatusCode();
-
-        if (response == null || response.Content == null)
-            throw new HttpRequestException("Failed to disable wallet.");
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to disable wallet with id {walletId}. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
 
         return await ParseResponse<DisableWalletResponse>(response, cancellationToken);
     }
