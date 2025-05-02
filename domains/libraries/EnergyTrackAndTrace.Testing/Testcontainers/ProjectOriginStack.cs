@@ -56,7 +56,8 @@ public class ProjectOriginStack : RegistryFixture
 
             var networkOptions = new NetworkOptions
             {
-                DaysBeforeCertificatesExpire = 60
+                DaysBeforeCertificatesExpire = 60,
+                TimeConstraint = TimeConstraint.Disabled
             };
             networkOptions.Registries.Add(RegistryName, new RegistryInfo
             {
@@ -86,7 +87,7 @@ public class ProjectOriginStack : RegistryFixture
             var configFile = networkOptions.ToTempYamlFile();
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/vault:2.0.5-rc.1")
+                .WithImage("ghcr.io/project-origin/vault:2.0.7-rc3")
                 .WithNetwork(Network)
                 .WithNetworkAliases(WalletAlias)
                 .WithResourceMapping(configFile, "/app/tmp/")

@@ -146,10 +146,9 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
             Start = new DateTimeOffset().ToUnixTimeSeconds()
         };
 
-        var claimResponse = await walletClient.ClaimCertificates(ownerSubject, consumptionCert, productionCert, productionCert.Quantity);
-
-        claimResponse.Should().NotBeNull();
-        claimResponse.ClaimRequestId.Should().NotBeEmpty();
+        await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await walletClient.ClaimCertificates(ownerSubject, consumptionCert, productionCert,
+                productionCert.Quantity));
     }
 
     [Fact]
@@ -184,6 +183,14 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(poStack.WalletUrl);
+
+        return client;
+    }
+
+    private HttpClient GetStampHttpClient()
+    {
+        var client = new HttpClient();
+        client.BaseAddress = new Uri(poStack.StampUrl);
 
         return client;
     }

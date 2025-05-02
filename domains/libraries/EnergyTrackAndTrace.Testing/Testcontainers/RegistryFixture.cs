@@ -63,9 +63,6 @@ public class RegistryFixture : IAsyncLifetime
           DK2:
             issuerKeys:
               - publicKey: "{Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk2IssuerKey.PublicKey.ExportPkixText()))}"
-        issuers:
-          Denmark:
-            stampUrl: http://po-stamp.eo.svc:5000/stamp-api
         daysBeforeCertificatesExpire: 60
         timeConstraint: Disabled
         """);
