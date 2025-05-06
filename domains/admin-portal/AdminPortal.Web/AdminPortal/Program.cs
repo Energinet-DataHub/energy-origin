@@ -1,8 +1,6 @@
-using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using AdminPortal.Options;
-using AdminPortal.Services;
 using AdminPortal.Utilities;
 using AdminPortal.Utilities.Local;
 using EnergyOrigin.Setup;
@@ -15,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web.UI;
-using IAuthorizationService = AdminPortal.Services.IAuthorizationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,14 +80,7 @@ else
     });
 }
 
-builder.Services.AddTypedHttpClient<IAuthorizationService, AuthorizationService>(sp =>
-    sp.GetRequiredService<IOptions<ClientUriOptions>>().Value.Authorization);
-
-builder.Services.AddTypedHttpClient<ICertificatesService, CertificatesService>(sp =>
-    sp.GetRequiredService<IOptions<ClientUriOptions>>().Value.Certificates);
-
-builder.Services.AddTypedHttpClient<IMeasurementsService, MeasurementsService>(sp =>
-    sp.GetRequiredService<IOptions<ClientUriOptions>>().Value.Measurements);
+builder.Services.AddUpstreamHttpClientsAndServices(builder.Environment);
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
@@ -108,11 +98,18 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(new StaticFileOptions
+if (app.Environment.IsDevelopment())
 {
-    RequestPath = "/ett-admin-portal"
-});
-app.UsePathBase("/ett-admin-portal");
+    app.UseStaticFiles();
+}
+else
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        RequestPath = "/ett-admin-portal"
+    });
+    app.UsePathBase("/ett-admin-portal");
+}
 
 app.UseRouting();
 app.UseOidcMiddlewareForAdminPortal(app.Environment);
