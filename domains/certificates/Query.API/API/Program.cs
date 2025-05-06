@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using API.Configurations;
 using API.ContractService;
@@ -50,12 +51,15 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
     .ValidateOnStart();
 builder.Services.AddOptions<StampOptions>().BindConfiguration(StampOptions.Stamp).ValidateDataAnnotations()
     .ValidateOnStart();
-
+// num nmu
 builder.Services.AddDbContext<DbContext, ApplicationDbContext>(options =>
     {
         options.UseNpgsql(
             builder.Configuration.GetConnectionString("Postgres"),
-            providerOptions => providerOptions.EnableRetryOnFailure()
+            providerOptions => providerOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorCodesToAdd: null)
         );
     },
     optionsLifetime: ServiceLifetime.Singleton);

@@ -19,6 +19,8 @@ public static class WebApplicationBuilderExtensions
             ? log.WriteTo.Console()
             : log.WriteTo.Console(new JsonFormatter());
 
+        builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(console.CreateLogger());
     }
@@ -33,6 +35,7 @@ public static class WebApplicationBuilderExtensions
         var console = builder.Environment.IsDevelopment()
             ? log.WriteTo.Console()
             : log.WriteTo.Console(new JsonFormatter());
+        builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
 
         builder.Logging.ClearProviders();
         builder.Logging.AddSerilog(console.CreateLogger());
