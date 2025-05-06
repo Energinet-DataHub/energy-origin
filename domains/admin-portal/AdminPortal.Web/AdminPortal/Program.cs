@@ -1,15 +1,11 @@
-using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using AdminPortal.Options;
-using AdminPortal.Services;
 using AdminPortal.Utilities;
+using AdminPortal.Utilities.Local;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.OpenTelemetry;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
@@ -17,19 +13,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web.UI;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using IAuthorizationService = AdminPortal.Services.IAuthorizationService;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations()
-    .ValidateOnStart();
 
 builder.Services.AddOptions<AdminPortalOptions>().BindConfiguration(AdminPortalOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
 builder.Services.AddOptions<ClientUriOptions>().BindConfiguration(ClientUriOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
@@ -54,39 +47,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-    })
-    .AddCookie(options => options.ExpireTimeSpan = TimeSpan.FromMinutes(30))
-    .AddOpenIdConnect(options =>
-    {
-        var oidcOptions = builder.Configuration.GetSection(OidcOptions.Prefix).Get<OidcOptions>()!;
 
-        options.Authority = oidcOptions.Authority;
-        options.ClientId = oidcOptions.ClientId;
-        options.ClientSecret = oidcOptions.ClientSecret;
-
-        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.ResponseType = OpenIdConnectResponseType.Code;
-
-        options.SaveTokens = false;
-        options.GetClaimsFromUserInfoEndpoint = false;
-
-        options.MapInboundClaims = false;
-        options.CallbackPath = "/signin-oidc";
-        options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
-    });
-
-builder.Services.AddSingleton<MsalHttpClientFactoryAdapter>();
-
-var requireAuthPolicy = new AuthorizationPolicyBuilder()
-    .RequireAuthenticatedUser()
-    .Build();
-
-builder.Services.AddAuthorizationBuilder()
-    .SetFallbackPolicy(requireAuthPolicy);
+builder.Services.AddOidcMiddlewareForAdminPortal(builder.Configuration, builder.Environment);
 
 builder.Services.AddHttpClient("Msal")
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler())
@@ -97,29 +59,15 @@ builder.Services.AddHttpClient("Msal")
             new MediaTypeWithQualityHeaderValue("application/json"));
     });
 
-builder.Services.AddHttpClient<ICertificatesService, CertificatesService>("CertificatesClient", (sp, client) =>
-    {
-        var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
-        client.BaseAddress = new Uri(clientUriOptions.Certificates);
-    })
-    .AddHttpMessageHandler(sp =>
-    {
-        var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
-        return new ClientCredentialsTokenHandler(
-            options.ClientId,
-            options.ClientSecret,
-            options.TenantId,
-            new[] { options.Scope },
-            sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
-        );
-    });
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddTransient<DelegatingHandler, FakeClientCredentialsTokenHandler>();
+}
+else
+{
+    builder.Services.AddSingleton<MsalHttpClientFactoryAdapter>();
 
-builder.Services.AddHttpClient<IMeasurementsService, MeasurementsService>("MeasurementsClient", (sp, client) =>
-    {
-        var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
-        client.BaseAddress = new Uri(clientUriOptions.Measurements);
-    })
-    .AddHttpMessageHandler(sp =>
+    builder.Services.AddTransient(sp =>
     {
         var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
         return new ClientCredentialsTokenHandler(
@@ -130,23 +78,9 @@ builder.Services.AddHttpClient<IMeasurementsService, MeasurementsService>("Measu
             sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
         );
     });
+}
 
-builder.Services.AddHttpClient<IAuthorizationService, AuthorizationService>("AuthorizationClient", (sp, client) =>
-    {
-        var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
-        client.BaseAddress = new Uri(clientUriOptions.Authorization);
-    })
-    .AddHttpMessageHandler(sp =>
-    {
-        var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
-        return new ClientCredentialsTokenHandler(
-            options.ClientId,
-            options.ClientSecret,
-            options.TenantId,
-            new[] { options.Scope },
-            sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
-        );
-    });
+builder.Services.AddUpstreamHttpClientsAndServices(builder.Environment);
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
@@ -164,15 +98,21 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(new StaticFileOptions
+if (app.Environment.IsDevelopment())
 {
-    RequestPath = "/ett-admin-portal"
-});
-app.UsePathBase("/ett-admin-portal");
+    app.UseStaticFiles();
+}
+else
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        RequestPath = "/ett-admin-portal"
+    });
+    app.UsePathBase("/ett-admin-portal");
+}
 
 app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseOidcMiddlewareForAdminPortal(app.Environment);
 
 app.MapControllerRoute(
     name: "default",
