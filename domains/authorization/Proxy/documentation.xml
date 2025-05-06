@@ -672,8 +672,27 @@
         </member>
         <member name="P:Proxy.Controllers.TransferRequest.HashedAttributes">
             <summary>
-            List of hashed attributes names to transfer with the certificate.
-            Can be empty array if no hashed attributes are to be transferred.
+            List of hashed attribute names to transfer with the certificate.
+            Possible values include:
+            - assetId
+            - energyTag_GcIssuer
+            - energyTag_GcIssueMarketZone
+            - energyTag_Country
+            - energyTag_GcIssuanceDatestamp
+            - energyTag_ProductionStartingIntervalTimestamp
+            - energyTag_ProductionEndingIntervalTimestamp
+            - energyTag_GcFaceValue
+            - energyTag_ProductionDeviceUniqueIdentification
+            - energyTag_ProducedEnergySource
+            - energyTag_ProducedEnergyTechnology
+            - energyTag_ConnectedGridIdentification
+            - energyTag_ProductionDeviceLocation
+            - energyTag_ProductionDeviceCapacity
+            - energyTag_ProductionDeviceCommercialOperationDate
+            - energyTag_EnergyCarrier
+            - energyTag_GcIssueDeviceType
+            - energyTag_Disclosure
+            Can be an empty array if no hashed attributes are to be transferred.
             </summary>
         </member>
         <member name="T:Proxy.Controllers.TransferResponse">
