@@ -16,10 +16,10 @@ namespace AdminPortal.Utilities;
 
 public static class OidcConfigurationExtensions
 {
-public static IServiceCollection AddOidcMiddlewareForAdminPortal(
-        this IServiceCollection services,
-        IConfiguration config,
-        IWebHostEnvironment env)
+    public static IServiceCollection AddOidcMiddlewareForAdminPortal(
+            this IServiceCollection services,
+            IConfiguration config,
+            IWebHostEnvironment env)
     {
         services.AddAuthentication(options =>
         {
