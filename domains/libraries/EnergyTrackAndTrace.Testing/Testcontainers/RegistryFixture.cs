@@ -63,7 +63,7 @@ public class RegistryFixture : IAsyncLifetime
           DK2:
             issuerKeys:
               - publicKey: "{Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk2IssuerKey.PublicKey.ExportPkixText()))}"
-        daysBeforeCertificatesExpire: 60
+        daysBeforeCertificatesExpire: 365
         timeConstraint: Disabled
         """);
 

@@ -56,7 +56,7 @@ public class ProjectOriginStack : RegistryFixture
 
             var networkOptions = new NetworkOptions
             {
-                DaysBeforeCertificatesExpire = 60,
+                DaysBeforeCertificatesExpire = 365,
                 TimeConstraint = TimeConstraint.Disabled
             };
             networkOptions.Registries.Add(RegistryName, new RegistryInfo
