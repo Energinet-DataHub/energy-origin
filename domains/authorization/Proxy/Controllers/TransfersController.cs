@@ -196,8 +196,14 @@ public record TransferRequest()
     public required uint Quantity { get; init; }
 
     /// <summary>
-    /// List of hashed attributes names to transfer with the certificate.
-    /// Can be empty array if no hashed attributes are to be transferred.
+    /// Specifies the list of hashed attribute names that must be transferred along with the certificate.
+    /// These attributes provide additional metadata about the certificate and its associated energy production or consumption.
+    /// Possible values include:
+    /// - assetId: Identifier for the asset (consumption only).
+    /// - energyTag_ProductionDeviceCapacity: Capacity of the production device (production only).
+    /// - energyTag_ProductionDeviceLocation: Location of the production device (production only).
+    /// - energyTag_ProductionDeviceUniqueIdentification: Unique identifier for the production device (production only).
+    /// Can be an empty array if no hashed attributes are to be transferred.
     /// </summary>
     [Required]
     public required string[] HashedAttributes { get; init; }
