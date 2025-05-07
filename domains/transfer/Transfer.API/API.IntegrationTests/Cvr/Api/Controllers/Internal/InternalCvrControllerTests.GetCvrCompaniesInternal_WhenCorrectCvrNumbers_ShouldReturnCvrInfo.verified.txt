@@ -1,0 +1,7 @@
+﻿{
+  Tin: 10150817,
+  Name: Erhvervsstyrelsen,
+  City: ,
+  ZipCode: 2100,
+  Address: Langelinie Allé 17
+}
