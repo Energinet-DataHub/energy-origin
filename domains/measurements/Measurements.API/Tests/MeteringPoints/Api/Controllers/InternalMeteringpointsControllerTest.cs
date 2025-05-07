@@ -102,7 +102,8 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
                     PhysicalStatusOfMp = "E22",
                     ConsumerCvr = "12345678",
                     MunicipalityCode = "101", // Copenhagen
-                    CitySubDivisionName = "vesterbro"
+                    CitySubDivisionName = "vesterbro",
+                    MeteringGridAreaId = "932"
                 },
                 new MeteringPoint
                 {
@@ -120,7 +121,8 @@ public class InternalMeteringpointsControllerTest : IClassFixture<CustomMeterPoi
                     PhysicalStatusOfMp = "E22",
                     ConsumerCvr = "12345678",
                     MunicipalityCode = "101", // Copenhagen
-                    CitySubDivisionName = "vesterbro"
+                    CitySubDivisionName = "vesterbro",
+                    MeteringGridAreaId = "932"
                 }
             }
         };

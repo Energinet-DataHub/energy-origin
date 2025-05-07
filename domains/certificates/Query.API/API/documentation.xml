@@ -146,6 +146,9 @@
         <member name="F:Meteringpoint.V1.MeteringPoint.CitySubDivisionNameFieldNumber">
             <summary>Field number for the "city_sub_division_name" field.</summary>
         </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.MeteringGridAreaIdFieldNumber">
+            <summary>Field number for the "metering_grid_area_id" field.</summary>
+        </member>
         <member name="P:Meteringpoint.V1.Meteringpoint.Descriptor">
             <summary>Service descriptor</summary>
         </member>
