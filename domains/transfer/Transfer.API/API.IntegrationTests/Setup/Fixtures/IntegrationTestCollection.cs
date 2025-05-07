@@ -62,7 +62,7 @@ public class IntegrationTestFixture : IAsyncLifetime
                 Result = new List<WalletRecord>
                 {
                     new WalletRecord
-                        { Id = Guid.NewGuid(), PublicKey = new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter() }
+                        { Id = Guid.NewGuid(), PublicKey = new Secp256k1Algorithm().GenerateNewPrivateKey().Neuter(), DisabledDate = null }
                 }
             });
         walletClientMock.CreateWalletEndpoint(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace EnergyTrackAndTrace.Testing;
 
@@ -9,7 +10,14 @@ public record NetworkOptions
     public IDictionary<string, IssuerInfo> Issuers { get; init; } = new Dictionary<string, IssuerInfo>();
 
     public int? DaysBeforeCertificatesExpire { get; init; }
+    public TimeConstraint TimeConstraint { get; init; } = TimeConstraint.Enclosing;
+}
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum TimeConstraint
+{
+    Enclosing,
+    Disabled,
 }
 
 public record RegistryInfo
