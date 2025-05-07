@@ -33,7 +33,9 @@ public record MeteringPoint(
                 null,
                 result.CityName,
                 result.Postcode,
-                "DK"
+                "DK",
+                result.MunicipalityCode,
+                result.CitySubDivisionName
             ),
             GetTechnology(result.AssetType),
             result.ConsumerCvr,

@@ -114,6 +114,8 @@ public class Any
             CityName = "cityName",
             Postcode = "postcode",
             StreetName = "streetName",
+            MunicipalityCode = "101", // Copenhagen
+            CitySubDivisionName = "vesterbro"
         };
     }
 

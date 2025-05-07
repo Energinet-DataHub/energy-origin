@@ -8,7 +8,9 @@
         Address2: 1 1,
         City: City,
         PostalCode: 1234,
-        Country: DK
+        Country: DK,
+        MunicipalityCode: 101,
+        CitySubDivisionName: vesterbro
       },
       Technology: {
         AibTechCode: T070000,

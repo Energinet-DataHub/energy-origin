@@ -86,15 +86,3 @@ public class CertificateIssuingContract
     public bool Contains(long startDate, long endDate)
         => Contains(DateTimeOffset.FromUnixTimeSeconds(startDate), DateTimeOffset.FromUnixTimeSeconds(endDate));
 }
-
-
-public static class MeteringPointTypeMapper
-{
-    public static CertificateType MapToCertificateType(this MeteringPointType meteringPointType) =>
-        meteringPointType switch
-        {
-            MeteringPointType.Production => CertificateType.Production,
-            MeteringPointType.Consumption => CertificateType.Consumption,
-            _ => throw new ArgumentOutOfRangeException(nameof(meteringPointType), meteringPointType, null)
-        };
-}

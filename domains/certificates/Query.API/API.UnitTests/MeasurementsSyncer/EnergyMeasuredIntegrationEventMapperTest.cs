@@ -52,6 +52,8 @@ public class EnergyMeasuredIntegrationEventMapperTest
         evt.Capacity.Should().Be(meteringPoint.Capacity);
         evt.Address.Should().NotBeNull();
         evt.Address.Country.Should().NotBeEmpty();
+        evt.Address.MunicipalityCode.Should().NotBeEmpty();
+        evt.Address.CitySubDivisionName.Should().NotBeEmpty();
         evt.Address.BuildingNumber.Should().NotBeEmpty();
         evt.Address.CityName.Should().NotBeEmpty();
         evt.Address.Postcode.Should().NotBeEmpty();
