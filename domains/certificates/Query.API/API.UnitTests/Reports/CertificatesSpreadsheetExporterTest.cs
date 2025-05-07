@@ -113,5 +113,10 @@ public class CertificatesSpreadsheetExporterTest
             { Metadata = new PageInfo { Count = _result.Count, Offset = 0, Limit = Int32.MaxValue, Total = _result.Count }, Result = _result };
             return resultList;
         }
+
+        public Task<DisableWalletResponse> DisableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

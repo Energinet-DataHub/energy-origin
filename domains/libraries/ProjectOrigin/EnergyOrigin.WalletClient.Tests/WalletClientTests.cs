@@ -1,8 +1,7 @@
 using EnergyOrigin.WalletClient.Models;
-using EnergyOrigin.WalletClient.Tests.Testcontainers;
+using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
+using System.Net;
 using Xunit;
 
 namespace EnergyOrigin.WalletClient.Tests;
@@ -24,6 +23,23 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
 
         wallets.Should().NotBeNull();
         wallets.Result.Count().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task DisableWallet()
+    {
+        var ownerSubject = Guid.NewGuid();
+        var httpClient = GetWalletHttpClient();
+        var walletClient = new WalletClient(httpClient);
+
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+
+        Assert.NotNull(createWalletResponse);
+
+        var disableWalletResponse = await walletClient.DisableWallet(createWalletResponse.WalletId, ownerSubject, new CancellationToken());
+
+        Assert.NotNull(disableWalletResponse);
+        Assert.Equal(createWalletResponse.WalletId, disableWalletResponse.WalletId);
     }
 
     [Fact]
@@ -120,6 +136,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
+        await walletClient.CreateWallet(ownerSubject, new CancellationToken());
 
         //This does not go well in the wallet since we haven't sent the certificate to the registry first,
         //and since the certificates does not appear in the wallet, but for this test we don't care
@@ -144,10 +161,11 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
             Start = new DateTimeOffset().ToUnixTimeSeconds()
         };
 
-        var claimResponse = await walletClient.ClaimCertificates(ownerSubject, consumptionCert, productionCert, productionCert.Quantity);
+        var ex = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            await walletClient.ClaimCertificates(ownerSubject, consumptionCert, productionCert,
+                productionCert.Quantity));
 
-        claimResponse.Should().NotBeNull();
-        claimResponse.ClaimRequestId.Should().NotBeEmpty();
+        Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
     }
 
     [Fact]
@@ -182,6 +200,14 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(poStack.WalletUrl);
+
+        return client;
+    }
+
+    private HttpClient GetStampHttpClient()
+    {
+        var client = new HttpClient();
+        client.BaseAddress = new Uri(poStack.StampUrl);
 
         return client;
     }

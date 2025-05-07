@@ -62,7 +62,8 @@ public class WalletClient(HttpClient client) : IWalletClient
             Result = Enumerable.Select<WalletRecordDto, WalletRecord>(dto.Result, r => new WalletRecord
             {
                 Id = r.Id,
-                PublicKey = new Secp256k1Algorithm().ImportHDPublicKey(r.PublicKey)
+                PublicKey = new Secp256k1Algorithm().ImportHDPublicKey(r.PublicKey),
+                DisabledDate = r.DisabledDate
             }).ToList(),
             Metadata = dto.Metadata
         };
@@ -198,6 +199,21 @@ public class WalletClient(HttpClient client) : IWalletClient
             cancellationToken: cancellationToken);
     }
 
+    public async Task<DisableWalletResponse> DisableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    {
+        SetOwnerHeader(ownerSubject);
+
+        var response = await client.PostAsync($"v1/wallets/{walletId}/disable", null, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to disable wallet with id {walletId}. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
+
+        return await ParseResponse<DisableWalletResponse>(response, cancellationToken);
+    }
+
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -225,12 +241,14 @@ public record WalletRecord()
 {
     public required Guid Id { get; init; }
     public required IHDPublicKey PublicKey { get; init; }
+    public required long? DisabledDate { get; init; }
 }
 
 public record WalletRecordDto()
 {
     public required Guid Id { get; init; }
     public required byte[] PublicKey { get; init; }
+    public required long? DisabledDate { get; init; }
 }
 
 public record CreateWalletRequest()
@@ -349,4 +367,10 @@ public record TransferRequest()
 public record TransferResponse()
 {
     public required Guid TransferRequestId { get; init; }
+}
+
+public record DisableWalletResponse()
+{
+    public Guid WalletId { get; init; }
+    public required long DisabledDate { get; init; }
 }

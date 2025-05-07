@@ -46,6 +46,7 @@ enum TransactionState {
     PENDING = 1;
     FAILED = 2;
     COMMITTED = 3;
+    FINALIZED = 4;
 }
 
 message GetTransactionProofRequest {
