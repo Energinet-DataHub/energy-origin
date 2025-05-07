@@ -196,26 +196,13 @@ public record TransferRequest()
     public required uint Quantity { get; init; }
 
     /// <summary>
-    /// List of hashed attribute names to transfer with the certificate.
+    /// Specifies the list of hashed attribute names that must be transferred along with the certificate.
+    /// These attributes provide additional metadata about the certificate and its associated energy production or consumption.
     /// Possible values include:
-    /// - assetId
-    /// - energyTag_GcIssuer
-    /// - energyTag_GcIssueMarketZone
-    /// - energyTag_Country
-    /// - energyTag_GcIssuanceDatestamp
-    /// - energyTag_ProductionStartingIntervalTimestamp
-    /// - energyTag_ProductionEndingIntervalTimestamp
-    /// - energyTag_GcFaceValue
-    /// - energyTag_ProductionDeviceUniqueIdentification
-    /// - energyTag_ProducedEnergySource
-    /// - energyTag_ProducedEnergyTechnology
-    /// - energyTag_ConnectedGridIdentification
-    /// - energyTag_ProductionDeviceLocation
-    /// - energyTag_ProductionDeviceCapacity
-    /// - energyTag_ProductionDeviceCommercialOperationDate
-    /// - energyTag_EnergyCarrier
-    /// - energyTag_GcIssueDeviceType
-    /// - energyTag_Disclosure
+    /// - assetId: Identifier for the asset (consumption only).
+    /// - energyTag_ProductionDeviceCapacity: Capacity of the production device (production only).
+    /// - energyTag_ProductionDeviceLocation: Location of the production device (production only).
+    /// - energyTag_ProductionDeviceUniqueIdentification: Unique identifier for the production device (production only).
     /// Can be an empty array if no hashed attributes are to be transferred.
     /// </summary>
     [Required]
