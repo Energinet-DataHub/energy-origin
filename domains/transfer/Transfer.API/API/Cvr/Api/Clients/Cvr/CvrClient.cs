@@ -8,7 +8,12 @@ using API.Cvr.Api.Models;
 
 namespace API.Cvr.Api.Clients.Cvr;
 
-public class CvrClient
+public interface ICvrClient
+{
+    Task<Root?> CvrNumberSearch(IEnumerable<CvrNumber> cvrNumbers);
+}
+
+public class CvrClient : ICvrClient
 {
     private readonly HttpClient client;
 

@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,9 +30,9 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer, PageInfoCursor>), StatusCodes.Status200OK)]
-    public async Task GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> GetTransfersCursor([FromQuery] GetTransfersQueryParametersCursor param, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/transfers/cursor", organizationId);
+        return ProxyClientCredentialsRequest("v1/transfers/cursor", organizationId);
     }
 
     /// <summary>
@@ -49,9 +48,9 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Transfer, PageInfo>), StatusCodes.Status200OK)]
-    public async Task GetTransfers([FromQuery] GetTransfersQueryParameters param, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> GetTransfers([FromQuery] GetTransfersQueryParameters param, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/transfers", organizationId);
+        return ProxyClientCredentialsRequest("v1/transfers", organizationId);
     }
 
     /// <summary>
@@ -68,9 +67,9 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultList<AggregatedTransfers, PageInfo>), StatusCodes.Status200OK)]
-    public async Task AggregateTransfers([FromQuery] AggregateTransfersQueryParameters param, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> AggregateTransfers([FromQuery] AggregateTransfersQueryParameters param, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/aggregate-transfers", organizationId);
+        return ProxyClientCredentialsRequest("v1/aggregate-transfers", organizationId);
     }
 
     /// <summary>
@@ -86,9 +85,9 @@ public class TransfersController : ProxyBase
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(TransferResponse), StatusCodes.Status200OK)]
-    public async Task TransferCertificate([FromBody] TransferRequest request, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> TransferCertificate([FromBody] TransferRequest request, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/transfers", organizationId);
+        return ProxyClientCredentialsRequest("v1/transfers", organizationId);
     }
 }
 
@@ -156,7 +155,7 @@ public record AggregateTransfersQueryParameters
 /// <summary>
 /// A transfer record of a transfer of a part of a certificate to another wallet.
 /// </summary>
-public record Transfer()
+public record Transfer
 {
     [Required]
     public required FederatedStreamId FederatedStreamId { get; init; }
@@ -175,7 +174,7 @@ public record Transfer()
 /// <summary>
 /// A request to transfer a certificate to another wallet.
 /// </summary>
-public record TransferRequest()
+public record TransferRequest
 {
     /// <summary>
     /// The federated stream id of the certificate to transfer.
@@ -212,7 +211,7 @@ public record TransferRequest()
 /// <summary>
 /// A response to a transfer request.
 /// </summary>
-public record TransferResponse()
+public record TransferResponse
 {
     /// <summary>
     /// The id of the transfer request.
@@ -224,7 +223,7 @@ public record TransferResponse()
 /// <summary>
 /// A result of aggregated transfers.
 /// </summary>
-public record AggregatedTransfers()
+public record AggregatedTransfers
 {
     /// <summary>
     /// The start of the aggregated period.

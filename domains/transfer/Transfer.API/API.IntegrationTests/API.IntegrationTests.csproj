@@ -61,5 +61,8 @@
           <ParentFile>CvrControllerTests</ParentFile>
           <DependentUpon>CvrController20240515Tests.cs</DependentUpon>
         </None>
+        <None Update="Cvr\Api\Controllers\Internal\InternalCvrControllerTests.GetCvrCompanies_WhenCorrectCvrNumbers_ShouldReturnCvrInfo.verified.txt">
+          <ParentFile>InternalCvrControllerTests</ParentFile>
+        </None>
 	</ItemGroup>
 </Project>

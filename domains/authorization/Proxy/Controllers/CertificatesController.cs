@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 
@@ -30,9 +29,9 @@ public class CertificatesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate, PageInfoCursor>), StatusCodes.Status200OK)]
-    public async Task GetCertificatesCursor([FromQuery] GetCertificatesQueryParametersCursor param, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> GetCertificatesCursor([FromQuery] GetCertificatesQueryParametersCursor param, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/certificates/cursor", organizationId);
+        return ProxyClientCredentialsRequest("v1/certificates/cursor", organizationId);
     }
 
     /// <summary>
@@ -49,10 +48,10 @@ public class CertificatesController : ProxyBase
     [ProducesResponseType(typeof(GranularCertificate), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
-    public async Task GetCertificate(
+    public Task<IActionResult> GetCertificate(
         [FromRoute] string registry, [FromRoute] Guid streamId, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest($"v1/certificates/{registry}/{streamId}", organizationId);
+        return ProxyClientCredentialsRequest($"v1/certificates/{registry}/{streamId}", organizationId);
     }
 
 
@@ -69,9 +68,9 @@ public class CertificatesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<GranularCertificate, PageInfo>), StatusCodes.Status200OK)]
-    public async Task GetCertificates([FromQuery] GetCertificatesQueryParameters param, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> GetCertificates([FromQuery] GetCertificatesQueryParameters param, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/certificates", organizationId);
+        return ProxyClientCredentialsRequest("v1/certificates", organizationId);
     }
 
     /// <summary>
@@ -89,8 +88,8 @@ public class CertificatesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<AggregatedCertificates, PageInfo>), StatusCodes.Status200OK)]
-    public async Task AggregateCertificates([FromQuery] AggregateCertificatesQueryParameters param, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> AggregateCertificates([FromQuery] AggregateCertificatesQueryParameters param, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/aggregate-certificates", organizationId);
+        return ProxyClientCredentialsRequest("v1/aggregate-certificates", organizationId);
     }
 }
