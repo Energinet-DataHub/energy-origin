@@ -84,23 +84,6 @@ else
 
 builder.Services.AddUpstreamHttpClientsAndServices(builder.Environment);
 
-builder.Services.AddHttpClient<ITransferService, TransferService>("TransferClient", (sp, client) =>
-    {
-        var clientUriOptions = sp.GetRequiredService<IOptions<ClientUriOptions>>().Value;
-        client.BaseAddress = new Uri(clientUriOptions.Transfers);
-    })
-    .AddHttpMessageHandler(sp =>
-    {
-        var options = sp.GetRequiredService<IOptions<AdminPortalOptions>>().Value;
-        return new ClientCredentialsTokenHandler(
-            options.ClientId,
-            options.ClientSecret,
-            options.TenantId,
-            new[] { options.Scope },
-            sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
-        );
-    });
-
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 var app = builder.Build();
