@@ -60,8 +60,12 @@ public class GetCvrCompanyQueryHandlerTests
     public async Task WhenGettingCvrCompany_WithNoCompanyInformation_ReturnCompanyInformation()
     {
         // Arrange
-        var query = new GetCvrCompanyQuery("12345678");
+        var cvr = "12345678";
+        var query = new GetCvrCompanyQuery(cvr);
 
+        var name = "Test Company";
+        var city = "Test City";
+        var zipCode = 1234;
         _cvrClient.CvrNumberSearch(Arg.Any<IEnumerable<CvrNumber>>()).Returns(new Root
         {
             hits = new HitsRoot
@@ -78,7 +82,17 @@ public class GetCvrCompanyQueryHandlerTests
                                 {
                                     nyesteNavn = new NyesteNavn
                                     {
-                                        navn = "Test Company"
+                                        navn = name
+                                    },
+                                    nyesteBeliggenhedsadresse = new NyesteBeliggenhedsadresse
+                                    {
+                                        bynavn = city,
+                                        postnummer = zipCode,
+                                        vejnavn = "Test Street",
+                                        husnummerFra = 1,
+                                        bogstavFra = "A",
+                                        etage = "2",
+                                        sidedoer = "B"
                                     }
                                 }
                             }
@@ -93,5 +107,10 @@ public class GetCvrCompanyQueryHandlerTests
 
         // Assert
         Assert.NotNull(result);
+        Assert.Equal(cvr, result.Tin);
+        Assert.Equal(name, result.Name);
+        Assert.Equal(city, result.City);
+        Assert.Equal(zipCode.ToString(), result.ZipCode);
+        Assert.Equal("Test Street 1 A 2 B", result.Address);
     }
 }
