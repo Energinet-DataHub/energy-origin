@@ -112,10 +112,11 @@ public class Any
             Capacity = "123",
             BuildingNumber = "buildingNumber",
             CityName = "cityName",
-            Postcode = "postcode",
+            Postcode = "8240",
             StreetName = "streetName",
             MunicipalityCode = "101", // Copenhagen
-            CitySubDivisionName = "vesterbro"
+            CitySubDivisionName = "vesterbro",
+            MeteringGridAreaId = "932"
         };
     }
 
