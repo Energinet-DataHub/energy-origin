@@ -18,7 +18,7 @@ namespace API.Cvr.Api.Controllers.Internal;
 public class InternalCvrController(IMediator mediator) : ControllerBase
 {
     [ProducesResponseType(typeof(CvrCompanyInformationDto), 200)]
-    [ProducesResponseType(typeof(void), 400)]
+    [ProducesResponseType(typeof(void), 404)]
     [HttpGet]
     [Route("internal-cvr/companies/{tin}")]
     public async Task<ActionResult<CvrCompanyInformationDto>> GetCvrCompanies([FromRoute] string tin,
@@ -27,7 +27,7 @@ public class InternalCvrController(IMediator mediator) : ControllerBase
         var companyQueryResult = await mediator.Send(new GetCvrCompanyQuery(tin), cancellationToken);
         if (companyQueryResult is null)
         {
-            return BadRequest();
+            return NotFound();
         }
 
         return Ok(new CvrCompanyInformationDto
