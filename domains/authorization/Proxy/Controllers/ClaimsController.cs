@@ -32,9 +32,9 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Claim, PageInfoCursor>), StatusCodes.Status200OK)]
-    public async Task GetClaimsCursor([FromQuery] GetClaimsQueryParametersCursor param, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> GetClaimsCursor([FromQuery] GetClaimsQueryParametersCursor param, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/claims/cursor", organizationId);
+        return ProxyClientCredentialsRequest("v1/claims/cursor", organizationId);
     }
 
     /// <summary>
@@ -50,9 +50,9 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ResultList<Claim, PageInfo>), StatusCodes.Status200OK)]
-    public async Task GetClaims([FromQuery] GetClaimsQueryParameters param, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> GetClaims([FromQuery] GetClaimsQueryParameters param, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/claims", organizationId);
+        return ProxyClientCredentialsRequest("v1/claims", organizationId);
     }
 
     /// <summary>
@@ -70,9 +70,9 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultList<AggregatedClaims, PageInfo>), StatusCodes.Status200OK)]
-    public async Task AggregateClaims([FromQuery] AggregateClaimsQueryParameters param, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> AggregateClaims([FromQuery] AggregateClaimsQueryParameters param, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/aggregate-claims", organizationId);
+        return ProxyClientCredentialsRequest("v1/aggregate-claims", organizationId);
     }
 
     /// <summary>
@@ -89,9 +89,9 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ClaimResponse), StatusCodes.Status202Accepted)]
-    public async Task ClaimCertificate([FromBody] ClaimRequest request, [Required][FromQuery] string organizationId)
+    public Task<IActionResult> ClaimCertificate([FromBody] ClaimRequest request, [Required][FromQuery] string organizationId)
     {
-        await ProxyClientCredentialsRequest("v1/claims", organizationId);
+        return ProxyClientCredentialsRequest("v1/claims", organizationId);
     }
 }
 

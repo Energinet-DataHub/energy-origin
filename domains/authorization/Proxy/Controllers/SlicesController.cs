@@ -40,9 +40,9 @@ public class SlicesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task ReceiveSlice([FromBody] ReceiveRequest request)
+    public Task<IActionResult> ReceiveSlice([FromBody] ReceiveRequest request)
     {
-        await ProxyInsecureCall("v1/slices");
+        return ProxyInsecureCall("v1/slices");
     }
 
     /// <summary>
@@ -68,9 +68,9 @@ public class SlicesController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    public async Task ReceiveSliceV2([FromBody] ReceiveRequest request)
+    public Task<IActionResult> ReceiveSliceV2([FromBody] ReceiveRequest request)
     {
-        await ProxyInsecureCall("v1/slices");
+        return ProxyInsecureCall("v1/slices");
     }
 }
 

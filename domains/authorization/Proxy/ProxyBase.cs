@@ -8,6 +8,7 @@ public class ProxyBase : ControllerBase
 {
     private readonly IHttpContextAccessor? _httpContextAccessor;
     private readonly HttpClient _httpClient;
+    private static readonly string[] SkipForward = ["Authorization", "Transfer-Encoding"];
 
     public ProxyBase(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor)
     {
@@ -22,90 +23,50 @@ public class ProxyBase : ControllerBase
 
     private async Task ProxyRequest(string path, string? organizationId)
     {
-        var requestMessage = await BuildProxyRequest(path);
-
+        using var requestMessage = await BuildProxyRequest(path);
         BuildProxyForwardHeaders(organizationId, requestMessage);
 
-        var proxyResponse = await RunProxyRequest(requestMessage);
+        using var proxyResponse = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
 
         BuildProxyResponseHeaders(proxyResponse);
-
-        await BuildProxyResponse(proxyResponse);
-
-        FlushRequest();
-    }
-
-    private void FlushRequest()
-    {
-        Response.Body.Close();
-    }
-
-    private async Task BuildProxyResponse(HttpResponseMessage proxyResponse)
-    {
         Response.StatusCode = (int)proxyResponse.StatusCode;
-
-        await proxyResponse.Content.CopyToAsync(Response.Body, null, default);
+        await proxyResponse.Content.CopyToAsync(Response.Body);
     }
 
     private void BuildProxyResponseHeaders(HttpResponseMessage proxyResponse)
     {
-        foreach (var header in proxyResponse.Headers.Where(x => !x.Key.Equals("Transfer-Encoding", StringComparison.InvariantCultureIgnoreCase)))
-        {
+        foreach (var header in proxyResponse.Headers.Concat(proxyResponse.Content.Headers))
             foreach (var value in header.Value)
-            {
-                Response.Headers.Append(header.Key, value);
-            }
-        }
-
-        foreach (var header in proxyResponse.Content.Headers)
-        {
-            foreach (var value in header.Value)
-            {
-                Response.Headers.Append(header.Key, value);
-            }
-        }
+                if (!SkipForward.Contains(header.Key, StringComparer.OrdinalIgnoreCase))
+                    Response.Headers.Append(header.Key, value);
     }
 
-    private async Task<HttpResponseMessage> RunProxyRequest(HttpRequestMessage requestMessage)
+    private void BuildProxyForwardHeaders(string? organizationId, HttpRequestMessage request)
     {
-        return await _httpClient.SendAsync(requestMessage);
-    }
-
-    private void BuildProxyForwardHeaders(string? organizationId, HttpRequestMessage requestMessage)
-    {
-        foreach (var header in HttpContext.Request.Headers.Where(x => !x.Key.Equals("Authorization", StringComparison.InvariantCultureIgnoreCase)))
-        {
-            if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
-            {
-                requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
-            }
-        }
+        foreach (var h in HttpContext.Request.Headers.Where(h => !SkipForward.Contains(h.Key, StringComparer.OrdinalIgnoreCase)))
+            if (!request.Headers.TryAddWithoutValidation(h.Key, h.Value.ToArray()))
+                request.Content?.Headers.TryAddWithoutValidation(h.Key, h.Value.ToArray());
 
         if (organizationId is not null)
-        {
-            requestMessage.Content?.Headers.TryAddWithoutValidation(WalletConstants.Header, organizationId);
-        }
+            request.Content?.Headers.TryAddWithoutValidation(WalletConstants.Header, organizationId);
     }
 
     private async Task<HttpRequestMessage> BuildProxyRequest(string path)
     {
         if (HttpContext.Request.Body.CanSeek)
-        {
             HttpContext.Request.Body.Position = 0;
-        }
-        var requestBodyStream = new MemoryStream();
-        await HttpContext.Request.Body.CopyToAsync(requestBodyStream);
-        requestBodyStream.Seek(0, SeekOrigin.Begin);
 
-        var requestMessage = new HttpRequestMessage()
+        var buffer = new MemoryStream();
+        await HttpContext.Request.Body.CopyToAsync(buffer);
+        buffer.Position = 0;
+
+        var req = new HttpRequestMessage
         {
-            Content = new StreamContent(requestBodyStream)
+            Method = new HttpMethod(HttpContext.Request.Method),
+            Content = new StreamContent(buffer),
+            RequestUri = new Uri($"wallet-api/{path}{HttpContext.Request.QueryString}", UriKind.Relative)
         };
-
-        requestMessage.Method = new HttpMethod(HttpContext.Request.Method);
-        requestMessage.RequestUri = new Uri($"wallet-api/{path}{HttpContext.Request.QueryString}", UriKind.Relative);
-
-        return requestMessage;
+        return req;
     }
 
     /// <summary>
@@ -113,45 +74,41 @@ public class ProxyBase : ControllerBase
     /// </summary>
     /// <param name="path"></param>
     /// <param name="organizationId"></param>
-    protected async Task ProxyClientCredentialsRequest(string path, string? organizationId)
+    protected async Task<IActionResult> ProxyClientCredentialsRequest(string path, string? organizationId)
     {
         if (_httpContextAccessor is null)
-        {
-            Forbidden();
-            return;
-        }
+            return Forbidden();
+
+        if (!Guid.TryParse(organizationId, out var orgGuid))
+            return BadRequest("Query‑parameter 'organizationId' must be a non‑empty GUID.");
 
         var accessDescriptor = new AccessDescriptor(new IdentityDescriptor(_httpContextAccessor));
 
-        if (string.IsNullOrEmpty(organizationId))
-        {
-            Forbidden();
-            return;
-        }
+        if (!accessDescriptor.IsAuthorizedToOrganization(orgGuid))
+            return Forbidden();
 
-        var orgId = Guid.Parse(organizationId);
-        if (!accessDescriptor.IsAuthorizedToOrganization(orgId))
-        {
-            Forbidden();
-            return;
-        }
+        await ProxyRequest(path, organizationId);
 
-        await ProxyRequest(path, organizationId!);
-    }
-
-    private void Forbidden()
-    {
-        Response.StatusCode = StatusCodes.Status403Forbidden;
-        Response.Body.Close();
+        return new EmptyResult();
     }
 
     /// <summary>
     /// Proxies a request to the wallet service without any validation.
     /// </summary>
     /// <param name="path"></param>
-    protected async Task ProxyInsecureCall(string path)
+    protected async Task<IActionResult> ProxyInsecureCall(string path)
     {
         await ProxyRequest(path, null);
+        return new EmptyResult();
     }
 
+    private ObjectResult Forbidden(string? detail = null)
+    {
+        return Problem(detail, statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    private ObjectResult BadRequest(string detail)
+    {
+        return Problem(detail, statusCode: StatusCodes.Status400BadRequest);
+    }
 }
