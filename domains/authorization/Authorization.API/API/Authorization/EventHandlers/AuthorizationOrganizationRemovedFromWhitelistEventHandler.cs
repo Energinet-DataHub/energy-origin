@@ -24,7 +24,7 @@ public class AuthorizationOrganizationRemovedFromWhitelistEventHandler(ILogger<A
         var removeOrganizationClientsCommand = new RemoveOrganizationClientsCommand(orgId);
         await mediator.Send(removeOrganizationClientsCommand, context.CancellationToken);
 
-        logger.LogInformation("Organization {orgId} removed from whitelist, removing all clients", orgId);
+        logger.LogInformation("Organization {orgId} removed from whitelist, revoking acceptance of terms", orgId);
         var revokeTermsCommand = new RevokeTermsCommand(orgId);
         await mediator.Send(revokeTermsCommand, context.CancellationToken);
     }
