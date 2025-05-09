@@ -16,7 +16,8 @@ public record MeteringPoint(
     string ConsumerCvr,
     [property: SwaggerSchema("Indicates if the metering point can be used for issuing certificates.")]
     bool CanBeUsedForIssuingCertificates,
-    string Capacity)
+    string Capacity,
+    string BiddingZone)
 {
     public static MeteringPoint CreateFrom(Meteringpoint.V1.MeteringPoint result)
     {
@@ -24,7 +25,7 @@ public record MeteringPoint(
 
         return new MeteringPoint(
             result.MeteringPointId,
-            GetGridArea(result.Postcode),
+            result.MeteringGridAreaId,
             GetMeterType(result.TypeOfMp),
             GetSubMeterType(result.SubtypeOfMp),
             new Address(
@@ -40,7 +41,8 @@ public record MeteringPoint(
             GetTechnology(result.AssetType),
             result.ConsumerCvr,
             GetCanBeUsedForIssuingCertificates(result.TypeOfMp, result.AssetType, result.PhysicalStatusOfMp),
-            result.Capacity
+            result.Capacity,
+            GetBiddingZone(result.Postcode)
         );
     }
 
@@ -67,7 +69,7 @@ public record MeteringPoint(
         return false;
     }
 
-    public static string GetGridArea(string postcode)
+    public static string GetBiddingZone(string postcode)
     {
         var postcodeInt = int.Parse(postcode);
 

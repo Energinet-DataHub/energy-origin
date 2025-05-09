@@ -44,7 +44,8 @@ public class EnergyMeasuredIntegrationEventMapper
             Capacity: meteringPoint.Capacity,
             Technology: MapTechnology(technology),
             MeterType: MapMeterType(meteringPointType),
-            Quality: MapQuality(measurement.Quality));
+            Quality: MapQuality(measurement.Quality),
+            BiddingZone: GetBiddingZone(meteringPoint.Postcode));
     }
 
     private MeterType MapMeterType(MeteringPointType meteringPointType)
@@ -70,4 +71,20 @@ public class EnergyMeasuredIntegrationEventMapper
             EnergyQuality.Calculated => Quality.Calculated,
             _ => throw new ArgumentOutOfRangeException(nameof(quantity), quantity, null)
         };
+
+    public string GetBiddingZone(string postcode)
+    {
+        var postcodeInt = int.Parse(postcode);
+
+        if (postcodeInt >= 5000)
+        {
+            return "DK1";
+        }
+        else if (postcodeInt < 5000)
+        {
+            return "DK2";
+        }
+
+        throw new NotSupportedException($"Postcode '{postcode}' is out of bounds.");
+    }
 }

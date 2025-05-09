@@ -13,7 +13,8 @@ public record EnergyMeasuredIntegrationEvent(
     string Capacity,
     Technology Technology,
     MeterType MeterType,
-    Quality Quality
+    Quality Quality,
+    string BiddingZone
 );
 
 public enum MeterType

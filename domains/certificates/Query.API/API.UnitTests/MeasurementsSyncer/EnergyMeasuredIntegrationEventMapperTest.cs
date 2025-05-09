@@ -64,5 +64,6 @@ public class EnergyMeasuredIntegrationEventMapperTest
         evt.MeterType.Should().Be(syncInfo.MeteringPointType == MeteringPointType.Consumption ? MeterType.Consumption : MeterType.Production);
         evt.RecipientId.Should().Be(recipientId);
         evt.GSRN.Should().Be(gsrn.Value);
+        evt.BiddingZone.Should().Be(_sut.GetBiddingZone(meteringPoint.Postcode));
     }
 }

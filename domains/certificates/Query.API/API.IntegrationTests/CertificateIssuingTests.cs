@@ -87,10 +87,11 @@ public sealed class CertificateIssuingTests : TestBase
             Capacity = "123",
             BuildingNumber = "buildingNumber",
             CityName = "cityName",
-            Postcode = "postcode",
+            Postcode = "8240",
             StreetName = "streetName",
             MunicipalityCode = "101", // Copenhagen
-            CitySubDivisionName = "vesterbro"
+            CitySubDivisionName = "vesterbro",
+            MeteringGridAreaId = "932"
         };
         var mockedMeteringPointsResponse = new MeteringPointsResponse
         {
@@ -121,7 +122,7 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
             { EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet" },
-            { EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, granularCertificate.GridArea },
+            { EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, "DK1" },
             { EnergyTagAttributeKeys.EnergyTagCountry, "Denmark" },
             { EnergyTagAttributeKeys.EnergyTagGcIssuanceDateStamp, DateTimeOffset.Now.ToString("d") },
             { EnergyTagAttributeKeys.EnergyTagProductionStartingIntervalTimestamp, granularCertificate.Start.ToString() },
@@ -130,7 +131,7 @@ public sealed class CertificateIssuingTests : TestBase
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceUniqueIdentification, gsrn.Value },
             { EnergyTagAttributeKeys.EnergyTagProducedEnergySource, "F01040100" },
             { EnergyTagAttributeKeys.EnergyTagProducedEnergyTechnology, "T010000" },
-            { EnergyTagAttributeKeys.EnergyTagConnectedGridIdentification, granularCertificate.GridArea },
+            { EnergyTagAttributeKeys.EnergyTagConnectedGridIdentification, meteringPoint.MeteringGridAreaId },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, address.ToString() },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A" },

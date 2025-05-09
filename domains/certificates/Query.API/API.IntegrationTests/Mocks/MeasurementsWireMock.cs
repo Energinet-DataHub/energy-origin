@@ -53,7 +53,7 @@ public sealed class MeasurementsWireMock : IDisposable
         var result = meteringPoints.Select(mp => new
         {
             mp.gsrn,
-            gridArea = "DK1",
+            gridArea = "932",
             mp.type,
             technology = mp.technology ?? defaultTechnology,
             canBeUsedForIssuingCertificates = mp.canBeUsedforIssuingCertificates

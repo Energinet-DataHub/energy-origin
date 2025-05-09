@@ -35,4 +35,5 @@ message MeteringPoint {
   string consumer_Cvr = 18;
   string municipality_code = 19;
   string city_sub_division_name = 20;
+  string metering_grid_area_id = 21;
 }
