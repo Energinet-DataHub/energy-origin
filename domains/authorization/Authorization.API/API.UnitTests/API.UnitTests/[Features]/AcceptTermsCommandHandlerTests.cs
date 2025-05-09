@@ -6,6 +6,7 @@ using API.Repository;
 using API.UnitTests.Repository;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
+using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
@@ -154,11 +155,11 @@ public class AcceptTermsCommandHandlerTests
 
         walletClient
             .EnableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Throws(new WalletNotEnabled("Failed to enable wallet."));
+            .Throws(new BusinessException("Failed to enable wallet."));
 
         var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
 
-        await Assert.ThrowsAsync<WalletNotEnabled>(() => handler.Handle(command, CancellationToken.None));
+        await Assert.ThrowsAsync<BusinessException>(() => handler.Handle(command, CancellationToken.None));
         await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
     }

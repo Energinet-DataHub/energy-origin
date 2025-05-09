@@ -9,6 +9,7 @@ using API.Models;
 using API.Repository;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.Terms.V2;
+using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.WalletClient;
 using MassTransit;
 using MediatR;
@@ -86,6 +87,6 @@ public class AcceptTermsCommandHandler(
 
         var enableWalletResponse = walletClient.EnableWallet(wallet.Id, organizationId, CancellationToken.None);
         if (enableWalletResponse == null)
-            throw new WalletNotCreated("Failed to create wallet.");
+            throw new BusinessException("Failed to create wallet.");
     }
 }
