@@ -57,7 +57,7 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, Value = measurementEvent.Address.ToString() });
             hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, Value = measurementEvent.Capacity });
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet");
-            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, measurementEvent.GridArea);
+            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, measurementEvent.BiddingZone);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagCountry, "Denmark");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssuanceDateStamp, DateTimeOffset.Now.ToString("d"));
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionStartingIntervalTimestamp, measurementEvent.DateFrom.ToString());
@@ -84,7 +84,7 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             Start = measurementEvent.DateFrom,
             Quantity = (uint)measurementEvent.Quantity,
             Type = MapMeterType(measurementEvent.MeterType),
-            GridArea = measurementEvent.GridArea,
+            GridArea = measurementEvent.BiddingZone, //GridArea is used in stamp, registry and vault, thus changing value breaks everything.
             ClearTextAttributes = clearTextAttributes,
             HashedAttributes = hashedAttributes
         };

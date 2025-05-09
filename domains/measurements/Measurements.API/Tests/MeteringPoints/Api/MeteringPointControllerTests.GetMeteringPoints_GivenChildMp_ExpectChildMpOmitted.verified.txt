@@ -2,7 +2,7 @@
   Result: [
     {
       GSRN: 1234567890123456,
-      GridArea: DK2,
+      GridArea: 932,
       Address: {
         Address1: Street 1,
         Address2: 1 1,
@@ -18,7 +18,8 @@
       },
       ConsumerCvr: ,
       CanBeUsedForIssuingCertificates: true,
-      Capacity: 12345678
+      Capacity: 12345678,
+      BiddingZone: DK2
     }
   ],
   Status: Created

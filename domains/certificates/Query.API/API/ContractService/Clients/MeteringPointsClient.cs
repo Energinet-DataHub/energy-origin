@@ -82,15 +82,26 @@ public record MeteringPoint(
     string Gsrn,
     string GridArea,
     MeterType Type,
+    SubMeterType SubMeterType,
     Address Address,
     Technology Technology,
-    bool CanBeUsedForIssuingCertificates);
+    string ConsumerCvr,
+    bool CanBeUsedForIssuingCertificates,
+    string Capacity,
+    string BiddingZone);
 
 public enum MeterType
 {
     Consumption,
     Production,
     Child
+}
+
+public enum SubMeterType
+{
+    Physical,
+    Virtual,
+    Calculated
 }
 
 public record Technology(string AibFuelCode, string AibTechCode);

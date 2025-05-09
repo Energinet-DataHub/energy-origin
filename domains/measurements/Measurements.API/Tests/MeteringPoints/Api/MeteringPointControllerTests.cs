@@ -88,6 +88,7 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                     PhysicalStatusOfMp = "E22",
                     MunicipalityCode = "101", // Copenhagen
                     CitySubDivisionName = "vesterbro",
+                    MeteringGridAreaId = "932"
                 }
             }
         };
@@ -147,6 +148,7 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                     PhysicalStatusOfMp = "E22",
                     MunicipalityCode = "101", // Copenhagen
                     CitySubDivisionName = "vesterbro",
+                    MeteringGridAreaId = "932"
                 },
                 new MeteringPoint
                 {
@@ -164,6 +166,7 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                     PhysicalStatusOfMp = "E22",
                     MunicipalityCode = "101", // Copenhagen
                     CitySubDivisionName = "vesterbro",
+                    MeteringGridAreaId = "932"
                 }
             }
         };
@@ -232,7 +235,8 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
                         AssetType = "E17",
                         Capacity = "12345678",
                         MunicipalityCode = "101", // Copenhagen
-                        CitySubDivisionName = "vesterbro"
+                        CitySubDivisionName = "vesterbro",
+                        MeteringGridAreaId = "932"
                     }
                 }
             });

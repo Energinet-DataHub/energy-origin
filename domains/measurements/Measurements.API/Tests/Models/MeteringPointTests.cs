@@ -52,7 +52,7 @@ public class MeteringPointTests
     [InlineData("9000", "DK1")]
     public void MeteringPoints_GridArea_Success(string postcode, string gridArea)
     {
-        var ga = MeteringPoint.GetGridArea(postcode);
+        var ga = MeteringPoint.GetBiddingZone(postcode);
 
         Assert.Equal(gridArea, ga);
     }
