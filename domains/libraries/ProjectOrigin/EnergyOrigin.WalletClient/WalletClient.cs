@@ -390,5 +390,4 @@ public record DisableWalletResponse()
 public record EnableWalletResponse()
 {
     public Guid WalletId { get; init; }
-    public required string Message { get; init; }
 }

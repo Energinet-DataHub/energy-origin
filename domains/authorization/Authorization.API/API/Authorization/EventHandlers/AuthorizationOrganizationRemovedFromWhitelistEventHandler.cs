@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using EnergyOrigin.IntegrationEvents.Events.OrganizationRemovedFromWhitelist.V1;
 using MassTransit;
@@ -22,6 +23,10 @@ public class AuthorizationOrganizationRemovedFromWhitelistEventHandler(ILogger<A
         logger.LogInformation("Organization {orgId} removed from whitelist, removing all clients", orgId);
         var removeOrganizationClientsCommand = new RemoveOrganizationClientsCommand(orgId);
         await mediator.Send(removeOrganizationClientsCommand, context.CancellationToken);
+
+        logger.LogInformation("Organization {orgId} removed from whitelist, removing all clients", orgId);
+        var revokeTermsCommand = new RevokeTermsCommand(orgId);
+        await mediator.Send(revokeTermsCommand, context.CancellationToken);
     }
 }
 

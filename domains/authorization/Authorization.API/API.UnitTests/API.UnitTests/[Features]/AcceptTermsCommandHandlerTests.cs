@@ -11,6 +11,8 @@ using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
 using MassTransit;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
 namespace API.UnitTests._Features_;
 
@@ -118,5 +120,90 @@ public class AcceptTermsCommandHandlerTests
         await action.Should().ThrowAsync<InvalidConfigurationException>();
         await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
         await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WhenWalletExistsAndIsDisabledButEnableFails_RollsBackTransactionAndDoesNotPublishMessage()
+    {
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
+        await _organizationRepository.AddAsync(organization, CancellationToken.None);
+        await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
+
+        var walletClient = Substitute.For<IWalletClient>();
+
+        var disabledWallet = new WalletRecord
+        {
+            Id = Guid.NewGuid(),
+            PublicKey = Substitute.For<IHDPublicKey>(),
+            DisabledDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        };
+
+        walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(new ResultList<WalletRecord>
+            {
+                Metadata = new PageInfo
+                {
+                    Count = 1,
+                    Limit = 1,
+                    Offset = 0,
+                    Total = 1
+                },
+                Result = new List<WalletRecord> { disabledWallet }
+            });
+
+        walletClient
+            .EnableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Throws(new WalletNotEnabled("Failed to enable wallet."));
+
+        var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
+
+        await Assert.ThrowsAsync<WalletNotEnabled>(() => handler.Handle(command, CancellationToken.None));
+        await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+        await _publishEndpoint.DidNotReceive().Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WhenWalletExistsAndIsDisabled_EnablesWalletAndPublishesMessage()
+    {
+        // Arrange
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
+        await _organizationRepository.AddAsync(organization, CancellationToken.None);
+        await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
+
+        var walletClient = Substitute.For<IWalletClient>();
+
+        var disabledWallet = new WalletRecord
+        {
+            Id = Guid.NewGuid(),
+            PublicKey = Substitute.For<IHDPublicKey>(),
+            DisabledDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        };
+
+        walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(new ResultList<WalletRecord>
+            {
+                Metadata = new PageInfo
+                {
+                    Count = 1,
+                    Limit = 1,
+                    Offset = 0,
+                    Total = 1
+                },
+                Result = new List<WalletRecord> { disabledWallet }
+            });
+
+        walletClient.EnableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(new EnableWalletResponse { WalletId = disabledWallet.Id});
+
+        var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
+
+        // Act
+        await handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await _unitOfWork.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+        await _publishEndpoint.Received(1).Publish(Arg.Any<OrgAcceptedTerms>(), Arg.Any<CancellationToken>());
     }
 }
