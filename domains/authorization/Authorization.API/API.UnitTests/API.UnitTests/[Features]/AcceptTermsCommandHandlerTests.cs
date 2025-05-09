@@ -195,7 +195,7 @@ public class AcceptTermsCommandHandlerTests
             });
 
         walletClient.EnableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns(new EnableWalletResponse { WalletId = disabledWallet.Id});
+            .Returns(new EnableWalletResponse { WalletId = disabledWallet.Id });
 
         var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
 
