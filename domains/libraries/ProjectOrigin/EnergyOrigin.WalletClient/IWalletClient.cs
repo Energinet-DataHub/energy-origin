@@ -13,5 +13,6 @@ public interface IWalletClient
     Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate, GranularCertificate productionCertificate, uint quantity);
     Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0, CertificateType? certificateType = null);
     Task<DisableWalletResponse> DisableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken);
+    Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken);
 }
 

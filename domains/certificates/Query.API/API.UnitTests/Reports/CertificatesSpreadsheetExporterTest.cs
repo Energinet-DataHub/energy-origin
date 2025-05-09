@@ -118,5 +118,10 @@ public class CertificatesSpreadsheetExporterTest
         {
             throw new NotImplementedException();
         }
+
+        public Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

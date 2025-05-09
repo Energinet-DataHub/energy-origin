@@ -214,6 +214,18 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<DisableWalletResponse>(response, cancellationToken);
     }
 
+    public async Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    {
+        SetOwnerHeader(ownerSubject);
+        var response = await client.PostAsync($"v1/wallets/{walletId}/enable", null, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to enable wallet with id {walletId}. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
+        return await ParseResponse<EnableWalletResponse>(response, cancellationToken);
+    }
+
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -373,4 +385,9 @@ public record DisableWalletResponse()
 {
     public Guid WalletId { get; init; }
     public required long DisabledDate { get; init; }
+}
+
+public record EnableWalletResponse()
+{
+    public Guid WalletId { get; init; }
 }
