@@ -94,6 +94,11 @@ public class FakeWalletStampClient : IWalletClient, IStampClient
         throw new NotImplementedException();
     }
 
+    public Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<CreateRecipientResponse> CreateRecipient(WalletEndpointReference walletEndpointReference, CancellationToken cancellationToken)
     {
         return Task.FromResult(new CreateRecipientResponse() { Id = Guid.NewGuid() });

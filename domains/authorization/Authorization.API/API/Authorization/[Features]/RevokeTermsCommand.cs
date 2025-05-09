@@ -10,24 +10,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
-public class RevokeTermsCommand(Guid OrganizationId) : IRequest<RevokeTermsCommandResult>
+public class RevokeTermsCommand(Guid organizationId) : IRequest<RevokeTermsCommandResult>
 {
-    public Guid OrganizationId { get; } = OrganizationId;
+    public Guid OrganizationId { get; } = organizationId;
 }
 
-public class RevokeTermsCommandResult();
+public class RevokeTermsCommandResult;
 
 public class RevokeTermsCommandHandler(
     IOrganizationRepository organizationRepository,
-    IUnitOfWork unitOfWork,
-    ApplicationDbContext Context)
+    IUnitOfWork unitOfWork)
     : IRequestHandler<RevokeTermsCommand, RevokeTermsCommandResult>
 {
     public async Task<RevokeTermsCommandResult> Handle(RevokeTermsCommand request, CancellationToken cancellationToken)
     {
-        await unitOfWork.BeginTransactionAsync();
-
-        var orgs = await Context.Organizations.ToListAsync();
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         var organization = await organizationRepository.Query().FirstOrDefaultAsync(o => o.Id == request.OrganizationId, cancellationToken);
 
@@ -38,7 +35,7 @@ public class RevokeTermsCommandHandler(
 
         organization.RevokeTerms();
 
-        await unitOfWork.CommitAsync();
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return new RevokeTermsCommandResult();
     }
