@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using EnergyOrigin.Domain.ValueObjects;
 
 namespace DataContext.Models;

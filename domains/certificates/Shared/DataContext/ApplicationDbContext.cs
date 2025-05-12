@@ -42,7 +42,7 @@ public class ApplicationDbContext : DbContext
                 .HasColumnName("SponsorshipGSRN")
                 .HasConversion(
                     vo => vo.Value,
-                    v  => new Gsrn(v)
+                    v => new Gsrn(v)
                 );
 
             b.Property(s => s.SponsorshipEndDate)
