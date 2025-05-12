@@ -217,7 +217,7 @@ public class WalletClient(HttpClient client) : IWalletClient
     public async Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
-        var response = await client.PostAsync($"v1/wallets/{walletId}/enable", null, cancellationToken);
+        var response = await client.PutAsync($"v1/wallets/{walletId}/enable", null, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
