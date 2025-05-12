@@ -640,7 +640,17 @@
             A transfer record of a transfer of a part of a certificate to another wallet.
             </summary>
         </member>
+        <member name="M:Proxy.Controllers.Transfer.#ctor">
+            <summary>
+            A transfer record of a transfer of a part of a certificate to another wallet.
+            </summary>
+        </member>
         <member name="T:Proxy.Controllers.TransferRequest">
+            <summary>
+            A request to transfer a certificate to another wallet.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.TransferRequest.#ctor">
             <summary>
             A request to transfer a certificate to another wallet.
             </summary>
@@ -662,17 +672,16 @@
         </member>
         <member name="P:Proxy.Controllers.TransferRequest.HashedAttributes">
             <summary>
-            Specifies the list of hashed attribute names that must be transferred along with the certificate.
-            These attributes provide additional metadata about the certificate and its associated energy production or consumption.
-            Can be an empty array if no hashed attributes are to be transferred.
-            Possible values include:
-            - assetId: Identifier for the asset (consumption only).
-            - energyTag_ProductionDeviceCapacity: Capacity of the production device (production only).
-            - energyTag_ProductionDeviceLocation: Location of the production device (production only).
-            - energyTag_ProductionDeviceUniqueIdentification: Unique identifier for the production device (production only).
+            List of hashed attributes names to transfer with the certificate.
+            Can be empty array if no hashed attributes are to be transferred.
             </summary>
         </member>
         <member name="T:Proxy.Controllers.TransferResponse">
+            <summary>
+            A response to a transfer request.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.TransferResponse.#ctor">
             <summary>
             A response to a transfer request.
             </summary>
@@ -683,6 +692,11 @@
             </summary>
         </member>
         <member name="T:Proxy.Controllers.AggregatedTransfers">
+            <summary>
+            A result of aggregated transfers.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.AggregatedTransfers.#ctor">
             <summary>
             A result of aggregated transfers.
             </summary>
