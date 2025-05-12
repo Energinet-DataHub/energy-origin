@@ -34,6 +34,22 @@ public class ApplicationDbContext : DbContext
             d.OwnsMany(x => x.Intervals);
         });
 
+        modelBuilder.Entity<Sponsorship>(b =>
+        {
+            b.HasKey(s => s.Gsrn);
+
+            b.Property(s => s.Gsrn)
+                .HasColumnName("SponsorshipGSRN")
+                .HasConversion(
+                    vo => vo.Value,
+                    v  => new Gsrn(v)
+                );
+
+            b.Property(s => s.SponsorshipEndDate)
+                .HasColumnType("timestamp with time zone")
+                .IsRequired();
+        });
+
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxMessageEntity();
         modelBuilder.AddOutboxStateEntity();
@@ -44,6 +60,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
     public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
     public DbSet<MeteringPointTimeSeriesSlidingWindow> MeteringPointTimeSeriesSlidingWindows { get; set; }
+    public DbSet<Sponsorship> Sponsorships { get; set; }
 }
 
 // Some of the EF Core Tools commands (for example, the Migrations commands) require a derived DbContext instance to be created at design time
