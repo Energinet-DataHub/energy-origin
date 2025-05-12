@@ -5,6 +5,25 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Granulære Oprindelsesgarantier</title>
         <style>
+            @font-face {
+                font-family: "OpenSansNormal";
+                src: url("../Fonts/open-sans-regular.ttf"); format("truetype");
+                font-weight: 400;
+                font-style: normal;
+            }
+            @font-face {
+                font-family: "OpenSansBold";
+                src: url("../Fonts/open-sans-bold.ttf"); format("truetype");
+                font-weight: 700;
+                font-style: normal;
+            }
+            @font-face {
+                font-family: "OpenSansBolder";
+                src: url("../Fonts/open-sans-extra-bold.ttf"); format("truetype");
+                font-weight: 800;
+                font-style: normal;
+            }
+
             :root {
                 /* Color variables */
                 --dark-blue-text: #002433;
@@ -13,10 +32,16 @@
                 --text-color: #333;
 
                 --logo-height: 64px;
+
+                --letter-space-05: 0.05em;
+                --letter-space--03: -0.03em;
+                --letter-space--015: -0.015em;
+
+                background-color: darkgrey;
             }
 
             body {
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                font-family: "OpenSansNormal", sans-serif;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
@@ -25,26 +50,27 @@
                 height: 842px;
                 padding: 16px 16px;
 
+                background-color: white;
             }
 
             .top {
                 display: flex;
                 flex-direction: row;
                 justify-content: space-between;
-                padding: 10px 16px;
+                padding: 0px 16px;
             }
 
             .company-name {
                 font-size: 12px;
                 color: var(--dark-blue-text);
-                font-weight: 700;
-                letter-spacing: 0.1em;
+                font-family: "OpenSansBold", sans-serif;
+                letter-spacing: var(--letter-space-05);
             }
 
             .company-cvr {
                 font-size: 12px;
                 color: var(--dark-blue-text);
-                letter-spacing: 0.1em;
+                letter-spacing: var(--letter-space-05);
             }
 
             .header {
@@ -60,8 +86,9 @@
 
                 h1 {
                     color: var(--dark-blue-text);
-                    font-size: 47px;
-                    font-weight: 700;
+                    font-size: 44px;
+                    font-family: "OpenSansBolder", sans-serif;
+                    letter-spacing: var(--letter-space--03);
                     margin: 0
                 }
             }
@@ -84,15 +111,15 @@
                 .title {
                     font-size: 12px;
                     color: var(--dark-blue-text);
-                    font-weight: 400;
                     text-transform: uppercase;
-                    letter-spacing: 0.1em;
+                    letter-spacing: var(--letter-space-05);
                 }
 
                 .value {
-                    font-size: 54px;
+                    font-size: 44px;
                     color: var(--dark-blue-text);
-                    font-weight: 700;
+                    font-family: "OpenSansBolder", sans-serif;
+                    letter-spacing: var(--letter-space--015);
                 }
             }
 
@@ -103,18 +130,17 @@
                 .title {
                     font-size: 12px;
                     color: var(--dark-blue-text);
-                    font-weight: 400;
                     text-align: end;
                     text-transform: uppercase;
-                    letter-spacing: 0.1em;
+                    letter-spacing: var(--letter-space-05);
                 }
 
                 .value {
                     font-size: 12px;
                     color: var(--dark-blue-text);
-                    font-weight: 700;
+                    font-family: "OpenSansBolder", sans-serif;
                     text-align: end;
-
+                    letter-spacing: var(--letter-space-05);
                 }
             }
 
@@ -143,11 +169,20 @@
                 span {
                     font-size: 10px;
                     color: var(--dark-blue-text);
+                    letter-spacing: var(--letter-space--015);
                 }
             }
 
             .details {
                 margin: 16px;
+            }
+
+            .description {
+                font-size: 10px;
+                color: var(--dark-blue-text);
+                margin-top: 0;
+                margin-bottom: 12px;
+                letter-spacing: var(--letter-space--015);
             }
 
             .sections {
@@ -159,6 +194,8 @@
                     min-width: 120px;
                     .section-title {
                         margin: 0;
+                        font-family: "OpenSansBold", sans-serif;
+                        letter-spacing: var(--letter-space--015);
                     }
 
                     ul {
@@ -167,16 +204,12 @@
                         margin: 0;
                         li {
                             font-size: 10px;
+                            letter-spacing: var(--letter-space--015);
                         }
                     }
                 }
             }
 
-            .description {
-                font-size: 10px;
-                color: var(--dark-blue-text);
-                margin-bottom: 12px;
-            }
 
             .logo-container {
                 display: flex;
@@ -198,7 +231,9 @@
 
             .disclaimer {
                 p {
-                    padding: 0 32px;
+                    padding: 0 16px;
+                    margin-top: 10px;
+                    margin-bottom: 10px;
                     font-size: 6.3px;
                 }
             }
@@ -228,9 +263,9 @@
             <!-- Chart will be dynamically inserted here -->
             <div class="chart-image">
                 <!-- Mocked Chart-->
-                <img class="bar-chart" src="mock-report-chart.png" alt="Chart">
-                <img class="hour-numbers" src="hour-numbers.png" alt="Time Tal">
-                <img class="legend" src="legend.png" alt="<Legend>">
+                <img class="bar-chart" src="../Images/mock-report-chart.png" alt="Chart">
+                <img class="hour-numbers" src="../Images/hour-numbers.png" alt="Time Tal">
+                <img class="legend" src="../Images/legend.png" alt="<Legend>">
             </div>
             <div class="other-coverage">
                 <span id="daily-coverage">Dagsdækning: 61%</span>
@@ -273,9 +308,9 @@
         </div>
 
         <div class="logo-container">
-            <img class="logo" src="energinet-logo.svg" alt="Energinet Logo">
-            <img class="logo" src="energy-track-and-trace-logo.png" alt="Energy Track and Trace Logo">
-            <img class="logo" src="energy-tag-logo.svg" alt="Energy Tag Logo">
+            <img class="logo" src="../Images/energinet-logo.svg" alt="Energinet Logo">
+            <img class="logo" src="../Images/energy-track-and-trace-logo.svg" alt="Energy Track and Trace Logo">
+            <img class="logo" src="../Images/energy-tag-logo.svg" alt="Energy Tag Logo">
         </div>
 
         <div class="disclaimer">
