@@ -36,13 +36,13 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Sponsorship>(b =>
         {
-            b.HasKey(s => s.Gsrn);
+            b.HasKey(s => s.SponsorshipGSRN);
 
-            b.Property(s => s.Gsrn)
+            b.Property(s => s.SponsorshipGSRN)
                 .HasColumnName("SponsorshipGSRN")
                 .HasConversion(
-                    vo => vo.Value,
-                    v => new Gsrn(v)
+                    gsrnValueObject => gsrnValueObject.Value,
+                    stringValueWhenFetchedFromDatabase => new Gsrn(stringValueWhenFetchedFromDatabase)
                 );
 
             b.Property(s => s.SponsorshipEndDate)

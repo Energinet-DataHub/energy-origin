@@ -71,6 +71,7 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProducedEnergyTechnology, measurementEvent.Technology.AibTechCode);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes");
             clearTextAttributes.Add("municipality_code", measurementEvent.Address.MunicipalityCode);
+            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagSponsored, measurementEvent.IsStateSponsored.ToString());
         }
         else
         {
@@ -80,9 +81,9 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
         var certificate = new CertificateDto
         {
             Id = Guid.NewGuid(),
-            End = measurementEvent.DateTo,
             Start = measurementEvent.DateFrom,
             Quantity = (uint)measurementEvent.Quantity,
+            End = measurementEvent.DateTo,
             Type = MapMeterType(measurementEvent.MeterType),
             GridArea = measurementEvent.BiddingZone, //GridArea is used in stamp, registry and vault, thus changing value breaks everything.
             ClearTextAttributes = clearTextAttributes,

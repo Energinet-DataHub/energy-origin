@@ -15,12 +15,12 @@ public class EnergyMeasuredIntegrationEventMapper
         List<Measurement> measurements)
     {
         return measurements.Select(measurement =>
-                MapToIntegrationEvent(meteringPoint, syncInfo.MeteringPointType, syncInfo.GridArea, syncInfo.Technology, syncInfo.RecipientId, measurement))
+                MapToIntegrationEvent(meteringPoint, syncInfo.MeteringPointType, syncInfo.GridArea, syncInfo.Technology, syncInfo.RecipientId, measurement, syncInfo.IsStateSponsored))
             .ToList();
     }
 
     private EnergyMeasuredIntegrationEvent MapToIntegrationEvent(MeteringPoint meteringPoint, MeteringPointType meteringPointType, string gridArea,
-        DataContext.ValueObjects.Technology? technology, Guid recipientId, Measurement measurement)
+        DataContext.ValueObjects.Technology? technology, Guid recipientId, Measurement measurement, bool isStateSponsored)
     {
         var address = new Address(
             meteringPoint.StreetName,
@@ -45,7 +45,8 @@ public class EnergyMeasuredIntegrationEventMapper
             Technology: MapTechnology(technology),
             MeterType: MapMeterType(meteringPointType),
             Quality: MapQuality(measurement.Quality),
-            BiddingZone: GetBiddingZone(meteringPoint.Postcode));
+            BiddingZone: GetBiddingZone(meteringPoint.Postcode),
+            IsStateSponsored: isStateSponsored);
     }
 
     private MeterType MapMeterType(MeteringPointType meteringPointType)

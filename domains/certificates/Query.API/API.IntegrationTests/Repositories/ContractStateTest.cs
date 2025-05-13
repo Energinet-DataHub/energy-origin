@@ -213,4 +213,30 @@ public class ContractStateTest
 
         gsrn1SlidingWindows.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task GivenSponsoredAndUnsponsoredContracts_WhenGettingSyncInfo_FlagIsSetCorrectly()
+    {
+        await using var db = _dbContextFactoryMock.CreateDbContext();
+
+        var sponsoredGsrn = Any.Gsrn();
+        var unsponsoredGsrn = Any.Gsrn();
+        var now = UnixTimestamp.Now().AddHours(-_minimumAgeThresholdHours - 1);
+
+        db.Contracts.Add(Any.CertificateIssuingContract(sponsoredGsrn, now, null));
+        db.Contracts.Add(Any.CertificateIssuingContract(unsponsoredGsrn, now, null));
+
+        db.Sponsorships.Add(new Sponsorship
+        {
+            SponsorshipGSRN = sponsoredGsrn,
+            SponsorshipEndDate = DateTimeOffset.MaxValue
+        });
+
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var syncInfos = await _sut.GetSyncInfos(TestContext.Current.CancellationToken);
+
+        syncInfos.Should().ContainSingle(i => i.Gsrn.Equals(sponsoredGsrn) && i.IsStateSponsored);
+        syncInfos.Should().ContainSingle(i => i.Gsrn.Equals(unsponsoredGsrn)   && !i.IsStateSponsored);
+    }
 }

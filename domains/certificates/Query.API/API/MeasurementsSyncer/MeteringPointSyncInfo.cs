@@ -11,4 +11,5 @@ public record MeteringPointSyncInfo(Gsrn Gsrn,
     MeteringPointType MeteringPointType,
     string GridArea,
     Guid RecipientId,
-    Technology? Technology);
+    Technology? Technology,
+    bool IsStateSponsored = false);
