@@ -14,6 +14,7 @@ public interface IUnitOfWork : IAsyncDisposable
     ICertificateIssuingContractRepository CertificateIssuingContractRepo { get; }
     IActivityLogEntryRepository ActivityLogEntryRepo { get; }
     ISlidingWindowState SlidingWindowState { get; }
+    ISponsorshipRepository SponsorshipRepo { get; }
 
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitAsync(CancellationToken cancellationToken = default);
@@ -29,6 +30,7 @@ public class UnitOfWork : IUnitOfWork
     private IActivityLogEntryRepository? _activityLogEntryRepo;
     private ICertificateIssuingContractRepository? _certificateIssuingContractRepo;
     private ISlidingWindowState? _slidingWindowState;
+    private ISponsorshipRepository? _sponsorshipRepo;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -43,6 +45,9 @@ public class UnitOfWork : IUnitOfWork
 
     public ISlidingWindowState SlidingWindowState =>
         _slidingWindowState ??= new SlidingWindowState(_context);
+
+    public ISponsorshipRepository SponsorshipRepo =>
+        _sponsorshipRepo ??= new SponsorshipRepository(_context);
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {

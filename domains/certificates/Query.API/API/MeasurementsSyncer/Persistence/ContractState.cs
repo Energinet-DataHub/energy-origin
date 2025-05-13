@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using API.Configurations;
 using DataContext;
 using DataContext.Models;
+using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -75,62 +77,26 @@ public class ContractState : IContractState
                 .ToList();
 
             //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
-            var grouped = eligibleContracts.GroupBy(c => c.GSRN);
-            var singleOwner = new List<(string gsrn, CertificateIssuingContract oldest)>();
-            var multiOwner = new List<string>();
-
-            foreach (var g in grouped)
-            {
-                if (GetNumberOfOwners(g) == 1)
+            var syncInfos = eligibleContracts.GroupBy(c => c.GSRN)
+                .Where(g => GetNumberOfOwners(g) == 1)
+                .Select(g =>
                 {
-                    var oldest = g.MinBy(c => c.StartDate)!;
-                    singleOwner.Add((g.Key, oldest));
-                }
-                else
-                {
-                    multiOwner.Add(g.Key);
-                }
-            }
+                    var oldestContract = g.OrderBy(c => c.StartDate).First();
+                    var gsrn = g.Key;
+                    return new MeteringPointSyncInfo(new Gsrn(gsrn), oldestContract.StartDate, oldestContract.EndDate,
+                        oldestContract.MeteringPointOwner, oldestContract.MeteringPointType, oldestContract.GridArea, oldestContract.RecipientId,
+                        oldestContract.Technology, oldestContract.SponsorshipEndDate.HasValue);
+                })
+                .ToList();
 
-            if (multiOwner.Count > 0)
+            var contractsWithChangingOwnerForSameMeteringPoint = eligibleContracts.GroupBy(c => c.GSRN)
+                .Where(g => GetNumberOfOwners(g) > 1);
+
+            if (contractsWithChangingOwnerForSameMeteringPoint.Any())
             {
-                logger.LogWarning(
-                    "Skipping sync of GSRN with multiple owners: {contractsWithChangingOwnerForSameMeteringPoint}",
-                    multiOwner);
+                logger.LogWarning("Skipping sync of GSRN with multiple owners: {contractsWithChangingOwnerForSameMeteringPoint}",
+                    contractsWithChangingOwnerForSameMeteringPoint);
             }
-
-            if (singleOwner.Count == 0)
-                return new List<MeteringPointSyncInfo>();
-
-            var gsrnKeyObjects = singleOwner
-                .Select(x => new Gsrn(x.gsrn))
-                .Distinct()
-                .ToArray();
-
-            var hashSetOfSponsoredContracts = new HashSet<string>(
-                await dbContext.Sponsorships
-                    .AsNoTracking()
-                    .Where(s => gsrnKeyObjects.Contains(s.SponsorshipGSRN))
-                    .Select(s => s.SponsorshipGSRN.Value)
-                    .ToListAsync(cancellationToken),
-                StringComparer.Ordinal);
-
-            var syncInfos = singleOwner.Select(t =>
-            {
-                var oldest = t.oldest;
-                var gsrn = t.gsrn;
-
-                return new MeteringPointSyncInfo(
-                    new Gsrn(gsrn),
-                    oldest.StartDate,
-                    oldest.EndDate,
-                    oldest.MeteringPointOwner,
-                    oldest.MeteringPointType,
-                    oldest.GridArea,
-                    oldest.RecipientId,
-                    oldest.Technology,
-                    hashSetOfSponsoredContracts.Contains(gsrn));
-            }).ToList();
 
             return syncInfos;
         }

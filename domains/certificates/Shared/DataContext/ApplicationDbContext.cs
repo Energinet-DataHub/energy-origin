@@ -26,6 +26,7 @@ public class ApplicationDbContext : DbContext
     {
         modelBuilder.Entity<CertificateIssuingContract>().HasIndex(c => new { c.GSRN, c.ContractNumber }).IsUnique();
         modelBuilder.Entity<CertificateIssuingContract>().OwnsOne(c => c.Technology);
+        modelBuilder.Entity<CertificateIssuingContract>().Property(c => c.SponsorshipEndDate).HasColumnType("timestamp with time zone");
 
         modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().HasKey(s => new { s.GSRN });
         modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().OwnsOne(m => m.MissingMeasurements, d =>

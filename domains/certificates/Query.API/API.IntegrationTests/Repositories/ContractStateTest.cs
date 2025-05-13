@@ -223,8 +223,8 @@ public class ContractStateTest
         var unsponsoredGsrn = Any.Gsrn();
         var now = UnixTimestamp.Now().AddHours(-_minimumAgeThresholdHours - 1);
 
-        db.Contracts.Add(Any.CertificateIssuingContract(sponsoredGsrn, now, null));
-        db.Contracts.Add(Any.CertificateIssuingContract(unsponsoredGsrn, now, null));
+        db.Contracts.Add(Any.CertificateIssuingContract(sponsoredGsrn, now, null, isStateSponsored: true));
+        db.Contracts.Add(Any.CertificateIssuingContract(unsponsoredGsrn, now, null, isStateSponsored: false));
 
         db.Sponsorships.Add(new Sponsorship
         {

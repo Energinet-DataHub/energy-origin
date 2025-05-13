@@ -17,6 +17,7 @@ public class CertificateIssuingContract
     public DateTimeOffset Created { get; set; }
     public Guid RecipientId { get; set; }
     public Technology? Technology { get; set; }
+    public DateTimeOffset? SponsorshipEndDate { get; set; }
 
     public static CertificateIssuingContract Create(int contractNumber,
         Gsrn gsrn,
@@ -26,7 +27,8 @@ public class CertificateIssuingContract
         DateTimeOffset startDate,
         DateTimeOffset? endDate,
         Guid recipientId,
-        Technology? technology)
+        Technology? technology,
+        DateTimeOffset? sponsorshipEndDate = null)
     {
         return new CertificateIssuingContract
         {
@@ -40,7 +42,8 @@ public class CertificateIssuingContract
             EndDate = endDate,
             Created = DateTimeOffset.UtcNow,
             RecipientId = recipientId,
-            Technology = technology
+            Technology = technology,
+            SponsorshipEndDate = sponsorshipEndDate
         };
     }
 
