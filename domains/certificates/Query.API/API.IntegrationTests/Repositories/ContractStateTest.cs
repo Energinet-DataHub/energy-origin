@@ -237,6 +237,6 @@ public class ContractStateTest
         var syncInfos = await _sut.GetSyncInfos(TestContext.Current.CancellationToken);
 
         syncInfos.Should().ContainSingle(i => i.Gsrn.Equals(sponsoredGsrn) && i.IsStateSponsored);
-        syncInfos.Should().ContainSingle(i => i.Gsrn.Equals(unsponsoredGsrn)   && !i.IsStateSponsored);
+        syncInfos.Should().ContainSingle(i => i.Gsrn.Equals(unsponsoredGsrn) && !i.IsStateSponsored);
     }
 }

@@ -77,7 +77,7 @@ public class ContractState : IContractState
             //TODO: Currently the sync is only per GSRN/metering point, but should be changed to a combination of (GSRN, metering point owner). See https://github.com/Energinet-DataHub/energy-origin-issues/issues/1659 for more details
             var grouped = eligibleContracts.GroupBy(c => c.GSRN);
             var singleOwner = new List<(string gsrn, CertificateIssuingContract oldest)>();
-            var multiOwner  = new List<string>();
+            var multiOwner = new List<string>();
 
             foreach (var g in grouped)
             {
@@ -118,7 +118,7 @@ public class ContractState : IContractState
             var syncInfos = singleOwner.Select(t =>
             {
                 var oldest = t.oldest;
-                var gsrn   = t.gsrn;
+                var gsrn = t.gsrn;
 
                 return new MeteringPointSyncInfo(
                     new Gsrn(gsrn),
