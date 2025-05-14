@@ -23,14 +23,12 @@ runs:
     - name: Extract preview info
       shell: bash
       run: |
-        # Determine branch name (for PRs and pushes)
         if [[ -n "$GITHUB_HEAD_REF" ]]; then
           BRANCH="$GITHUB_HEAD_REF"
         else
           BRANCH="${GITHUB_REF#refs/heads/}"
         fi
 
-        # Compute PREVIEW_ID: strip 'preview/' then lowercase+strip
         RAW_ID="${BRANCH#preview/}"
         PREVIEW_ID=$(echo "$RAW_ID" \
           | tr '[:upper:]' '[:lower:]' \
