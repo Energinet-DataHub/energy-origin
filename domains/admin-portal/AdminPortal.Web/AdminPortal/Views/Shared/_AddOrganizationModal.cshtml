@@ -1,5 +1,10 @@
+@using Microsoft.Extensions.Options;
+@using AdminPortal.Options;
+@inject IOptions<CvrOptions> Options;
+
 <div class="modal fade" id="addOrganizationModal" tabindex="-1" aria-labelledby="addOrganizationModalLabel"
-     aria-hidden="true">
+     aria-hidden="true" data-cvr-basepath="@Options.Value.CvrEndpointBasePath"
+     data-cvr-validation-enforced="@Options.Value.EnforceCvrValidation">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -67,6 +72,10 @@
         const companyCity = document.getElementById('companyCity');
         const companyZipCode = document.getElementById('companyZipCode');
 
+        const modalElement = document.getElementById('addOrganizationModal');
+        const cvrBasePath = modalElement.getAttribute('data-cvr-basepath');
+        const cvrValidationEnforced = modalElement.getAttribute('data-cvr-validation-enforced') === 'true';
+
         // Disable the button by default
         confirmAddBtn.disabled = true;
 
@@ -81,7 +90,8 @@
             }
 
             try {
-                const response = await fetch(`/ett-admin-portal/cvr/company/${encodeURIComponent(tin)}`, {
+                const basePath = cvrBasePath ? `/${cvrBasePath}` : '';
+                const response = await fetch(`${basePath}/cvr/company/${encodeURIComponent(tin)}`, {
                     method: 'GET',
                     headers: {
                         'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
@@ -100,9 +110,17 @@
                     confirmAddBtn.disabled = false;
                 } else {
                     errorInfoDiv.style.display = 'block';
+
+                    if (!cvrValidationEnforced) {
+                        confirmAddBtn.disabled = false;
+                    }
                 }
             } catch (error) {
                 errorInfoDiv.style.display = 'block';
+
+                if (!cvrValidationEnforced) {
+                    confirmAddBtn.disabled = false;
+                }
             }
         });
     });
