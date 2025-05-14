@@ -49,13 +49,24 @@ runs:
         private_key: ${{ inputs.github-client-secret }}
 
     - name: Process B2C policies
-      env:
-        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
       shell: bash
       run: |
         mkdir -p policies
         IFS=',' read -r -a OLD_POLICIES <<< "$POLICIES"
+
         for OLD_POLICY in "${OLD_POLICIES[@]}"; do
+          NEW_POLICY="${OLD_POLICY}_${PREVIEW_ID}"
+
+          echo "→ Checking if ${NEW_POLICY} already exists"
+          if az rest \
+               --method GET \
+               --uri "https://graph.microsoft.com/beta/trustFramework/policies/${NEW_POLICY}" \
+               --headers "Accept: application/json" \
+               --output none 2>/dev/null; then
+            echo "✔ ${NEW_POLICY} exists; skipping"
+            continue
+          fi
+
           echo "→ Downloading ${OLD_POLICY}"
           az rest \
             --method GET \
@@ -63,8 +74,7 @@ runs:
             --headers "Accept: application/xml" \
             > policies/${OLD_POLICY}.xml
 
-          NEW_POLICY="${OLD_POLICY}_${PREVIEW_ID}"
-          echo "→ Templating ${OLD_POLICY} -> ${NEW_POLICY}"
+          echo "→ Templating ${OLD_POLICY} → ${NEW_POLICY}"
           sed \
             -e "s|https://demo.energytrackandtrace.dk|https://${DOMAIN}|g" \
             -e "s|PolicyId=\"${OLD_POLICY}\"|PolicyId=\"${NEW_POLICY}\"|g" \
