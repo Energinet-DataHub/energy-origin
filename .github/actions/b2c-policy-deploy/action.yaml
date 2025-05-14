@@ -1,7 +1,7 @@
 name: "Template & Deploy B2C Custom Policy"
 description: |
   Download an existing Azure B2C custom policy, substitute URLs and IDs
-  based on the current preview branch, and re-upload under a new name.
+  based on the current preview branch, and re‑upload under a new name.
 inputs:
   azure-tenant-id:
     description: Azure Tenant ID
@@ -56,6 +56,7 @@ runs:
 
           echo "→ Checking if ${NEW_POLICY} exists"
           if az rest \
+               --only-show-errors \
                --method GET \
                --uri "https://graph.microsoft.com/beta/trustFramework/policies/${NEW_POLICY}" \
                --headers Accept=application/json \
@@ -66,13 +67,16 @@ runs:
 
           echo "→ Downloading ${OLD_POLICY}"
           az rest \
+            --only-show-errors \
             --method GET \
             --uri "https://graph.microsoft.com/beta/trustFramework/policies/${OLD_POLICY}/\$value" \
             --headers Accept=application/xml \
-            > policies/${OLD_POLICY}.xml
+            > policies/${OLD_POLICY}.xml 2>/dev/null
 
           echo "→ Templating ${OLD_POLICY} → ${NEW_POLICY}"
           sed \
+            -e "/<ApplicationInsights>/,/<\/ApplicationInsights>/d" \
+            -e "s|<InstrumentationKey>.*<\/InstrumentationKey>||g" \
             -e "s|https://demo.energytrackandtrace.dk|https://${DOMAIN}|g" \
             -e "s|PolicyId=\"${OLD_POLICY}\"|PolicyId=\"${NEW_POLICY}\"|g" \
             -e "s|PublicPolicyUri=\"http://datahubeouenerginet.onmicrosoft.com/${OLD_POLICY}\"|PublicPolicyUri=\"http://datahubeouenerginet.onmicrosoft.com/${NEW_POLICY}\"|g" \
@@ -81,8 +85,9 @@ runs:
 
           echo "→ Uploading ${NEW_POLICY}"
           az rest \
+            --only-show-errors \
             --method PUT \
             --uri "https://graph.microsoft.com/beta/trustFramework/policies/${NEW_POLICY}/\$value" \
             --headers Content-Type=application/xml \
-            --body @"policies/${NEW_POLICY}.xml"
+            --body @"policies/${NEW_POLICY}.xml" 2>/dev/null
         done
