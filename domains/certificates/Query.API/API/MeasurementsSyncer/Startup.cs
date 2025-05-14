@@ -20,7 +20,7 @@ public static class Startup
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-    services.AddTransient<ITokenService, TokenService>();
+        services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<AuthHeaderHandler, AuthHeaderHandler>();
 
         services.AddScoped<MeasurementsSyncService>();

@@ -6,7 +6,6 @@ using DataContext.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using Meteringpoint.V1;
 using Technology = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3.Technology;
-using EnergyOrigin.DatahubFacade;
 
 namespace API.MeasurementsSyncer;
 
