@@ -1,8 +1,6 @@
-using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using AdminPortal.Options;
-using AdminPortal.Services;
 using AdminPortal.Utilities;
 using AdminPortal.Utilities.Local;
 using EnergyOrigin.Setup;
@@ -28,6 +26,9 @@ builder.Services.AddOptions<OidcOptions>().BindConfiguration(OidcOptions.Prefix)
     .ValidateOnStart();
 
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<CvrOptions>().BindConfiguration(CvrOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
 builder.Services.AddDefaultHealthChecks();
@@ -87,6 +88,12 @@ builder.Services.AddUpstreamHttpClientsAndServices(builder.Environment);
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 var app = builder.Build();
+
+if (builder.Environment.IsDevelopment())
+{
+    var options = app.Services.GetRequiredService<IOptions<CvrOptions>>();
+    options.Value.CvrEndpointBasePath = string.Empty;
+}
 
 app.MapHealthChecks("/health").AllowAnonymous();
 

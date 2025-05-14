@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
+using AdminPortal.Options;
 using AdminPortal.Services;
 using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.AspNetCore.Authentication;
@@ -39,6 +40,12 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             services.AddAuthentication(AutoFailSchemeProvider.AutoFailScheme)
                 .AddScheme<AuthenticationSchemeOptions, AutoFailAuthHandler>(AutoFailSchemeProvider.AutoFailScheme,
                     _ => { });
+
+            services.Configure<CvrOptions>(options =>
+            {
+                options.CvrEndpointBasePath = "test";
+                options.EnforceCvrValidation = true;
+            });
         });
     }
 
