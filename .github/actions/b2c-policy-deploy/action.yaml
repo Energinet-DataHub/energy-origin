@@ -41,13 +41,6 @@ runs:
         creds: "{ \"clientSecret\": \"${{ inputs.azure-client-secret }}\", \"tenantId\": \"${{ inputs.azure-tenant-id }}\", \"clientId\": \"${{ inputs.azure-client-id }}\"}"
         allow-no-subscriptions: true
 
-    - name: Generate Github token
-      uses: Energinet-DataHub/.github/.github/actions/github-create-token@v13
-      id: generate_token
-      with:
-        app_id: ${{ inputs.github-client-id }}
-        private_key: ${{ inputs.github-client-secret }}
-
     - name: Process B2C policies
       shell: bash
       run: |
