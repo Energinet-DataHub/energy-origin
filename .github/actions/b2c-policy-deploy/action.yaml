@@ -1,7 +1,7 @@
 name: "Template & Deploy B2C Custom Policy"
 description: |
   Download an existing Azure B2C custom policy, substitute URLs and IDs
-  based on the current preview branch, and re‑upload under a new name.
+  based on the current preview branch, and re-upload under a new name.
 inputs:
   azure-tenant-id:
     description: Azure Tenant ID
@@ -23,16 +23,20 @@ runs:
     - name: Extract preview info
       shell: bash
       run: |
+        if [[ -n "$GITHUB_HEAD_REF" ]]; then
+          BRANCH="$GITHUB_HEAD_REF"
+        else
+          BRANCH="${GITHUB_REF#refs/heads/}"
+        fi
 
-        IFS=',' read -r -a POLICIES <<< "${{ inputs.policies-to-replace }}"
-        BRANCH=${GITHUB_REF#refs/heads/preview/}
-        PREVIEW_ID=$(echo "$BRANCH" \
+        RAW_ID="${BRANCH#preview/}"
+        PREVIEW_ID=$(echo "$RAW_ID" \
           | tr '[:upper:]' '[:lower:]' \
           | sed 's/[^0-9a-z]*//g')
-        DOMAIN="energytrackandtrace-dk.${PREVIEW_ID}.p.acorn-dev.dk"
 
-        echo "PREVIEW_ID=$PREVIEW_ID"     >> $GITHUB_ENV
-        echo "DOMAIN=$DOMAIN"             >> $GITHUB_ENV
+        DOMAIN="energytrackandtrace-dk.${PREVIEW_ID}.p.acorn-dev.dk"
+        echo "PREVIEW_ID=$PREVIEW_ID" >> $GITHUB_ENV
+        echo "DOMAIN=$DOMAIN"         >> $GITHUB_ENV
         echo "POLICIES=${{ inputs.policies-to-replace }}" >> $GITHUB_ENV
 
     - name: Azure Login
@@ -41,7 +45,7 @@ runs:
         creds: "{ \"clientSecret\": \"${{ inputs.azure-client-secret }}\", \"tenantId\": \"${{ inputs.azure-tenant-id }}\", \"clientId\": \"${{ inputs.azure-client-id }}\"}"
         allow-no-subscriptions: true
 
-    - name: Process B2C policies
+    - name: Process B2C policies idempotently
       shell: bash
       run: |
         mkdir -p policies
@@ -50,11 +54,11 @@ runs:
         for OLD_POLICY in "${OLD_POLICIES[@]}"; do
           NEW_POLICY="${OLD_POLICY}_${PREVIEW_ID}"
 
-          echo "→ Checking if ${NEW_POLICY} already exists"
+          echo "→ Checking if ${NEW_POLICY} exists"
           if az rest \
                --method GET \
                --uri "https://graph.microsoft.com/beta/trustFramework/policies/${NEW_POLICY}" \
-               --headers "Accept: application/json" \
+               --headers Accept=application/json \
                --output none 2>/dev/null; then
             echo "✔ ${NEW_POLICY} exists; skipping"
             continue
@@ -64,7 +68,7 @@ runs:
           az rest \
             --method GET \
             --uri "https://graph.microsoft.com/beta/trustFramework/policies/${OLD_POLICY}/\$value" \
-            --headers "Accept: application/xml" \
+            --headers Accept=application/xml \
             > policies/${OLD_POLICY}.xml
 
           echo "→ Templating ${OLD_POLICY} → ${NEW_POLICY}"
@@ -79,6 +83,6 @@ runs:
           az rest \
             --method PUT \
             --uri "https://graph.microsoft.com/beta/trustFramework/policies/${NEW_POLICY}/\$value" \
-            --headers "Content-Type: application/xml" \
+            --headers Content-Type=application/xml \
             --body @"policies/${NEW_POLICY}.xml"
         done
