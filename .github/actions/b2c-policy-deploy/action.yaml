@@ -23,10 +23,6 @@ runs:
     - name: Extract preview info
       shell: bash
       run: |
-        if [[ ! "${GITHUB_REF}" =~ ^refs/heads/preview/ ]]; then
-          echo "Not a preview branch; skipping B2C policy deploy."
-          exit 0
-        fi
 
         IFS=',' read -r -a POLICIES <<< "${{ inputs.policies-to-replace }}"
         BRANCH=${GITHUB_REF#refs/heads/preview/}
@@ -42,15 +38,19 @@ runs:
     - name: Azure Login
       uses: azure/login@v2
       with:
-        creds: >-
-          {
-            "clientId": "${{ inputs.azure-client-id }}",
-            "clientSecret": "${{ inputs.azure-client-secret }}",
-            "tenantId": "${{ inputs.azure-tenant-id }}"
-          }
+        creds: "{ \"clientSecret\": \"${{ inputs.azure-client-secret }}\", \"tenantId\": \"${{ inputs.azure-tenant-id }}\", \"clientId\": \"${{ inputs.azure-client-id }}\"}"
         allow-no-subscriptions: true
 
+    - name: Generate Github token
+      uses: Energinet-DataHub/.github/.github/actions/github-create-token@v13
+      id: generate_token
+      with:
+        app_id: ${{ inputs.github-client-id }}
+        private_key: ${{ inputs.github-client-secret }}
+
     - name: Process B2C policies
+      env:
+        GH_TOKEN: ${{ steps.generate_token.outputs.token }}
       shell: bash
       run: |
         mkdir -p policies
