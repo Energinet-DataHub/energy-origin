@@ -1,8 +1,8 @@
 using System;
 using API.Configurations;
-using API.MeasurementsSyncer.Clients.DataHub3;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
+using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -14,7 +14,10 @@ public static class Startup
     public static void AddMeasurementsSyncer(this IServiceCollection services)
     {
         services.MeasurementsSyncOptions();
-        services.AddDataHub3Options();
+        services.AddOptions<DataHub3Options>()
+            .BindConfiguration(DataHub3Options.Prefix)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddOptions<DataHubFacadeOptions>()
             .BindConfiguration(DataHubFacadeOptions.Prefix)
             .ValidateDataAnnotations()

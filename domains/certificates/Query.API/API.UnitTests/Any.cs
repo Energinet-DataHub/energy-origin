@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using API.MeasurementsSyncer.Clients.DataHub3;
 using API.Models;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Datahub3;
 using EnergyOrigin.Domain.ValueObjects;
 using Meteringpoint.V1;
+using MeteringPoint = EnergyOrigin.Datahub3.MeteringPoint;
 
 namespace API.UnitTests;
 
@@ -55,7 +56,7 @@ public class Any
 
         return [new MeteringPointData
         {
-            MeteringPoint = new API.MeasurementsSyncer.Clients.DataHub3.MeteringPoint { Id = gsrn.Value },
+            MeteringPoint = new MeteringPoint { Id = gsrn.Value },
             PointAggregationGroups = pags
         }];
     }
@@ -86,7 +87,7 @@ public class Any
 
         return [new MeteringPointData
         {
-            MeteringPoint = new API.MeasurementsSyncer.Clients.DataHub3.MeteringPoint { Id = gsrn.Value },
+            MeteringPoint = new MeteringPoint { Id = gsrn.Value },
             PointAggregationGroups = pags
         }];
     }
