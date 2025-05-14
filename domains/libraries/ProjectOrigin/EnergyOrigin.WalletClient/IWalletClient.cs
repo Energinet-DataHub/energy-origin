@@ -14,5 +14,6 @@ public interface IWalletClient
     Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit, int skip = 0, CertificateType? certificateType = null);
     Task<DisableWalletResponse> DisableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken);
     Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken);
+    Task<ResultList<Claim>?> GetClaims(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken);
 }
 

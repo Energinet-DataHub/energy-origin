@@ -183,6 +183,20 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
     }
 
     [Fact]
+    public async Task GetClaims()
+    {
+        var ownerSubject = Guid.NewGuid();
+        var httpClient = GetWalletHttpClient();
+        var walletClient = new WalletClient(httpClient);
+        await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+
+        var claims = await walletClient.GetClaims(ownerSubject, null, null, new CancellationToken());
+
+        Assert.NotNull(claims);
+        Assert.Empty(claims.Result);
+    }
+
+    [Fact]
     public async Task GetGranularCertificates_WhenNullLimit_ExpectNoErrors()
     {
         var ownerSubject = Guid.NewGuid();
