@@ -24,7 +24,6 @@ jobs:
         )
       )
     runs-on: ubuntu-latest
-
     steps:
       - name: Determine preview ID
         shell: bash
