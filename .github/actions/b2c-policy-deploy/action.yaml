@@ -1,0 +1,81 @@
+name: "Template & Deploy B2C Custom Policy"
+description: |
+  Download an existing Azure B2C custom policy, substitute URLs and IDs
+  based on the current preview branch, and re‑upload under a new name.
+inputs:
+  azure-tenant-id:
+    description: Azure Tenant ID
+    required: true
+  azure-client-id:
+    description: Azure Client ID (SPN)
+    required: true
+  azure-client-secret:
+    description: Azure Client Secret (SPN)
+    required: true
+  policies-to-replace:
+    description: Comma-separated list of existing B2C policy names to download & template
+    required: false
+    default: "B2C_1A_OidcMock_V3,B2C_1A_ClientCredentials"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Extract preview info
+      shell: bash
+      run: |
+        if [[ ! "${GITHUB_REF}" =~ ^refs/heads/preview/ ]]; then
+          echo "Not a preview branch; skipping B2C policy deploy."
+          exit 0
+        fi
+
+        IFS=',' read -r -a POLICIES <<< "${{ inputs.policies-to-replace }}"
+        BRANCH=${GITHUB_REF#refs/heads/preview/}
+        PREVIEW_ID=$(echo "$BRANCH" \
+          | tr '[:upper:]' '[:lower:]' \
+          | sed 's/[^0-9a-z]*//g')
+        DOMAIN="energytrackandtrace-dk.${PREVIEW_ID}.p.acorn-dev.dk"
+
+        echo "PREVIEW_ID=$PREVIEW_ID"     >> $GITHUB_ENV
+        echo "DOMAIN=$DOMAIN"             >> $GITHUB_ENV
+        echo "POLICIES=${{ inputs.policies-to-replace }}" >> $GITHUB_ENV
+
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: >-
+          {
+            "clientId": "${{ inputs.azure-client-id }}",
+            "clientSecret": "${{ inputs.azure-client-secret }}",
+            "tenantId": "${{ inputs.azure-tenant-id }}"
+          }
+        allow-no-subscriptions: true
+
+    - name: Process B2C policies
+      shell: bash
+      run: |
+        mkdir -p policies
+        IFS=',' read -r -a OLD_POLICIES <<< "$POLICIES"
+        for OLD_POLICY in "${OLD_POLICIES[@]}"; do
+          echo "→ Downloading ${OLD_POLICY}"
+          az rest \
+            --method GET \
+            --uri "https://graph.microsoft.com/beta/trustFramework/policies/${OLD_POLICY}/\$value" \
+            --headers "Accept: application/xml" \
+            > policies/${OLD_POLICY}.xml
+
+          NEW_POLICY="${OLD_POLICY}_${PREVIEW_ID}"
+          echo "→ Templating ${OLD_POLICY} -> ${NEW_POLICY}"
+          sed \
+            -e "s|https://demo.energytrackandtrace.dk|https://${DOMAIN}|g" \
+            -e "s|PolicyId=\"${OLD_POLICY}\"|PolicyId=\"${NEW_POLICY}\"|g" \
+            -e "s|PublicPolicyUri=\"http://datahubeouenerginet.onmicrosoft.com/${OLD_POLICY}\"|PublicPolicyUri=\"http://datahubeouenerginet.onmicrosoft.com/${NEW_POLICY}\"|g" \
+            policies/${OLD_POLICY}.xml \
+            > policies/${NEW_POLICY}.xml
+
+          echo "→ Uploading ${NEW_POLICY}"
+          az rest \
+            --method PUT \
+            --uri "https://graph.microsoft.com/beta/trustFramework/policies/${NEW_POLICY}/\$value" \
+            --headers "Content-Type: application/xml" \
+            --body @"policies/${NEW_POLICY}.xml"
+        done

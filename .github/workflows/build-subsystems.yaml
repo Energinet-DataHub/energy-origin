@@ -132,3 +132,21 @@ jobs:
           dry_run: ${{ inputs.dry-run }}
           github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
           github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
+
+  deploy-b2c-preview:
+    name: 🌀 Deploy B2C Policy for Preview
+    runs-on: ubuntu-latest
+    needs: update
+    concurrency: commits-base-environment
+    if: ${{ inputs.is-dependabot == 'false' && startsWith(github.ref, 'refs/heads/preview/') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Template & deploy B2C custom policy
+        uses: ./.github/actions/b2c-policy-deploy
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+
