@@ -5,6 +5,9 @@ on:
     branches:
       - 'preview/**'
       - 'vcluster/**'
+  pull_request:
+    types:
+      - 'closed'
 
 permissions:
   contents: none
