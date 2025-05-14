@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using System;
-using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 
-namespace API.MeasurementsSyncer.Clients.DataHubFacade;
+namespace EnergyOrigin.DatahubFacade;
 
 public record ListMeteringPointForCustomerCaResponse
 {

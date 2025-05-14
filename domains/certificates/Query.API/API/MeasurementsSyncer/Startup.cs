@@ -1,9 +1,9 @@
 using System;
 using API.Configurations;
 using API.MeasurementsSyncer.Clients.DataHub3;
-using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
+using EnergyOrigin.DatahubFacade;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -15,9 +15,12 @@ public static class Startup
     {
         services.MeasurementsSyncOptions();
         services.AddDataHub3Options();
-        services.AddDataHubFacadeOptions();
+        services.AddOptions<DataHubFacadeOptions>()
+            .BindConfiguration(DataHubFacadeOptions.Prefix)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-        services.AddTransient<ITokenService, TokenService>();
+    services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<AuthHeaderHandler, AuthHeaderHandler>();
 
         services.AddScoped<MeasurementsSyncService>();
