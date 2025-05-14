@@ -44,12 +44,7 @@ runs:
     - name: Azure Login
       uses: azure/login@v2
       with:
-        creds: |
-          {
-            "clientId":     "${{ inputs.azure-client-id }}",
-            "clientSecret": "${{ inputs.azure-client-secret }}",
-            "tenantId":     "${{ inputs.azure-tenant-id }}"
-          }
+        creds: "{ \"clientSecret\": \"${{ inputs.azure-client-secret }}\", \"tenantId\": \"${{ inputs.azure-tenant-id }}\", \"clientId\": \"${{ inputs.azure-client-id }}\"}"
         allow-no-subscriptions: true
 
     - name: Process B2C policies idempotently
