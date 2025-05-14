@@ -75,12 +75,11 @@ runs:
 
           echo "→ Templating ${OLD_POLICY} → ${NEW_POLICY}"
           sed \
-            -e "s/InstrumentationKey=\"[^\"]*\"/InstrumentationKey=\"123...\"/g" \
-            -e "s|https://demo.energytrackandtrace.dk|https://${DOMAIN}|g" \
-            -e "s|PolicyId=\"${OLD_POLICY}\"|PolicyId=\"${NEW_POLICY}\"|g" \
-            -e "s|PublicPolicyUri=\"http://datahubeouenerginet.onmicrosoft.com/${OLD_POLICY}\"|PublicPolicyUri=\"http://datahubeouenerginet.onmicrosoft.com/${NEW_POLICY}\"|g" \
-            policies/${OLD_POLICY}.xml \
-            > policies/${NEW_POLICY}.xml
+          -e "s|https://demo.energytrackandtrace.dk|https://${DOMAIN}|g" \
+          -e "s|PolicyId=\"${OLD_POLICY}\"|PolicyId=\"${NEW_POLICY}\"|g" \
+          -e "s|PublicPolicyUri=\"http://datahubeouenerginet.onmicrosoft.com/${OLD_POLICY}\"|PublicPolicyUri=\"http://datahubeouenerginet.onmicrosoft.com/${NEW_POLICY}\"|g" \
+          policies/${OLD_POLICY}.xml \
+          > policies/${NEW_POLICY}.xml
 
           echo "→ Uploading ${NEW_POLICY}"
           az rest \
