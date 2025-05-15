@@ -11,6 +11,8 @@ using API.MeasurementsSyncer.Clients.DataHub3;
 using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.Models;
 using API.UnitTests;
+using DataContext;
+using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
@@ -18,6 +20,7 @@ using EnergyOrigin.WalletClient.Models;
 using EnergyTrackAndTrace.Testing.Attributes;
 using FluentAssertions;
 using Meteringpoint.V1;
+using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Testing.Extensions;
 using Xunit;
@@ -42,6 +45,7 @@ public sealed class CertificateIssuingTests : TestBase
     public async Task MeasurementsSyncerSendsMeasurementsToStamp_ExpectInWallet()
     {
         var gsrn = Any.Gsrn();
+        await AddGsrnToSponsoredTableAsync(gsrn);
         var subject = Guid.NewGuid().ToString();
         var orgId = Guid.NewGuid().ToString();
         var now = DateTimeOffset.UtcNow;
@@ -137,8 +141,23 @@ public sealed class CertificateIssuingTests : TestBase
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A" },
             { EnergyTagAttributeKeys.EnergyTagEnergyCarrier, "Electricity" },
             { EnergyTagAttributeKeys.EnergyTagGcIssueDeviceType, "Production" },
-            { EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes" },
-            { "municipality_code", meteringPoint.MunicipalityCode }
+            { EnergyTagAttributeKeys.EnergyTagDisclosure, "True" },
+            { "municipality_code", meteringPoint.MunicipalityCode },
+            { EnergyTagAttributeKeys.EnergyTagSponsored, "True" }
         });
+    }
+
+    private async Task AddGsrnToSponsoredTableAsync(Gsrn gsrn)
+    {
+        await using var db = new ApplicationDbContext(
+            new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseNpgsql(_integrationTestFixture.PostgresContainer.ConnectionString)
+                .Options);
+        db.Sponsorships.Add(new Sponsorship
+        {
+            SponsorshipGSRN = gsrn,
+            SponsorshipEndDate = DateTimeOffset.MaxValue
+        });
+        await db.SaveChangesAsync();
     }
 }

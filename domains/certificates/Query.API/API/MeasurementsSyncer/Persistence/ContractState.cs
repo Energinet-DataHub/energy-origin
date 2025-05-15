@@ -85,7 +85,7 @@ public class ContractState : IContractState
                     var gsrn = g.Key;
                     return new MeteringPointSyncInfo(new Gsrn(gsrn), oldestContract.StartDate, oldestContract.EndDate,
                         oldestContract.MeteringPointOwner, oldestContract.MeteringPointType, oldestContract.GridArea, oldestContract.RecipientId,
-                        oldestContract.Technology);
+                        oldestContract.Technology, oldestContract.SponsorshipEndDate.HasValue);
                 })
                 .ToList();
 
