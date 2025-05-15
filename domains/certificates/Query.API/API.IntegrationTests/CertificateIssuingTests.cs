@@ -141,7 +141,7 @@ public sealed class CertificateIssuingTests : TestBase
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A" },
             { EnergyTagAttributeKeys.EnergyTagEnergyCarrier, "Electricity" },
             { EnergyTagAttributeKeys.EnergyTagGcIssueDeviceType, "Production" },
-            { EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes" },
+            { EnergyTagAttributeKeys.EnergyTagDisclosure, "True" },
             { "municipality_code", meteringPoint.MunicipalityCode },
             { EnergyTagAttributeKeys.EnergyTagSponsored, "True" }
         });
