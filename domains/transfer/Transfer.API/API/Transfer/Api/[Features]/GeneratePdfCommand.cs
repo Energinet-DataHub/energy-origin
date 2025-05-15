@@ -1,14 +1,11 @@
 using System;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.Setup.Pdf;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 
 namespace API.Transfer.Api._Features_;

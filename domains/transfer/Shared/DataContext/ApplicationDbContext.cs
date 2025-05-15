@@ -19,6 +19,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ClaimAutomationArgument> ClaimAutomationArguments { get; set; }
     public DbSet<TransferAgreementProposal> TransferAgreementProposals { get; set; }
     public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
+    public DbSet<Report> Reports { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
