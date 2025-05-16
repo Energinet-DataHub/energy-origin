@@ -32,8 +32,8 @@ public class ReportsControllerTests
         var sub = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
-        var startDate   = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
-        var endDate     = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var startDate = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var requestBody = new { StartDate = startDate, EndDate = endDate };
 
         // Act

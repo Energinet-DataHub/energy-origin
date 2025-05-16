@@ -17,9 +17,9 @@ namespace API.UnitTests.Transfer.Api._Features_;
 
 public class CreateReportRequestCommandHandlerTests
 {
-    private readonly IReportRepository _reports    = Substitute.For<IReportRepository>();
-    private readonly IUnitOfWork       _unitOfWork = Substitute.For<IUnitOfWork>();
-    private readonly IPublishEndpoint  _bus        = Substitute.For<IPublishEndpoint>();
+    private readonly IReportRepository _reports = Substitute.For<IReportRepository>();
+    private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
+    private readonly IPublishEndpoint _bus = Substitute.For<IPublishEndpoint>();
     private readonly CreateReportRequestCommandHandler _sut;
 
     public CreateReportRequestCommandHandlerTests()
@@ -40,7 +40,7 @@ public class CreateReportRequestCommandHandlerTests
     {
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var start = UnixTimestamp.Now().AddDays(-30);
-        var end   = UnixTimestamp.Now();
+        var end = UnixTimestamp.Now();
 
         var cmd = new CreateReportRequestCommand(orgId, start, end);
 
@@ -52,11 +52,11 @@ public class CreateReportRequestCommandHandlerTests
         var resultId = await _sut.Handle(cmd, CancellationToken.None);
 
         capturedReport.Should().NotBeNull();
-        capturedReport!.Id             .Should().Be(resultId);
-        capturedReport.OrganizationId .Should().Be(orgId);
+        capturedReport!.Id.Should().Be(resultId);
+        capturedReport.OrganizationId.Should().Be(orgId);
         capturedReport.StartDate.EpochSeconds.Should().Be(start.EpochSeconds);
-        capturedReport.EndDate  .EpochSeconds.Should().Be(end.EpochSeconds);
-        capturedReport.Status     .Should().Be(ReportStatus.Pending);
+        capturedReport.EndDate.EpochSeconds.Should().Be(end.EpochSeconds);
+        capturedReport.Status.Should().Be(ReportStatus.Pending);
 
         await _reports.Received(1).AddAsync(
             Arg.Is<Report>(r => r.Id == resultId),
@@ -67,7 +67,7 @@ public class CreateReportRequestCommandHandlerTests
             Arg.Is<ReportRequestCreated>(e =>
                 e.ReportId == resultId &&
                 e.StartDate == start.EpochSeconds &&
-                e.EndDate   == end.EpochSeconds
+                e.EndDate == end.EpochSeconds
             ),
             Arg.Any<CancellationToken>());
 
@@ -79,8 +79,8 @@ public class CreateReportRequestCommandHandlerTests
     {
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var start = UnixTimestamp.Now().AddDays(-366);
-        var end   = UnixTimestamp.Now();
-        var cmd   = new CreateReportRequestCommand(orgId, start, end);
+        var end = UnixTimestamp.Now();
+        var cmd = new CreateReportRequestCommand(orgId, start, end);
 
         await Assert.ThrowsAsync<BusinessException>(() =>
             _sut.Handle(cmd, CancellationToken.None));

@@ -16,22 +16,22 @@ public class CreateReportRequestCommandHandler
     : IRequestHandler<CreateReportRequestCommand, Guid>
 {
     private readonly IReportRepository _reports;
-    private readonly IUnitOfWork       _unitOfWork;
-    private readonly IPublishEndpoint  _bus;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IPublishEndpoint _bus;
 
     public CreateReportRequestCommandHandler(
         IReportRepository reports,
-        IUnitOfWork       unitOfWork,
-        IPublishEndpoint  bus)
+        IUnitOfWork unitOfWork,
+        IPublishEndpoint bus)
     {
-        _reports    = reports;
+        _reports = reports;
         _unitOfWork = unitOfWork;
-        _bus        = bus;
+        _bus = bus;
     }
 
     public async Task<Guid> Handle(
         CreateReportRequestCommand request,
-        CancellationToken         cancellationToken)
+        CancellationToken cancellationToken)
     {
         var duration = request.EndDate.EpochSeconds - request.StartDate.EpochSeconds;
         if (duration > UnixTimestamp.SecondsPerDay * 365)
@@ -59,6 +59,6 @@ public class CreateReportRequestCommandHandler
 
 public record CreateReportRequestCommand(
     OrganizationId OrganizationId,
-    UnixTimestamp  StartDate,
-    UnixTimestamp  EndDate
+    UnixTimestamp StartDate,
+    UnixTimestamp EndDate
 ) : IRequest<Guid>;

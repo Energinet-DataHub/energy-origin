@@ -5,39 +5,39 @@ namespace DataContext.Models;
 
 public enum ReportStatus
 {
-    Pending   = 0,
+    Pending = 0,
     Completed = 1,
-    Failed    = 2
+    Failed = 2
 }
 
 public class Report
 {
 
     private Report(
-        Guid           id,
+        Guid id,
         OrganizationId organizationId,
-        UnixTimestamp  createdAt,
-        UnixTimestamp  startDate,
-        UnixTimestamp  endDate,
-        ReportStatus   status,
-        byte[]?        content)
+        UnixTimestamp createdAt,
+        UnixTimestamp startDate,
+        UnixTimestamp endDate,
+        ReportStatus status,
+        byte[]? content)
     {
-        Id             = id;
+        Id = id;
         OrganizationId = organizationId ??
                          throw new ArgumentNullException(nameof(organizationId));
-        CreatedAt      = createdAt;
-        StartDate      = startDate;
-        EndDate        = endDate;
-        Status         = status;
-        Content        = content;
+        CreatedAt = createdAt;
+        StartDate = startDate;
+        EndDate = endDate;
+        Status = status;
+        Content = content;
     }
 
     private Report() { }
 
     public static Report Create(
         OrganizationId organizationId,
-        UnixTimestamp  startDate,
-        UnixTimestamp  endDate)
+        UnixTimestamp startDate,
+        UnixTimestamp endDate)
     {
         if (organizationId == null)
             throw new ArgumentNullException(nameof(organizationId));
@@ -46,23 +46,23 @@ public class Report
                 "StartDate must be on or before EndDate.", nameof(startDate));
 
         return new Report(
-            id:              Guid.NewGuid(),
-            organizationId:  organizationId,
-            createdAt:       UnixTimestamp.Now(),
-            startDate:       startDate,
-            endDate:         endDate,
-            status:          ReportStatus.Pending,
-            content:         null
+            id: Guid.NewGuid(),
+            organizationId: organizationId,
+            createdAt: UnixTimestamp.Now(),
+            startDate: startDate,
+            endDate: endDate,
+            status: ReportStatus.Pending,
+            content: null
         );
     }
 
-    public Guid           Id             { get; private set; }
+    public Guid Id { get; private set; }
     public OrganizationId OrganizationId { get; private set; } = OrganizationId.Empty();
-    public UnixTimestamp  CreatedAt      { get; private set; } = UnixTimestamp.Empty();
-    public UnixTimestamp  StartDate      { get; private set; } = UnixTimestamp.Empty();
-    public UnixTimestamp  EndDate        { get; private set; } = UnixTimestamp.Empty();
-    public ReportStatus   Status         { get; private set; }
-    public byte[]?        Content        { get; private set; }
+    public UnixTimestamp CreatedAt { get; private set; } = UnixTimestamp.Empty();
+    public UnixTimestamp StartDate { get; private set; } = UnixTimestamp.Empty();
+    public UnixTimestamp EndDate { get; private set; } = UnixTimestamp.Empty();
+    public ReportStatus Status { get; private set; }
+    public byte[]? Content { get; private set; }
 
 
     public void MarkCompleted(byte[] pdfBytes)
@@ -75,7 +75,7 @@ public class Report
                 "PDF content must be provided.", nameof(pdfBytes));
 
         Content = pdfBytes;
-        Status  = ReportStatus.Completed;
+        Status = ReportStatus.Completed;
     }
 
     public void MarkFailed()
@@ -94,6 +94,6 @@ public class Report
                 "Only Failed reports can be reset to pending.");
 
         Content = null;
-        Status  = ReportStatus.Pending;
+        Status = ReportStatus.Pending;
     }
 }
