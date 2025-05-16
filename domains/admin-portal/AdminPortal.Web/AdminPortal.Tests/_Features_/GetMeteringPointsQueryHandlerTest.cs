@@ -9,7 +9,7 @@ using AdminPortal.Services;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
-namespace AdminPortal.Tests.Features;
+namespace AdminPortal.Tests._Features_;
 
 public class GetMeteringPointsQueryHandlerTest
 {

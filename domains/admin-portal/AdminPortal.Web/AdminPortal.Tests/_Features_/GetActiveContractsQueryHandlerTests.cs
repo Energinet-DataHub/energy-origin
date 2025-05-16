@@ -8,7 +8,7 @@ using AdminPortal.Models;
 using AdminPortal.Services;
 using NSubstitute;
 
-namespace AdminPortal.Tests.Features;
+namespace AdminPortal.Tests._Features_;
 
 public class GetActiveContractsQueryHandlerTests
 {

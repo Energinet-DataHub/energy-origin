@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-namespace AdminPortal.Tests.Features;
+namespace AdminPortal.Tests._Features_;
 
 public class GetCompanyInformationQueryHandlerTests
 {
