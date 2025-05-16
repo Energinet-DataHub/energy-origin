@@ -55,7 +55,7 @@ builder.AddSerilog();
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
     x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler, TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
-    x.AddConsumer<GenerateReportCommandConsumer>().Endpoint(e => e.Name = "generate-report-queue");
+    x.AddConsumer<GenerateReportCommandConsumer, GenerateReportCommandConsumerDefinition>();
 });
 
 

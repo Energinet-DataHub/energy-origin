@@ -73,6 +73,19 @@ public class GenerateReportCommandConsumer : IConsumer<GenerateReportCommand>
     }
 }
 
+public class GenerateReportCommandConsumerDefinition : ConsumerDefinition<GenerateReportCommandConsumer>
+{
+    protected override void ConfigureConsumer(
+        IReceiveEndpointConfigurator endpointConfigurator,
+        IConsumerConfigurator<GenerateReportCommandConsumer> consumerConfigurator,
+        IRegistrationContext context
+    )
+    {
+        endpointConfigurator.UseMessageRetry(r => r
+            .Incremental(5, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(3)));
+    }
+}
+
 public record GenerateReportCommand(
     Guid ReportId,
     UnixTimestamp StartDate,
