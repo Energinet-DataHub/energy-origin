@@ -1,12 +1,12 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using AdminPortal._Features_;
+using AdminPortal.Features;
 using AdminPortal.Services;
 using EnergyOrigin.Domain.ValueObjects;
 using NSubstitute;
 
-namespace AdminPortal.Tests._Features_;
+namespace AdminPortal.Tests.Features;
 
 public class AddOrganizationToWhitelistCommandHandlerTests
 {

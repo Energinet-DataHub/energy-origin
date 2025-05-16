@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
-using API.Cvr.Api._Features_.Internal;
 using API.Cvr.Api.Dto.Responses.Internal;
+using API.Cvr.Api.Features.Internal;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
