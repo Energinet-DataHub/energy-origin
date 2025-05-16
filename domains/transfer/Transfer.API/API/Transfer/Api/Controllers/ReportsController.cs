@@ -21,15 +21,15 @@ namespace API.Transfer.Api.Controllers;
 [Route("api/reports")]
 public class ReportsController : ControllerBase
 {
-    private readonly IMediator         _mediator;
+    private readonly IMediator _mediator;
     private readonly AccessDescriptor _accessDescriptor;
 
     public ReportsController(
-        IMediator          mediator,
-        AccessDescriptor   accessDescriptor)
+        IMediator mediator,
+        AccessDescriptor accessDescriptor)
     {
         _mediator = mediator;
-        _accessDescriptor   = accessDescriptor;
+        _accessDescriptor = accessDescriptor;
     }
 
     [HttpPost]
@@ -38,9 +38,9 @@ public class ReportsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [SwaggerOperation(Summary = "Initiates asynchronous report generation.")]
     public async Task<IActionResult> RequestReportGeneration(
-        [FromQuery] Guid                         organizationId,
-        [FromBody]  ReportGenerationStoredApiResponse request,
-        CancellationToken                        cancellationToken)
+        [FromQuery] Guid organizationId,
+        [FromBody] ReportGenerationStoredApiResponse request,
+        CancellationToken cancellationToken)
     {
         _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
