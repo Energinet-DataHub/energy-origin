@@ -17,6 +17,11 @@ inputs:
     default: "false"
     required: false
 
+  test-filter:
+    description: Dotnet test filter
+    default: ""
+    required: false
+
 runs:
   using: composite
 
@@ -46,7 +51,7 @@ runs:
         dotnet tool restore || true
         dotnet restore ${{ inputs.subsystem }}.sln
 
-    - name: Test
+    - name: Test with filter
       shell: bash
       env:
         DOTNET_NOLOGO: "true"
@@ -54,4 +59,5 @@ runs:
         DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "true"
         TERM: "xterm"
         version: ""
-      run: dotnet test ${{ inputs.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" -p:ParallelizeAssemblies=true -p:ParallelizeTestCollections=true
+      run: dotnet test ${{ inputs.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter ${{ inputs.test-filter }} -p:ParallelizeAssemblies=true -p:ParallelizeTestCollections=true
+

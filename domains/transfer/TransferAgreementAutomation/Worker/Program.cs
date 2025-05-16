@@ -73,7 +73,7 @@ builder.Services.AddSingleton<ITransferEngine, TransferCertificatesBasedOnConsum
 builder.Services.AddSingleton<ITransferEngineCoordinator, TransferEngineCoordinator>();
 
 builder.Services.AddHttpClient<TransferAgreementsAutomationWorker>();
-builder.Services.AddHttpClient<IWalletClient, WalletClient>((sp, c) =>
+builder.Services.AddHttpClient<IWalletClient, EnergyOrigin.WalletClient.WalletClient>((sp, c) =>
 {
     var options = sp.GetRequiredService<IOptions<ProjectOriginOptions>>().Value;
     c.BaseAddress = new Uri(options.WalletUrl);

@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
+using AdminPortal.Options;
 using AdminPortal.Services;
 using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.AspNetCore.Authentication;
@@ -24,6 +25,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Test");
         builder.ConfigureServices(services =>
         {
             services.Remove(services.First(s => s.ServiceType == typeof(IAuthorizationService)));
@@ -32,12 +34,21 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             services.AddScoped<IAuthorizationService, MockAuthorizationService>();
             services.AddScoped<ICertificatesService, MockCertificatesService>();
             services.AddScoped<IMeasurementsService, MockMeasurementsService>();
+            services.AddScoped<ITransferService, MockTransferService>();
 
             services.AddTransient<IAuthenticationSchemeProvider, AutoFailSchemeProvider>();
             services.AddAuthentication(AutoFailSchemeProvider.AutoFailScheme)
-                .AddScheme<AuthenticationSchemeOptions, AutoFailAuthHandler>(AutoFailSchemeProvider.AutoFailScheme, _ => { });
+                .AddScheme<AuthenticationSchemeOptions, AutoFailAuthHandler>(AutoFailSchemeProvider.AutoFailScheme,
+                    _ => { });
+
+            services.Configure<CvrOptions>(options =>
+            {
+                options.CvrEndpointBasePath = "test";
+                options.EnforceCvrValidation = true;
+            });
         });
     }
+
 
     private class MockAuthorizationService : IAuthorizationService
     {
@@ -46,11 +57,14 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             return Task.FromResult(
                 new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>()));
         }
-        public Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync(CancellationToken cancellationToken)
+
+        public Task<GetWhitelistedOrganizationsResponse> GetWhitelistedOrganizationsAsync(
+            CancellationToken cancellationToken)
         {
             return Task.FromResult(
                 new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>()));
         }
+
         public Task AddOrganizationToWhitelistAsync(Tin tin, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
@@ -80,12 +94,29 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         }
     }
 
-    public HttpClient CreateAuthenticatedClient<T>(WebApplicationFactoryClientOptions options, int sessionId) where T : ImpersonatedUser
+    private class MockTransferService : ITransferService
+    {
+        public Task<CvrCompanyInformationDto> GetCompanyInformation(string tin)
+        {
+            return Task.FromResult(new CvrCompanyInformationDto
+            {
+                Tin = "12345678",
+                Name = "Test Company",
+                Address = "Test Address",
+                City = "Test City",
+                ZipCode = "1234"
+            });
+        }
+    }
+
+    public HttpClient CreateAuthenticatedClient<T>(WebApplicationFactoryClientOptions options, int sessionId)
+        where T : ImpersonatedUser
     {
         return CreateLoggedInClient<T>(options, list => list.Add(new Claim("sessionid", sessionId.ToString())));
     }
 
-    private HttpClient CreateLoggedInClient<T>(WebApplicationFactoryClientOptions options, Action<List<Claim>> configure) where T : ImpersonatedUser
+    private HttpClient CreateLoggedInClient<T>(WebApplicationFactoryClientOptions options,
+        Action<List<Claim>> configure) where T : ImpersonatedUser
     {
         return WithWebHostBuilder(builder =>
         {
@@ -93,11 +124,12 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             {
                 services.AddTransient<IAuthenticationSchemeProvider, InterceptOidcAuthenticationSchemeProvider>();
                 services.AddAuthentication(InterceptOidcAuthenticationSchemeProvider.InterceptedScheme)
-                    .AddScheme<ImpersonatedAuthenticationSchemeOptions, T>(InterceptOidcAuthenticationSchemeProvider.InterceptedScheme, schemeOptions =>
-                    {
-                        schemeOptions.OriginalScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                        schemeOptions.Configure = configure;
-                    });
+                    .AddScheme<ImpersonatedAuthenticationSchemeOptions, T>(
+                        InterceptOidcAuthenticationSchemeProvider.InterceptedScheme, schemeOptions =>
+                        {
+                            schemeOptions.OriginalScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                            schemeOptions.Configure = configure;
+                        });
             });
         }).CreateClient(options);
     }

@@ -1,0 +1,55 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  push:
+    branches:
+      - main
+
+jobs:
+  test-subsystems-e2e:
+    runs-on: ubuntu-22.04
+    if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test ${{ matrix.subsystem }} subsystem - E2E
+        uses: ./.github/actions/dotnet-validate-solution
+        with:
+          subsystem: ${{ matrix.subsystem }}
+          pin-version: "true"
+          test-filter: "Category=E2ETest"
+
+  allow-merge-e2e-tests:
+    runs-on: ubuntu-latest
+    needs:
+      [
+        test-subsystems-e2e,
+      ]
+    if: always()
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Print needs
+        run: |
+          echo '${{ toJSON(needs) }}'
+      - name: Verify if merge is allowed - E2E-tests
+        run: |
+          verification=$(echo '${{ toJSON(needs) }}' | jq '.[] | select(.result != "success") | select(.result != "skipped")')
+          if [[ ! -z "$verification" ]]; then
+              echo "Failed"
+              exit 1
+          fi

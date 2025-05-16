@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using AdminPortal._Features_;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Tests.Setup;
 using Microsoft.AspNetCore.Mvc.Testing;

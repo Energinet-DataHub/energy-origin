@@ -11,12 +11,16 @@ using API.MeasurementsSyncer.Clients.DataHub3;
 using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.Models;
 using API.UnitTests;
+using DataContext;
+using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using EnergyOrigin.WalletClient.Models;
+using EnergyTrackAndTrace.Testing.Attributes;
 using FluentAssertions;
 using Meteringpoint.V1;
+using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Testing.Extensions;
 using Xunit;
@@ -37,9 +41,11 @@ public sealed class CertificateIssuingTests : TestBase
     }
 
     [Fact]
+    [E2ETest]
     public async Task MeasurementsSyncerSendsMeasurementsToStamp_ExpectInWallet()
     {
         var gsrn = Any.Gsrn();
+        await AddGsrnToSponsoredTableAsync(gsrn);
         var subject = Guid.NewGuid().ToString();
         var orgId = Guid.NewGuid().ToString();
         var now = DateTimeOffset.UtcNow;
@@ -85,8 +91,11 @@ public sealed class CertificateIssuingTests : TestBase
             Capacity = "123",
             BuildingNumber = "buildingNumber",
             CityName = "cityName",
-            Postcode = "postcode",
+            Postcode = "8240",
             StreetName = "streetName",
+            MunicipalityCode = "101", // Copenhagen
+            CitySubDivisionName = "vesterbro",
+            MeteringGridAreaId = "932"
         };
         var mockedMeteringPointsResponse = new MeteringPointsResponse
         {
@@ -96,7 +105,7 @@ public sealed class CertificateIssuingTests : TestBase
         meteringpointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(mockedMeteringPointsResponse);
         factory.MeteringpointClient = meteringpointClientMock;
 
-        var client = await factory.CreateWalletClient(orgId);
+        var client = await factory.CreateWallet(orgId);
 
         factory.Start();
 
@@ -113,11 +122,11 @@ public sealed class CertificateIssuingTests : TestBase
         granularCertificate.CertificateType.Should().Be(CertificateType.Production);
 
         granularCertificate.Attributes.Should().NotBeEmpty();
-        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Danmark");
+        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Danmark", meteringPoint.MunicipalityCode, meteringPoint.CitySubDivisionName);
         granularCertificate.Attributes.Should().BeEquivalentTo(new Dictionary<string, string>
         {
             { EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet" },
-            { EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, granularCertificate.GridArea },
+            { EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, "DK1" },
             { EnergyTagAttributeKeys.EnergyTagCountry, "Denmark" },
             { EnergyTagAttributeKeys.EnergyTagGcIssuanceDateStamp, DateTimeOffset.Now.ToString("d") },
             { EnergyTagAttributeKeys.EnergyTagProductionStartingIntervalTimestamp, granularCertificate.Start.ToString() },
@@ -126,13 +135,29 @@ public sealed class CertificateIssuingTests : TestBase
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceUniqueIdentification, gsrn.Value },
             { EnergyTagAttributeKeys.EnergyTagProducedEnergySource, "F01040100" },
             { EnergyTagAttributeKeys.EnergyTagProducedEnergyTechnology, "T010000" },
-            { EnergyTagAttributeKeys.EnergyTagConnectedGridIdentification, granularCertificate.GridArea },
+            { EnergyTagAttributeKeys.EnergyTagConnectedGridIdentification, meteringPoint.MeteringGridAreaId },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, address.ToString() },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, meteringPoint.Capacity },
             { EnergyTagAttributeKeys.EnergyTagProductionDeviceCommercialOperationDate, "N/A" },
             { EnergyTagAttributeKeys.EnergyTagEnergyCarrier, "Electricity" },
             { EnergyTagAttributeKeys.EnergyTagGcIssueDeviceType, "Production" },
-            { EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes" }
+            { EnergyTagAttributeKeys.EnergyTagDisclosure, "True" },
+            { "municipality_code", meteringPoint.MunicipalityCode },
+            { EnergyTagAttributeKeys.EnergyTagSponsored, "True" }
         });
+    }
+
+    private async Task AddGsrnToSponsoredTableAsync(Gsrn gsrn)
+    {
+        await using var db = new ApplicationDbContext(
+            new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseNpgsql(_integrationTestFixture.PostgresContainer.ConnectionString)
+                .Options);
+        db.Sponsorships.Add(new Sponsorship
+        {
+            SponsorshipGSRN = gsrn,
+            SponsorshipEndDate = DateTimeOffset.MaxValue
+        });
+        await db.SaveChangesAsync();
     }
 }

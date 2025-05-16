@@ -34,7 +34,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 using Technology = API.ContractService.Clients.Technology;
 
@@ -43,7 +45,7 @@ namespace API.IntegrationTests.Factories;
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly List<GrpcChannel> disposableChannels = new();
-    private HttpClient? client;
+    private HttpClient? _client;
     public string ConnectionString { get; set; } = "";
     public string MeasurementsUrl { get; set; } = "http://foo";
     public string DataHub3Url { get; set; } = "http://dh3";
@@ -143,7 +145,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
             new DbMigrator(ConnectionString, typeof(ApplicationDbContext).Assembly, NullLogger<DbMigrator>.Instance).MigrateAsync().Wait();
         });
-
     }
 
     public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
@@ -198,20 +199,20 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
         string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
     {
-        client = CreateClient();
-        client.DefaultRequestHeaders.Authorization =
+        _client = CreateClient();
+        _client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer",
                 GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted));
-        client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
+        _client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
 
-        return client;
+        return _client;
     }
 
-    public async Task<IWalletClient> CreateWalletClient(string orgId)
+    public async Task<IWalletClient> CreateWallet(string orgId)
     {
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
-        var wallet = new WalletClient(client);
+        var wallet = new EnergyOrigin.WalletClient.WalletClient(client);
         await wallet.CreateWallet(Guid.Parse(orgId), CancellationToken.None);
         return wallet;
     }
@@ -284,7 +285,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     {
         if (disposing)
         {
-            client?.Dispose();
+            _client?.Dispose();
             foreach (var disposableChannel in disposableChannels)
             {
                 disposableChannel.Dispose();

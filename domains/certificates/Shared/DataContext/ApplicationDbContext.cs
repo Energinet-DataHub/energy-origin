@@ -26,12 +26,29 @@ public class ApplicationDbContext : DbContext
     {
         modelBuilder.Entity<CertificateIssuingContract>().HasIndex(c => new { c.GSRN, c.ContractNumber }).IsUnique();
         modelBuilder.Entity<CertificateIssuingContract>().OwnsOne(c => c.Technology);
+        modelBuilder.Entity<CertificateIssuingContract>().Property(c => c.SponsorshipEndDate).HasColumnType("timestamp with time zone");
 
         modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().HasKey(s => new { s.GSRN });
         modelBuilder.Entity<MeteringPointTimeSeriesSlidingWindow>().OwnsOne(m => m.MissingMeasurements, d =>
         {
             d.ToJson();
             d.OwnsMany(x => x.Intervals);
+        });
+
+        modelBuilder.Entity<Sponsorship>(b =>
+        {
+            b.HasKey(s => s.SponsorshipGSRN);
+
+            b.Property(s => s.SponsorshipGSRN)
+                .HasColumnName("SponsorshipGSRN")
+                .HasConversion(
+                    gsrnValueObject => gsrnValueObject.Value,
+                    stringValueWhenFetchedFromDatabase => new Gsrn(stringValueWhenFetchedFromDatabase)
+                );
+
+            b.Property(s => s.SponsorshipEndDate)
+                .HasColumnType("timestamp with time zone")
+                .IsRequired();
         });
 
         modelBuilder.AddInboxStateEntity();
@@ -44,6 +61,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
     public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
     public DbSet<MeteringPointTimeSeriesSlidingWindow> MeteringPointTimeSeriesSlidingWindows { get; set; }
+    public DbSet<Sponsorship> Sponsorships { get; set; }
 }
 
 // Some of the EF Core Tools commands (for example, the Migrations commands) require a derived DbContext instance to be created at design time

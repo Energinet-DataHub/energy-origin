@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using EnergyOrigin.WalletClient;
+using WalletClient;
 
 namespace API.ContractService;
 
@@ -24,7 +25,7 @@ public static class Startup
 
         services.AddWalletOptions();
 
-        services.AddHttpClient<IWalletClient, WalletClient>((sp, client) =>
+        services.AddHttpClient<IWalletClient, EnergyOrigin.WalletClient.WalletClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<WalletOptions>>().Value;
             client.BaseAddress = new Uri(options.Url);
@@ -36,4 +37,13 @@ public static class Startup
             client.BaseAddress = new Uri(options.Url);
         });
     }
+}
+
+public static partial class OptionsExtensions
+{
+    public static void AddWalletOptions(this IServiceCollection services) =>
+        services.AddOptions<WalletOptions>()
+            .BindConfiguration(WalletOptions.Wallet)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 }

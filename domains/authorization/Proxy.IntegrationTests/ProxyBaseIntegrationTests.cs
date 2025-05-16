@@ -114,4 +114,26 @@ public class ProxyBaseIntegrationTests(ProxyIntegrationTestFixture fixture) : IC
 
         response.StatusCode.Should().Be(statusCode);
     }
+
+    [Fact]
+    public async Task Given_TransferEncodingHeader_When_ProxyForwardsResponse_Then_HeaderIsStripped()
+    {
+        fixture.WalletWireMockServer
+            .Given(Request.Create().WithPath("/wallet-api/v1/certificates").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Transfer-Encoding", "chunked")
+                .WithBody("ok"));
+
+        var orgId = Guid.NewGuid();
+        var client = fixture.Factory.CreateAuthenticatedClient(orgId: orgId.ToString(),
+            orgIds: [orgId.ToString()]);
+
+        var request = new HttpRequestMessage(HttpMethod.Get,
+            $"/wallet-api/certificates?organizationId={orgId}");
+        request.Headers.Add("X-API-Version", ApiVersions.Version1);
+        var response = await client.SendAsync(request, CancellationToken.None);
+
+        response.Headers.TransferEncodingChunked.Should().BeNull();
+    }
 }

@@ -1,7 +1,6 @@
 using System;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
-using ProjectOriginClients.Models;
 
 namespace DataContext.Models;
 
@@ -18,6 +17,7 @@ public class CertificateIssuingContract
     public DateTimeOffset Created { get; set; }
     public Guid RecipientId { get; set; }
     public Technology? Technology { get; set; }
+    public DateTimeOffset? SponsorshipEndDate { get; set; }
 
     public static CertificateIssuingContract Create(int contractNumber,
         Gsrn gsrn,
@@ -27,7 +27,8 @@ public class CertificateIssuingContract
         DateTimeOffset startDate,
         DateTimeOffset? endDate,
         Guid recipientId,
-        Technology? technology)
+        Technology? technology,
+        DateTimeOffset? sponsorshipEndDate = null)
     {
         return new CertificateIssuingContract
         {
@@ -41,7 +42,8 @@ public class CertificateIssuingContract
             EndDate = endDate,
             Created = DateTimeOffset.UtcNow,
             RecipientId = recipientId,
-            Technology = technology
+            Technology = technology,
+            SponsorshipEndDate = sponsorshipEndDate
         };
     }
 
@@ -85,16 +87,4 @@ public class CertificateIssuingContract
     /// <returns>true if completely within</returns>
     public bool Contains(long startDate, long endDate)
         => Contains(DateTimeOffset.FromUnixTimeSeconds(startDate), DateTimeOffset.FromUnixTimeSeconds(endDate));
-}
-
-
-public static class MeteringPointTypeMapper
-{
-    public static CertificateType MapToCertificateType(this MeteringPointType meteringPointType) =>
-        meteringPointType switch
-        {
-            MeteringPointType.Production => CertificateType.Production,
-            MeteringPointType.Consumption => CertificateType.Consumption,
-            _ => throw new ArgumentOutOfRangeException(nameof(meteringPointType), meteringPointType, null)
-        };
 }

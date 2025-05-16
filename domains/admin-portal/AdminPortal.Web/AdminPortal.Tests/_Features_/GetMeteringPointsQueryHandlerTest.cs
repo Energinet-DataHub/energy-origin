@@ -8,7 +8,6 @@ using AdminPortal.Models;
 using AdminPortal.Services;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 
 namespace AdminPortal.Tests._Features_;
 

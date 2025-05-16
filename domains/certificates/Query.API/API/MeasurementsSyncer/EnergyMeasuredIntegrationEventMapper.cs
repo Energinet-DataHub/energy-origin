@@ -15,14 +15,24 @@ public class EnergyMeasuredIntegrationEventMapper
         List<Measurement> measurements)
     {
         return measurements.Select(measurement =>
-                MapToIntegrationEvent(meteringPoint, syncInfo.MeteringPointType, syncInfo.GridArea, syncInfo.Technology, syncInfo.RecipientId, measurement))
+                MapToIntegrationEvent(meteringPoint, syncInfo.MeteringPointType, syncInfo.GridArea, syncInfo.Technology, syncInfo.RecipientId, measurement, syncInfo.IsStateSponsored))
             .ToList();
     }
 
     private EnergyMeasuredIntegrationEvent MapToIntegrationEvent(MeteringPoint meteringPoint, MeteringPointType meteringPointType, string gridArea,
-        DataContext.ValueObjects.Technology? technology, Guid recipientId, Measurement measurement)
+        DataContext.ValueObjects.Technology? technology, Guid recipientId, Measurement measurement, bool isStateSponsored)
     {
-        var address = new Address(meteringPoint.StreetName, meteringPoint.BuildingNumber, meteringPoint.FloorId, meteringPoint.RoomId, meteringPoint.Postcode, meteringPoint.CityName, "Danmark");
+        var address = new Address(
+            meteringPoint.StreetName,
+            meteringPoint.BuildingNumber,
+            meteringPoint.FloorId,
+            meteringPoint.RoomId,
+            meteringPoint.Postcode,
+            meteringPoint.CityName,
+            "Danmark",
+            meteringPoint.MunicipalityCode,
+            meteringPoint.CitySubDivisionName
+            );
         return new EnergyMeasuredIntegrationEvent(
             GSRN: measurement.Gsrn,
             Address: address,
@@ -34,7 +44,9 @@ public class EnergyMeasuredIntegrationEventMapper
             Capacity: meteringPoint.Capacity,
             Technology: MapTechnology(technology),
             MeterType: MapMeterType(meteringPointType),
-            Quality: MapQuality(measurement.Quality));
+            Quality: MapQuality(measurement.Quality),
+            BiddingZone: GetBiddingZone(meteringPoint.Postcode),
+            IsStateSponsored: isStateSponsored);
     }
 
     private MeterType MapMeterType(MeteringPointType meteringPointType)
@@ -60,4 +72,20 @@ public class EnergyMeasuredIntegrationEventMapper
             EnergyQuality.Calculated => Quality.Calculated,
             _ => throw new ArgumentOutOfRangeException(nameof(quantity), quantity, null)
         };
+
+    public string GetBiddingZone(string postcode)
+    {
+        var postcodeInt = int.Parse(postcode);
+
+        if (postcodeInt >= 5000)
+        {
+            return "DK1";
+        }
+        else if (postcodeInt < 5000)
+        {
+            return "DK2";
+        }
+
+        throw new NotSupportedException($"Postcode '{postcode}' is out of bounds.");
+    }
 }

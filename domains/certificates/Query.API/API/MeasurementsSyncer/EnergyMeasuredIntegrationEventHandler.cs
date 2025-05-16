@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using API.ContractService.Clients;
 using API.MeasurementsSyncer.Metrics;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
+using EnergyOrigin.WalletClient.Models;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using ProjectOriginClients.Models;
-using HashedAttribute = API.ContractService.Clients.HashedAttribute;
+using WalletClient;
+using HashedAttribute = WalletClient.HashedAttribute;
 using MeterType = EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3.MeterType;
 
 namespace API.MeasurementsSyncer;
@@ -56,9 +56,8 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceUniqueIdentification, Value = measurementEvent.GSRN });
             hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceLocation, Value = measurementEvent.Address.ToString() });
             hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.EnergyTagProductionDeviceCapacity, Value = measurementEvent.Capacity });
-
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssuer, "Energinet");
-            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, measurementEvent.GridArea);
+            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueMarketZone, measurementEvent.BiddingZone);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagCountry, "Denmark");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssuanceDateStamp, DateTimeOffset.Now.ToString("d"));
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProductionStartingIntervalTimestamp, measurementEvent.DateFrom.ToString());
@@ -70,7 +69,9 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagGcIssueDeviceType, "Production");
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProducedEnergySource, measurementEvent.Technology.AibFuelCode);
             clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagProducedEnergyTechnology, measurementEvent.Technology.AibTechCode);
-            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagDisclosure, "Yes");
+            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagDisclosure, "True");
+            clearTextAttributes.Add("municipality_code", measurementEvent.Address.MunicipalityCode);
+            clearTextAttributes.Add(EnergyTagAttributeKeys.EnergyTagSponsored, measurementEvent.IsStateSponsored.ToString());
         }
         else
         {
@@ -84,7 +85,7 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
             Start = measurementEvent.DateFrom,
             Quantity = (uint)measurementEvent.Quantity,
             Type = MapMeterType(measurementEvent.MeterType),
-            GridArea = measurementEvent.GridArea,
+            GridArea = measurementEvent.BiddingZone, //GridArea is used in stamp, registry and vault, thus changing value breaks everything.
             ClearTextAttributes = clearTextAttributes,
             HashedAttributes = hashedAttributes
         };

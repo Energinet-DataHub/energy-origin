@@ -4,66 +4,6 @@
         <name>API</name>
     </assembly>
     <members>
-        <member name="P:API.ContractService.Clients.CreateCertificateRequest.RecipientId">
-            <summary>
-            The recipient id of the certificate.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CreateCertificateRequest.RegistryName">
-            <summary>
-            The registry used to issues the certificate.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CreateCertificateRequest.MeteringPointId">
-            <summary>
-            The id of the metering point used to produce the certificate.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CreateCertificateRequest.Certificate">
-            <summary>
-            The certificate to issue.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CertificateDto.Id">
-            <summary>
-            The id of the certificate.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CertificateDto.Type">
-            <summary>
-            The type of certificate (production or consumption).
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CertificateDto.Quantity">
-            <summary>
-            The quantity available on the certificate.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CertificateDto.Start">
-            <summary>
-            The start of the period for which the certificate is valid.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CertificateDto.End">
-            <summary>
-            The end of the period for which the certificate is valid.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CertificateDto.GridArea">
-            <summary>
-            The Grid Area of the certificate.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CertificateDto.ClearTextAttributes">
-            <summary>
-            Attributes of the certificate that is not hashed.
-            </summary>
-        </member>
-        <member name="P:API.ContractService.Clients.CertificateDto.HashedAttributes">
-            <summary>
-            List of hashed attributes, their values and salts so the receiver can access the data.
-            </summary>
-        </member>
         <member name="P:API.Query.API.ApiModels.Requests.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
@@ -196,6 +136,18 @@
         </member>
         <member name="F:Meteringpoint.V1.MeteringPoint.PhysicalStatusOfMpFieldNumber">
             <summary>Field number for the "physical_status_of_mp" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.ConsumerCvrFieldNumber">
+            <summary>Field number for the "consumer_Cvr" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.MunicipalityCodeFieldNumber">
+            <summary>Field number for the "municipality_code" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.CitySubDivisionNameFieldNumber">
+            <summary>Field number for the "city_sub_division_name" field.</summary>
+        </member>
+        <member name="F:Meteringpoint.V1.MeteringPoint.MeteringGridAreaIdFieldNumber">
+            <summary>Field number for the "metering_grid_area_id" field.</summary>
         </member>
         <member name="P:Meteringpoint.V1.Meteringpoint.Descriptor">
             <summary>Service descriptor</summary>

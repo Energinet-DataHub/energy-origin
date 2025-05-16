@@ -2,13 +2,15 @@
   Result: [
     {
       GSRN: 1234567890123456,
-      GridArea: DK2,
+      GridArea: 932,
       Address: {
         Address1: Street 1,
         Address2: 1 1,
         City: City,
         PostalCode: 1234,
-        Country: DK
+        Country: DK,
+        MunicipalityCode: 101,
+        CitySubDivisionName: vesterbro
       },
       Technology: {
         AibTechCode: T070000,
@@ -16,17 +18,20 @@
       },
       ConsumerCvr: 12345678,
       CanBeUsedForIssuingCertificates: true,
-      Capacity: 12345678
+      Capacity: 12345678,
+      BiddingZone: DK2
     },
     {
       GSRN: 12345678901234512,
-      GridArea: DK2,
+      GridArea: 932,
       Address: {
         Address1: Street 1,
         Address2: 1 1,
         City: City,
         PostalCode: 1234,
-        Country: DK
+        Country: DK,
+        MunicipalityCode: 101,
+        CitySubDivisionName: vesterbro
       },
       Technology: {
         AibTechCode: T070000,
@@ -34,7 +39,8 @@
       },
       ConsumerCvr: 12345678,
       CanBeUsedForIssuingCertificates: true,
-      Capacity: 12345678
+      Capacity: 12345678,
+      BiddingZone: DK2
     }
   ]
 }

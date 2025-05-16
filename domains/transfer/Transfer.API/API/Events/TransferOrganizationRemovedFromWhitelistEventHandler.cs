@@ -24,9 +24,13 @@ public class TransferOrganizationRemovedFromWhitelistEventHandler : IConsumer<Or
     {
         var e = context.Message;
 
-        _logger.LogInformation("Organization {orgId} removed from whitelist, removing all transfer agreements", e.OrganizationId);
-        var cmd = new DeleteTransferAgreementsCommand(OrganizationId.Create(e.OrganizationId));
-        await _mediator.Send(cmd);
+        _logger.LogInformation("Organization removed from whitelist, removing all transfer agreements for organization");
+        var deleteTasCmd = new DeleteTransferAgreementsCommand(OrganizationId.Create(e.OrganizationId));
+        await _mediator.Send(deleteTasCmd);
+
+        _logger.LogInformation("Organization removed from whitelist, disabling all wallets for organization");
+        var disableWalletsCmd = new DisableWalletCommand(OrganizationId.Create(e.OrganizationId));
+        await _mediator.Send(disableWalletsCmd);
     }
 }
 

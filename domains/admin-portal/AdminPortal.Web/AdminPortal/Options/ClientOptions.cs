@@ -14,4 +14,7 @@ public class ClientUriOptions
 
     [Required]
     public string Measurements { get; set; } = null!;
+
+    [Required]
+    public string Transfers { get; set; } = null!;
 }

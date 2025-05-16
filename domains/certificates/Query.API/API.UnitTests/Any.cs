@@ -112,8 +112,11 @@ public class Any
             Capacity = "123",
             BuildingNumber = "buildingNumber",
             CityName = "cityName",
-            Postcode = "postcode",
+            Postcode = "8240",
             StreetName = "streetName",
+            MunicipalityCode = "101", // Copenhagen
+            CitySubDivisionName = "vesterbro",
+            MeteringGridAreaId = "932"
         };
     }
 
@@ -147,14 +150,16 @@ public class Any
         };
     }
 
-    public static CertificateIssuingContract CertificateIssuingContract(Gsrn gsrn, UnixTimestamp start, UnixTimestamp? end, int contractNumber = 0)
+    public static CertificateIssuingContract CertificateIssuingContract(Gsrn gsrn, UnixTimestamp start, UnixTimestamp? end, int contractNumber = 0, bool isStateSponsored = false)
     {
-        return new CertificateIssuingContract()
+        return new CertificateIssuingContract
         {
             GSRN = gsrn.Value,
             StartDate = start.ToDateTimeOffset(),
             EndDate = end?.ToDateTimeOffset(),
-            ContractNumber = contractNumber
+            ContractNumber = contractNumber,
+            SponsorshipEndDate = isStateSponsored
+                ? DateTimeOffset.MaxValue : null
         };
     }
 

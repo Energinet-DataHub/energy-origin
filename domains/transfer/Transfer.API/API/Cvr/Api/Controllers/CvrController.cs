@@ -19,7 +19,7 @@ namespace API.Cvr.Api.Controllers;
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
 [Route("api/transfer/cvr")]
-public class CvrController(CvrClient client) : Controller
+public class CvrController(ICvrClient client) : Controller
 {
     /// <summary>
     /// Get CVR registered company information for multiple CVR numbers

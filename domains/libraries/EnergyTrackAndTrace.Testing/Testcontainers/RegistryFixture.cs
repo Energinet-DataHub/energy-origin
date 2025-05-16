@@ -16,8 +16,8 @@ namespace EnergyTrackAndTrace.Testing.Testcontainers;
 
 public class RegistryFixture : IAsyncLifetime
 {
-    private const string registryImage = "ghcr.io/project-origin/registry-server:3.0.1";
-    private const string electricityVerifierImage = "ghcr.io/project-origin/electricity-server:3.0.0";
+    private const string registryImage = "ghcr.io/project-origin/registry-server:3.0.2";
+    private const string electricityVerifierImage = "ghcr.io/project-origin/electricity-server:4.0.0";
     protected const int GrpcPort = 5000;
     private const int RabbitMqHttpPort = 15672;
     private const string registryName = "TestRegistry";
@@ -63,6 +63,8 @@ public class RegistryFixture : IAsyncLifetime
           DK2:
             issuerKeys:
               - publicKey: "{Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk2IssuerKey.PublicKey.ExportPkixText()))}"
+        daysBeforeCertificatesExpire: 365
+        timeConstraint: Disabled
         """);
 
         verifierContainer = new ContainerBuilder()

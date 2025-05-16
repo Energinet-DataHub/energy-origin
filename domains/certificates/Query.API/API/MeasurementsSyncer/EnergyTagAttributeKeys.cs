@@ -20,4 +20,5 @@ public static class EnergyTagAttributeKeys
     public const string EnergyTagEnergyCarrier = "energyTag_EnergyCarrier";
     public const string EnergyTagGcIssueDeviceType = "energyTag_GcIssueDeviceType";
     public const string EnergyTagDisclosure = "energyTag_Disclosure";
+    public const string EnergyTagSponsored = "energyTag_Sponsored";
 }

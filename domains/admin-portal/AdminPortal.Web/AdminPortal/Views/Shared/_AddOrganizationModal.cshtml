@@ -1,11 +1,18 @@
-<div class="modal fade" id="addOrganizationModal" tabindex="-1" aria-labelledby="addOrganizationModalLabel" aria-hidden="true">
+@using Microsoft.Extensions.Options;
+@using AdminPortal.Options;
+@inject IOptions<CvrOptions> Options;
+
+<div class="modal fade" id="addOrganizationModal" tabindex="-1" aria-labelledby="addOrganizationModalLabel"
+     aria-hidden="true" data-cvr-basepath="@Options.Value.CvrEndpointBasePath"
+     data-cvr-validation-enforced="@Options.Value.EnforceCvrValidation">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addOrganizationModalLabel">Add Organization to Whitelist</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="addOrganizationForm" asp-controller="WhitelistedOrganizations" method="post" class="needs-validation" novalidate>
+            <form id="addOrganizationForm" asp-controller="WhitelistedOrganizations" method="post"
+                  class="needs-validation" novalidate>
                 @Html.AntiForgeryToken()
                 <div class="modal-body">
                     <div class="mb-3">
@@ -17,12 +24,104 @@
                             TIN must be exactly 8 digits.
                         </div>
                     </div>
+                    <div id="companyInfo" class="mt-3" style="display: none;">
+                        <h4 class="text-primary border-bottom pb-2 mb-3">Company Information</h4>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">CVR:</div>
+                            <div class="col-8" id="companyTin"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Name:</div>
+                            <div class="col-8" id="companyName"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Address:</div>
+                            <div class="col-8" id="companyAddress"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">City:</div>
+                            <div class="col-8" id="companyCity"></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 text-muted">Zip Code:</div>
+                            <div class="col-8" id="companyZipCode"></div>
+                        </div>
+                    </div>
+                    <div id="errorInfo" class="mt-3 text-danger" style="display: none;">
+                        <p>CVR number does not exist. Please check the input and try again.</p>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="confirmAddBtn">Add Organization</button>
+                    <button type="button" class="btn btn-primary" id="confirmAddBtn" disabled>Add Organization</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tinInput = document.getElementById('tin');
+        const confirmAddBtn = document.getElementById('confirmAddBtn');
+        const companyInfoDiv = document.getElementById('companyInfo');
+        const errorInfoDiv = document.getElementById('errorInfo');
+        const companyTin = document.getElementById('companyTin');
+        const companyName = document.getElementById('companyName');
+        const companyAddress = document.getElementById('companyAddress');
+        const companyCity = document.getElementById('companyCity');
+        const companyZipCode = document.getElementById('companyZipCode');
+
+        const modalElement = document.getElementById('addOrganizationModal');
+        const cvrBasePath = modalElement.getAttribute('data-cvr-basepath');
+        const cvrValidationEnforced = modalElement.getAttribute('data-cvr-validation-enforced') === 'true';
+
+        // Disable the button by default
+        confirmAddBtn.disabled = true;
+
+        tinInput.addEventListener('input', async function () {
+            companyInfoDiv.style.display = 'none';
+            errorInfoDiv.style.display = 'none';
+            confirmAddBtn.disabled = true;
+
+            const tin = this.value;
+            if (!/^\d{8}$/.test(tin)) {
+                return;
+            }
+
+            try {
+                const basePath = cvrBasePath ? `/${cvrBasePath}` : '';
+                const response = await fetch(`${basePath}/cvr/company/${encodeURIComponent(tin)}`, {
+                    method: 'GET',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    credentials: 'same-origin',
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    companyTin.textContent = data.tin || 'N/A';
+                    companyName.textContent = data.name || 'N/A';
+                    companyAddress.textContent = data.address || 'N/A';
+                    companyCity.textContent = data.city || 'N/A';
+                    companyZipCode.textContent = data.zipCode || 'N/A';
+                    companyInfoDiv.style.display = 'block';
+                    confirmAddBtn.disabled = false;
+                } else {
+                    errorInfoDiv.style.display = 'block';
+
+                    if (!cvrValidationEnforced) {
+                        confirmAddBtn.disabled = false;
+                    }
+                }
+            } catch (error) {
+                errorInfoDiv.style.display = 'block';
+
+                if (!cvrValidationEnforced) {
+                    confirmAddBtn.disabled = false;
+                }
+            }
+        });
+    });
+</script>
