@@ -9,16 +9,25 @@ using MediatR;
 
 namespace API.Transfer.Api._Features_;
 
-public abstract class GenerateReportCommandConsumer(
-    IReportRepository reportRepository,
-    IUnitOfWork unitOfWork,
-    IMediator mediator)
-    : IConsumer<GenerateReportCommand>
+public class GenerateReportCommandConsumer : IConsumer<GenerateReportCommand>
 {
+    private readonly IReportRepository _reportRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
+
+    public GenerateReportCommandConsumer(
+        IReportRepository reportRepository,
+        IUnitOfWork unitOfWork,
+        IMediator mediator)
+    {
+        _reportRepository = reportRepository;
+        _unitOfWork = unitOfWork;
+        _mediator = mediator;
+    }
     public async Task Consume(ConsumeContext<GenerateReportCommand> context)
     {
         var command = context.Message;
-        var report = await reportRepository.GetByIdAsync(command.ReportId, context.CancellationToken);
+        var report = await _reportRepository.GetByIdAsync(command.ReportId, context.CancellationToken);
 
         if (report == null) return;
 
@@ -29,7 +38,7 @@ public abstract class GenerateReportCommandConsumer(
 
             var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(html));
 
-            var pdfResult = await mediator.Send(
+            var pdfResult = await _mediator.Send(
                 new GeneratePdfCommand(base64Html),
                 context.CancellationToken
             );
@@ -49,8 +58,8 @@ public abstract class GenerateReportCommandConsumer(
             report.Status = ReportStatus.Failed;
         }
 
-        await reportRepository.UpdateAsync(report, context.CancellationToken);
-        await unitOfWork.SaveAsync();
+        await _reportRepository.UpdateAsync(report, context.CancellationToken);
+        await _unitOfWork.SaveAsync();
 
         if (report.Status == ReportStatus.Completed)
         {
