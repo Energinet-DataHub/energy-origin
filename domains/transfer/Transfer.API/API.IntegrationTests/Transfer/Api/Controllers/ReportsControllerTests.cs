@@ -33,38 +33,35 @@ public class ReportsControllerTests
     [Fact]
     public async Task RequestReportGeneration_ShouldPersistPendingReport_AndPublishEvent()
     {
+        // Arrange
         var startDate = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
-        var endDate   = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var requestBody = new { StartDate = startDate, EndDate = endDate };
-        var httpClient  = _factory.CreateB2CAuthenticatedClient(_sub, _orgId.Value);
+        var client = _factory.CreateB2CAuthenticatedClient(_sub, _orgId.Value);
 
-        var response = await httpClient.PostAsJsonAsync("/api/reports", requestBody, cancellationToken: TestContext.Current.CancellationToken);
+        // Act
+        var response = await client.PostAsJsonAsync("/api/reports", requestBody, TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
-        var reportId = await response.Content.ReadFromJsonAsync<Guid>(cancellationToken: TestContext.Current.CancellationToken);
-        reportId.Should().NotBe(Guid.Empty);
+        // Assert Http response
+        response.Headers.Location.Should().NotBeNull();
+        var segments = response.Headers.Location!.Segments;
+        var reportId = Guid.Parse(segments.Last().TrimEnd('/'));
 
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider
-                .GetRequiredService<ApplicationDbContext>();
+        // Assert DB record
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var report = db.Reports.Single(x => x.Id == reportId);
+        report.Status.Should().Be(ReportStatus.Pending);
+        report.StartDate.EpochSeconds.Should().Be(startDate);
+        report.EndDate.EpochSeconds.Should().Be(endDate);
 
-            var report = db.Reports.Single(x => x.Id == reportId);
-            report.Should().NotBeNull()
-                .And.BeOfType<Report>()
-                .Which.Status.Should().Be(ReportStatus.Pending);
-            report.Id.Should().Be(reportId);
-            report.StartDate.EpochSeconds.Should().Be(startDate);
-            report.EndDate.EpochSeconds.Should().Be(endDate);
-        }
-
-        var harness = _factory.Services
-            .GetRequiredService<ITestHarness>();
+        // Assert event published
+        var harness = _factory.Services.GetRequiredService<ITestHarness>();
         Assert.True(await harness.Published.Any<ReportRequestCreated>(TestContext.Current.CancellationToken));
-
         var published = harness.Published
-            .Select<ReportRequestCreated>(TestContext.Current.CancellationToken).First().Context.Message;
-
+            .Select<ReportRequestCreated>(TestContext.Current.CancellationToken)
+            .First().Context.Message;
         published.ReportId.Should().Be(reportId);
         published.StartDate.Should().Be(startDate);
         published.EndDate.Should().Be(endDate);
