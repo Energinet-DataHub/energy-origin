@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using API.Cvr.Api._Features_.Internal;
 using API.Cvr.Api.Clients.Cvr;
-using API.Cvr.Api.Features.Internal;
 using API.Cvr.Api.Models;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Xunit;
 
-namespace API.UnitTests.Cvr.Api.Features;
+namespace API.UnitTests.Cvr.Api._Features_;
 
 public class GetCvrCompanyQueryHandlerTests
 {
