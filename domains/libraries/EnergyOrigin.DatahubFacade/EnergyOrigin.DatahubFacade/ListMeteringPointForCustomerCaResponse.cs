@@ -17,6 +17,11 @@ public class CustomerRelation
     {
         return MeteringPointId == gsrn.Value && UnixTimestamp.Create(ValidFromDate) < UnixTimestamp.Now();
     }
+
+    public bool IsValid()
+    {
+        return IsValidGsrn(new Gsrn(MeteringPointId));
+    }
 }
 
 public class Rejection

@@ -16,10 +16,10 @@ using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using EnergyOrigin.WalletClient.Models;
 using EnergyTrackAndTrace.Testing.Attributes;
+using EnergyTrackAndTrace.Testing.Extensions;
 using FluentAssertions;
 using Meteringpoint.V1;
 using NSubstitute;
-using Testing.Extensions;
 using Xunit;
 using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 
