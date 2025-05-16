@@ -43,6 +43,11 @@ public static class Any
         return EnergyOrigin.Domain.ValueObjects.Tin.Create(IntString(8));
     }
 
+    public static Gsrn Gsrn()
+    {
+        return new Gsrn("57" + IntString(16));
+    }
+
     private static string IntString(int charCount)
     {
         var alphabet = "0123456789";

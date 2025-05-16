@@ -1,11 +1,7 @@
-using Microsoft.Extensions.Options;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 
-namespace API.MeasurementsSyncer.Clients.DataHub3;
+namespace EnergyOrigin.Datahub3;
 
 public interface ITokenService
 {

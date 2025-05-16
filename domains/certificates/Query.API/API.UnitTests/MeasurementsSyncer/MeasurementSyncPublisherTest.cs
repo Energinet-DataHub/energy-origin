@@ -25,7 +25,7 @@ public class MeasurementSyncPublisherTest
 
         // When publishing events
         var gsrn = Any.Gsrn();
-        var meteringPoint = Any.MeteringPoint(gsrn);
+        var meteringPoint = EnergyTrackAndTrace.Testing.Any.MeteringPoint(gsrn);
         var meteringPointOwner = Guid.NewGuid().ToString();
         var syncInfo = new MeteringPointSyncInfo(gsrn, DateTimeOffset.UtcNow, null, meteringPointOwner, MeteringPointType.Production, "DK1", Guid.NewGuid(),
             Any.Technology());

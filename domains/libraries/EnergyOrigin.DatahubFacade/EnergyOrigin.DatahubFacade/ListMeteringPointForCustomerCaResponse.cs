@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using System;
-using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 
-namespace API.MeasurementsSyncer.Clients.DataHubFacade;
+namespace EnergyOrigin.DatahubFacade;
 
 public record ListMeteringPointForCustomerCaResponse
 {
@@ -19,6 +16,11 @@ public class CustomerRelation
     public bool IsValidGsrn(Gsrn gsrn)
     {
         return MeteringPointId == gsrn.Value && UnixTimestamp.Create(ValidFromDate) < UnixTimestamp.Now();
+    }
+
+    public bool IsValid()
+    {
+        return IsValidGsrn(new Gsrn(MeteringPointId));
     }
 }
 

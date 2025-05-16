@@ -47,9 +47,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\libraries\EnergyOrigin.DatahubFacade\EnergyOrigin.DatahubFacade\EnergyOrigin.DatahubFacade.csproj" />
         <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
         <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
-        <ProjectReference Include="..\..\DataHubFacadeClients\DataHubFacadeClients.csproj" />
     </ItemGroup>
 
     <ItemGroup>

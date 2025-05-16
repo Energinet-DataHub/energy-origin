@@ -1,12 +1,9 @@
 using System.Net;
-using Polly.Retry;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
-using System.Threading;
 using Polly;
+using Polly.Retry;
 
-namespace API.MeasurementsSyncer.Clients.DataHub3;
+namespace EnergyOrigin.Datahub3;
 
 public class AuthHeaderHandler : DelegatingHandler
 {

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace API.MeasurementsSyncer.Clients.DataHub3;
+namespace EnergyOrigin.Datahub3;
 
 public class Token
 {

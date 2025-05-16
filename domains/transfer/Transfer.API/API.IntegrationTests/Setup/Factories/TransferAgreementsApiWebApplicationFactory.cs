@@ -41,7 +41,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     private string WalletUrl { get; set; } = "http://foo";
 
     public string PdfUrl { get; set; } = "http://placeholder.io/pdf";
-
+    public string DataHub3Url { get; set; } = "http://dh3";
+    public string DataHubFacadeUrl { get; set; } = "http://dhfacade";
+    public string DataHubFacadeGrpcUrl { get; set; } = "http://dhfacadegrpc";
     private byte[] B2CDummyPrivateKey { get; set; } = RsaKeyGenerator.GenerateTestKey();
 
     private string OtlpReceiverEndpoint { get; set; } = "http://foo";
@@ -84,6 +86,10 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         builder.UseSetting("RabbitMq:Port", "5672");
         builder.UseSetting("RabbitMq:Username", "guest");
         builder.UseSetting("RabbitMq:Password", "guest");
+        builder.UseSetting("DataHub3:Url", DataHub3Url);
+        builder.UseSetting("DataHub3:EnableMock", "true");
+        builder.UseSetting("DataHubFacade:Url", DataHubFacadeUrl);
+        builder.UseSetting("DataHubFacade:GrpcUrl", DataHubFacadeGrpcUrl);
 
         if (RabbitMqOptions != null)
         {

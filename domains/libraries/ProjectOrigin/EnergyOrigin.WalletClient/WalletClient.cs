@@ -1,14 +1,9 @@
-using System;
-using System.Linq;
-using System.Net.Http;
+using System.ComponentModel;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using EnergyOrigin.WalletClient.Models;
-using Microsoft.Extensions.Logging;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using ProjectOrigin.HierarchicalDeterministicKeys.Interfaces;
 
@@ -226,6 +221,13 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<EnableWalletResponse>(response, cancellationToken);
     }
 
+    public async Task<ResultList<Claim>?> GetClaims(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken)
+    {
+        SetOwnerHeader(ownerSubject);
+
+        return await client.GetFromJsonAsync<ResultList<Claim>>($"v1/claims?start={start?.ToUnixTimeSeconds()}&end={end?.ToUnixTimeSeconds()}", _jsonSerializerOptions, cancellationToken);
+    }
+
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -390,4 +392,31 @@ public record DisableWalletResponse()
 public record EnableWalletResponse()
 {
     public Guid WalletId { get; init; }
+}
+
+public record Claim()
+{
+    public required Guid ClaimId { get; init; }
+    public required uint Quantity { get; init; }
+    public required ClaimedCertificate ProductionCertificate { get; init; }
+    public required ClaimedCertificate ConsumptionCertificate { get; init; }
+    public required long UpdatedAt { get; init; }
+}
+
+public record ClaimedCertificate()
+{
+    public required FederatedStreamId FederatedStreamId { get; init; }
+    public required long Start { get; init; }
+    public required long End { get; init; }
+    public required string GridArea { get; init; }
+    public required Dictionary<string, string> Attributes { get; init; }
+}
+
+public record GetClaimsQueryParameters
+{
+    public long? Start { get; init; }
+    public long? End { get; init; }
+    public int? Limit { get; init; }
+    [DefaultValue(0)]
+    public int Skip { get; init; } = 0;
 }

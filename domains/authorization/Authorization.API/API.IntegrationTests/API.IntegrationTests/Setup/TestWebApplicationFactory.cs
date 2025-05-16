@@ -4,12 +4,10 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using API.Models;
-using API.Options;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.WalletClient;
-using EnergyOrigin.WalletClient.Models;
 using EnergyTrackAndTrace.Testing;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
@@ -132,7 +130,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 
         var signingCredentials = new SigningCredentials(new X509SecurityKey(cert), SecurityAlgorithms.RsaSha256);
         var tokenHandler = new JwtSecurityTokenHandler();
-        var claims = new List<Claim>
+        var claims = new List<System.Security.Claims.Claim>
         {
             new("sub", sub),
             new("name", name),
