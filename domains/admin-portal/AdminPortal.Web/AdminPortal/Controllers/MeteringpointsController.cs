@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using AdminPortal.Features;
+using AdminPortal._Features_;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

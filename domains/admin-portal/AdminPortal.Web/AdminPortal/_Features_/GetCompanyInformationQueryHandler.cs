@@ -6,7 +6,7 @@ using AdminPortal.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace AdminPortal.Features;
+namespace AdminPortal._Features_;
 
 public class GetCompanyInformationQueryHandler(
     ITransferService transferService,

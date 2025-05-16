@@ -5,7 +5,7 @@ using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
 using MediatR;
 
-namespace AdminPortal.Features;
+namespace AdminPortal._Features_;
 public class GetActiveContractsQuery : IRequest<GetActiveContractsResponse>
 {
 }

@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using AdminPortal._Features_;
 using AdminPortal.Dtos.Response;
-using AdminPortal.Features;
 using AdminPortal.Models;
 using AdminPortal.Services;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
-namespace AdminPortal.Tests.Features;
+namespace AdminPortal.Tests._Features_;
 
 public class GetMeteringPointsQueryHandlerTest
 {
