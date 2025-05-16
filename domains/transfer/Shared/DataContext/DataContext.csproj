@@ -18,10 +18,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Models\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\..\libraries\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog.csproj" />
         <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Domain\EnergyOrigin.Domain.ValueObjects\EnergyOrigin.Domain.ValueObjects.csproj" />
     </ItemGroup>
