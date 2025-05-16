@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AdminPortal._Features_;
+using AdminPortal.Features;
 using AdminPortal.Services;
 using Microsoft.Extensions.Logging;
 using NSubstitute;

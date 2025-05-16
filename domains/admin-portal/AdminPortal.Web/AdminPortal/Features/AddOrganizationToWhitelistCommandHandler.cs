@@ -4,7 +4,7 @@ using AdminPortal.Services;
 using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 
-namespace AdminPortal._Features_;
+namespace AdminPortal.Features;
 
 public class AddOrganizationToWhitelistCommand(Tin tin) : IRequest
 {
