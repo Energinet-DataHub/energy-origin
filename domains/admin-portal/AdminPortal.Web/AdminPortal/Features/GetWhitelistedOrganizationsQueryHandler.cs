@@ -6,7 +6,7 @@ using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
 using MediatR;
 
-namespace AdminPortal._Features_;
+namespace AdminPortal.Features;
 
 public class GetWhitelistedOrganizationsQuery : IRequest<WhitelistedOrganizationsQueryResult>
 {

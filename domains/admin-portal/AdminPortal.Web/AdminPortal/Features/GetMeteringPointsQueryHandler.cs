@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal.Models;
@@ -9,7 +8,7 @@ using AdminPortal.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace AdminPortal._Features_;
+namespace AdminPortal.Features;
 
 public record GetMeteringPointsQuery(string Tin) : IRequest<GetMeteringPointsQueryResult>
 {

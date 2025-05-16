@@ -8,7 +8,7 @@ using API.Cvr.Api.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace API.Cvr.Api._Features_.Internal;
+namespace API.Cvr.Api.Features.Internal;
 
 public class GetCvrCompanyQueryHandler(ICvrClient client, ILogger<GetCvrCompanyQueryHandler> logger)
     : IRequestHandler<GetCvrCompanyQuery, GetCvrCompanyQueryResult?>
