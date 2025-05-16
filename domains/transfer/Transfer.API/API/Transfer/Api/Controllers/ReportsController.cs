@@ -28,9 +28,9 @@ public class ReportsController(IMediator mediator, AccessDescriptor accessDescri
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [SwaggerOperation(Summary = "Requests asynchronous report generation.")]
     public async Task<IActionResult> RequestReportGeneration(
-        [FromQuery] Guid                         organizationId,
-        [FromBody]  ReportGenerationStoredApiResponse request,
-        CancellationToken                        cancellationToken)
+        [FromQuery] Guid organizationId,
+        [FromBody] ReportGenerationStoredApiResponse request,
+        CancellationToken cancellationToken)
     {
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
@@ -40,7 +40,7 @@ public class ReportsController(IMediator mediator, AccessDescriptor accessDescri
             UnixTimestamp.Create(request.EndDate)
         );
 
-       var reportId = await mediator.Send(cmd, cancellationToken);
+        var reportId = await mediator.Send(cmd, cancellationToken);
 
         return AcceptedAtAction(
             actionName: nameof(GetReportStatuses),
@@ -60,7 +60,7 @@ public class ReportsController(IMediator mediator, AccessDescriptor accessDescri
         accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
         var query = new GetReportStatusesQuery(OrganizationId.Create(organizationId));
-        var result  = await mediator.Send(query, cancellationToken);
+        var result = await mediator.Send(query, cancellationToken);
         return Ok(result);
     }
 }

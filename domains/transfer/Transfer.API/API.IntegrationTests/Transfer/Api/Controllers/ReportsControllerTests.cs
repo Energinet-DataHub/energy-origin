@@ -64,7 +64,7 @@ public class ReportsControllerTests
     {
         var sub = Guid.NewGuid();
         var orgId = OrganizationId.Create(Guid.NewGuid());
-        var client  = _factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+        var client = _factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
 
         var report1 = Report.Create(orgId,
             UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-2)),
@@ -80,7 +80,7 @@ public class ReportsControllerTests
 
         using (var scope = _factory.Services.CreateScope())
         {
-            var db    = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             db.Reports.AddRange(report1, report2, otherOrganizationsReport);
             await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
