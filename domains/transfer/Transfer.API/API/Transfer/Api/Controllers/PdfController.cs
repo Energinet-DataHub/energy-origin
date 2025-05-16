@@ -49,11 +49,11 @@ public class PdfController : ControllerBase
         Summary = "Generates a PDF from HTML",
         Description = "Converts the provided base64 encoded HTML into a PDF file"
     )]
-    public async Task<IActionResult> Generate([FromQuery] Guid organizationId, [FromBody] GeneratePdfRequest request)
+    public async Task<IActionResult> Generate([FromQuery] Guid organizationId, [FromBody] GeneratePdfRequest request) // TODO: MASEP Remove body and convert to get request
     {
         _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        var result = await _mediator.Send(new GeneratePdfCommand(request.Base64Html));
+        var result = await _mediator.Send(new GeneratePdfCommand(request.Base64Html)); // TODO: MASEP Remove bopdy from command
 
         return result.IsSuccess
             ? File(result.PdfBytes!, "application/pdf")
