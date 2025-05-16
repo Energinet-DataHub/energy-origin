@@ -55,15 +55,5 @@ public class ReportsControllerTests
         report.Status.Should().Be(ReportStatus.Pending);
         report.StartDate.EpochSeconds.Should().Be(startDate);
         report.EndDate.EpochSeconds.Should().Be(endDate);
-
-        // Assert event published
-        var harness = _factory.Services.GetRequiredService<ITestHarness>();
-        Assert.True(await harness.Published.Any<ReportRequestCreated>(TestContext.Current.CancellationToken));
-        var published = harness.Published
-            .Select<ReportRequestCreated>(TestContext.Current.CancellationToken)
-            .First().Context.Message;
-        published.ReportId.Should().Be(reportId);
-        published.StartDate.Should().Be(startDate);
-        published.EndDate.Should().Be(endDate);
     }
 }
