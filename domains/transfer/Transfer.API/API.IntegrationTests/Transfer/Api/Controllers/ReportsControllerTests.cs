@@ -9,9 +9,7 @@ using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects.Tests;
-using EnergyOrigin.IntegrationEvents.Events.Pdf.V1;
 using FluentAssertions;
-using MassTransit.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
