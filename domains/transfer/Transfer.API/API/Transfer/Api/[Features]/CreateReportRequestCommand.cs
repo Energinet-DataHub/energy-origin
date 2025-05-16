@@ -3,51 +3,62 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Repository;
 using API.UnitOfWork;
-using MassTransit;
-using MediatR;
-using EnergyOrigin.Domain.ValueObjects;
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.Pdf.V1;
 using EnergyOrigin.Setup.Exceptions;
+using MassTransit;
+using MediatR;
 
 namespace API.Transfer.Api._Features_;
 
-public class CreateReportRequestCommandHandler(
-    IReportRepository reports,
-    IUnitOfWork unitOfWork,
-    IPublishEndpoint bus)
+public class CreateReportRequestCommandHandler
     : IRequestHandler<CreateReportRequestCommand, Guid>
 {
-    public async Task<Guid> Handle(CreateReportRequestCommand request, CancellationToken cancellationToken)
+    private readonly IReportRepository _reports;
+    private readonly IUnitOfWork       _unitOfWork;
+    private readonly IPublishEndpoint  _bus;
+
+    public CreateReportRequestCommandHandler(
+        IReportRepository reports,
+        IUnitOfWork       unitOfWork,
+        IPublishEndpoint  bus)
     {
-        var rangeSeconds = request.EndDate.EpochSeconds - request.StartDate.EpochSeconds;
-        if (rangeSeconds > UnixTimestamp.SecondsPerDay * 365)
+        _reports    = reports;
+        _unitOfWork = unitOfWork;
+        _bus        = bus;
+    }
+
+    public async Task<Guid> Handle(
+        CreateReportRequestCommand request,
+        CancellationToken         cancellationToken)
+    {
+        var duration = request.EndDate.EpochSeconds - request.StartDate.EpochSeconds;
+        if (duration > UnixTimestamp.SecondsPerDay * 365)
             throw new BusinessException("Date range cannot exceed 1 year.");
 
-        var report = new Report
-        {
-            Id = Guid.NewGuid(),
-            StartDate = request.StartDate,
-            EndDate = request.EndDate,
-            CreatedAt = UnixTimestamp.Now(),
-            Status = ReportStatus.Pending
-        };
-        await reports.AddAsync(report, cancellationToken);
+        var report = Report.Create(
+            request.OrganizationId,
+            request.StartDate,
+            request.EndDate);
 
-        await bus.Publish(
+        await _reports.AddAsync(report, cancellationToken);
+
+        await _bus.Publish(
             new ReportRequestCreated(
                 report.Id,
                 request.StartDate.EpochSeconds,
                 request.EndDate.EpochSeconds),
             cancellationToken);
 
-        await unitOfWork.SaveAsync();
+        await _unitOfWork.SaveAsync();
 
         return report.Id;
     }
 }
 
 public record CreateReportRequestCommand(
-    UnixTimestamp StartDate,
-    UnixTimestamp EndDate
+    OrganizationId OrganizationId,
+    UnixTimestamp  StartDate,
+    UnixTimestamp  EndDate
 ) : IRequest<Guid>;

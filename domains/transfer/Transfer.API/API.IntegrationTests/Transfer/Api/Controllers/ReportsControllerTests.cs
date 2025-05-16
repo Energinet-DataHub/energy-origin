@@ -18,9 +18,6 @@ namespace API.IntegrationTests.Transfer.Api.Controllers;
 [Collection(IntegrationTestCollection.CollectionName)]
 public class ReportsControllerTests
 {
-    private readonly Guid _sub = Guid.NewGuid();
-    private readonly OrganizationId _orgId = Any.OrganizationId();
-
     private readonly TransferAgreementsApiWebApplicationFactory _factory;
 
     public ReportsControllerTests(IntegrationTestFixture integrationTestFixture)
@@ -32,16 +29,21 @@ public class ReportsControllerTests
     public async Task RequestReportGeneration_ShouldPersistPendingReport_AndPublishEvent()
     {
         // Arrange
-        var startDate = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
-        var endDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
+        var startDate   = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
+        var endDate     = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var requestBody = new { StartDate = startDate, EndDate = endDate };
-        var client = _factory.CreateB2CAuthenticatedClient(_sub, _orgId.Value);
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/reports", requestBody, TestContext.Current.CancellationToken);
-        response.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        var response = await client.PostAsJsonAsync(
+            $"/api/reports?organizationId={orgId}",
+            requestBody,
+            TestContext.Current.CancellationToken);
 
         // Assert Http response
+        response.StatusCode.Should().Be(HttpStatusCode.Accepted);
         response.Headers.Location.Should().NotBeNull();
         var segments = response.Headers.Location!.Segments;
         var reportId = Guid.Parse(segments.Last().TrimEnd('/'));
