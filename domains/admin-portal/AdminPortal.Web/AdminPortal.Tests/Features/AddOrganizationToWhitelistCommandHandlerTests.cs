@@ -6,7 +6,7 @@ using AdminPortal.Services;
 using EnergyOrigin.Domain.ValueObjects;
 using NSubstitute;
 
-namespace AdminPortal.Tests._Features_;
+namespace AdminPortal.Tests.Features;
 
 public class AddOrganizationToWhitelistCommandHandlerTests
 {

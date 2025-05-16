@@ -7,7 +7,7 @@ using AdminPortal.Features;
 using AdminPortal.Services;
 using NSubstitute;
 
-namespace AdminPortal.Tests._Features_;
+namespace AdminPortal.Tests.Features;
 
 public class GetWhitelistedOrganizationsQueryHandlerTests
 {
