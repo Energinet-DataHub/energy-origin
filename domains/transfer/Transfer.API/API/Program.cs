@@ -55,10 +55,8 @@ builder.AddSerilog();
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
     x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler, TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
-    x.AddConsumer<GenerateReportCommandConsumer, GenerateReportCommandConsumerDefinition>();
+    x.AddConsumer<ReportRequestCreatedEventHandler, ReportRequestCreatedEventHandlerDefinition>();
 });
-
-
 
 builder.Services.AddPdfOptions();
 

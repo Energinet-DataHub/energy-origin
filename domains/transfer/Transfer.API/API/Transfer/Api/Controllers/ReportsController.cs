@@ -1,18 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api._Features_;
-using API.Transfer.Api.Repository;
-using API.UnitOfWork;
 using Asp.Versioning;
-using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
-using EnergyOrigin.TokenValidation.b2c;
-using MassTransit;
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -22,62 +15,38 @@ namespace API.Transfer.Api.Controllers;
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
 [Route("api/reports")]
-public class ReportsController(
-    IReportRepository reportRepository,
-    IUnitOfWork unitOfWork,
-    IPublishEndpoint publishEndpoint)
-    : ControllerBase
+public class ReportsController : ControllerBase
 {
-    [HttpPost]
-    [Authorize(Policy = Policy.FrontendOr3rdParty)]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [SwaggerOperation(Summary = "Initiates asynchronous report generation.")]
-    public async Task<IActionResult> StartReportGeneration(
-        [FromBody] StartReportRequest request,
-        CancellationToken cancellationToken)
+    private readonly IMediator _mediator;
+
+    public ReportsController(IMediator mediator)
     {
-        if (request.EndDate - request.StartDate > UnixTimestamp.SecondsPerDay * 365)
-            return BadRequest("Date range cannot exceed 1 year.");
-
-        var report = new Report
-        {
-            Id = Guid.NewGuid(),
-            CreatedAt = UnixTimestamp.Now(),
-            Status = ReportStatus.Pending,
-            StartDate = UnixTimestamp.Create(request.StartDate),
-            EndDate = UnixTimestamp.Create(request.EndDate)
-        };
-
-        await reportRepository.AddAsync(report, cancellationToken);
-        await unitOfWork.SaveAsync();
-
-        await publishEndpoint.Publish(
-            new GenerateReportCommand(report.Id,
-                UnixTimestamp.Create(request.StartDate), UnixTimestamp.Create(request.EndDate)), cancellationToken);
-
-        return AcceptedAtAction(nameof(GetReportStatus), new { reportId = report.Id }, null);
+        _mediator = mediator;
     }
 
-    [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<ReportDto>), StatusCodes.Status200OK)]
-    [SwaggerOperation(Summary = "Lists all generated reports with metadata.")]
-    public async Task<IActionResult> ListReports(CancellationToken cancellationToken)
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [SwaggerOperation(Summary = "Records a request to generate a report.")]
+    public async Task<IActionResult> RequestReportGeneration(
+        [FromBody] RequestReportDto request,
+        CancellationToken cancellationToken)
     {
-        var reports = await reportRepository.GetAllAsync(cancellationToken);
-        return Ok(reports.Select(r => new ReportDto(r.Id, r.CreatedAt.EpochSeconds, r.Status)));
+        var reportId = await _mediator.Send(
+            new CreateReportRequestCommand(
+                UnixTimestamp.Create(request.StartDate),
+                UnixTimestamp.Create(request.EndDate)),
+            cancellationToken);
+
+        return AcceptedAtAction(
+            nameof(GetReportStatus),
+            new { reportId },
+            null);
     }
 
     [HttpGet("{reportId}")]
-    [ProducesResponseType(typeof(ReportDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [SwaggerOperation(Summary = "Gets the status of a specific report.")]
-    public async Task<IActionResult> GetReportStatus(Guid reportId, CancellationToken cancellationToken)
-    {
-        var report = await reportRepository.GetByIdAsync(reportId, cancellationToken);
-        return report == null ? NotFound() : Ok(new ReportDto(report.Id, report.CreatedAt.EpochSeconds, report.Status));
-    }
+    public IActionResult GetReportStatus(Guid reportId)
+        => throw new NotImplementedException();
 }
 
-public record StartReportRequest(long StartDate, long EndDate);
-public record ReportDto(Guid Id, long CreatedAt, ReportStatus Status);
+public record RequestReportDto(long StartDate, long EndDate);
