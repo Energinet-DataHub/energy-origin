@@ -69,7 +69,7 @@ public class ConsumptionServiceTests
     public void MapToTotalHourFormat()
     {
         var numberOfDays = 30;
-        var dateTo = new DateTimeOffset(2025, 1, 31, 0 ,0, 0, TimeSpan.Zero);
+        var dateTo = new DateTimeOffset(2025, 1, 31, 0, 0, 0, TimeSpan.Zero);
         var dateFrom = dateTo.AddDays(-numberOfDays);
         var gsrn = Any.Gsrn();
 

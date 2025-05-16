@@ -47,7 +47,7 @@ public class ConsumptionService
 
         var totalConsumption = await _dh3Client.GetMeasurements(validRelations.Select(x => new Gsrn(x.MeteringPointId)).ToList(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), cancellationToken);
 
-        if(totalConsumption == null)
+        if (totalConsumption == null)
             return new List<ConsumptionHour>();
 
         return MapToTotalHourFormat(totalConsumption);
