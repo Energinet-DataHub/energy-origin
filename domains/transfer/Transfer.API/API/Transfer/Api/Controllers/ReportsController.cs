@@ -55,12 +55,25 @@ public class ReportsController : ControllerBase
         return AcceptedAtAction(
             nameof(GetReportStatus),
             new { organizationId, reportId },
-            null);
+            null
+        );
     }
 
     [HttpGet("{reportId}")]
-    public IActionResult GetReportStatus(Guid reportId)
-        => throw new NotImplementedException();
+    [ProducesResponseType(typeof(ReportStatusApiResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [SwaggerOperation(Summary = "Gets the status of a specific report.")]
+    public Task<IActionResult> GetReportStatus(
+        [FromQuery] Guid organizationId,
+        Guid reportId,
+        CancellationToken cancellationToken)
+    {
+        _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+
+        throw new NotImplementedException();
+    }
 }
 
 public record ReportGenerationStoredApiResponse(long StartDate, long EndDate);
+public record ReportStatusApiResponse(Guid Id, long CreatedAt, ReportStatus Status);
