@@ -7,7 +7,7 @@ BEGIN
   ) THEN
 CREATE TABLE public."Reports" (
                                   "Id"         uuid NOT NULL,
-                                  "CreatedAt"  timestamp with time zone NOT NULL,
+                                  "CreatedAt"  timestamp with time zone DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'::text) NOT NULL,
                                   "StartDate"  timestamp with time zone NOT NULL,
                                   "EndDate"    timestamp with time zone NOT NULL,
                                   "Status"     text NOT NULL,

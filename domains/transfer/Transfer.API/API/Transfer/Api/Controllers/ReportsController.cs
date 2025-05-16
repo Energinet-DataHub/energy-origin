@@ -8,6 +8,7 @@ using API.Transfer.Api.Repository;
 using API.UnitOfWork;
 using Asp.Versioning;
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
 using MassTransit;
@@ -36,24 +37,24 @@ public class ReportsController(
         [FromBody] StartReportRequest request,
         CancellationToken cancellationToken)
     {
-        if ((request.EndDate - request.StartDate).TotalDays > 365)
+        if (request.EndDate - request.StartDate > UnixTimestamp.SecondsPerDay * 365)
             return BadRequest("Date range cannot exceed 1 year.");
 
         var report = new Report
         {
             Id = Guid.NewGuid(),
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = UnixTimestamp.Now(),
             Status = ReportStatus.Pending,
-            StartDate = request.StartDate,
-            EndDate = request.EndDate
+            StartDate = UnixTimestamp.Create(request.StartDate),
+            EndDate = UnixTimestamp.Create(request.EndDate)
         };
 
         await reportRepository.AddAsync(report, cancellationToken);
         await unitOfWork.SaveAsync();
 
         await publishEndpoint.Publish(
-            new GenerateReportCommand(report.Id, request.StartDate, request.EndDate),
-            cancellationToken);
+            new GenerateReportCommand(report.Id,
+                UnixTimestamp.Create(request.StartDate), UnixTimestamp.Create(request.EndDate)), cancellationToken);
 
         return AcceptedAtAction(nameof(GetReportStatus), new { reportId = report.Id }, null);
     }
@@ -64,7 +65,7 @@ public class ReportsController(
     public async Task<IActionResult> ListReports(CancellationToken cancellationToken)
     {
         var reports = await reportRepository.GetAllAsync(cancellationToken);
-        return Ok(reports.Select(r => new ReportDto(r.Id, r.CreatedAt, r.Status)));
+        return Ok(reports.Select(r => new ReportDto(r.Id, r.CreatedAt.EpochSeconds, r.Status)));
     }
 
     [HttpGet("{reportId}")]
@@ -74,9 +75,9 @@ public class ReportsController(
     public async Task<IActionResult> GetReportStatus(Guid reportId, CancellationToken cancellationToken)
     {
         var report = await reportRepository.GetByIdAsync(reportId, cancellationToken);
-        return report == null ? NotFound() : Ok(new ReportDto(report.Id, report.CreatedAt, report.Status));
+        return report == null ? NotFound() : Ok(new ReportDto(report.Id, report.CreatedAt.EpochSeconds, report.Status));
     }
 }
 
-public record StartReportRequest(DateTimeOffset StartDate, DateTimeOffset EndDate);
-public record ReportDto(Guid Id, DateTimeOffset CreatedAt, ReportStatus Status);
+public record StartReportRequest(long StartDate, long EndDate);
+public record ReportDto(Guid Id, long CreatedAt, ReportStatus Status);

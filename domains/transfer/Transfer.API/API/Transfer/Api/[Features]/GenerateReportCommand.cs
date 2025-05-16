@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using API.Transfer.Api.Repository;
 using API.UnitOfWork;
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using MassTransit;
 using MediatR;
 
@@ -72,11 +73,10 @@ public class GenerateReportCommandConsumer : IConsumer<GenerateReportCommand>
     }
 }
 
-
 public record GenerateReportCommand(
     Guid ReportId,
-    DateTimeOffset StartDate,
-    DateTimeOffset EndDate
+    UnixTimestamp StartDate,
+    UnixTimestamp EndDate
 );
 
 public record ReportGenerationCompleted(Guid ReportId);
