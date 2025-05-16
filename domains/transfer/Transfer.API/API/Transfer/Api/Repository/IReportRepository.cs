@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataContext;
 using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Transfer.Api.Repository;
@@ -14,6 +16,7 @@ public interface IReportRepository
     Task<Report?> GetByIdAsync(Guid reportId, CancellationToken cancellationToken);
     Task UpdateAsync(Report report, CancellationToken cancellationToken);
     Task<IEnumerable<Report>> GetAllAsync(CancellationToken cancellationToken);
+    Task<IEnumerable<Report>> GetByOrganizationAsync(OrganizationId organizationId, CancellationToken cancellationToken);
 }
 
 public class ReportRepository(ApplicationDbContext context) : IReportRepository
@@ -32,4 +35,13 @@ public class ReportRepository(ApplicationDbContext context) : IReportRepository
 
     public async Task<IEnumerable<Report>> GetAllAsync(CancellationToken cancellationToken)
         => await context.Reports.ToListAsync(cancellationToken);
+
+    public async Task<IEnumerable<Report>> GetByOrganizationAsync(
+        OrganizationId organizationId,
+        CancellationToken cancellationToken)
+    {
+        return await context.Reports
+            .Where(r => r.OrganizationId == organizationId)
+            .ToListAsync(cancellationToken);
+    }
 }

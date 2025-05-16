@@ -1,28 +1,37 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.Transfer.Api.Controllers;
 using API.Transfer.Api.Repository;
+using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 
 namespace API.Transfer.Api._Features_;
 
 public class GetReportStatusesQueryHandler(IReportRepository reports)
-    : IRequestHandler<GetReportStatusesQuery, IEnumerable<ReportStatusApiResponse>>
+    : IRequestHandler<GetReportStatusesQuery, GetReportStatusesQueryResult>
 {
-    public async Task<IEnumerable<ReportStatusApiResponse>> Handle(
+    public async Task<GetReportStatusesQueryResult> Handle(
         GetReportStatusesQuery request,
         CancellationToken cancellationToken)
     {
-        var all = await reports.GetAllAsync(cancellationToken);
-        return all
-            .Select(report => new ReportStatusApiResponse(
-                report.Id,
-                report.CreatedAt.EpochSeconds,
-                report.Status)
-            );
+        var reports1 = await reports.GetByOrganizationAsync(
+            request.OrganizationId,
+            cancellationToken);
+
+        var items = reports1
+            .Select(r => new ReportStatusItem(
+                r.Id,
+                r.CreatedAt.EpochSeconds,
+                r.Status))
+            .ToList();
+
+        return new GetReportStatusesQueryResult(items);
     }
 }
 
-public record GetReportStatusesQuery() : IRequest<IEnumerable<ReportStatusApiResponse>>;
+public record GetReportStatusesQuery(OrganizationId OrganizationId) : IRequest<GetReportStatusesQueryResult>;
+public record ReportStatusItem(Guid Id, long CreatedAt, ReportStatus Status);
+public record GetReportStatusesQueryResult(List<ReportStatusItem> Result);

@@ -1,8 +1,10 @@
 using System;
+using System.Text.Json.Serialization;
 using EnergyOrigin.Domain.ValueObjects;
 
 namespace DataContext.Models;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ReportStatus
 {
     Pending = 0,
@@ -23,8 +25,7 @@ public class Report
         byte[]? content)
     {
         Id = id;
-        OrganizationId = organizationId ??
-                         throw new ArgumentNullException(nameof(organizationId));
+        OrganizationId = organizationId ?? throw new ArgumentNullException(nameof(organizationId));
         CreatedAt = createdAt;
         StartDate = startDate;
         EndDate = endDate;
