@@ -219,7 +219,8 @@ function generateGridLines(width, height) {
 
     for (let hour = 0; hour <= 24; hour++) {
         const x = CHART_MARGIN.left + hour * hourWidth;
-        gridLines += `<path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M ${x}.5 ${CHART_MARGIN.top} L ${x}.5 ${CHART_MARGIN.top + height}" opacity="1"></path>`;
+        const xPos = x + 0.5;
+        gridLines += `<path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M ${xPos} ${CHART_MARGIN.top} L ${xPos} ${CHART_MARGIN.top + height}" opacity="1"></path>`;
     }
 
     return gridLines;
