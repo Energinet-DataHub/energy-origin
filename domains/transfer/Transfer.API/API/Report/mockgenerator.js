@@ -7,7 +7,8 @@ const COLORS = {
     matched: "#82CF76",
     averageLine: "#FF0000",
     text: "#002433",
-    background: "#ffffff"
+    background: "#F9FAFB",
+    hourText: "rgb(194,194,194)"
 };
 
 /**
@@ -237,7 +238,7 @@ function generateXAxis(width, height) {
     for (let hour = 0; hour < 24; hour++) {
         const x = CHART_MARGIN.left + hour * hourWidth + hourWidth / 2;
         const hourLabel = hour.toString().padStart(2, '0');
-        xAxis += `<text x="${x}" style="cursor: default; font-size: 12px; fill: rgb(51, 51, 51);" text-anchor="middle" transform="translate(0,0)" y="${CHART_MARGIN.top + height + 27}" opacity="1">${hourLabel}</text>`;
+        xAxis += `<text x="${x}" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="${CHART_MARGIN.top + height + 27}" opacity="1">${hourLabel}</text>`;
     }
 
     return xAxis;
