@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.Domain.ValueObjects;
 using MeteringPoint = EnergyOrigin.Datahub3.MeteringPoint;
@@ -86,6 +87,19 @@ public class Any
             MeteringPoint = new MeteringPoint { Id = gsrn.Value },
             PointAggregationGroups = pags
         }];
+    }
+
+    public static Gsrn Gsrn()
+    {
+        var rand = new Random();
+        var sb = new StringBuilder();
+        sb.Append("57");
+        for (var i = 0; i < 16; i++)
+        {
+            sb.Append(rand.Next(0, 9));
+        }
+
+        return new Gsrn(sb.ToString());
     }
 
     public static PointAggregation PointAggregation(long minObservationTime, decimal aggregatedQuantity)

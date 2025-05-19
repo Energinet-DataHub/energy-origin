@@ -18,7 +18,6 @@ using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Testing.Helpers;
 using Xunit;
 using Technology = API.ContractService.Clients.Technology;
 
@@ -39,8 +38,8 @@ public class ContractsTests
     [Fact]
     public async Task CreateMultipleContract_ActivateWithEndDate_Created()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
-        var gsrn1 = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        var gsrn1 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
         measurementsWireMock.SetupMeteringPointsResponse(
             new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
@@ -83,7 +82,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateMulitpleContract_Overlapping_Conflict()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
         measurementsWireMock.SetupMeteringPointsResponse(
             new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
@@ -124,7 +123,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_ActivateWithEndDate_Created()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -157,7 +156,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_ActivateWithEndDateAndConsumptionType_Created()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Consumption);
 
         var subject = Guid.NewGuid();
@@ -183,7 +182,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_ActivateWithoutEndDate_Created()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -209,7 +208,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_GsrnAlreadyExistsInDb_Conflict()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -233,8 +232,8 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_MeteringPointNotOwnedByUser_BadRequest()
     {
-        var gsrn1 = GsrnHelper.GenerateRandom();
-        var gsrn2 = GsrnHelper.GenerateRandom();
+        var gsrn1 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        var gsrn2 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
         measurementsWireMock.SetupMeteringPointsResponse(gsrn1, MeteringPointType.Production);
 
@@ -259,7 +258,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_WithConsumptionMeteringPoint_TechnologyNull()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Consumption, technology);
 
@@ -285,7 +284,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_WithProductionMeteringPoint_TechnologyExists()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, technology);
 
@@ -312,7 +311,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_WhenCtreatingMultipleNonOverlappingContracts_Created()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
@@ -343,7 +342,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_WhenCreatingOverlappingContracts_Conflict()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
@@ -378,7 +377,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_InvalidGsrn_BadRequest()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         var invalidGsrn = "invalid GSRN";
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
@@ -403,7 +402,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_GsrnNotFound_BadRequest()
     {
-        var gsrnNotFound = GsrnHelper.GenerateRandom();
+        var gsrnNotFound = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -428,7 +427,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_CannotBeUsedForIssuingCertificates_Conflict()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, canBeUsedforIssuingCertificates: false);
 
         var subject = Guid.NewGuid();
@@ -454,7 +453,7 @@ public class ContractsTests
     [Fact]
     public async Task CreateContract_ConcurrentRequests_OnlyOneContractCreated()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -483,7 +482,7 @@ public class ContractsTests
     [Fact]
     public async Task GetAllMeteringPointOwnerContract_QueryAllContracts_Success()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -531,7 +530,7 @@ public class ContractsTests
     [Fact]
     public async Task GetSpecificContract_UserIsNotOwner_NotFound()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject1 = Guid.NewGuid();
@@ -567,7 +566,7 @@ public class ContractsTests
     [Fact]
     public async Task EditEndDate_StartsWithNoEndDate_HasEndDate()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -597,7 +596,7 @@ public class ContractsTests
     [Fact]
     public async Task EditEndDate_SetsToNoEndDate_HasNoEndDate()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -627,7 +626,7 @@ public class ContractsTests
     [Fact]
     public async Task EditEndDate_WithoutEndDate_Ended()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -657,7 +656,7 @@ public class ContractsTests
     [Fact]
     public async Task UpdateEndDate_OverlappingContract_ReturnsConflict()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -701,8 +700,8 @@ public class ContractsTests
     [Fact]
     public async Task UpdateEndDate_MultipleContracts_ReturnsOk()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
-        var gsrn1 = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        var gsrn1 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(
             new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
             {
@@ -759,7 +758,7 @@ public class ContractsTests
     [Fact]
     public async Task EditEndDate_NoContractCreated_NoContract()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -785,7 +784,7 @@ public class ContractsTests
     [Fact]
     public async Task EditEndDate_NewEndDateBeforeStartDate_BadRequest()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -826,7 +825,7 @@ public class ContractsTests
     [Fact]
     public async Task EditEndDate_UserIsNotOwnerOfMeteringPoint_Forbidden()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -870,7 +869,7 @@ public class ContractsTests
     public async Task GivenMeteringPoint_WhenCreatingContract_ActivityLogIsUpdated()
     {
         // Create contract
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
@@ -896,7 +895,7 @@ public class ContractsTests
     public async Task GivenContract_WhenEditingEndDate_ActivityLogIsUpdated()
     {
         // Create contract
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
