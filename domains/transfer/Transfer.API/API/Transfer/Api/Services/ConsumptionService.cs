@@ -8,7 +8,7 @@ using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
 using Meteringpoint.V1;
 
-namespace API.Services;
+namespace API.Transfer.Api.Services;
 
 public class ConsumptionService
 {

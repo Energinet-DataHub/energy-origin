@@ -411,12 +411,3 @@ public record ClaimedCertificate()
     public required string GridArea { get; init; }
     public required Dictionary<string, string> Attributes { get; init; }
 }
-
-public record GetClaimsQueryParameters
-{
-    public long? Start { get; init; }
-    public long? End { get; init; }
-    public int? Limit { get; init; }
-    [DefaultValue(0)]
-    public int Skip { get; init; } = 0;
-}
