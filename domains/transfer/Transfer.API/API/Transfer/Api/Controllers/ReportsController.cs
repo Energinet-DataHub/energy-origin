@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api._Features_;
 using Asp.Versioning;
-using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using EnergyOrigin.TokenValidation.b2c;
@@ -37,7 +36,7 @@ public class ReportsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [SwaggerOperation(Summary = "Initiates asynchronous report generation.")]
-    public async Task<IActionResult> RequestReportGeneration(
+    public IActionResult RequestReportGeneration(
         [FromQuery] Guid organizationId,
         [FromBody] ReportGenerationStoredApiResponse request,
         CancellationToken cancellationToken)
@@ -50,17 +49,13 @@ public class ReportsController : ControllerBase
             UnixTimestamp.Create(request.EndDate)
         );
 
-        var reportId = await _mediator.Send(cmd, cancellationToken);
+        _mediator.Send(cmd, cancellationToken);
 
         return AcceptedAtAction(
-            nameof(GetReportStatus),
-            new { organizationId, reportId },
+            null,
+            new { organizationId },
             null);
     }
-
-    [HttpGet("{reportId}")]
-    public IActionResult GetReportStatus(Guid reportId)
-        => throw new NotImplementedException();
 }
 
 public record ReportGenerationStoredApiResponse(long StartDate, long EndDate);
