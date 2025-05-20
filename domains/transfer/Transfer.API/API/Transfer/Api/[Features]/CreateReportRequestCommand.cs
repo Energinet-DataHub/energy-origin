@@ -36,10 +36,6 @@ public class CreateReportRequestCommandHandler
         CreateReportRequestCommand request,
         CancellationToken cancellationToken)
     {
-        var duration = request.EndDate.EpochSeconds - request.StartDate.EpochSeconds;
-        if (duration > UnixTimestamp.SecondsPerDay * 365)
-            throw new BusinessException("Date range cannot exceed 1 year.");
-
         var report = Report.Create(
             request.ReportId,
             request.OrganizationId,

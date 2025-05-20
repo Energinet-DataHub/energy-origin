@@ -1,5 +1,6 @@
 using System;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyOrigin.Setup.Exceptions;
 
 namespace DataContext.Models;
 
@@ -12,7 +13,6 @@ public enum ReportStatus
 
 public class Report
 {
-
     private Report(
         Guid id,
         OrganizationId organizationId,
@@ -40,15 +40,20 @@ public class Report
         UnixTimestamp endDate)
     {
         if (organizationId == null)
-            throw new ArgumentNullException(nameof(organizationId));
-        if (startDate > endDate)
-            throw new ArgumentException(
-                "StartDate must be on or before EndDate.", nameof(startDate));
+            throw new BusinessException(nameof(organizationId));
+
+        var createdAt = UnixTimestamp.Now();
+
+        if (endDate > createdAt)
+            throw new BusinessException("EndDate cannot be in the future.");
+
+        if (endDate < startDate.AddDays(7) || endDate > startDate.AddYears(1))
+            throw new BusinessException("Date range must be between 1 week and 1 year.");
 
         return new Report(
             id: id,
             organizationId: organizationId,
-            createdAt: UnixTimestamp.Now(),
+            createdAt: createdAt,
             startDate: startDate,
             endDate: endDate,
             status: ReportStatus.Pending,
