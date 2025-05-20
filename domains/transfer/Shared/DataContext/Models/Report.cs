@@ -23,8 +23,7 @@ public class Report
         byte[]? content)
     {
         Id = id;
-        OrganizationId = organizationId ??
-                         throw new ArgumentNullException(nameof(organizationId));
+        OrganizationId = organizationId ?? throw new ArgumentNullException(nameof(organizationId));
         CreatedAt = createdAt;
         StartDate = startDate;
         EndDate = endDate;
@@ -35,6 +34,7 @@ public class Report
     private Report() { }
 
     public static Report Create(
+        Guid id,
         OrganizationId organizationId,
         UnixTimestamp startDate,
         UnixTimestamp endDate)
@@ -46,7 +46,7 @@ public class Report
                 "StartDate must be on or before EndDate.", nameof(startDate));
 
         return new Report(
-            id: Guid.NewGuid(),
+            id: id,
             organizationId: organizationId,
             createdAt: UnixTimestamp.Now(),
             startDate: startDate,
@@ -56,7 +56,7 @@ public class Report
         );
     }
 
-    public Guid Id { get; private set; }
+    public Guid Id { get; }
     public OrganizationId OrganizationId { get; private set; } = OrganizationId.Empty();
     public UnixTimestamp CreatedAt { get; private set; } = UnixTimestamp.Empty();
     public UnixTimestamp StartDate { get; private set; } = UnixTimestamp.Empty();

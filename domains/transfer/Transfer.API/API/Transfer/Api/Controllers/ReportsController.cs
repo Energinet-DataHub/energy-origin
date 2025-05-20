@@ -44,16 +44,17 @@ public class ReportsController : ControllerBase
         _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
         var cmd = new CreateReportRequestCommand(
-            OrganizationId.Create(organizationId),
-            UnixTimestamp.Create(request.StartDate),
-            UnixTimestamp.Create(request.EndDate)
+            ReportId: Guid.NewGuid(),
+            OrganizationId: OrganizationId.Create(organizationId),
+            StartDate: UnixTimestamp.Create(request.StartDate),
+            EndDate: UnixTimestamp.Create(request.EndDate)
         );
 
         _mediator.Send(cmd, cancellationToken);
 
         return AcceptedAtAction(
             null,
-            new { organizationId },
+            new { organizationId, cmd.ReportId },
             null);
     }
 }

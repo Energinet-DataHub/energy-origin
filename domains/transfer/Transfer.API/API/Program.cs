@@ -2,11 +2,9 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using API.Cvr;
 using API.Cvr.Api.Clients.Cvr;
 using API.Events;
 using API.Transfer;
-using API.Transfer.Api._Features_;
 using API.Transfer.Api.Clients;
 using API.UnitOfWork;
 using DataContext;
@@ -55,7 +53,6 @@ builder.AddSerilog();
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
     x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler, TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
-    x.AddConsumer<ReportRequestCreatedEventHandler, ReportRequestCreatedEventHandlerDefinition>();
 });
 
 builder.Services.AddPdfOptions();
