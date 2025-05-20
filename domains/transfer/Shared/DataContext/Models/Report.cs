@@ -86,14 +86,4 @@ public class Report
 
         Status = ReportStatus.Failed;
     }
-
-    public void ResetToPending()
-    {
-        if (Status != ReportStatus.Failed)
-            throw new InvalidOperationException(
-                "Only Failed reports can be reset to pending.");
-
-        Content = null;
-        Status = ReportStatus.Pending;
-    }
 }
