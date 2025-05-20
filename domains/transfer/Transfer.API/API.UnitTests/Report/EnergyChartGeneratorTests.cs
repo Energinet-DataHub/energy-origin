@@ -16,78 +16,78 @@ namespace API.UnitTests.Report;
 
 public class EnergyChartGeneratorTests
 {
-private static List<ConsumptionHour> GenerateMockConsumption(int seed)
-{
-    var rnd = new Random(seed);
-
-    return Enumerable.Range(0, 24)
-        .Select(h =>
-        {
-            var baseLoad = 20 + rnd.NextDouble() * 10;
-
-            var hourlyFactor = h switch
-            {
-                >= 0 and <= 5 => 0.5 + (rnd.NextDouble() * 0.3),
-                >= 6 and <= 9 => 1.5 + (rnd.NextDouble() * 0.5),
-                >= 10 and <= 16 => 1.0 + (rnd.NextDouble() * 0.3),
-                >= 17 and <= 22 => 1.8 + (rnd.NextDouble() * 0.4),
-                _ => 1.0 + (rnd.NextDouble() * 0.2)
-            };
-
-            var consumption = baseLoad * hourlyFactor * (0.9 + rnd.NextDouble() * 0.2);
-
-            return new ConsumptionHour(h)
-            {
-                KwhQuantity = (decimal)Math.Round(consumption, 2)
-            };
-        })
-        .ToList();
-}
-
-private static List<Claim> GenerateMockClaims(int seed, DateTimeOffset from, DateTimeOffset to)
-{
-    var rnd = new Random(seed);
-    var dummyCert = new ClaimedCertificate
+    private static List<ConsumptionHour> GenerateMockConsumption(int seed)
     {
-        FederatedStreamId = new FederatedStreamId { Registry = "dummy", StreamId = Guid.NewGuid() },
-        Start = 0,
-        End = 0,
-        GridArea = string.Empty,
-        Attributes = new Dictionary<string, string>()
-    };
+        var rnd = new Random(seed);
 
-    var totalHours = (int)(to - from).TotalHours;
+        return Enumerable.Range(0, 24)
+            .Select(h =>
+            {
+                var baseLoad = 20 + rnd.NextDouble() * 10;
 
-    return Enumerable.Range(0, totalHours)
-        .Select(i =>
+                var hourlyFactor = h switch
+                {
+                    >= 0 and <= 5 => 0.5 + (rnd.NextDouble() * 0.3),
+                    >= 6 and <= 9 => 1.5 + (rnd.NextDouble() * 0.5),
+                    >= 10 and <= 16 => 1.0 + (rnd.NextDouble() * 0.3),
+                    >= 17 and <= 22 => 1.8 + (rnd.NextDouble() * 0.4),
+                    _ => 1.0 + (rnd.NextDouble() * 0.2)
+                };
+
+                var consumption = baseLoad * hourlyFactor * (0.9 + rnd.NextDouble() * 0.2);
+
+                return new ConsumptionHour(h)
+                {
+                    KwhQuantity = (decimal)Math.Round(consumption, 2)
+                };
+            })
+            .ToList();
+    }
+
+    private static List<Claim> GenerateMockClaims(int seed, DateTimeOffset from, DateTimeOffset to)
+    {
+        var rnd = new Random(seed);
+        var dummyCert = new ClaimedCertificate
         {
-            var hourOfDay = (from.Hour + i) % 24;
+            FederatedStreamId = new FederatedStreamId { Registry = "dummy", StreamId = Guid.NewGuid() },
+            Start = 0,
+            End = 0,
+            GridArea = string.Empty,
+            Attributes = new Dictionary<string, string>()
+        };
 
-            var productionFactor = hourOfDay switch
+        var totalHours = (int)(to - from).TotalHours;
+
+        return Enumerable.Range(0, totalHours)
+            .Select(i =>
             {
-                >= 20 or <= 5 => 0,
-                <= 11 => (hourOfDay - 6) / 5.0 * 0.9,
-                <= 14 => 0.9 + (hourOfDay - 12) / 2.0 * 0.1,
-                _ => (19 - hourOfDay) / 4.0
-            };
+                var hourOfDay = (from.Hour + i) % 24;
 
-            double maxProduction = 120;
+                var productionFactor = hourOfDay switch
+                {
+                    >= 20 or <= 5 => 0,
+                    <= 11 => (hourOfDay - 6) / 5.0 * 0.9,
+                    <= 14 => 0.9 + (hourOfDay - 12) / 2.0 * 0.1,
+                    _ => (19 - hourOfDay) / 4.0
+                };
 
-            var weatherFactor = 0.7 + rnd.NextDouble() * 0.3;
+                double maxProduction = 120;
 
-            var production = maxProduction * productionFactor * weatherFactor * (0.9 + rnd.NextDouble() * 0.2);
+                var weatherFactor = 0.7 + rnd.NextDouble() * 0.3;
 
-            return new Claim
-            {
-                ClaimId = Guid.NewGuid(),
-                Quantity = (uint)Math.Round(production, 0),
-                UpdatedAt = from.AddHours(i).ToUnixTimeSeconds(),
-                ProductionCertificate = dummyCert,
-                ConsumptionCertificate = dummyCert
-            };
-        })
-        .ToList();
-}
+                var production = maxProduction * productionFactor * weatherFactor * (0.9 + rnd.NextDouble() * 0.2);
+
+                return new Claim
+                {
+                    ClaimId = Guid.NewGuid(),
+                    Quantity = (uint)Math.Round(production, 0),
+                    UpdatedAt = from.AddHours(i).ToUnixTimeSeconds(),
+                    ProductionCertificate = dummyCert,
+                    ConsumptionCertificate = dummyCert
+                };
+            })
+            .ToList();
+    }
 
     [Fact]
     public async Task GenerateAsync_SvgSnapshot()

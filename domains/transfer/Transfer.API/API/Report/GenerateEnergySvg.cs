@@ -259,13 +259,18 @@ public static class EnergyChartGenerator
         // Calculate y position based on series type
         double yPos;
 
-        if (seriesType == "matched") {
+        if (seriesType == "matched")
+        {
             // Matched bars start from the bottom
             yPos = PLOT_HEIGHT - height;
-        } else if (seriesType == "unmatched") {
+        }
+        else if (seriesType == "unmatched")
+        {
             // Unmatched bars stack on top of matched
             yPos = PLOT_HEIGHT - height - (PLOT_HEIGHT * data.Matched / maxValue);
-        } else { // overmatched
+        }
+        else
+        { // overmatched
             // Overmatched bars stack on top of matched
             yPos = PLOT_HEIGHT - height - (PLOT_HEIGHT * data.Matched / maxValue);
         }
@@ -286,7 +291,8 @@ public static class EnergyChartGenerator
     {
         var points = data
             .OrderBy(d => d.Hour)
-            .Select(d => {
+            .Select(d =>
+            {
                 var x = unitWidth * (d.Hour + 0.5);
                 var y = PLOT_HEIGHT - (PLOT_HEIGHT * d.Consumption / maxValue);
                 return $"{x.ToString(CultureInfo.InvariantCulture)},{y.ToString(CultureInfo.InvariantCulture)}";
@@ -302,7 +308,8 @@ public static class EnergyChartGenerator
         return new XElement(svg + "g",
             new XAttribute("class", "highcharts-axis-labels highcharts-xaxis-labels"),
             new XAttribute("data-z-index", "7"),
-            data.Select(t => {
+            data.Select(t =>
+            {
                 double x = MARGIN_LEFT + unitWidth * (t.Hour + 0.5);
                 return new XElement(svg + "text",
                     new XAttribute("x", x.ToString(CultureInfo.InvariantCulture)),
