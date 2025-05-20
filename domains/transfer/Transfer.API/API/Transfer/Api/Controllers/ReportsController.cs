@@ -32,6 +32,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(ReportGenerationResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -53,10 +54,11 @@ public class ReportsController : ControllerBase
         _mediator.Send(cmd, cancellationToken);
 
         return AcceptedAtAction(
-            null,
-            new { organizationId, cmd.ReportId },
-            null);
+            actionName: null,
+            routeValues: new ReportGenerationResponse(organizationId, cmd.ReportId),
+            value: null);
     }
 }
 
 public record ReportGenerationStartRequest(long StartDate, long EndDate);
+public record ReportGenerationResponse(Guid organizationId, Guid ReportId);
