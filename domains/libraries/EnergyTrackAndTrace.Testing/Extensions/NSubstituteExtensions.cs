@@ -1,9 +1,10 @@
+using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Testing;
 using NSubstitute;
 using NSubstitute.Core;
 
-namespace Testing.Extensions;
+namespace EnergyTrackAndTrace.Testing.Extensions;
 
 public static class NSubstituteExtensions
 {

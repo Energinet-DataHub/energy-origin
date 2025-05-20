@@ -26,6 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Datahub3\EnergyOrigin.Datahub3\EnergyOrigin.Datahub3.csproj" />
+    <ProjectReference Include="..\..\..\libraries\EnergyOrigin.DatahubFacade\EnergyOrigin.DatahubFacade\EnergyOrigin.DatahubFacade.csproj" />
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents.csproj" />
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.Setup\EnergyOrigin.Setup\EnergyOrigin.Setup.csproj" />
     <ProjectReference Include="..\..\..\libraries\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation\EnergyOrigin.TokenValidation.csproj" />
@@ -48,9 +50,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
-	<ItemGroup>
-		<Protobuf Include="Protos/meteringpoint.proto" GrpcServices="Client" />
-	</ItemGroup>
 
 </Project>

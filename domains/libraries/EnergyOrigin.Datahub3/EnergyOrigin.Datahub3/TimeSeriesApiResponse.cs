@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-
-namespace API.MeasurementsSyncer.Clients.DataHub3;
+namespace EnergyOrigin.Datahub3;
 
 public class MeteringPoint
 {
