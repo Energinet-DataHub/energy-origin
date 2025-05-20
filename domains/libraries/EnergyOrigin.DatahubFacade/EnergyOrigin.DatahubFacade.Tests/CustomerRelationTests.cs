@@ -1,8 +1,6 @@
-using System;
-using API.MeasurementsSyncer.Clients.DataHubFacade;
 using Xunit;
 
-namespace API.UnitTests.MeasurementsSyncer;
+namespace EnergyOrigin.DatahubFacade.Tests;
 
 public class CustomerRelationTests
 {

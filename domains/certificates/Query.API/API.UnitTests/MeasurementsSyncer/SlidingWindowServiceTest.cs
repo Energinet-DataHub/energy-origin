@@ -5,11 +5,9 @@ using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.Models;
 using DataContext.Models;
-using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using NSubstitute;
-using Testing.Helpers;
 using Xunit;
 
 namespace API.UnitTests.MeasurementsSyncer;
@@ -17,7 +15,7 @@ namespace API.UnitTests.MeasurementsSyncer;
 public class SlidingWindowServiceTest
 {
     private readonly SlidingWindowService _sut;
-    private readonly Gsrn _gsrn = new Gsrn(GsrnHelper.GenerateRandom());
+    private readonly Gsrn _gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn();
     private readonly UnixTimestamp _now = UnixTimestamp.Now();
     private readonly IMeasurementSyncMetrics _measurementSyncMetrics = Substitute.For<IMeasurementSyncMetrics>();
 
