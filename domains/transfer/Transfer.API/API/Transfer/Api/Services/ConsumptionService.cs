@@ -10,7 +10,12 @@ using Meteringpoint.V1;
 
 namespace API.Transfer.Api.Services;
 
-public class ConsumptionService
+public interface IConsumptionService
+{
+    Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken);
+}
+
+public class ConsumptionService : IConsumptionService
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _meteringPointClient;
     private readonly IDataHubFacadeClient _dhFacadeClient;
@@ -58,7 +63,7 @@ public class ConsumptionService
         return typeOfMp.Trim().ToUpper() == "E17";
     }
 
-    public List<ConsumptionHour> MapToTotalHourFormat(MeteringPointData[] totalConsumption)
+    private List<ConsumptionHour> MapToTotalHourFormat(MeteringPointData[] totalConsumption)
     {
         var result = Enumerable.Range(0, 24).Select(x => new ConsumptionHour(x)).ToList();
 
