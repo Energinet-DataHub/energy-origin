@@ -66,7 +66,7 @@ public class ConsumptionServiceTests
     }
 
     [Fact]
-    public async Task GetTotalHourlyConsumption()
+    public async Task GetTotalHourlyConsumption_AllOwnersMeteringPoints()
     {
         var subject = Guid.NewGuid();
         var numberOfDays = 30;
