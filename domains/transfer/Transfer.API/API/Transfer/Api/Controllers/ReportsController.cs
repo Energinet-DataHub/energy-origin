@@ -61,4 +61,4 @@ public class ReportsController : ControllerBase
 }
 
 public record ReportGenerationStartRequest(long StartDate, long EndDate);
-public record ReportGenerationResponse(Guid organizationId, Guid ReportId);
+public record ReportGenerationResponse(Guid OrganizationId, Guid ReportId);

@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using System.Web;
 using API.IntegrationTests.Setup.Factories;
 using API.IntegrationTests.Setup.Fixtures;
 using FluentAssertions;
@@ -20,15 +21,15 @@ public class ReportsControllerTests
     }
 
     [Fact]
-    public async Task RequestReportGeneration_ShouldReturnValidReportId()
+    public async Task RequestReportGeneration_ShouldReturnValidReportResponse()
     {
         // Arrange
-        var sub = Guid.NewGuid();
+        var sub   = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
         var startDate = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
-        var endDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var endDate   = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var requestBody = new { StartDate = startDate, EndDate = endDate };
 
         // Act
@@ -39,16 +40,15 @@ public class ReportsControllerTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Accepted);
-        response.Headers.Location.Should().NotBeNull("we expect a Location header with the new ReportId");
 
-        var location = response.Headers.Location!.ToString();
-        location.Should().Contain("ReportId=", "the controller appends it as a query parameter");
+        response.Headers.Location.Should().NotBeNull();
+        var uri = response.Headers.Location!;
+        var qs  = HttpUtility.ParseQueryString(uri.Query);
 
-        var raw = location[(location.IndexOf("ReportId=", StringComparison.OrdinalIgnoreCase) + "ReportId=".Length)..];
-        var amp = raw.IndexOf('&');
-        var idString = amp >= 0 ? raw[..amp] : raw;
+        var returnedOrgId = Guid.Parse(qs["OrganizationId"]!);
+        returnedOrgId.Should().Be(orgId);
 
-        var reportId = Guid.Parse(idString);
-        reportId.Should().NotBe(Guid.Empty, "the controller must generate a real ReportId");
+        var returnedReportId = Guid.Parse(qs["ReportId"]!);
+        returnedReportId.Should().NotBe(Guid.Empty);
     }
 }
