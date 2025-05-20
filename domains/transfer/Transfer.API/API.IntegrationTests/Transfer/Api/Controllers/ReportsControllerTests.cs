@@ -24,12 +24,12 @@ public class ReportsControllerTests
     public async Task RequestReportGeneration_ShouldReturnValidReportResponse()
     {
         // Arrange
-        var sub   = Guid.NewGuid();
+        var sub = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
         var startDate = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
-        var endDate   = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var requestBody = new { StartDate = startDate, EndDate = endDate };
 
         // Act
@@ -43,7 +43,7 @@ public class ReportsControllerTests
 
         response.Headers.Location.Should().NotBeNull();
         var uri = response.Headers.Location!;
-        var qs  = HttpUtility.ParseQueryString(uri.Query);
+        var qs = HttpUtility.ParseQueryString(uri.Query);
 
         var returnedOrgId = Guid.Parse(qs["OrganizationId"]!);
         returnedOrgId.Should().Be(orgId);
