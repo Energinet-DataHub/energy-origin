@@ -12,6 +12,7 @@ using DataContext;
 using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Exceptions.Middleware;
+using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.Pdf;
@@ -29,6 +30,7 @@ using Polly;
 using Polly.Extensions.Http;
 using Polly.Retry;
 using MassTransit;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,20 +89,28 @@ builder.Services.Configure<JsonOptions>(options =>
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
-builder.Services.AddDbContext<DbContext, ApplicationDbContext>(
-    (sp, options) =>
+builder.Services.AddDbContextFactory<ApplicationDbContext>((sp, options) =>
+{
+    var connectionString = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString();
+    options.UseNpgsql(connectionString, npgsql =>
     {
-        options.UseNpgsql(sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString(),
-            providerOptions => providerOptions.EnableRetryOnFailure()
-        );
-    },
-    optionsLifetime: ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<ApplicationDbContext>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        npgsql.EnableRetryOnFailure();
+    });
+});
+
+builder.Services.AddScoped<IDbContextFactory<ApplicationDbContext>>(sp =>
+        new ResilientDbContextFactory<ApplicationDbContext>(
+            sp.GetRequiredService<IDbContextFactory<ApplicationDbContext>>()));
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString());
+    .AddCheck<DbContextHealthCheck<ApplicationDbContext>>(
+        name: "postgres",
+        failureStatus: HealthStatus.Degraded
+    );
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddValidatorsFromAssembly(typeof(API.Program).Assembly);
 

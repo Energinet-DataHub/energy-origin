@@ -16,5 +16,6 @@ public class DatabaseOptions
     [Required]
     public string Password { get; set; } = string.Empty;
     public string ToConnectionString()
-        => $"Host={Host}; Port={Port}; Database={Name}; Username={User}; Password={Password};";
+        => $"Host={Host}; Port={Port}; Database={Name}; Username={User}; Password={Password}; " +
+           "Pooling=false; Timeout=5; Command Timeout=15; Keepalive=30;";
 }

@@ -4,6 +4,7 @@ using API.ClaimAutomation.Api.Repositories;
 using API.Transfer.Api.Repository;
 using DataContext;
 using EnergyOrigin.ActivityLog.API;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.UnitOfWork;
 
@@ -16,47 +17,40 @@ public interface IUnitOfWork : IAsyncDisposable
 
     Task SaveAsync();
 }
-
 public class UnitOfWork : IUnitOfWork
 {
-    private ApplicationDbContext context;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
+    private ApplicationDbContext? _context;
+
     private ITransferAgreementRepository transferAgreementRepo = null!;
     private IActivityLogEntryRepository activityLogEntryRepo = null!;
     private ITransferAgreementProposalRepository transferAgreementProposalRepo = null!;
     private IClaimAutomationRepository claimAutomationRepository = null!;
 
-    public UnitOfWork(ApplicationDbContext context)
+    public UnitOfWork(IDbContextFactory<ApplicationDbContext> dbContextFactory)
     {
-        this.context = context;
+        _dbContextFactory = dbContextFactory;
     }
 
-    public ITransferAgreementRepository TransferAgreementRepo
-    {
-        get => transferAgreementRepo ??= new TransferAgreementRepository(context);
-    }
+    private ApplicationDbContext Context => _context ??= _dbContextFactory.CreateDbContext();
 
-    public IActivityLogEntryRepository ActivityLogEntryRepo
-    {
-        get => activityLogEntryRepo ??= new ActivityLogEntryRepository(context);
-    }
+    public ITransferAgreementRepository TransferAgreementRepo =>
+        transferAgreementRepo ??= new TransferAgreementRepository(Context);
 
-    public ITransferAgreementProposalRepository TransferAgreementProposalRepo
-    {
-        get => transferAgreementProposalRepo ??= new TransferAgreementProposalRepository(context);
-    }
+    public IActivityLogEntryRepository ActivityLogEntryRepo =>
+        activityLogEntryRepo ??= new ActivityLogEntryRepository(Context);
 
-    public IClaimAutomationRepository ClaimAutomationRepository
-    {
-        get => claimAutomationRepository ??= new ClaimAutomationRepository(context);
-    }
+    public ITransferAgreementProposalRepository TransferAgreementProposalRepo =>
+        transferAgreementProposalRepo ??= new TransferAgreementProposalRepository(Context);
 
-    public Task SaveAsync()
-    {
-        return context.SaveChangesAsync();
-    }
+    public IClaimAutomationRepository ClaimAutomationRepository =>
+        claimAutomationRepository ??= new ClaimAutomationRepository(Context);
+
+    public Task SaveAsync() => Context.SaveChangesAsync();
 
     public async ValueTask DisposeAsync()
     {
-        await context.DisposeAsync();
+        if (_context is not null)
+            await _context.DisposeAsync();
     }
 }
