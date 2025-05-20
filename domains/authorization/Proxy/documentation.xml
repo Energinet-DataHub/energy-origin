@@ -84,6 +84,14 @@
             The number of items to skip.
             </summary>
         </member>
+        <member name="P:Proxy.Controllers.GetClaimsQueryParameters.TimeMatch">
+            <summary>
+            Fetch all or hourly claims.
+            Values:
+            All,
+            Hourly (default: Hourly)
+            </summary>
+        </member>
         <member name="P:Proxy.Controllers.AggregateClaimsQueryParameters.TimeAggregate">
             <summary>
             The size of each bucket in the aggregation
