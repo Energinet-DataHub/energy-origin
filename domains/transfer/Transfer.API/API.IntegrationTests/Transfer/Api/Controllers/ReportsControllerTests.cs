@@ -7,8 +7,6 @@ using API.IntegrationTests.Setup.Factories;
 using API.IntegrationTests.Setup.Fixtures;
 using DataContext;
 using DataContext.Models;
-using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.Tests;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -26,7 +24,7 @@ public class ReportsControllerTests
     }
 
     [Fact]
-    public async Task RequestReportGeneration_ShouldPersistPendingReport_AndPublishEvent()
+    public async Task RequestReportGeneration_ShouldPersistPendingReport()
     {
         // Arrange
         var sub = Guid.NewGuid();
@@ -42,11 +40,19 @@ public class ReportsControllerTests
             requestBody,
             TestContext.Current.CancellationToken);
 
-        // Assert Http response
+        // Assert HTTP response
         response.StatusCode.Should().Be(HttpStatusCode.Accepted);
         response.Headers.Location.Should().NotBeNull();
-        var segments = response.Headers.Location!.Segments;
-        var reportId = Guid.Parse(segments.Last().TrimEnd('/'));
+
+        var location = response.Headers.Location!.ToString();
+        location.Should().Contain("ReportId=", because: "we return it as a query parameter");
+
+        var raw = location.Substring(
+            location.IndexOf("ReportId=", StringComparison.OrdinalIgnoreCase)
+            + "ReportId=".Length);
+        var amp = raw.IndexOf('&');
+        var idString = amp >= 0 ? raw.Substring(0, amp) : raw;
+        var reportId = Guid.Parse(idString);
 
         // Assert DB record
         using var scope = _factory.Services.CreateScope();
