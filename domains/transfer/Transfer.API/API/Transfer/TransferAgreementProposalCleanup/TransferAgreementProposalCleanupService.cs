@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
 using DataContext;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,7 +39,7 @@ public class TransferAgreementProposalCleanupService(
                 }
                 else
                 {
-                    await DeleteOldTransferAgreementProposals(DateTimeOffset.UtcNow.AddDays(-14), stoppingToken);
+                    logger.LogInformation("Waiting for EF migrations");
                 }
             }
             catch (Exception e)
@@ -50,24 +49,6 @@ public class TransferAgreementProposalCleanupService(
 
             await Sleep(stoppingToken);
         }
-    }
-
-    private async Task DeleteOldTransferAgreementProposals(DateTimeOffset olderThan, CancellationToken cancellationToken)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        var olderThanTimestamp = UnixTimestamp.Create(olderThan);
-        var oldProposals = context.TransferAgreementProposals
-            .Where(i => i.CreatedAt < olderThanTimestamp);
-
-        context.TransferAgreementProposals.RemoveRange(oldProposals);
-
-        var activityLogEntries = oldProposals.Select(proposal => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
-            string.Empty, proposal.SenderCompanyTin.Value, proposal.SenderCompanyName.Value, String.Empty, String.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
-            ActivityLogEntry.ActionTypeEnum.Expired, proposal.Id.ToString()));
-        await context.ActivityLogs.AddRangeAsync(activityLogEntries, cancellationToken);
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     private async Task Sleep(CancellationToken cancellationToken)

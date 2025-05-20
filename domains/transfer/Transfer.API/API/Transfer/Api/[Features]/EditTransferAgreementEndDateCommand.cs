@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext.Models;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.TokenValidation.b2c;
@@ -82,8 +81,6 @@ public class EditTransferAgreementEndDateCommandHandler : IRequestHandler<EditTr
 
         transferAgreement.EndDate = endDate;
 
-        await AppendAgreementEndDateChangedToActivityLog(_identityDescriptor, transferAgreement);
-
         await _unitOfWork.SaveAsync();
 
         return new EditTransferAgreementEndDateCommandResult(transferAgreement);
@@ -97,36 +94,5 @@ public class EditTransferAgreementEndDateCommandHandler : IRequestHandler<EditTr
     private bool IsAuthorizedToReceiver(TransferAgreement transferAgreement)
     {
         return transferAgreement.ReceiverId is not null && _accessDescriptor.IsAuthorizedToOrganization(transferAgreement.ReceiverId.Value);
-    }
-
-    private async Task AppendAgreementEndDateChangedToActivityLog(IdentityDescriptor identity, TransferAgreement result)
-    {
-        // Receiver entry
-        await _unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: identity.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: String.Empty,
-            organizationTin: result.ReceiverTin.Value,
-            organizationName: result.ReceiverName.Value,
-            otherOrganizationTin: identity.OrganizationCvr!,
-            otherOrganizationName: identity.OrganizationName,
-            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-            entityId: result.Id.ToString())
-        );
-
-        // Sender entry
-        await _unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: identity.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: identity.Name,
-            organizationTin: identity.OrganizationCvr!,
-            organizationName: identity.OrganizationName,
-            otherOrganizationTin: result.ReceiverTin.Value,
-            otherOrganizationName: result.ReceiverName.Value,
-            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-            entityId: result.Id.ToString())
-        );
     }
 }

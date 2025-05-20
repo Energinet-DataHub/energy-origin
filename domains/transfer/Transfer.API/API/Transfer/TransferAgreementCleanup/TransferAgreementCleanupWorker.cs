@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.TransferAgreementCleanup.Options;
 using DataContext;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
@@ -36,7 +35,7 @@ public class TransferAgreementCleanupWorker(
                 }
                 else
                 {
-                    await DeleteExpiredTransferAgreements(stoppingToken);
+                    logger.LogInformation("Waiting for EF migrations");
                 }
             }
             catch (Exception e)
@@ -46,27 +45,6 @@ public class TransferAgreementCleanupWorker(
 
             await Sleep(stoppingToken);
         }
-    }
-
-    private async Task DeleteExpiredTransferAgreements(CancellationToken cancellationToken)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        var expiredTransferAgreements = context.TransferAgreements
-            .Where(ta => ta.EndDate != null && ta.EndDate < UnixTimestamp.Now().AddYears(3));
-
-        context.TransferAgreements.RemoveRange(expiredTransferAgreements);
-
-        var senderLogEntries = expiredTransferAgreements.Select(transferAgreement => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
-                       string.Empty, transferAgreement.SenderTin.Value, transferAgreement.SenderName.Value, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-                                  ActivityLogEntry.ActionTypeEnum.Expired, transferAgreement.Id.ToString()));
-        var receiverLogEntries = expiredTransferAgreements.Select(transferAgreement => ActivityLogEntry.Create(Guid.Empty, ActivityLogEntry.ActorTypeEnum.System,
-            string.Empty, transferAgreement.ReceiverTin.Value, string.Empty, string.Empty, string.Empty, ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            ActivityLogEntry.ActionTypeEnum.Expired, transferAgreement.Id.ToString()));
-        await context.ActivityLogs.AddRangeAsync(senderLogEntries, cancellationToken);
-        await context.ActivityLogs.AddRangeAsync(receiverLogEntries, cancellationToken);
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     private async Task Sleep(CancellationToken cancellationToken)

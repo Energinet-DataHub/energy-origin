@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using API.IntegrationTests.Setup.Factories;
 using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
-using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.Setup;
 using FluentAssertions;
 using Newtonsoft.Json;
@@ -61,26 +60,6 @@ public class Api
         var request = new EditTransferAgreementEndDate(endDate);
         var response = await authenticatedClient.PutAsJsonAsync($"api/transfer/transfer-agreements/{transferAgreementId}", request);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
-    public async Task<ActivityLogListEntryResponse> GetActivityLog(ActivityLogEntryFilterRequest request)
-    {
-        return await GetActivityLog(authenticatedClient, request);
-    }
-
-    public async Task<ActivityLogListEntryResponse> GetActivityLog(string tin, string cpn, ActivityLogEntryFilterRequest request)
-    {
-        return await GetActivityLog(factory.CreateAuthenticatedClient(sub, apiVersion: apiVersion, tin: tin, cpn: cpn), request);
-    }
-
-    public async Task<ActivityLogListEntryResponse> GetActivityLog(HttpClient client, ActivityLogEntryFilterRequest request)
-    {
-        var result = await client.PostAsJsonAsync("api/transfer/activity-log", request);
-        output.WriteLine(await result.Content.ReadAsStringAsync());
-        result.StatusCode.Should().Be(HttpStatusCode.OK);
-        var activityLogResponseBody = await result.Content.ReadAsStringAsync();
-        var log = JsonConvert.DeserializeObject<ActivityLogListEntryResponse>(activityLogResponseBody);
-        return log!;
     }
 
     public HttpClient MockWalletServiceAndCreateAuthenticatedClient(string receiverTin, string receiverName)

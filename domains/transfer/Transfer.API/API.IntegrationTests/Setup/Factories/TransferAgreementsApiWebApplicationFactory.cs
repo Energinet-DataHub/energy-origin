@@ -11,8 +11,6 @@ using API.Transfer.Api.Clients;
 using API.Transfer.TransferAgreementProposalCleanup;
 using Asp.Versioning.ApiExplorer;
 using DataContext;
-using EnergyOrigin.ActivityLog;
-using EnergyOrigin.ActivityLog.HostedService;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.RabbitMq;
@@ -101,12 +99,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
         builder.ConfigureTestServices(s =>
         {
-            OptionsServiceCollectionExtensions.Configure<ActivityLogOptions>(s, options =>
-            {
-                options.ServiceName = "transfer";
-                options.CleanupActivityLogsOlderThanInDays = -1;
-                options.CleanupIntervalInSeconds = 3;
-            });
 
             OptionsServiceCollectionExtensions.Configure<DatabaseOptions>(s, o =>
             {
@@ -130,7 +122,6 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             {
                 s.Remove(Enumerable.First<ServiceDescriptor>(s, x => x.ImplementationType == typeof(TransferAgreementProposalCleanupWorker)));
                 s.Remove(Enumerable.First<ServiceDescriptor>(s, x => x.ImplementationType == typeof(TransferAgreementProposalCleanupService)));
-                s.Remove(Enumerable.First<ServiceDescriptor>(s, x => x.ImplementationType == typeof(CleanupActivityLogsHostedService)));
             }
 
             s.Remove(Enumerable.First<ServiceDescriptor>(s, sd => sd.ServiceType == typeof(IAuthorizationClient)));

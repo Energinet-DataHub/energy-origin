@@ -1,6 +1,4 @@
 using DataContext.Models;
-using EnergyOrigin.ActivityLog;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects.Converters;
 using MassTransit;
@@ -55,11 +53,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.AddOutboxMessageEntity();
         modelBuilder.AddOutboxStateEntity();
 
-        modelBuilder.AddActivityLogEntry();
     }
 
     public DbSet<CertificateIssuingContract> Contracts { get; set; }
-    public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
     public DbSet<MeteringPointTimeSeriesSlidingWindow> MeteringPointTimeSeriesSlidingWindows { get; set; }
     public DbSet<Sponsorship> Sponsorships { get; set; }
 }

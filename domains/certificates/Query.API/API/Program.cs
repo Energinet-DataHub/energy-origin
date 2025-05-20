@@ -8,7 +8,6 @@ using API.MeasurementsSyncer.Metrics;
 using API.Query.API;
 using API.UnitOfWork;
 using DataContext;
-using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.Migrations;
@@ -71,7 +70,6 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddDefaultHealthChecks();
 
-builder.Services.AddActivityLog(options => options.ServiceName = "certificates");
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblyContaining<GetContractsForAdminPortalQueryHandler>();
@@ -104,10 +102,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
-app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
-    .HasApiVersion(ApiVersions.Version1AsInt);
 
 if (args.Contains("--swagger"))
 {

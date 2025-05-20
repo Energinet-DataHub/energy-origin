@@ -5,7 +5,6 @@ using API.Transfer.Api.Clients;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext.Models;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
@@ -103,8 +102,6 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
 
         await _unitOfWork.TransferAgreementProposalRepo.AddTransferAgreementProposal(newProposal, cancellationToken);
 
-        await AppendToActivityLog(_identityDescriptor, newProposal, ActivityLogEntry.ActionTypeEnum.Created);
-
         await _unitOfWork.SaveAsync();
 
         return new CreateTransferAgreementProposalCommandResult(newProposal.Id, newProposal.SenderCompanyName.Value,
@@ -138,22 +135,5 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
         }
 
         return (organizationId, organizationTin, organizationName);
-    }
-
-    private async Task AppendToActivityLog(IdentityDescriptor identity, TransferAgreementProposal proposal,
-        ActivityLogEntry.ActionTypeEnum actionType)
-    {
-        await _unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: identity.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: identity.Name,
-            organizationTin: identity.OrganizationCvr!,
-            organizationName: identity.OrganizationName,
-            otherOrganizationTin: proposal.ReceiverCompanyTin?.Value ?? string.Empty,
-            otherOrganizationName: string.Empty,
-            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
-            actionType: actionType,
-            entityId: proposal.Id.ToString())
-        );
     }
 }

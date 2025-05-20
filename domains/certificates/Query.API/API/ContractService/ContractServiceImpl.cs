@@ -8,7 +8,6 @@ using API.Query.API.ApiModels.Requests;
 using API.UnitOfWork;
 using DataContext.Models;
 using DataContext.ValueObjects;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
 using Microsoft.EntityFrameworkCore;
@@ -111,19 +110,6 @@ internal class ContractServiceImpl : IContractService
 
             newContracts.Add(issuingContract);
             contractsByGsrn.Add(issuingContract);
-
-            await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-                actorId: subjectId,
-                actorType: ActivityLogEntry.ActorTypeEnum.User,
-                actorName: subjectName,
-                organizationTin: organizationTin,
-                organizationName: organizationName,
-                otherOrganizationTin: string.Empty,
-                otherOrganizationName: string.Empty,
-                entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-                actionType: ActivityLogEntry.ActionTypeEnum.Activated,
-                entityId: contract.GSRN)
-            );
             number++;
         }
 
@@ -220,19 +206,6 @@ internal class ContractServiceImpl : IContractService
             }
 
             existingContract.EndDate = newEndDate;
-
-            await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-                actorId: subjectId,
-                actorType: ActivityLogEntry.ActorTypeEnum.User,
-                actorName: subjectName,
-                organizationTin: organizationTin,
-                organizationName: organizationName,
-                otherOrganizationTin: string.Empty,
-                otherOrganizationName: string.Empty,
-                entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
-                actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
-                entityId: existingContract.GSRN)
-            );
         }
 
         unitOfWork.CertificateIssuingContractRepo.UpdateRange(issuingContracts);

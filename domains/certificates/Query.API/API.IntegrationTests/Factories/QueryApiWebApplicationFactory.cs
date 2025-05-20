@@ -14,7 +14,6 @@ using API.Query.API.ApiModels.Requests;
 using Asp.Versioning.ApiExplorer;
 using DataContext;
 using DataContext.ValueObjects;
-using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Setup;
@@ -99,12 +98,6 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
-            services.Configure<ActivityLogOptions>(options =>
-            {
-                options.ServiceName = "certificates";
-                options.CleanupActivityLogsOlderThanInDays = 1;
-                options.CleanupIntervalInSeconds = 3;
-            });
 
             services.AddOptions<MassTransitHostOptions>().Configure(options =>
             {

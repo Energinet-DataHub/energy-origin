@@ -13,7 +13,6 @@ using API.Transfer.Api.Dto.Requests;
 using API.Transfer.Api.Dto.Responses;
 using DataContext;
 using DataContext.Models;
-using EnergyOrigin.ActivityLog.API;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects.Tests;
 using FluentAssertions;
@@ -641,15 +640,6 @@ public class TransferAgreementProposalsControllerTests
         await using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
         var proposal = dbContext.TransferAgreementProposals.Single(tap => tap.ReceiverCompanyTin == Tin.Create(request.ReceiverTin));
         proposal.Type.Should().Be(TransferAgreementType.TransferCertificatesBasedOnConsumption);
-    }
-
-    [Fact]
-    public async Task GivenActivityLog_WhenUsingB2CAuth_EndpointReturnsOk()
-    {
-        var client = factory.CreateB2CAuthenticatedClient(sub: Guid.NewGuid(), orgId: Guid.NewGuid(), tin: "1223344");
-        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-        using var activityLogResponse = await client.PostAsJsonAsync("api/transfer/activity-log", activityLogRequest, cancellationToken: TestContext.Current.CancellationToken);
-        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     private async Task SeedTransferAgreements(List<TransferAgreement> transferAgreements)

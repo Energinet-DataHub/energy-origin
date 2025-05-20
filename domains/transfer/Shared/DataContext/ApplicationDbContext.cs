@@ -1,6 +1,4 @@
 using DataContext.Models;
-using EnergyOrigin.ActivityLog;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects.Converters;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +16,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<TransferAgreement> TransferAgreements { get; set; }
     public DbSet<ClaimAutomationArgument> ClaimAutomationArguments { get; set; }
     public DbSet<TransferAgreementProposal> TransferAgreementProposals { get; set; }
-    public DbSet<ActivityLogEntry> ActivityLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,7 +50,5 @@ public class ApplicationDbContext : DbContext
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxMessageEntity();
         modelBuilder.AddOutboxStateEntity();
-
-        modelBuilder.AddActivityLogEntry();
     }
 }

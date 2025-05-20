@@ -86,12 +86,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "oidc-mock\API\Test
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{3C383CE9-DC5A-4392-9B48-6B41AFA95EE1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ActivityLog", "ActivityLog", "{73494261-A8B1-4D7A-A84F-37EF06D18118}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOrigin.ActivityLog", "libraries\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog.csproj", "{835CF147-2160-4E18-829C-7A7E894B656F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOrigin.ActivityLog.Unit.Tests", "libraries\EnergyOrigin.ActivityLog\EnergyOrigin.ActivityLog.Unit.Tests\EnergyOrigin.ActivityLog.Unit.Tests.csproj", "{D41378A0-24F1-4133-A3E0-CA3BD22964D3}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationEvents", "IntegrationEvents", "{48F1EB08-5739-4E22-96BD-ACC271D568F0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnergyOrigin.IntegrationEvents", "libraries\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents\EnergyOrigin.IntegrationEvents.csproj", "{B5911CA1-84FA-4CF1-8380-28F0C490C47B}"

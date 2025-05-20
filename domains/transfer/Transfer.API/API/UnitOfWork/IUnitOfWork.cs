@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using API.ClaimAutomation.Api.Repositories;
 using API.Transfer.Api.Repository;
 using DataContext;
-using EnergyOrigin.ActivityLog.API;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.UnitOfWork;
@@ -11,7 +10,6 @@ namespace API.UnitOfWork;
 public interface IUnitOfWork : IAsyncDisposable
 {
     ITransferAgreementRepository TransferAgreementRepo { get; }
-    IActivityLogEntryRepository ActivityLogEntryRepo { get; }
     ITransferAgreementProposalRepository TransferAgreementProposalRepo { get; }
     IClaimAutomationRepository ClaimAutomationRepository { get; }
 
@@ -23,7 +21,6 @@ public class UnitOfWork : IUnitOfWork
     private ApplicationDbContext? _context;
 
     private ITransferAgreementRepository transferAgreementRepo = null!;
-    private IActivityLogEntryRepository activityLogEntryRepo = null!;
     private ITransferAgreementProposalRepository transferAgreementProposalRepo = null!;
     private IClaimAutomationRepository claimAutomationRepository = null!;
 
@@ -36,9 +33,6 @@ public class UnitOfWork : IUnitOfWork
 
     public ITransferAgreementRepository TransferAgreementRepo =>
         transferAgreementRepo ??= new TransferAgreementRepository(Context);
-
-    public IActivityLogEntryRepository ActivityLogEntryRepo =>
-        activityLogEntryRepo ??= new ActivityLogEntryRepository(Context);
 
     public ITransferAgreementProposalRepository TransferAgreementProposalRepo =>
         transferAgreementProposalRepo ??= new TransferAgreementProposalRepository(Context);

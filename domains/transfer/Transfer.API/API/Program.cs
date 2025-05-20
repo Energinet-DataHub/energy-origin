@@ -2,14 +2,12 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using API.Cvr;
 using API.Cvr.Api.Clients.Cvr;
 using API.Events;
 using API.Transfer;
 using API.Transfer.Api.Clients;
 using API.UnitOfWork;
 using DataContext;
-using EnergyOrigin.ActivityLog;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.Exceptions.Middleware;
 using EnergyOrigin.Setup.Health;
@@ -116,9 +114,6 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddValidatorsFromAssembly(typeof(API.Program).Assembly);
 
-builder.Services.AddActivityLog(options => options.ServiceName = "transfer");
-
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
@@ -148,10 +143,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.UseMiddleware<ExceptionHandlerMiddleware>();
-
-var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
-app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
-    .HasApiVersion(ApiVersions.Version1AsInt);
 
 app.Run();
 

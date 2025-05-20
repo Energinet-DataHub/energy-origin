@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using API.ContractService.Repositories;
 using API.MeasurementsSyncer.Persistence;
 using DataContext;
-using EnergyOrigin.ActivityLog.API;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace API.UnitOfWork;
@@ -12,7 +11,6 @@ namespace API.UnitOfWork;
 public interface IUnitOfWork : IAsyncDisposable
 {
     ICertificateIssuingContractRepository CertificateIssuingContractRepo { get; }
-    IActivityLogEntryRepository ActivityLogEntryRepo { get; }
     ISlidingWindowState SlidingWindowState { get; }
     ISponsorshipRepository SponsorshipRepo { get; }
 
@@ -27,7 +25,6 @@ public class UnitOfWork : IUnitOfWork
     private readonly ApplicationDbContext _context;
     private IDbContextTransaction? _transaction;
     private bool _ownsTransaction;
-    private IActivityLogEntryRepository? _activityLogEntryRepo;
     private ICertificateIssuingContractRepository? _certificateIssuingContractRepo;
     private ISlidingWindowState? _slidingWindowState;
     private ISponsorshipRepository? _sponsorshipRepo;
@@ -39,9 +36,6 @@ public class UnitOfWork : IUnitOfWork
 
     public ICertificateIssuingContractRepository CertificateIssuingContractRepo =>
         _certificateIssuingContractRepo ??= new CertificateIssuingContractRepository(_context);
-
-    public IActivityLogEntryRepository ActivityLogEntryRepo =>
-        _activityLogEntryRepo ??= new ActivityLogEntryRepository(_context);
 
     public ISlidingWindowState SlidingWindowState =>
         _slidingWindowState ??= new SlidingWindowState(_context);

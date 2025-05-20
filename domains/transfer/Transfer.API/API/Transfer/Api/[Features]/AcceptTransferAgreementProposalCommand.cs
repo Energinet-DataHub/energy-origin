@@ -6,7 +6,6 @@ using API.Transfer.Api.Clients;
 using API.Transfer.Api.Exceptions;
 using API.UnitOfWork;
 using DataContext.Models;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.TokenValidation.b2c;
@@ -129,8 +128,6 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
 
         var result = await taRepo.AddTransferAgreementAndDeleteProposal(transferAgreement, command.TransferAgreementProposalId, cancellationToken);
 
-        await AppendProposalAcceptedToActivityLog(_identityDescriptor, result, proposal);
-
         await _unitOfWork.SaveAsync();
 
         return new AcceptTransferAgreementProposalCommandResult(result.Id, result.SenderName.Value, result.SenderTin.Value, result.ReceiverTin.Value,
@@ -163,36 +160,5 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
         }
 
         return (organizationId, organizationTin, organizationName);
-    }
-
-    private async Task AppendProposalAcceptedToActivityLog(IdentityDescriptor identity, TransferAgreement result, TransferAgreementProposal proposal)
-    {
-        // Receiver entry
-        await _unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: identity.Subject,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: identity.Name,
-            organizationTin: identity.OrganizationCvr!,
-            organizationName: identity.OrganizationName,
-            otherOrganizationTin: proposal.SenderCompanyTin.Value,
-            otherOrganizationName: proposal.SenderCompanyName.Value,
-            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
-            entityId: result.Id.ToString())
-        );
-
-        // Sender entry
-        await _unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
-            actorId: Guid.Empty,
-            actorType: ActivityLogEntry.ActorTypeEnum.User,
-            actorName: string.Empty,
-            organizationTin: proposal.SenderCompanyTin.Value,
-            organizationName: proposal.SenderCompanyName.Value,
-            otherOrganizationTin: result.ReceiverTin.Value,
-            otherOrganizationName: result.ReceiverName.Value,
-            entityType: ActivityLogEntry.EntityTypeEnum.TransferAgreement,
-            actionType: ActivityLogEntry.ActionTypeEnum.Accepted,
-            entityId: result.Id.ToString())
-        );
     }
 }

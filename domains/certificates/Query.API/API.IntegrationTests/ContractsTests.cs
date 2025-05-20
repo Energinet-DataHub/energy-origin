@@ -12,8 +12,6 @@ using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using DataContext;
 using DataContext.ValueObjects;
-using EnergyOrigin.ActivityLog.API;
-using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
 using FluentAssertions;
@@ -864,97 +862,6 @@ public class ContractsTests
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
-
-    [Fact]
-    public async Task GivenMeteringPoint_WhenCreatingContract_ActivityLogIsUpdated()
-    {
-        // Create contract
-        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
-
-        var subject = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
-        await factory.CreateWallet(orgId.ToString());
-
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
-        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }]);
-        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
-        contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        // Assert activity log entry
-        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-        using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest, cancellationToken: TestContext.Current.CancellationToken);
-        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
-        Assert.Single(activityLog!.ActivityLogEntries, x => x.ActorId.ToString() == subject.ToString());
-    }
-
-    [Fact]
-    public async Task GivenContract_WhenEditingEndDate_ActivityLogIsUpdated()
-    {
-        // Create contract
-        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
-
-        var subject = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
-        await factory.CreateWallet(orgId.ToString());
-
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
-        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
-        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
-        contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-
-        // Update end date
-        var createdContracts = await contractResponse.Content.ReadJson<ContractList>();
-        var createdContractId = createdContracts!.Result.First().Id;
-        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }]);
-        await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody, cancellationToken: TestContext.Current.CancellationToken);
-
-        // Assert activity log entries (created, updated)
-        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-        using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest, cancellationToken: TestContext.Current.CancellationToken);
-        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
-        Assert.Equal(2, activityLog!.ActivityLogEntries.Count(x => x.ActorId.ToString() == subject.ToString()));
-    }
-
-    [Fact]
-    public async Task GivenOldActivityLog_WhenCleaningUp_ActivityLogIsRemoved()
-    {
-        using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
-        var activityLogEntry = CreateActivityLogEligiblyForCleanup();
-        dbContext.ActivityLogs.Add(activityLogEntry);
-        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var subject = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
-
-        // Wait for activity log entries to be cleaned up
-        await WaitForCondition(TimeSpan.FromSeconds(10), async ctx =>
-        {
-            var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
-            var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest);
-            activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
-            return activityLog!.ActivityLogEntries.Where(al => al.ActorId == activityLogEntry.ActorId).Count() == 0;
-        });
-    }
-
-    private static ActivityLogEntry CreateActivityLogEligiblyForCleanup()
-    {
-        var activityLogEntry = ActivityLogEntry.Create(Guid.NewGuid(), ActivityLogEntry.ActorTypeEnum.System, "", "", "", "", "",
-            ActivityLogEntry.EntityTypeEnum.MeteringPoint, ActivityLogEntry.ActionTypeEnum.Activated, "");
-        typeof(ActivityLogEntry).GetProperty(nameof(ActivityLogEntry.Timestamp))!.SetValue(activityLogEntry, DateTimeOffset.UtcNow.AddDays(-60));
-        return activityLogEntry;
-    }
-
     private async Task WaitForCondition(TimeSpan timeout, Func<CancellationToken, Task<bool>> conditionAction)
     {
         await WaitForCondition(timeout, CancellationToken.None, conditionAction);
