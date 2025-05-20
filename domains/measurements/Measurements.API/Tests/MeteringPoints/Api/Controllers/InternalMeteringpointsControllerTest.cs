@@ -1,23 +1,19 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using API;
 using API.MeteringPoints.Api.Controllers.Internal;
 using EnergyOrigin.Setup.Migrations;
+using EnergyTrackAndTrace.Testing.Extensions;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Meteringpoint.V1;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
-using Tests.Extensions;
 using VerifyXunit;
 using Xunit;
-using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 
 namespace Tests.MeteringPoints.Api.Controllers;
 

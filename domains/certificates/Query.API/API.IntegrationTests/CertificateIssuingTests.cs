@@ -7,22 +7,22 @@ using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
-using API.MeasurementsSyncer.Clients.DataHub3;
-using API.MeasurementsSyncer.Clients.DataHubFacade;
 using API.Models;
 using API.UnitTests;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Datahub3;
+using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.IntegrationEvents.Events.EnergyMeasured.V3;
 using EnergyOrigin.WalletClient.Models;
 using EnergyTrackAndTrace.Testing.Attributes;
+using EnergyTrackAndTrace.Testing.Extensions;
 using FluentAssertions;
 using Meteringpoint.V1;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
-using Testing.Extensions;
 using Xunit;
 using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 
@@ -62,7 +62,7 @@ public sealed class CertificateIssuingTests : TestBase
 
         var dataHub3ClientMock = Substitute.For<IDataHub3Client>();
         dataHub3ClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(
-            Any.TimeSeriesApiResponse(gsrn, [Any.PointAggregation(utcMidnight.ToUnixTimeSeconds(), 42)]));
+            EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(utcMidnight.ToUnixTimeSeconds(), 42)]));
         factory.DataHub3Client = dataHub3ClientMock;
 
         var dataHubFacadeClientMock = Substitute.For<IDataHubFacadeClient>();

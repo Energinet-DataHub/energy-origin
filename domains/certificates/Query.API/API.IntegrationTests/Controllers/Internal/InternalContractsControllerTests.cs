@@ -1,9 +1,7 @@
 using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
@@ -11,10 +9,6 @@ using API.Query.API.ApiModels.Requests;
 using API.Query.API.Controllers.Internal;
 using DataContext.ValueObjects;
 using EnergyOrigin.Setup;
-using EnergyOrigin.WalletClient;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Testing.Helpers;
 using Xunit;
 
 namespace API.IntegrationTests.Controllers.Internal;
@@ -52,7 +46,7 @@ public class InternalContractsControllerTests : TestBase
     [Fact]
     public async Task Given_ContractsExist_When_CallingInternalContractsEndpoints_Then_Return200ok_With_PopulatedContractsForAdminPortalResponse()
     {
-        var gsrn = GsrnHelper.GenerateRandom();
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
