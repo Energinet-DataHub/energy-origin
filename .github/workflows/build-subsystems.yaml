@@ -16,7 +16,6 @@ jobs:
 
   dotnet-lint-solution:
     runs-on: ubuntu-22.04
-    if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
       - name: Run dotnet lint
