@@ -162,6 +162,8 @@ public static class EnergyChartGenerator
 
     private static XElement CreateXAxisLine()
     {
+        var y = (MARGIN_TOP + PLOT_HEIGHT + 0.5).ToString(CultureInfo.InvariantCulture);
+
         return new XElement(svg + "g",
             new XAttribute("class", "highcharts-axis highcharts-xaxis"),
             new XAttribute("data-z-index", "2"),
@@ -170,7 +172,7 @@ public static class EnergyChartGenerator
                 new XAttribute("class", "highcharts-axis-line"),
                 new XAttribute("stroke", "#ffffff"),
                 new XAttribute("stroke-width", "1"),
-                new XAttribute("d", $"M {MARGIN_LEFT} {MARGIN_TOP + PLOT_HEIGHT + 0.5} L {SVG_WIDTH - MARGIN_LEFT} {MARGIN_TOP + PLOT_HEIGHT + 0.5}")
+                new XAttribute("d", $"M {MARGIN_LEFT} {y} L {SVG_WIDTH - MARGIN_LEFT} {y}")
             )
         );
     }
@@ -292,7 +294,7 @@ public static class EnergyChartGenerator
             {
                 var x = unitWidth * (d.Hour + 0.5);
                 var y = PLOT_HEIGHT - (PLOT_HEIGHT * d.Consumption / maxValue);
-                return $"{x.ToString(NumberFormatInfo.InvariantInfo)},{y.ToString(NumberFormatInfo.InvariantInfo)}";
+                return $"{x.ToString(CultureInfo.InvariantCulture)},{y.ToString(CultureInfo.InvariantCulture)}";
             });
 
         return "M " + string.Join(" ", points);

@@ -36,7 +36,7 @@
     <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 744 10 L 744 314" opacity="1" />
   </g>
   <g class="highcharts-axis highcharts-xaxis" data-z-index="2">
-    <path fill="none" class="highcharts-axis-line" stroke="#ffffff" stroke-width="1" d="M 10 314,5 L 744 314,5" />
+    <path fill="none" class="highcharts-axis-line" stroke="#ffffff" stroke-width="1" d="M 10 314.5 L 744 314.5" />
   </g>
   <g class="highcharts-series-group" data-z-index="3" transform="translate(10,10)">
     <g class="highcharts-series highcharts-series-0 highcharts-column-series" data-z-index="0.1" opacity="1" clip-path="url(#chart-area)">
