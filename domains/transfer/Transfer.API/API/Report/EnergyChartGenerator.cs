@@ -261,17 +261,14 @@ public static class EnergyChartGenerator
 
         if (seriesType == "matched")
         {
-            // Matched bars start from the bottom
             yPos = PLOT_HEIGHT - height;
         }
         else if (seriesType == "unmatched")
         {
-            // Unmatched bars stack on top of matched
             yPos = PLOT_HEIGHT - height - (PLOT_HEIGHT * data.Matched / maxValue);
         }
         else
-        { // overmatched
-            // Overmatched bars stack on top of matched
+        {
             yPos = PLOT_HEIGHT - height - (PLOT_HEIGHT * data.Matched / maxValue);
         }
 
