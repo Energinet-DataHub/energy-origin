@@ -38,7 +38,7 @@ public class EnergyMeasuredIntegrationEventMapperTest
         var technology = Any.Technology();
         var recipientId = Guid.NewGuid();
         var syncInfo = new MeteringPointSyncInfo(gsrn, start, null, Guid.NewGuid().ToString(), MeteringPointType.Production, "DK1", recipientId,
-            technology);
+            technology, IsStateSponsored: true);
 
         // When mapping to event
         var mappedEvents = _sut.MapToIntegrationEvents(meteringPoint, syncInfo, new List<Measurement> { measurement });
@@ -65,5 +65,6 @@ public class EnergyMeasuredIntegrationEventMapperTest
         evt.RecipientId.Should().Be(recipientId);
         evt.GSRN.Should().Be(gsrn.Value);
         evt.BiddingZone.Should().Be(_sut.GetBiddingZone(meteringPoint.Postcode));
+        evt.IsStateSponsored.Should().Be(true);
     }
 }

@@ -94,6 +94,9 @@ internal class ContractServiceImpl : IContractService
 
             var recipientResponse = await stampClient.CreateRecipient(walletEndpoint, cancellationToken);
 
+            var sponsorshipEndDate = await unitOfWork.SponsorshipRepo
+                .GetEndDateAsync(new Gsrn(contract.GSRN), cancellationToken);
+
             var issuingContract = CertificateIssuingContract.Create(
                 contractNumber,
                 new Gsrn(contract.GSRN),
@@ -103,7 +106,8 @@ internal class ContractServiceImpl : IContractService
                 startDate,
                 endDate,
                 recipientResponse.Id,
-                Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology));
+                Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology),
+                sponsorshipEndDate);
 
             newContracts.Add(issuingContract);
             contractsByGsrn.Add(issuingContract);

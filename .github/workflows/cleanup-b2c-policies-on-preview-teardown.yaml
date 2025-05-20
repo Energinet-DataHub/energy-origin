@@ -1,0 +1,71 @@
+name: Cleanup B2C Policies on Preview Tear-Down
+
+on:
+  delete:
+    branches:
+      - 'preview/**'
+      - 'vcluster/**'
+  pull_request:
+    types:
+      - 'closed'
+
+permissions:
+  contents: none
+  pull-requests: read
+  id-token: write
+
+jobs:
+  cleanup:
+    if: |
+      github.event_name == 'delete'
+      ||
+      (
+        github.event_name == 'pull_request'
+        && (
+          startsWith(github.event.pull_request.head.ref, 'preview/')
+          || startsWith(github.event.pull_request.head.ref, 'vcluster/')
+        )
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine preview ID
+        shell: bash
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "delete" ]]; then
+            BRANCH="${GITHUB_REF#refs/heads/}"
+          else
+            BRANCH="${{ github.event.pull_request.head.ref }}"
+          fi
+
+          RAW="${BRANCH#preview/}"
+          RAW="${RAW#vcluster/}"
+
+          PREVIEW_ID=$(echo "$RAW" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^0-9a-z]*//g')
+
+          echo "Detected preview ID: $PREVIEW_ID"
+          echo "PREVIEW_ID=$PREVIEW_ID" >> $GITHUB_ENV
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: "{ \"clientSecret\": \"${{ secrets.ENERGY_TRACK_AND_TRACE_B2C_CLIENT_SECRET_DEMO }}\", \"tenantId\": \"d3803538-de83-47f3-bc72-54843a8592f2\", \"clientId\": \"291fedbd-35c0-4fcb-9088-498d0c96c50d\"}"
+          allow-no-subscriptions: true
+
+      - name: Delete B2C custom policies
+        shell: bash
+        run: |
+          BASES=(B2C_1A_OidcMock_V3 B2C_1A_ClientCredentials)
+
+          for BASE in "${BASES[@]}"; do
+            NAME="${BASE}_${PREVIEW_ID}"
+            echo "→ Deleting policy: ${NAME}"
+            az rest \
+              --only-show-errors \
+              --method DELETE \
+              --uri "https://graph.microsoft.com/beta/trustFramework/policies/${NAME}" \
+              >/dev/null 2>&1 \
+            && echo "✔ Deleted ${NAME}" \
+            || echo "ℹ︎ ${NAME} did not exist or was already removed"
+          done
