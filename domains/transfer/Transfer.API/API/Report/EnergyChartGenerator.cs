@@ -292,7 +292,7 @@ public static class EnergyChartGenerator
             {
                 var x = unitWidth * (d.Hour + 0.5);
                 var y = PLOT_HEIGHT - (PLOT_HEIGHT * d.Consumption / maxValue);
-                return $"{x.ToString(CultureInfo.InvariantCulture)},{y.ToString(CultureInfo.InvariantCulture)}";
+                return $"{x.ToString(NumberFormatInfo.InvariantInfo)},{y.ToString(NumberFormatInfo.InvariantInfo)}";
             });
 
         return "M " + string.Join(" ", points);
