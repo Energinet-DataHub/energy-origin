@@ -38,7 +38,7 @@ public class ReportsController : ControllerBase
     [SwaggerOperation(Summary = "Initiates asynchronous report generation.")]
     public IActionResult RequestReportGeneration(
         [FromQuery] Guid organizationId,
-        [FromBody] ReportGenerationStoredApiResponse request,
+        [FromBody] ReportGenerationStartRequest request,
         CancellationToken cancellationToken)
     {
         _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
@@ -59,4 +59,4 @@ public class ReportsController : ControllerBase
     }
 }
 
-public record ReportGenerationStoredApiResponse(long StartDate, long EndDate);
+public record ReportGenerationStartRequest(long StartDate, long EndDate);
