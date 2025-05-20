@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using API.Transfer.Api.Options;
+using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
 using API.Transfer.TransferAgreementCleanup;
 using API.Transfer.TransferAgreementCleanup.Options;
@@ -47,6 +48,7 @@ public static class Startup
         services.AddSingleton<TransferAgreementStatusService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
         services.AddHostedService<TransferAgreementCleanupWorker>();
+        services.AddScoped<IReportRepository, ReportRepository>();
 
         services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
         {
