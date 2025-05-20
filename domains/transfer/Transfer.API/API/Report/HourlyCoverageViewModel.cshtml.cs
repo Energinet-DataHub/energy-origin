@@ -10,28 +10,20 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace API.Report;
 
-public class GeneratorModel : PageModel
+public class GeneratorModel(
+    IConsumptionService consumptionService,
+    IWalletClient walletClient)
+    : PageModel
 {
-    private readonly IConsumptionService _consumptionService;
-    private readonly IWalletClient _walletClient;
-
-    public _Page_Report_HourlyCoverageViewModel_cshtml.HourlyCoverageViewModel ModelData { get; private set; }
-
-    public GeneratorModel(
-        IConsumptionService consumptionService,
-        IWalletClient walletClient)
-    {
-        _consumptionService = consumptionService;
-        _walletClient = walletClient;
-    }
+    public required _Page_Report_HourlyCoverageViewModel_cshtml.HourlyCoverageViewModel ModelData { get; set; }
 
     public async Task OnGetAsync(
         OrganizationId organizationId,
         DateTimeOffset from,
         DateTimeOffset to)
     {
-        var consTask = _consumptionService.GetTotalHourlyConsumption(organizationId, from, to, CancellationToken.None);
-        var claimsTask = _walletClient.GetClaims(organizationId.Value, from, to, CancellationToken.None);
+        var consTask = consumptionService.GetTotalHourlyConsumption(organizationId, from, to, CancellationToken.None);
+        var claimsTask = walletClient.GetClaims(organizationId.Value, from, to, CancellationToken.None);
 
         await Task.WhenAll(consTask, claimsTask);
 
