@@ -95,6 +95,11 @@ public class ClaimsController : ProxyBase
     }
 }
 
+public enum TimeMatch
+{
+    Hourly,
+    All,
+}
 
 public record GetClaimsQueryParameters
 {
@@ -118,6 +123,16 @@ public record GetClaimsQueryParameters
     /// </summary>
     [DefaultValue(0)]
     public int Skip { get; init; }
+
+    /// <summary>
+    /// Fetch all or hourly claims.
+    /// Values:
+    /// All,
+    /// Hourly (default: Hourly)
+    /// </summary>
+    [DefaultValue(TimeMatch.Hourly)]
+
+    public TimeMatch TimeMatch { get; init; } = TimeMatch.Hourly;
 }
 
 public record AggregateClaimsQueryParameters
