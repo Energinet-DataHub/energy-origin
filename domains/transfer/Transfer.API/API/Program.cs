@@ -89,6 +89,8 @@ builder.Services.Configure<JsonOptions>(options =>
 
 builder.Services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
+builder.Services.AddScoped<DbContext>(sp =>
+    sp.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddDbContextFactory<ApplicationDbContext>((sp, options) =>
 {
     var connectionString = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString();

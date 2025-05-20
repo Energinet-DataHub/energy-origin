@@ -119,4 +119,17 @@ public static class ActivityLogExtensions
             ActivityLogEntryResponse.EntityTypeEnum.TransferAgreementProposal => ActivityLogEntry.EntityTypeEnum.TransferAgreementProposal,
             _ => throw new InvalidEnumArgumentException()
         };
+
+    public static IServiceCollection AddActivityLog<TContext>(
+        this IServiceCollection services,
+        Action<ActivityLogOptions> options
+    )
+        where TContext : DbContext
+    {
+        services.AddScoped<IActivityLogEntryRepository, ActivityLogEntryRepository<TContext>>();
+        services.AddHostedService<CleanupActivityLogsHostedService<TContext>>();
+        services.Configure(options);
+        return services;
+    }
+
 }
