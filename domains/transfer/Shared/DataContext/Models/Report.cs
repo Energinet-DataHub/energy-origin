@@ -56,7 +56,7 @@ public class Report
         );
     }
 
-    public Guid Id { get; }
+    public Guid Id { get; private set; }
     public OrganizationId OrganizationId { get; private set; } = OrganizationId.Empty();
     public UnixTimestamp CreatedAt { get; private set; } = UnixTimestamp.Empty();
     public UnixTimestamp StartDate { get; private set; } = UnixTimestamp.Empty();
