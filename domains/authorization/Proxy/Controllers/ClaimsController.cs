@@ -127,9 +127,11 @@ public record GetClaimsQueryParameters
     /// <summary>
     /// Fetch all or hourly claims.
     /// Values:
-    /// All
-    /// Hourly (default)
+    /// All,
+    /// Hourly (default: Hourly)
     /// </summary>
+    [DefaultValue(TimeMatch.Hourly)]
+
     public TimeMatch TimeMatch { get; init; } = TimeMatch.Hourly;
 }
 
