@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace EnergyReporting;
+namespace API.Report;
 
 public record DataPoint(DateTime Timestamp, double Value);
 public record Metrics(double Hourly, double Daily, double Weekly, double Monthly, double Annual);
