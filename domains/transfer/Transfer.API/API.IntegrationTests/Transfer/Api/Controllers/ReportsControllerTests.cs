@@ -46,7 +46,6 @@ public class ReportsControllerTests
         {
             PropertyNameCaseInsensitive = true
         });
-
         body.Should().NotBeNull();
         body!.ReportId.Should().NotBe(Guid.Empty);
     }
