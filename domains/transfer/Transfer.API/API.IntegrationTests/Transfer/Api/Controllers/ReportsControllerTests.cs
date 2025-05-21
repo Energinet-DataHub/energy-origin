@@ -1,11 +1,14 @@
 using System;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
 using API.IntegrationTests.Setup.Factories;
 using API.IntegrationTests.Setup.Fixtures;
+using API.Transfer.Api.Controllers;
 using FluentAssertions;
+using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
@@ -33,22 +36,18 @@ public class ReportsControllerTests
         var requestBody = new { StartDate = startDate, EndDate = endDate };
 
         // Act
-        var response = await client.PostAsJsonAsync(
-            $"/api/reports?organizationId={orgId}",
-            requestBody,
-            TestContext.Current.CancellationToken);
+        var response = await client.PostAsJsonAsync($"/api/reports?organizationId={orgId}", requestBody, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
-        response.Headers.Location.Should().NotBeNull();
-        var uri = response.Headers.Location!;
-        var qs = HttpUtility.ParseQueryString(uri.Query);
+        var bodyJson = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var body = JsonSerializer.Deserialize<ReportGenerationResponse>(bodyJson, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
 
-        var returnedOrgId = Guid.Parse(qs["OrganizationId"]!);
-        returnedOrgId.Should().Be(orgId);
-
-        var returnedReportId = Guid.Parse(qs["ReportId"]!);
-        returnedReportId.Should().NotBe(Guid.Empty);
+        body.Should().NotBeNull();
+        body!.ReportId.Should().NotBe(Guid.Empty);
     }
 }

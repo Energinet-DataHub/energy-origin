@@ -55,10 +55,10 @@ public class ReportsController : ControllerBase
 
         return AcceptedAtAction(
             actionName: null,
-            routeValues: new ReportGenerationResponse(organizationId, cmd.ReportId),
-            value: null);
+            routeValues: null,
+            value: new ReportGenerationResponse(cmd.ReportId));
     }
 }
 
 public record ReportGenerationStartRequest(long StartDate, long EndDate);
-public record ReportGenerationResponse(Guid OrganizationId, Guid ReportId);
+public record ReportGenerationResponse(Guid ReportId);
