@@ -83,7 +83,7 @@ runs:
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
     - name: Scan image
-      uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v4
+      uses: Energinet-DataHub/acorn-actions/actions/docker-scan@bcdb71ebe4d08a5d6172420effe259f347f28aa9
       with:
         image-name: ${{ env.name }}
         image-tag: ${{ env.version }}
