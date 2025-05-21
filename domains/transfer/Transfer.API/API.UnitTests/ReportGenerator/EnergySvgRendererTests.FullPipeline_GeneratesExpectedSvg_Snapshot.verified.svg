@@ -1,4 +1,4 @@
-﻿<svg class="highcharts-root" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 754 400" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto; display: block;" role="img" aria-label="">
+﻿<svg class="highcharts-root" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 754 400" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto; display: block;" role="img">
   <defs>
     <filter id="drop-shadow">
       <feDropShadow dx="1" dy="1" flood-color="#000000" flood-opacity="0.75" stdDeviation="2.5" />
@@ -82,34 +82,34 @@
       <rect x="553.5583333333333" y="227.5520467203807" width="24.46666666666667" height="76.44795327961931" fill="#82CF76" />
     </g>
     <g class="highcharts-series highcharts-series-3 highcharts-line-series" data-z-index="10" opacity="1" clip-path="url(#chart-area)">
-      <path fill="none" d="M 15.291666666666666,264.87929486832854 45.875,249.36901530308765 76.45833333333333,252.45907099983776 107.04166666666666,254.94911588168495 137.625,271.7494186989672 168.20833333333331,257.13915535608066 198.79166666666666,167.37753744660142 229.375,177.90772724814792 259.9583333333333,187.62790244957552 290.54166666666663,152.73727356296976 321.125,231.7886984264316 351.7083333333333,226.38860109230518 382.29166666666663,228.27863515924946 412.875,218.7684637430379 443.4583333333333,191.1379657167577 474.04166666666663,236.82878927161627 504.625,194.19802087276267 535.2083333333333,134.22693992321416 565.7916666666666,179.76776077434704 596.375,150.3972313848483 626.9583333333333,161.76743632725896 657.5416666666666,175.1776780403396 688.125,163.98747634239982 718.7083333333333,220.0284864543341" class="highcharts-graph" data-z-index="1" stroke="#FF0000" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+      <path fill="none" class="highcharts-graph" d="M 15.291666666666666,264.87929486832854 45.875,249.36901530308765 76.45833333333333,252.45907099983776 107.04166666666666,254.94911588168495 137.625,271.7494186989672 168.20833333333331,257.13915535608066 198.79166666666666,167.37753744660142 229.375,177.90772724814792 259.9583333333333,187.62790244957552 290.54166666666663,152.73727356296976 321.125,231.7886984264316 351.7083333333333,226.38860109230518 382.29166666666663,228.27863515924946 412.875,218.7684637430379 443.4583333333333,191.1379657167577 474.04166666666663,236.82878927161627 504.625,194.19802087276267 535.2083333333333,134.22693992321416 565.7916666666666,179.76776077434704 596.375,150.3972313848483 626.9583333333333,161.76743632725896 657.5416666666666,175.1776780403396 688.125,163.98747634239982 718.7083333333333,220.0284864543341" stroke="#FF0000" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
     </g>
   </g>
   <g class="highcharts-axis-labels highcharts-xaxis-labels" data-z-index="7">
-    <text x="25.291666666666664" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">00</text>
-    <text x="55.875" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">01</text>
-    <text x="86.45833333333333" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">02</text>
-    <text x="117.04166666666666" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">03</text>
-    <text x="147.625" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">04</text>
-    <text x="178.20833333333331" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">05</text>
-    <text x="208.79166666666666" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">06</text>
-    <text x="239.375" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">07</text>
-    <text x="269.9583333333333" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">08</text>
-    <text x="300.54166666666663" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">09</text>
-    <text x="331.125" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">10</text>
-    <text x="361.7083333333333" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">11</text>
-    <text x="392.29166666666663" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">12</text>
-    <text x="422.875" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">13</text>
-    <text x="453.4583333333333" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">14</text>
-    <text x="484.04166666666663" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">15</text>
-    <text x="514.625" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">16</text>
-    <text x="545.2083333333333" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">17</text>
-    <text x="575.7916666666666" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">18</text>
-    <text x="606.375" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">19</text>
-    <text x="636.9583333333333" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">20</text>
-    <text x="667.5416666666666" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">21</text>
-    <text x="698.125" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">22</text>
-    <text x="728.7083333333333" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);" text-anchor="middle" transform="translate(0,0)" y="341" opacity="1">23</text>
+    <text x="25.291666666666664" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">00</text>
+    <text x="55.875" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">01</text>
+    <text x="86.45833333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">02</text>
+    <text x="117.04166666666666" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">03</text>
+    <text x="147.625" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">04</text>
+    <text x="178.20833333333331" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">05</text>
+    <text x="208.79166666666666" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">06</text>
+    <text x="239.375" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">07</text>
+    <text x="269.9583333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">08</text>
+    <text x="300.54166666666663" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">09</text>
+    <text x="331.125" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">10</text>
+    <text x="361.7083333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">11</text>
+    <text x="392.29166666666663" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">12</text>
+    <text x="422.875" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">13</text>
+    <text x="453.4583333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">14</text>
+    <text x="484.04166666666663" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">15</text>
+    <text x="514.625" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">16</text>
+    <text x="545.2083333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">17</text>
+    <text x="575.7916666666666" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">18</text>
+    <text x="606.375" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">19</text>
+    <text x="636.9583333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">20</text>
+    <text x="667.5416666666666" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">21</text>
+    <text x="698.125" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">22</text>
+    <text x="728.7083333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">23</text>
   </g>
   <g class="highcharts-legend" data-z-index="7" transform="translate(119,355)">
     <rect fill="none" class="highcharts-legend-box" rx="0" ry="0" stroke="#999999" stroke-width="0" x="0" y="0" width="517" height="30" />
