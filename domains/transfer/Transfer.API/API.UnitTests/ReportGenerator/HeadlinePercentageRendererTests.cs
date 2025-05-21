@@ -28,7 +28,7 @@ public class HeadlinePercentageRendererTests
 
         var consSvc = Substitute.For<IConsumptionService>();
         var consHours = MockedDataGenerators.GenerateMockConsumption(seed);
-        consSvc.GetTotalHourlyConsumption(orgId, from, to, Arg.Any<CancellationToken>())
+        consSvc.GetAverageHourlyConsumption(orgId, from, to, Arg.Any<CancellationToken>())
             .Returns(consHours);
 
         var wallet = Substitute.For<IWalletClient>();

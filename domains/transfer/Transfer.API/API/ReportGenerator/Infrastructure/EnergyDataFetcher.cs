@@ -19,7 +19,7 @@ public sealed class EnergyDataFetcher(IConsumptionService consumption, IWalletCl
         DateTimeOffset to,
         CancellationToken ct = default)
     {
-        var consTask = consumption.GetTotalHourlyConsumption(orgId, from, to, ct);
+        var consTask = consumption.GetAverageHourlyConsumption(orgId, from, to, ct);
         var claimsTask = wallet.GetClaims(orgId.Value, from, to, ct);
 
         await Task.WhenAll(consTask, claimsTask);

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
+using MassTransit.Initializers;
 using Meteringpoint.V1;
 
 namespace API.Transfer.Api.Services;
@@ -13,6 +15,7 @@ namespace API.Transfer.Api.Services;
 public interface IConsumptionService
 {
     Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken);
+    Task<List<ConsumptionHour>> GetAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
 }
 
 public class ConsumptionService : IConsumptionService
@@ -56,6 +59,68 @@ public class ConsumptionService : IConsumptionService
             return new List<ConsumptionHour>();
 
         return MapToTotalHourFormat(totalConsumption);
+    }
+
+    public async Task<List<ConsumptionHour>> GetAverageHourlyConsumption(
+        OrganizationId    orgId,
+        DateTimeOffset    from,
+        DateTimeOffset    to,
+        CancellationToken ct = default)
+    {
+        async Task<ReadOnlyCollection<Gsrn>> ValidGsrnsAsync()
+        {
+            var owned = await _meteringPointClient.GetOwnedMeteringPointsAsync(
+                            new OwnedMeteringPointsRequest { Subject = orgId.Value.ToString() },
+                            cancellationToken : ct);
+
+            var consumptionGs = owned.MeteringPoints
+                .Where(mp => mp.TypeOfMp.Trim()
+                             .Equals("E17", StringComparison.OrdinalIgnoreCase))
+                .Select(mp => new Gsrn(mp.MeteringPointId))
+                .ToList();
+
+            var relations = await _dhFacadeClient
+                .ListCustomerRelations(orgId.Value.ToString(), consumptionGs, ct);
+
+            return (relations?.Relations ?? Enumerable.Empty<CustomerRelation>())
+                   .Where(r => r.IsValid())
+                   .Select(r => new Gsrn(r.MeteringPointId))
+                   .ToList()
+                   .AsReadOnly();
+        }
+
+        async Task<MeteringPointData[]> RawAsync()
+        {
+            var gsrns = await ValidGsrnsAsync();
+
+            return gsrns.Count == 0
+                ? []
+                : (await _dh3Client.GetMeasurements(
+                    gsrns.ToList(),
+                    from.ToUnixTimeSeconds(),
+                    to  .ToUnixTimeSeconds(),
+                    ct)) ?? [];
+        }
+
+        List<ConsumptionHour> ToAverages(MeteringPointData[] data) =>
+            Enumerable.Range(0, 24)
+                      .Select(hour =>
+                          new ConsumptionHour(hour)
+                          {
+                              KwhQuantity =
+                                  data
+                                  .SelectMany(mp => mp.PointAggregationGroups.Values)
+                                  .SelectMany(pg => pg.PointAggregations)
+                                  .Where(p => DateTimeOffset
+                                               .FromUnixTimeSeconds(p.MinObservationTime)
+                                               .Hour == hour)
+                                  .Select(p => p.AggregatedQuantity)
+                                  .DefaultIfEmpty(0m)
+                                  .Average()
+                          })
+                      .ToList();
+
+        return ToAverages(await RawAsync());
     }
 
     private static bool IsConsumption(string typeOfMp)

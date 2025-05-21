@@ -17,7 +17,7 @@ public static class EnergyDataProcessor
         return Enumerable.Range(0, 24)
             .Select(h =>
             {
-                var c = cons[h].DefaultIfEmpty().Average();
+                var c = cons[h].FirstOrDefault();
                 var p = prod[h].DefaultIfEmpty().Average();
                 return new HourlyEnergy(
                     Hour: h,
