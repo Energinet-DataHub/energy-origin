@@ -22,14 +22,15 @@ public sealed class EnergySvgRenderer : IEnergySvgRenderer
 
     private static readonly XNamespace svg = "http://www.w3.org/2000/svg";
 
-    public EnergySvgResult Render(IReadOnlyList<HourlyEnergy> data, Metrics? metrics = null)
+    public EnergySvgResult Render(
+        IReadOnlyList<HourlyEnergy> data)
     {
         ArgumentNullException.ThrowIfNull(data);
 
-        metrics ??= new Metrics(50, 77, 88, 95, 100);
         var max = EnergyDataProcessor.MaxStacked(data);
+        var finalRender = CreateSvgDocument(data, max).ToString();
 
-        return new EnergySvgResult(CreateSvgDocument(data, max).ToString(), metrics);
+        return new EnergySvgResult(finalRender);
     }
 
     private static XDocument CreateSvgDocument(IReadOnlyList<HourlyEnergy> data, double maxValue)

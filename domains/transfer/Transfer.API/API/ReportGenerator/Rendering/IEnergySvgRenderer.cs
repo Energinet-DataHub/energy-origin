@@ -5,5 +5,5 @@ namespace API.ReportGenerator.Rendering;
 
 public interface IEnergySvgRenderer
 {
-    EnergySvgResult Render(IReadOnlyList<HourlyEnergy> hourly, Metrics? metrics = null);
+    EnergySvgResult Render(IReadOnlyList<HourlyEnergy> hourly);
 }
