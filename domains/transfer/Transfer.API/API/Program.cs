@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using API.Cvr;
 using API.Cvr.Api.Clients.Cvr;
 using API.Events;
 using API.Transfer;
