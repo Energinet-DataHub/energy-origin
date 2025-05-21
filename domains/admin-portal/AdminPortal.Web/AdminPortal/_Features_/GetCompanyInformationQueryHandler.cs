@@ -1,8 +1,10 @@
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Services;
+using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -28,6 +30,10 @@ public class GetCompanyInformationQueryHandler(
                 City = companyInformation.City,
                 ZipCode = companyInformation.ZipCode
             };
+        }
+        catch (ResourceNotFoundException)
+        {
+            throw;
         }
         catch (Exception exception)
         {
