@@ -62,16 +62,16 @@ public class ConsumptionService : IConsumptionService
     }
 
     public async Task<List<ConsumptionHour>> GetAverageHourlyConsumption(
-        OrganizationId    orgId,
-        DateTimeOffset    from,
-        DateTimeOffset    to,
+        OrganizationId orgId,
+        DateTimeOffset from,
+        DateTimeOffset to,
         CancellationToken ct = default)
     {
         async Task<ReadOnlyCollection<Gsrn>> ValidGsrnsAsync()
         {
             var owned = await _meteringPointClient.GetOwnedMeteringPointsAsync(
                             new OwnedMeteringPointsRequest { Subject = orgId.Value.ToString() },
-                            cancellationToken : ct);
+                            cancellationToken: ct);
 
             var consumptionGs = owned.MeteringPoints
                 .Where(mp => mp.TypeOfMp.Trim()
@@ -98,7 +98,7 @@ public class ConsumptionService : IConsumptionService
                 : (await _dh3Client.GetMeasurements(
                     gsrns.ToList(),
                     from.ToUnixTimeSeconds(),
-                    to  .ToUnixTimeSeconds(),
+                    to.ToUnixTimeSeconds(),
                     ct)) ?? [];
         }
 
