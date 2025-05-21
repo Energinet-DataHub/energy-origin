@@ -6,8 +6,13 @@ using System.Threading.Tasks;
 using System.Web;
 using API.IntegrationTests.Setup.Factories;
 using API.IntegrationTests.Setup.Fixtures;
+using API.Transfer.Api._Features_;
 using API.Transfer.Api.Controllers;
+using DataContext;
+using DataContext.Models;
+using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using VerifyXunit;
 using Xunit;
 
@@ -48,5 +53,54 @@ public class ReportsControllerTests
         });
         body.Should().NotBeNull();
         body!.ReportId.Should().NotBe(Guid.Empty);
+    }
+
+    [Fact]
+    public async Task GivenReportsFromMultipleOrganizations_WhenGettingStatuses_ThenOnlyReportsFromRequestedOrganizationAreReturned()
+    {
+        var sub = Guid.NewGuid();
+        var orgId = OrganizationId.Create(Guid.NewGuid());
+        var client = _factory.CreateB2CAuthenticatedClient(sub, orgId.Value);
+
+        var report1 = Report.Create(
+            id: Guid.NewGuid(),
+            organizationId: orgId,
+            startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-7)),
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+
+        var report2 = Report.Create(
+            id: Guid.NewGuid(),
+            organizationId: orgId,
+            startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-14)),
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+
+        var otherOrganizationsReport = Report.Create(
+            id: Guid.NewGuid(),
+            organizationId: OrganizationId.Create(Guid.NewGuid()),
+            startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-30)),
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Reports.AddRange(report1, report2, otherOrganizationsReport);
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        var url = $"/api/reports?organizationId={orgId}";
+        var response = await client.GetAsync(url, TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var results = await response.Content
+            .ReadFromJsonAsync<GetReportStatusesQueryResult>(cancellationToken: TestContext.Current.CancellationToken);
+
+        results
+            .Should().NotBeNull()
+            .And.BeOfType<GetReportStatusesQueryResult>()
+            .Which.Result
+            .Should().NotBeNull()
+            .And.HaveCount(2)
+            .And.Contain(r => r.Id != otherOrganizationsReport.OrganizationId.Value);
     }
 }
