@@ -96,7 +96,7 @@ public class EnergyChartGeneratorTests
         var organizationId = OrganizationId.Create(ownerGuid);
         var from = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var to = from.AddYears(1);
-        const int seed = 5; // Nice
+        const int seed = 5;
 
         var mockCons = Substitute.For<IConsumptionService>();
         var consList = GenerateMockConsumption(seed);
@@ -123,6 +123,6 @@ public class EnergyChartGeneratorTests
             to);
         var svg = result.Svg;
 
-        await Verifier.Verify(svg);
+        await Verifier.Verify(svg, extension: "svg");
     }
 }
