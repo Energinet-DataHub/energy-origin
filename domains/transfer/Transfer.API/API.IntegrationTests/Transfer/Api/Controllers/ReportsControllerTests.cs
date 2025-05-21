@@ -37,11 +37,11 @@ public class ReportsControllerTests
 
         // Act
         var response = await client.PostAsJsonAsync($"/api/reports?organizationId={orgId}", requestBody, cancellationToken: TestContext.Current.CancellationToken);
+        var bodyJson = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Accepted);
-
-        var bodyJson = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        response.Headers.Location.Should().NotBeNull();
         var body = JsonSerializer.Deserialize<ReportGenerationResponse>(bodyJson, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true

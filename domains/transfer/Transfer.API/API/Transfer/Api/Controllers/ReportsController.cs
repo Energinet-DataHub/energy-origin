@@ -55,7 +55,6 @@ public class ReportsController : ControllerBase
 
         return AcceptedAtAction(
             actionName: null,
-            routeValues: null,
             value: new ReportGenerationResponse(cmd.ReportId));
     }
 }
