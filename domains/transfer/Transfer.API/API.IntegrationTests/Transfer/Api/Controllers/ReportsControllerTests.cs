@@ -51,7 +51,7 @@ public class ReportsControllerTests
         body!.ReportId.Should().NotBe(Guid.Empty);
     }
 
-        [Fact]
+    [Fact]
     public async Task DownloadReport_ShouldReturnFile_WhenReportIsCompleted()
     {
         var sub = Guid.NewGuid();
