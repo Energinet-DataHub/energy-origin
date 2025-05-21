@@ -9,7 +9,7 @@ using API.Transfer.Api.Services;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
 
-namespace API.Report;
+namespace API.ReportGenerator;
 
 public record DataPoint(DateTime Timestamp, double Value);
 public record Metrics(double Hourly, double Daily, double Weekly, double Monthly, double Annual);
