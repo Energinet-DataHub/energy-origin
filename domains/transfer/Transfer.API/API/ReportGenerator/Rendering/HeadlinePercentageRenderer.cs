@@ -11,7 +11,7 @@ public sealed class HeadlinePercentageRenderer : IHeadlinePercentageRenderer
 {
     public string Render(double percent, string periodLabel)
     {
-        var pct    = Math.Round(percent).ToString("0");
+        var pct = Math.Round(percent).ToString("0");
         var html = $"""
                     <div class="chart">
                         <div data-layer="Grapth Top" class="GrapthTop" style="width: 562.99px; height: 75px; position: relative; background-color: #F9FAFB;">

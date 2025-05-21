@@ -9,7 +9,7 @@ namespace API.UnitTests.ReportGenerator.Utilities;
 
 public class MockedDataGenerators
 {
-        public static List<ConsumptionHour> GenerateMockConsumption(int seed)
+    public static List<ConsumptionHour> GenerateMockConsumption(int seed)
     {
         var rnd = new Random(seed);
 

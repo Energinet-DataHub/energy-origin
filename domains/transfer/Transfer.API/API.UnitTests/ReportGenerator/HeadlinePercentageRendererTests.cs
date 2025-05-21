@@ -22,11 +22,11 @@ public class HeadlinePercentageRendererTests
     {
         var orgId = OrganizationId.Create(Guid.NewGuid());
 
-        var from = new DateTimeOffset(2024, 1, 1,  0, 0, 0, TimeSpan.Zero);
-        var to   = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var from = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var to = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
         const int seed = 7;
 
-        var consSvc   = Substitute.For<IConsumptionService>();
+        var consSvc = Substitute.For<IConsumptionService>();
         var consHours = MockedDataGenerators.GenerateMockConsumption(seed);
         consSvc.GetTotalHourlyConsumption(orgId, from, to, Arg.Any<CancellationToken>())
             .Returns(consHours);
@@ -36,21 +36,24 @@ public class HeadlinePercentageRendererTests
         wallet.GetClaims(orgId.Value, from, to, Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
-                Result   = claims,
+                Result = claims,
                 Metadata = new PageInfo
                 {
-                    Count = claims.Count, Offset = 0, Limit = claims.Count, Total = claims.Count
+                    Count = claims.Count,
+                    Offset = 0,
+                    Limit = claims.Count,
+                    Total = claims.Count
                 }
             });
 
-        var fetcher        = new EnergyDataFetcher(consSvc, wallet);
-        var headlineCalc   = new HeadlinePercentageProcessor();
-        var htmlRenderer   = new HeadlinePercentageRenderer();
+        var fetcher = new EnergyDataFetcher(consSvc, wallet);
+        var headlineCalc = new HeadlinePercentageProcessor();
+        var htmlRenderer = new HeadlinePercentageRenderer();
 
         var (rawCons, rawProd) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
-        var hourly             = EnergyDataProcessor.ToHourly(rawCons, rawProd);
-        var percent            = headlineCalc.Render(hourly);
-        var html               = htmlRenderer.Render(percent, "Året 2024");
+        var hourly = EnergyDataProcessor.ToHourly(rawCons, rawProd);
+        var percent = headlineCalc.Render(hourly);
+        var html = htmlRenderer.Render(percent, "Året 2024");
 
         await Verifier.Verify(html, extension: "html");
     }
