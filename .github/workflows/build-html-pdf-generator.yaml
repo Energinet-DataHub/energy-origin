@@ -11,6 +11,9 @@ on:
         description: "An indication of a dependabot pull request"
         required: true
         type: string
+    permissions:
+      packages: read
+      security-events: write
 
 jobs:
   build-html-pdf-generator:
