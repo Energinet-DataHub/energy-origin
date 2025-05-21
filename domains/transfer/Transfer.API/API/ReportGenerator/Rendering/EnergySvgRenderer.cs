@@ -8,6 +8,11 @@ using API.ReportGenerator.Processing;
 
 namespace API.ReportGenerator.Rendering;
 
+public interface IEnergySvgRenderer
+{
+    EnergySvgResult Render(IReadOnlyList<HourlyEnergy> hourly);
+}
+
 public sealed class EnergySvgRenderer : IEnergySvgRenderer
 {
     private const int SVG_WIDTH = 754;
