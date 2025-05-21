@@ -12,6 +12,7 @@ public interface ITransferService
     Task<CvrCompanyInformationDto> GetCompanyInformation(string tin);
 }
 
+// TODO: Write tests
 public class TransferService(HttpClient client) : ITransferService
 {
     public async Task<CvrCompanyInformationDto> GetCompanyInformation(string tin)
