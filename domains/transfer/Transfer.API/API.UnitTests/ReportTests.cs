@@ -1,4 +1,3 @@
-
 using System;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
