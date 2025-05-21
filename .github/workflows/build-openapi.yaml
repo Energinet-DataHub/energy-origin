@@ -36,7 +36,7 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
       - name: Scan image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v4
+        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@af69857c8bb867a8cde261fb450bf6f5b97678fb
         with:
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
