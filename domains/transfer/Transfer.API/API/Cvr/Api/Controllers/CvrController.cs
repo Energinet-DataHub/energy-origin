@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Cvr.Api.Clients.Cvr;
 using API.Cvr.Api.Dto.Requests;
+using API.Cvr.Api.Dto.Requests.Internal;
 using API.Cvr.Api.Dto.Responses;
 using API.Cvr.Api.Models;
 using API.Transfer.Api.Controllers;

@@ -6,6 +6,7 @@ using AdminPortal.Services;
 using MediatR;
 
 namespace AdminPortal._Features_;
+
 public class GetActiveContractsQuery : IRequest<GetActiveContractsResponse>
 {
 }

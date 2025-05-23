@@ -64,5 +64,8 @@
         <None Update="Cvr\Api\Controllers\Internal\InternalCvrControllerTests.GetCvrCompanies_WhenCorrectCvrNumbers_ShouldReturnCvrInfo.verified.txt">
           <ParentFile>InternalCvrControllerTests</ParentFile>
         </None>
+        <None Update="Cvr\Api\Controllers\Internal\InternalCvrControllerTests.GetCompanies_WhenCorrectCvrNumbers_ShouldReturnCompanies.verified.txt">
+          <ParentFile>InternalCvrControllerTests</ParentFile>
+        </None>
 	</ItemGroup>
 </Project>
