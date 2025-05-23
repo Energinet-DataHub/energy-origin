@@ -103,6 +103,7 @@ public class ReportsControllerTests
             .And.HaveCount(2)
             .And.Contain(r => r.Id != otherOrganizationsReport.OrganizationId.Value);
 
+    [Fact]
     public async Task DownloadReport_ShouldReturnFile_WhenReportIsCompleted()
     {
         var sub = Guid.NewGuid();
