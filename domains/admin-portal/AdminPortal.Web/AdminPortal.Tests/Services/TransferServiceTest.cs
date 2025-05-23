@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AdminPortal.Services;
+using EnergyOrigin.Setup.Exceptions;
 using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 
@@ -11,7 +12,7 @@ namespace AdminPortal.Tests.Services;
 public class TransferServiceTest
 {
     [Fact]
-    public async Task WhenGettingCompanyInformation_WithNonSuccessStatusCode_Throws()
+    public async Task WhenGettingCompanyInformation_WithBadRequestStatusCode_Throws()
     {
         // Arrange
         var mockResponse = new CvrCompanyInformationDto
@@ -35,6 +36,33 @@ public class TransferServiceTest
 
         // Act/Assert
         await Assert.ThrowsAsync<HttpRequestException>(() => transferService.GetCompanyInformation(mockResponse.Tin));
+    }
+
+    [Fact]
+    public async Task WhenGettingCompanyInformation_WithNotFoundStatusCode_Throws()
+    {
+        // Arrange
+        var mockResponse = new CvrCompanyInformationDto
+        {
+            Tin = "12345678",
+            Name = "Test Company",
+            City = "Test City",
+            ZipCode = "1234",
+            Address = "Test Address"
+        };
+
+        var mockHttp = new MockHttpMessageHandler();
+
+        mockHttp.When($"http://localhost/internal-cvr/companies/{mockResponse.Tin}")
+            .Respond(HttpStatusCode.NotFound, new StringContent(JsonConvert.SerializeObject(mockResponse)));
+
+        var client = mockHttp.ToHttpClient();
+        client.BaseAddress = new Uri("http://localhost");
+
+        var transferService = new TransferService(client);
+
+        // Act/Assert
+        await Assert.ThrowsAsync<ResourceNotFoundException>(() => transferService.GetCompanyInformation(mockResponse.Tin));
     }
 
     [Fact]
