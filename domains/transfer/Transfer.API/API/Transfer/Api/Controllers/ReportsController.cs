@@ -57,6 +57,25 @@ public class ReportsController : ControllerBase
             actionName: null,
             value: new ReportGenerationResponse(cmd.ReportId));
     }
+
+    [HttpGet("{reportId}/download")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [SwaggerOperation(Summary = "Downloads the generated report as a file.")]
+    public async Task<IActionResult> DownloadReport(
+        [FromRoute] Guid reportId,
+        [FromQuery] Guid organizationId,
+        CancellationToken cancellationToken)
+    {
+        _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+
+        var result = await _mediator.Send(new DownloadReportCommand(reportId, organizationId), cancellationToken);
+        if (result == null || result.Content == null)
+            return NotFound();
+
+        return File(result.Content, "application/pdf", $"report-{reportId}.pdf");
+    }
 }
 
 public record ReportGenerationStartRequest(long StartDate, long EndDate);
