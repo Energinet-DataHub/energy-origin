@@ -79,4 +79,25 @@ public static class MockData
             }
         }
     };
+
+    public static CvrCompaniesListResponse GetCompanies()
+    {
+        return new CvrCompaniesListResponse
+        {
+            Result =
+            [
+               new()
+               {
+                   Name = "Company number one",
+                   Tin = Tin1
+               },
+               new()
+               {
+                   Name = "Company number two",
+                   Tin = Tin2
+               }
+            ],
+
+        };
+    }
 }
