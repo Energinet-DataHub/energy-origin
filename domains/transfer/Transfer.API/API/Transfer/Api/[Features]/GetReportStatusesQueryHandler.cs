@@ -10,18 +10,18 @@ using MediatR;
 
 namespace API.Transfer.Api._Features_;
 
-public class GetReportStatusesQueryHandler(IReportRepository reports)
+public class GetReportStatusesQueryHandler(IReportRepository _reports)
     : IRequestHandler<GetReportStatusesQuery, GetReportStatusesQueryResult>
 {
     public async Task<GetReportStatusesQueryResult> Handle(
         GetReportStatusesQuery request,
         CancellationToken cancellationToken)
     {
-        var reports1 = await reports.GetByOrganizationAsync(
+        var reports = await _reports.GetByOrganizationAsync(
             request.OrganizationId,
             cancellationToken);
 
-        var items = reports1
+        var items = reports
             .Select(r => new ReportStatusItem(
                 r.Id,
                 r.CreatedAt.EpochSeconds,

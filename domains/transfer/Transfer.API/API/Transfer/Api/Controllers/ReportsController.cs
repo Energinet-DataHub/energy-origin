@@ -67,12 +67,12 @@ public class ReportsController : ControllerBase
         CancellationToken cancellationToken)
     {
         _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
-        
+
         var query = new GetReportStatusesQuery(OrganizationId.Create(organizationId));
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
-    
+
     [HttpGet("{reportId}/download")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -80,13 +80,16 @@ public class ReportsController : ControllerBase
     [SwaggerOperation(Summary = "Downloads the generated report as a file.")]
     public async Task<IActionResult> DownloadReport(
         [FromRoute] Guid reportId,
+        [FromQuery] Guid organizationId,
+        CancellationToken cancellationToken)
+    {
+        _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
         var result = await _mediator.Send(new DownloadReportCommand(reportId, organizationId), cancellationToken);
         if (result == null || result.Content == null)
             return NotFound();
 
         return File(result.Content, "application/pdf", $"report-{reportId}.pdf");
-
     }
 }
 
