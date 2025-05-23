@@ -26,7 +26,11 @@ public class CvrClient : ICvrClient
     {
         var cvrNumbersArray = JsonSerializer.Serialize(cvrNumbers);
 
+        var from = 0;
+        var size = 5000;
         var postBody = $@"{{
+                            ""from"": {from},
+                            ""size"": {size},
                             ""query"": {{
                                 ""bool"": {{
                                     ""must"": [
