@@ -34,8 +34,8 @@ public class GetWhitelistedOrganizationsQueryHandler(IAuthorizationService autho
         var result = whitelistedOrganizations.Result
             .GroupJoin(
                 companies.Result,
-                whiteListed => whiteListed.Tin.Trim(),
-                company => company.Tin.Trim(),
+                whiteListed => whiteListed.Tin,
+                company => company.Tin,
                 (whiteListed, companyGroup) => new { whiteListed, companyGroup }
             )
             .SelectMany(
