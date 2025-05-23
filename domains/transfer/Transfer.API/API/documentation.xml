@@ -26,16 +26,6 @@
             Company address
             </summary>
         </member>
-        <member name="M:API.Transfer.Api.Controllers.PdfController.Generate(System.Guid,API.Transfer.Api.Controllers.PdfController.GeneratePdfRequest)">
-            <summary>
-            Generates a PDF file from a Base64-encoded HTML string.
-            </summary>
-            <param name="organizationId">ID of the organization</param>
-            <param name="request">The request containing the Base64-encoded HTML to be converted into a PDF</param>
-            <response code="200">PDF file generated successfully</response>
-            <response code="400">Invalid input</response>
-            <response code="403">Caller is not authorized to access the specified organization</response>
-        </member>
         <member name="M:API.Transfer.Api.Controllers.TransferAgreementProposalController.CreateTransferAgreementProposal(System.Guid,API.Transfer.Api.Dto.Requests.CreateTransferAgreementProposal)">
             <summary>
             Create TransferAgreementProposal

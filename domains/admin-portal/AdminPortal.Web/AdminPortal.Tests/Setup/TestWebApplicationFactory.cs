@@ -107,6 +107,21 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 ZipCode = "1234"
             });
         }
+
+        public Task<CvrCompaniesListResponse> GetCompanies(List<string> cvrNumbers)
+        {
+            return Task.FromResult(new CvrCompaniesListResponse
+            {
+                Result =
+                [
+                    new CvrCompaniesInformationDto
+                    {
+                        Tin = "12345678",
+                        Name = "Test Company Name"
+                    }
+                ]
+            });
+        }
     }
 
     public HttpClient CreateAuthenticatedClient<T>(WebApplicationFactoryClientOptions options, int sessionId)

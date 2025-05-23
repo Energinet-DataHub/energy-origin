@@ -48,7 +48,7 @@
                         </div>
                     </div>
                     <div id="errorInfo" class="mt-3 text-danger" style="display: none;">
-                        <p>CVR number does not exist. Please check the input and try again.</p>
+                        <p id="errorMessage">CVR number does not exist. Please check the input and try again.</p>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -66,6 +66,7 @@
         const confirmAddBtn = document.getElementById('confirmAddBtn');
         const companyInfoDiv = document.getElementById('companyInfo');
         const errorInfoDiv = document.getElementById('errorInfo');
+        const errorMessage = document.getElementById('errorMessage');
         const companyTin = document.getElementById('companyTin');
         const companyName = document.getElementById('companyName');
         const companyAddress = document.getElementById('companyAddress');
@@ -111,12 +112,20 @@
                 } else {
                     errorInfoDiv.style.display = 'block';
 
+                    if (response.status === 404) {
+                        errorMessage.textContent = 'CVR number does not exist. Please check the input and try again.';
+                    } else {
+                        errorMessage.textContent = 'An unexpected error occurred when calling the CVR register. Please try again later.';
+                    }
+
                     if (!cvrValidationEnforced) {
                         confirmAddBtn.disabled = false;
                     }
                 }
             } catch (error) {
                 errorInfoDiv.style.display = 'block';
+
+                errorMessage.textContent = 'An unexpected error occurred when calling the CVR register. Please try again later.';
 
                 if (!cvrValidationEnforced) {
                     confirmAddBtn.disabled = false;

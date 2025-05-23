@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Web;
 using API.IntegrationTests.Setup.Factories;
 using API.IntegrationTests.Setup.Fixtures;
 using API.Transfer.Api._Features_;
@@ -56,6 +55,7 @@ public class ReportsControllerTests
     }
 
     [Fact]
+
     public async Task GivenReportsFromMultipleOrganizations_WhenGettingStatuses_ThenOnlyReportsFromRequestedOrganizationAreReturned()
     {
         var sub = Guid.NewGuid();
@@ -102,5 +102,53 @@ public class ReportsControllerTests
             .Should().NotBeNull()
             .And.HaveCount(2)
             .And.Contain(r => r.Id != otherOrganizationsReport.OrganizationId.Value);
+
+    public async Task DownloadReport_ShouldReturnFile_WhenReportIsCompleted()
+    {
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var reportId = Guid.NewGuid();
+        var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var content = new byte[] { 1, 2, 3, 4, 5 };
+        var report = Report.Create(reportId, OrganizationId.Create(orgId), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        report.MarkCompleted(content);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<DataContext.ApplicationDbContext>();
+            dbContext.Reports.Add(report);
+            dbContext.SaveChanges();
+        }
+
+        var response = await client.GetAsync($"/api/reports/{reportId}/download?organizationId={orgId}", TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var responseContent = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
+        responseContent.Should().BeEquivalentTo(content);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/pdf");
+    }
+
+    [Fact]
+    public async Task DownloadReport_ShouldReturnNotFound_WhenReportIsNotCompleted()
+    {
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var reportId = Guid.NewGuid();
+        var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var report = Report.Create(reportId, OrganizationId.Create(orgId), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        report.MarkFailed();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<DataContext.ApplicationDbContext>();
+            dbContext.Reports.Add(report);
+            dbContext.SaveChanges();
+        }
+
+        var response = await client.GetAsync($"/api/reports/{reportId}/download?organizationId={orgId}", TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }

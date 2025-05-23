@@ -1,0 +1,8 @@
+﻿{
+  Result: [
+    {
+      Tin: 10150817,
+      Name: Erhvervsstyrelsen
+    }
+  ]
+}

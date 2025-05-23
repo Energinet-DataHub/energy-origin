@@ -17,25 +17,36 @@ public class WhitelistedOrganizationsQueryResult(List<WhitelistedOrganizationVie
     public List<WhitelistedOrganizationViewModel> ViewModel { get; } = viewModel;
 }
 
-public class GetWhitelistedOrganizationsQueryHandler : IRequestHandler<GetWhitelistedOrganizationsQuery, WhitelistedOrganizationsQueryResult>
+public class GetWhitelistedOrganizationsQueryHandler(IAuthorizationService authorizationService, ITransferService transferService)
+    : IRequestHandler<GetWhitelistedOrganizationsQuery, WhitelistedOrganizationsQueryResult>
 {
-    private readonly IAuthorizationService _authorizationService;
-
-    public GetWhitelistedOrganizationsQueryHandler(IAuthorizationService authorizationService)
-    {
-        _authorizationService = authorizationService;
-    }
-
     public async Task<WhitelistedOrganizationsQueryResult> Handle(GetWhitelistedOrganizationsQuery request, CancellationToken cancellationToken)
     {
-        var whitelistedOrganizations = await _authorizationService.GetWhitelistedOrganizationsAsync(cancellationToken);
+        var whitelistedOrganizations = await authorizationService.GetWhitelistedOrganizationsAsync(cancellationToken);
+
+        if (whitelistedOrganizations is null || !whitelistedOrganizations.Result.Any())
+        {
+            return new WhitelistedOrganizationsQueryResult([]);
+        }
+
+        var companies = await transferService.GetCompanies([.. whitelistedOrganizations.Result.Select(w => w.Tin)]);
 
         var result = whitelistedOrganizations.Result
-            .Select(whitelisted => new WhitelistedOrganizationViewModel
-            {
-                OrganizationId = whitelisted.OrganizationId,
-                Tin = whitelisted.Tin
-            })
+            .GroupJoin(
+                companies.Result,
+                whiteListed => whiteListed.Tin.Trim(),
+                company => company.Tin.Trim(),
+                (whiteListed, companyGroup) => new { whiteListed, companyGroup }
+            )
+            .SelectMany(
+                x => x.companyGroup.DefaultIfEmpty(),
+                (x, company) => new WhitelistedOrganizationViewModel
+                {
+                    OrganizationId = x.whiteListed.OrganizationId,
+                    CompanyName = company?.Name ?? string.Empty,
+                    Tin = x.whiteListed.Tin
+                }
+            )
             .ToList();
 
         return new WhitelistedOrganizationsQueryResult(result);
