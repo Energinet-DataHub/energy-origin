@@ -58,6 +58,21 @@ public class ReportsController : ControllerBase
             value: new ReportGenerationResponse(cmd.ReportId));
     }
 
+    [HttpGet]
+    [ProducesResponseType(typeof(GetReportStatusesQueryResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [SwaggerOperation(Summary = "Lists all report statuses for an organization.")]
+    public async Task<IActionResult> GetReportStatuses(
+        [FromQuery] Guid organizationId,
+        CancellationToken cancellationToken)
+    {
+        _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+
+        var query = new GetReportStatusesQuery(OrganizationId.Create(organizationId));
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
     [HttpGet("{reportId}/download")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
