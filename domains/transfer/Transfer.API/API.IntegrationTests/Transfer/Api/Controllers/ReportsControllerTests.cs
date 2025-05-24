@@ -55,8 +55,8 @@ public class ReportsControllerTests
     }
 
     [Fact]
-
-    public async Task GivenReportsFromMultipleOrganizations_WhenGettingStatuses_ThenOnlyReportsFromRequestedOrganizationAreReturned()
+    public async Task
+        GivenReportsFromMultipleOrganizations_WhenGettingStatuses_ThenOnlyReportsFromRequestedOrganizationAreReturned()
     {
         var sub = Guid.NewGuid();
         var orgId = OrganizationId.Create(Guid.NewGuid());
@@ -102,6 +102,7 @@ public class ReportsControllerTests
             .Should().NotBeNull()
             .And.HaveCount(2)
             .And.Contain(r => r.Id != otherOrganizationsReport.OrganizationId.Value);
+    }
 
     [Fact]
     public async Task DownloadReport_ShouldReturnFile_WhenReportIsCompleted()
