@@ -31,25 +31,54 @@ public class EnergySvgRendererTests
                    .Returns(consHours);
 
         var wallet = Substitute.For<IWalletClient>();
-        var claims = MockedDataGenerators.GenerateMockClaims(seed, from, to);
-        wallet.GetClaims(orgId.Value, from, to, Arg.Any<CancellationToken>())
-              .Returns(new ResultList<Claim>
-              {
-                  Result = claims,
-                  Metadata = new PageInfo
-                  {
-                      Count = claims.Count,
-                      Offset = 0,
-                      Limit = claims.Count,
-                      Total = claims.Count
-                  }
-              });
+        var strictClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to, strictHourlyOnly: true);
+        var allClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to);
+
+        // Mock wallet client to return different claims based on TimeMatch
+        wallet.GetClaims(
+                orgId.Value,
+                from,
+                to,
+                Arg.Is<TimeMatch>(t => t == TimeMatch.Hourly), // Strict hourly
+                Arg.Any<CancellationToken>())
+            .Returns(new ResultList<Claim>
+            {
+                Result = strictClaims,
+                Metadata = new PageInfo
+                {
+                    Count = strictClaims.Count,
+                    Offset = 0,
+                    Limit = strictClaims.Count,
+                    Total = strictClaims.Count
+                }
+            });
+
+        wallet.GetClaims(
+                orgId.Value,
+                from,
+                to,
+                Arg.Is<TimeMatch>(t => t == TimeMatch.All), // All claims
+                Arg.Any<CancellationToken>())
+            .Returns(new ResultList<Claim>
+            {
+                Result = allClaims,
+                Metadata = new PageInfo
+                {
+                    Count = allClaims.Count,
+                    Offset = 0,
+                    Limit = allClaims.Count,
+                    Total = allClaims.Count
+                }
+            });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
         var renderer = new EnergySvgRenderer();
 
-        var (rawCons, rawProd) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
-        var hourly = EnergyDataProcessor.ToHourly(rawCons, rawProd);
+        // Fetch all three datasets
+        var (rawCons, strictProd, allProd) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
+
+        // Pass all three to processor
+        var hourly = EnergyDataProcessor.ToHourly(rawCons, strictProd, allProd);
         var svg = renderer.Render(hourly).Svg;
 
         await Verifier.Verify(svg, extension: "svg");
