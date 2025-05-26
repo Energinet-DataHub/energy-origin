@@ -14,7 +14,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace API.Authorization.Controllers;
 
 [ApiController]
-
+[Produces("application/json")]
 [ApiVersion(ApiVersions.Version1)]
 
 public class ServiceProviderTermsController(IMediator mediator, IdentityDescriptor identityDescriptor) : ControllerBase

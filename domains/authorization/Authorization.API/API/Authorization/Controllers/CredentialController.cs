@@ -16,6 +16,7 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
 [Authorize(Policy.FrontendOr3rdParty)]
+[Produces("application/json")]
 [Route("api/authorization/clients/{clientId:guid}/credentials")]
 public class CredentialController(
     IMediator mediator,
@@ -83,7 +84,7 @@ public class CredentialController(
 
     [HttpDelete]
     [Route("{keyId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status404NotFound)]

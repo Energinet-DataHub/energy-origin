@@ -4,6 +4,16 @@
         <name>API</name>
     </assembly>
     <members>
+        <member name="T:API.Authorization.Controllers.AcceptServiceProviderTermsResponse">
+            <summary>
+            Response returned when service provider terms are accepted.
+            </summary>
+        </member>
+        <member name="M:API.Authorization.Controllers.AcceptServiceProviderTermsResponse.#ctor(System.String)">
+            <summary>
+            Response returned when service provider terms are accepted.
+            </summary>
+        </member>
         <member name="M:API.Authorization.Controllers.ConsentController.GrantConsentToClient(Microsoft.Extensions.Logging.ILogger{API.Authorization.Controllers.ConsentController},API.Authorization.Controllers.GrantConsentToClientRequest)">
             <summary>
             Grant consent to 3rd party client

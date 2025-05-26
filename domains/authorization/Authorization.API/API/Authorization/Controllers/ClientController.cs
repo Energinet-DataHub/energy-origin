@@ -29,11 +29,13 @@ public class ClientController : ControllerBase
     }
 
     [HttpGet]
+    [Produces("application/json")]
     [Route("api/authorization/client/consents")]
     [SwaggerOperation(
         Summary = "Retrieves granted consents for client",
         Description = "Retrieves a list of all consents granted to client identified by bearer token"
     )]
+    [ProducesResponseType(typeof(ClientConsentsResponse), 200)]
     public async Task<ActionResult<ClientConsentsResponse>> GetClientConsents([FromServices] ILogger<ClientResponse> logger)
     {
         var queryResult = await _mediator.Send(new GetClientGrantedConsentsQuery(new IdpClientId(_identityDescriptor.Subject)));
