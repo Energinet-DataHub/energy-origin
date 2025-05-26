@@ -29,6 +29,7 @@ public class ClientController : ControllerBase
     }
 
     [HttpGet]
+    [Produces("application/json")]
     [Route("api/authorization/client/consents")]
     [SwaggerOperation(
         Summary = "Retrieves granted consents for client",

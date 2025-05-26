@@ -20,6 +20,7 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
 [Authorize(Policy.Frontend)]
+[Produces("application/json")]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class ConsentController(IMediator mediator, IdentityDescriptor identity) : ControllerBase
 {

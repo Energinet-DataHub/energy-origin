@@ -16,6 +16,7 @@ namespace API.Authorization.Controllers;
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
 [Authorize(Policy.FrontendOr3rdParty)]
+[Produces("application/json")]
 [Route("api/authorization/clients/{clientId:guid}/credentials")]
 public class CredentialController(
     IMediator mediator,
