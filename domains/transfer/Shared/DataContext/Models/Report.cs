@@ -1,9 +1,11 @@
 using System;
+using System.Text.Json.Serialization;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Exceptions;
 
 namespace DataContext.Models;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ReportStatus
 {
     Pending = 0,
@@ -68,7 +70,6 @@ public class Report
     public UnixTimestamp EndDate { get; private set; } = UnixTimestamp.Empty();
     public ReportStatus Status { get; private set; }
     public byte[]? Content { get; private set; }
-
 
     public void MarkCompleted(byte[] pdfBytes)
     {
