@@ -33,7 +33,7 @@ public class MockedDataGenerators
             .ToList();
     }
 
-    public static List<Claim> GenerateMockClaims(int seed, DateTimeOffset from, DateTimeOffset to)
+    public static List<Claim> GenerateMockClaims(int seed, DateTimeOffset from, DateTimeOffset to, bool strictHourlyOnly = false)
     {
         var rnd = new Random(seed);
         var dummyCert = new ClaimedCertificate
@@ -50,7 +50,12 @@ public class MockedDataGenerators
         return Enumerable.Range(0, hrs)
             .Select(i =>
             {
-                var hod = (from.Hour + i) % 24;
+                // For strict hourly claims, align to exact hours
+                var timestamp = strictHourlyOnly
+                    ? from.AddHours(i)
+                    : from.AddHours(i).AddMinutes(rnd.Next(0, 60)); // Add random minutes
+
+                var hod = timestamp.Hour;
                 var factor = hod switch
                 {
                     >= 20 or <= 5 => 0,

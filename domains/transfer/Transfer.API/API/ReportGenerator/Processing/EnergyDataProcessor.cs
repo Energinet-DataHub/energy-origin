@@ -9,22 +9,30 @@ public static class EnergyDataProcessor
 {
     public static IReadOnlyList<HourlyEnergy> ToHourly(
         IEnumerable<DataPoint> consumption,
-        IEnumerable<DataPoint> production)
+        IEnumerable<DataPoint> strictProduction,
+        IEnumerable<DataPoint> allProduction)
     {
         var cons = consumption.ToLookup(d => d.Timestamp.Hour, d => d.Value);
-        var prod = production.ToLookup(d => d.Timestamp.Hour, d => d.Value);
+        var strictProd = strictProduction.ToLookup(d => d.Timestamp.Hour, d => d.Value);
+        var allProd = allProduction.ToLookup(d => d.Timestamp.Hour, d => d.Value);
 
         return Enumerable.Range(0, 24)
             .Select(h =>
             {
-                var c = cons[h].FirstOrDefault();
-                var p = prod[h].DefaultIfEmpty().Average();
+                var c = cons[h].DefaultIfEmpty().Average();
+                var sp = strictProd[h].DefaultIfEmpty().Average();
+                var ap = allProd[h].DefaultIfEmpty().Average();
+
+                var matched = Math.Min(c, sp); // Matched uses strict hourly production
+                var unmatched = Math.Max(0, c - sp);
+                var overmatched = Math.Max(0, ap - c); // Overmatched uses all production
+
                 return new HourlyEnergy(
                     Hour: h,
                     Consumption: c,
-                    Matched: Math.Min(c, p),
-                    Unmatched: Math.Max(0, c - p),
-                    Overmatched: Math.Max(0, p - c));
+                    Matched: matched,
+                    Unmatched: unmatched,
+                    Overmatched: overmatched);
             })
             .ToList();
     }

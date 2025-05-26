@@ -54,7 +54,7 @@ public class CreateReportRequestCommandHandlerTests
         var start = UnixTimestamp.Now().AddDays(-7);
         var end = UnixTimestamp.Now();
         var reportId = Guid.NewGuid();
-        var cmd = new CreateReportRequestCommand(reportId, orgId, start, end);
+        var cmd = new CreateReportRequestCommand(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
 
         Report captured = null!;
         _reports
@@ -97,7 +97,7 @@ public class CreateReportRequestCommandHandlerTests
         var start = UnixTimestamp.Now().AddDays(-7);
         var end = UnixTimestamp.Now();
         var reportId = Guid.NewGuid();
-        var cmd = new CreateReportRequestCommand(reportId, orgId, start, end);
+        var cmd = new CreateReportRequestCommand(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
 
         Report captured = null!;
         _reports
@@ -127,7 +127,7 @@ public class CreateReportRequestCommandHandlerTests
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var start = UnixTimestamp.Now().AddDays(-400);
         var end = UnixTimestamp.Now();
-        var cmd = new CreateReportRequestCommand(Guid.NewGuid(), orgId, start, end);
+        var cmd = new CreateReportRequestCommand(Guid.NewGuid(), orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
 
         await Assert.ThrowsAsync<BusinessException>(() =>
             _sut.Handle(cmd, CancellationToken.None));
