@@ -175,8 +175,8 @@
                         showRow = rowText.includes(globalFilter);
                     }
 
-                    Array.from(cells).forEach(cell => {
-                        if (globalFilter) {
+                    Array.from(cells).forEach((cell, idx) => {
+                        if (globalFilter && idx < 2) {
                             cell.innerHTML = highlightMatches(cell.dataset.originalHtml || cell.textContent, globalFilter);
                         } else {
                             cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
