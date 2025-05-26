@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using API.Authorization._Features_.Internal;
 using Microsoft.AspNetCore.Http;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Authorization.Controllers;
 
@@ -86,7 +87,12 @@ public record UserOrganizationConsentsReceivedResponseItem(Guid ConsentId, Guid 
 
 public record UserOrganizationConsentsReceivedResponse(IEnumerable<UserOrganizationConsentsReceivedResponseItem> Result);
 
-public record AcceptServiceProviderTermsResponse(string Message);
+/// <summary>
+/// Response returned when service provider terms are accepted.
+/// </summary>
+public record AcceptServiceProviderTermsResponse(
+    [property: SwaggerSchema(Description = "A message describing the result of accepting the service provider terms. Example: \"Service Provider Terms accepted successfully.\"")]    string Message
+    );
 
 public record GetServiceProviderTermsResponse(bool TermsAccepted);
 

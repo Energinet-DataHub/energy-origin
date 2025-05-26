@@ -32,7 +32,7 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
         Summary = "Grant consent to 3rd party",
         Description = "Grant consent to 3rd party identified by the provided client id"
     )]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GrantConsentToClient([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentToClientRequest toClientRequest)
@@ -50,7 +50,7 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
         Summary = "Grant consent to organization",
         Description = "Grant consent to organization identified by the provided organization id"
     )]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GrantConsentToOrganization([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentToOrganizationRequest request)
@@ -99,7 +99,7 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
     /// <param name="consentId">The ID of the consent to delete.</param>
     /// <returns>No content if the deletion was successful, Not Found if the consent was not found.</returns>
     [HttpDelete("api/authorization/consents/{consentId}")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteConsent([FromRoute] Guid consentId)
