@@ -28,7 +28,7 @@ public class CvrClient(HttpClient client, ILogger<CvrClient> logger) : ICvrClien
         {
             var batch = cvrArray.Skip(i).Take(BatchSize);
             var serializedBatch = JsonSerializer.Serialize(batch);
-            var body = GetSearchBody(serializedBatch, From, BatchSize);
+            var body = GetSearchBody(serializedBatch);
             var content = new StringContent(body, Encoding.UTF8, "application/json");
 
             tasks.Add(client.PostAsync("cvr-permanent/virksomhed/_search", content));
@@ -62,11 +62,11 @@ public class CvrClient(HttpClient client, ILogger<CvrClient> logger) : ICvrClien
         return rootResult;
     }
 
-    private static string GetSearchBody(string cvrNumbersArray, int from, int size)
+    private static string GetSearchBody(string cvrNumbersArray)
     {
         return $@"{{
-                    ""from"": {from},
-                    ""size"": {size},
+                    ""from"": {From},
+                    ""size"": {BatchSize},
                     ""query"": {{
                         ""bool"": {{
                             ""must"": [
