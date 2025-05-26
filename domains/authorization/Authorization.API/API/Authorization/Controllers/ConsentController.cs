@@ -50,7 +50,7 @@ public class ConsentController(IMediator mediator, IdentityDescriptor identity) 
         Summary = "Grant consent to organization",
         Description = "Grant consent to organization identified by the provided organization id"
     )]
-    [ProducesResponseType(typeof(void),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GrantConsentToOrganization([FromServices] ILogger<ConsentController> logger, [FromBody] GrantConsentToOrganizationRequest request)

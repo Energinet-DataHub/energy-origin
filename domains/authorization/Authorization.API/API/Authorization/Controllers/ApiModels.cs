@@ -91,7 +91,7 @@ public record UserOrganizationConsentsReceivedResponse(IEnumerable<UserOrganizat
 /// Response returned when service provider terms are accepted.
 /// </summary>
 public record AcceptServiceProviderTermsResponse(
-    [property: SwaggerSchema(Description = "A message describing the result of accepting the service provider terms. Example: \"Service Provider Terms accepted successfully.\"")]    string Message
+    [property: SwaggerSchema(Description = "A message describing the result of accepting the service provider terms. Example: \"Service Provider Terms accepted successfully.\"")] string Message
     );
 
 public record GetServiceProviderTermsResponse(bool TermsAccepted);
