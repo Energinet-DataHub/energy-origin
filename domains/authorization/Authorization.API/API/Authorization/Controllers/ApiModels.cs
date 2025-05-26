@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using API.Authorization._Features_.Internal;
 using Microsoft.AspNetCore.Http;
 
 namespace API.Authorization.Controllers;

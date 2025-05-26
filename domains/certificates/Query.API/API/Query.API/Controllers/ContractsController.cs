@@ -22,6 +22,7 @@ namespace API.Query.API.Controllers;
 [Authorize(Policy = Policy.FrontendOr3rdParty)]
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
+[Produces("application/json")]
 public class ContractsController(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
 {
     /// <summary>

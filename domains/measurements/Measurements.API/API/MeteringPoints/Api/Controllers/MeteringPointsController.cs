@@ -19,6 +19,7 @@ namespace API.MeteringPoints.Api.Controllers;
 [Authorize(Policy.FrontendOr3rdParty)]
 [ApiController]
 [ApiVersion(ApiVersions.Version1)]
+[Produces("application/json")]
 [Route("api/measurements/meteringpoints")]
 public class MeteringPointsController : ControllerBase
 {

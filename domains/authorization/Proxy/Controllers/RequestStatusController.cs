@@ -31,7 +31,7 @@ public class RequestStatusController : ProxyBase
     [Produces("application/json")]
     [Authorize(policy: Policy.FrontendOr3rdParty)]
     [ApiVersion(ApiVersions.Version1)]
-    [ProducesResponseType(typeof(ReceiveResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(RequestStatusResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
     public Task<IActionResult> GetRequestStatus([FromRoute] Guid requestId, [Required][FromQuery] string organizationId)
@@ -39,3 +39,16 @@ public class RequestStatusController : ProxyBase
         return ProxyClientCredentialsRequest($"v1/request-status/{requestId}", organizationId);
     }
 }
+
+/// <summary>
+/// Request status response.
+/// </summary>
+public record RequestStatusResponse()
+{
+    /// <summary>
+    /// The status of the request.
+    /// </summary>
+    public required RequestStatus Status { get; init; }
+}
+
+public enum RequestStatus { Pending, Completed, Failed }
