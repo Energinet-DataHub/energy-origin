@@ -60,7 +60,7 @@ public class ReportsControllerTests
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
         var content = new byte[] { 1, 2, 3, 4, 5 };
-        var report = Report.Create(reportId, OrganizationId.Create(orgId), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(reportId, OrganizationId.Create(orgId), OrganizationName.Create("Organization Name"), Tin.Create("13371337"), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
         report.MarkCompleted(content);
 
         using (var scope = _factory.Services.CreateScope())
@@ -86,7 +86,7 @@ public class ReportsControllerTests
         var reportId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var report = Report.Create(reportId, OrganizationId.Create(orgId), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(reportId, OrganizationId.Create(orgId), OrganizationName.Create("Organization Name"), Tin.Create("13371337"), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
         report.MarkFailed();
 
         using (var scope = _factory.Services.CreateScope())

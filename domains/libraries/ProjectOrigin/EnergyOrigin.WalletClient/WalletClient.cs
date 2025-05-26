@@ -429,26 +429,26 @@ public record ClaimedCertificate()
     public required Dictionary<string, string> Attributes { get; init; }
 }
 
-    public record TimeMatch
-    {
-        private TimeMatch(string value) => Value = value;
+public record TimeMatch
+{
+    private TimeMatch(string value) => Value = value;
 
-        /// <summary>
-        /// Return only hourly-aggregated claims (default).
-        /// </summary>
-        public static readonly TimeMatch Hourly = new("hourly");
+    /// <summary>
+    /// Return only hourly-aggregated claims (default).
+    /// </summary>
+    public static readonly TimeMatch Hourly = new("hourly");
 
-        /// <summary>
-        /// Return all individual claims within the specified time range.
-        /// </summary>
-        public static readonly TimeMatch All = new("all");
+    /// <summary>
+    /// Return all individual claims within the specified time range.
+    /// </summary>
+    public static readonly TimeMatch All = new("all");
 
-        /// <summary>
-        /// Underlying string value for query parameter.
-        /// </summary>
-        public string Value { get; }
+    /// <summary>
+    /// Underlying string value for query parameter.
+    /// </summary>
+    public string Value { get; }
 
-        /// <inheritdoc />
-        public override string ToString() => Value;
-    }
+    /// <inheritdoc />
+    public override string ToString() => Value;
+}
 

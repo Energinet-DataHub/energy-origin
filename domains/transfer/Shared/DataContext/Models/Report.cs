@@ -16,6 +16,8 @@ public class Report
     private Report(
         Guid id,
         OrganizationId organizationId,
+        OrganizationName organizationName,
+        Tin organizationTin,
         UnixTimestamp createdAt,
         UnixTimestamp startDate,
         UnixTimestamp endDate,
@@ -24,6 +26,8 @@ public class Report
     {
         Id = id;
         OrganizationId = organizationId ?? throw new ArgumentNullException(nameof(organizationId));
+        OrganizationName = organizationName;
+        OrganizationTin = organizationTin;
         CreatedAt = createdAt;
         StartDate = startDate;
         EndDate = endDate;
@@ -36,6 +40,8 @@ public class Report
     public static Report Create(
         Guid id,
         OrganizationId organizationId,
+        OrganizationName organizationName,
+        Tin organizationTin,
         UnixTimestamp startDate,
         UnixTimestamp endDate)
     {
@@ -53,6 +59,8 @@ public class Report
         return new Report(
             id: id,
             organizationId: organizationId,
+            organizationTin: organizationTin,
+            organizationName: organizationName,
             createdAt: createdAt,
             startDate: startDate,
             endDate: endDate,
@@ -63,6 +71,8 @@ public class Report
 
     public Guid Id { get; private set; }
     public OrganizationId OrganizationId { get; private set; } = OrganizationId.Empty();
+    public OrganizationName OrganizationName { get; private set; } = OrganizationName.Empty();
+    public Tin OrganizationTin { get; private set; } = Tin.Empty();
     public UnixTimestamp CreatedAt { get; private set; } = UnixTimestamp.Empty();
     public UnixTimestamp StartDate { get; private set; } = UnixTimestamp.Empty();
     public UnixTimestamp EndDate { get; private set; } = UnixTimestamp.Empty();
