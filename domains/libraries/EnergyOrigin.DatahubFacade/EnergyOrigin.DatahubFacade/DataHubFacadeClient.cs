@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using EnergyOrigin.Domain.ValueObjects;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 
 namespace EnergyOrigin.DatahubFacade;
 
@@ -25,15 +27,19 @@ public class DataHubFacadeClient : IDataHubFacadeClient
         List<Gsrn> gsrns,
         CancellationToken cancellationToken)
     {
-        var mpIdsCsv = string.Join(",", gsrns.Select(g => g.Value));
+        // Build repeated "meteringPointIds" entries via StringValues
+        var queryParams = new Dictionary<string, StringValues>
+        {
+            ["subject"] = new StringValues(owner),
+            ["meteringPointIds"] = new StringValues(gsrns.Select(g => g.Value).ToArray())
+        };
 
-        var url = $"/api/relation/meteringpoints/customer" +
-                  $"?subject={Uri.EscapeDataString(owner)}" +
-                  $"&meteringPointIds={Uri.EscapeDataString(mpIdsCsv)}";
+        var url = QueryHelpers.AddQueryString(
+            "/api/relation/meteringpoints/customer",
+            queryParams);
 
-        return await _client
-            .GetFromJsonAsync<ListMeteringPointForCustomerCaResponse>(
-                url,
-                cancellationToken);
+        return await _client.GetFromJsonAsync<ListMeteringPointForCustomerCaResponse>(
+            url,
+            cancellationToken);
     }
 }
