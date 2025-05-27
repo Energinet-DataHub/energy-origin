@@ -52,8 +52,6 @@ public static class Startup
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
         services.AddHostedService<TransferAgreementCleanupWorker>();
 
-
-
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<IEnergyDataFetcher, EnergyDataFetcher>();
         services.AddScoped<IHeadlinePercentageProcessor, HeadlinePercentageProcessor>();
@@ -76,7 +74,6 @@ public static class Startup
 
         services.AddScoped<ITokenService, TokenService>();
         services.AddTransient<AuthHeaderHandler>();
-
 
         services.AddHttpClient<IDataHub3Client, DataHub3Client>((sp, client) =>
         {
