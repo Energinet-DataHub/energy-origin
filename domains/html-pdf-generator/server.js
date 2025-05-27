@@ -11,7 +11,7 @@ app.get('/health', (_, res) => {
 app.post('/generate-pdf', async (req, res) => {
     const { html } = req.body;
     let browser;
-    
+
     if (!html) {
         return res.status(400).end('HTML content is required');
     }
