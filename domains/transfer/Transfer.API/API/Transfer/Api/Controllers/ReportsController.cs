@@ -57,7 +57,7 @@ public class ReportsController : ControllerBase
             EndDate: UnixTimestamp.Create(request.EndDate)
         );
 
-        _mediator.Send(cmd, cancellationToken);
+        _ = _mediator.Send(cmd, CancellationToken.None);
 
         return AcceptedAtAction(
             actionName: null,
