@@ -239,7 +239,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         var url = new StringBuilder("v1/claims?")
             .Append($"start={start?.ToUnixTimeSeconds()}&")
             .Append($"end={end?.ToUnixTimeSeconds()}&")
-            .Append($"timeMatch={timeMatch}")
+            .Append($"timeMatch={timeMatch.ToString().ToLowerInvariant()}")
             .ToString();
 
         return await client.GetFromJsonAsync<ResultList<Claim>>(url, _jsonSerializerOptions, cancellationToken);
@@ -429,26 +429,10 @@ public record ClaimedCertificate()
     public required Dictionary<string, string> Attributes { get; init; }
 }
 
-public record TimeMatch
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum TimeMatch
 {
-    private TimeMatch(string value) => Value = value;
-
-    /// <summary>
-    /// Return only hourly-aggregated claims (default).
-    /// </summary>
-    public static readonly TimeMatch Hourly = new("hourly");
-
-    /// <summary>
-    /// Return all individual claims within the specified time range.
-    /// </summary>
-    public static readonly TimeMatch All = new("all");
-
-    /// <summary>
-    /// Underlying string value for query parameter.
-    /// </summary>
-    public string Value { get; }
-
-    /// <inheritdoc />
-    public override string ToString() => Value;
+    Hourly,
+    All
 }
 
