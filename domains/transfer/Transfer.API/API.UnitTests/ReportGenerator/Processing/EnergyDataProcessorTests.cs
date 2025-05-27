@@ -24,15 +24,15 @@ public class EnergyDataProcessorTests
     {
         var consumption = new[]
         {
-            new DataPoint(new DateTime(2024, 1, 1, hour, 0, 0), cons)
+            new DataPoint(hour, cons)
         };
         var strictProduction = new[]
         {
-            new DataPoint(new DateTime(2024, 1, 1, hour, 0, 0), strictProd)
+            new DataPoint(hour, strictProd)
         };
         var allProduction = new[]
         {
-            new DataPoint(new DateTime(2024, 1, 1, hour, 0, 0), allProd)
+            new DataPoint(hour, allProd)
         };
 
         var result = EnergyDataProcessor
