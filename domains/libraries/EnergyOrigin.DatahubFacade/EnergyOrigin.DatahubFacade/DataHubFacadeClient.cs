@@ -25,13 +25,11 @@ public class DataHubFacadeClient : IDataHubFacadeClient
         List<Gsrn> gsrns,
         CancellationToken cancellationToken)
     {
-        // Join GSRNs with commas so the mock stub sees a single "meteringPointIds" param
-        var mpIds = string.Join(",", gsrns.Select(x => x.Value));
+        var mpIdsCsv = string.Join(",", gsrns.Select(g => g.Value));
 
-        // Build the exact relative URL your stub expects:
-        var url = $"api/relation/meteringpoints/customer" +
-                  $"?subject={owner}" +
-                  $"&meteringPointIds={mpIds}";
+        var url = $"/api/relation/meteringpoints/customer" +
+                  $"?subject={Uri.EscapeDataString(owner)}" +
+                  $"&meteringPointIds={Uri.EscapeDataString(mpIdsCsv)}";
 
         return await _client
             .GetFromJsonAsync<ListMeteringPointForCustomerCaResponse>(

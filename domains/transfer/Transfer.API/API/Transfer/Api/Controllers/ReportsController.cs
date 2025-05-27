@@ -11,6 +11,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Transfer.Api.Controllers;
@@ -24,15 +25,19 @@ public class ReportsController : ControllerBase
     private readonly IMediator _mediator;
     private readonly AccessDescriptor _accessDescriptor;
     private readonly IdentityDescriptor _identityDescriptor;
+    private readonly IServiceScopeFactory _scopeFactory;
+
 
     public ReportsController(
         IMediator mediator,
         AccessDescriptor accessDescriptor,
-        IdentityDescriptor identityDescriptor)
+        IdentityDescriptor identityDescriptor,
+        IServiceScopeFactory scopeFactory)
     {
         _mediator = mediator;
         _accessDescriptor = accessDescriptor;
         _identityDescriptor = identityDescriptor;
+        _scopeFactory      = scopeFactory;
     }
 
     [HttpPost]
@@ -57,7 +62,12 @@ public class ReportsController : ControllerBase
             EndDate: UnixTimestamp.Create(request.EndDate)
         );
 
-        _mediator.Send(cmd, CancellationToken.None);
+        _ = Task.Run(async () =>
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            await mediator.Send(cmd, CancellationToken.None);
+        });
 
         return AcceptedAtAction(
             actionName: null,
