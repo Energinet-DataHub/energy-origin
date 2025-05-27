@@ -128,5 +128,11 @@ public class CertificatesSpreadsheetExporterTest
         {
             throw new NotImplementedException();
         }
+
+        public Task<ResultList<Claim>?> GetClaims(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, TimeMatch timeMatch,
+            CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

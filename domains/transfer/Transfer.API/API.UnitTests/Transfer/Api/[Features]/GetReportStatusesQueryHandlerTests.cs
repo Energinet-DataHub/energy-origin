@@ -29,24 +29,32 @@ public class GetReportStatusesQueryHandlerTests
         var report1 = Report.Create(
             id: Guid.NewGuid(),
             organizationId: orgId,
+            Any.OrganizationName(),
+            Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-7)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
         var report2 = Report.Create(
             id: Guid.NewGuid(),
             organizationId: orgId,
+            Any.OrganizationName(),
+            Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-60)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
         Report.Create(
             id: Guid.NewGuid(),
             organizationId: OrganizationId.Create(Guid.NewGuid()),
+            Any.OrganizationName(),
+            Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-180)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
         Report.Create(
             id: Guid.NewGuid(),
             organizationId: OrganizationId.Create(Guid.NewGuid()),
+            Any.OrganizationName(),
+            Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-365)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 

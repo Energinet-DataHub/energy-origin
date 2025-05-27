@@ -228,6 +228,23 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await client.GetFromJsonAsync<ResultList<Claim>>($"v1/claims?start={start?.ToUnixTimeSeconds()}&end={end?.ToUnixTimeSeconds()}", _jsonSerializerOptions, cancellationToken);
     }
 
+    public async Task<ResultList<Claim>?> GetClaims(
+        Guid ownerSubject,
+        DateTimeOffset? start,
+        DateTimeOffset? end,
+        TimeMatch timeMatch,
+        CancellationToken cancellationToken)
+    {
+        SetOwnerHeader(ownerSubject);
+        var url = new StringBuilder("v1/claims?")
+            .Append($"start={start?.ToUnixTimeSeconds()}&")
+            .Append($"end={end?.ToUnixTimeSeconds()}&")
+            .Append($"timeMatch={timeMatch.ToString().ToLowerInvariant()}")
+            .ToString();
+
+        return await client.GetFromJsonAsync<ResultList<Claim>>(url, _jsonSerializerOptions, cancellationToken);
+    }
+
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -411,3 +428,11 @@ public record ClaimedCertificate()
     public required string GridArea { get; init; }
     public required Dictionary<string, string> Attributes { get; init; }
 }
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum TimeMatch
+{
+    Hourly,
+    All
+}
+

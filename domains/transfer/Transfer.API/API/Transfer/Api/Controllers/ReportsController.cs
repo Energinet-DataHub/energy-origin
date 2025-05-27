@@ -5,6 +5,7 @@ using API.Transfer.Api._Features_;
 using Asp.Versioning;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -22,13 +23,16 @@ public class ReportsController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly AccessDescriptor _accessDescriptor;
+    private readonly IdentityDescriptor _identityDescriptor;
 
     public ReportsController(
         IMediator mediator,
-        AccessDescriptor accessDescriptor)
+        AccessDescriptor accessDescriptor,
+        IdentityDescriptor identityDescriptor)
     {
         _mediator = mediator;
         _accessDescriptor = accessDescriptor;
+        _identityDescriptor = identityDescriptor;
     }
 
     [HttpPost]
@@ -47,6 +51,8 @@ public class ReportsController : ControllerBase
         var cmd = new CreateReportRequestCommand(
             ReportId: Guid.NewGuid(),
             OrganizationId: OrganizationId.Create(organizationId),
+            OrganizationName: OrganizationName.Create(_identityDescriptor.OrganizationName),
+            OrganizationTin: Tin.Create(_identityDescriptor.OrganizationCvr ?? throw new BusinessException("Organization CVR is missing")),
             StartDate: UnixTimestamp.Create(request.StartDate),
             EndDate: UnixTimestamp.Create(request.EndDate)
         );

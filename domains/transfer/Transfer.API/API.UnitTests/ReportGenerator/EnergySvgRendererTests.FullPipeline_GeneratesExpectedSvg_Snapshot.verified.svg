@@ -1,0 +1,137 @@
+﻿<svg class="highcharts-root" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 754 400" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto; display: block;" role="img">
+  <defs>
+    <filter id="drop-shadow">
+      <feDropShadow dx="1" dy="1" flood-color="#000000" flood-opacity="0.75" stdDeviation="2.5" />
+    </filter>
+    <clipPath id="chart-area">
+      <rect x="0" y="0" width="734" height="304" fill="none" />
+    </clipPath>
+  </defs>
+  <rect fill="#F9FAFB" class="highcharts-background" x="0" y="0" width="754" height="400" rx="0" ry="0" />
+  <g class="highcharts-grid highcharts-xaxis-grid" data-z-index="1">
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 10 10 L 10 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 40.58333333333333 10 L 40.58333333333333 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 71.16666666666666 10 L 71.16666666666666 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 101.75 10 L 101.75 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 132.33333333333331 10 L 132.33333333333331 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 162.91666666666666 10 L 162.91666666666666 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 193.5 10 L 193.5 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 224.08333333333331 10 L 224.08333333333331 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 254.66666666666666 10 L 254.66666666666666 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 285.25 10 L 285.25 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 315.8333333333333 10 L 315.8333333333333 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 346.41666666666663 10 L 346.41666666666663 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 377 10 L 377 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 407.5833333333333 10 L 407.5833333333333 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 438.16666666666663 10 L 438.16666666666663 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 468.75 10 L 468.75 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 499.3333333333333 10 L 499.3333333333333 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 529.9166666666666 10 L 529.9166666666666 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 560.5 10 L 560.5 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 591.0833333333333 10 L 591.0833333333333 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 621.6666666666666 10 L 621.6666666666666 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 652.25 10 L 652.25 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 682.8333333333333 10 L 682.8333333333333 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 713.4166666666666 10 L 713.4166666666666 314" opacity="1" />
+    <path fill="none" stroke="#e6e6e6" stroke-width="0" data-z-index="1" class="highcharts-grid-line" d="M 744 10 L 744 314" opacity="1" />
+  </g>
+  <g class="highcharts-axis highcharts-xaxis" data-z-index="2">
+    <path fill="none" class="highcharts-axis-line" stroke="#ffffff" stroke-width="1" d="M 10 314.5 L 744 314.5" />
+  </g>
+  <g class="highcharts-series-group" data-z-index="3" transform="translate(10,10)">
+    <g class="highcharts-series highcharts-series-0 highcharts-column-series" data-z-index="0.1" opacity="1" clip-path="url(#chart-area)">
+      <rect x="3.0583333333333336" y="264.7987428881062" width="24.46666666666667" height="39.201257111893796" fill="#DFDFDF" />
+      <rect x="33.641666666666666" y="249.2565266865348" width="24.46666666666667" height="54.74347331346519" fill="#DFDFDF" />
+      <rect x="64.225" y="252.35294500135464" width="24.46666666666667" height="51.64705499864536" fill="#DFDFDF" />
+      <rect x="94.80833333333334" y="254.84811704145218" width="24.46666666666667" height="49.15188295854782" fill="#DFDFDF" />
+      <rect x="125.39166666666667" y="271.6830127336765" width="24.46666666666667" height="32.316987266323494" fill="#DFDFDF" />
+      <rect x="155.975" y="257.04266594418857" width="24.46666666666667" height="46.95733405581143" fill="#DFDFDF" />
+      <rect x="186.55833333333334" y="167.09622324573286" width="24.46666666666667" height="136.90377675426714" fill="#DFDFDF" />
+      <rect x="217.14166666666665" y="177.64809536710914" width="24.46666666666667" height="71.15255486318073" fill="#DFDFDF" />
+      <rect x="247.725" y="187.38828501761043" width="24.46666666666667" height="5.537642915199139" fill="#DFDFDF" />
+      <rect x="522.9749999999999" y="133.8773665673259" width="24.46666666666667" height="17.93319967488487" fill="#DFDFDF" />
+      <rect x="553.5583333333333" y="179.51195881874833" width="24.46666666666667" height="47.882676781360054" fill="#DFDFDF" />
+      <rect x="584.1416666666665" y="150.08095367109183" width="24.46666666666667" height="153.91904632890817" fill="#DFDFDF" />
+      <rect x="614.7249999999999" y="161.4745705770794" width="24.46666666666667" height="142.5254294229206" fill="#DFDFDF" />
+      <rect x="645.3083333333333" y="174.91242481712274" width="24.46666666666667" height="129.08757518287726" fill="#DFDFDF" />
+      <rect x="675.8916666666665" y="163.69918179355187" width="24.46666666666667" height="140.30081820644813" fill="#DFDFDF" />
+      <rect x="706.4749999999999" y="219.85558385261447" width="24.46666666666667" height="84.14441614738553" fill="#DFDFDF" />
+    </g>
+    <g class="highcharts-series highcharts-series-1 highcharts-column-series" data-z-index="0.1" opacity="1" clip-path="url(#chart-area)">
+      <rect x="278.30833333333334" y="136.98531563261986" width="24.46666666666667" height="15.440498509888915" fill="#59ACE8" />
+      <rect x="308.89166666666665" y="81.6294771064752" width="24.46666666666667" height="150.0105337306963" fill="#59ACE8" />
+      <rect x="339.47499999999997" y="27.937361148740194" width="24.46666666666667" height="198.29143321593062" fill="#59ACE8" />
+      <rect x="370.05833333333334" y="29.996423733405564" width="24.46666666666667" height="198.1262963966405" fill="#59ACE8" />
+      <rect x="400.64166666666665" y="12.807369276618758" width="24.46666666666667" height="205.78559739907888" fill="#59ACE8" />
+      <rect x="431.22499999999997" y="0.6506637767542287" width="24.46666666666667" height="190.2549119479816" fill="#59ACE8" />
+      <rect x="461.80833333333334" y="-1.4210854715202004E-14" width="24.46666666666667" height="236.6904795448388" fill="#59ACE8" />
+      <rect x="492.39166666666665" y="74.31568680574372" width="24.46666666666667" height="119.65624492007584" fill="#59ACE8" />
+    </g>
+    <g class="highcharts-series highcharts-series-2 highcharts-column-series" data-z-index="0.1" opacity="1" clip-path="url(#chart-area)">
+      <rect x="217.14166666666665" y="248.80065023028988" width="24.46666666666667" height="55.19934976971011" fill="#82CF76" />
+      <rect x="247.725" y="192.92592793280954" width="24.46666666666667" height="111.07407206719046" fill="#82CF76" />
+      <rect x="278.30833333333334" y="152.42581414250878" width="24.46666666666667" height="151.57418585749122" fill="#82CF76" />
+      <rect x="308.89166666666665" y="231.6400108371715" width="24.46666666666667" height="72.3599891628285" fill="#82CF76" />
+      <rect x="339.47499999999997" y="226.22879436467082" width="24.46666666666667" height="77.77120563532918" fill="#82CF76" />
+      <rect x="370.05833333333334" y="228.12272013004605" width="24.46666666666667" height="75.87727986995394" fill="#82CF76" />
+      <rect x="400.64166666666665" y="218.59296667569765" width="24.46666666666667" height="85.40703332430236" fill="#82CF76" />
+      <rect x="431.22499999999997" y="190.90557572473585" width="24.46666666666667" height="113.09442427526416" fill="#82CF76" />
+      <rect x="461.80833333333334" y="236.6904795448388" width="24.46666666666667" height="67.3095204551612" fill="#82CF76" />
+      <rect x="492.39166666666665" y="193.97193172581956" width="24.46666666666667" height="110.02806827418044" fill="#82CF76" />
+      <rect x="522.9749999999999" y="151.81056624221077" width="24.46666666666667" height="152.18943375778923" fill="#82CF76" />
+      <rect x="553.5583333333333" y="227.39463560010836" width="24.46666666666667" height="76.60536439989163" fill="#82CF76" />
+    </g>
+    <g class="highcharts-series highcharts-series-3 highcharts-line-series" data-z-index="10" opacity="1" clip-path="url(#chart-area)">
+      <path fill="none" class="highcharts-graph" d="M 15.291666666666666,264.7987428881062 45.875,249.2565266865348 76.45833333333333,252.35294500135464 107.04166666666666,254.84811704145218 137.625,271.6830127336765 168.20833333333331,257.04266594418857 198.79166666666666,167.09622324573286 229.375,177.6480953671092 259.9583333333333,187.3882850176104 290.54166666666663,152.42581414250878 321.125,231.6400108371715 351.7083333333333,226.22879436467082 382.29166666666663,228.12272013004605 412.875,218.59296667569765 443.4583333333333,190.90557572473585 474.04166666666663,236.6904795448388 504.625,193.97193172581956 535.2083333333333,133.8773665673259 565.7916666666666,179.51195881874833 596.375,150.08095367109183 626.9583333333333,161.4745705770794 657.5416666666666,174.91242481712274 688.125,163.69918179355187 718.7083333333333,219.85558385261447" stroke="#FF0000" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+    </g>
+  </g>
+  <g class="highcharts-axis-labels highcharts-xaxis-labels" data-z-index="7">
+    <text x="25.291666666666664" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">00</text>
+    <text x="55.875" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">01</text>
+    <text x="86.45833333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">02</text>
+    <text x="117.04166666666666" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">03</text>
+    <text x="147.625" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">04</text>
+    <text x="178.20833333333331" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">05</text>
+    <text x="208.79166666666666" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">06</text>
+    <text x="239.375" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">07</text>
+    <text x="269.9583333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">08</text>
+    <text x="300.54166666666663" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">09</text>
+    <text x="331.125" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">10</text>
+    <text x="361.7083333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">11</text>
+    <text x="392.29166666666663" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">12</text>
+    <text x="422.875" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">13</text>
+    <text x="453.4583333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">14</text>
+    <text x="484.04166666666663" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">15</text>
+    <text x="514.625" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">16</text>
+    <text x="545.2083333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">17</text>
+    <text x="575.7916666666666" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">18</text>
+    <text x="606.375" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">19</text>
+    <text x="636.9583333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">20</text>
+    <text x="667.5416666666666" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">21</text>
+    <text x="698.125" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">22</text>
+    <text x="728.7083333333333" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">23</text>
+  </g>
+  <g class="highcharts-legend" data-z-index="7" transform="translate(119,355)">
+    <rect fill="none" class="highcharts-legend-box" rx="0" ry="0" stroke="#999999" stroke-width="0" x="0" y="0" width="517" height="30" />
+    <g data-z-index="1">
+      <g>
+        <g class="highcharts-legend-item highcharts-column-series" data-z-index="1" transform="translate(8,3)">
+          <text x="21" y="17" text-anchor="start" data-z-index="2" style="font-size: 12px; font-family: OpenSansNormal; fill: rgb(51, 51, 51);">Ikke matchet</text>
+          <rect x="2" y="6" rx="6" ry="6" width="12" height="12" fill="#DFDFDF" class="highcharts-point" data-z-index="3" />
+        </g>
+        <g class="highcharts-legend-item highcharts-column-series" data-z-index="1" transform="translate(128,3)">
+          <text x="21" y="17" text-anchor="start" data-z-index="2" style="font-size: 12px; font-family: OpenSansNormal; fill: rgb(51, 51, 51);">Overmatchet</text>
+          <rect x="2" y="6" rx="6" ry="6" width="12" height="12" fill="#59ACE8" class="highcharts-point" data-z-index="3" />
+        </g>
+        <g class="highcharts-legend-item highcharts-column-series" data-z-index="1" transform="translate(248,3)">
+          <text x="21" y="17" text-anchor="start" data-z-index="2" style="font-size: 12px; font-family: OpenSansNormal; fill: rgb(51, 51, 51);">Matchet</text>
+          <rect x="2" y="6" rx="6" ry="6" width="12" height="12" fill="#82CF76" class="highcharts-point" data-z-index="3" />
+        </g>
+        <g class="highcharts-legend-item highcharts-line-series" data-z-index="1" transform="translate(368,3)">
+          <path fill="none" class="highcharts-graph" stroke-width="2" stroke-linecap="round" d="M 1 13 L 15 13" stroke="#FF0000" />
+          <text x="21" y="17" text-anchor="start" data-z-index="2" style="font-size: 12px; font-family: OpenSansNormal; fill: rgb(51, 51, 51);">Årligt forbrug</text>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

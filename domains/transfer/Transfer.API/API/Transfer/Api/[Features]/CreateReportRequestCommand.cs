@@ -37,10 +37,12 @@ public class CreateReportRequestCommandHandler
         CancellationToken cancellationToken)
     {
         var report = Report.Create(
-            request.ReportId,
-            request.OrganizationId,
-            request.StartDate,
-            request.EndDate);
+            id: request.ReportId,
+            organizationId: request.OrganizationId,
+            organizationName: request.OrganizationName,
+            organizationTin: request.OrganizationTin,
+            startDate: request.StartDate,
+            endDate: request.EndDate);
 
         await _reports.AddAsync(report, cancellationToken);
         await _unitOfWork.SaveAsync();
@@ -78,6 +80,8 @@ public class CreateReportRequestCommandHandler
 public record CreateReportRequestCommand(
     Guid ReportId,
     OrganizationId OrganizationId,
+    OrganizationName OrganizationName,
+    Tin OrganizationTin,
     UnixTimestamp StartDate,
     UnixTimestamp EndDate
 ) : IRequest<Unit>;
