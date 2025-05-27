@@ -70,7 +70,7 @@ public class HeadlinePercentageRendererTests
             await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
 
         var hourly = EnergyDataProcessor.ToHourly(rawCons, rawProdStrict, rawProdAll);
-        var percent = headlineProcessor.Render(hourly);
+        var percent = headlineProcessor.Calculate(hourly);
         var html = headlineRenderer.Render(percent, "Året 2024");
 
         await Verifier.Verify(html, extension: "html");

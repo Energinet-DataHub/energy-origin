@@ -48,7 +48,7 @@ public class EnergyReportService
             consumption, strictProduction, allProduction);
 
         // Step 3: Calculate the percentage
-        double percentage = _percentageProcessor.Render(hourlyEnergy);
+        double percentage = _percentageProcessor.Calculate(hourlyEnergy);
 
         // Step 4: Generate the HTML
         string periodLabel = $"{from:MMM d} - {to:MMM d, yyyy}";

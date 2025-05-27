@@ -6,16 +6,19 @@ namespace API.ReportGenerator.Processing;
 
 public interface IHeadlinePercentageProcessor
 {
-    double Render(IReadOnlyList<HourlyEnergy> hours);
+    double Calculate(IReadOnlyList<HourlyEnergy> hours);
 }
 
 public sealed class HeadlinePercentageProcessor : IHeadlinePercentageProcessor
 {
-    public double Render(IReadOnlyList<HourlyEnergy> hours)
+    public double Calculate(IReadOnlyList<HourlyEnergy> hours)
     {
-        if (hours.Count == 0) return 0;
+        if (!hours.Any()) return 0;
 
-        var fullyMatched = hours.Count(h => h.Unmatched == 0);
-        return fullyMatched / (double)hours.Count * 100;
+        var totalConsumed = hours.Sum(h => h.Consumption);
+        var totalMatched = hours.Sum(h => h.Matched);
+
+        if (totalConsumed == 0) return 100;
+        return totalMatched / totalConsumed * 100;
     }
 }
