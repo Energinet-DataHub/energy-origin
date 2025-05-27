@@ -12,9 +12,9 @@ public static class EnergyDataProcessor
         IEnumerable<DataPoint> strictProduction,
         IEnumerable<DataPoint> allProduction)
     {
-        var cons = consumption.ToLookup(d => d.Timestamp.Hour, d => d.Value);
-        var strictProd = strictProduction.ToLookup(d => d.Timestamp.Hour, d => d.Value);
-        var allProd = allProduction.ToLookup(d => d.Timestamp.Hour, d => d.Value);
+        var cons = consumption.ToLookup(d => d.HourOfDay, d => d.Value);
+        var strictProd = strictProduction.ToLookup(d => d.HourOfDay, d => d.Value);
+        var allProd = allProduction.ToLookup(d => d.HourOfDay, d => d.Value);
 
         return Enumerable.Range(0, 24)
             .Select(h =>

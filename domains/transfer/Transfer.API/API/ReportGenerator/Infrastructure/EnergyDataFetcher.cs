@@ -28,17 +28,19 @@ public sealed class EnergyDataFetcher(IConsumptionService consumption, IWalletCl
 
         var cons = (await consTask)
             .OrderBy(x => x.HourOfDay)
-            .Select(x => new DataPoint(from.Date.AddHours(x.HourOfDay), (double)x.KwhQuantity));
+            .Select(x => new DataPoint(x.HourOfDay, (double)x.KwhQuantity));
 
-        // Process strict hourly claims
-        var strictProd = ((await hourlyClaimsTask)?.Result ?? Enumerable.Empty<Claim>())
-            .GroupBy(c => DateTimeOffset.FromUnixTimeSeconds(c.UpdatedAt).Hour)
-            .SelectMany(g => g.Select(c => new DataPoint(from.Date.AddHours(g.Key), c.Quantity)));
+        var strictProd = (await hourlyClaimsTask)?.Result
+                         .Select(c => new DataPoint(
+                             DateTimeOffset.FromUnixTimeSeconds(c.UpdatedAt).Hour,
+                             c.Quantity))
+                         ?? Enumerable.Empty<DataPoint>();
 
-        // Process all claims (including non-hourly)
-        var allProd = ((await allClaimsTask)?.Result ?? Enumerable.Empty<Claim>())
-            .GroupBy(c => DateTimeOffset.FromUnixTimeSeconds(c.UpdatedAt).Hour)
-            .SelectMany(g => g.Select(c => new DataPoint(from.Date.AddHours(g.Key), c.Quantity)));
+        var allProd = (await allClaimsTask)?.Result
+                      .Select(c => new DataPoint(
+                          DateTimeOffset.FromUnixTimeSeconds(c.UpdatedAt).Hour,
+                          c.Quantity))
+                      ?? Enumerable.Empty<DataPoint>();
 
         return (cons, strictProd, allProd);
     }
