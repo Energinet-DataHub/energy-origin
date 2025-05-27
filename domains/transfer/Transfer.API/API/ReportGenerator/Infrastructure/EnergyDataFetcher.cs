@@ -19,38 +19,52 @@ public interface IEnergyDataFetcher
             CancellationToken ct = default);
 }
 
-public sealed class EnergyDataFetcher(IConsumptionService consumption, IWalletClient wallet)
+public sealed class EnergyDataFetcher : IEnergyDataFetcher
 {
-    public async Task<(IEnumerable<DataPoint> Consumption,
-        IEnumerable<DataPoint> StrictProduction,
-        IEnumerable<DataPoint> AllProduction)> GetAsync(
-        OrganizationId orgId,
-        DateTimeOffset from,
-        DateTimeOffset to,
-        CancellationToken ct = default)
+    private readonly IConsumptionService _consumptionService;
+    private readonly IWalletClient _walletClient;
+
+    public EnergyDataFetcher(
+        IConsumptionService consumptionService,
+        IWalletClient walletClient)
     {
-        var consTask = consumption.GetAverageHourlyConsumption(orgId, from, to, ct);
-        var hourlyClaimsTask = wallet.GetClaims(orgId.Value, from, to, TimeMatch.Hourly, ct);
-        var allClaimsTask = wallet.GetClaims(orgId.Value, from, to, TimeMatch.All, ct);
+        _consumptionService = consumptionService ?? throw new ArgumentNullException(nameof(consumptionService));
+        _walletClient = walletClient ?? throw new ArgumentNullException(nameof(walletClient));
+    }
+
+    public async Task<(IEnumerable<DataPoint> Consumption,
+                       IEnumerable<DataPoint> StrictProduction,
+                       IEnumerable<DataPoint> AllProduction)>
+        GetAsync(
+            OrganizationId orgId,
+            DateTimeOffset from,
+            DateTimeOffset to,
+            CancellationToken ct = default)
+    {
+        if (orgId is null) throw new ArgumentNullException(nameof(orgId));
+
+        var consTask = _consumptionService.GetAverageHourlyConsumption(orgId, from, to, ct);
+        var hourlyClaimsTask = _walletClient.GetClaims(orgId.Value, from, to, TimeMatch.Hourly, ct);
+        var allClaimsTask = _walletClient.GetClaims(orgId.Value, from, to, TimeMatch.All, ct);
 
         await Task.WhenAll(consTask, hourlyClaimsTask, allClaimsTask);
 
-        var cons = (await consTask)
+        var consumption = (await consTask)
             .OrderBy(x => x.HourOfDay)
             .Select(x => new DataPoint(x.HourOfDay, (double)x.KwhQuantity));
 
-        var strictProd = (await hourlyClaimsTask)?.Result
-                         .Select(c => new DataPoint(
-                             DateTimeOffset.FromUnixTimeSeconds(c.UpdatedAt).Hour,
-                             c.Quantity))
-                         ?? Enumerable.Empty<DataPoint>();
+        var strictProduction = (await hourlyClaimsTask)?.Result
+            .Select(c => new DataPoint(
+                DateTimeOffset.FromUnixTimeSeconds(c.UpdatedAt).Hour,
+                c.Quantity))
+            ?? Enumerable.Empty<DataPoint>();
 
-        var allProd = (await allClaimsTask)?.Result
-                      .Select(c => new DataPoint(
-                          DateTimeOffset.FromUnixTimeSeconds(c.UpdatedAt).Hour,
-                          c.Quantity))
-                      ?? Enumerable.Empty<DataPoint>();
+        var allProduction = (await allClaimsTask)?.Result
+            .Select(c => new DataPoint(
+                DateTimeOffset.FromUnixTimeSeconds(c.UpdatedAt).Hour,
+                c.Quantity))
+            ?? Enumerable.Empty<DataPoint>();
 
-        return (cons, strictProd, allProd);
+        return (consumption, strictProduction, allProduction);
     }
 }

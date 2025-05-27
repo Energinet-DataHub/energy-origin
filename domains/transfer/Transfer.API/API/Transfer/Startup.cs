@@ -1,5 +1,8 @@
 using System;
 using System.Text.Json.Serialization;
+using API.ReportGenerator.Infrastructure;
+using API.ReportGenerator.Processing;
+using API.ReportGenerator.Rendering;
 using API.Transfer.Api.Options;
 using API.Transfer.Api.Repository;
 using API.Transfer.Api.Services;
@@ -49,6 +52,11 @@ public static class Startup
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
         services.AddHostedService<TransferAgreementCleanupWorker>();
         services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddScoped<IEnergyDataFetcher, EnergyDataFetcher>();
+        services.AddScoped<IHeadlinePercentageProcessor, HeadlinePercentageProcessor>();
+        services.AddScoped<IEnergySvgRenderer, EnergySvgRenderer>();
+        services.AddScoped<IOrganizationHeaderRenderer, OrganizationHeaderRenderer>();
+        services.AddScoped<IHeadlinePercentageRenderer, HeadlinePercentageRenderer>();
 
         services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
         {
