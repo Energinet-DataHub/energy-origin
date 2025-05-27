@@ -37,7 +37,7 @@ public class ReportsController : ControllerBase
         _mediator = mediator;
         _accessDescriptor = accessDescriptor;
         _identityDescriptor = identityDescriptor;
-        _scopeFactory      = scopeFactory;
+        _scopeFactory = scopeFactory;
     }
 
     [HttpPost]
