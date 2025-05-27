@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using API.Transfer.Api.Repository;
 using API.UnitOfWork;
 using EnergyOrigin.Domain.ValueObjects;
@@ -82,29 +84,68 @@ public class CreateReportRequestCommandHandler
 
             // Render HTML fragments
             var headerHtml = _headerRenderer.Render(
-                request.OrganizationName.Value,
-                request.OrganizationTin.Value);
+                HttpUtility.HtmlEncode(request.OrganizationName.Value),
+                HttpUtility.HtmlEncode(request.OrganizationTin.Value));
             var headlineHtml = _percentageRenderer.Render(headlinePercent, periodLabel);
             var svgHtml = _svgRenderer.Render(hourlyData).Svg;
 
-            // Assemble full HTML
-            var fullHtml = $"""
-                            <!DOCTYPE html>
-                            <html>
-                              <head><meta charset='utf-8'/></head>
-                              <body>
-                                {headerHtml}
-                                {headlineHtml}
-                                {svgHtml}
-                              </body>
-                            </html>
+            if (string.IsNullOrEmpty(svgHtml) || !svgHtml.Contains("<svg"))
+            {
+                _logger.LogWarning("SVG content appears to be invalid for ReportId={ReportId}", report.Id);
+                svgHtml = "<p>Chart data could not be displayed</p>"; // Fallback content
+            }
+
+            var htmlDir = Path.Combine(Directory.GetCurrentDirectory(), "API", "ReportGenerator", "html");
+
+            string css = File.ReadAllText(Path.Combine(htmlDir, "report.css"));
+            string energinetSvg = File.ReadAllText(Path.Combine(htmlDir, "energinet-logo.svg"));
+            string trackAndTraceSvg = File.ReadAllText(Path.Combine(htmlDir, "energy-track-and-trace-logo.svg"));
+            string energyTagSvg = File.ReadAllText(Path.Combine(htmlDir, "energy-tag-logo.svg"));
+
+            var head = $"""
+                          <head>
+                            <meta charset="utf-8"/>
+                            <style>
+                            {css}
+                            </style>
+                          </head>
+                        """;
+
+            var logoHtml = $"""
+                              <div class="logo-container">
+                                {energinetSvg}
+                                {trackAndTraceSvg}
+                                {energyTagSvg}
+                              </div>
                             """;
 
-            // Convert to base64 and generate PDF
+            var disclaimerHtml = """
+                                   <div class="disclaimer">
+                                     <p>
+                                       Data grundlag &amp; Godkendelse. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
+                                       Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
+                                       sit amet risus. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio
+                                       sem nec elit.
+                                     </p>
+                                   </div>
+                                 """;
+
+            var fullHtml = $"""
+                              <!DOCTYPE html>
+                              <html>
+                                {head}
+                                <body>
+                                  {headerHtml}    <!-- your rendered header fragment -->
+                                  {headlineHtml}  <!-- your rendered headline fragment -->
+                                  {svgHtml}       <!-- your chart SVG fragment -->
+                                  {logoHtml}      <!-- inlined logos -->
+                                  {disclaimerHtml}
+                                </body>
+                              </html>
+                            """;
+
             var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(fullHtml));
-            var pdfResult = await _mediator.Send(
-                new GeneratePdfCommand(base64Html),
-                cancellationToken);
+            var pdfResult = await _mediator.Send(new GeneratePdfCommand(base64Html), cancellationToken);
 
             if (!pdfResult.IsSuccess)
             {
