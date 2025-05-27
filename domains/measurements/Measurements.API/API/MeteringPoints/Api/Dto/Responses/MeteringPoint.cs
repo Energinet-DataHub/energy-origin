@@ -9,7 +9,7 @@ namespace API.MeteringPoints.Api.Dto.Responses;
 public record MeteringPoint(
     string GSRN,
     string GridArea,
-    MeterType Type,
+    MeterType MeteringPointType,
     SubMeterType SubMeterType,
     Address Address,
     Technology Technology,
