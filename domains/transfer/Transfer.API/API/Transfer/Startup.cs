@@ -51,12 +51,16 @@ public static class Startup
         services.AddSingleton<TransferAgreementStatusService>();
         services.AddHostedService<TransferAgreementProposalCleanupWorker>();
         services.AddHostedService<TransferAgreementCleanupWorker>();
+
+
+
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<IEnergyDataFetcher, EnergyDataFetcher>();
         services.AddScoped<IHeadlinePercentageProcessor, HeadlinePercentageProcessor>();
         services.AddScoped<IEnergySvgRenderer, EnergySvgRenderer>();
         services.AddScoped<IOrganizationHeaderRenderer, OrganizationHeaderRenderer>();
         services.AddScoped<IHeadlinePercentageRenderer, HeadlinePercentageRenderer>();
+        services.AddScoped<IConsumptionService, ConsumptionService>();
 
         services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
         {
@@ -69,6 +73,10 @@ public static class Startup
             var options = sp.GetRequiredService<IOptions<DataHubFacadeOptions>>().Value;
             client.BaseAddress = new Uri(options.Url);
         });
+
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddTransient<AuthHeaderHandler>();
+
 
         services.AddHttpClient<IDataHub3Client, DataHub3Client>((sp, client) =>
         {
