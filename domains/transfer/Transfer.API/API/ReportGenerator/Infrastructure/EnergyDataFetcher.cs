@@ -10,6 +10,15 @@ using EnergyOrigin.WalletClient;
 
 namespace API.ReportGenerator.Infrastructure;
 
+public interface IEnergyDataFetcher
+{
+    Task<(IEnumerable<DataPoint> Consumption,
+            IEnumerable<DataPoint> StrictProduction,
+            IEnumerable<DataPoint> AllProduction)>
+        GetAsync(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to,
+            CancellationToken ct = default);
+}
+
 public sealed class EnergyDataFetcher(IConsumptionService consumption, IWalletClient wallet)
 {
     public async Task<(IEnumerable<DataPoint> Consumption,

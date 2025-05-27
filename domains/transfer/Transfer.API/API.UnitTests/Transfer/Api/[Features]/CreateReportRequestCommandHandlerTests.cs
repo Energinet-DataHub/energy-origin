@@ -1,6 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.ReportGenerator.Domain;
+using API.ReportGenerator.Infrastructure;
+using API.ReportGenerator.Processing;
+using API.ReportGenerator.Rendering;
 using API.Transfer.Api._Features_;
 using API.Transfer.Api.Repository;
 using API.UnitOfWork;
@@ -20,14 +26,25 @@ public class CreateReportRequestCommandHandlerTests
     private readonly IReportRepository _reports = Substitute.For<IReportRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly IMediator _mediator = Substitute.For<IMediator>();
-    private readonly ILogger<CreateReportRequestCommandHandler> _logger =
-        Substitute.For<ILogger<CreateReportRequestCommandHandler>>();
+    private readonly ILogger<CreateReportRequestCommandHandler> _logger = Substitute.For<ILogger<CreateReportRequestCommandHandler>>();
+    private readonly IEnergyDataFetcher _dataFetcher = Substitute.For<IEnergyDataFetcher>();
+    private readonly IHeadlinePercentageProcessor _percentageProcessor = Substitute.For<IHeadlinePercentageProcessor>();
+    private readonly IEnergySvgRenderer _svgRenderer = Substitute.For<IEnergySvgRenderer>();
+    private readonly IOrganizationHeaderRenderer _headerRenderer = Substitute.For<IOrganizationHeaderRenderer>();
+    private readonly IHeadlinePercentageRenderer _percentageRenderer = Substitute.For<IHeadlinePercentageRenderer>();
 
     private readonly CreateReportRequestCommandHandler _sut;
 
     public CreateReportRequestCommandHandlerTests()
     {
         _unitOfWork.SaveAsync().Returns(Task.CompletedTask);
+        _dataFetcher
+            .GetAsync(Arg.Any<OrganizationId>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns((Enumerable.Empty<DataPoint>(), Enumerable.Empty<DataPoint>(), Enumerable.Empty<DataPoint>()));
+        _percentageProcessor.Calculate(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(100);
+        _svgRenderer.Render(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(new EnergySvgResult("<svg></svg>"));
+        _headerRenderer.Render(Arg.Any<string>(), Arg.Any<string>()).Returns("<header/>");
+        _percentageRenderer.Render(Arg.Any<double>(), Arg.Any<string>()).Returns("<percent/>");
 
         var dummyPdf = new byte[] { 0x01, 0x02, 0x03 };
         var successResult = new GeneratePdfResult(
@@ -43,7 +60,12 @@ public class CreateReportRequestCommandHandlerTests
             _reports,
             _unitOfWork,
             _mediator,
-            _logger
+            _logger,
+            _dataFetcher,
+            _percentageProcessor,
+            _svgRenderer,
+            _headerRenderer,
+            _percentageRenderer
         );
     }
 
