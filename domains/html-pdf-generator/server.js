@@ -2,7 +2,7 @@ const express = require('express');
 const { chromium } = require('playwright-core');
 const app = express();
 
-app.use(express.json({limit: '30mb'}));
+app.use(express.json({limit: '300mb'}));
 
 app.get('/health', (_, res) => {
     res.sendStatus(200);
@@ -11,7 +11,7 @@ app.get('/health', (_, res) => {
 app.post('/generate-pdf', async (req, res) => {
     const { html } = req.body;
     let browser;
-    
+
     if (!html) {
         return res.status(400).end('HTML content is required');
     }

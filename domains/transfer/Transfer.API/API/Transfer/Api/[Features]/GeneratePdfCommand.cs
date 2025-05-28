@@ -19,7 +19,6 @@ public class GeneratePdfCommandHandler(HttpClient httpClient, IOptions<PdfOption
     {
         string html;
 
-        // TODO: MASEP Remove conversion
         try
         {
             html = Encoding.UTF8.GetString(Convert.FromBase64String(request.Base64Html));

@@ -459,6 +459,21 @@
             <response code="400">The user is not authenticated.</response>
             <response code="404">Status not found.</response>
         </member>
+        <member name="T:Proxy.Controllers.RequestStatusResponse">
+            <summary>
+            Request status response.
+            </summary>
+        </member>
+        <member name="M:Proxy.Controllers.RequestStatusResponse.#ctor">
+            <summary>
+            Request status response.
+            </summary>
+        </member>
+        <member name="P:Proxy.Controllers.RequestStatusResponse.Status">
+            <summary>
+            The status of the request.
+            </summary>
+        </member>
         <member name="M:Proxy.Controllers.SlicesController.ReceiveSlice(Proxy.Controllers.ReceiveRequest)">
             <summary>
             Receive a certificate-slice from another wallet.

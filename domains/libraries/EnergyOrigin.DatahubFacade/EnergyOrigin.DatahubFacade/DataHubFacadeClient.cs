@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using EnergyOrigin.Domain.ValueObjects;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 
 namespace EnergyOrigin.DatahubFacade;
 
@@ -17,7 +19,10 @@ public class DataHubFacadeClient : IDataHubFacadeClient
         _client = client;
     }
 
-    public async Task<ListMeteringPointForCustomerCaResponse?> ListCustomerRelations(string owner, List<Gsrn> gsrns, CancellationToken cancellationToken)
+    public async Task<ListMeteringPointForCustomerCaResponse?> ListCustomerRelations(
+        string owner,
+        List<Gsrn> gsrns,
+        CancellationToken cancellationToken)
     {
         var mpIdsUrl = string.Join("&meteringPointIds=", gsrns.Select(x => x.Value));
         return await _client.GetFromJsonAsync<ListMeteringPointForCustomerCaResponse>($"/api/relation/meteringpoints/customer?subject={owner}&meteringPointIds={mpIdsUrl}", cancellationToken);
