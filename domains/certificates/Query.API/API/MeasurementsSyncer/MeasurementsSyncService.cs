@@ -165,6 +165,9 @@ public class MeasurementsSyncService
                     }));
             }
 
+            // DH3 should not return measurements after newSyncPoint, but just in case
+            measurements = measurements.Where(m => m.DateFrom >= dateFrom && m.DateTo <= newSyncPoint.EpochSeconds).ToList();
+
             _logger.LogInformation(
                 "Successfully fetched {numberOfMeasurements} measurements for GSRN {GSRN} in period from {from} to: {to}",
                 measurements.Count,
@@ -184,8 +187,7 @@ public class MeasurementsSyncService
                     measurement.IsQuantityMissing);
             }
 
-            // DH3 should not return measurements after newSyncPoint, but just in case
-            return measurements.Where(m => m.DateFrom >= dateFrom && m.DateTo <= newSyncPoint.EpochSeconds).ToList();
+            return measurements;
         }
 
         return new();
