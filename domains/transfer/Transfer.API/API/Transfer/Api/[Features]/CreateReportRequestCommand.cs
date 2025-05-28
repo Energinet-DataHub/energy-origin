@@ -60,7 +60,6 @@ public class CreateReportRequestCommandHandler
         CreateReportRequestCommand request,
         CancellationToken cancellationToken)
     {
-        // Create and persist a pending report
         var report = Report.Create(
             id: request.ReportId,
             organizationId: request.OrganizationId,
@@ -74,7 +73,6 @@ public class CreateReportRequestCommandHandler
 
         try
         {
-            // Fetch raw data
             var from = DateTimeOffset.FromUnixTimeSeconds(request.StartDate.EpochSeconds);
             var to = DateTimeOffset.FromUnixTimeSeconds(request.EndDate.EpochSeconds);
             var (consumption, strictProd, allProd) =
@@ -94,6 +92,7 @@ public class CreateReportRequestCommandHandler
             var headlineHtml = _percentageRenderer.Render(headlinePercent, periodLabel);
             var svgHtml = _svgRenderer.Render(hourlyData).Svg;
             var logoHtml = _logoRenderer.Render();
+            var styleHtml = _styleRenderer.Render();
 
             if (string.IsNullOrEmpty(svgHtml) || !svgHtml.Contains("<svg"))
             {
@@ -108,8 +107,8 @@ public class CreateReportRequestCommandHandler
                                <head>
                                  <meta charset="UTF-8">
                                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                 {{styleHtml}}
                                  <title>Granulære Oprindelsesgarantier</title>
-
                              </head>
                                <body>
                                  {{headerHtml}}
