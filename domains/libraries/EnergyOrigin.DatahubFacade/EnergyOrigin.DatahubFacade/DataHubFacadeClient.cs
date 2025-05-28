@@ -7,10 +7,7 @@ namespace EnergyOrigin.DatahubFacade;
 
 public interface IDataHubFacadeClient
 {
-    Task<ListMeteringPointForCustomerCaResponse?> ListCustomerRelations(
-        string owner,
-        List<Gsrn> gsrns,
-        CancellationToken cancellationToken);
+    Task<ListMeteringPointForCustomerCaResponse?> ListCustomerRelations(string owner, List<Gsrn> gsrns, CancellationToken cancellationToken);
 }
 
 public class DataHubFacadeClient : IDataHubFacadeClient
@@ -27,19 +24,7 @@ public class DataHubFacadeClient : IDataHubFacadeClient
         List<Gsrn> gsrns,
         CancellationToken cancellationToken)
     {
-        // Build repeated "meteringPointIds" entries via StringValues
-        var queryParams = new Dictionary<string, StringValues>
-        {
-            ["subject"] = new StringValues(owner),
-            ["meteringPointIds"] = new StringValues(gsrns.Select(g => g.Value).ToArray())
-        };
-
-        var url = QueryHelpers.AddQueryString(
-            "/api/relation/meteringpoints/customer",
-            queryParams);
-
-        return await _client.GetFromJsonAsync<ListMeteringPointForCustomerCaResponse>(
-            url,
-            cancellationToken);
+        var mpIdsUrl = string.Join("&meteringPointIds=", gsrns.Select(x => x.Value));
+        return await _client.GetFromJsonAsync<ListMeteringPointForCustomerCaResponse>($"/api/relation/meteringpoints/customer?subject={owner}&meteringPointIds={mpIdsUrl}", cancellationToken);
     }
 }
