@@ -58,6 +58,8 @@ public static class Startup
         services.AddScoped<IEnergySvgRenderer, EnergySvgRenderer>();
         services.AddScoped<IOrganizationHeaderRenderer, OrganizationHeaderRenderer>();
         services.AddScoped<IHeadlinePercentageRenderer, HeadlinePercentageRenderer>();
+        services.AddScoped<ILogoRenderer, LogoeRenderer>();
+        services.AddScoped<IStyleRenderer, StyleRenderer>();
         services.AddScoped<IConsumptionService, ConsumptionService>();
 
         services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
