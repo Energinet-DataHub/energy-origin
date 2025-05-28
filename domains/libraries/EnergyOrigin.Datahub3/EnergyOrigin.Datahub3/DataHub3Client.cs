@@ -18,8 +18,8 @@ public class DataHub3Client : IDataHub3Client
         HttpClient client,
         IOptions<DataHub3Options> opts)
     {
-        _client   = client;
-        _useMock  = opts.Value.EnableMock;
+        _client = client;
+        _useMock = opts.Value.EnableMock;
     }
 
     public async Task<MeteringPointData[]?> GetMeasurements(
