@@ -32,6 +32,8 @@ public class CreateReportRequestCommandHandlerTests
     private readonly IEnergySvgRenderer _svgRenderer = Substitute.For<IEnergySvgRenderer>();
     private readonly IOrganizationHeaderRenderer _headerRenderer = Substitute.For<IOrganizationHeaderRenderer>();
     private readonly IHeadlinePercentageRenderer _percentageRenderer = Substitute.For<IHeadlinePercentageRenderer>();
+    private readonly ILogoRenderer _logoRenderer = Substitute.For<ILogoRenderer>();
+    private readonly IStyleRenderer _styleRenderer = Substitute.For<IStyleRenderer>();
 
     private readonly CreateReportRequestCommandHandler _sut;
 
@@ -45,6 +47,8 @@ public class CreateReportRequestCommandHandlerTests
         _svgRenderer.Render(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(new EnergySvgResult("<svg></svg>"));
         _headerRenderer.Render(Arg.Any<string>(), Arg.Any<string>()).Returns("<header/>");
         _percentageRenderer.Render(Arg.Any<double>(), Arg.Any<string>()).Returns("<percent/>");
+        _logoRenderer.Render().Returns("<svg></svg>");
+        _styleRenderer.Render().Returns("<style></style>");
 
         var dummyPdf = new byte[] { 0x01, 0x02, 0x03 };
         var successResult = new GeneratePdfResult(
@@ -65,7 +69,9 @@ public class CreateReportRequestCommandHandlerTests
             _percentageProcessor,
             _svgRenderer,
             _headerRenderer,
-            _percentageRenderer
+            _percentageRenderer,
+            _logoRenderer,
+            _styleRenderer
         );
     }
 
