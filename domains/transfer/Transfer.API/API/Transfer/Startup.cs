@@ -61,6 +61,8 @@ public static class Startup
         services.AddScoped<ILogoRenderer, LogoeRenderer>();
         services.AddScoped<IStyleRenderer, StyleRenderer>();
         services.AddScoped<IConsumptionService, ConsumptionService>();
+        services.AddScoped<IDetailsRenderer, DetailsRenderer>();
+        services.AddScoped<IDisclaimerRenderer, DisclaimerRenderer>();
 
         services.AddGrpcClient<Meteringpoint.V1.Meteringpoint.MeteringpointClient>((sp, o) =>
         {
