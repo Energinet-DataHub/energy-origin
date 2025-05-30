@@ -47,6 +47,7 @@ public class ApplicationDbContext : DbContext
     private static void ConfigureReport(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Report>().Property(r => r.Status).HasConversion<string>().HasColumnType("text").IsRequired();
+        modelBuilder.Entity<Report>().Property(r => r.Language).HasConversion<string>().HasColumnType("text").IsRequired();
         modelBuilder.Entity<Report>().Property(r => r.Content).HasColumnType("bytea");
         modelBuilder.Entity<Report>().Property(r => r.OrganizationId).HasConversion(new OrganizationIdValueConverter()).IsRequired();
         modelBuilder.Entity<Report>().Property(o => o.OrganizationTin).HasConversion(new TinValueConverter()).IsRequired();

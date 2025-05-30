@@ -44,9 +44,9 @@ public class CreateReportRequestCommandHandlerTests
             .GetAsync(Arg.Any<OrganizationId>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns((Enumerable.Empty<DataPoint>(), Enumerable.Empty<DataPoint>(), Enumerable.Empty<DataPoint>()));
         _percentageProcessor.Calculate(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(100);
-        _svgRenderer.Render(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(new EnergySvgResult("<svg></svg>"));
+        _svgRenderer.Render(Arg.Any<IReadOnlyList<HourlyEnergy>>(), Arg.Any<Language>()).Returns(new EnergySvgResult("<svg></svg>"));
         _headerRenderer.Render(Arg.Any<string>(), Arg.Any<string>()).Returns("<header/>");
-        _percentageRenderer.Render(Arg.Any<double>(), Arg.Any<string>()).Returns("<percent/>");
+        _percentageRenderer.Render(Arg.Any<double>(), Arg.Any<string>(), Arg.Any<Language>()).Returns("<percent/>");
         _logoRenderer.Render().Returns("<svg></svg>");
         _styleRenderer.Render().Returns("<style></style>");
 
@@ -82,7 +82,7 @@ public class CreateReportRequestCommandHandlerTests
         var start = UnixTimestamp.Now().AddDays(-7);
         var end = UnixTimestamp.Now();
         var reportId = Guid.NewGuid();
-        var cmd = new CreateReportRequestCommand(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var cmd = new CreateReportRequestCommand(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end, Language.English.ToString());
 
         Report captured = null!;
         _reports
@@ -125,7 +125,7 @@ public class CreateReportRequestCommandHandlerTests
         var start = UnixTimestamp.Now().AddDays(-7);
         var end = UnixTimestamp.Now();
         var reportId = Guid.NewGuid();
-        var cmd = new CreateReportRequestCommand(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var cmd = new CreateReportRequestCommand(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end, Language.English.ToString());
 
         Report captured = null!;
         _reports
@@ -155,7 +155,7 @@ public class CreateReportRequestCommandHandlerTests
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var start = UnixTimestamp.Now().AddDays(-400);
         var end = UnixTimestamp.Now();
-        var cmd = new CreateReportRequestCommand(Guid.NewGuid(), orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var cmd = new CreateReportRequestCommand(Guid.NewGuid(), orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end, Language.English.ToString());
 
         await Assert.ThrowsAsync<BusinessException>(() =>
             _sut.Handle(cmd, CancellationToken.None));

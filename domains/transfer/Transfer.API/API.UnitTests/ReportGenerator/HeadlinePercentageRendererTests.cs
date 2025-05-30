@@ -6,6 +6,7 @@ using API.ReportGenerator.Processing;
 using API.ReportGenerator.Rendering;
 using API.Transfer.Api.Services;
 using API.UnitTests.ReportGenerator.Utilities;
+using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
@@ -17,13 +18,17 @@ namespace API.UnitTests.ReportGenerator;
 
 public class HeadlinePercentageRendererTests
 {
-    [Fact]
-    public async Task Pipeline_GeneratesExpectedHeadlineBox_HtmlSnapshot()
+    [Theory]
+    [InlineData(Language.Danish)]
+    [InlineData(Language.English)]
+    public async Task GivenLanguage_WhenRenderingHeadlineBox_ThenCorrectLocalizedHtmlIsGenerated(Language language)
     {
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var from = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var to = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
         const int seed = 7;
+
+        var period = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
 
         var consumptionClient = Substitute.For<IConsumptionService>();
         var consumptionHours = MockedDataGenerators.GenerateMockConsumption(seed);
@@ -40,26 +45,14 @@ public class HeadlinePercentageRendererTests
             .Returns(new ResultList<Claim>
             {
                 Result = strictClaims,
-                Metadata = new PageInfo
-                {
-                    Count = strictClaims.Count,
-                    Offset = 0,
-                    Limit = strictClaims.Count,
-                    Total = strictClaims.Count
-                }
+                Metadata = new PageInfo { Count = strictClaims.Count, Offset = 0, Limit = strictClaims.Count, Total = strictClaims.Count }
             });
         walletClient
             .GetClaims(orgId.Value, from, to, TimeMatch.All, Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = allClaims,
-                Metadata = new PageInfo
-                {
-                    Count = allClaims.Count,
-                    Offset = 0,
-                    Limit = allClaims.Count,
-                    Total = allClaims.Count
-                }
+                Metadata = new PageInfo { Count = allClaims.Count, Offset = 0, Limit = allClaims.Count, Total = allClaims.Count }
             });
 
         var fetcher = new EnergyDataFetcher(consumptionClient, walletClient);
@@ -71,8 +64,9 @@ public class HeadlinePercentageRendererTests
 
         var hourly = EnergyDataProcessor.ToHourly(rawCons, rawProdStrict, rawProdAll);
         var percent = headlineProcessor.Calculate(hourly);
-        var html = headlineRenderer.Render(percent, "Året 2024");
 
-        await Verifier.Verify(html, extension: "html");
+        var html = headlineRenderer.Render(percent, period, language);
+
+        await Verifier.Verify(html, extension: "html").UseParameters(language);
     }
 }

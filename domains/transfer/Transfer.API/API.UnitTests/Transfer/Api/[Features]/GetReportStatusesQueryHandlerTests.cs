@@ -32,7 +32,8 @@ public class GetReportStatusesQueryHandlerTests
             Any.OrganizationName(),
             Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-7)),
-            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow),
+            language: Language.English);
 
         var report2 = Report.Create(
             id: Guid.NewGuid(),
@@ -40,7 +41,8 @@ public class GetReportStatusesQueryHandlerTests
             Any.OrganizationName(),
             Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-60)),
-            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow),
+            Language.English);
 
         Report.Create(
             id: Guid.NewGuid(),
@@ -48,7 +50,8 @@ public class GetReportStatusesQueryHandlerTests
             Any.OrganizationName(),
             Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-180)),
-            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow),
+            Language.English);
 
         Report.Create(
             id: Guid.NewGuid(),
@@ -56,7 +59,8 @@ public class GetReportStatusesQueryHandlerTests
             Any.OrganizationName(),
             Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-365)),
-            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow),
+            Language.English);
 
         _reports
             .GetByOrganizationAsync(orgId, Arg.Any<CancellationToken>())

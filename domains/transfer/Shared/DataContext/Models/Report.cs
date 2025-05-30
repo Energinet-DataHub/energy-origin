@@ -13,6 +13,13 @@ public enum ReportStatus
     Failed = 2
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum Language
+{
+    English = 0,
+    Danish = 1
+}
+
 public class Report
 {
     private Report(
@@ -23,6 +30,7 @@ public class Report
         UnixTimestamp createdAt,
         UnixTimestamp startDate,
         UnixTimestamp endDate,
+        Language language,
         ReportStatus status,
         byte[]? content)
     {
@@ -33,6 +41,7 @@ public class Report
         CreatedAt = createdAt;
         StartDate = startDate;
         EndDate = endDate;
+        Language = language;
         Status = status;
         Content = content;
     }
@@ -45,7 +54,8 @@ public class Report
         OrganizationName organizationName,
         Tin organizationTin,
         UnixTimestamp startDate,
-        UnixTimestamp endDate)
+        UnixTimestamp endDate,
+        Language language)
     {
         if (organizationId == null)
             throw new BusinessException(nameof(organizationId));
@@ -66,6 +76,7 @@ public class Report
             createdAt: createdAt,
             startDate: startDate,
             endDate: endDate,
+            language: language,
             status: ReportStatus.Pending,
             content: null
         );
@@ -78,6 +89,7 @@ public class Report
     public UnixTimestamp CreatedAt { get; private set; } = UnixTimestamp.Empty();
     public UnixTimestamp StartDate { get; private set; } = UnixTimestamp.Empty();
     public UnixTimestamp EndDate { get; private set; } = UnixTimestamp.Empty();
+    public Language Language { get; private set; }
     public ReportStatus Status { get; private set; }
     public byte[]? Content { get; private set; }
 

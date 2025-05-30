@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api._Features_;
+using API.Transfer.Api.Controllers.HttpUtilities;
 using Asp.Versioning;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
@@ -42,7 +43,6 @@ public class ReportsController : ControllerBase
 
     [HttpPost]
     [ProducesResponseType(typeof(ReportGenerationResponse), StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [SwaggerOperation(Summary = "Initiates asynchronous report generation.")]
@@ -59,8 +59,8 @@ public class ReportsController : ControllerBase
             OrganizationName: OrganizationName.Create(_identityDescriptor.OrganizationName),
             OrganizationTin: Tin.Create(_identityDescriptor.OrganizationCvr ?? throw new BusinessException("Organization CVR is missing")),
             StartDate: UnixTimestamp.Create(request.StartDate),
-            EndDate: UnixTimestamp.Create(request.EndDate)
-        );
+            EndDate: UnixTimestamp.Create(request.EndDate),
+            Language: AcceptLanguageParser.GetPreferredLanguage(Request.Headers));
 
         _ = Task.Run(async () =>
         {

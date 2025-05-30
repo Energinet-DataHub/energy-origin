@@ -66,7 +66,8 @@ public class CreateReportRequestCommandHandler
             organizationName: request.OrganizationName,
             organizationTin: request.OrganizationTin,
             startDate: request.StartDate,
-            endDate: request.EndDate);
+            endDate: request.EndDate,
+            language: PdfLanguageMapper.Map(request.Language));
 
         await _reports.AddAsync(report, cancellationToken);
         await _unitOfWork.SaveAsync();
@@ -83,14 +84,14 @@ public class CreateReportRequestCommandHandler
 
             // Calculate coverage headline
             var headlinePercent = _percentageProcessor.Calculate(hourlyData);
-            var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
+            var periodFromTo = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
 
             // Render HTML fragments
             var headerHtml = _headerRenderer.Render(
                 HttpUtility.HtmlEncode(request.OrganizationName.Value),
                 HttpUtility.HtmlEncode(request.OrganizationTin.Value));
-            var headlineHtml = _percentageRenderer.Render(headlinePercent, periodLabel);
-            var svgHtml = _svgRenderer.Render(hourlyData).Svg;
+            var headlineHtml = _percentageRenderer.Render(headlinePercent, periodFromTo, report.Language);
+            var svgHtml = _svgRenderer.Render(hourlyData, report.Language).Svg;
             var logoHtml = _logoRenderer.Render();
             var styleHtml = _styleRenderer.Render();
 
@@ -199,5 +200,20 @@ public record CreateReportRequestCommand(
     OrganizationName OrganizationName,
     Tin OrganizationTin,
     UnixTimestamp StartDate,
-    UnixTimestamp EndDate
+    UnixTimestamp EndDate,
+    string Language
 ) : IRequest<Unit>;
+
+internal static class PdfLanguageMapper
+{
+    public static Language Map(string lang)
+    {
+        var normalized = lang.Trim().ToLowerInvariant();
+
+        return normalized switch
+        {
+            "da" or "da-dk" => Language.Danish,
+            _ => Language.English
+        };
+    }
+}

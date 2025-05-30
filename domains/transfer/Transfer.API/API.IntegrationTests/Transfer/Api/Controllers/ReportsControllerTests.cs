@@ -69,7 +69,8 @@ public class ReportsControllerTests
             Any.OrganizationName(),
             Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-7)),
-            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow),
+            language: Language.English);
 
         var report2 = Report.Create(
             id: Guid.NewGuid(),
@@ -77,7 +78,8 @@ public class ReportsControllerTests
             Any.OrganizationName(),
             Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-14)),
-            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow),
+            language: Language.English);
 
         var otherOrganizationsReport = Report.Create(
             id: Guid.NewGuid(),
@@ -85,7 +87,8 @@ public class ReportsControllerTests
             Any.OrganizationName(),
             Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-30)),
-            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
+            endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow),
+            language: Language.English);
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -120,7 +123,7 @@ public class ReportsControllerTests
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
         var content = new byte[] { 1, 2, 3, 4, 5 };
-        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7), Language.Danish);
         report.MarkCompleted(content);
 
         using (var scope = _factory.Services.CreateScope())
@@ -146,7 +149,7 @@ public class ReportsControllerTests
         var reportId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7), Language.Danish);
         report.MarkFailed();
 
         using (var scope = _factory.Services.CreateScope())

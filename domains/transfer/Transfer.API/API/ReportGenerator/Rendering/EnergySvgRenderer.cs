@@ -2,352 +2,301 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 using API.ReportGenerator.Domain;
 using API.ReportGenerator.Processing;
+using DataContext.Models;
 
 namespace API.ReportGenerator.Rendering;
 
 public interface IEnergySvgRenderer
 {
-    EnergySvgResult Render(IReadOnlyList<HourlyEnergy> hourly);
+    EnergySvgResult Render(IReadOnlyList<HourlyEnergy> hourly, Language language);
 }
 
 public sealed class EnergySvgRenderer : IEnergySvgRenderer
 {
-    private const int SVG_WIDTH = 754;
-    private const int SVG_HEIGHT = 400;
-    private const int MARGIN_LEFT = 10;
-    private const int MARGIN_TOP = 10;
-    private const int PLOT_HEIGHT = 304;
-
-    private static readonly (string Unmatched, string Overmatched, string Matched,
-        string AvgLine, string Bg, string HourText)
-        Colors = ("#DFDFDF", "#59ACE8", "#82CF76", "#FF0000", "#F9FAFB", "rgb(194,194,194)");
-
     private static readonly XNamespace svg = "http://www.w3.org/2000/svg";
 
-    public EnergySvgResult Render(
-        IReadOnlyList<HourlyEnergy> data)
+    private const int SvgWidth = 754;
+    private const int SvgHeight = 400;
+    private const int MarginLeft = 10;
+    private const int MarginTop = 10;
+    private const int PlotHeight = 304;
+    private const int LegendTop = 355;
+    private const int LegendLeft = 119;
+    private const double BarGapPct = .1;     // 10 % gap left & right → barWidth = 0.8*unitWidth
+
+    private static class Color
+    {
+        public const string Unmatched = "#DFDFDF";
+        public const string Overmatched = "#59ACE8";
+        public const string Matched = "#82CF76";
+        public const string AvgLine = "#FF0000";
+        public const string Background = "#F9FAFB";
+        public const string AxisText = "rgb(194,194,194)";
+    }
+
+    private static string ToInvariant(double d) => d.ToString(CultureInfo.InvariantCulture);
+
+    private readonly record struct SeriesSpec(
+        Func<HourlyEnergy, double> Selector,
+        string Colour,
+        Func<Language, string> LocalizedLabel
+        );
+
+
+    // **Order = stacking order bottom → top**
+    private static readonly SeriesSpec[] Series =
+    {
+        new(h => h.Matched,    Color.Matched,    lang => lang == Language.Danish ? "Matchet"     : "Matched"),
+        new(h => h.Unmatched,  Color.Unmatched,  lang => lang == Language.Danish ? "Ikke matchet"   : "Unmatched"),
+        new(h => h.Overmatched,Color.Overmatched,lang => lang == Language.Danish ? "Overmatchet" : "Overmatched")
+    };
+
+    public EnergySvgResult Render(IReadOnlyList<HourlyEnergy> data, Language language)
     {
         ArgumentNullException.ThrowIfNull(data);
+        if (data.Count != 24)
+            throw new ArgumentException("Hourly array must contain exactly 24 elements.", nameof(data));
 
-        var max = EnergyDataProcessor.MaxStacked(data);
-        var finalRender = CreateSvgDocument(data, max).ToString();
+        double maxStack = EnergyDataProcessor.MaxStacked(data);
 
-        return new EnergySvgResult(finalRender);
+        var unitWidth = (SvgWidth - MarginLeft * 2) / 24.0;
+        var barWidth = unitWidth * (1 - 2 * BarGapPct);
+        var barXStart = unitWidth * BarGapPct;
+
+        var svgDoc =
+            new XDocument(
+                new XElement(svg + "svg",
+                    new XAttribute("xmlns", svg),
+                    new XAttribute("viewBox", $"0 0 {SvgWidth} {SvgHeight}"),
+                    new XAttribute("preserveAspectRatio", "xMidYMid meet"),
+                    new XAttribute("style", "width:100%;height:auto;display:block;"),
+                    CreateDefs(),
+                    CreateBackground(),
+                    CreateGrid(unitWidth),
+                    CreateXAxisLine(),
+                    CreateBars(data, maxStack, unitWidth, barWidth, barXStart),
+                    CreateAverageLine(data, maxStack, unitWidth),
+                    CreateXAxisLabels(unitWidth),
+                    CreateLegend(language)
+                ));
+
+        return new EnergySvgResult(svgDoc.ToString());
     }
 
-    private static XDocument CreateSvgDocument(IReadOnlyList<HourlyEnergy> data, double maxValue)
+    private static XElement CreateBackground() =>
+        new(svg + "rect",
+            new XAttribute("fill", Color.Background),
+            new XAttribute("x", 0), new XAttribute("y", 0),
+            new XAttribute("width", SvgWidth),
+            new XAttribute("height", SvgHeight));
+
+    private static XElement CreateDefs() =>
+        new(svg + "defs",
+            new XElement(svg + "clipPath",
+                new XAttribute("id", "plot"),
+                new XElement(svg + "rect",
+                    new XAttribute("x", 0),
+                    new XAttribute("y", 0),
+                    new XAttribute("width", SvgWidth - MarginLeft * 2),
+                    new XAttribute("height", PlotHeight))));
+
+    private static XElement CreateGrid(double unitWidth)
     {
-        var unitWidth = (SVG_WIDTH - MARGIN_LEFT * 2) / 24.0;
-
-        return new XDocument(
-            new XElement(svg + "svg",
-                new XAttribute("class", "highcharts-root"),
-                new XAttribute("xmlns", svg),
-                new XAttribute("viewBox", $"0 0 {SVG_WIDTH} {SVG_HEIGHT}"),
-                new XAttribute("preserveAspectRatio", "xMidYMid meet"),
-                new XAttribute("style", "width: 100%; height: auto; display: block;"),
-                new XAttribute("role", "img"),
-
-                CreateDefinitions(),
-                CreateBackground(),
-                CreateGridLines(unitWidth),
-                CreateXAxisLine(),
-                CreateChartSeries(data, unitWidth, maxValue),
-                CreateXAxisLabels(data, unitWidth),
-                CreateLegend()
-            ));
-    }
-
-    private static XElement CreateChartSeries(IReadOnlyList<HourlyEnergy> data,
-                                              double unitWidth,
-                                              double maxValue)
-    {
-        return new XElement(svg + "g",
-            new XAttribute("class", "highcharts-series-group"),
-            new XAttribute("data-z-index", "3"),
-            new XAttribute("transform", $"translate({MARGIN_LEFT},{MARGIN_TOP})"),
-
-            CreateBarSeries(data, unitWidth, maxValue, "unmatched", 0),
-            CreateBarSeries(data, unitWidth, maxValue, "overmatched", 1),
-            CreateBarSeries(data, unitWidth, maxValue, "matched", 2),
-            CreateAverageLine(data, unitWidth, maxValue));
-    }
-
-    private static XElement CreateBarSeries(IEnumerable<HourlyEnergy> data,
-                                            double unitWidth,
-                                            double maxValue,
-                                            string seriesType,
-                                            int seriesIndex)
-    {
-        var colour = seriesType switch
+        var lines = Enumerable.Range(0, 25).Select(i =>
         {
-            "unmatched" => Colors.Unmatched,
-            "overmatched" => Colors.Overmatched,
-            "matched" => Colors.Matched,
-            _ => throw new ArgumentException(nameof(seriesType))
-        };
-
-        return new XElement(svg + "g",
-            new XAttribute("class",
-                $"highcharts-series highcharts-series-{seriesIndex} highcharts-column-series"),
-            new XAttribute("data-z-index", "0.1"),
-            new XAttribute("opacity", "1"),
-            new XAttribute("clip-path", "url(#chart-area)"),
-            data.SelectMany(d => CreateBar(d, unitWidth, maxValue, seriesType, colour)));
+            double x = MarginLeft + unitWidth * i;
+            return new XElement(svg + "line",
+                new XAttribute("x1", ToInvariant(x)),
+                new XAttribute("y1", MarginTop),
+                new XAttribute("x2", ToInvariant(x)),
+                new XAttribute("y2", MarginTop + PlotHeight),
+                new XAttribute("stroke", "#e6e6e6"),
+                new XAttribute("stroke-width", 0));
+        });
+        return new(svg + "g", lines);
     }
 
-    private static IEnumerable<XElement> CreateBar(HourlyEnergy d,
-                                                   double unitWidth,
-                                                   double maxValue,
-                                                   string seriesType,
-                                                   string colour)
+    private static XElement CreateXAxisLine() =>
+        new(svg + "line",
+            new XAttribute("x1", MarginLeft),
+            new XAttribute("y1", MarginTop + PlotHeight + 0.5),
+            new XAttribute("x2", SvgWidth - MarginLeft),
+            new XAttribute("y2", MarginTop + PlotHeight + 0.5),
+            new XAttribute("stroke", "#ffffff"),
+            new XAttribute("stroke-width", 1));
+
+    private static XElement CreateBars(IEnumerable<HourlyEnergy> data,
+                                       double maxStack,
+                                       double unitWidth,
+                                       double barWidth,
+                                       double barXStart)
     {
-        var value = seriesType switch
+        const double R = 1.0;
+
+        string RoundedTopPath(double x, double y, double w, double h) =>
+            $"M {ToInvariant(x)} {ToInvariant(y + R)} " +
+            $"a {R} {R} 0 0 1 {ToInvariant(R)} {ToInvariant(-R)} " +
+            $"h {ToInvariant(w - 2 * R)} " +
+            $"a {R} {R} 0 0 1 {ToInvariant(R)} {ToInvariant(R)} " +
+            $"v {ToInvariant(h - R)} h -{ToInvariant(w)} Z";
+
+        string FlatRectPath(double x, double y, double w, double h) =>
+            $"M {ToInvariant(x)} {ToInvariant(y)} h {ToInvariant(w)} v {ToInvariant(h)} h -{ToInvariant(w)} Z";
+
+        var seriesArray = Series.ToArray();
+        var dataList = data.ToList();
+
+        var values = dataList
+            .Select(h => seriesArray.Select(s => s.Selector(h)).ToArray())
+            .ToList();
+
+        var seriesGroups = new XElement[seriesArray.Length];
+
+        for (int s = 0; s < seriesArray.Length; s++)
         {
-            "unmatched" => d.Unmatched,
-            "overmatched" => d.Overmatched,
-            "matched" => d.Matched,
-            _ => 0
-        };
-        if (value <= 0) yield break;
+            var spec = seriesArray[s];
+            var paths = new List<XElement>();
 
-        var bw = unitWidth * 0.8;
-        var xPos = unitWidth * d.Hour + unitWidth * 0.1;
-        var height = PLOT_HEIGHT * value / maxValue;
+            for (int hIndex = 0; hIndex < dataList.Count; hIndex++)
+            {
+                double value = values[hIndex][s];
+                if (value <= 0) continue;
 
-        var yPos = seriesType == "matched"
-            ? PLOT_HEIGHT - height
-            : PLOT_HEIGHT - height - (PLOT_HEIGHT * d.Matched / maxValue);
+                double below = 0;
+                for (int i = 0; i < s; i++)
+                    below += values[hIndex][i];
 
-        yield return new XElement(svg + "rect",
-            new XAttribute("x", xPos.ToString(CultureInfo.InvariantCulture)),
-            new XAttribute("y", yPos.ToString(CultureInfo.InvariantCulture)),
-            new XAttribute("width", bw.ToString(CultureInfo.InvariantCulture)),
-            new XAttribute("height", height.ToString(CultureInfo.InvariantCulture)),
-            new XAttribute("fill", colour));
+                double heightPx = PlotHeight * value / maxStack;
+                double y = PlotHeight - (PlotHeight * (below + value) / maxStack);
+                double x = unitWidth * dataList[hIndex].Hour + barXStart;
+
+                bool isTopMost = true;
+                for (int i = s + 1; i < seriesArray.Length; i++)
+                {
+                    if (values[hIndex][i] > 0)
+                    {
+                        isTopMost = false;
+                        break;
+                    }
+                }
+
+                paths.Add(new XElement(svg + "path",
+                    new XAttribute("d", isTopMost
+                        ? RoundedTopPath(x, y, barWidth, heightPx)
+                        : FlatRectPath(x, y, barWidth, heightPx)),
+                    new XAttribute("fill", spec.Colour)));
+            }
+
+            seriesGroups[s] = new XElement(svg + "g", paths);
+        }
+
+        return new XElement(svg + "g",
+            new XAttribute("clip-path", "url(#plot)"),
+            new XAttribute("transform", $"translate({MarginLeft},{MarginTop})"),
+            seriesGroups);
     }
 
     private static XElement CreateAverageLine(IEnumerable<HourlyEnergy> data,
-                                              double unitWidth,
-                                              double maxValue)
-    {
-        return new XElement(svg + "g",
-            new XAttribute("class",
-                "highcharts-series highcharts-series-3 highcharts-line-series"),
-            new XAttribute("data-z-index", "10"),
-            new XAttribute("opacity", "1"),
-            new XAttribute("clip-path", "url(#chart-area)"),
-            new XElement(svg + "path",
-                new XAttribute("fill", "none"),
-                new XAttribute("class", "highcharts-graph"),
-                new XAttribute("d", CreateAverageLinePath(data, unitWidth, maxValue)),
-                new XAttribute("stroke", Colors.AvgLine),
-                new XAttribute("stroke-width", "2"),
-                new XAttribute("stroke-linejoin", "round"),
-                new XAttribute("stroke-linecap", "round")));
-    }
-
-    private static string CreateAverageLinePath(IEnumerable<HourlyEnergy> data,
-                                                    double unitWidth,
-                                                  double maxValue)
-    {
-        var pts = data.OrderBy(d => d.Hour)
-                                         .Select(d =>
-                          {
-                              var x = unitWidth * (d.Hour + 0.5);
-                              var y = PLOT_HEIGHT - (PLOT_HEIGHT * d.Consumption / maxValue);
-                              return $"{x.ToString(CultureInfo.InvariantCulture)}," +
-                                                                       $"{y.ToString(CultureInfo.InvariantCulture)}";
-                          });
-
-        return "M " + string.Join(" ", pts);
-    }
-
-    private static XElement CreateXAxisLabels(IEnumerable<HourlyEnergy> data,
+                                              double maxStack,
                                               double unitWidth)
     {
-        return new XElement(svg + "g",
-            new XAttribute("class",
-                "highcharts-axis-labels highcharts-xaxis-labels"),
-            new XAttribute("data-z-index", "7"),
-            data.Select(d =>
-            {
-                var x = MARGIN_LEFT + unitWidth * (d.Hour + 0.5);
-                return new XElement(svg + "text",
-                    new XAttribute("x", x.ToString(CultureInfo.InvariantCulture)),
-                    new XAttribute("y", MARGIN_TOP + PLOT_HEIGHT + 27),
-                    new XAttribute("text-anchor", "middle"),
-                    new XAttribute("style", $"cursor: default; font-size: 12px; fill: {Colors.HourText};"),
-                    d.Hour.ToString("D2"));
-            }));
-    }
+        var sb = new StringBuilder("M ");
 
-    private static XElement CreateDefinitions()
-    {
-        return new XElement(svg + "defs",
-            new XElement(svg + "filter",
-                new XAttribute("id", "drop-shadow"),
-                new XElement(svg + "feDropShadow",
-                    new XAttribute("dx", "1"),
-                    new XAttribute("dy", "1"),
-                    new XAttribute("flood-color", "#000000"),
-                    new XAttribute("flood-opacity", "0.75"),
-                    new XAttribute("stdDeviation", "2.5")
-                )
-            ),
-            new XElement(svg + "clipPath",
-                new XAttribute("id", "chart-area"),
-                new XElement(svg + "rect",
-                    new XAttribute("x", "0"),
-                    new XAttribute("y", "0"),
-                    new XAttribute("width", SVG_WIDTH - MARGIN_LEFT * 2),
-                    new XAttribute("height", PLOT_HEIGHT),
-                    new XAttribute("fill", "none")
-                )
-            )
-        );
-    }
+        foreach (var h in data.OrderBy(h => h.Hour))
+        {
+            double x = unitWidth * (h.Hour + 0.5);
+            double y = PlotHeight - (PlotHeight * h.Consumption / maxStack);
+            sb.Append(ToInvariant(x)).Append(',').Append(ToInvariant(y)).Append(' ');
+        }
 
-    private static XElement CreateBackground()
-    {
-        return new XElement(svg + "rect",
-            new XAttribute("fill", Colors.Bg),
-            new XAttribute("class", "highcharts-background"),
-            new XAttribute("x", "0"),
-            new XAttribute("y", "0"),
-            new XAttribute("width", SVG_WIDTH),
-            new XAttribute("height", SVG_HEIGHT),
-            new XAttribute("rx", "0"),
-            new XAttribute("ry", "0")
-        );
-    }
-
-    private static XElement CreateGridLines(double unitWidth)
-    {
-        return new XElement(svg + "g",
-            new XAttribute("class", "highcharts-grid highcharts-xaxis-grid"),
-            new XAttribute("data-z-index", "1"),
-            Enumerable.Range(0, 25).Select(i =>
-            {
-                double x = MARGIN_LEFT + unitWidth * i;
-                return new XElement(svg + "path",
-                    new XAttribute("fill", "none"),
-                    new XAttribute("stroke", "#e6e6e6"),
-                    new XAttribute("stroke-width", "0"),
-                    new XAttribute("data-z-index", "1"),
-                    new XAttribute("class", "highcharts-grid-line"),
-                    new XAttribute("d", $"M {x.ToString(CultureInfo.InvariantCulture)} {MARGIN_TOP} L {x.ToString(CultureInfo.InvariantCulture)} {MARGIN_TOP + PLOT_HEIGHT}"),
-                    new XAttribute("opacity", "1")
-                );
-            })
-        );
-    }
-
-    private static XElement CreateXAxisLine()
-    {
-        var y = (MARGIN_TOP + PLOT_HEIGHT + 0.5).ToString(CultureInfo.InvariantCulture);
+        var path = new XElement(svg + "path",
+            new XAttribute("fill", "none"),
+            new XAttribute("stroke", Color.AvgLine),
+            new XAttribute("stroke-width", 2),
+            new XAttribute("stroke-linejoin", "round"),
+            new XAttribute("stroke-linecap", "round"),
+            new XAttribute("d", sb.ToString().TrimEnd()));
 
         return new XElement(svg + "g",
-            new XAttribute("class", "highcharts-axis highcharts-xaxis"),
-            new XAttribute("data-z-index", "2"),
-            new XElement(svg + "path",
-                new XAttribute("fill", "none"),
-                new XAttribute("class", "highcharts-axis-line"),
-                new XAttribute("stroke", "#ffffff"),
-                new XAttribute("stroke-width", "1"),
-                new XAttribute("d", $"M {MARGIN_LEFT} {y} L {SVG_WIDTH - MARGIN_LEFT} {y}")
-            )
-        );
+            new XAttribute("clip-path", "url(#plot)"),
+            new XAttribute("transform", $"translate({MarginLeft},{MarginTop})"),
+            path);
     }
 
-    private static XElement CreateLegend()
+    private static XElement CreateXAxisLabels(double unitWidth)
     {
+        var labels = Enumerable.Range(0, 24).Select(h =>
+        {
+            double x = MarginLeft + unitWidth * (h + .5);
+            return new XElement(svg + "text",
+                new XAttribute("x", ToInvariant(x)),
+                new XAttribute("y", MarginTop + PlotHeight + 27),
+                new XAttribute("text-anchor", "middle"),
+                new XAttribute("style", $"font-size:12px;fill:{Color.AxisText};"),
+                h.ToString("D2"));
+        });
+        return new XElement(svg + "g", labels);
+    }
+
+    private static XElement CreateLegend(Language language)
+    {
+        var items = new List<XElement>();
+
+        // column-series items
+        int offset = 0;
+        foreach (var spec in Series)
+        {
+            items.Add(LegendItem(offset, spec.Colour, spec.LocalizedLabel(language), isLine: false));
+            offset += 120;
+        }
+        // average line
+        items.Add(LegendItem(
+            offset,
+            Color.AvgLine,
+            language == Language.English ? "Annual consumption" : "Årligt forbrug",
+            isLine: true));
+
         return new XElement(svg + "g",
-            new XAttribute("class", "highcharts-legend"),
-            new XAttribute("data-z-index", "7"),
-            new XAttribute("transform", "translate(119,355)"),
+            new XAttribute("transform", $"translate({LegendLeft},{LegendTop})"),
             new XElement(svg + "rect",
                 new XAttribute("fill", "none"),
-                new XAttribute("class", "highcharts-legend-box"),
-                new XAttribute("rx", "0"),
-                new XAttribute("ry", "0"),
-                new XAttribute("stroke", "#999999"),
-                new XAttribute("stroke-width", "0"),
-                new XAttribute("x", "0"),
-                new XAttribute("y", "0"),
-                new XAttribute("width", "517"),
-                new XAttribute("height", "30")),
-            CreateLegendItems()
-        );
+                new XAttribute("x", 0), new XAttribute("y", 0),
+                new XAttribute("width", 517), new XAttribute("height", 30)),
+            items);
     }
 
-    private static XElement CreateLegendItems()
+    private static XElement LegendItem(int xOffset, string colour, string label, bool isLine)
     {
-        var items = new[]
+        var group = new XElement(svg + "g",
+            new XAttribute("transform", $"translate({xOffset},3)"));
+
+        if (isLine)
         {
-            ("Ikke matchet", Colors.Unmatched, false),
-            ("Overmatchet", Colors.Overmatched, false),
-            ("Matchet", Colors.Matched, false),
-            ("Årligt forbrug", Colors.AvgLine, true)
-        };
+            group.Add(new XElement(svg + "path",
+                new XAttribute("d", "M 1 13 L 15 13"),
+                new XAttribute("fill", "none"),
+                new XAttribute("stroke", colour),
+                new XAttribute("stroke-width", 2),
+                new XAttribute("stroke-linecap", "round")));
+        }
+        else
+        {
+            group.Add(new XElement(svg + "rect",
+                new XAttribute("x", 2), new XAttribute("y", 6),
+                new XAttribute("width", 12), new XAttribute("height", 12),
+                new XAttribute("rx", 6), new XAttribute("ry", 6),
+                new XAttribute("fill", colour)));
+        }
 
-        return new XElement(svg + "g",
-            new XAttribute("data-z-index", "1"),
-            new XElement(svg + "g",
-                items.Select((item, index) =>
-                    new XElement(svg + "g",
-                        new XAttribute("class", item.Item3 ?
-                            "highcharts-legend-item highcharts-line-series" :
-                            "highcharts-legend-item highcharts-column-series"),
-                        new XAttribute("data-z-index", "1"),
-                        new XAttribute("transform", $"translate({8 + index * 120},3)"),
-                        item.Item3 ? CreateLineLegendItem(item) : CreateRectLegendItem(item))
-                )
-            )
-        );
-    }
+        group.Add(new XElement(svg + "text",
+            new XAttribute("x", 21), new XAttribute("y", 17),
+            new XAttribute("style", "font-size:12px;font-family:OpenSansNormal;fill:#333;"),
+            label));
 
-    private static IEnumerable<XElement> CreateRectLegendItem((string Label, string Color, bool IsLine) item)
-    {
-        yield return new XElement(svg + "text",
-            new XAttribute("x", "21"),
-            new XAttribute("y", "17"),
-            new XAttribute("text-anchor", "start"),
-            new XAttribute("data-z-index", "2"),
-            new XAttribute("style", "font-size: 12px; font-family: OpenSansNormal; fill: rgb(51, 51, 51);"),
-            item.Label);
-
-        yield return new XElement(svg + "rect",
-            new XAttribute("x", "2"),
-            new XAttribute("y", "6"),
-            new XAttribute("rx", "6"),
-            new XAttribute("ry", "6"),
-            new XAttribute("width", "12"),
-            new XAttribute("height", "12"),
-            new XAttribute("fill", item.Color),
-            new XAttribute("class", "highcharts-point"),
-            new XAttribute("data-z-index", "3"));
-    }
-
-    private static IEnumerable<XElement> CreateLineLegendItem((string Label, string Color, bool IsLine) item)
-    {
-        yield return new XElement(svg + "path",
-            new XAttribute("fill", "none"),
-            new XAttribute("class", "highcharts-graph"),
-            new XAttribute("stroke-width", "2"),
-            new XAttribute("stroke-linecap", "round"),
-            new XAttribute("d", "M 1 13 L 15 13"),
-            new XAttribute("stroke", item.Color));
-
-        yield return new XElement(svg + "text",
-            new XAttribute("x", "21"),
-            new XAttribute("y", "17"),
-            new XAttribute("text-anchor", "start"),
-            new XAttribute("data-z-index", "2"),
-            new XAttribute("style", "font-size: 12px; font-family: OpenSansNormal; fill: rgb(51, 51, 51);"),
-            item.Label);
+        return group;
     }
 }
