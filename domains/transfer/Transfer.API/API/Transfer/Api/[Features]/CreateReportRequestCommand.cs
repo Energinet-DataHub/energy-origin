@@ -26,9 +26,11 @@ public class CreateReportRequestCommandHandler
     private readonly IHeadlinePercentageProcessor _percentageProcessor;
     private readonly IEnergySvgRenderer _svgRenderer;
     private readonly IOrganizationHeaderRenderer _headerRenderer;
-    private readonly IHeadlinePercentageRenderer _percentageRenderer;
+    private readonly IHeadlinePercentageRenderer _headlinePercentageRenderer;
     private readonly ILogoRenderer _logoRenderer;
     private readonly IStyleRenderer _styleRenderer;
+    private readonly IDetailsRenderer _detailsRenderer;
+    private readonly IDisclaimerRenderer _disclaimerRenderer;
 
     public CreateReportRequestCommandHandler(
         IReportRepository reports,
@@ -39,9 +41,11 @@ public class CreateReportRequestCommandHandler
         IHeadlinePercentageProcessor percentageProcessor,
         IEnergySvgRenderer svgRenderer,
         IOrganizationHeaderRenderer headerRenderer,
-        IHeadlinePercentageRenderer percentageRenderer,
+        IHeadlinePercentageRenderer headlinePercentageRenderer,
         ILogoRenderer logoRenderer,
-        IStyleRenderer styleRenderer)
+        IStyleRenderer styleRenderer,
+        IDetailsRenderer detailsRenderer,
+        IDisclaimerRenderer disclaimerRenderer)
     {
         _reports = reports;
         _unitOfWork = unitOfWork;
@@ -51,9 +55,11 @@ public class CreateReportRequestCommandHandler
         _percentageProcessor = percentageProcessor;
         _svgRenderer = svgRenderer;
         _headerRenderer = headerRenderer;
-        _percentageRenderer = percentageRenderer;
+        _headlinePercentageRenderer = headlinePercentageRenderer;
         _logoRenderer = logoRenderer;
         _styleRenderer = styleRenderer;
+        _detailsRenderer = detailsRenderer;
+        _disclaimerRenderer = disclaimerRenderer;
     }
 
     public async Task<Unit> Handle(
@@ -87,13 +93,16 @@ public class CreateReportRequestCommandHandler
             var periodFromTo = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
 
             // Render HTML fragments
-            var headerHtml = _headerRenderer.Render(
+            var organizationHeaderHtml = _headerRenderer.Render(
                 HttpUtility.HtmlEncode(request.OrganizationName.Value),
-                HttpUtility.HtmlEncode(request.OrganizationTin.Value));
-            var headlineHtml = _percentageRenderer.Render(headlinePercent, periodFromTo, report.Language);
+                HttpUtility.HtmlEncode(request.OrganizationTin.Value),
+                report.Language);
+            var headlineHtml = _headlinePercentageRenderer.Render(headlinePercent, periodFromTo, report.Language);
             var svgHtml = _svgRenderer.Render(hourlyData, report.Language).Svg;
             var logoHtml = _logoRenderer.Render();
             var styleHtml = _styleRenderer.Render();
+            var detailsHtml = _detailsRenderer.Render(report.Language);
+            var disclaimerHtml = _disclaimerRenderer.Render(report.Language);
 
             if (string.IsNullOrEmpty(svgHtml) || !svgHtml.Contains("<svg"))
             {
@@ -109,53 +118,17 @@ public class CreateReportRequestCommandHandler
                                  <meta charset="UTF-8">
                                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
                                  {{styleHtml}}
-                                 <title>Granulære Oprindelsesgarantier</title>
+                                 <title>Report</title>
                              </head>
                                <body>
-                                 {{headerHtml}}
+                                 {{organizationHeaderHtml}}
                                  <div class="chart">
                                  {{headlineHtml}}
                                  {{svgHtml}}
                                  </div>
-                                 <div class="details">
-                                 <p class="description">Granulære Oprindelsesgarantier er udelukkende udstedt på basis af sol- og vindproduktion.
-                                     Herunder kan du se en fordeling af geografisk oprindelse, teknologityper samt andelen fra statsstøttede
-                                     producenter.</p>
-
-                                 <div class="sections">
-                                     <div class="section-column">
-                                         <h6 class="section-title">Kommuner</h6>
-                                         <ul>
-                                             <li>Aabenraa: 50%</li>
-                                             <li>Ringkøbing-Skjern: 25%</li>
-                                             <li>Lolland: 20%</li>
-                                             <li>Andre kommuner: 5%</li>
-                                         </ul>
-                                     </div>
-                                     <div class="section-column">
-                                         <h6 class="section-title">Teknologi</h6>
-                                         <ul>
-                                             <li>Solenergi: 38%</li>
-                                             <li>Vindenergi: 62%</li>
-                                         </ul>
-                                     </div>
-                                     <div class="section-column">
-                                         <h6 class="section-title">Andel fra statsstøttede producenter</h6>
-                                         <ul>
-                                             <li>Ikke statsstøttede: 95%</li>
-                                             <li>Statsstøttede: 5%</li>
-                                         </ul>
-                                     </div>
-                                 </div>
-                             </div>
                              {{logoHtml}}
-
-                                    <div class="disclaimer">
-                                        <p>Data grundlag & Godkendelse. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
-                                            Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
-                                            sit amet risus. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio
-                                            sem nec elit. </p>
-                                    </div>
+                             {{detailsHtml}}
+                             {{disclaimerHtml}}
                                </body>
                              </html>
                              """;

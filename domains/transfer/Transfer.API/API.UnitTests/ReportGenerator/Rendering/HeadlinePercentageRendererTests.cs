@@ -14,7 +14,7 @@ using NSubstitute;
 using VerifyXunit;
 using Xunit;
 
-namespace API.UnitTests.ReportGenerator;
+namespace API.UnitTests.ReportGenerator.Rendering;
 
 public class HeadlinePercentageRendererTests
 {
@@ -67,6 +67,8 @@ public class HeadlinePercentageRendererTests
 
         var html = headlineRenderer.Render(percent, period, language);
 
-        await Verifier.Verify(html, extension: "html").UseParameters(language);
+        await Verifier.Verify(html, extension: "html")
+            .UseParameters(language)
+            .UseDirectory("Snapshots");
     }
 }

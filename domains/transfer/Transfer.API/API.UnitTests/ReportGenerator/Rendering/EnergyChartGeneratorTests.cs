@@ -5,16 +5,16 @@ using API.ReportGenerator.Infrastructure;
 using API.ReportGenerator.Processing;
 using API.ReportGenerator.Rendering;
 using API.Transfer.Api.Services;
+using API.UnitTests.ReportGenerator.Utilities;
+using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
-using API.UnitTests.ReportGenerator.Utilities;
-using DataContext.Models;
 using NSubstitute;
 using VerifyXunit;
 using Xunit;
 
-namespace API.UnitTests.ReportGenerator;
+namespace API.UnitTests.ReportGenerator.Rendering;
 public class EnergySvgRendererTests
 {
     [Theory]
@@ -71,6 +71,7 @@ public class EnergySvgRendererTests
         var svg = renderer.Render(hourly, language).Svg;
 
         await Verifier.Verify(svg, extension: "svg")
-                      .UseParameters(language.ToString());
+            .UseParameters(language)
+            .UseDirectory("Snapshots");
     }
 }
