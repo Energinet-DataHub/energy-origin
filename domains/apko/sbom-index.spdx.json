@@ -1,0 +1,73 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "sbom-sha256:d8344b0d0ce83ae01e87a8c262a46fa4929b7b76f62ca4d49c47198383a83b41",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2025-05-29T21:49:32Z",
+    "creators": [
+      "Tool: apko (v0.27.9+dirty)",
+      "Organization: Chainguard, Inc"
+    ],
+    "licenseListVersion": "3.16"
+  },
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://spdx.org/spdxdocs/apko/",
+  "documentDescribes": [
+    "SPDXRef-Package-sha256-d8344b0d0ce83ae01e87a8c262a46fa4929b7b76f62ca4d49c47198383a83b41"
+  ],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-sha256-d8344b0d0ce83ae01e87a8c262a46fa4929b7b76f62ca4d49c47198383a83b41",
+      "name": "sha256:d8344b0d0ce83ae01e87a8c262a46fa4929b7b76f62ca4d49c47198383a83b41",
+      "versionInfo": "sha256:d8344b0d0ce83ae01e87a8c262a46fa4929b7b76f62ca4d49c47198383a83b41",
+      "filesAnalyzed": false,
+      "description": "Multi-arch image index",
+      "downloadLocation": "NOASSERTION",
+      "supplier": "Organization: Chainguard, Inc.",
+      "sourceInfo": "Generated at image build time by apko",
+      "primaryPackagePurpose": "CONTAINER",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "d8344b0d0ce83ae01e87a8c262a46fa4929b7b76f62ca4d49c47198383a83b41"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:oci/html-pdf-generator@sha256%3Ad8344b0d0ce83ae01e87a8c262a46fa4929b7b76f62ca4d49c47198383a83b41?mediaType=application%2Fvnd.oci.image.index.v1%2Bjson",
+          "referenceType": "purl"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-sha256-81a28cc3d1bea15a7212fea18606bf29da4d74af70de69f5dafb4a028ccda8f5",
+      "name": "sha256:81a28cc3d1bea15a7212fea18606bf29da4d74af70de69f5dafb4a028ccda8f5",
+      "versionInfo": "sha256:81a28cc3d1bea15a7212fea18606bf29da4d74af70de69f5dafb4a028ccda8f5",
+      "filesAnalyzed": false,
+      "downloadLocation": "NOASSERTION",
+      "supplier": "Organization: Chainguard, Inc.",
+      "primaryPackagePurpose": "CONTAINER",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "81a28cc3d1bea15a7212fea18606bf29da4d74af70de69f5dafb4a028ccda8f5"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:oci/html-pdf-generator@sha256%3A81a28cc3d1bea15a7212fea18606bf29da4d74af70de69f5dafb4a028ccda8f5?arch=amd64\u0026mediaType=application%2Fvnd.oci.image.manifest.v1%2Bjson\u0026os=linux",
+          "referenceType": "purl"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-sha256-d8344b0d0ce83ae01e87a8c262a46fa4929b7b76f62ca4d49c47198383a83b41",
+      "relationshipType": "VARIANT_OF",
+      "relatedSpdxElement": "SPDXRef-Package-sha256-81a28cc3d1bea15a7212fea18606bf29da4d74af70de69f5dafb4a028ccda8f5"
+    }
+  ]
+}
