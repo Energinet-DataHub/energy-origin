@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Transfer.Api.Controllers;
@@ -27,18 +28,20 @@ public class ReportsController : ControllerBase
     private readonly AccessDescriptor _accessDescriptor;
     private readonly IdentityDescriptor _identityDescriptor;
     private readonly IServiceScopeFactory _scopeFactory;
-
+    private readonly ILogger<ReportsController> _logger;
 
     public ReportsController(
         IMediator mediator,
         AccessDescriptor accessDescriptor,
         IdentityDescriptor identityDescriptor,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        ILogger<ReportsController> logger)
     {
         _mediator = mediator;
         _accessDescriptor = accessDescriptor;
         _identityDescriptor = identityDescriptor;
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -51,28 +54,60 @@ public class ReportsController : ControllerBase
         [FromBody] ReportGenerationStartRequest request,
         CancellationToken cancellationToken)
     {
-        _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+        _logger.LogInformation("Starting report generation request for organization {OrganizationId}", organizationId);
 
-        var cmd = new CreateReportRequestCommand(
-            ReportId: Guid.NewGuid(),
-            OrganizationId: OrganizationId.Create(organizationId),
-            OrganizationName: OrganizationName.Create(_identityDescriptor.OrganizationName),
-            OrganizationTin: Tin.Create(_identityDescriptor.OrganizationCvr ?? throw new BusinessException("Organization CVR is missing")),
-            StartDate: UnixTimestamp.Create(request.StartDate),
-            EndDate: UnixTimestamp.Create(request.EndDate),
-            Language: AcceptLanguageParser.GetPreferredLanguage(Request.Headers));
-
-        _ = Task.Run(async () =>
+        try
         {
-            await using var scope = _scopeFactory.CreateAsyncScope();
-            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+            _logger.LogDebug("Authorization check passed for organization {OrganizationId}", organizationId);
 
-            await mediator.Send(cmd, CancellationToken.None);
-        });
+            var reportId = Guid.NewGuid();
+            _logger.LogInformation("Created new report with ID {ReportId} for organization {OrganizationId}", reportId, organizationId);
 
-        return AcceptedAtAction(
-            actionName: null,
-            value: new ReportGenerationResponse(cmd.ReportId));
+            var cmd = new CreateReportRequestCommand(
+                ReportId: reportId,
+                OrganizationId: OrganizationId.Create(organizationId),
+                OrganizationName: OrganizationName.Create(_identityDescriptor.OrganizationName),
+                OrganizationTin: Tin.Create(_identityDescriptor.OrganizationCvr ?? throw new BusinessException("Organization CVR is missing")),
+                StartDate: UnixTimestamp.Create(request.StartDate),
+                EndDate: UnixTimestamp.Create(request.EndDate),
+                Language: AcceptLanguageParser.GetPreferredLanguage(Request.Headers));
+
+            _logger.LogDebug("Created report command with date range: {StartDate} to {EndDate}", request.StartDate, request.EndDate);
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    _logger.LogInformation("Starting background processing for report {ReportId}", cmd.ReportId);
+                    await using var scope = _scopeFactory.CreateAsyncScope();
+                    var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+                    await mediator.Send(cmd, CancellationToken.None);
+                    _logger.LogInformation("Successfully completed background processing for report {ReportId}", cmd.ReportId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during background processing of report {ReportId}", cmd.ReportId);
+                }
+            });
+
+            _logger.LogInformation("Report generation request accepted for report {ReportId}", cmd.ReportId);
+            return AcceptedAtAction(
+                actionName: null,
+                value: new ReportGenerationResponse(cmd.ReportId));
+        }
+        catch (BusinessException ex)
+        {
+            _logger.LogWarning(ex, "Business exception during report generation request for organization {OrganizationId}: {Message}",
+                organizationId, ex.Message);
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during report generation request for organization {OrganizationId}", organizationId);
+            throw;
+        }
     }
 
     [HttpGet]
@@ -83,11 +118,27 @@ public class ReportsController : ControllerBase
         [FromQuery] Guid organizationId,
         CancellationToken cancellationToken)
     {
-        _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+        _logger.LogInformation("Getting report statuses for organization {OrganizationId}", organizationId);
 
-        var query = new GetReportStatusesQuery(OrganizationId.Create(organizationId));
-        var result = await _mediator.Send(query, cancellationToken);
-        return Ok(result);
+        try
+        {
+            _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+            _logger.LogDebug("Authorization check passed for organization {OrganizationId}", organizationId);
+
+            var query = new GetReportStatusesQuery(OrganizationId.Create(organizationId));
+            _logger.LogDebug("Executing GetReportStatusesQuery for organization {OrganizationId}", organizationId);
+
+            var result = await _mediator.Send(query, cancellationToken);
+            _logger.LogInformation("Successfully retrieved {Count} report statuses for organization {OrganizationId}",
+                result?.Result?.Count ?? 0, organizationId);
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving report statuses for organization {OrganizationId}", organizationId);
+            throw;
+        }
     }
 
     [HttpGet("{reportId}/download")]
@@ -100,13 +151,32 @@ public class ReportsController : ControllerBase
         [FromQuery] Guid organizationId,
         CancellationToken cancellationToken)
     {
-        _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+        _logger.LogInformation("Download request for report {ReportId} from organization {OrganizationId}", reportId, organizationId);
 
-        var result = await _mediator.Send(new DownloadReportCommand(reportId, organizationId), cancellationToken);
-        if (result == null || result.Content == null)
-            return NotFound();
+        try
+        {
+            _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
+            _logger.LogDebug("Authorization check passed for organization {OrganizationId}", organizationId);
 
-        return File(result.Content, "application/pdf", $"report-{reportId}.pdf");
+            _logger.LogDebug("Executing DownloadReportCommand for report {ReportId}", reportId);
+            var result = await _mediator.Send(new DownloadReportCommand(reportId, organizationId), cancellationToken);
+
+            if (result == null || result.Content == null)
+            {
+                _logger.LogWarning("Report {ReportId} not found or has no content for organization {OrganizationId}",
+                    reportId, organizationId);
+                return NotFound();
+            }
+
+            _logger.LogInformation("Successfully retrieved report {ReportId} for download, content size: {ContentSize} bytes",
+                reportId, result.Content.Length);
+            return File(result.Content, "application/pdf", $"report-{reportId}.pdf");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading report {ReportId} for organization {OrganizationId}", reportId, organizationId);
+            throw;
+        }
     }
 }
 
