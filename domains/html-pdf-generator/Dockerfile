@@ -1,4 +1,4 @@
-FROM Energinet-DataHub/dhi-node:23
+FROM node:24-slim
 
 WORKDIR /app
 
