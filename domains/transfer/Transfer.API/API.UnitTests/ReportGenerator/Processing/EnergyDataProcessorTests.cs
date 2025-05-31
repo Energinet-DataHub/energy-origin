@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using API.ReportGenerator.Domain;
 using API.ReportGenerator.Processing;

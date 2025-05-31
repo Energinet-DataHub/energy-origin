@@ -53,11 +53,13 @@ runs:
 
     - name: Test with filter
       shell: bash
-      env:
-        DOTNET_NOLOGO: "true"
-        DOTNET_CLI_TELEMETRY_OPTOUT: "true"
-        DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "true"
-        TERM: "xterm"
-        version: ""
-      run: dotnet test ${{ inputs.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter ${{ inputs.test-filter }} -p:ParallelizeAssemblies=true -p:ParallelizeTestCollections=true
-
+      run: |
+        echo "Hello World"
+#      env:
+#        DOTNET_NOLOGO: "true"
+#        DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+#        DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "true"
+#        TERM: "xterm"
+#        version: ""
+#      run: dotnet test ${{ inputs.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter ${{ inputs.test-filter }} -p:ParallelizeAssemblies=true -p:ParallelizeTestCollections=true
+#

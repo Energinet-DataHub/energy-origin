@@ -203,9 +203,10 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     }
 
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string orgIds = "", string name = "Peter Producent",
-        string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
+        string apiVersion = ApiVersions.Version1, string languageHeader = "en-GB", bool termsAccepted = true)
     {
         var client = CreateClient();
+        client.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue(languageHeader));
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer",
                 GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), orgIds: orgIds, termsAccepted: termsAccepted));

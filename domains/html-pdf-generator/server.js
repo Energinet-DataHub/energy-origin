@@ -39,10 +39,7 @@ app.post('/generate-pdf', async (req, res) => {
                     margin: { top: '30px', right: '30px', bottom: '30px', left: '30px' },
                     displayHeaderFooter: true,
                     headerTemplate: ``,
-                    footerTemplate: `
-                        <div style="font-size:10px; text-align:right; width:100%; margin-right: 30px">
-                            <span class="pageNumber"></span> / <span class="totalPages"></span>
-                        </div>`
+                    footerTemplate: ``
                 });
 
                 res.set({
