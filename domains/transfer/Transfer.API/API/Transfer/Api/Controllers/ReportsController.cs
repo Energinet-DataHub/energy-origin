@@ -64,8 +64,9 @@ public class ReportsController : ControllerBase
 
         _ = Task.Run(async () =>
         {
-            using var scope = _scopeFactory.CreateScope();
+            await using var scope = _scopeFactory.CreateAsyncScope();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
             await mediator.Send(cmd, CancellationToken.None);
         });
 
