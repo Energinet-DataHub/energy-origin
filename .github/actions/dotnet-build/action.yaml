@@ -80,7 +80,7 @@ runs:
         sign-with-temporary-key: true
         signing-key-path: ./melange.rsa
         repository-path: ./packages
-        environment-variables: "name=${{env.name}},version=${{env.version}},SDK=${{ env.SDK }},RUNTIME=${{ env.RUNTIME }},project=${{ inputs.project }}"
+        environment-variables: "name=${{env.name}},version=${{env.version}},SDK=${{ env.SDK }},RUNTIME=${{ env.RUNTIME }},PROJECT=${{ inputs.project }}"
 
     - name: Generate apko image, provenance, SBOM, sign image, and push it
       uses: ./.github/actions/apko-snapshot

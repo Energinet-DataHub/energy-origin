@@ -114,10 +114,14 @@ runs:
     - name: Set additional environment variables if provided
       shell: bash
       run: |
+        echo "# auto-generated vars" > vars.yaml
         if [ ! -z "${{ inputs.environment-variables }}" ]; then
           IFS=',' read -ra VARS <<< "${{ inputs.environment-variables }}"
           for VAR in "${VARS[@]}"; do
             echo "$VAR" >> $GITHUB_ENV
+            key=$(echo "$VAR" | cut -d= -f1)
+            value=$(echo "$VAR" | cut -d= -f2-)
+            echo "$key: \"$value\"" >> vars.yaml
           done
         fi
 
