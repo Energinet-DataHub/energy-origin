@@ -19,7 +19,7 @@ on:
       project:
         description: "Project name"
         required: false
-        default: "domains/html-pdf-generator/HtmlPdfGenerator.API/HtmlPdfGenerator.API.csproj"
+        default: "HtmlPdfGenerator.API.csproj"
         type: string
 
 jobs:
@@ -68,7 +68,7 @@ jobs:
           dockerfile: ./domains/html-pdf-generator/HtmlPdfGenerator.API/Dockerfile
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
-          docker-context: ./domains/html-pdf-generator/HtmlPdfGenerator.API
+          docker-context: .
           dry-run: ${{ inputs.dry-run }}
           build-args: |
             PROJECT=${{ inputs.project }}
