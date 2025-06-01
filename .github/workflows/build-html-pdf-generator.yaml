@@ -16,6 +16,11 @@ on:
         required: false
         default: "HtmlPdfGenerator.sln"
         type: string
+      project:
+        description: "Project name"
+        required: false
+        default: "domains/html-pdf-generator/HtmlPdfGenerator.API/API.csproj"
+        type: string
 
 jobs:
   build-html-pdf-generator:
@@ -65,6 +70,10 @@ jobs:
           image-tag: ${{ env.version }}
           docker-context: ./domains/html-pdf-generator/HtmlPdfGenerator.API
           dry-run: ${{ inputs.dry-run }}
+          build-args: |
+            PROJECT=${{ inputs.project }}
+            SDK_VERSION=${{ env.SDK }}
+            RUNTIME_VERSION=${{ env.RUNTIME }}
 
       - name: Scan image
         uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v4
