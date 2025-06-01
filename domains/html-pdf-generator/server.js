@@ -17,47 +17,39 @@ app.post('/generate-pdf', async (req, res) => {
     }
 
     try {
-        await Promise.race([
-            (async () => {
-                browser = await chromium.launch({ headless: true });
-                const context = await browser.newContext({
-                    offline: true,
-                    javaScriptEnabled: false,
-                    bypassCSP: false,
-                    acceptDownloads: false,
-                    ignoreHTTPSErrors: false,
-                    serviceWorkers: 'block',
-                    permissions: [],
-                    isMobile: false
-                });
-                const page = await context.newPage();
-                await page.setContent(html, { waitUntil: 'networkidle' });
+        browser = await chromium.launch({
+            headless: true,
+            executablePath: '/usr/bin/chromium-browser'
+        });
 
-                const buffer = await page.pdf({
-                    format: 'A4',
-                    printBackground: true,
-                    margin: { top: '30px', right: '30px', bottom: '30px', left: '30px' },
-                    displayHeaderFooter: true,
-                    headerTemplate: ``,
-                    footerTemplate: ``
-                });
+        const context = await browser.newContext({
+            offline: true,
+            javaScriptEnabled: false,
+            bypassCSP: false,
+            acceptDownloads: false,
+            ignoreHTTPSErrors: false,
+            serviceWorkers: 'block',
+            permissions: []
+        });
 
-                res.set({
-                    'Content-Type': 'application/pdf',
-                    'Content-Length': buffer.length
-                });
+        const page = await context.newPage();
+        await page.setContent(html, { waitUntil: 'networkidle' });
 
-                res.end(buffer);
-            })(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
-        ]);
+        const buffer = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '30px', right: '30px', bottom: '30px', left: '30px' }
+        });
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Length': buffer.length
+        });
+
+        res.end(buffer);
     } catch (error) {
         console.error(error);
-        if (error.message === 'timeout') {
-            res.status(408).end('The request has timed out');
-        } else {
-            res.status(500).end('An unexpected error occurred while processing the PDF');
-        }
+        res.status(500).end('An error occurred while generating the PDF');
     } finally {
         if (browser) {
             await browser.close();
@@ -65,4 +57,4 @@ app.post('/generate-pdf', async (req, res) => {
     }
 });
 
-app.listen(8080, () => console.log('Server started'));
+app.listen(8080, '0.0.0.0', () => console.log('html-pdf-generator started on port 8080'));

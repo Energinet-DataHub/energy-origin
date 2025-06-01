@@ -1,0 +1,123 @@
+name: 'Build package with melange'
+description: |
+  This action builds a single package using Melange, given a config file.
+  It deals with setting up the Melange build tool, repository, and signing
+  key.
+
+inputs:
+  config:
+    description: |
+      The config file to use for building the package.
+    default: .melange.yaml
+
+  multi-config:
+    description: |
+      Comma-separated list of config files to use for building package(s).
+    default: ''
+
+  archs:
+    description: |
+      The architectures to use.
+    default: x86_64
+
+  sign-with-temporary-key:
+    description: |
+      Sign packages with a temporary key, useful for multi-stage
+      pipelines.
+    default: 'false'
+
+  signing-key-path:
+    description: |
+      The path for the temporary key if signing is enabled.
+    default: ${{ github.workspace }}/melange.rsa
+
+  repository-path:
+    description: |
+      The path of the repository being constructed by Melange.
+    default: ${{ github.workspace }}/packages
+
+  repository-append:
+    description: |
+      A list of paths or URIs of repositories that should be
+      implicitly included in the build environment.
+    default: ''
+
+  keyring-append:
+    description: |
+      A list of paths or URIs of keys that should be included
+      in the build environment.
+    default: ''
+
+  namespace:
+    description: |
+      Namespace string to use in SBOM purls identifying built packages (eg wolfi, alpine)
+    default: ''
+
+  empty-workspace:
+    description: |
+      Whether to use an empty workspace or not.
+    default: 'false'
+
+  workdir:
+    description: |
+      Switch to this directory prior to running build
+    default: ''
+
+  cache-dir:
+    description: |
+      Directory used for cached inputs
+    default: ''
+
+  pipeline-dir:
+    description: |
+      Directory used for pipelines
+    default: ''
+
+  git-commit:
+    description: |
+      Commit hash of the git repository containing the build config file
+    default: ''
+
+  git-repo-url:
+    description: |
+      URL of the git repository containing the build config file
+    default: ''
+
+  version:
+    description: |
+      Version of melange to install (tip, latest-release, v0.5.5, etc.)
+    required: true
+    default: 'latest-release'
+
+runs:
+  using: 'composite'
+
+  steps:
+    - if: inputs.template != ''
+      shell: bash
+      run: |
+        echo "Warning: the --template flag has been removed from melange and will be ignored."
+    - uses: .github/actions/melange-setup
+      with:
+        version: ${{ inputs.version }}
+    - uses: .github/actions/melange-keygen
+      if: ${{ inputs.sign-with-temporary-key }}
+      with:
+        signing-key-path: ${{ inputs.signing-key-path }}
+    - uses: .github/actions/melange-build-pkg
+      with:
+        config: ${{ inputs.config }}
+        multi-config: ${{ inputs.multi-config }}
+        archs: ${{ inputs.archs }}
+        sign-with-key: ${{ inputs.sign-with-temporary-key }}
+        signing-key-path: ${{ inputs.signing-key-path }}
+        repository-path: ${{ inputs.repository-path }}
+        repository-append: ${{ inputs.repository-append }}
+        keyring-append: ${{ inputs.keyring-append }}
+        empty-workspace: ${{ inputs.empty-workspace }}
+        namespace: ${{ inputs.namespace }}
+        workdir: ${{ inputs.workdir }}
+        cache-dir: ${{ inputs.cache-dir }}
+        pipeline-dir: ${{ inputs.pipeline-dir }}
+        git-commit: ${{ inputs.git-commit }}
+        git-repo-url: ${{ inputs.git-repo-url }}

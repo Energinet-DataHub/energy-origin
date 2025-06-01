@@ -19,25 +19,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # This outputs the sha of the commit as env.version
       - name: Resolve image version
         uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v4
 
+        # This outputs the name of the subsystem as env.name
       - name: Resolve image name
         shell: bash
         run: echo "name=$(yq '.name' 'domains/html-pdf-generator/configuration.yaml')" | tee -a $GITHUB_ENV
 
-      - name: Build and push Docker image
-        uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v4
-        with:
-          dockerfile: ./domains/html-pdf-generator/Dockerfile
-          image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
-          docker-context: ./domains/html-pdf-generator
-          dry-run: ${{ inputs.dry-run }}
+        # This combines the name of the organization + the name of the subsystem, and lowercases it into env.LOWERCASED
+      - name: Resolve image name
+        shell: bash
+        run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ env.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Scan image
-        uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v4
+      - name: Build melange package
+        uses: .github/actions/melange-build
         with:
-          image-name: ${{ env.name }}
-          image-tag: ${{ env.version }}
-          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          config: domains/html-pdf-generator/melange.yaml
+          archs: x86_64
+          sign-with-temporary-key: true
+          signing-key-path: ./melange.rsa
+          repository-path: ./packages
+
+      - name: Generate apko image, provenance, SBOM, sign image, and push it
+        uses: .github/actions/apko-snapshot
+        with:
+          config: domains/html-pdf-generator/apko.yaml
+          base-tag: ${{ env.LOWERCASED }}
+          target-tag: ${{ env.version }}
