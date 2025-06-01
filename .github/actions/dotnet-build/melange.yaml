@@ -23,7 +23,7 @@ environment:
 
 pipeline:
   - runs: |
-      if [ -z "$PROJECT" ]; then
+      if [ -z "$project" ]; then
         echo "Error: PROJECT environment variable must be set"
         exit 1
       fi
@@ -43,17 +43,17 @@ pipeline:
       - runs: |
           echo "Building with SDK version: $SDK"
           echo "Targeting runtime version: $RUNTIME"
-          echo "Building project: $PROJECT"
+          echo "Building project: $project"
 
-          if grep -q "<AssemblyName>" "${PROJECT}"; then
-            sed -i "${PROJECT}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+          if grep -q "<AssemblyName>" "${project}"; then
+            sed -i "${project}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
           else
-            sed -i "${PROJECT}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+            sed -i "${project}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
           fi
 
           dotnet tool restore || true
 
-          dotnet publish "${PROJECT}" -c Release -o /tmp/app/publish
+          dotnet publish "${project}" -c Release -o /tmp/app/publish
 
           rm -f /tmp/app/publish/appsettings.json /tmp/app/publish/appsettings.*.json || true
 
