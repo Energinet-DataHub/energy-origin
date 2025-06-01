@@ -142,3 +142,4 @@ runs:
         pipeline-dir: ${{ inputs.pipeline-dir }}
         git-commit: ${{ inputs.git-commit }}
         git-repo-url: ${{ inputs.git-repo-url }}
+        vars-file: 'vars.yaml'

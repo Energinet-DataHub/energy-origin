@@ -97,6 +97,11 @@ inputs:
       URL of the git repository containing the build config file
     default: ''
 
+  vars-file:
+    description: |
+      Path to the vars.yaml file with variable bindings
+    default: ''
+
 runs:
   using: 'composite'
 
@@ -108,6 +113,7 @@ runs:
     - name: 'Build package with Melange'
       shell: bash
       run: |
+        [ -n '${{ inputs.vars-file }}' ] && varsfilearg="--vars-file=${{ inputs.vars-file }}"
         [ -n '${{ inputs.workdir }}' ] && cd "${{ inputs.workdir }}"
         [ -n '${{ inputs.repository-append }}' ] && repoarg="--repository-append ${{ inputs.repository-append }}"
         [ -n '${{ inputs.keyring-append }}' ] && keyringarg="--keyring-append ${{ inputs.keyring-append }}"
@@ -130,7 +136,7 @@ runs:
             repoarg="${repoarg} --repository-append ${{ inputs.repository-path }}"
             keyringarg="${keyringarg} --keyring-append ${{ inputs.signing-key-path }}.pub"
           fi
-          sudo melange build $config  --arch ${{ inputs.archs }} --out-dir ${{ inputs.repository-path }} --vars-file vars.yaml $signarg $repoarg $keyringarg $workspacearg $indexarg $nsarg $cachearg $pipelinedirarg $gitcommitarg $gitrepoarg
+          sudo melange build $config --arch ${{ inputs.archs }} --out-dir ${{ inputs.repository-path }} $varsfilearg $signarg $repoarg $keyringarg $workspacearg $indexarg $nsarg $cachearg $pipelinedirarg $gitcommitarg $gitrepoarg
         done
     - name: 'Fix local repository permissions'
       shell: bash
