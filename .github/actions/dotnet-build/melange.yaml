@@ -23,28 +23,9 @@ environment:
 
 pipeline:
   - runs: |
-      if [ -z "$project" ]; then
-        echo "Error: PROJECT environment variable must be set"
-        exit 1
-      fi
-
-      if [ -z "$SDK" ]; then
-        echo "Error: SDK environment variable must be set"
-        exit 1
-      fi
-
-      if [ -z "$RUNTIME" ]; then
-        echo "Error: RUNTIME environment variable must be set"
-        exit 1
-      fi
-
   - working-directory: /work
     pipeline:
       - runs: |
-          echo "Building with SDK version: $SDK"
-          echo "Targeting runtime version: $RUNTIME"
-          echo "Building project: $project"
-
           if grep -q "<AssemblyName>" "${project}"; then
             sed -i "${project}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
           else
@@ -53,7 +34,7 @@ pipeline:
 
           dotnet tool restore || true
 
-          dotnet publish "${project}" -c Release -o /tmp/app/publish
+          dotnet publish "$PROJECT" -c Release -o /tmp/app/publish
 
           rm -f /tmp/app/publish/appsettings.json /tmp/app/publish/appsettings.*.json || true
 
