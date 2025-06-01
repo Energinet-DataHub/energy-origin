@@ -1,0 +1,60 @@
+package:
+  name: html-pdf-generator
+  version: 1.0.0
+  description: HTML to PDF generator using Playwright
+  target-architecture:
+    - x86_64
+  copyright:
+    - license: Apache-2.0
+  dependencies:
+    runtime:
+      - baselayout
+      - nodejs-24
+      - chromium
+      - dumb-init
+      - ca-certificates-bundle
+      - fontconfig
+      - freetype
+      - harfbuzz
+      - nss
+
+environment:
+  contents:
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    repositories:
+      - https://packages.wolfi.dev/os
+    packages:
+      - busybox
+      - ca-certificates-bundle
+      - nodejs-24
+      - npm
+
+pipeline:
+  - name: Build application
+    runs: |
+      # Create destination directories
+      APP_DIR="${{targets.destdir}}/usr/lib/html-pdf-generator"
+      BIN_DIR="${{targets.destdir}}/usr/bin"
+      mkdir -p "${APP_DIR}" "${BIN_DIR}"
+
+      # Copy package.json
+      cp /work/html-pdf-generator/package.json "${APP_DIR}/package.json"
+
+      # Copy package-lock.json
+      cp /work/html-pdf-generator/package-lock.json "${APP_DIR}/package-lock.json"
+
+      # Copy server.js
+      cp /work/html-pdf-generator/server.js "${APP_DIR}/server.js"
+
+      cat > "${BIN_DIR}/html-pdf-generator" << 'EOFINNER'
+      #!/bin/sh
+      exec node /usr/lib/html-pdf-generator/server.js "$@"
+      EOFINNER
+
+      chmod +x "${BIN_DIR}/html-pdf-generator"
+
+      cd "${APP_DIR}"
+      npm install --omit=dev --no-package-lock
+
+      rm -rf ~/.npm

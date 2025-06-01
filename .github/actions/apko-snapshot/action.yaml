@@ -1,0 +1,388 @@
+name: 'Build image snapshot with apko'
+description: |
+  This action builds an OCI image with apko, given a config file
+  and base tag to use.
+
+inputs:
+  apko-image:
+    description: |
+      The digest of the apko image to invoke.
+    default: ghcr.io/wolfi-dev/sdk:latest
+    required: true
+
+  config:
+    description: |
+      The config file to use for building the image.
+    required: true
+    default: .apko.yaml
+
+  lockfile:
+    description: |
+      The lock file that constraints versions of packages.
+    required: false
+    default: ''
+
+  base-tag:
+    description: |
+      The container repository into which we should publish images.
+    default: ghcr.io/${{ github.repository }}
+    required: true
+
+  target-tag:
+    description: |
+      The tag this build will produce upon success.  It will also be used
+      to form a date-based variant for tracking over time.
+    required: true
+
+  registry:
+    description: |
+      Which registry to use.
+    default: ghcr.io
+    required: true
+
+  username:
+    description: |
+      The username to use for docker login step.
+    required: true
+    default: ${{ github.repository_owner }}
+
+  token:
+    description: |
+      The token to use for docker login step.
+    required: true
+    default: ${{ github.token }}
+
+  keyring-append:
+    description: |
+      The value to pass to --keyring-append.
+    required: false
+    default: ''
+
+  build-repository-append:
+    description: |
+      The value to pass to --build-repository-append.
+    required: false
+    default: ''
+
+  repository-append:
+    description: |
+      The value to pass to --repository-append.
+    required: false
+    default: ''
+
+  package-append:
+    description: |
+      The value to pass to --package-append.
+    default: ''
+
+  archs:
+    description: |
+      The architectures to build for.
+    required: false
+    default: ''
+
+  build-options:
+    description: |
+      Build options to enable (comma-separated).
+    default: ''
+
+  additional-tags:
+    description: |
+      Additional tags for the final image.
+    required: false
+    default: ''
+
+  sbom-attest:
+    description: |
+      Upload SBOMs as attestations.
+    required: false
+    default: 'true'
+
+  # Note: requires "actions: read"
+  slsa-attest:
+    description: |
+      Upload build provenance information as attestation.
+    required: false
+    default: 'true'
+
+  generic-user:
+    description: |
+      Username to login to registry.
+    required: false
+    default: ''
+
+  generic-pass:
+    description: |
+      Password to login to registry.
+    required: false
+    default: ''
+
+  debug:
+    description: |
+      Enable debug logging.
+    required: false
+    default: 'false'
+
+  image_refs:
+    description: |
+      The value to pass to --image-refs.
+    default: apko.images
+
+  automount-src:
+    description: |
+      In subsequent steps, if this directory is found, create a copy at automount-dest (inside container)
+    default: ${{ github.workspace }}/.apko-automount
+
+  automount-dest:
+    description: |
+      In subsequent steps, if automount-src is found, create a copy at this location (inside container)
+    default: /work
+
+  source-date-epoch:
+    description: |
+      The UNIX timestamp to use as the source date when building an image.
+    default: ''
+
+  annotations:
+    description: |
+      Annotations to add to the final image. Format: key1:value1,key2:value2.
+    required: false
+    default: ''
+
+  FULCIO_URL:
+    required: false
+    description: address of sigstore PKI server (default "https://fulcio.sigstore.dev")
+    default: "https://fulcio.sigstore.dev"
+
+  REKOR_URL:
+    required: false
+    description: address of rekor STL server (default "https://rekor.sigstore.dev")
+    default: "https://rekor.sigstore.dev"
+
+outputs:
+  digest:
+    value: ${{ steps.apko.outputs.digest }}
+    description: |
+      The digest of the published container image.
+  digest-index:
+    value: ${{ steps.extract.outputs.digest-index }}
+  digest-amd64:
+    value: ${{ steps.extract.outputs.digest-amd64 }}
+  digest-arm64:
+    value: ${{ steps.extract.outputs.digest-arm64 }}
+  digest-386:
+    value: ${{ steps.extract.outputs.digest-386 }}
+  digest-armv6:
+    value: ${{ steps.extract.outputs.digest-armv6 }}
+  digest-armv7:
+    value: ${{ steps.extract.outputs.digest-armv7 }}
+  digest-ppc64le:
+    value: ${{ steps.extract.outputs.digest-ppc64le }}
+  digest-riscv64:
+    value: ${{ steps.extract.outputs.digest-riscv64 }}
+  digest-s390x:
+    value: ${{ steps.extract.outputs.digest-s390x }}
+  shortdigest-index:
+    value: ${{ steps.extract.outputs.shortdigest-index }}
+  shortdigest-amd64:
+    value: ${{ steps.extract.outputs.shortdigest-amd64 }}
+  shortdigest-arm64:
+    value: ${{ steps.extract.outputs.shortdigest-arm64 }}
+  shortdigest-386:
+    value: ${{ steps.extract.outputs.shortdigest-386 }}
+  shortdigest-armv6:
+    value: ${{ steps.extract.outputs.shortdigest-armv6 }}
+  shortdigest-armv7:
+    value: ${{ steps.extract.outputs.shortdigest-armv7 }}
+  shortdigest-ppc64le:
+    value: ${{ steps.extract.outputs.shortdigest-ppc64le }}
+  shortdigest-riscv64:
+    value: ${{ steps.extract.outputs.shortdigest-riscv64 }}
+  shortdigest-s390x:
+    value: ${{ steps.extract.outputs.shortdigest-s390x }}
+
+runs:
+  using: composite
+  steps:
+    - uses: sigstore/cosign-installer@v3
+    - uses: imjasonh/setup-crane@v0.3
+
+    - name: Setup QEMU
+      uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
+
+    - name: Generate snapshot date
+      id: snapshot-date
+      run: |
+        echo date=$(date -u +%Y%m%d) >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Generate dynamic inputs for apko-publish
+      shell: bash
+      id: apko-publish-inputs
+      run: |
+        # If sbom-attest enabled, write SBOMs to working directory to attest later
+        echo "sbom-path=${{ inputs.sbom-attest && '.' || ''}}" >> $GITHUB_OUTPUT
+
+    - uses: ./.github/actions/apko-publish
+      id: apko
+      with:
+        apko-image: ${{ inputs.apko-image }}
+        config: ${{ inputs.config }}
+        lockfile: ${{ inputs.lockfile }}
+        tag: ${{ inputs.base-tag }}:${{ inputs.target-tag }}
+        image_refs: ${{ inputs.image_refs }}
+        keyring-append: ${{ inputs.keyring-append }}
+        build-repository-append: ${{ inputs.build-repository-append }}
+        repository-append: ${{ inputs.repository-append }}
+        package-append: ${{ inputs.package-append }}
+        archs: ${{ inputs.archs }}
+        debug: ${{ inputs.debug }}
+        automount-src: ${{ inputs.automount-src }}
+        automount-dest: ${{ inputs.automount-dest }}
+        build-options: ${{ inputs.build-options }}
+        sbom-path: ${{ steps.apko-publish-inputs.outputs.sbom-path }}
+        generic-user: ${{ inputs.generic-user }}
+        generic-pass: ${{ inputs.generic-pass }}
+        annotations: ${{ inputs.annotations }}
+        source-date-epoch: ${{ inputs.source-date-epoch }}
+
+    - uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.token }}
+
+    - shell: bash
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      run: |
+        cosign sign --yes $(cat ${{ inputs.image_refs }}) \
+            --fulcio-url ${{ inputs.FULCIO_URL }}  --rekor-url ${{ inputs.REKOR_URL }} \
+            -a sha=${{ github.sha }} \
+            -a run_id=${{ github.run_id }} \
+            -a run_attempt=${{ github.run_attempt }}
+
+    - name: Extract the digests for each architecture
+      id: extract
+      shell: bash
+      run: |
+        output="digest-index=${{ steps.apko.outputs.digest }}"
+        echo "Adding GitHub step output: ${output}"
+        echo "${output}" >> $GITHUB_OUTPUT
+        output="shortdigest-index=$(echo "${{ steps.apko.outputs.digest }}" | cut -d@ -f 2)"
+        echo "Adding GitHub step output: ${output}"
+        echo "${output}" >> $GITHUB_OUTPUT
+
+        # If its an index, extract the platform digests too
+        CRANE_MANIFEST_OUTPUT="$(crane manifest ${{ steps.apko.outputs.digest }})"
+        if [[ "$(echo $CRANE_MANIFEST_OUTPUT | jq -r .mediaType)" == "application/vnd.oci.image.index.v1+json" ]]; then
+          for combo in `echo $CRANE_MANIFEST_OUTPUT | jq -r '.manifests[] | .platform.architecture + .platform.variant + "_" + .digest'`; do
+            arch="$(echo "${combo}" | cut -d "_" -f1)"
+            digest="$(echo "${combo}" | cut -d "_" -f2)"
+            output="digest-${arch}=${{ inputs.base-tag }}@${digest}"
+            echo "Adding GitHub step output: ${output}"
+            echo "${output}" >> $GITHUB_OUTPUT
+            output="shortdigest-${arch}=${digest}"
+            echo "Adding GitHub step output: ${output}"
+            echo "${output}" >> $GITHUB_OUTPUT
+          done
+        fi
+
+    - name: Upload SBOMs as attestations
+      if: ${{ inputs.sbom-attest == 'true' }}
+      shell: bash
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      run: |
+        function attest_sbom {
+          arch="${1}"
+          digest="${2}"
+          sbomfile="${3}"
+          if [[ "${sbomfile}" == "" ]]; then
+            echo "Unknown architecture: ${arch}. Exiting."
+            exit 1
+          fi
+          if [[ ! -f "${sbomfile}" ]]; then
+            echo "Unable to find SBOM on disk: ${sbomfile} (arch: ${arch}). Exiting."
+            exit 1
+          fi
+          echo "Attaching ${sbomfile} to ${digest} as spdxjson attestation (arch: ${arch}) ..."
+          cosign attest --yes --type spdxjson --predicate "${sbomfile}" "${digest}"
+          rm -f "${sbomfile}"
+        }
+
+        # First attest the index SBOM
+        attest_sbom "index" "${{ steps.extract.outputs.digest-index }}" "sbom-index.spdx.json"
+
+        # Next, for each architecture (if present)
+        [[ "${{ steps.extract.outputs.digest-amd64 }}" == "" ]] || attest_sbom "amd64" "${{ steps.extract.outputs.digest-amd64 }}" "sbom-x86_64.spdx.json"
+        [[ "${{ steps.extract.outputs.digest-arm64 }}" == "" ]] || attest_sbom "arm64" "${{ steps.extract.outputs.digest-arm64 }}" "sbom-aarch64.spdx.json"
+        [[ "${{ steps.extract.outputs.digest-386 }}" == "" ]] || attest_sbom "386" "${{ steps.extract.outputs.digest-386 }}" "sbom-x86.spdx.json"
+        [[ "${{ steps.extract.outputs.digest-armv6 }}" == "" ]] || attest_sbom "armv6" "${{ steps.extract.outputs.digest-armv6 }}" "sbom-armhf.spdx.json"
+        [[ "${{ steps.extract.outputs.digest-armv7 }}" == "" ]] || attest_sbom "armv7" "${{ steps.extract.outputs.digest-armv7 }}" "sbom-armv7.spdx.json"
+        [[ "${{ steps.extract.outputs.digest-ppc64le }}" == "" ]] || attest_sbom "ppc64le" "${{ steps.extract.outputs.digest-ppc64le }}" "sbom-ppc64le.spdx.json"
+        [[ "${{ steps.extract.outputs.digest-riscv64 }}" == "" ]] || attest_sbom "riscv64" "${{ steps.extract.outputs.digest-riscv64 }}" "sbom-riscv64.spdx.json"
+        [[ "${{ steps.extract.outputs.digest-s390x }}" == "" ]] || attest_sbom "s390x" "${{ steps.extract.outputs.digest-s390x }}" "sbom-s390x.spdx.json"
+
+    # See https://github.com/slsa-framework/slsa-github-generator/tree/main/internal/builders/container
+    - name: 'SLSA: Generate provenance and attest'
+      if: ${{ inputs.slsa-attest == 'true' }}
+      shell: bash
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+        GENERATOR_REPOSITORY: slsa-framework/slsa-github-generator
+        GENERATOR_RELEASE_TAG: v1.5.0
+        GENERATOR_RELEASE_BINARY: slsa-generator-container-linux-amd64
+        GENERATOR_RELEASE_BINARY_SHA256: 6d8b83327ac2134aa8760e1e4f9cd5d3fdbcb56599e39be2cd965f1e04aa8ede
+        GH_TOKEN: "${{ github.token }}"
+        GITHUB_CONTEXT: "${{ toJSON(github) }}" # Needed by slsa-generator-container
+      run: |
+        set -x
+        # Fetch the generator
+        gh release -R "${GENERATOR_REPOSITORY}" download "${GENERATOR_RELEASE_TAG}" -p "${GENERATOR_RELEASE_BINARY}"
+        COMPUTED_HASH="$(sha256sum "${GENERATOR_RELEASE_BINARY}" | awk '{print $1}')"
+        if [[ "${COMPUTED_HASH}" != "${GENERATOR_RELEASE_BINARY_SHA256}" ]]; then
+          echo "Mismatched checksums (wanted ${GENERATOR_RELEASE_BINARY_SHA256} got ${COMPUTED_HASH}). Exiting."
+          exit 1
+        fi
+        chmod +x "${GENERATOR_RELEASE_BINARY}"
+
+        # Create the provenance document
+        trap "rm -f provenance.json" EXIT
+        echo "Generating SLSA build provenance ..."
+        "./${GENERATOR_RELEASE_BINARY}" generate --predicate="provenance.json"
+        echo "Provenance doc:"
+        cat provenance.json | jq
+
+        function attest_slsa {
+          arch="${1}"
+          digest="${2}"
+          echo "Attaching SLSA build provenance to ${digest} (arch: ${arch}) ..."
+          cosign attest --yes --type slsaprovenance --predicate="provenance.json" "${digest}"
+        }
+
+        # First attest the index
+        attest_slsa "index" "${{ steps.extract.outputs.digest-index }}"
+
+        # Next, for each architecture (if present)
+        [[ "${{ steps.extract.outputs.digest-amd64 }}" == "" ]] || attest_slsa "amd64" "${{ steps.extract.outputs.digest-amd64 }}"
+        [[ "${{ steps.extract.outputs.digest-arm64 }}" == "" ]] || attest_slsa "arm64" "${{ steps.extract.outputs.digest-arm64 }}"
+        [[ "${{ steps.extract.outputs.digest-386 }}" == "" ]] || attest_slsa "386" "${{ steps.extract.outputs.digest-386 }}"
+        [[ "${{ steps.extract.outputs.digest-armv6 }}" == "" ]] || attest_slsa "armv6" "${{ steps.extract.outputs.digest-armv6 }}"
+        [[ "${{ steps.extract.outputs.digest-armv7 }}" == "" ]] || attest_slsa "armv7" "${{ steps.extract.outputs.digest-armv7 }}"
+        [[ "${{ steps.extract.outputs.digest-ppc64le }}" == "" ]] || attest_slsa "ppc64le" "${{ steps.extract.outputs.digest-ppc64le }}"
+        [[ "${{ steps.extract.outputs.digest-riscv64 }}" == "" ]] || attest_slsa "riscv64" "${{ steps.extract.outputs.digest-riscv64 }}"
+        [[ "${{ steps.extract.outputs.digest-s390x }}" == "" ]] || attest_slsa "s390x" "${{ steps.extract.outputs.digest-s390x }}"
+
+    # Now that everything else has completed successfully, update the target tag.
+    # based on the digest produced above.
+    - shell: bash
+      run: |
+        set -x
+
+        crane cp ${{ steps.apko.outputs.digest }} ${{ inputs.base-tag }}:${{ inputs.target-tag }}
+
+        for tag in $(echo ${{ inputs.additional-tags }} | sed "s/,/ /g")
+        do
+          crane cp ${{ steps.apko.outputs.digest }} ${{ inputs.base-tag }}:$tag
+        done

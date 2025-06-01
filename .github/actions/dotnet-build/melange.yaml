@@ -1,0 +1,74 @@
+package:
+  name: aspnetcore-app
+  version: 1.0.0
+  epoch: 0
+  description: "ASP.NET Core Application"
+  copyright:
+    - license: MIT
+  dependencies:
+    runtime:
+      - aspnet-9-runtime
+      - busybox
+
+environment:
+  contents:
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    repositories:
+      - https://packages.wolfi.dev/os
+    packages:
+      - ca-certificates-bundle
+      - dotnet-9-sdk
+      - busybox
+
+pipeline:
+  - runs: |
+      if [ -z "$PROJECT" ]; then
+        echo "Error: PROJECT environment variable must be set"
+        exit 1
+      fi
+
+      if [ -z "$SDK" ]; then
+        echo "Error: SDK environment variable must be set"
+        exit 1
+      fi
+
+      if [ -z "$RUNTIME" ]; then
+        echo "Error: RUNTIME environment variable must be set"
+        exit 1
+      fi
+
+  - working-directory: /work
+    pipeline:
+      - runs: |
+          echo "Building with SDK version: $SDK"
+          echo "Targeting runtime version: $RUNTIME"
+          echo "Building project: $PROJECT"
+
+          if grep -q "<AssemblyName>" "${PROJECT}"; then
+            sed -i "${PROJECT}" -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+          else
+            sed -i "${PROJECT}" -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+          fi
+
+          dotnet tool restore || true
+
+          dotnet publish "${PROJECT}" -c Release -o /tmp/app/publish
+
+          rm -f /tmp/app/publish/appsettings.json /tmp/app/publish/appsettings.*.json || true
+
+          mkdir -p /tmp/app/migrations
+          if [ ! -z "${MIGRATIONS}" ]; then
+            cp -v "${MIGRATIONS}" /tmp/app/migrations/
+          fi
+
+          mkdir -p "${{targets.destdir}}/app"
+          mkdir -p "${{targets.destdir}}/migrations"
+          mkdir -p "${{targets.destdir}}/bin"
+
+          cp -r /tmp/app/publish/* "${{targets.destdir}}/app/"
+          cp -r /tmp/app/migrations/* "${{targets.destdir}}/migrations/" || true
+
+          cp $(which cp) "${{targets.destdir}}/bin/"
+          cp $(which cat) "${{targets.destdir}}/bin/"
+          cp $(which ls) "${{targets.destdir}}/bin/"

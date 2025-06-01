@@ -1,0 +1,34 @@
+contents:
+  repositories:
+    - https://packages.wolfi.dev/os
+  keyring:
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+  packages:
+    - aspnet-9-runtime
+    - aspnetcore-app
+    - ca-certificates-bundle
+    - busybox
+
+entrypoint:
+  command: /app/main
+
+environment:
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "false"
+  ASPNETCORE_URLS: "http://+:8080"
+
+ports:
+  - 8080
+  - 8081
+
+work-dir: /app
+
+paths:
+  - path: /app
+    type: directory
+    permissions: 0755
+  - path: /migrations
+    type: directory
+    permissions: 0755
+  - path: /bin
+    type: directory
+    permissions: 0755

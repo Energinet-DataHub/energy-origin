@@ -1,0 +1,37 @@
+contents:
+  keyring:
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    - ./melange.rsa.pub
+  repositories:
+    - https://packages.wolfi.dev/os
+    - "@local /work/packages"
+  packages:
+    - html-pdf-generator@local
+
+entrypoint:
+  command: /usr/bin/dumb-init
+
+cmd: node /usr/lib/html-pdf-generator/server.js
+
+work-dir: /
+
+accounts:
+  groups:
+    - groupname: node
+      gid: 1000
+  users:
+    - username: node
+      uid: 1000
+      gid: 1000
+  run-as: node
+
+environment:
+  NODE_ENV: "production"
+  PLAYWRIGHT_BROWSERS_PATH: "/usr/bin"
+
+paths:
+  - path: /tmp
+    type: directory
+    uid: 1000
+    gid: 1000
+    permissions: 0o1777
