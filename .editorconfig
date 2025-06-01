@@ -18,11 +18,8 @@ indent_style = space
 indent_size = 4
 indent_style = space
 
-[*.cs]
-indent_size = 2
-indent_style = space
-[*.csproj]
-indent_size = 2
+[*.cs,*.csproj]
+indent_size = 4
 indent_style = space
 
 # New line preferences
@@ -79,8 +76,8 @@ dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 csharp_using_directive_placement = outside_namespace:error
 dotnet_sort_system_directives_first = true
 csharp_prefer_braces = when_multiline:suggestion
-csharp_preserve_single_line_blocks = true
-csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_blocks = true:none
+csharp_preserve_single_line_statements = false:none
 csharp_prefer_static_local_function = true:suggestion
 csharp_prefer_simple_using_statement = true:warning
 csharp_style_prefer_switch_expression = true:suggestion

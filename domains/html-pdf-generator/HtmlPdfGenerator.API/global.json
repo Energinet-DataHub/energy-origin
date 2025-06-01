@@ -1,0 +1,9 @@
+{
+    "sdk": {
+        "version": "9.0.102",
+        "rollForward": "feature"
+    },
+    "runtime": {
+        "version": "9.0.1"
+    }
+}
