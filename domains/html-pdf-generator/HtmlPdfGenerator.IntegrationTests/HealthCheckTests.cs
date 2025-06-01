@@ -7,15 +7,15 @@ namespace HtmlPdfGenerator.IntegrationTests;
 
 public class HealthCheckTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
-  private readonly HttpClient _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
-  [Fact]
-  public async Task HealthCheck_ShouldReturnHealthy()
-  {
-    var response = await _client.GetAsync("/health", TestContext.Current.CancellationToken);
-    var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+    [Fact]
+    public async Task HealthCheck_ShouldReturnHealthy()
+    {
+        var response = await _client.GetAsync("/health", TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
-    response.EnsureSuccessStatusCode();
-    Assert.Contains("Healthy", body, StringComparison.OrdinalIgnoreCase);
-  }
+        response.EnsureSuccessStatusCode();
+        Assert.Contains("Healthy", body, StringComparison.OrdinalIgnoreCase);
+    }
 }

@@ -9,7 +9,7 @@ namespace HtmlPdfGenerator.API.Controllers;
 [Route("generate-pdf")]
 public class PdfController(IPdfRenderer pdfRenderer) : ControllerBase
 {
-  [HttpPost]
+    [HttpPost]
     public async Task<IActionResult> Generate([FromBody] HtmlInput input)
     {
         var pdf = await pdfRenderer.RenderPdfAsync(input.Html);

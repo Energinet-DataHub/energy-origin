@@ -11,6 +11,11 @@ on:
         description: "An indication of a dependabot pull request"
         required: true
         type: string
+      solution:
+        description: "Solution name"
+        required: false
+        default: "HtmlPdfGenerator.sln"
+        type: string
 
 jobs:
   build-html-pdf-generator:
@@ -18,6 +23,32 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Load - global.json
+        shell: bash
+        run: |
+          DIRECTORY=$(dirname '${{ inputs.solution }}')
+          test -f "$DIRECTORY/global.json" || exit 0
+          echo "DIRECTORY=$DIRECTORY" | tee -a $GITHUB_ENV
+          echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
+          echo "RUNTIME=$(jq -rc '.runtime.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
+
+      - name: Overwrite - if given optional input
+        shell: bash
+        run: |
+          if [ ! -z "${{ inputs.sdk-version }}" ]; then
+            echo "SDK=${{ inputs.sdk-version }}" | tee -a $GITHUB_ENV
+          fi
+          if [ ! -z "${{ inputs.runtime-version }}" ]; then
+            echo "RUNTIME=${{ inputs.runtime-version }}" | tee -a $GITHUB_ENV
+          fi
+
+      - name: Fail - if versions are not present
+        shell: bash
+        run: |
+          set +e
+          ! test -z "${{ env.SDK }}"
+          ! test -z "${{ env.RUNTIME }}"
 
       - name: Resolve image version
         uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v4

@@ -13,7 +13,7 @@ public interface IPdfRenderer
 
 public interface IPdfRendererLifecycle : IPdfRenderer, IAsyncDisposable
 {
-  Task InitializeAsync();
+    Task InitializeAsync();
 }
 
 public class PdfRenderer : IPdfRendererLifecycle
@@ -55,26 +55,26 @@ public class PdfRenderer : IPdfRendererLifecycle
 
     public async ValueTask DisposeAsync()
     {
-      if (Browser is not null)
-        await Browser.CloseAsync();
+        if (Browser is not null)
+            await Browser.CloseAsync();
 
-      _playwright?.Dispose();
-      _semaphore.Dispose();
+        _playwright?.Dispose();
+        _semaphore.Dispose();
     }
 }
 
 public class PdfRendererStartup(IPdfRendererLifecycle pdfRenderer, StartupHealthCheck healthCheck)
   : IHostedService
 {
-  public async Task StartAsync(CancellationToken cancellationToken)
-  {
-    await pdfRenderer.InitializeAsync();
-    healthCheck.StartupCompleted = true;
-  }
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await pdfRenderer.InitializeAsync();
+        healthCheck.StartupCompleted = true;
+    }
 
-  public async Task StopAsync(CancellationToken cancellationToken)
-  {
-    await pdfRenderer.DisposeAsync();
-  }
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        await pdfRenderer.DisposeAsync();
+    }
 }
 
