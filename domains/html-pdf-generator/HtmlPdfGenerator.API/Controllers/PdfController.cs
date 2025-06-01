@@ -7,19 +7,12 @@ namespace HtmlPdfGenerator.API.Controllers;
 
 [ApiController]
 [Route("generate-pdf")]
-public class PdfController : ControllerBase
+public class PdfController(IPdfRenderer pdfRenderer) : ControllerBase
 {
-    private readonly IPdfRenderer _pdfRenderer;
-
-    public PdfController(IPdfRenderer pdfRenderer)
-    {
-        _pdfRenderer = pdfRenderer;
-    }
-
-    [HttpPost]
+  [HttpPost]
     public async Task<IActionResult> Generate([FromBody] HtmlInput input)
     {
-        var pdf = await _pdfRenderer.RenderPdfAsync(input.Html);
+        var pdf = await pdfRenderer.RenderPdfAsync(input.Html);
         return File(pdf, "application/pdf");
     }
 }

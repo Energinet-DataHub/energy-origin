@@ -29,10 +29,10 @@ jobs:
       - name: Build and push Docker image
         uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v4
         with:
-          dockerfile: ./domains/html-pdf-generator/Dockerfile
+          dockerfile: ./domains/html-pdf-generator/HtmlPdfGenerator.API/Dockerfile
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}
-          docker-context: ./domains/html-pdf-generator
+          docker-context: ./domains/html-pdf-generator/HtmlPdfGenerator.API
           dry-run: ${{ inputs.dry-run }}
 
       - name: Scan image

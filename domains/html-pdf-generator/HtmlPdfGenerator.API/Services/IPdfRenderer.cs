@@ -11,7 +11,12 @@ public interface IPdfRenderer
     Task<byte[]> RenderPdfAsync(string html);
 }
 
-public class PdfRenderer : IPdfRenderer, IDisposable
+public interface IPdfRendererLifecycle : IPdfRenderer, IAsyncDisposable
+{
+  Task InitializeAsync();
+}
+
+public class PdfRenderer : IPdfRendererLifecycle
 {
     public IBrowser? Browser { get; private set; }
     private IPlaywright? _playwright;
@@ -48,29 +53,28 @@ public class PdfRenderer : IPdfRenderer, IDisposable
         Browser = await _playwright.Chromium.LaunchAsync(new() { Headless = true });
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _playwright?.Dispose();
-        _semaphore.Dispose();
+      if (Browser is not null)
+        await Browser.CloseAsync();
+
+      _playwright?.Dispose();
+      _semaphore.Dispose();
     }
 }
 
-public class PdfRendererStartup : IHostedService
+public class PdfRendererStartup(IPdfRendererLifecycle pdfRenderer, StartupHealthCheck healthCheck)
+  : IHostedService
 {
-    private readonly PdfRenderer _pdfRenderer;
+  public async Task StartAsync(CancellationToken cancellationToken)
+  {
+    await pdfRenderer.InitializeAsync();
+    healthCheck.StartupCompleted = true;
+  }
 
-    public PdfRendererStartup(IPdfRenderer renderer)
-    {
-        _pdfRenderer = renderer as PdfRenderer
-                       ?? throw new ArgumentException("Expected PdfRenderer concrete instance");
-    }
-
-    public Task StartAsync(CancellationToken cancellationToken)
-        => _pdfRenderer.InitializeAsync();
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _pdfRenderer.Dispose();
-        return Task.CompletedTask;
-    }
+  public async Task StopAsync(CancellationToken cancellationToken)
+  {
+    await pdfRenderer.DisposeAsync();
+  }
 }
+
