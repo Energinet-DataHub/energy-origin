@@ -19,7 +19,7 @@ on:
       project:
         description: "Project name"
         required: false
-        default: "HtmlPdfGenerator.API.csproj"
+        default: "domains/html-pdf-generator/HtmlPdfGenerator.API/HtmlPdfGenerator.API.csproj"
         type: string
 
 jobs:
