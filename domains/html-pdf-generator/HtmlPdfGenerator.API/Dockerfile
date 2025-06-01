@@ -24,10 +24,10 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 RUN dotnet tool restore || true
-RUN dotnet tool install --global Microsoft.Playwright.CLI \
-    && /root/.dotnet/tools/playwright install -p ${PROJECT}
-
 RUN dotnet publish ${PROJECT} -c Release -o /app/publish
+RUN dotnet tool install --global Microsoft.Playwright.CLI \
+    && /root/.dotnet/tools/playwright install
+
 WORKDIR /app/publish
 RUN rm -f appsettings.json appsettings.*.json || true
 
