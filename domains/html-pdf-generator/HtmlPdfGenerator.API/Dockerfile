@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN dotnet tool restore || true
 RUN dotnet tool install --global Microsoft.Playwright.CLI \
-    && /root/.dotnet/tools/playwright install
+    && /root/.dotnet/tools/playwright install -p ${PROJECT}
 
 RUN dotnet publish ${PROJECT} -c Release -o /app/publish
 WORKDIR /app/publish
