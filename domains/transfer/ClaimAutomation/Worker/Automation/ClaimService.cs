@@ -100,7 +100,7 @@ public class ClaimService(
                     response?.Result.Count(), maskedSubjectId);
 
                 logger.LogInformation("Fetched {certificatesCount} certificates for subject {subjectId}",
-                response?.Result.Count(), maskedSubjectId);if (response == null)
+                response?.Result.Count(), maskedSubjectId); if (response == null)
                 {
                     throw new ClaimCertificatesException(
                         $"Something went wrong when getting certificates from the wallet for {subjectId}. Response is null.");
