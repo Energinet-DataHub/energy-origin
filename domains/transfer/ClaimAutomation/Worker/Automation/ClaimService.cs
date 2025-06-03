@@ -92,24 +92,31 @@ public class ClaimService(
             logger.LogInformation("Fetching certificates for subject {subjectId} with {certificatesCount} already fetched",
                 maskedSubjectId, certificates.Count);
 
-            var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken,
-                limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
-
-            logger.LogInformation("Fetched {certificatesCount} certificates for subject {subjectId}",
-                response?.Result.Count(), maskedSubjectId);
-
-            if (response == null)
+            try
             {
-                throw new ClaimCertificatesException(
-                    $"Something went wrong when getting certificates from the wallet for {subjectId}. Response is null.");
+                var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken,
+                    limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
+                logger.LogInformation("Fetched {certificatesCount} certificates for subject {subjectId}",
+                    response?.Result.Count(), maskedSubjectId);
+
+                logger.LogInformation("Fetched {certificatesCount} certificates for subject {subjectId}",
+                response?.Result.Count(), maskedSubjectId); if (response == null)
+                {
+                    throw new ClaimCertificatesException(
+                        $"Something went wrong when getting certificates from the wallet for {subjectId}. Response is null.");
+                }
+
+                certificates.AddRange(response.Result);
+                if (certificates.Count >= response.Metadata.Total)
+                {
+                    logger.LogInformation("Fetched all certificates for subject {subjectId}. Total: {totalCertificates}",
+                        maskedSubjectId, response.Metadata.Total);
+                    hasMoreCertificates = false;
+                }
             }
-
-            certificates.AddRange(response.Result);
-            if (certificates.Count >= response.Metadata.Total)
+            catch (Exception e)
             {
-                logger.LogInformation("Fetched all certificates for subject {subjectId}. Total: {totalCertificates}",
-                    maskedSubjectId, response.Metadata.Total);
-                hasMoreCertificates = false;
+                logger.LogError(e, "Error fetching certificates for subject {subjectId}.", maskedSubjectId);
             }
         }
 
