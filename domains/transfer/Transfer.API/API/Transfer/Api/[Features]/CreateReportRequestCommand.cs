@@ -23,6 +23,7 @@ public class CreateReportRequestCommandHandler
     private readonly IMediator _mediator;
     private readonly ILogger<CreateReportRequestCommandHandler> _logger;
     private readonly IEnergyDataFetcher _dataFetcher;
+    private readonly IEnergyDataFormatter _dataFormatter;
     private readonly IHeadlinePercentageProcessor _percentageProcessor;
     private readonly IEnergySvgRenderer _svgRenderer;
     private readonly IOrganizationHeaderRenderer _headerRenderer;
@@ -36,6 +37,7 @@ public class CreateReportRequestCommandHandler
         IMediator mediator,
         ILogger<CreateReportRequestCommandHandler> logger,
         IEnergyDataFetcher dataFetcher,
+        IEnergyDataFormatter dataFormatter,
         IHeadlinePercentageProcessor percentageProcessor,
         IEnergySvgRenderer svgRenderer,
         IOrganizationHeaderRenderer headerRenderer,
@@ -48,6 +50,7 @@ public class CreateReportRequestCommandHandler
         _mediator = mediator;
         _logger = logger;
         _dataFetcher = dataFetcher;
+        _dataFormatter = dataFormatter;
         _percentageProcessor = percentageProcessor;
         _svgRenderer = svgRenderer;
         _headerRenderer = headerRenderer;
@@ -75,8 +78,9 @@ public class CreateReportRequestCommandHandler
         {
             var from = DateTimeOffset.FromUnixTimeSeconds(request.StartDate.EpochSeconds);
             var to = DateTimeOffset.FromUnixTimeSeconds(request.EndDate.EpochSeconds);
-            var (consumption, strictProd, allProd) =
-                await _dataFetcher.GetAsync(request.OrganizationId, from, to, cancellationToken);
+            var (consumptionRaw, claims) = await _dataFetcher.GetAsync(request.OrganizationId, from, to, cancellationToken);
+
+            var (consumption, strictProd, allProd) = _dataFormatter.Format(consumptionRaw, claims);
 
             // Process into hourly aggregates
             var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);
