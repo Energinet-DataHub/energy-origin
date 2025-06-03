@@ -38,7 +38,7 @@ public class MunicipalityPercentageProcessorTests
     {
         var claims = new List<Claim>();
         var attributes = new Dictionary<string, string>();
-        if(municipalityCode != null)
+        if (municipalityCode != null)
             attributes.Add("municipality_code", municipalityCode);
         else
         {

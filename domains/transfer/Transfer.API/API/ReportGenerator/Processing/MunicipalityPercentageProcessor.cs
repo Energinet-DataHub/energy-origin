@@ -19,9 +19,9 @@ public sealed class MunicipalityPercentageProcessor : IMunicipalityPercentagePro
         var totalQuantity = claims.Sum(x => x.Quantity);
 
         var grpd = from c in claims
-            group (double)c.Quantity by c.ProductionCertificate.Attributes.FirstOrDefault(y => y.Key == "municipality_code").Value
+                   group (double)c.Quantity by c.ProductionCertificate.Attributes.FirstOrDefault(y => y.Key == "municipality_code").Value
             into g
-            select new { g.Key, sum = g.Sum(x => x) };
+                   select new { g.Key, sum = g.Sum(x => x) };
 
         var municipalities = new List<MunicipalityDistribution>();
         foreach (var municipality in grpd)
