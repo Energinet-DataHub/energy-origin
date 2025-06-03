@@ -9,7 +9,7 @@ public interface IHeadlinePercentageProcessor
     double Calculate(IReadOnlyList<HourlyEnergy> hours);
 }
 
-public sealed class HeadlinePercentageProcessor : IHeadlinePercentageProcessor
+public class HeadlinePercentageProcessor : IHeadlinePercentageProcessor
 {
     public double Calculate(IReadOnlyList<HourlyEnergy> hours)
     {

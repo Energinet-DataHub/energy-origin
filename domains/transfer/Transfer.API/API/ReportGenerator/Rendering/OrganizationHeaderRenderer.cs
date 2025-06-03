@@ -7,7 +7,7 @@ public interface IOrganizationHeaderRenderer
     string Render(string organizationName, string taxIdentificationNumber);
 }
 
-public sealed class OrganizationHeaderRenderer : IOrganizationHeaderRenderer
+public class OrganizationHeaderRenderer : IOrganizationHeaderRenderer
 {
     public string Render(string organizationName, string taxIdentificationNumber)
     {

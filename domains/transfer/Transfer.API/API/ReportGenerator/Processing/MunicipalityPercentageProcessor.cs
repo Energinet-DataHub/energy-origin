@@ -10,7 +10,7 @@ public interface IMunicipalityPercentageProcessor
     List<MunicipalityDistribution> Calculate(IReadOnlyList<Claim> claims);
 }
 
-public sealed class MunicipalityPercentageProcessor : IMunicipalityPercentageProcessor
+public class MunicipalityPercentageProcessor : IMunicipalityPercentageProcessor
 {
     public List<MunicipalityDistribution> Calculate(IReadOnlyList<Claim> claims)
     {

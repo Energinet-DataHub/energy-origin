@@ -7,7 +7,7 @@ public interface IHeadlinePercentageRenderer
     string Render(double percent, string periodLabel);
 }
 
-public sealed class HeadlinePercentageRenderer : IHeadlinePercentageRenderer
+public class HeadlinePercentageRenderer : IHeadlinePercentageRenderer
 {
     public string Render(double percent, string periodLabel)
     {

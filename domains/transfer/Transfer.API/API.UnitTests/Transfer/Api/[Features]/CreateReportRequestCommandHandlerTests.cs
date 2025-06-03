@@ -70,9 +70,11 @@ public class CreateReportRequestCommandHandlerTests
             _dataFetcher,
             new EnergyDataFormatter(),
             _percentageProcessor,
+            new MunicipalityPercentageProcessor(),
             _svgRenderer,
             _headerRenderer,
             _percentageRenderer,
+            new MunicipalityPercentageRenderer(),
             _logoRenderer,
             _styleRenderer
         );
