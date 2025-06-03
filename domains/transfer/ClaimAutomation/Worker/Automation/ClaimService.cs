@@ -118,9 +118,6 @@ public class ClaimService(
             {
                 logger.LogError(e, "Error fetching certificates for subject {subjectId}.", maskedSubjectId);
             }
-
-
-
         }
 
         return certificates;
