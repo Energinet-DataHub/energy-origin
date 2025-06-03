@@ -15,7 +15,7 @@ public class MunicipalityPercentageRenderer : IMunicipalityPercentageRenderer
 {
     public string Render(List<MunicipalityDistribution> municipalities)
     {
-        var ordered = municipalities.OrderBy(x => x.Percentage).ToList();
+        var ordered = municipalities.OrderByDescending(x => x.Percentage).ToList();
         var top3Municipalities = ordered.Take(3);
         var rest = ordered.Skip(3);
 

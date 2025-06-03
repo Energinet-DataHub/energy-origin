@@ -13,7 +13,7 @@ using NSubstitute;
 using VerifyXunit;
 using Xunit;
 
-namespace API.UnitTests.ReportGenerator;
+namespace API.UnitTests.ReportGenerator.Rendering;
 
 public class HeadlinePercentageRendererTests
 {
