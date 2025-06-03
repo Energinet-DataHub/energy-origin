@@ -2,7 +2,7 @@
 
 <script>
     function onRemoveTinClicked(tin) {
-        showConfirmationModal('Remove ' + tin + ' from whitelist', () => {
+        showRemoveOrgFromWhitelistModal(tin, () => {
             let tinFormElement = document.getElementById("removeTin");
             let form = document.getElementById("removeOrganizationForm");
             tinFormElement.value = tin
@@ -91,6 +91,7 @@
 <partial name="_ConfirmationModal" />
 <partial name="_AddOrganizationModal" />
 <partial name="_RemoveOrganizationModal" />
+<partial name="_RemoveOrganizationFromWhitelistModal" />
 
 <style>
     .filter-highlight {
