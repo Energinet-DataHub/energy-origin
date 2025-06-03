@@ -26,7 +26,7 @@ public sealed class MunicipalityPercentageProcessor : IMunicipalityPercentagePro
         var municipalities = new List<MunicipalityDistribution>();
         foreach (var municipality in grpd)
         {
-            var percentage = municipality.sum / totalQuantity;
+            var percentage = (municipality.sum / totalQuantity) * 100;
 
             var md = new MunicipalityDistribution(municipality.Key, percentage);
             municipalities.Add(md);

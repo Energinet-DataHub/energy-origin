@@ -30,7 +30,7 @@ public class MunicipalityPercentageProcessorTests
 
         Assert.NotNull(result);
         Assert.Equal(4, result.Count);
-        Assert.Equal([0.25, 0.25, 0.25, 0.25], result.Select(x => x.Percentage));
+        Assert.Equal([25, 25, 25, 25], result.Select(x => x.Percentage));
         Assert.Equal(["123", "124", "125", null], result.Select(x => x.Municipality));
     }
 

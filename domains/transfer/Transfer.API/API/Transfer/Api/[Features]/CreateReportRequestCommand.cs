@@ -25,9 +25,11 @@ public class CreateReportRequestCommandHandler
     private readonly IEnergyDataFetcher _dataFetcher;
     private readonly IEnergyDataFormatter _dataFormatter;
     private readonly IHeadlinePercentageProcessor _percentageProcessor;
+    private readonly IMunicipalityPercentageProcessor _municipalityPercentageProcessor;
     private readonly IEnergySvgRenderer _svgRenderer;
     private readonly IOrganizationHeaderRenderer _headerRenderer;
     private readonly IHeadlinePercentageRenderer _percentageRenderer;
+    private readonly IMunicipalityPercentageRenderer _municipalityPercentageRenderer;
     private readonly ILogoRenderer _logoRenderer;
     private readonly IStyleRenderer _styleRenderer;
 
@@ -39,9 +41,11 @@ public class CreateReportRequestCommandHandler
         IEnergyDataFetcher dataFetcher,
         IEnergyDataFormatter dataFormatter,
         IHeadlinePercentageProcessor percentageProcessor,
+        IMunicipalityPercentageProcessor municipalityPercentageProcessor,
         IEnergySvgRenderer svgRenderer,
         IOrganizationHeaderRenderer headerRenderer,
         IHeadlinePercentageRenderer percentageRenderer,
+        IMunicipalityPercentageRenderer municipalityPercentageRenderer,
         ILogoRenderer logoRenderer,
         IStyleRenderer styleRenderer)
     {
@@ -52,9 +56,11 @@ public class CreateReportRequestCommandHandler
         _dataFetcher = dataFetcher;
         _dataFormatter = dataFormatter;
         _percentageProcessor = percentageProcessor;
+        _municipalityPercentageProcessor = municipalityPercentageProcessor;
         _svgRenderer = svgRenderer;
         _headerRenderer = headerRenderer;
         _percentageRenderer = percentageRenderer;
+        _municipalityPercentageRenderer = municipalityPercentageRenderer;
         _logoRenderer = logoRenderer;
         _styleRenderer = styleRenderer;
     }
@@ -88,6 +94,7 @@ public class CreateReportRequestCommandHandler
             // Calculate coverage headline
             var headlinePercent = _percentageProcessor.Calculate(hourlyData);
             var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
+            var municipalities = _municipalityPercentageProcessor.Calculate(claims);
 
             // Render HTML fragments
             var headerHtml = _headerRenderer.Render(
@@ -97,6 +104,7 @@ public class CreateReportRequestCommandHandler
             var svgHtml = _svgRenderer.Render(hourlyData).Svg;
             var logoHtml = _logoRenderer.Render();
             var styleHtml = _styleRenderer.Render();
+            var municipalitiesHtml = _municipalityPercentageRenderer.Render(municipalities);
 
             if (string.IsNullOrEmpty(svgHtml) || !svgHtml.Contains("<svg"))
             {
@@ -127,13 +135,7 @@ public class CreateReportRequestCommandHandler
 
                                  <div class="sections">
                                      <div class="section-column">
-                                         <h6 class="section-title">Kommuner</h6>
-                                         <ul>
-                                             <li>Aabenraa: 50%</li>
-                                             <li>Ringkøbing-Skjern: 25%</li>
-                                             <li>Lolland: 20%</li>
-                                             <li>Andre kommuner: 5%</li>
-                                         </ul>
+                                         {{municipalitiesHtml}}
                                      </div>
                                      <div class="section-column">
                                          <h6 class="section-title">Teknologi</h6>
