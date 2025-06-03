@@ -116,6 +116,7 @@ public class ClaimService(
             }
             catch (Exception e)
             {
+                hasMoreCertificates = false;
                 logger.LogError(e, "Error fetching certificates for subject {subjectId}.", maskedSubjectId);
             }
         }
