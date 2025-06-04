@@ -148,7 +148,7 @@ public class AuthorizationControllerTests : IntegrationTestBase
 
         var user = Any.User();
         var organization = Any.Organization(Any.Tin());
-        organization.AcceptTerms(dbContext.Terms.First());
+        organization.AcceptTerms(dbContext.Terms.First(), true);
 
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
