@@ -31,7 +31,7 @@ public class TransferEngineUtilityTest
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var result = new ResultList<GranularCertificate>()
         { Result = new List<GranularCertificate>(), Metadata = new PageInfo() { Count = 0, Offset = 0, Total = 0, Limit = 0 } };
-        _mockWalletClient.GetGranularCertificates(orgId.Value, Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
+        _mockWalletClient.GetGranularCertificatesAsync(orgId.Value, Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
             .Returns(result);
 
         // When fetching
@@ -56,7 +56,7 @@ public class TransferEngineUtilityTest
             Result = Enumerable.Range(0, 1000).Select(_ => Any.GranularCertificate()),
             Metadata = new PageInfo() { Count = 1000, Offset = 2000, Total = 3000, Limit = 0 }
         };
-        _mockWalletClient.GetGranularCertificates(orgId.Value, Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
+        _mockWalletClient.GetGranularCertificatesAsync(orgId.Value, Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
             .Returns(result1, result2);
 
         // When fetching
@@ -102,14 +102,14 @@ public class TransferEngineUtilityTest
         var orgId = OrganizationId.Create(Guid.NewGuid());
         await _requestStatusRepository.Add(new RequestStatus(orgId, OrganizationId.Empty(), Guid.NewGuid(), UnixTimestamp.Now().AddMinutes(-3)), TestContext.Current.CancellationToken);
         var request = (await _requestStatusRepository.GetByOrganization(orgId, TestContext.Current.CancellationToken)).Single();
-        _mockWalletClient.GetRequestStatus(Arg.Is(request.SenderId.Value), Arg.Is(request.RequestId), Arg.Any<CancellationToken>())
+        _mockWalletClient.GetRequestStatusAsync(Arg.Is(request.SenderId.Value), Arg.Is(request.RequestId), Arg.Any<CancellationToken>())
             .Returns(EnergyOrigin.WalletClient.RequestStatus.Completed);
 
         // When checking for pending transactions
         var hasPendingTransactions = await _sut.HasPendingTransactions(orgId, TestContext.Current.CancellationToken);
 
         // Then no pending transactions
-        await _mockWalletClient.Received(1).GetRequestStatus(Arg.Is(request.SenderId.Value), Arg.Is(request.RequestId), Arg.Any<CancellationToken>());
+        await _mockWalletClient.Received(1).GetRequestStatusAsync(Arg.Is(request.SenderId.Value), Arg.Is(request.RequestId), Arg.Any<CancellationToken>());
         hasPendingTransactions.Should().BeFalse();
     }
 
@@ -125,7 +125,7 @@ public class TransferEngineUtilityTest
         var hasPendingTransactions = await _sut.HasPendingTransactions(orgId, TestContext.Current.CancellationToken);
 
         // Then no pending transactions
-        await _mockWalletClient.Received(0).GetRequestStatus(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _mockWalletClient.Received(0).GetRequestStatusAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
         hasPendingTransactions.Should().BeFalse();
     }
 
@@ -140,7 +140,7 @@ public class TransferEngineUtilityTest
         var hasPendingTransactions = await _sut.HasPendingTransactions(orgId, TestContext.Current.CancellationToken);
 
         // Transaction is timed out, and no pending transactions
-        await _mockWalletClient.Received(0).GetRequestStatus(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _mockWalletClient.Received(0).GetRequestStatusAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
         hasPendingTransactions.Should().BeFalse();
         (await _requestStatusRepository.GetByOrganization(orgId, TestContext.Current.CancellationToken)).SingleOrDefault()!.Status.Should().Be(Status.Timeout);
     }
@@ -156,7 +156,7 @@ public class TransferEngineUtilityTest
         var hasPendingTransactions = await _sut.HasPendingTransactions(orgId, TestContext.Current.CancellationToken);
 
         // Transaction is deleted, and no pending transactions
-        await _mockWalletClient.Received(0).GetRequestStatus(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _mockWalletClient.Received(0).GetRequestStatusAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
         hasPendingTransactions.Should().BeFalse();
         (await _requestStatusRepository.GetByOrganization(orgId, TestContext.Current.CancellationToken)).SingleOrDefault().Should().BeNull();
     }

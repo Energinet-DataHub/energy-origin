@@ -74,8 +74,8 @@ public class TransferAllCertificatesEngine : ITransferEngine
             logger.LogInformation("Transferring certificate {certificateId} to {receiver}",
                 certificate.FederatedStreamId, transferAgreement.ReceiverTin);
 
-            var transactionRequestId = await walletClient.TransferCertificates(transferAgreement.SenderId.Value, certificate, certificate.Quantity,
-                transferAgreement.ReceiverReference);
+            var transactionRequestId = await walletClient.TransferCertificatesAsync(transferAgreement.SenderId.Value, certificate, certificate.Quantity,
+                transferAgreement.ReceiverReference, cancellationToken);
             await requestStatusRepository.Add(
                 new RequestStatus(transferAgreement.SenderId, transferAgreement.ReceiverId ?? OrganizationId.Empty(), transactionRequestId.TransferRequestId, UnixTimestamp.Now()),
                 cancellationToken);

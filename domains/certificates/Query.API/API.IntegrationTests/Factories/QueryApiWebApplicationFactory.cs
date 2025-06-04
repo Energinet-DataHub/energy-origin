@@ -213,7 +213,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         var client = new HttpClient();
         client.BaseAddress = new Uri(WalletUrl);
         var wallet = new EnergyOrigin.WalletClient.WalletClient(client);
-        await wallet.CreateWallet(Guid.Parse(orgId), CancellationToken.None);
+        await wallet.CreateWalletAsync(Guid.Parse(orgId), CancellationToken.None);
         return wallet;
     }
 

@@ -44,7 +44,7 @@ public sealed class EnergyDataFetcher : IEnergyDataFetcher
         if (orgId is null) throw new ArgumentNullException(nameof(orgId));
 
         var allConsumptionFetchedFromDatahub = _consumptionService.GetAverageHourlyConsumption(orgId, from, to, ct);
-        var allClamsFetchedFromWallet = _walletClient.GetClaims(orgId.Value, from, to, TimeMatch.All, ct);
+        var allClamsFetchedFromWallet = _walletClient.GetClaimsAsync(orgId.Value, from, to, TimeMatch.All, ct);
 
         await Task.WhenAll(allConsumptionFetchedFromDatahub, allClamsFetchedFromWallet);
 

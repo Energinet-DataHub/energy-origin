@@ -40,7 +40,7 @@ public class CertificatesSpreadsheetExporter
 
     public async Task<CertificatesSpreadsheet> Export(Guid ownerId, CancellationToken cancellationToken)
     {
-        var certificates = await _walletClient.GetGranularCertificates(ownerId, cancellationToken, null);
+        var certificates = await _walletClient.GetGranularCertificatesAsync(ownerId, cancellationToken, null);
 
         using (var memoryStream = new MemoryStream())
         {
