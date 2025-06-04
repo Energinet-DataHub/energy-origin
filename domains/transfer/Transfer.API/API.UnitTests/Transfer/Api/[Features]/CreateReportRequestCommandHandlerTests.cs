@@ -9,10 +9,12 @@ using API.ReportGenerator.Processing;
 using API.ReportGenerator.Rendering;
 using API.Transfer.Api._Features_;
 using API.Transfer.Api.Repository;
+using API.Transfer.Api.Services;
 using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Exceptions;
+using EnergyOrigin.WalletClient;
 using FluentAssertions;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -42,7 +44,7 @@ public class CreateReportRequestCommandHandlerTests
         _unitOfWork.SaveAsync().Returns(Task.CompletedTask);
         _dataFetcher
             .GetAsync(Arg.Any<OrganizationId>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
-            .Returns((Enumerable.Empty<DataPoint>(), Enumerable.Empty<DataPoint>(), Enumerable.Empty<DataPoint>()));
+            .Returns((Enumerable.Empty<ConsumptionHour>().ToList(), Enumerable.Empty<Claim>().ToList()));
         _percentageProcessor.Calculate(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(100);
         _svgRenderer.Render(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(new EnergySvgResult("<svg></svg>"));
         _headerRenderer.Render(Arg.Any<string>(), Arg.Any<string>()).Returns("<header/>");
@@ -66,10 +68,13 @@ public class CreateReportRequestCommandHandlerTests
             _mediator,
             _logger,
             _dataFetcher,
+            new EnergyDataFormatter(),
             _percentageProcessor,
+            new MunicipalityPercentageProcessor(),
             _svgRenderer,
             _headerRenderer,
             _percentageRenderer,
+            new MunicipalityPercentageRenderer(),
             _logoRenderer,
             _styleRenderer
         );

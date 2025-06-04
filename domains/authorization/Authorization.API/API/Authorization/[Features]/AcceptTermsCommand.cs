@@ -19,94 +19,74 @@ namespace API.Authorization._Features_;
 
 public record AcceptTermsCommand(string OrgCvr, string OrgName, Guid UserId) : IRequest;
 
-public class AcceptTermsCommandHandler : IRequestHandler<AcceptTermsCommand>
+public class AcceptTermsCommandHandler(
+    IOrganizationRepository organizationRepository,
+    ITermsRepository termsRepository,
+    IUnitOfWork unitOfWork,
+    IWalletClient walletClient,
+    IPublishEndpoint publishEndpoint)
+    : IRequestHandler<AcceptTermsCommand>
 {
-    private readonly IOrganizationRepository _organizationRepository;
-    private readonly ITermsRepository _termsRepository;
-    private readonly IWhitelistedRepository _whitelistedRepository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IWalletClient _walletClient;
-    private readonly IPublishEndpoint _publishEndpoint;
-
-    public AcceptTermsCommandHandler(
-        IOrganizationRepository organizationRepository,
-        ITermsRepository termsRepository,
-        IWhitelistedRepository whitelistedRepository,
-        IUnitOfWork unitOfWork,
-        IWalletClient walletClient,
-        IPublishEndpoint publishEndpoint)
-    {
-        _organizationRepository = organizationRepository;
-        _termsRepository = termsRepository;
-        _whitelistedRepository = whitelistedRepository;
-        _unitOfWork = unitOfWork;
-        _walletClient = walletClient;
-        _publishEndpoint = publishEndpoint;
-    }
-
     public async Task Handle(AcceptTermsCommand request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        var tin = Tin.Create(request.OrgCvr);
-        var organizationName = OrganizationName.Create(request.OrgName);
+        var usersOrganizationsCvr = Tin.Create(request.OrgCvr);
 
-        var isWhitelisted = await _whitelistedRepository.Query()
-            .AnyAsync(w => w.Tin == tin, cancellationToken);
+        var usersAffiliatedOrganization = await organizationRepository.Query()
+            .FirstOrDefaultAsync(o => o.Tin == usersOrganizationsCvr, cancellationToken);
 
-        var organization = await _organizationRepository.Query()
-            .FirstOrDefaultAsync(o => o.Tin == tin, cancellationToken);
-
-        if (organization == null)
+        if (usersAffiliatedOrganization == null)
         {
-            organization = isWhitelisted
-                ? Organization.Create(tin, organizationName)
-                : Organization.CreateTrial(tin, organizationName);
-
-            await _organizationRepository.AddAsync(organization, cancellationToken);
+            usersAffiliatedOrganization =
+                Organization.Create(usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
+            await organizationRepository.AddAsync(usersAffiliatedOrganization, cancellationToken);
         }
 
-        var latestTerms = await _termsRepository.Query()
+        var latestTerms = await termsRepository.Query()
             .OrderByDescending(t => t.Version)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (latestTerms == null)
-            throw new InvalidConfigurationException("No Terms configured");
-
-        if (!organization.TermsAccepted || organization.TermsVersion != latestTerms.Version)
         {
-            organization.AcceptTerms(latestTerms, isWhitelisted);
+            throw new InvalidConfigurationException("No Terms configured");
         }
 
-        await EnsureWalletExistsAsync(organization.Id, cancellationToken);
+        if (!usersAffiliatedOrganization.TermsAccepted ||
+            usersAffiliatedOrganization.TermsVersion != latestTerms.Version)
+        {
+            usersAffiliatedOrganization.AcceptTerms(latestTerms);
+        }
 
-        await _publishEndpoint.Publish(new OrgAcceptedTerms(
+        await EnsureWalletExistsAsync(usersAffiliatedOrganization.Id);
+
+        await publishEndpoint.Publish(new OrgAcceptedTerms(
             Guid.NewGuid(),
             Activity.Current?.Id ?? Guid.NewGuid().ToString(),
             DateTimeOffset.UtcNow,
-            organization.Id,
+            usersAffiliatedOrganization.Id,
             request.OrgCvr,
             request.UserId
         ), cancellationToken);
 
-        await _unitOfWork.CommitAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
     }
 
-    private async Task EnsureWalletExistsAsync(Guid organizationId, CancellationToken cancellationToken)
+    private async Task EnsureWalletExistsAsync(Guid organizationId)
     {
-        var wallets = await _walletClient.GetWallets(organizationId, cancellationToken);
+        var wallets = await walletClient.GetWalletsAsync(organizationId, CancellationToken.None);
         var wallet = wallets.Result.FirstOrDefault();
 
         if (wallet is null)
         {
-            var createWalletResponse = await _walletClient.CreateWallet(organizationId, cancellationToken);
+            var createWalletResponse = await walletClient.CreateWalletAsync(organizationId, CancellationToken.None);
             if (createWalletResponse == null)
                 throw new WalletNotCreated("Failed to create wallet.");
             return;
         }
 
-        var enableWalletResponse = await _walletClient.EnableWallet(wallet.Id, organizationId, cancellationToken);
+        var enableWalletResponse = walletClient.EnableWalletAsync(wallet.Id, organizationId, CancellationToken.None);
         if (enableWalletResponse == null)
-            throw new BusinessException("Failed to enable wallet.");
+            throw new BusinessException("Failed to create wallet.");
     }
 }

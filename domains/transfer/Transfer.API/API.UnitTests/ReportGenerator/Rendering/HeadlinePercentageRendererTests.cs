@@ -13,7 +13,7 @@ using NSubstitute;
 using VerifyXunit;
 using Xunit;
 
-namespace API.UnitTests.ReportGenerator;
+namespace API.UnitTests.ReportGenerator.Rendering;
 
 public class HeadlinePercentageRendererTests
 {
@@ -36,7 +36,7 @@ public class HeadlinePercentageRendererTests
 
         var walletClient = Substitute.For<IWalletClient>();
         walletClient
-            .GetClaims(orgId.Value, from, to, TimeMatch.Hourly, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, from, to, TimeMatch.Hourly, Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = strictClaims,
@@ -49,7 +49,7 @@ public class HeadlinePercentageRendererTests
                 }
             });
         walletClient
-            .GetClaims(orgId.Value, from, to, TimeMatch.All, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, from, to, TimeMatch.All, Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = allClaims,
@@ -63,11 +63,12 @@ public class HeadlinePercentageRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consumptionClient, walletClient);
+        var formatter = new EnergyDataFormatter();
         var headlineProcessor = new HeadlinePercentageProcessor();
         var headlineRenderer = new HeadlinePercentageRenderer();
 
-        var (rawCons, rawProdStrict, rawProdAll) =
-            await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
+        var (rawConsumption, claims) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
+        var (rawCons, rawProdStrict, rawProdAll) = formatter.Format(rawConsumption, claims);
 
         var hourly = EnergyDataProcessor.ToHourly(rawCons, rawProdStrict, rawProdAll);
         var percent = headlineProcessor.Calculate(hourly);

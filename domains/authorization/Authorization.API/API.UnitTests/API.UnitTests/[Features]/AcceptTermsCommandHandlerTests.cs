@@ -23,7 +23,6 @@ public class AcceptTermsCommandHandlerTests
     private readonly FakeTermsRepository _termsRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPublishEndpoint _publishEndpoint;
-    private readonly IWhitelistedRepository _whitelistedRepository;
     private readonly AcceptTermsCommandHandler _handler;
     private readonly IWalletClient _walletClient;
 
@@ -31,14 +30,13 @@ public class AcceptTermsCommandHandlerTests
     {
         _organizationRepository = new FakeOrganizationRepository();
         _termsRepository = new FakeTermsRepository();
-        _whitelistedRepository = new FakeWhitelistedRepository();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _publishEndpoint = Substitute.For<IPublishEndpoint>();
         _walletClient = Substitute.For<IWalletClient>();
-        _walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
+        _walletClient.GetWalletsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
         { Metadata = new PageInfo() { Count = 0, Limit = 0, Offset = 0, Total = 0 }, Result = new List<WalletRecord>() });
-        _walletClient.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new CreateWalletResponse() { WalletId = Guid.NewGuid() });
-        _handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _whitelistedRepository, _unitOfWork, _walletClient, _publishEndpoint);
+        _walletClient.CreateWalletAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new CreateWalletResponse() { WalletId = Guid.NewGuid() });
+        _handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, _walletClient, _publishEndpoint);
     }
 
     [Fact]
@@ -64,8 +62,6 @@ public class AcceptTermsCommandHandlerTests
     {
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
         var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
-        var whitelisted = Whitelisted.Create(Tin.Create(command.OrgCvr));
-        await _whitelistedRepository.AddAsync(whitelisted, CancellationToken.None);
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
@@ -89,7 +85,7 @@ public class AcceptTermsCommandHandlerTests
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
         mockOrganizationRepository.Query().Returns(_ => throw new Exception("Test exception"));
         await using var mockUnitOfWork = Substitute.For<IUnitOfWork>();
-        var handler = new AcceptTermsCommandHandler(mockOrganizationRepository, _termsRepository, _whitelistedRepository, mockUnitOfWork, _walletClient, _publishEndpoint);
+        var handler = new AcceptTermsCommandHandler(mockOrganizationRepository, _termsRepository, mockUnitOfWork, _walletClient, _publishEndpoint);
 
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
         await mockUnitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
@@ -101,16 +97,14 @@ public class AcceptTermsCommandHandlerTests
     {
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
         var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
-        var whitelisted = Whitelisted.Create(Tin.Create(command.OrgCvr));
-        await _whitelistedRepository.AddAsync(whitelisted, CancellationToken.None);
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
         var walletClient = Substitute.For<IWalletClient>();
-        walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
+        walletClient.GetWalletsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
         { Metadata = new PageInfo() { Count = 0, Limit = 0, Offset = 0, Total = 0 }, Result = new List<WalletRecord>() });
 
-        var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _whitelistedRepository, _unitOfWork, walletClient, _publishEndpoint);
+        var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
 
         await Assert.ThrowsAsync<WalletNotCreated>(() => handler.Handle(command, CancellationToken.None));
         await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
@@ -146,7 +140,7 @@ public class AcceptTermsCommandHandlerTests
             DisabledDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };
 
-        walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        walletClient.GetWalletsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo
@@ -160,10 +154,10 @@ public class AcceptTermsCommandHandlerTests
             });
 
         walletClient
-            .EnableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .EnableWalletAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Throws(new BusinessException("Failed to enable wallet."));
 
-        var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _whitelistedRepository, _unitOfWork, walletClient, _publishEndpoint);
+        var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
 
         await Assert.ThrowsAsync<BusinessException>(() => handler.Handle(command, CancellationToken.None));
         await _unitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
@@ -176,8 +170,6 @@ public class AcceptTermsCommandHandlerTests
         // Arrange
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
         var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
-        var whitelisted = Whitelisted.Create(Tin.Create(command.OrgCvr));
-        await _whitelistedRepository.AddAsync(whitelisted, CancellationToken.None);
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
@@ -190,7 +182,7 @@ public class AcceptTermsCommandHandlerTests
             DisabledDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };
 
-        walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        walletClient.GetWalletsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo
@@ -203,10 +195,10 @@ public class AcceptTermsCommandHandlerTests
                 Result = new List<WalletRecord> { disabledWallet }
             });
 
-        walletClient.EnableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        walletClient.EnableWalletAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new EnableWalletResponse { WalletId = disabledWallet.Id });
 
-        var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _whitelistedRepository, _unitOfWork, walletClient, _publishEndpoint);
+        var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
 
         // Act
         await handler.Handle(command, CancellationToken.None);

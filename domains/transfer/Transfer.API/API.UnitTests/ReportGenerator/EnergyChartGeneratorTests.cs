@@ -35,7 +35,7 @@ public class EnergySvgRendererTests
         var allClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to);
 
         // Mock wallet client to return different claims based on TimeMatch
-        wallet.GetClaims(
+        wallet.GetClaimsAsync(
                 orgId.Value,
                 from,
                 to,
@@ -53,7 +53,7 @@ public class EnergySvgRendererTests
                 }
             });
 
-        wallet.GetClaims(
+        wallet.GetClaimsAsync(
                 orgId.Value,
                 from,
                 to,
@@ -72,10 +72,12 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
+        var formatter = new EnergyDataFormatter();
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
-        var (rawCons, strictProd, allProd) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
+        var (rawConsumption, claims) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
+        var (rawCons, strictProd, allProd) = formatter.Format(rawConsumption, claims);
 
         // Pass all three to processor
         var hourly = EnergyDataProcessor.ToHourly(rawCons, strictProd, allProd);
