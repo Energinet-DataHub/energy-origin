@@ -78,14 +78,14 @@ public class ConsumptionService : IConsumptionService
         CancellationToken ct)
     {
         var gsrns = await GetValidGsrnsAsync(orgId, ct);
-        if (gsrns.Count == 0) return Array.Empty<MeasurementAggregationByPeriodDto>();
+        if (gsrns.Count == 0) return [];
 
         return (await _measurementClient.GetMeasurements(
-                   gsrns.ToList(),
+                   [.. gsrns],
                    from.ToUnixTimeSeconds(),
                    to.ToUnixTimeSeconds(),
                    ct)).ToArray()
-               ?? Array.Empty<MeasurementAggregationByPeriodDto>();
+               ?? [];
     }
 
 
