@@ -1,0 +1,34 @@
+<div id="removeOrgFromWhitelistModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removeOrgFromWhitelistModalLabel">Warning!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to remove <i class="cvr"></i> from whitelist and <b>delete the account</b>. All data and settings will be lost, and <i class="cvr"></i> will no longer be able to log in.</p>
+                <p><b>Note:</b> If <i class="cvr"></i> creates a new account later, any still-valid GGO certificates will be accessible.</p>
+				
+                <p>Are you sure you want to remove <i class="cvr"></i>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-primary" id="confirmRemoveButton">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showRemoveOrgFromWhitelistModal(cvr, confirmCallback) {
+        $('.cvr').text(cvr);
+        $('#removeOrgFromWhitelistModal').modal('show');
+
+        $('#confirmRemoveButton').off('click').on('click', function() {
+            $('#removeOrgFromWhitelistModal').modal('hide');
+            if (confirmCallback) {
+                confirmCallback();
+            }
+        });
+    }
+</script>

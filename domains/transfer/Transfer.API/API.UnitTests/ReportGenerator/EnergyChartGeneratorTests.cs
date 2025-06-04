@@ -35,7 +35,7 @@ public class EnergySvgRendererTests
         var allClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to);
 
         // Mock wallet client to return different claims based on TimeMatch
-        wallet.GetClaims(
+        wallet.GetClaimsAsync(
                 orgId.Value,
                 from,
                 to,
@@ -53,7 +53,7 @@ public class EnergySvgRendererTests
                 }
             });
 
-        wallet.GetClaims(
+        wallet.GetClaimsAsync(
                 orgId.Value,
                 from,
                 to,

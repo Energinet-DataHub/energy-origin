@@ -43,11 +43,6 @@ public class ClaimService(
                 {
                     var certificates = await FetchAllCertificatesFromWallet(subjectId, stoppingToken);
 
-                    var subjectIdStr = subjectId.ToString();
-                    var maskedSubjectId = new string('*', subjectIdStr.Length - 4) + subjectIdStr[^4..];
-                    logger.LogInformation("Number of certificates for subject {subjectId}: {certificatesCount}",
-                        maskedSubjectId, certificates.Count);
-
                     certificates = certificates.OrderBy<GranularCertificate, int>(x => shuffle.Next()).ToList();
                     var certificatesGrouped = certificates.GroupBy(x => new { x.GridArea, x.Start, x.End });
 
@@ -58,7 +53,7 @@ public class ClaimService(
                         var consumptionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Consumption)
                             .ToList();
 
-                        await Claim(subjectId, consumptionCerts, productionCerts);
+                        await Claim(subjectId, consumptionCerts, productionCerts, stoppingToken);
                     }
                 }
             }
@@ -81,52 +76,44 @@ public class ClaimService(
 
     private async Task<List<GranularCertificate>> FetchAllCertificatesFromWallet(Guid subjectId, CancellationToken stoppingToken)
     {
+
+        var subjectIdStr = subjectId.ToString();
+        var maskedSubjectId = subjectIdStr[..^6] + new string('*', 6);
+
         var hasMoreCertificates = true;
         var certificates = new List<GranularCertificate>();
 
-        var subjectIdStr = subjectId.ToString();
-        var maskedSubjectId = new string('*', subjectIdStr.Length - 4) + subjectIdStr[^4..];
-
         while (hasMoreCertificates)
         {
-            logger.LogInformation("Fetching certificates for subject {subjectId} with {certificatesCount} already fetched",
-                maskedSubjectId, certificates.Count);
-
-            var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken,
-                limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
-
-            logger.LogInformation("Fetched {certificatesCount} certificates for subject {subjectId}",
-                response?.Result.Count(), maskedSubjectId);
-
-            if (response == null)
+            try
             {
-                throw new ClaimCertificatesException(
-                    $"Something went wrong when getting certificates from the wallet for {subjectId}. Response is null.");
+                var response = await walletClient.GetGranularCertificatesAsync(subjectId, stoppingToken,
+                    limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
+
+                if (response == null)
+                {
+                    throw new ClaimCertificatesException(
+                        $"Something went wrong when getting certificates from the wallet for {maskedSubjectId}. Response is null.");
+                }
+
+                certificates.AddRange(response.Result);
+                if (certificates.Count >= response.Metadata.Total)
+                {
+                    hasMoreCertificates = false;
+                }
             }
-
-            certificates.AddRange(response.Result);
-            if (certificates.Count >= response.Metadata.Total)
+            catch (Exception e)
             {
-                logger.LogInformation("Fetched all certificates for subject {subjectId}. Total: {totalCertificates}",
-                    maskedSubjectId, response.Metadata.Total);
                 hasMoreCertificates = false;
+                logger.LogError(e, "Error fetching certificates for subject {MaskedSubjectId}", maskedSubjectId);
             }
         }
 
         return certificates;
     }
 
-    private async Task Claim(Guid subjectId, List<GranularCertificate> consumptionCertificates, List<GranularCertificate> productionCertificates)
+    private async Task Claim(Guid subjectId, List<GranularCertificate> consumptionCertificates, List<GranularCertificate> productionCertificates, CancellationToken cancellationToken)
     {
-        if (!(productionCertificates.Any(x => x.Quantity > 0) && consumptionCertificates.Any(x => x.Quantity > 0)))
-        {
-            var subjectIdStr = subjectId.ToString();
-            var maskedSubjectId = new string('*', subjectIdStr.Length - 4) + subjectIdStr[^4..];
-
-            logger.LogInformation("No production or consumption certificates to claim for subject {SubjectId}.",
-            maskedSubjectId);
-        }
-
         while (productionCertificates.Any(x => x.Quantity > 0) && consumptionCertificates.Any(x => x.Quantity > 0))
         {
 
@@ -140,9 +127,7 @@ public class ClaimService(
                                   "Organization: {SubjectId}",
                 quantity, consumptionCert.FederatedStreamId.StreamId, consumptionCert.Quantity, productionCert.FederatedStreamId.StreamId, productionCert.Quantity, subjectId);
 
-            await walletClient.ClaimCertificates(subjectId, consumptionCert, productionCert, quantity);
-
-            logger.LogInformation("Claimed Quantity: {Quantity}.", quantity);
+            await walletClient.ClaimCertificatesAsync(subjectId, consumptionCert, productionCert, quantity, cancellationToken);
 
             SetClaimAttempt(consumptionCert.FederatedStreamId.StreamId.ToString());
             SetClaimAttempt(productionCert.FederatedStreamId.StreamId.ToString());

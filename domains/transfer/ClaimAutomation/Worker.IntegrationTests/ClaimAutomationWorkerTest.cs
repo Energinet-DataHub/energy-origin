@@ -26,7 +26,7 @@ public class ClaimAutomationWorkerTest
         var taskCompletedSource = new TaskCompletionSource<bool>();
         var workerRunningTask = taskCompletedSource.Task;
 
-        _integrationTestFixture.ClaimAutomationWorker.ProjectOriginWalletClientMock.GetGranularCertificates(Arg.Any<Guid>(),
+        _integrationTestFixture.ClaimAutomationWorker.ProjectOriginWalletClientMock.GetGranularCertificatesAsync(Arg.Any<Guid>(),
             Arg.Any<CancellationToken>(), Arg.Any<int>(), Arg.Any<int>())!.Returns(_ =>
         {
             taskCompletedSource.SetCompleted();

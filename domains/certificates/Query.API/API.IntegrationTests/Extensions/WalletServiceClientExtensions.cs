@@ -23,7 +23,7 @@ public static class WalletServiceClientExtensions
 
         do
         {
-            var response = await client.GetGranularCertificates(Guid.Parse(ownerId), CancellationToken.None, null);
+            var response = await client.GetGranularCertificatesAsync(Guid.Parse(ownerId), CancellationToken.None, null);
 
             if (condition(response!.Result))
                 return response.Result.ToList();
