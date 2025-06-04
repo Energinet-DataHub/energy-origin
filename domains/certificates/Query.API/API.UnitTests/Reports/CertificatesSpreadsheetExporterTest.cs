@@ -94,13 +94,13 @@ public class CertificatesSpreadsheetExporterTest
             throw new NotImplementedException();
         }
 
-        public Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId)
+        public Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
         public Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate,
-            GranularCertificate productionCertificate, uint quantity)
+            GranularCertificate productionCertificate, uint quantity, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

@@ -71,7 +71,7 @@ public class ClaimServiceTests
         var act = async () => await claimService.Run(cts.Token);
         await act.Should().ThrowAsync<TaskCanceledException>();
 
-        await walletClient.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, quantity);
+        await walletClient.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, quantity, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -113,9 +113,9 @@ public class ClaimServiceTests
         await act.Should().ThrowAsync<TaskCanceledException>();
 
         await walletClient.Received(1)
-            .ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, consumptionQuantity);
+            .ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, consumptionQuantity, Arg.Any<CancellationToken>());
         await walletClient.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, consumptionCertificate1, productionCertificate,
-            productionQuantity - consumptionQuantity);
+            productionQuantity - consumptionQuantity, Arg.Any<CancellationToken>());
     }
 
     [Theory]
@@ -171,7 +171,7 @@ public class ClaimServiceTests
 
         var numberOfCertificatesUsedPrClaim = 2;
         await walletClient.Received(numberOfCertificates / numberOfCertificatesUsedPrClaim).ClaimCertificates(claimAutomationArgument.SubjectId,
-            Arg.Any<GranularCertificate>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>());
+            Arg.Any<GranularCertificate>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public class ClaimServiceTests
         await act.Should().ThrowAsync<TaskCanceledException>();
 
         await walletClient.Received(1).ClaimCertificates(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(),
-            Arg.Any<GranularCertificate>(), Arg.Any<uint>());
+            Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public class ClaimServiceTests
         await act.Should().ThrowAsync<TaskCanceledException>();
 
         await walletClient.Received(2).ClaimCertificates(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(),
-            Arg.Any<GranularCertificate>(), Arg.Any<uint>());
+            Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<CancellationToken>());
     }
 
     private List<GranularCertificate> BuildGranularCertificates(int count)

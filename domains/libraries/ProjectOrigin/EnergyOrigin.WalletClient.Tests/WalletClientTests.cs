@@ -15,11 +15,11 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, CancellationToken.None);
 
         createWalletResponse.Should().NotBeNull();
 
-        var wallets = await walletClient.GetWallets(ownerSubject, new CancellationToken());
+        var wallets = await walletClient.GetWallets(ownerSubject, CancellationToken.None);
 
         wallets.Should().NotBeNull();
         wallets.Result.Count().Should().Be(1);
@@ -32,11 +32,11 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, CancellationToken.None);
 
         Assert.NotNull(createWalletResponse);
 
-        var disableWalletResponse = await walletClient.DisableWallet(createWalletResponse.WalletId, ownerSubject, new CancellationToken());
+        var disableWalletResponse = await walletClient.DisableWallet(createWalletResponse.WalletId, ownerSubject, CancellationToken.None);
 
         Assert.NotNull(disableWalletResponse);
         Assert.Equal(createWalletResponse.WalletId, disableWalletResponse.WalletId);
@@ -49,7 +49,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var wallets = await walletClient.GetWallets(ownerSubject, new CancellationToken());
+        var wallets = await walletClient.GetWallets(ownerSubject, CancellationToken.None);
 
         wallets.Should().NotBeNull();
         wallets.Result.Should().BeEmpty();
@@ -62,11 +62,11 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, CancellationToken.None);
 
         createWalletResponse.Should().NotBeNull();
 
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject, new CancellationToken());
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject, CancellationToken.None);
 
         walletEndpoint.Should().NotBeNull();
     }
@@ -78,15 +78,15 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, CancellationToken.None);
 
         createWalletResponse.Should().NotBeNull();
 
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject, new CancellationToken());
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject, CancellationToken.None);
 
         walletEndpoint.Should().NotBeNull();
         var cvrNumber = "12345678";
-        var externalEndpoint = await walletClient.CreateExternalEndpoint(Guid.NewGuid(), walletEndpoint, cvrNumber, new CancellationToken());
+        var externalEndpoint = await walletClient.CreateExternalEndpoint(Guid.NewGuid(), walletEndpoint, cvrNumber, CancellationToken.None);
 
         externalEndpoint.Should().NotBeNull();
         externalEndpoint.ReceiverId.Should().NotBeEmpty();
@@ -99,15 +99,15 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
 
-        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        var createWalletResponse = await walletClient.CreateWallet(ownerSubject, CancellationToken.None);
 
         createWalletResponse.Should().NotBeNull();
 
-        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject, new CancellationToken());
+        var walletEndpoint = await walletClient.CreateWalletEndpoint(createWalletResponse.WalletId, ownerSubject, CancellationToken.None);
 
         walletEndpoint.Should().NotBeNull();
         var cvrNumber = "12345678";
-        var externalEndpoint = await walletClient.CreateExternalEndpoint(Guid.NewGuid(), walletEndpoint, cvrNumber, new CancellationToken());
+        var externalEndpoint = await walletClient.CreateExternalEndpoint(Guid.NewGuid(), walletEndpoint, cvrNumber, CancellationToken.None);
 
         externalEndpoint.Should().NotBeNull();
         externalEndpoint.ReceiverId.Should().NotBeEmpty();
@@ -124,7 +124,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
             Quantity = 10,
             Start = new DateTimeOffset().ToUnixTimeSeconds()
         };
-        var transferCertificatesResponse = await walletClient.TransferCertificates(ownerSubject, cert, cert.Quantity, externalEndpoint.ReceiverId);
+        var transferCertificatesResponse = await walletClient.TransferCertificates(ownerSubject, cert, cert.Quantity, externalEndpoint.ReceiverId, CancellationToken.None);
 
         transferCertificatesResponse.Should().NotBeNull();
         transferCertificatesResponse.TransferRequestId.Should().NotBeEmpty();
@@ -136,7 +136,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
-        await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        await walletClient.CreateWallet(ownerSubject, CancellationToken.None);
 
         //This does not go well in the wallet since we haven't sent the certificate to the registry first,
         //and since the certificates does not appear in the wallet, but for this test we don't care
@@ -163,7 +163,7 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
 
         var ex = await Assert.ThrowsAsync<HttpRequestException>(async () =>
             await walletClient.ClaimCertificates(ownerSubject, consumptionCert, productionCert,
-                productionCert.Quantity));
+                productionCert.Quantity, CancellationToken.None));
 
         Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
     }
@@ -174,10 +174,10 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
-        await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        await walletClient.CreateWallet(ownerSubject, CancellationToken.None);
 
         //I cannot send any certificates to the wallet since I can't send to the registry first
-        var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: int.MaxValue, skip: 0);
+        var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, CancellationToken.None, limit: int.MaxValue, skip: 0);
 
         certsResponse.Should().NotBeNull();
         certsResponse!.Result.Should().BeEmpty();
@@ -189,9 +189,9 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
-        await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        await walletClient.CreateWallet(ownerSubject, CancellationToken.None);
 
-        var claims = await walletClient.GetClaims(ownerSubject, null, null, new CancellationToken());
+        var claims = await walletClient.GetClaims(ownerSubject, null, null, CancellationToken.None);
 
         Assert.NotNull(claims);
         Assert.Empty(claims.Result);
@@ -203,10 +203,10 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         var ownerSubject = Guid.NewGuid();
         var httpClient = GetWalletHttpClient();
         var walletClient = new WalletClient(httpClient);
-        await walletClient.CreateWallet(ownerSubject, new CancellationToken());
+        await walletClient.CreateWallet(ownerSubject, CancellationToken.None);
 
         //I cannot send any certificates to the wallet since I can't send to the registry first
-        var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, new CancellationToken(), limit: null);
+        var certsResponse = await walletClient.GetGranularCertificates(ownerSubject, CancellationToken.None, limit: null);
 
         certsResponse.Should().NotBeNull();
         certsResponse!.Result.Should().BeEmpty();

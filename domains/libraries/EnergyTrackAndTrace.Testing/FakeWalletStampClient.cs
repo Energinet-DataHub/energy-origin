@@ -67,13 +67,13 @@ public class FakeWalletStampClient : IWalletClient, IStampClient
         return Task.FromResult(new WalletEndpointReference(1, new Uri("http://eo"), Substitute.For<IHDPublicKey>()));
     }
 
-    public Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId)
+    public Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId, CancellationToken cancellationToken)
     {
         return Task.FromResult(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
     }
 
     public Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate,
-        GranularCertificate productionCertificate, uint quantity)
+        GranularCertificate productionCertificate, uint quantity, CancellationToken cancellationToken)
     {
         return Task.FromResult(new ClaimResponse() { ClaimRequestId = Guid.NewGuid() });
     }

@@ -161,7 +161,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         SetupWalletServiceClient(transferAgreement.SenderId.Value, [senderProductionCert],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         // Then certificates are transferred
         var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
@@ -188,7 +188,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
             [senderProductionCert1, senderProductionCert2, senderProductionCert3, senderProductionCert4],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         // Then certificates are transferred
         var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
@@ -257,7 +257,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
             });
 
         mockWalletClient
-            .TransferCertificates(Arg.Is(owner), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
+            .TransferCertificates(Arg.Is(owner), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>(), CancellationToken.None)
             .Returns(mockedTransferResponse);
     }
 }

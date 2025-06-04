@@ -111,7 +111,7 @@ public class TransferCertificatesBasedOnConsumptionEngine : ITransferEngine
                 senderProductionCertificate.Quantity, senderProductionCertificate.Certificate.FederatedStreamId, receiverOrganizationId);
 
             var requestId = await _walletClient.TransferCertificates(senderOrganizationId.Value, senderProductionCertificate.Certificate,
-                senderProductionCertificate.Quantity, transferAgreement.ReceiverReference);
+                senderProductionCertificate.Quantity, transferAgreement.ReceiverReference, cancellationToken);
 
             await _requestStatusRepository.Add(
                 new RequestStatus(senderOrganizationId, receiverOrganizationId, requestId.TransferRequestId, UnixTimestamp.Now()), cancellationToken);

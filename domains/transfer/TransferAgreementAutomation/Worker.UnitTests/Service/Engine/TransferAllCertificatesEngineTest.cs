@@ -43,7 +43,7 @@ public class TransferAllCertificatesEngineTest
             [cert],
             new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         _ = mockWalletClient
             .Received(1)
@@ -51,7 +51,8 @@ public class TransferAllCertificatesEngineTest
                 Arg.Any<Guid>(),
                 cert,
                 cert.Quantity,
-                transferAgreement.ReceiverReference
+                transferAgreement.ReceiverReference,
+                Arg.Any<CancellationToken>()
             );
     }
 
@@ -64,10 +65,10 @@ public class TransferAllCertificatesEngineTest
         SetupWalletServiceClient([certificate], new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
         // When transferring certificate
-        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         // Then request status is updated
-        var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, TestContext.Current.CancellationToken);
+        var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
         transactions.Should().HaveCount(1);
         transactions.First().Status.Should().Be(Status.Pending);
         transactions.First().SenderId.Should().Be(transferAgreement.SenderId);
@@ -113,7 +114,8 @@ public class TransferAllCertificatesEngineTest
                 Arg.Any<Guid>(),
                 Arg.Any<GranularCertificate>(),
                 Arg.Any<uint>(),
-                Arg.Any<Guid>()
+                Arg.Any<Guid>(),
+                CancellationToken.None
             );
     }
 
@@ -138,7 +140,8 @@ public class TransferAllCertificatesEngineTest
                 Arg.Any<Guid>(),
                 Arg.Any<GranularCertificate>(),
                 Arg.Any<uint>(),
-                Arg.Any<Guid>()
+                Arg.Any<Guid>(),
+                CancellationToken.None
             );
     }
 
@@ -153,7 +156,7 @@ public class TransferAllCertificatesEngineTest
             [cert],
             new TransferResponse { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         _ = mockWalletClient
             .Received(1)
@@ -161,7 +164,8 @@ public class TransferAllCertificatesEngineTest
                 Arg.Any<Guid>(),
                 cert,
                 cert.Quantity,
-                transferAgreement.ReceiverReference
+                transferAgreement.ReceiverReference,
+                CancellationToken.None
             );
     }
 
@@ -205,10 +209,10 @@ public class TransferAllCertificatesEngineTest
             .Returns(results[0], results.Skip(1).ToArray());
 
         mockWalletClient
-            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
+            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>(), CancellationToken.None)
             .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         _ = mockWalletClient
             .Received(numberOfCerts)
@@ -216,7 +220,8 @@ public class TransferAllCertificatesEngineTest
                 Arg.Any<Guid>(),
                 Arg.Any<GranularCertificate>(),
                 Arg.Any<uint>(),
-                transferAgreement.ReceiverReference
+                transferAgreement.ReceiverReference,
+                CancellationToken.None
             );
     }
 
@@ -241,10 +246,10 @@ public class TransferAllCertificatesEngineTest
                 });
 
         mockWalletClient
-            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
+            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>(), CancellationToken.None)
             .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         _ = mockWalletClient
             .Received(3)
@@ -252,7 +257,8 @@ public class TransferAllCertificatesEngineTest
                 Arg.Any<Guid>(),
                 Arg.Any<GranularCertificate>(),
                 Arg.Any<uint>(),
-                transferAgreement.ReceiverReference
+                transferAgreement.ReceiverReference,
+                CancellationToken.None
             );
     }
 
@@ -282,10 +288,10 @@ public class TransferAllCertificatesEngineTest
                 });
 
         mockWalletClient
-            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
+            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>(), CancellationToken.None)
             .Returns(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         _ = mockWalletClient
             .Received(5)
@@ -293,7 +299,8 @@ public class TransferAllCertificatesEngineTest
                 Arg.Any<Guid>(),
                 Arg.Any<GranularCertificate>(),
                 Arg.Any<uint>(),
-                transferAgreement.ReceiverReference
+                transferAgreement.ReceiverReference,
+                CancellationToken.None
             );
     }
 
@@ -327,7 +334,7 @@ public class TransferAllCertificatesEngineTest
                 });
 
         mockWalletClient
-            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>())
+            .TransferCertificates(Arg.Any<Guid>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>(), CancellationToken.None)
             .Returns(mockedTransferResponse);
     }
 
