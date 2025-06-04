@@ -29,8 +29,7 @@
 - [build-subsystems workflow](./doc/workflows/build-subsystems.md)
 
 ### Acorn Actions
-
-- [acorn-actions repository](https://github.com/Energinet-DataHub/acorn-actions)
+- [acorn-actions repository](https://github.com/Energinet-DataHub/.github/.github)
 
 ### NuGet packages
 

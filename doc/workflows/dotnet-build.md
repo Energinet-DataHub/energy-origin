@@ -15,11 +15,11 @@ The action runs through several steps to set up the environment, ensure the corr
 1. **Load - global.json**: Determines the directory of the provided solution file and checks if a `global.json` file is present. If found, it extracts the SDK and runtime versions specified in the file and sets them as environment variables.
 2. **Overwrite - if given optional input**: If the `sdk-version` or `runtime-version` inputs are provided, it overwrites the versions from `global.json` with the provided versions.
 3. **Fail - if versions are not present**: Ensures that both SDK and runtime versions are present. If not, the action fails.
-4. **Fetch Dockerfile**: Downloads the [Dockerfile](https://github.com/Energinet-DataHub/acorn-actions/Dockerfile.simplified) used for building the Docker image.
-5. **Resolve image version and name**: Uses the [docker-image-version@v2](https://github.com/Energinet-DataHub/acorn-actions/blob/main/actions/docker-image-version/action.yaml) action, from acorn, to extract the image version, and name, from the configuration file.
+4. **Fetch Dockerfile**: Downloads the [Dockerfile](https://github.com/Energinet-DataHub/.github/.github/Dockerfile.simplified) used for building the Docker image.
+5. **Resolve image version and name**: Uses the [docker-image-version@v2](https://github.com/Energinet-DataHub/.github/.github/blob/main/actions/docker-image-version/action.yaml) action, from acorn, to extract the image version, and name, from the configuration file.
 6. **Verify migrations**: If migrations are provided, it verifies them.
-7. **Build and push Docker image**: Uses the [docker-build-and-push@v2](https://github.com/Energinet-DataHub/acorn-actions/blob/main/actions/docker-build-and-push/action.yaml) action, from acorn, to build the Docker image using the specified Dockerfile and pushes it to the container registry.
-8. **Scan image**: uses the [docker-scan@v2](https://github.com/Energinet-DataHub/acorn-actions/blob/main/actions/docker-scan/action.yaml) action, from acorn, to scan the Docker image for vulnerabilities.
+7. **Build and push Docker image**: Uses the [docker-build-and-push@v2](https://github.com/Energinet-DataHub/.github/.github/blob/main/actions/docker-build-and-push/action.yaml) action, from acorn, to build the Docker image using the specified Dockerfile and pushes it to the container registry.
+8. **Scan image**: uses the [docker-scan@v2](https://github.com/Energinet-DataHub/.github/.github/blob/main/actions/docker-scan/action.yaml) action, from acorn, to scan the Docker image for vulnerabilities.
 9. **Upload Docker image tar**: Saves and uploads the Docker image as a tar file.
 
 ### Inputs
