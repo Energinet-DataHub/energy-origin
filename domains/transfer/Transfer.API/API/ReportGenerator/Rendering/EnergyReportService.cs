@@ -11,6 +11,7 @@ namespace API.ReportGenerator.Rendering;
 public class EnergyReportService
 {
     private readonly EnergyDataFetcher _dataFetcher;
+    private readonly IEnergyDataFormatter _dataFormatter;
     private readonly IEnergySvgRenderer _energySvgRenderer;
     private readonly IHeadlinePercentageProcessor _percentageProcessor;
     private readonly IHeadlinePercentageRenderer _percentageRenderer;
@@ -19,6 +20,7 @@ public class EnergyReportService
 
     public EnergyReportService(
         EnergyDataFetcher dataFetcher,
+        IEnergyDataFormatter dataFormatter,
         IEnergySvgRenderer energySvgRenderer,
         IHeadlinePercentageProcessor percentageProcessor,
         IHeadlinePercentageRenderer percentageRenderer,
@@ -26,6 +28,7 @@ public class EnergyReportService
         IOrganizationHeaderRenderer organizationHeaderRenderer)
     {
         _dataFetcher = dataFetcher;
+        _dataFormatter = dataFormatter;
         _energySvgRenderer = energySvgRenderer;
         _percentageProcessor = percentageProcessor;
         _percentageRenderer = percentageRenderer;
@@ -40,8 +43,10 @@ public class EnergyReportService
         CancellationToken ct = default)
     {
         // Step 1: Fetch the raw data
-        var (consumption, strictProduction, allProduction) =
+        var (consumptionRaw, claims) =
             await _dataFetcher.GetAsync(orgId, from, to, ct);
+
+        var (consumption, strictProduction, allProduction) = _dataFormatter.Format(consumptionRaw, claims);
 
         // Step 2: Transform the data into HourlyEnergy objects
         var hourlyEnergy = EnergyDataProcessor.ToHourly(

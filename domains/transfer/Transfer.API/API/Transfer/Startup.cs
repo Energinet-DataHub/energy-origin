@@ -54,10 +54,13 @@ public static class Startup
 
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<IEnergyDataFetcher, EnergyDataFetcher>();
+        services.AddScoped<IEnergyDataFormatter, EnergyDataFormatter>();
         services.AddScoped<IHeadlinePercentageProcessor, HeadlinePercentageProcessor>();
+        services.AddScoped<IMunicipalityPercentageProcessor, MunicipalityPercentageProcessor>();
         services.AddScoped<IEnergySvgRenderer, EnergySvgRenderer>();
         services.AddScoped<IOrganizationHeaderRenderer, OrganizationHeaderRenderer>();
         services.AddScoped<IHeadlinePercentageRenderer, HeadlinePercentageRenderer>();
+        services.AddScoped<IMunicipalityPercentageRenderer, MunicipalityPercentageRenderer>();
         services.AddScoped<ILogoRenderer, LogoeRenderer>();
         services.AddScoped<IStyleRenderer, StyleRenderer>();
         services.AddScoped<IConsumptionService, ConsumptionService>();
