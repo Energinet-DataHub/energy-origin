@@ -87,7 +87,7 @@ public class ClaimService(
         {
             try
             {
-                var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken,
+                var response = await walletClient.GetGranularCertificatesAsync(subjectId, stoppingToken,
                     limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
 
                 if (response == null)
@@ -127,7 +127,7 @@ public class ClaimService(
                                   "Organization: {SubjectId}",
                 quantity, consumptionCert.FederatedStreamId.StreamId, consumptionCert.Quantity, productionCert.FederatedStreamId.StreamId, productionCert.Quantity, subjectId);
 
-            await walletClient.ClaimCertificates(subjectId, consumptionCert, productionCert, quantity, cancellationToken);
+            await walletClient.ClaimCertificatesAsync(subjectId, consumptionCert, productionCert, quantity, cancellationToken);
 
             SetClaimAttempt(consumptionCert.FederatedStreamId.StreamId.ToString());
             SetClaimAttempt(productionCert.FederatedStreamId.StreamId.ToString());

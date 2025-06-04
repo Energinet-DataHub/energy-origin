@@ -80,7 +80,7 @@ internal class ContractServiceImpl : IContractService
                 return new ContractAlreadyExists(overlappingContract);
             }
 
-            var wallets = await walletClient.GetWallets(meteringPointOwnerId, cancellationToken);
+            var wallets = await walletClient.GetWalletsAsync(meteringPointOwnerId, cancellationToken);
 
             var walletId = wallets.Result.First().Id;
 
@@ -89,7 +89,7 @@ internal class ContractServiceImpl : IContractService
                 : number;
 
             var walletEndpoint =
-                await walletClient.CreateWalletEndpoint(walletId, meteringPointOwnerId,
+                await walletClient.CreateWalletEndpointAsync(walletId, meteringPointOwnerId,
                     cancellationToken);
 
             var recipientResponse = await stampClient.CreateRecipient(walletEndpoint, cancellationToken);

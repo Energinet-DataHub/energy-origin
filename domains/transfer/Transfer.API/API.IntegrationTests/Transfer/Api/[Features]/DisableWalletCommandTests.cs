@@ -29,7 +29,7 @@ public class DisableWalletCommandTests
         var walletClientMock = Substitute.For<IWalletClient>();
         var walletId = Guid.NewGuid();
 
-        walletClientMock.GetWallets(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
+        walletClientMock.GetWalletsAsync(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
             new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo
@@ -56,7 +56,7 @@ public class DisableWalletCommandTests
         var cmd = new DisableWalletCommand(OrganizationId.Create(orgId));
         await sut.Handle(cmd, new CancellationToken());
 
-        await walletClientMock.Received(1).DisableWallet(Arg.Is<Guid>(x => x.Equals(walletId)), Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>());
+        await walletClientMock.Received(1).DisableWalletAsync(Arg.Is<Guid>(x => x.Equals(walletId)), Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class DisableWalletCommandTests
         var walletClientMock = Substitute.For<IWalletClient>();
         var walletId = Guid.NewGuid();
 
-        walletClientMock.GetWallets(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
+        walletClientMock.GetWalletsAsync(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
             new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo
@@ -94,7 +94,7 @@ public class DisableWalletCommandTests
         var cmd = new DisableWalletCommand(OrganizationId.Create(orgId));
         await sut.Handle(cmd, new CancellationToken());
 
-        await walletClientMock.DidNotReceive().DisableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await walletClientMock.DidNotReceive().DisableWalletAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public class DisableWalletCommandTests
 
         var walletClientMock = Substitute.For<IWalletClient>();
 
-        walletClientMock.GetWallets(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
+        walletClientMock.GetWalletsAsync(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
             new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo
@@ -123,7 +123,7 @@ public class DisableWalletCommandTests
         var cmd = new DisableWalletCommand(OrganizationId.Create(orgId));
         await sut.Handle(cmd, new CancellationToken());
 
-        await walletClientMock.DidNotReceive().DisableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await walletClientMock.DidNotReceive().DisableWalletAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public class DisableWalletCommandTests
 
         var walletClientMock = Substitute.For<IWalletClient>();
 
-        walletClientMock.GetWallets(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
+        walletClientMock.GetWalletsAsync(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
             new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo
@@ -166,7 +166,7 @@ public class DisableWalletCommandTests
         var cmd = new DisableWalletCommand(OrganizationId.Create(orgId));
         await sut.Handle(cmd, new CancellationToken());
 
-        await walletClientMock.Received(2).DisableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await walletClientMock.Received(2).DisableWalletAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class DisableWalletCommandTests
         var walletClientMock = Substitute.For<IWalletClient>();
         var walletId = Guid.NewGuid();
 
-        walletClientMock.GetWallets(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
+        walletClientMock.GetWalletsAsync(Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>()).Returns(
             new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo
@@ -210,6 +210,6 @@ public class DisableWalletCommandTests
         var cmd = new DisableWalletCommand(OrganizationId.Create(orgId));
         await sut.Handle(cmd, new CancellationToken());
 
-        await walletClientMock.Received(1).DisableWallet(Arg.Is<Guid>(x => x.Equals(walletId)), Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>());
+        await walletClientMock.Received(1).DisableWalletAsync(Arg.Is<Guid>(x => x.Equals(walletId)), Arg.Is<Guid>(x => x.Equals(orgId)), Arg.Any<CancellationToken>());
     }
 }

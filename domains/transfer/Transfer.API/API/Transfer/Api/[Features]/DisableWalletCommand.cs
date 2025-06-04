@@ -20,7 +20,7 @@ public class DisableWalletCommandCommandHandler : IRequestHandler<DisableWalletC
 
     public async Task Handle(DisableWalletCommand request, CancellationToken cancellationToken)
     {
-        var walletsResponse = await _walletClient.GetWallets(request.OrganizationId.Value, cancellationToken);
+        var walletsResponse = await _walletClient.GetWalletsAsync(request.OrganizationId.Value, cancellationToken);
 
         var nonDisabledWallets = walletsResponse.Result.Where(x => x.DisabledDate == null).ToList();
 
@@ -29,7 +29,7 @@ public class DisableWalletCommandCommandHandler : IRequestHandler<DisableWalletC
 
         foreach (var wallet in nonDisabledWallets)
         {
-            await _walletClient.DisableWallet(wallet.Id, request.OrganizationId.Value, cancellationToken);
+            await _walletClient.DisableWalletAsync(wallet.Id, request.OrganizationId.Value, cancellationToken);
         }
     }
 }

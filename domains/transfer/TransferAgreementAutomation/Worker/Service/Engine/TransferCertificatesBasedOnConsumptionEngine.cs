@@ -110,7 +110,7 @@ public class TransferCertificatesBasedOnConsumptionEngine : ITransferEngine
             _logger.LogInformation("Transferring {quantity} from certificate {CertificateId} to {OrganizationId}",
                 senderProductionCertificate.Quantity, senderProductionCertificate.Certificate.FederatedStreamId, receiverOrganizationId);
 
-            var requestId = await _walletClient.TransferCertificates(senderOrganizationId.Value, senderProductionCertificate.Certificate,
+            var requestId = await _walletClient.TransferCertificatesAsync(senderOrganizationId.Value, senderProductionCertificate.Certificate,
                 senderProductionCertificate.Quantity, transferAgreement.ReceiverReference, cancellationToken);
 
             await _requestStatusRepository.Add(

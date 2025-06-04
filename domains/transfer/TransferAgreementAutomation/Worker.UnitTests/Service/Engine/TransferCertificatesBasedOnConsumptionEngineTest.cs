@@ -46,7 +46,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         // Then transfer agreement is skipped (no certificates fetched)
         await mockWalletClient
             .DidNotReceive()
-            .GetGranularCertificates(
+            .GetGranularCertificatesAsync(
                 Arg.Any<Guid>(),
                 Arg.Any<CancellationToken>(),
                 Arg.Any<int>()
@@ -68,7 +68,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         // Then transfer agreement is skipped (no certificates fetched)
         await mockWalletClient
             .DidNotReceive()
-            .GetGranularCertificates(
+            .GetGranularCertificatesAsync(
                 Arg.Any<Guid>(),
                 Arg.Any<CancellationToken>(),
                 Arg.Any<int>()
@@ -89,7 +89,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         // Then transfer agreement is skipped (no certificates fetched)
         await mockWalletClient
             .DidNotReceive()
-            .GetGranularCertificates(
+            .GetGranularCertificatesAsync(
                 Arg.Any<Guid>(),
                 Arg.Any<CancellationToken>(),
                 Arg.Any<int>()
@@ -112,7 +112,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         // Then certificates are transferred
         await mockWalletClient
             .Received(1)
-            .GetGranularCertificates(
+            .GetGranularCertificatesAsync(
                 Arg.Is(receiverId.Value),
                 Arg.Any<CancellationToken>(),
                 Arg.Any<int>()
@@ -135,7 +135,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         // Then no certificates are transferred
         await mockWalletClient
             .DidNotReceive()
-            .GetGranularCertificates(
+            .GetGranularCertificatesAsync(
                 Arg.Is(transferAgreement.SenderId.Value),
                 Arg.Any<CancellationToken>(),
                 Arg.Any<int>()
@@ -241,7 +241,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         TransferResponse mockedTransferResponse)
     {
         var certificateCount = mockedGranularCertificatesResponse.Count;
-        mockWalletClient.GetGranularCertificates(Arg.Is(owner), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>(),
+        mockWalletClient.GetGranularCertificatesAsync(Arg.Is(owner), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>(),
             Arg.Any<CertificateType>()).Returns(
             new ResultList<GranularCertificate>()
             {
@@ -249,7 +249,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
                 Result = mockedGranularCertificatesResponse
             });
 
-        mockWalletClient.GetGranularCertificates(Arg.Is(owner), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>()).Returns(
+        mockWalletClient.GetGranularCertificatesAsync(Arg.Is(owner), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>()).Returns(
             new ResultList<GranularCertificate>()
             {
                 Metadata = new PageInfo() { Offset = 0, Count = certificateCount, Limit = 100, Total = certificateCount },
@@ -257,7 +257,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
             });
 
         mockWalletClient
-            .TransferCertificates(Arg.Is(owner), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>(), CancellationToken.None)
+            .TransferCertificatesAsync(Arg.Is(owner), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>(), CancellationToken.None)
             .Returns(mockedTransferResponse);
     }
 }

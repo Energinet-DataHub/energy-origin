@@ -36,7 +36,7 @@ public class HeadlinePercentageRendererTests
 
         var walletClient = Substitute.For<IWalletClient>();
         walletClient
-            .GetClaims(orgId.Value, from, to, TimeMatch.Hourly, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, from, to, TimeMatch.Hourly, Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = strictClaims,
@@ -49,7 +49,7 @@ public class HeadlinePercentageRendererTests
                 }
             });
         walletClient
-            .GetClaims(orgId.Value, from, to, TimeMatch.All, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, from, to, TimeMatch.All, Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = allClaims,

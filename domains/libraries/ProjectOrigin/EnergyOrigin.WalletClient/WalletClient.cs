@@ -13,7 +13,7 @@ public class WalletClient(HttpClient client) : IWalletClient
 {
     private const string WalletOwnerHeader = "wallet-owner";
 
-    public async Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken)
+    public async Task<CreateWalletResponse> CreateWalletAsync(Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
 
@@ -34,7 +34,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<CreateWalletResponse>(response, cancellationToken);
     }
 
-    public async Task<ResultList<WalletRecord>> GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
+    public async Task<ResultList<WalletRecord>> GetWalletsAsync(Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
 
@@ -65,7 +65,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return result;
     }
 
-    public async Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject,
+    public async Task<CreateExternalEndpointResponse> CreateExternalEndpointAsync(Guid ownerSubject,
         WalletEndpointReference walletEndpointReference,
         string textReference, CancellationToken cancellationToken)
     {
@@ -92,7 +92,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<CreateExternalEndpointResponse>(res, cancellationToken);
     }
 
-    public async Task<RequestStatus> GetRequestStatus(Guid ownerSubject, Guid requestId,
+    public async Task<RequestStatus> GetRequestStatusAsync(Guid ownerSubject, Guid requestId,
         CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
@@ -107,7 +107,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return responseObj!.Status;
     }
 
-    public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, Guid ownerSubject,
+    public async Task<WalletEndpointReference> CreateWalletEndpointAsync(Guid walletId, Guid ownerSubject,
         CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
@@ -127,7 +127,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return new WalletEndpointReference(dto.WalletReference.Version, dto.WalletReference.Endpoint, hdPublicKey);
     }
 
-    public async Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate,
+    public async Task<TransferResponse> TransferCertificatesAsync(Guid ownerSubject, GranularCertificate certificate,
         uint quantity, Guid receiverId, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
@@ -154,7 +154,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<TransferResponse>(res, cancellationToken);
     }
 
-    public async Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate,
+    public async Task<ClaimResponse> ClaimCertificatesAsync(Guid ownerSubject, GranularCertificate consumptionCertificate,
         GranularCertificate productionCertificate, uint quantity, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
@@ -177,7 +177,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<ClaimResponse>(res, cancellationToken);
     }
 
-    public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject,
+    public async Task<ResultList<GranularCertificate>?> GetGranularCertificatesAsync(Guid ownerSubject,
         CancellationToken cancellationToken, int? limit,
         int skip = 0, CertificateType? certificateType = null)
     {
@@ -201,7 +201,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<ResultList<GranularCertificate>?>(response, cancellationToken);
     }
 
-    public async Task<DisableWalletResponse> DisableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    public async Task<DisableWalletResponse> DisableWalletAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
 
@@ -216,7 +216,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<DisableWalletResponse>(response, cancellationToken);
     }
 
-    public async Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    public async Task<EnableWalletResponse> EnableWalletAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
         var response = await client.PutAsync($"v1/wallets/{walletId}/enable", null, cancellationToken);
@@ -228,7 +228,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<EnableWalletResponse>(response, cancellationToken);
     }
 
-    public async Task<ResultList<Claim>?> GetClaims(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken)
+    public async Task<ResultList<Claim>?> GetClaimsAsync(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
         var requestUri = $"v1/claims?start={start?.ToUnixTimeSeconds()}&end={end?.ToUnixTimeSeconds()}";
@@ -244,7 +244,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<ResultList<Claim>?>(response, cancellationToken);
     }
 
-    public async Task<ResultList<Claim>?> GetClaims(
+    public async Task<ResultList<Claim>?> GetClaimsAsync(
         Guid ownerSubject,
         DateTimeOffset? start,
         DateTimeOffset? end,

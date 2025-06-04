@@ -57,13 +57,13 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IWall
             throw new TransferAgreementConflictException();
         }
 
-        var wallets = await WalletClient.GetWallets(command.ReceiverOrganizationId, CancellationToken.None);
+        var wallets = await WalletClient.GetWalletsAsync(command.ReceiverOrganizationId, CancellationToken.None);
 
         var walletId = wallets.Result.First().Id;
 
-        var walletEndpoint = await WalletClient.CreateWalletEndpoint(walletId, command.ReceiverOrganizationId, CancellationToken.None);
+        var walletEndpoint = await WalletClient.CreateWalletEndpointAsync(walletId, command.ReceiverOrganizationId, CancellationToken.None);
 
-        var externalEndpoint = await WalletClient.CreateExternalEndpoint(command.SenderOrganizationId, walletEndpoint, SenderTin.Value, CancellationToken.None);
+        var externalEndpoint = await WalletClient.CreateExternalEndpointAsync(command.SenderOrganizationId, walletEndpoint, SenderTin.Value, CancellationToken.None);
 
         transferAgreement.ReceiverReference = externalEndpoint.ReceiverId;
 

@@ -37,7 +37,7 @@ public class TransferEngineUtility
         var certificates = new List<GranularCertificate>();
         while (hasMoreCertificates)
         {
-            var response = await _walletClient.GetGranularCertificates(organizationId.Value, new CancellationToken(), limit: BatchSize,
+            var response = await _walletClient.GetGranularCertificatesAsync(organizationId.Value, new CancellationToken(), limit: BatchSize,
                 skip: certificates.Count, CertificateType.Production);
 
             if (response == null)
@@ -62,7 +62,7 @@ public class TransferEngineUtility
         var certificates = new List<GranularCertificate>();
         while (hasMoreCertificates)
         {
-            var response = await _walletClient.GetGranularCertificates(organizationId.Value, new CancellationToken(), limit: BatchSize,
+            var response = await _walletClient.GetGranularCertificatesAsync(organizationId.Value, new CancellationToken(), limit: BatchSize,
                 skip: certificates.Count);
 
             if (response == null)
@@ -112,7 +112,7 @@ public class TransferEngineUtility
             }
             else
             {
-                var updatedStatus = await _walletClient.GetRequestStatus(organizationId.Value, transactionToUpdate.RequestId, cancellationToken);
+                var updatedStatus = await _walletClient.GetRequestStatusAsync(organizationId.Value, transactionToUpdate.RequestId, cancellationToken);
                 transactionToUpdate.UpdateStatus(MapStatus(updatedStatus));
                 await _requestStatusRepository.Update(transactionToUpdate, cancellationToken);
             }
