@@ -71,21 +71,21 @@ public class ConsumptionService : IConsumptionService
         return ComputeHourlyAverages(data);
     }
 
-    private async Task<MeteringPointData[]> GetRawMeteringDataAsync(
+    private async Task<MeasurementAggregationByPeriodDto[]> GetRawMeteringDataAsync(
         OrganizationId orgId,
         DateTimeOffset from,
         DateTimeOffset to,
         CancellationToken ct)
     {
         var gsrns = await GetValidGsrnsAsync(orgId, ct);
-        if (gsrns.Count == 0) return Array.Empty<MeteringPointData>();
+        if (gsrns.Count == 0) return Array.Empty<MeasurementAggregationByPeriodDto>();
 
-        return await _dh3Client.GetMeasurements(
+        return (await _measurementClient.GetMeasurements(
                    gsrns.ToList(),
                    from.ToUnixTimeSeconds(),
                    to.ToUnixTimeSeconds(),
-                   ct)
-               ?? Array.Empty<MeteringPointData>();
+                   ct)).ToArray()
+               ?? Array.Empty<MeasurementAggregationByPeriodDto>();
     }
 
 
@@ -115,7 +115,7 @@ public class ConsumptionService : IConsumptionService
         return valid;
     }
 
-    private List<ConsumptionHour> ComputeHourlyAverages(MeteringPointData[] data)
+    private List<ConsumptionHour> ComputeHourlyAverages(MeasurementAggregationByPeriodDto[] data)
     {
         return Enumerable.Range(0, 24)
             .Select(hour => new ConsumptionHour(hour)
@@ -124,9 +124,9 @@ public class ConsumptionService : IConsumptionService
                     .SelectMany(mp => mp.PointAggregationGroups.Values)
                     .SelectMany(pg => pg.PointAggregations)
                     .Where(p => DateTimeOffset
-                        .FromUnixTimeSeconds(p.MinObservationTime)
+                        .FromUnixTimeSeconds(p.From.ToUnixTimeSeconds())
                         .Hour == hour)
-                    .Select(p => p.AggregatedQuantity)
+                    .Select(p => p.Quantity ?? 0)
                     .DefaultIfEmpty(0m)
                     .Average()
             })
