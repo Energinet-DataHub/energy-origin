@@ -1,27 +1,37 @@
-name: hello-world
-version: "0.1.0"
-summary: "A simple Hello, World! package"
-description: |
-  Installs a tiny shell script at /usr/local/bin/hello
-  which prints “Hello, world!” when executed.
-license: MIT
+# melange.yaml
+# --------------
+# Build a minimal “Hello, World!” APK using Melange v0.26.x+.
 
-arch:
-  - x86_64
+# 1) Package metadata: name, version, description, license, architecture
+package:
+  name: hello-world
+  version: 0.1.0
+  description: |
+    A trivial “Hello, World!” package. Installs a shell script at
+    /usr/local/bin/hello that prints “Hello, world!” when executed.
+  license:
+    - MIT
+  target-architecture:
+    - x86_64
 
+# 2) Pipeline: one shell step that writes out the “hello” script
 pipeline:
-  - type: shell
-    path: .
-    commands:
-      - mkdir -p out/usr/local/bin
-      - |
-        cat << 'EOF' > out/usr/local/bin/hello
-        #!/bin/sh
-        echo "Hello, world!"
-        EOF
+  - name: Build shell script
+    runs: |
+      # Create the directory in which our “binary” will live
+      mkdir -p "${{targets.destdir}}/usr/local/bin"
 
-      - chmod +x out/usr/local/bin/hello
+      # Write a tiny shell script that prints “Hello, world!”
+      cat << 'EOF' > "${{targets.destdir}}/usr/local/bin/hello"
+      #!/bin/sh
+      echo "Hello, world!"
+      EOF
 
+      # Make it executable
+      chmod +x "${{targets.destdir}}/usr/local/bin/hello"
+
+# 3) Outputs: wrap everything in ‘${TARGETSDIR}/…’ into an Alpine .apk
 outputs:
   - type: apk
+    # The APK will be named hello-world-0.1.0-r0.apk by default
     out_dir: packages

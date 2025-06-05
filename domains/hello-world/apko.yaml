@@ -1,17 +1,38 @@
+# apko.yaml
+# --------------
+# Build a minimal OCI image that includes the hello-world-0.1.0-r0.apk
+# produced by Melange (above). Uses Apko v1.x+ syntax.
+
 schemaVersion: v1
+
 metadata:
   name: hello-image
-  version: "0.1.0"
+  version: 0.1.0
 
+# 1) Where to find APKs at build time
 packageRepositories:
   - type: local
-    path: packages
+    path: packages       # Look for hello-world-0.1.0-r0.apk here
 
+# 2) Which APK(s) to install into the final image
 packages:
-  - hello-world@0.1.0
-oci:
-  imageType: base
+  - hello-world@0.1.0   # Must match “name@version” from melange.yaml
 
+# 3) (Optional) Additional package repositories, e.g. an online Wolfi repo:
+#   - type: remote
+#     url: https://ghostwolfi.example.com/wolfi/v0/amd64/apk/release
+
+# 4) OCI‐specific settings
+oci:
+  imageType: base       # Create a minimal “base” image (Alpine‐style)
+  # (You can add other OCI fields here, like entrypoint, cmd, etc.)
+
+# 5) (Optional) Any labels/annotations you want baked into the image
 annotations:
-  org.opencontainers.image.description: "A minimal Hello, World! image"
-  org.opencontainers.image.licenses: "MIT"
+  org.opencontainers.image.title: "hello-image"
+  org.opencontainers.image.description: "Runs /usr/local/bin/hello → prints Hello, world!"
+  org.opencontainers.image.licenses: MIT
+
+# 6) (Optional) If you need to override architectures here (by default, apko builds for host arch)
+# archs:
+#   - x86_64
