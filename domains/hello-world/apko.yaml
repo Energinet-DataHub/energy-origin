@@ -1,20 +1,15 @@
-schemaVersion: v1
+contents:
+  keyring:
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+  repositories:
+    - https://packages.wolfi.dev/os
+  packages:
+    - wolfi-baselayout
+    - hello-world@local
+    - busybox
 
-metadata:
-  name: hello-image
-  version: 0.1.0
+entrypoint:
+  command: /usr/local/bin/hello
 
-packageRepositories:
-  - type: local
-    path: packages
-
-packages:
-  - hello-world@0.1.0
-
-oci:
-  imageType: base
-
-annotations:
-  org.opencontainers.image.title: "hello-image"
-  org.opencontainers.image.description: "Runs /usr/local/bin/hello → prints Hello, world!"
-  org.opencontainers.image.licenses: MIT
+archs:
+  - amd64
