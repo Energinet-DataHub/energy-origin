@@ -1,38 +1,33 @@
 package:
   name: hello-world
   version: 0.1.0
-  description: |
-    A minimal Hello, World! package. Installs a shell script under
-    /usr/local/bin/hello which prints “Hello, world!”.
-  target-architecture:
-    - x86_64
+  epoch: 0
+  description: "A minimal Hello, World! package (shell script)"
   copyright:
     - license: MIT
-  dependencies:
-    runtime:
-      - busybox
 
 environment:
   contents:
-    keyring:
-      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    # We depend only on busybox for /bin/sh at runtime (for testing or if someone
+    # were to run the script outside our package). No build‐time downloads needed.
     repositories:
-      - https://packages.wolfi.dev/os
+      - https://dl-cdn.alpinelinux.org/alpine/edge/main
     packages:
       - busybox
       - ca-certificates-bundle
 
 pipeline:
-  - name: Create “hello” script
+  # Instead of “fetch” from a remote URL, we simply write our own script in-place.
+  - name: Create hello binary
     runs: |
-      # Create destination directories under the target rootfs
+      # Create the directory where our “binary” will live:
       mkdir -p "${{targets.destdir}}/usr/local/bin"
 
-      # Write a shell script at /usr/local/bin/hello
+      # Write a tiny shell script at /usr/local/bin/hello:
       cat << 'EOF' > "${{targets.destdir}}/usr/local/bin/hello"
       #!/bin/sh
       echo "Hello, world!"
       EOF
 
-      # Mark it executable
+      # Mark it executable:
       chmod +x "${{targets.destdir}}/usr/local/bin/hello"
