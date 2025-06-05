@@ -26,14 +26,15 @@
 	  <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.2.3" />
 	  <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.3" />
 	  <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.3" />
-	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.1" />
-	  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.1" />
-	  <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.0" />
-	  <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.11.0" />
-	  <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.11.0" />
+	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
+	  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
+	  <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
 	  <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
 	  <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
-	  <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
-	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.3.1" />
+	  <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.4" />
+	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="8.1.4" />
 	</ItemGroup>
 </Project>
