@@ -1,0 +1,17 @@
+schemaVersion: v1
+metadata:
+  name: hello-image
+  version: "0.1.0"
+
+packageRepositories:
+  - type: local
+    path: packages
+
+packages:
+  - hello-world@0.1.0
+oci:
+  imageType: base
+
+annotations:
+  org.opencontainers.image.description: "A minimal Hello, World! image"
+  org.opencontainers.image.licenses: "MIT"

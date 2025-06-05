@@ -1,0 +1,36 @@
+# .github/workflows/build-example-image.yaml
+name: Build Example Image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # 1) Build a package with Melange
+  build-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Resolve image version
+        uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v4
+
+      - name: Resolve image name
+        shell: bash
+        run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/hello-world' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Build melange package
+        uses: ./.github/actions/melange-build
+        with:
+          config: domains/hello-world/melange.yaml
+          archs: x86_64
+          sign-with-temporary-key: true
+          signing-key-path: ./melange.rsa
+          repository-path: ./packages
+
+      - name: Generate apko image, provenance, SBOM, sign image, and push it
+        uses: ./.github/actions/apko-snapshot
+        with:
+          config: domains/hello-world/apko.yaml
+          base-tag: ${{ env.LOWERCASED }}
+          target-tag: ${{ env.version }}

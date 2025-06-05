@@ -1,0 +1,201 @@
+name: 'Build image with apko'
+description: |
+  This action build an OCI image with apko, given a config file
+  and tag to use.
+
+inputs:
+  apko-image:
+    description: |
+      The digest of the apko image to invoke.
+    default: ghcr.io/wolfi-dev/sdk:sha256-a83bf3287826696fbc477cbcf40dfa748d89af26df82f4cdb6281771c19bd11d.sig
+    required: false
+
+  config:
+    description: |
+      The config file to use for building the image.
+    default: .apko.yaml
+
+  lockfile:
+    description: |
+      The lock file that constraints versions of packages.
+    required: false
+    default: ''
+
+  tag:
+    description: |
+      The tag to use for publishing the image.
+    required: true
+
+  repository_owner:
+    description: |
+      The repository owner's GitHub username.
+    default: ${{ github.repository_owner }}
+
+  repository:
+    description: |
+      The repository name.
+    default: ${{ github.repository }}
+
+  token:
+    description: |
+      The repository owner's GitHub token.
+    default: ${{ github.token }}
+
+  image_refs:
+    description: |
+      The value to pass to --image-refs.
+    default: /tmp/apko.images
+
+  keyring-append:
+    description: |
+      The value to pass to --keyring-append.
+    default: ''
+
+  build-repository-append:
+    description: |
+      The value to pass to --build-repository-append.
+    required: false
+    default: ''
+
+  repository-append:
+    description: |
+      The value to pass to --repository-append.
+    default: ''
+
+  package-append:
+    description: |
+      The value to pass to --package-append.
+    default: ''
+
+  archs:
+    description: |
+      The architectures to build for.
+    default: ''
+
+  build-options:
+    description: |
+      Build options to enable (comma-separated).
+    default: ''
+
+  source-date-epoch:
+    description: |
+      The UNIX timestamp to use as the source date when building an image.
+      This is set as the SOURCE_DATE_EPOCH environment variable.
+    default: ''
+
+  vcs-url:
+    description: |
+      Whether to detect and embed the VCS URL (unlike apko we default this to false for reproducible builds).
+    type: boolean
+    required: false
+    default: false
+
+  debug:
+    description: |
+      Enable debug logging.
+    type: boolean
+    required: false
+    default: false
+
+  automount-src:
+    description: |
+      If this directory is found, create a copy at automount-dest (inside container)
+    default: ${{ github.workspace }}/.apko-automount
+
+  automount-dest:
+    description: |
+      If automount-src is found, create a copy at this location (inside container)
+    default: /work
+
+  sbom-path:
+    description: |
+      Path to write the SBOMs.
+    required: false
+    default: ''
+
+  generic-user:
+    description: |
+      Username to login to registry.
+    required: false
+    default: ''
+
+  generic-pass:
+    description: |
+      Password to login to registry.
+    required: false
+    default: ''
+
+  annotations:
+    description: |
+      Annotations to add to the image. Format: key1:value1,key2:value2.
+    required: false
+    default: ''
+
+outputs:
+  digest:
+    value: ${{ steps.docker-run.outputs.digest }}
+    description: |
+      The digest of the published container image.
+
+runs:
+  using: composite
+  steps:
+    - id: docker-run
+      shell: bash
+      run: |
+        APKO_IMAGE="${{ inputs.apko-image }}"
+        if [[ "${APKO_IMAGE}" == "" ]]; then
+          echo "Warning: using latest wolfi-dev/sdk image since apko-image input was empty string."
+          APKO_IMAGE="ghcr.io/wolfi-dev/sdk:sha256-a83bf3287826696fbc477cbcf40dfa748d89af26df82f4cdb6281771c19bd11d.sig"
+        fi
+        docker run -i --rm --entrypoint /bin/sh \
+          --network host \
+          -v $PWD:${{ github.workspace }} \
+          -v /tmp:/tmp \
+          --workdir ${{ github.workspace }} \
+          -e "GITHUB_ACTOR=${{ inputs.repository_owner }}" \
+          -e "GITHUB_TOKEN=${{ inputs.token }}" \
+          -e "REPOSITORY=${{ inputs.repository }}" \
+          "${APKO_IMAGE}" \
+          -c "$(cat <<"EOF"
+        set -o errexit
+        set -o pipefail
+
+        if [[ "${{ inputs.generic-user }}" != "" && "${{ inputs.generic-pass }}" != "" ]]; then
+          echo "${{ inputs.generic-pass }}" | \
+            /usr/bin/apko login -u "${{ inputs.generic-user }}" \
+              --password-stdin "$(echo "${{ inputs.tag }}" | cut -d'/' -f1)"
+        fi
+
+        if [ -d "${{ inputs.automount-src }}" ]; then
+          echo "Creating copy of ${{ inputs.automount-src }} at ${{ inputs.automount-dest }}"
+          cp -r "${{ inputs.automount-src }}" "${{ inputs.automount-dest }}"
+        fi
+        [ -n "${{ inputs.source-date-epoch }}" ] && export SOURCE_DATE_EPOCH='${{ inputs.source-date-epoch }}'
+        [ -n "${{ inputs.keyring-append }}" ] && keys="-k ${{ inputs.keyring-append }}"
+        [ -n "${{ inputs.build-repository-append }}" ] && build_repos="-b ${{ inputs.build-repository-append }}"
+        [ -n "${{ inputs.repository-append }}" ] && repos="-r ${{ inputs.repository-append }}"
+        [ -n "${{ inputs.package-append }}" ] && packages="-p ${{ inputs.package-append }}"
+        [ -n  "${{ inputs.archs }}" ] && archs="--arch ${{ inputs.archs }}"
+        [ -n  "${{ inputs.annotations }}" ] && annotations="--annotations ${{ inputs.annotations }}"
+        build_options=""
+        if [ -n "${{ inputs.build-options }}" ]; then
+          opts="${{ inputs.build-options }}"
+          for opt in ${opts//,/ }; do
+            build_options="${build_options} --build-option ${opt}"
+          done
+        fi
+
+        sbomPath="--sbom-path=${{ inputs.sbom-path }}"
+
+        export DIGEST_FILE="/tmp/digest"
+        /usr/bin/apko publish \
+          --vcs=${{ inputs.vcs-url }} \
+          --lockfile=${{ inputs.lockfile }} \
+          ${{ inputs.debug && '--log-level debug' }} \
+          --image-refs="${{ inputs.image_refs }}" ${{ inputs.config }} ${{ inputs.tag }} $keys $build_repos $repos $packages $archs $annotations $build_options $sbomPath | tee ${DIGEST_FILE}
+        echo EXIT CODE: $?
+        EOF
+        )"
+
+        echo "digest=$(cat /tmp/digest)" >> $GITHUB_OUTPUT
