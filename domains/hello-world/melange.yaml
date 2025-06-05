@@ -2,6 +2,10 @@ package:
   name: hello-world
   version: 0.0.1
   description: a very basic melange example
+  target-architecture:
+    - x86_64
+  copyright:
+    - license: Apache-2.0
 environment:
   contents:
     repositories:
