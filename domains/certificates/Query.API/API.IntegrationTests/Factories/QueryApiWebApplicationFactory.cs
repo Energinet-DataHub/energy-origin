@@ -55,7 +55,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public string StampUrl { get; set; } = "baz";
     public string RegistryName { get; set; } = "TestRegistry";
     public bool MeasurementsSyncEnabled { get; set; } = false;
-    public IDataHub3Client? DataHub3Client { get; set; } = null;
+    public IMeasurementClient? MeasurementClient { get; set; } = null;
     public IDataHubFacadeClient? DataHubFacadeClient { get; set; } = null;
     public Meteringpoint.V1.Meteringpoint.MeteringpointClient? MeteringpointClient { get; set; } = null;
 
@@ -118,10 +118,10 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             if (!MeasurementsSyncEnabled)
                 services.Remove(services.First(s => s.ImplementationType == typeof(MeasurementsSyncerWorker)));
 
-            if (DataHub3Client != null)
+            if (MeasurementClient != null)
             {
-                services.Remove(services.First(s => s.ServiceType == typeof(IDataHub3Client)));
-                services.AddSingleton(DataHub3Client);
+                services.Remove(services.First(s => s.ServiceType == typeof(IMeasurementClient)));
+                services.AddSingleton(MeasurementClient);
             }
 
             if (DataHubFacadeClient != null)

@@ -1,7 +1,12 @@
 using System;
+using System.Net.Http;
 using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
+using Energinet.DataHub.Measurements.Client;
+using Energinet.DataHub.Measurements.Client.Extensions.DependencyInjection;
+using Energinet.DataHub.Measurements.Client.Extensions.Options;
+using Energinet.DataHub.Measurements.Client.ResponseParsers;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,11 +53,15 @@ public static class Startup
             client.BaseAddress = new Uri(options.Url);
         });
 
-        services.AddHttpClient<IDataHub3Client, DataHub3Client>((sp, client) =>
+        services.AddOptions<MeasurementHttpClientOptions>().BindConfiguration("MeasurementsHttpClient").ValidateDataAnnotations();
+        services.AddHttpClient("Measurements", delegate (IServiceProvider serviceProvider, HttpClient httpClient)
         {
-            var options = sp.GetRequiredService<IOptions<DataHub3Options>>().Value;
-            client.BaseAddress = new Uri(options.Url);
-            client.Timeout = TimeSpan.FromSeconds(300); // Databricks can autoscale under high load, which can take a long time. So this is so we don't lose the call if that happens.
+            MeasurementHttpClientOptions value = serviceProvider.GetRequiredService<IOptions<MeasurementHttpClientOptions>>().Value;
+            httpClient.BaseAddress = new Uri(value.BaseAddress);
         }).AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddScoped<IMeasurementsForDateResponseParser, MeasurementsForDateResponseParser>();
+        services.AddScoped<IMeasurementsClient, MeasurementsClient>();
+        services.AddScoped<IMeasurementClient, MeasurementClient>();
     }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Polly" Version="8.5.2" />
+    <PackageReference Include="Energinet.DataHub.Measurements.Client" Version="8.3.0" />
   </ItemGroup>
 
   <ItemGroup>
