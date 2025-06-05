@@ -28,23 +28,23 @@ jobs:
         shell: bash
         run: echo "name=$(yq '.name' 'domains/html-pdf-generator/configuration.yaml')" | tee -a $GITHUB_ENV
 
-        # This combines the name of the organization + the name of the subsystem, and lowercases it into env.LOWERCASED
-      - name: Resolve image name
-        shell: bash
-        run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ env.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
-      - name: Build melange package
-        uses: .github/actions/melange-build
-        with:
-          config: domains/html-pdf-generator/melange.yaml
-          archs: x86_64
-          sign-with-temporary-key: true
-          signing-key-path: ./melange.rsa
-          repository-path: ./packages
-
-      - name: Generate apko image, provenance, SBOM, sign image, and push it
-        uses: .github/actions/apko-snapshot
-        with:
-          config: domains/html-pdf-generator/apko.yaml
-          base-tag: ${{ env.LOWERCASED }}
-          target-tag: ${{ env.version }}
+#        # This combines the name of the organization + the name of the subsystem, and lowercases it into env.LOWERCASED
+#      - name: Resolve image name
+#        shell: bash
+#        run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ env.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+#
+#      - name: Build melange package
+#        uses: .github/actions/melange-build
+#        with:
+#          config: domains/html-pdf-generator/melange.yaml
+#          archs: x86_64
+#          sign-with-temporary-key: true
+#          signing-key-path: ./melange.rsa
+#          repository-path: ./packages
+#
+#      - name: Generate apko image, provenance, SBOM, sign image, and push it
+#        uses: .github/actions/apko-snapshot
+#        with:
+#          config: domains/html-pdf-generator/apko.yaml
+#          base-tag: ${{ env.LOWERCASED }}
+#          target-tag: ${{ env.version }}
