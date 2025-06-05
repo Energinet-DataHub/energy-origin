@@ -1,8 +1,16 @@
-# .github/workflows/build-example-image.yaml
-name: Build Example Image
+name: Build Hello World
 
 on:
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "An indication of whether to commit/publish results"
+        required: true
+        type: string
+      is-dependabot:
+        description: "An indication of a dependabot pull request"
+        required: true
+        type: string
 
 jobs:
   # 1) Build a package with Melange
@@ -10,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Resolve image version
         uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v4

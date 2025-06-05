@@ -84,6 +84,9 @@ jobs:
   build-hello-world:
     uses: ./.github/workflows/build-hello-world.yaml
     secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-openapi:
     uses: ./.github/workflows/build-openapi.yaml
