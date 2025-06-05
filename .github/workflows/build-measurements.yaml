@@ -14,8 +14,8 @@ on:
 
 permissions:
   contents: read
-  packages: write
-  security-events: write
+  packages: none
+  security-events: none
   id-token: write
 
 jobs:
