@@ -18,6 +18,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.300
+
       - name: Run dotnet lint
         uses: ./.github/actions/dotnet-lint-solution
         with:
@@ -31,6 +37,11 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.300
 
       - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
         uses: ./.github/actions/dotnet-validate-solution

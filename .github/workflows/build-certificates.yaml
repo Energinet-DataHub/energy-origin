@@ -19,6 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.300
+
       - uses: ./.github/actions/dotnet-build
         with:
           solution: Certificates.sln

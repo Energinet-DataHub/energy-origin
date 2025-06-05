@@ -60,7 +60,7 @@ runs:
 
     - name: Fetch Dockerfile
       shell: bash
-      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/main/Dockerfile.simplified -O Dockerfile
+      run: cp ./Dockerfile.simplified ./Dockerfile
 
     - name: Resolve image version
       uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v4

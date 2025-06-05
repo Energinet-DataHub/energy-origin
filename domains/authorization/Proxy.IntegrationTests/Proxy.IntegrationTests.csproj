@@ -15,18 +15,18 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="FluentAssertions" Version="6.12.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.2" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-        <PackageReference Include="Verify.XunitV3" Version="29.2.0" />
-        <PackageReference Include="WireMock.Net" Version="1.7.4" />
-        <PackageReference Include="xunit.v3" Version="2.0.1" />
-        <PackageReference Include="xunit.v3.extensibility.core" Version="2.0.1" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="3.0.2">
+        <PackageReference Include="FluentAssertions" Version="7.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.5" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+        <PackageReference Include="Verify.XunitV3" Version="30.3.1" />
+        <PackageReference Include="WireMock.Net" Version="1.8.9" />
+        <PackageReference Include="xunit.v3" Version="2.0.2" />
+        <PackageReference Include="xunit.v3.extensibility.core" Version="2.0.2" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="1.1.0" />
+        <PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="1.2.0" />
         <PackageReference Include="ProjectOrigin.PedersenCommitment" Version="1.1.1" />
     </ItemGroup>
 
