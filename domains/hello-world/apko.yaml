@@ -13,4 +13,4 @@ entrypoint:
   command: /hello
 
 archs:
-  - x86_64
+  - amd64
