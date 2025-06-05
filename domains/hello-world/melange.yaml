@@ -1,0 +1,27 @@
+name: hello-world
+version: "0.1.0"
+summary: "A simple Hello, World! package"
+description: |
+  Installs a tiny shell script at /usr/local/bin/hello
+  which prints “Hello, world!” when executed.
+license: MIT
+
+arch:
+  - x86_64
+
+pipeline:
+  - type: shell
+    path: .
+    commands:
+      - mkdir -p out/usr/local/bin
+      - |
+        cat << 'EOF' > out/usr/local/bin/hello
+        #!/bin/sh
+        echo "Hello, world!"
+        EOF
+
+      - chmod +x out/usr/local/bin/hello
+
+outputs:
+  - type: apk
+    out_dir: packages

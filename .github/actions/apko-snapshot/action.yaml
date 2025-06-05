@@ -204,8 +204,8 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: sigstore/cosign-installer@v3
-    - uses: imjasonh/setup-crane@v0.3
+    - uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb
+    - uses: imjasonh/setup-crane@00c9e93efa4e1138c9a7a5c594acd6c75a2fbf0c
 
     - name: Setup QEMU
       uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0

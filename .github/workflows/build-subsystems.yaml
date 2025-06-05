@@ -74,6 +74,10 @@ jobs:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
+  build-hello-world:
+    uses: ./.github/workflows/build-hello-world.yaml
+    secrets: inherit
+
   build-oidc-mock:
     uses: ./.github/workflows/build-oidc-mock.yaml
     secrets: inherit
@@ -99,16 +103,17 @@ jobs:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-      - dotnet-lint-solution
-      - test-subsystems-exclude-e2e
-      - build-admin-portal
-      - build-authorization
-      - build-certificates
-      - build-html-pdf-generator
-      - build-measurements
-      - build-oidc-mock
-      - build-openapi
-      - build-transfer
+#      - dotnet-lint-solution
+#      - test-subsystems-exclude-e2e
+#      - build-admin-portal
+#      - build-authorization
+#      - build-certificates
+#      - build-html-pdf-generator
+#      - build-measurements
+#      - build-oidc-mock
+#      - build-openapi
+#      - build-transfer
+      - build-hello-world
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:

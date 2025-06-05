@@ -7,8 +7,8 @@ inputs:
   apko-image:
     description: |
       The digest of the apko image to invoke.
-    default: ghcr.io/wolfi-dev/sdk:latest
-    required: true
+    default: ghcr.io/wolfi-dev/sdk:sha256-a83bf3287826696fbc477cbcf40dfa748d89af26df82f4cdb6281771c19bd11d.sig
+    required: false
 
   config:
     description: |
@@ -146,7 +146,7 @@ runs:
         APKO_IMAGE="${{ inputs.apko-image }}"
         if [[ "${APKO_IMAGE}" == "" ]]; then
           echo "Warning: using latest wolfi-dev/sdk image since apko-image input was empty string."
-          APKO_IMAGE="ghcr.io/wolfi-dev/sdk:latest"
+          APKO_IMAGE="ghcr.io/wolfi-dev/sdk:sha256-a83bf3287826696fbc477cbcf40dfa748d89af26df82f4cdb6281771c19bd11d.sig"
         fi
         docker run -i --rm --entrypoint /bin/sh \
           --network host \
