@@ -17,17 +17,17 @@ jobs:
         run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/hello-world' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Build melange package
-        uses: .github/actions/melange-build
+        uses: ./.github/actions/melange-build
         with:
-          config: domains/html-pdf-generator/melange.yaml
+          config: domains/hello-world/melange.yaml
           archs: x86_64
           sign-with-temporary-key: true
           signing-key-path: ./melange.rsa
           repository-path: ./packages
 
       - name: Generate apko image, provenance, SBOM, sign image, and push it
-        uses: .github/actions/apko-snapshot
+        uses: ./.github/actions/apko-snapshot
         with:
-          config: domains/html-pdf-generator/apko.yaml
+          config: domains/hello-world/apko.yaml
           base-tag: ${{ env.LOWERCASED }}
           target-tag: ${{ env.version }}
