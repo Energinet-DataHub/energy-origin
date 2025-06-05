@@ -13,8 +13,7 @@ on:
         type: string
 
 jobs:
-  # 1) Build a package with Melange
-  build-package:
+  build-hello-world:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
