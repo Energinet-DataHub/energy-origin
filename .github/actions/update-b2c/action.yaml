@@ -21,13 +21,13 @@ runs:
   using: composite
   steps:
     - name: Azure Login
-      uses: azure/login@v2
+      uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
       with:
         creds: "{ \"clientSecret\": \"${{ inputs.azure-client-secret }}\", \"tenantId\": \"${{ inputs.azure-tenant-id }}\", \"clientId\": \"${{ inputs.azure-client-id }}\"}"
         allow-no-subscriptions: true
 
     - name: Generate Github token
-      uses: Energinet-DataHub/.github/.github/actions/github-create-token@v13
+      uses: Energinet-DataHub/.github/.github/actions/github-create-token@5c08f24c90ae96740aefae31d99808d89c68a45d # v14
       id: generate_token
       with:
         app_id: ${{ inputs.github-client-id }}
