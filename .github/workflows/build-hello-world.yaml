@@ -41,3 +41,6 @@ jobs:
           config: domains/hello-world/apko.yaml
           base-tag: ${{ env.LOWERCASED }}
           target-tag: ${{ env.version }}
+          keyring-append: ./melange.rsa.pub
+          repository-append: ./packages
+          package-append: hello-world@local
