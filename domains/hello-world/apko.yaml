@@ -3,7 +3,7 @@ contents:
     - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
   repositories:
     - https://packages.wolfi.dev/os
-    - '@local /packages'
+    - '@local ./packages'
   packages:
     - wolfi-baselayout
     - hello-world@local
@@ -13,4 +13,4 @@ entrypoint:
   command: /hello
 
 archs:
-  - amd64
+  - x86_64
