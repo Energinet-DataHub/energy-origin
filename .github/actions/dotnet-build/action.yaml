@@ -60,7 +60,7 @@ runs:
 
     - name: Fetch Dockerfile
       shell: bash
-      run: wget https://raw.githubusercontent.com/Energinet-DataHub/.github/.github/main/Dockerfile.simplified -O Dockerfile
+      run: wget https://raw.githubusercontent.com/Energinet-DataHub/.github/main/Dockerfile.simplified -O Dockerfile
 
     - name: Resolve image version
       uses: Energinet-DataHub/.github/.github/actions/docker-image-version@v14
