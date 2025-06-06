@@ -18,6 +18,7 @@ public static class MassTransitServiceCollectionExtensions
 
         services.AddMassTransit(o =>
         {
+            o.DisableUsageTelemetry();
             o.SetKebabCaseEndpointNameFormatter();
             o.AddConfigureEndpointsCallback((_, cfg) =>
             {

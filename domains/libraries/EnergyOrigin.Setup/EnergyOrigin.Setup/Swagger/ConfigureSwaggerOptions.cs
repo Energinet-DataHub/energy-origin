@@ -23,7 +23,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider, st
         {
             Name = "Authorization",
             Type = SecuritySchemeType.Http,
-            Scheme = "Bearer",
+            Scheme = "bearer",
             BearerFormat = "JWT",
             In = ParameterLocation.Header,
             Description =

@@ -16,7 +16,11 @@ public static class SwaggerApplicationBuilderExtensions
     public static void AddSwagger(this IApplicationBuilder app, IWebHostEnvironment env, string subsystemName)
     {
         var provider = app.ApplicationServices.GetRequiredService<IApiVersionDescriptionProvider>();
-        app.UseSwagger(o => o.RouteTemplate = "api-docs/" + subsystemName + "/{documentName}/swagger.json");
+        app.UseSwagger(o =>
+        {
+            o.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+            o.RouteTemplate = "api-docs/" + subsystemName + "/{documentName}/swagger.json";
+        });
         if (env.IsDevelopment())
         {
             app.UseSwaggerUI(
