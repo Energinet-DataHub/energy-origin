@@ -111,7 +111,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Update environment
-        uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v4
+        uses: Energinet-DataHub/.github/.github/actions/update-base-environment@v14
         with:
           configurations: |
             domains/auth/Auth.API/configuration.yaml
