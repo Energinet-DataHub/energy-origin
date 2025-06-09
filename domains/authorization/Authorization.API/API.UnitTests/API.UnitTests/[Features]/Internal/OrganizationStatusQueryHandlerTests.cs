@@ -27,8 +27,8 @@ public class GetOrganizationStatusQueryHandlerTests
     }
 
     [Theory]
-    [InlineData("00000000", "trial", true, null)]
-    [InlineData("00000000", "normal", true, null)]
+    [InlineData("00000000", "trial", true, OrganizationStatus.Trial)]
+    [InlineData("00000000", "normal", true, OrganizationStatus.Normal)]
     [InlineData("12345678", "normal", true, OrganizationStatus.Normal)]
     [InlineData("87654321", "trial", true, OrganizationStatus.Trial)]
     [InlineData("87654321", "normal", false, OrganizationStatus.Trial)]

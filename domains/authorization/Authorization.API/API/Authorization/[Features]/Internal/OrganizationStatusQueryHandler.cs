@@ -23,9 +23,9 @@ public class GetOrganizationStatusQueryHandler(IOrganizationRepository organizat
         return (loginType, status) switch
         {
             ("normal", OrganizationStatus.Normal) => new LoginTypeValidationResult(true, OrganizationStatus.Normal),
-            ("normal", null) => new LoginTypeValidationResult(true, null),
+            ("normal", null) => new LoginTypeValidationResult(true, OrganizationStatus.Normal),
             ("trial", OrganizationStatus.Trial) => new LoginTypeValidationResult(true, OrganizationStatus.Trial),
-            ("trial", null) => new LoginTypeValidationResult(true, null),
+            ("trial", null) => new LoginTypeValidationResult(true, OrganizationStatus.Trial),
             _ => new LoginTypeValidationResult(false, status)
         };
     }
