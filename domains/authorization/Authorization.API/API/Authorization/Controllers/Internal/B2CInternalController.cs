@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using API.Authorization._Features_.Internal;
+using API.Models;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
@@ -107,21 +108,31 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
 
     [HttpPost]
     [Route("organization-status")]
-    [SwaggerOperation(
-        Summary = "Gets the organizations status",
-        Description = "This endpoint is only used by Azure B2C"
-    )]
+    [SwaggerOperation(Summary = "Gets the organizations status",
+        Description = "This endpoint is only used by Azure B2C")]
     public async Task<ActionResult> GetDoesLoginTypeMatch([FromBody] DoesOrganizationStatusMatchLoginTypeRequest request)
     {
-        var isValid = await mediator.Send(new GetOrganizationStatusQuery(request.OrgCvr, request.LoginType));
+        var result = await mediator.Send(new GetOrganizationStatusQuery(request.OrgCvr, request.LoginType));
+        var loginType = request.LoginType.ToLowerInvariant();
 
-        if (isValid)
+        if (result.IsValid)
+            return Ok(new { status = loginType });
+
+        var failureGuid = (loginType, result.OrgStatus) switch
         {
-            return Ok(new { status = request.LoginType });
-        }
+            ("normal", OrganizationStatus.Trial) => LoginFailureReasons.NormalLoginForTrialOrg,
+            ("trial", OrganizationStatus.Normal) => LoginFailureReasons.TrialLoginForNormalOrg,
+            (_, OrganizationStatus.Deactivated) => LoginFailureReasons.OrgIsDeactivated,
+            ("normal", _) or ("trial", _) => LoginFailureReasons.NoMatchingCase,
+            _ => LoginFailureReasons.UnknownLoginType
+        };
 
-        return new ObjectResult(
-            new AuthorizationErrorResponse("LoginType does not match Organizations status"))
+        var response = new AuthorizationErrorResponse(
+            UserMessage: failureGuid,
+            Version: "1.0",
+            Status: 409);
+
+        return new ObjectResult(response)
         {
             StatusCode = StatusCodes.Status403Forbidden
         };

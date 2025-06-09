@@ -5,6 +5,7 @@ using API.Authorization.Controllers;
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
+using EnergyOrigin.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API;
@@ -45,10 +46,29 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
         Assert.Equal("trial", json.GetProperty("status").GetString());
     }
 
-    [Fact]
-    public async Task GivenLoginTypeAndOrganizationStatusNoMatch_WhenQueryingEndpoint_Then_Return403Forbidden()
+    [Theory]
+    [InlineData("trial", "normal", "b2c3d4e5-e222-5555-bbbb-bbbbbbbbbbbb")]
+    [InlineData("normal", "trial", "a1b2c3d4-e111-4444-aaaa-aaaaaaaaaaaa")]
+    [InlineData("trial", "deactivated", "c3d4e5f6-e333-6666-cccc-cccccccccccc")]
+    [InlineData("normal", "deactivated", "c3d4e5f6-e333-6666-cccc-cccccccccccc")]
+    [InlineData("vip", "normal", "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee")]
+    public async Task GivenLoginTypeAndOrgStatusMismatch_WhenQueryingEndpoint_Then_ReturnHttp403WithB2cStatus409_And_ExpectedFailureReason(string loginType, string orgStatus, string expectedReason)
     {
-        var org = Any.TrialOrganization();
+        var tin = orgStatus switch
+        {
+            "trial" => "87654321",
+            "normal" => "12345678",
+            "deactivated" => "69696969",
+            _ => throw new ArgumentException("Unsupported org status")
+        };
+
+        var org = orgStatus switch
+        {
+            "trial" => Any.TrialOrganization(tin: Tin.Create(tin)),
+            "normal" => Any.Organization(tin: Tin.Create(tin)),
+            "deactivated" => Any.DeactivatedOrganization(tin: Tin.Create(tin)),
+            _ => throw new ArgumentException("Unsupported org status")
+        };
 
         await using (var dbContext = new ApplicationDbContext(_options))
         {
@@ -56,10 +76,14 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
             await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
-        var request = new DoesOrganizationStatusMatchLoginTypeRequest(org.Tin!.Value, "normal");
+        var request = new DoesOrganizationStatusMatchLoginTypeRequest(org.Tin!.Value, loginType);
         var response = await _api.GetDoesLoginTypeMatch(request);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(expectedReason, json.GetProperty("userMessage").GetString());
+        Assert.Equal("1.0", json.GetProperty("version").GetString());
+        Assert.Equal(409, json.GetProperty("status").GetInt32());
     }
 
     [Fact]

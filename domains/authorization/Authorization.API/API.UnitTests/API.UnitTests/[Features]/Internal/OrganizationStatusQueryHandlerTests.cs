@@ -8,135 +8,70 @@ namespace API.UnitTests._Features_.Internal;
 public class GetOrganizationStatusQueryHandlerTests
 {
     private readonly GetOrganizationStatusQueryHandler _sut;
-    private readonly Organization _normalOrg;
-    private readonly Organization _trialOrg;
-    private readonly Organization _deactivatedOrg;
+    private readonly Dictionary<string, Organization> _orgMap;
 
     public GetOrganizationStatusQueryHandlerTests()
     {
         var fakeOrgRepo = new FakeOrganizationRepository();
         _sut = new GetOrganizationStatusQueryHandler(fakeOrgRepo);
 
-        _normalOrg = Any.Organization(tin: Tin.Create("12345678"));
-        _trialOrg = Any.TrialOrganization(tin: Tin.Create("87654321"));
+        _orgMap = new()
+        {
+            ["12345678"] = Any.Organization(tin: Tin.Create("12345678")),
+            ["87654321"] = Any.TrialOrganization(tin: Tin.Create("87654321")),
+            ["69696969"] = Any.DeactivatedOrganization(tin: Tin.Create("69696969"))
+        };
 
-        _deactivatedOrg = Any.Organization(tin: Tin.Create("69696969"));
-        _deactivatedOrg.Deactivate();
-
-        fakeOrgRepo.AddAsync(_trialOrg, CancellationToken.None).Wait();
-        fakeOrgRepo.AddAsync(_normalOrg, CancellationToken.None).Wait();
-        fakeOrgRepo.AddAsync(_deactivatedOrg, CancellationToken.None).Wait();
+        foreach (var org in _orgMap.Values)
+            fakeOrgRepo.AddAsync(org, CancellationToken.None).Wait();
     }
 
-    [Fact]
-    public async Task OrganizationDoesNotExist_LoginTypeIsTrial_ReturnsTrue()
+    [Theory]
+    [InlineData("00000000", "trial", true, null)]
+    [InlineData("00000000", "normal", true, null)]
+    [InlineData("12345678", "normal", true, OrganizationStatus.Normal)]
+    [InlineData("87654321", "trial", true, OrganizationStatus.Trial)]
+    [InlineData("87654321", "normal", false, OrganizationStatus.Trial)]
+    [InlineData("12345678", "trial", false, OrganizationStatus.Normal)]
+    [InlineData("69696969", "trial", false, OrganizationStatus.Deactivated)]
+    [InlineData("69696969", "normal", false, OrganizationStatus.Deactivated)]
+    [InlineData("87654321", "TrIaL", true, OrganizationStatus.Trial)]
+    public async Task LoginTypeValidation_ReturnsExpectedResult(string tin, string loginType, bool expectedValid, OrganizationStatus? expectedStatus)
     {
-        var query = new GetOrganizationStatusQuery(Tin.Create("00000000").Value, LoginType: "trial");
+        var query = new GetOrganizationStatusQuery(tin, loginType);
         var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.True(result);
+
+        Assert.Equal(expectedValid, result.IsValid);
+        Assert.Equal(expectedStatus, result.OrgStatus);
     }
 
-    [Fact]
-    public async Task OrganizationDoesNotExist_LoginTypeIsNormal_ReturnsTrue()
+    [Theory]
+    [InlineData("", "trial")]
+    [InlineData("", "normal")]
+    public async Task EmptyTin_ThrowsArgumentException(string tin, string loginType)
     {
-        var query = new GetOrganizationStatusQuery(Tin.Create("00000000").Value, LoginType: "normal");
-        var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task OrgStatusIsNormal_LoginTypeIsNormal_ReturnsTrue()
-    {
-        var query = new GetOrganizationStatusQuery(_normalOrg.Tin!.Value, LoginType: "normal");
-        var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task OrgStatusIsTrial_LoginTypeIsTrial_ReturnsTrue()
-    {
-        var query = new GetOrganizationStatusQuery(_trialOrg.Tin!.Value, LoginType: "trial");
-        var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task OrgStatusIsTrial_LoginTypeIsNormal_ReturnsFalse()
-    {
-        var query = new GetOrganizationStatusQuery(_trialOrg.Tin!.Value, LoginType: "normal");
-        var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.False(result);
-    }
-
-    [Fact]
-    public async Task OrgStatusIsNormal_LoginTypeIsTrial_ReturnsFalse()
-    {
-        var query = new GetOrganizationStatusQuery(_normalOrg.Tin!.Value, LoginType: "trial");
-        var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.False(result);
-    }
-
-    [Fact]
-    public async Task OrgStatusIsDeactivated_LoginTypeIsTrial_ReturnsFalse()
-    {
-        var query = new GetOrganizationStatusQuery(_deactivatedOrg.Tin!.Value, LoginType: "trial");
-        var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.False(result);
-    }
-
-    [Fact]
-    public async Task OrgStatusIsDeactivated_LoginTypeIsNormal_ReturnsFalse()
-    {
-        var query = new GetOrganizationStatusQuery(_deactivatedOrg.Tin!.Value, LoginType: "normal");
-        var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.False(result);
-    }
-
-    [Fact]
-    public async Task OrgStatusIsTrial_LoginTypeIsMixedCase_ReturnsTrue()
-    {
-        var query = new GetOrganizationStatusQuery(_trialOrg.Tin!.Value, LoginType: "TrIaL");
-        var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task QueryWithEmptyTinString_LoginTypeIsTrial_ReturnsArgumentException()
-    {
-        var query = new GetOrganizationStatusQuery(Tin.Empty().Value, LoginType: "trial");
-        await Assert.ThrowsAsync<ArgumentException>(() => _sut.Handle(query, CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task QueryWithEmptyTinString_LoginTypeIsNormal_ReturnsArgumentException()
-    {
-        var query = new GetOrganizationStatusQuery(Tin.Empty().Value, LoginType: "normal");
+        var query = new GetOrganizationStatusQuery(tin, loginType);
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.Handle(query, CancellationToken.None));
     }
 
     [Theory]
-    // Normal Organization
-    [InlineData("12345678", "vip", false)]
-    [InlineData("12345678", "", false)]
-    [InlineData("12345678", " ", false)]
-    [InlineData("12345678", "\t", false)]
-    [InlineData("12345678", "\n", false)]
-
-    // Trial organization
-    [InlineData("87654321", "", false)]
-    [InlineData("87654321", " ", false)]
-    [InlineData("87654321", "\t", false)]
-    [InlineData("87654321", "\n", false)]
-
-    // Deactivated organization
-    [InlineData("69696969", "", false)]
-    [InlineData("69696969", " ", false)]
-    [InlineData("69696969", "\t", false)]
-    [InlineData("69696969", "\n", false)]
-    public async Task InvalidLoginTypes_ReturnExpected(string tin, string loginType, bool expected)
+    [InlineData("12345678", "vip")]
+    [InlineData("12345678", "")]
+    [InlineData("12345678", " ")]
+    [InlineData("12345678", "\t")]
+    [InlineData("12345678", "\n")]
+    [InlineData("87654321", "")]
+    [InlineData("87654321", " ")]
+    [InlineData("87654321", "\t")]
+    [InlineData("87654321", "\n")]
+    [InlineData("69696969", "")]
+    [InlineData("69696969", " ")]
+    [InlineData("69696969", "\t")]
+    [InlineData("69696969", "\n")]
+    public async Task InvalidLoginTypes_ReturnExpected(string tin, string loginType)
     {
         var query = new GetOrganizationStatusQuery(tin, loginType);
         var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.Equal(expected, result);
+        Assert.False(result.IsValid);
     }
 }

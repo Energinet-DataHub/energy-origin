@@ -9,9 +9,9 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Authorization._Features_.Internal;
 
 public class GetOrganizationStatusQueryHandler(IOrganizationRepository organizationRepository)
-    : IRequestHandler<GetOrganizationStatusQuery, bool>
+    : IRequestHandler<GetOrganizationStatusQuery, LoginTypeValidationResult>
 {
-    public async Task<bool> Handle(GetOrganizationStatusQuery request, CancellationToken cancellationToken)
+    public async Task<LoginTypeValidationResult> Handle(GetOrganizationStatusQuery request, CancellationToken cancellationToken)
     {
         var tin = Tin.Create(request.Tin);
         var organization = await organizationRepository.Query()
@@ -22,13 +22,14 @@ public class GetOrganizationStatusQueryHandler(IOrganizationRepository organizat
 
         return (loginType, status) switch
         {
-            ("normal", OrganizationStatus.Normal) => true,
-            ("normal", null) => true,
-            ("trial", OrganizationStatus.Trial) => true,
-            ("trial", null) => true,
-            _ => false
+            ("normal", OrganizationStatus.Normal) => new LoginTypeValidationResult(true, OrganizationStatus.Normal),
+            ("normal", null) => new LoginTypeValidationResult(true, null),
+            ("trial", OrganizationStatus.Trial) => new LoginTypeValidationResult(true, OrganizationStatus.Trial),
+            ("trial", null) => new LoginTypeValidationResult(true, null),
+            _ => new LoginTypeValidationResult(false, status)
         };
     }
 }
 
-public record GetOrganizationStatusQuery(string Tin, string LoginType) : IRequest<bool>;
+public record GetOrganizationStatusQuery(string Tin, string LoginType) : IRequest<LoginTypeValidationResult>;
+public record LoginTypeValidationResult(bool IsValid, OrganizationStatus? OrgStatus);

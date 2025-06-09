@@ -51,6 +51,15 @@ public record AuthorizationErrorResponse(
     [property: JsonPropertyName("status")] int Status = StatusCodes.Status409Conflict
 );
 
+public static class LoginFailureReasons
+{
+    public const string TrialLoginForNormalOrg = "b2c3d4e5-e222-5555-bbbb-bbbbbbbbbbbb";
+    public const string NormalLoginForTrialOrg = "a1b2c3d4-e111-4444-aaaa-aaaaaaaaaaaa";
+    public const string OrgIsDeactivated = "c3d4e5f6-e333-6666-cccc-cccccccccccc";
+    public const string UnknownLoginType = "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee";
+    public const string NoMatchingCase = "e5f6g7h8-e444-7777-dddd-dddddddddddd";
+}
+
 public record GrantConsentToClientRequest(Guid IdpClientId);
 
 public record GrantConsentToOrganizationRequest(Guid OrganizationId);
