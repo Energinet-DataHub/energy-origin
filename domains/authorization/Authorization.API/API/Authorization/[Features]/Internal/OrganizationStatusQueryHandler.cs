@@ -8,31 +8,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_.Internal;
 
-public class GetOrganizationStatusQueryHandler(
-    IOrganizationRepository organizationRepository,
-    IWhitelistedRepository whitelistedRepository)
+public class GetOrganizationStatusQueryHandler(IOrganizationRepository organizationRepository)
     : IRequestHandler<GetOrganizationStatusQuery, bool>
 {
     public async Task<bool> Handle(GetOrganizationStatusQuery request, CancellationToken cancellationToken)
     {
         var tin = Tin.Create(request.Tin);
+        var organization = await organizationRepository.Query()
+            .FirstOrDefaultAsync(w => w.Tin == tin, cancellationToken);
 
-        var orgTask = organizationRepository.Query()
-            .FirstOrDefaultAsync(o => o.Tin == tin, cancellationToken);
+        var status = organization?.Status;
+        var loginType = request.LoginType.ToLowerInvariant();
 
-        var whitelistTask = whitelistedRepository.Query()
-            .AnyAsync(w => w.Tin == tin, cancellationToken);
-
-        await Task.WhenAll(orgTask, whitelistTask);
-
-        var organization = orgTask.Result;
-        var isWhitelisted = whitelistTask.Result;
-
-        if (organization == null)
-            return !isWhitelisted;
-
-        return organization.Status == OrganizationStatus.Trial && !isWhitelisted;
+        return (loginType, status) switch
+        {
+            ("normal", OrganizationStatus.Normal) => true,
+            ("normal", null) => true,
+            ("trial", OrganizationStatus.Trial) => true,
+            ("trial", null) => true,
+            _ => false
+        };
     }
 }
 
-public record GetOrganizationStatusQuery(string Tin) : IRequest<bool>;
+public record GetOrganizationStatusQuery(string Tin, string LoginType) : IRequest<bool>;

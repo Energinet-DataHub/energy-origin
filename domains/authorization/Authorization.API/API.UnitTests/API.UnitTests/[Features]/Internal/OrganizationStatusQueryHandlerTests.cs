@@ -7,154 +7,136 @@ namespace API.UnitTests._Features_.Internal;
 
 public class GetOrganizationStatusQueryHandlerTests
 {
-    private readonly FakeOrganizationRepository _fakeOrgRepo;
-    private readonly FakeWhitelistedRepository _fakeWhitelistRepo;
     private readonly GetOrganizationStatusQueryHandler _sut;
+    private readonly Organization _normalOrg;
+    private readonly Organization _trialOrg;
+    private readonly Organization _deactivatedOrg;
 
     public GetOrganizationStatusQueryHandlerTests()
     {
-        _fakeOrgRepo = new FakeOrganizationRepository();
-        _fakeWhitelistRepo = new FakeWhitelistedRepository();
-        _sut = new GetOrganizationStatusQueryHandler(_fakeOrgRepo, _fakeWhitelistRepo);
+        var fakeOrgRepo = new FakeOrganizationRepository();
+        _sut = new GetOrganizationStatusQueryHandler(fakeOrgRepo);
+
+        _normalOrg = Any.Organization(tin: Tin.Create("12345678"));
+        _trialOrg = Any.TrialOrganization(tin: Tin.Create("87654321"));
+
+        _deactivatedOrg = Any.Organization(tin: Tin.Create("69696969"));
+        _deactivatedOrg.Deactivate();
+
+        fakeOrgRepo.AddAsync(_trialOrg, CancellationToken.None).Wait();
+        fakeOrgRepo.AddAsync(_normalOrg, CancellationToken.None).Wait();
+        fakeOrgRepo.AddAsync(_deactivatedOrg, CancellationToken.None).Wait();
     }
 
     [Fact]
-    public async Task OrganizationDoesNotExist_NotWhitelisted_ReturnsTrue()
+    public async Task OrganizationDoesNotExist_LoginTypeIsTrial_ReturnsTrue()
     {
-        // Arrange
-        var query = new GetOrganizationStatusQuery("12345678");
-        // No org added, no whitelist added
-
-        // Act
+        var query = new GetOrganizationStatusQuery(Tin.Create("00000000").Value, LoginType: "trial");
         var result = await _sut.Handle(query, CancellationToken.None);
-
-        // Assert
-        Assert.True(result);  // Null org + NOT whitelisted => true (trial)
+        Assert.True(result);
     }
 
     [Fact]
-    public async Task OrganizationDoesNotExist_Whitelisted_ReturnsFalse()
+    public async Task OrganizationDoesNotExist_LoginTypeIsNormal_ReturnsTrue()
     {
-        // Arrange
-        var tin = Tin.Create("12345678");
-        await _fakeWhitelistRepo.AddAsync(Whitelisted.Create(tin), CancellationToken.None);
-
-        var query = new GetOrganizationStatusQuery("12345678");
-
-        // Act
+        var query = new GetOrganizationStatusQuery(Tin.Create("00000000").Value, LoginType: "normal");
         var result = await _sut.Handle(query, CancellationToken.None);
-
-        // Assert
-        Assert.False(result);  // Null org + whitelisted => false (normal)
+        Assert.True(result);
     }
 
     [Fact]
-    public async Task TrialOrganization_NotWhitelisted_ReturnsTrue()
+    public async Task OrgStatusIsNormal_LoginTypeIsNormal_ReturnsTrue()
     {
-        // Arrange
-        var tin = Tin.Create("12345678");
-        var org = Organization.CreateTrial(tin, OrganizationName.Create("Trial Org"));
-        await _fakeOrgRepo.AddAsync(org, CancellationToken.None);
-        // Not whitelisted
-
-        var query = new GetOrganizationStatusQuery("12345678");
-
-        // Act
+        var query = new GetOrganizationStatusQuery(_normalOrg.Tin!.Value, LoginType: "normal");
         var result = await _sut.Handle(query, CancellationToken.None);
-
-        // Assert
-        Assert.True(result);  // Trial org + NOT whitelisted => true (trial)
+        Assert.True(result);
     }
 
     [Fact]
-    public async Task TrialOrganization_Whitelisted_ReturnsFalse()
+    public async Task OrgStatusIsTrial_LoginTypeIsTrial_ReturnsTrue()
     {
-        // Arrange
-        var tin = Tin.Create("12345678");
-        var org = Organization.CreateTrial(tin, OrganizationName.Create("Trial Org"));
-        await _fakeOrgRepo.AddAsync(org, CancellationToken.None);
-        await _fakeWhitelistRepo.AddAsync(Whitelisted.Create(tin), CancellationToken.None);
-
-        var query = new GetOrganizationStatusQuery("12345678");
-
-        // Act
+        var query = new GetOrganizationStatusQuery(_trialOrg.Tin!.Value, LoginType: "trial");
         var result = await _sut.Handle(query, CancellationToken.None);
-
-        // Assert
-        Assert.False(result);  // Trial org + whitelisted => false (normal)
+        Assert.True(result);
     }
 
     [Fact]
-    public async Task NormalOrganization_NotWhitelisted_ReturnsFalse()
+    public async Task OrgStatusIsTrial_LoginTypeIsNormal_ReturnsFalse()
     {
-        // Arrange
-        var tin = Tin.Create("12345678");
-        var org = Organization.Create(tin, OrganizationName.Create("Normal Org"));
-        await _fakeOrgRepo.AddAsync(org, CancellationToken.None);
-        // Not whitelisted
-
-        var query = new GetOrganizationStatusQuery("12345678");
-
-        // Act
+        var query = new GetOrganizationStatusQuery(_trialOrg.Tin!.Value, LoginType: "normal");
         var result = await _sut.Handle(query, CancellationToken.None);
-
-        // Assert
-        Assert.False(result);  // Normal org + NOT whitelisted => false (normal)
+        Assert.False(result);
     }
 
     [Fact]
-    public async Task NormalOrganization_Whitelisted_ReturnsFalse()
+    public async Task OrgStatusIsNormal_LoginTypeIsTrial_ReturnsFalse()
     {
-        // Arrange
-        var tin = Tin.Create("12345678");
-        var org = Organization.Create(tin, OrganizationName.Create("Normal Org"));
-        await _fakeOrgRepo.AddAsync(org, CancellationToken.None);
-        await _fakeWhitelistRepo.AddAsync(Whitelisted.Create(tin), CancellationToken.None);
-
-        var query = new GetOrganizationStatusQuery("12345678");
-
-        // Act
+        var query = new GetOrganizationStatusQuery(_normalOrg.Tin!.Value, LoginType: "trial");
         var result = await _sut.Handle(query, CancellationToken.None);
-
-        // Assert
-        Assert.False(result);  // Normal org + whitelisted => false (normal)
+        Assert.False(result);
     }
 
     [Fact]
-    public async Task DeactivatedOrganization_NotWhitelisted_ReturnsFalse()
+    public async Task OrgStatusIsDeactivated_LoginTypeIsTrial_ReturnsFalse()
     {
-        // Arrange
-        var tin = Tin.Create("12345678");
-        var org = Organization.Create(tin, OrganizationName.Create("Deactivated Org"));
-        org.Deactivate();
-        await _fakeOrgRepo.AddAsync(org, CancellationToken.None);
-        // Not whitelisted
-
-        var query = new GetOrganizationStatusQuery("12345678");
-
-        // Act
+        var query = new GetOrganizationStatusQuery(_deactivatedOrg.Tin!.Value, LoginType: "trial");
         var result = await _sut.Handle(query, CancellationToken.None);
-
-        // Assert
-        Assert.False(result);  // Deactivated org + NOT whitelisted => false (normal)
+        Assert.False(result);
     }
 
     [Fact]
-    public async Task DeactivatedOrganization_Whitelisted_ReturnsFalse()
+    public async Task OrgStatusIsDeactivated_LoginTypeIsNormal_ReturnsFalse()
     {
-        // Arrange
-        var tin = Tin.Create("12345678");
-        var org = Organization.Create(tin, OrganizationName.Create("Deactivated Org"));
-        org.Deactivate();
-        await _fakeOrgRepo.AddAsync(org, CancellationToken.None);
-        await _fakeWhitelistRepo.AddAsync(Whitelisted.Create(tin), CancellationToken.None);
-
-        var query = new GetOrganizationStatusQuery("12345678");
-
-        // Act
+        var query = new GetOrganizationStatusQuery(_deactivatedOrg.Tin!.Value, LoginType: "normal");
         var result = await _sut.Handle(query, CancellationToken.None);
+        Assert.False(result);
+    }
 
-        // Assert
-        Assert.False(result);  // Deactivated org + whitelisted => false (normal)
+    [Fact]
+    public async Task OrgStatusIsTrial_LoginTypeIsMixedCase_ReturnsTrue()
+    {
+        var query = new GetOrganizationStatusQuery(_trialOrg.Tin!.Value, LoginType: "TrIaL");
+        var result = await _sut.Handle(query, CancellationToken.None);
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task QueryWithEmptyTinString_LoginTypeIsTrial_ReturnsArgumentException()
+    {
+        var query = new GetOrganizationStatusQuery(Tin.Empty().Value, LoginType: "trial");
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.Handle(query, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task QueryWithEmptyTinString_LoginTypeIsNormal_ReturnsArgumentException()
+    {
+        var query = new GetOrganizationStatusQuery(Tin.Empty().Value, LoginType: "normal");
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.Handle(query, CancellationToken.None));
+    }
+
+    [Theory]
+    // Normal Organization
+    [InlineData("12345678", "vip", false)]
+    [InlineData("12345678", "", false)]
+    [InlineData("12345678", " ", false)]
+    [InlineData("12345678", "\t", false)]
+    [InlineData("12345678", "\n", false)]
+
+    // Trial organization
+    [InlineData("87654321", "", false)]
+    [InlineData("87654321", " ", false)]
+    [InlineData("87654321", "\t", false)]
+    [InlineData("87654321", "\n", false)]
+
+    // Deactivated organization
+    [InlineData("69696969", "", false)]
+    [InlineData("69696969", " ", false)]
+    [InlineData("69696969", "\t", false)]
+    [InlineData("69696969", "\n", false)]
+    public async Task InvalidLoginTypes_ReturnExpected(string tin, string loginType, bool expected)
+    {
+        var query = new GetOrganizationStatusQuery(tin, loginType);
+        var result = await _sut.Handle(query, CancellationToken.None);
+        Assert.Equal(expected, result);
     }
 }

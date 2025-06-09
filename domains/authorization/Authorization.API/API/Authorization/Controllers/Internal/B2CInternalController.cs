@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
@@ -101,6 +100,28 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
 
         return new ObjectResult(
             new AuthorizationErrorResponse("Organization not whitelisted"))
+        {
+            StatusCode = StatusCodes.Status403Forbidden
+        };
+    }
+
+    [HttpPost]
+    [Route("organization-status")]
+    [SwaggerOperation(
+        Summary = "Gets the organizations status",
+        Description = "This endpoint is only used by Azure B2C"
+    )]
+    public async Task<ActionResult> GetDoesLoginTypeMatch([FromBody] DoesOrganizationStatusMatchLoginTypeRequest request)
+    {
+        var isValid = await mediator.Send(new GetOrganizationStatusQuery(request.OrgCvr, request.LoginType));
+
+        if (isValid)
+        {
+            return Ok(new { status = request.LoginType });
+        }
+
+        return new ObjectResult(
+            new AuthorizationErrorResponse("LoginType does not match Organizations status"))
         {
             StatusCode = StatusCodes.Status403Forbidden
         };
