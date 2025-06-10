@@ -36,7 +36,8 @@ public record UserAuthorizationResponse(
 );
 
 public record WhitelistedOrganizationRequest(
-    [property: JsonPropertyName("org_cvr")] string OrgCvr
+    [property: JsonPropertyName("org_cvr")] string OrgCvr,
+    [property: JsonPropertyName("login_type")] string LoginType
 );
 
 public record DoesOrganizationStatusMatchLoginTypeRequest(
