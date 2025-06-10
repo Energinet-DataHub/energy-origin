@@ -608,14 +608,15 @@
                         <Item Key="SendClaimsIn">Body</Item>
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="UseClaimAsBearerToken">self_access_token</Item>
-                        <Item Key="DebugMode">true</Item>
-                        <!-- c73c2d14-4463-41f2-9e5e-aee59b2a2189 = organization is not whitelisted-->
+                        <Item Key="DebugMode">false</Item>
+                        <!-- c73c2d14-4463-41f2-9e5e-aee59b2a2189 = acr_values=ett:login:type:trial OR ett:login:type:normal does not match Organizaion.Status in Authorization Database-->
                         <Item Key="DefaultUserMessageIfRequestFailed">c73c2d14-4463-41f2-9e5e-aee59b2a2189 - Failed to obtain whitelist information.</Item>
                         <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
                     </Metadata>
                     <InputClaims>
                         <InputClaim ClaimTypeReferenceId="self_access_token"/>
                         <InputClaim ClaimTypeReferenceId="org_cvr" />
+                        <InputClaim ClaimTypeReferenceId="login_type" />
                     </InputClaims>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
@@ -628,9 +629,7 @@
                         <Item Key="SendClaimsIn">Body</Item>
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="UseClaimAsBearerToken">self_access_token</Item>
-                        <Item Key="DebugMode">true</Item>
-                        <!-- e8f5c219-7d34-48b6-a9e2-f1d3b8c92a71 = invalid login type for organization -->
-                        <Item Key="DefaultUserMessageIfRequestFailed">e8f5c219-7d34-48b6-a9e2-f1d3b8c92a71 - Invalid login type for this organization.</Item>
+                        <Item Key="DebugMode">false</Item>
                         <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
                     </Metadata>
                     <InputClaims>

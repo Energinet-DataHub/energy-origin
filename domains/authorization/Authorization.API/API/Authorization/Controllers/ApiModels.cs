@@ -53,11 +53,11 @@ public record AuthorizationErrorResponse(
 
 public static class LoginFailureReasons
 {
-    public const string TrialLoginForNormalOrg = "b2c3d4e5-e222-5555-bbbb-bbbbbbbbbbbb";
-    public const string NormalLoginForTrialOrg = "a1b2c3d4-e111-4444-aaaa-aaaaaaaaaaaa";
-    public const string OrgIsDeactivated = "c3d4e5f6-e333-6666-cccc-cccccccccccc";
-    public const string UnknownLoginType = "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee";
-    public const string NoMatchingCase = "e5f6g7h8-e444-7777-dddd-dddddddddddd";
+    public const string TrialOrganizationIsNotAllowedToLogInAsNormalOrganization = "a1b2c3d4-e111-4444-aaaa-aaaaaaaaaaaa - Trial Organization is not allowed to log in as a Normal Organization - Please log in as Trial Organization, or contact support, if you think this is an error";
+    public const string NormalOrganizationsAreNotAllowedToLogInAsTrial = "b2c3d4e5-e222-5555-bbbb-bbbbbbbbbbbb - Normal Organization is not allowed to log in as a Trial organization - Please log in as Normal Organization, or contact support, if you think this is an error";
+    public const string OrganizationIsDeactivated = "c3d4e5f6-e333-6666-cccc-cccccccccccc - Organization is deactivated - Please contact support, if you think this is an error";
+    public const string UnknownLoginTypeSpecifiedInRequest = "e5f6g7h8-e444-7777-dddd-dddddddddddd - Unknown login type specified in request - Have you configured your client correctly?";
+    public const string UnhandledException = "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee - Unhandled Exception";
 }
 
 public record GrantConsentToClientRequest(Guid IdpClientId);

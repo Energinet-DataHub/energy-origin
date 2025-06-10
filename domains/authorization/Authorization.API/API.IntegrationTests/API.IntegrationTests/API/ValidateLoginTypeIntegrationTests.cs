@@ -47,14 +47,14 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
     }
 
     [Theory]
-    [InlineData("trial", "normal", "b2c3d4e5-e222-5555-bbbb-bbbbbbbbbbbb")]
-    [InlineData("normal", "trial", "a1b2c3d4-e111-4444-aaaa-aaaaaaaaaaaa")]
-    [InlineData("trial", "deactivated", "c3d4e5f6-e333-6666-cccc-cccccccccccc")]
-    [InlineData("normal", "deactivated", "c3d4e5f6-e333-6666-cccc-cccccccccccc")]
-    [InlineData("vip", "normal", "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee")]
-    public async Task GivenLoginTypeAndOrgStatusMismatch_WhenQueryingEndpoint_Then_ReturnHttp403WithB2cStatus409_And_ExpectedFailureReason(string loginType, string orgStatus, string expectedReason)
+    [InlineData("normal", "trial", "a1b2c3d4-e111-4444-aaaa-aaaaaaaaaaaa - Trial Organization is not allowed to log in as a Normal Organization - Please log in as Trial Organization, or contact support, if you think this is an error")]
+    [InlineData("trial", "normal", "b2c3d4e5-e222-5555-bbbb-bbbbbbbbbbbb - Normal Organization is not allowed to log in as a Trial organization - Please log in as Normal Organization, or contact support, if you think this is an error")]
+    [InlineData("trial", "deactivated", "c3d4e5f6-e333-6666-cccc-cccccccccccc - Organization is deactivated - Please contact support, if you think this is an error")]
+    [InlineData("normal", "deactivated", "c3d4e5f6-e333-6666-cccc-cccccccccccc - Organization is deactivated - Please contact support, if you think this is an error")]
+    [InlineData("vip", "normal", "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee - Unhandled Exception")]
+    public async Task GivenLoginTypeAndOrgStatusMismatch_WhenQueryingEndpoint_Then_ReturnHttp403WithB2cStatus409_And_ExpectedFailureReason(string loginTypeRequestParameter, string orgStatusQueryHandlerResult, string expectedReason)
     {
-        var tin = orgStatus switch
+        var tin = orgStatusQueryHandlerResult switch
         {
             "trial" => "87654321",
             "normal" => "12345678",
@@ -62,7 +62,7 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
             _ => throw new ArgumentException("Unsupported org status")
         };
 
-        var org = orgStatus switch
+        var org = orgStatusQueryHandlerResult switch
         {
             "trial" => Any.TrialOrganization(tin: Tin.Create(tin)),
             "normal" => Any.Organization(tin: Tin.Create(tin)),
@@ -76,7 +76,7 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
             await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
-        var request = new DoesOrganizationStatusMatchLoginTypeRequest(org.Tin!.Value, loginType);
+        var request = new DoesOrganizationStatusMatchLoginTypeRequest(org.Tin!.Value, loginTypeRequestParameter);
         var response = await _api.GetDoesLoginTypeMatch(request);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

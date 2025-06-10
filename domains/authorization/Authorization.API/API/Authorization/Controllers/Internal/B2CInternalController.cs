@@ -112,19 +112,19 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         Description = "This endpoint is only used by Azure B2C")]
     public async Task<ActionResult> GetDoesLoginTypeMatch([FromBody] DoesOrganizationStatusMatchLoginTypeRequest request)
     {
-        var result = await mediator.Send(new GetOrganizationStatusQuery(request.OrgCvr, request.LoginType));
+        var queryHandlerResult = await mediator.Send(new GetOrganizationStatusQuery(request.OrgCvr, request.LoginType));
         var loginType = request.LoginType.ToLowerInvariant();
 
-        if (result.IsValid)
+        if (queryHandlerResult.IsValid)
             return Ok(new { status = loginType });
 
-        var failureGuid = (loginType, result.OrgStatus) switch
+        var failureGuid = (queryHandlerResult.OrgStatus, loginType) switch
         {
-            ("normal", OrganizationStatus.Trial) => LoginFailureReasons.NormalLoginForTrialOrg,
-            ("trial", OrganizationStatus.Normal) => LoginFailureReasons.TrialLoginForNormalOrg,
-            (_, OrganizationStatus.Deactivated) => LoginFailureReasons.OrgIsDeactivated,
-            ("normal", _) or ("trial", _) => LoginFailureReasons.NoMatchingCase,
-            _ => LoginFailureReasons.UnknownLoginType
+            (OrganizationStatus.Trial, "normal") => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
+            (OrganizationStatus.Normal, "trial") => LoginFailureReasons.NormalOrganizationsAreNotAllowedToLogInAsTrial,
+            (OrganizationStatus.Deactivated, _) => LoginFailureReasons.OrganizationIsDeactivated,
+            (_, "normal") or (_, "trial") => LoginFailureReasons.UnknownLoginTypeSpecifiedInRequest,
+            _ => LoginFailureReasons.UnhandledException
         };
 
         var response = new AuthorizationErrorResponse(
