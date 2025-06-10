@@ -72,6 +72,7 @@
                     @foreach (var org in Model)
                     {
                         <tr>
+                            <td>@org.OrganizationId</td>
                             <td onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Tin</td>
                             <td>@org.CompanyName</td>
                             <td>
