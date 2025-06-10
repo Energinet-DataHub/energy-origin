@@ -20,7 +20,6 @@ public class OrganizationTests
 
         org.AcceptTerms(v1, isWhitelisted: true);
         var timestamp1 = org.TermsAcceptanceDate;
-        Thread.Sleep(10); // ensure time difference
         org.AcceptTerms(v2, isWhitelisted: true);
 
         org.TermsAccepted.Should().BeTrue();

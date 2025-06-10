@@ -8,21 +8,20 @@ namespace API.UnitTests._Features_.Internal;
 public class GetOrganizationStatusQueryHandlerTests
 {
     private readonly GetOrganizationStatusQueryHandler _sut;
-    private readonly Dictionary<string, Organization> _orgMap;
 
     public GetOrganizationStatusQueryHandlerTests()
     {
         var fakeOrgRepo = new FakeOrganizationRepository();
         _sut = new GetOrganizationStatusQueryHandler(fakeOrgRepo);
 
-        _orgMap = new()
+        Dictionary<string, Organization> orgMap = new()
         {
             ["12345678"] = Any.Organization(tin: Tin.Create("12345678")),
             ["87654321"] = Any.TrialOrganization(tin: Tin.Create("87654321")),
             ["69696969"] = Any.DeactivatedOrganization(tin: Tin.Create("69696969"))
         };
 
-        foreach (var org in _orgMap.Values)
+        foreach (var org in orgMap.Values)
             fakeOrgRepo.AddAsync(org, CancellationToken.None).Wait();
     }
 
