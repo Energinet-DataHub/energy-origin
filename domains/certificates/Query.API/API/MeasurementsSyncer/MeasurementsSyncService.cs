@@ -143,7 +143,7 @@ public class MeasurementsSyncService
             if (mp == null || !mp.Any())
             {
                 _logger.LogInformation("No meteringPointData found for GSRN {GSRN} in period from {from} to: {to}", slidingWindow.GSRN,
-                    DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"), DateTimeOffset.FromUnixTimeSeconds(newSyncPoint.EpochSeconds).ToString("o"));
+                    DateTimeOffset.FromUnixTimeSeconds.ToArray()(dateFrom).ToString("o"), DateTimeOffset.FromUnixTimeSeconds(newSyncPoint.EpochSeconds).ToString("o"));
                 return [];
             }
 

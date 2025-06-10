@@ -12,6 +12,7 @@ using API.Transfer.TransferAgreementCleanup.Options;
 using API.Transfer.TransferAgreementProposalCleanup;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
 using Energinet.DataHub.Measurements.Client;
+using Energinet.DataHub.Measurements.Client.Extensions.DependencyInjection;
 using Energinet.DataHub.Measurements.Client.Extensions.Options;
 using Energinet.DataHub.Measurements.Client.ResponseParsers;
 using EnergyOrigin.Datahub3;
@@ -80,13 +81,14 @@ public static class Startup
 
         // TODO: CABOL - Use extension made from measurements or library
         services.AddScoped<ITokenService, TokenService>();
-        services.AddOptions<MeasurementHttpClientOptions>().BindConfiguration("MeasurementsHttpClient").ValidateDataAnnotations();
         services.AddHttpClient("Measurements", delegate (IServiceProvider serviceProvider, HttpClient httpClient)
         {
-            MeasurementHttpClientOptions value = serviceProvider.GetRequiredService<IOptions<MeasurementHttpClientOptions>>().Value;
-            httpClient.BaseAddress = new Uri(value.BaseAddress);
+            var value = serviceProvider.GetRequiredService<IOptions<DataHub3Options>>().Value;
+            httpClient.BaseAddress = new Uri(value.Url);
             httpClient.Timeout = TimeSpan.FromSeconds(300); // Databricks can autoscale under high load, which can take a long time. So this is so we don't lose the call if that happens.
         }).AddHttpMessageHandler<AuthHeaderHandler>();
+
+        services.AddMeasurementsClient
 
         services.AddScoped<IMeasurementsForDateResponseParser, MeasurementsForDateResponseParser>();
         services.AddScoped<IMeasurementsClient, MeasurementsClient>();

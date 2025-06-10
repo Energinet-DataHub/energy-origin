@@ -53,11 +53,10 @@ public static class Startup
             client.BaseAddress = new Uri(options.Url);
         });
 
-        services.AddOptions<MeasurementHttpClientOptions>().BindConfiguration("MeasurementsHttpClient").ValidateDataAnnotations();
         services.AddHttpClient("Measurements", delegate (IServiceProvider serviceProvider, HttpClient httpClient)
         {
-            MeasurementHttpClientOptions value = serviceProvider.GetRequiredService<IOptions<MeasurementHttpClientOptions>>().Value;
-            httpClient.BaseAddress = new Uri(value.BaseAddress);
+            var value = serviceProvider.GetRequiredService<IOptions<DataHub3Options>>().Value;
+            httpClient.BaseAddress = new Uri(value.Url);
         }).AddHttpMessageHandler<AuthHeaderHandler>();
 
         services.AddScoped<IMeasurementsForDateResponseParser, MeasurementsForDateResponseParser>();
