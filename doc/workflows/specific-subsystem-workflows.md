@@ -1,4 +1,4 @@
-﻿## Specific Workflows for Each Subsystem
+## Specific Workflows for Each Subsystem
 
 ### Overview
 
@@ -115,7 +115,7 @@ To add a new subsystem workflow, follow these steps:
             - uses: actions/checkout@v4
 
             - name: Update environment
-              uses: Energinet-DataHub/.github/.github/actions/update-base-environment@v14
+              uses: Energinet-DataHub/.github/.github/actions/update-base-environment@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
               with:
                 configurations: | # Configuration files for each project
                   domains/new-subsystem/Project1.API/configuration.yaml
