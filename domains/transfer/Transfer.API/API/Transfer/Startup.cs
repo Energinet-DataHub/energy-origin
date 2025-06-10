@@ -88,8 +88,6 @@ public static class Startup
             httpClient.Timeout = TimeSpan.FromSeconds(300); // Databricks can autoscale under high load, which can take a long time. So this is so we don't lose the call if that happens.
         }).AddHttpMessageHandler<AuthHeaderHandler>();
 
-        services.AddMeasurementsClient
-
         services.AddScoped<IMeasurementsForDateResponseParser, MeasurementsForDateResponseParser>();
         services.AddScoped<IMeasurementsClient, MeasurementsClient>();
         services.AddScoped<IMeasurementClient, MeasurementClient>();
