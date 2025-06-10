@@ -30,7 +30,7 @@
 
 ### Acorn Actions
 
-- [acorn-actions repository](https://github.com/Energinet-DataHub/acorn-actions)
+- [actions repository](https://github.com/Energinet-DataHub/.github)
 
 ### NuGet packages
 
