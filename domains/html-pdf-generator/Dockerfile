@@ -8,7 +8,7 @@ COPY . .
 
 RUN npm ci
 
-RUN npx playwright install chromium --with-deps --only-shell
+RUN npx playwright install chromium --with-deps
 
 EXPOSE 8080
 
