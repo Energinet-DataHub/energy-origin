@@ -1,9 +1,11 @@
+using System;
+
 namespace API.ReportGenerator.Domain;
 
-public record DataPoint(int HourOfDay, double Value);
+public sealed record DataPoint(int HourOfDay, double Value);
 public record EnergySvgResult(string Svg);
 
-public record HourlyEnergy
+public sealed record HourlyEnergy
 (
     int Hour,
     double Consumption,
@@ -11,5 +13,3 @@ public record HourlyEnergy
     double Unmatched,
     double Overmatched
 );
-
-public record MunicipalityDistribution(string Municipality, double Percentage);

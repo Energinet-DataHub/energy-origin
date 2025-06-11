@@ -13,7 +13,7 @@ public interface IEnergySvgRenderer
     EnergySvgResult Render(IReadOnlyList<HourlyEnergy> hourly);
 }
 
-public class EnergySvgRenderer : IEnergySvgRenderer
+public sealed class EnergySvgRenderer : IEnergySvgRenderer
 {
     private const int SVG_WIDTH = 754;
     private const int SVG_HEIGHT = 400;
