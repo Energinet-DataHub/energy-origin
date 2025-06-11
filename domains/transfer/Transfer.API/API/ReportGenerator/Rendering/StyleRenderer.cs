@@ -5,7 +5,7 @@ public interface IStyleRenderer
     string Render();
 }
 
-public sealed class StyleRenderer : IStyleRenderer
+public class StyleRenderer : IStyleRenderer
 {
     public string Render()
     {

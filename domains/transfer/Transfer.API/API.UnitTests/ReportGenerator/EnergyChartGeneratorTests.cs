@@ -72,10 +72,12 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
+        var formatter = new EnergyDataFormatter();
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
-        var (rawCons, strictProd, allProd) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
+        var (rawConsumption, claims) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
+        var (rawCons, strictProd, allProd) = formatter.Format(rawConsumption, claims);
 
         // Pass all three to processor
         var hourly = EnergyDataProcessor.ToHourly(rawCons, strictProd, allProd);
