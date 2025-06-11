@@ -135,13 +135,7 @@ public class CreateReportRequestCommandHandler
 
                                  <div class="sections">
                                      <div class="section-column">
-                                         <h6 class="section-title">Kommuner</h6>
-                                         <ul>
-                                             <li>Aabenraa: 50%</li>
-                                             <li>Ringkøbing-Skjern: 25%</li>
-                                             <li>Lolland: 20%</li>
-                                             <li>Andre kommuner: 5%</li>
-                                         </ul>
+                                         {{municipalitiesHtml}}
                                      </div>
                                      <div class="section-column">
                                          <h6 class="section-title">Teknologi</h6>
