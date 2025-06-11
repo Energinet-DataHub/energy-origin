@@ -121,9 +121,6 @@ jobs:
     if: ${{ github.ref_name == 'main' }}
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
