@@ -1,9 +1,11 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.UnitOfWork;
 using DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace API.Transfer.Api._Features_;
 
@@ -11,23 +13,26 @@ public record DeleteClaimAutomationArgsCommand(OrganizationId OrganizationId) : 
 
 public class DeleteClaimAutomationArgsCommandHandler : IRequestHandler<DeleteClaimAutomationArgsCommand>
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<DeleteClaimAutomationArgsCommandHandler> _logger;
 
-    public DeleteClaimAutomationArgsCommandHandler(ApplicationDbContext dbContext)
+    public DeleteClaimAutomationArgsCommandHandler(IUnitOfWork unitOfWork, ILogger<DeleteClaimAutomationArgsCommandHandler> logger)
     {
-        _dbContext = dbContext;
+        _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task Handle(DeleteClaimAutomationArgsCommand request, CancellationToken cancellationToken)
     {
-        var argsToDelete = _dbContext
-            .ClaimAutomationArguments
-            .Where(x => x.SubjectId == request.OrganizationId.Value);
+        var argToDelete = await _unitOfWork
+            .ClaimAutomationRepository
+            .GetClaimAutomationArgument(request.OrganizationId.Value);
 
-        if (argsToDelete.Any())
+        if (argToDelete != null)
         {
-            _dbContext.ClaimAutomationArguments.RemoveRange(argsToDelete);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            _unitOfWork.ClaimAutomationRepository.DeleteClaimAutomationArgument(argToDelete);
+            await _unitOfWork.SaveAsync();
+            _logger.LogInformation("Successfully deleted claim automation argument");
         }
     }
 }

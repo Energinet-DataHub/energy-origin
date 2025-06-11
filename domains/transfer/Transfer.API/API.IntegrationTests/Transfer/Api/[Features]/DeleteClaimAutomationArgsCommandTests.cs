@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Setup.Fixtures;
@@ -11,7 +9,9 @@ using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Migrations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api._Features_;
@@ -41,7 +41,8 @@ public class DeleteClaimAutomationArgsCommandTests
         dbContext.ClaimAutomationArguments.Add(claimArg2);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        var sut = new DeleteClaimAutomationArgsCommandHandler(dbContext);
+        var unitOfWork = new UnitOfWork.UnitOfWork(dbContext);
+        var sut = new DeleteClaimAutomationArgsCommandHandler(unitOfWork, Substitute.For<ILogger<DeleteClaimAutomationArgsCommandHandler>>());
 
         var request = new DeleteClaimAutomationArgsCommand(OrganizationId.Create(subject));
         await sut.Handle(request, cancellationToken);
