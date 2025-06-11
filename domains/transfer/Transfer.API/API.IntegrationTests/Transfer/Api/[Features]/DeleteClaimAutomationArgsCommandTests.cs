@@ -29,7 +29,7 @@ public class DeleteClaimAutomationArgsCommandTests
     }
 
     [Fact]
-    public async Task DeleteClaimAutomationArgsCommand()
+    public async Task DeletesOnlyOwnersArgs()
     {
         var cancellationToken = new CancellationToken();
         var subject = Guid.NewGuid();
