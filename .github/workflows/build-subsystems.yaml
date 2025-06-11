@@ -22,7 +22,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
-          dotnet-version: 9.0.300
+          dotnet-version: 9.0.x
 
       - name: Run dotnet lint
         uses: ./.github/actions/dotnet-lint-solution
@@ -41,7 +41,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
-          dotnet-version: 9.0.300
+          dotnet-version: 9.0.x
 
       - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
         uses: ./.github/actions/dotnet-validate-solution
