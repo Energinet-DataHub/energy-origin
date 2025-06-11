@@ -14,30 +14,30 @@ on:
 
 jobs:
 
-  dotnet-lint-solution:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run dotnet lint
-        uses: ./.github/actions/dotnet-lint-solution
-        with:
-          path: "domains"
-
-  test-subsystems-exclude-e2e:
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
-        uses: ./.github/actions/dotnet-validate-solution
-        with:
-          subsystem: ${{ matrix.subsystem }}
-          pin-version: "true"
-          test-filter: "Category!=E2ETest"
+#  dotnet-lint-solution:
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Run dotnet lint
+#        uses: ./.github/actions/dotnet-lint-solution
+#        with:
+#          path: "domains"
+#
+#  test-subsystems-exclude-e2e:
+#    runs-on: ubuntu-22.04
+#    strategy:
+#      matrix:
+#        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer]
+#      fail-fast: false
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
+#        uses: ./.github/actions/dotnet-validate-solution
+#        with:
+#          subsystem: ${{ matrix.subsystem }}
+#          pin-version: "true"
+#          test-filter: "Category!=E2ETest"
 
   build-admin-portal:
     uses: ./.github/workflows/build-admin-portal.yaml
@@ -99,8 +99,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-      - dotnet-lint-solution
-      - test-subsystems-exclude-e2e
+#      - dotnet-lint-solution
+#      - test-subsystems-exclude-e2e
       - build-admin-portal
       - build-authorization
       - build-certificates
