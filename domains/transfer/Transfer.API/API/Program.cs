@@ -48,7 +48,7 @@ if (args.Contains("--migrate"))
 var otlpConfiguration = builder.Configuration.GetSection(OtlpOptions.Prefix);
 var otlpOptions = otlpConfiguration.Get<OtlpOptions>()!;
 
-builder.AddSerilog();
+builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
