@@ -26,13 +26,16 @@ public class DataHub3Client : IDataHub3Client
         var allResults = new List<MeteringPointData>();
         foreach (var g in gsrns)
         {
-            var url = $"ListAggregatedTimeSeries?meteringPointIds={g.Value}"
+            var url = $"/ListAggregatedTimeSeries"
+                      + $"?meteringPointIds={g.Value}"
                       + $"&dateFromEpoch={dateFromEpoch}"
                       + $"&dateToEpoch={dateToEpoch}"
                       + $"&Aggregation=Hour";
 
             var single = await _client
-                .GetFromJsonAsync<MeteringPointData[]?>(url, cancellationToken: cancellationToken);
+                .GetFromJsonAsync<MeteringPointData[]?>(
+                    url,
+                    cancellationToken: cancellationToken);
 
             if (single != null)
                 allResults.AddRange(single);
