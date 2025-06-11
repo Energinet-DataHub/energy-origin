@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0.200-noble AS builder
+FROM mcr.microsoft.com/dotnet/sdk:9.0.300-noble AS builder
 
 WORKDIR /app
 COPY domains/authorization domains/authorization
@@ -11,7 +11,7 @@ RUN dotnet run --project domains/authorization/Proxy/Proxy.csproj --swagger
 RUN dotnet run --project domains/authorization/Authorization.API/API/API.csproj --swagger
 RUN dotnet run --project domains/measurements/Measurements.API/API/API.csproj --swagger
 
-FROM redocly/cli AS packager
+FROM redocly/cli:1.34.3 AS packager
 
 WORKDIR /app
 COPY --from=builder /app/domains/authorization/Proxy/proxy.yaml .
@@ -25,7 +25,7 @@ WORKDIR /html
 RUN redocly join /app/api-info.yaml /app/authorization.yaml /app/measurements.yaml /app/contracts.yaml /app/proxy.yaml -o /app/openapi.yaml
 RUN redocly build-docs /app/openapi.yaml -t /app/redoc-template.hbs --output=/html/index.html
 
-FROM nginxinc/nginx-unprivileged:alpine-slim AS final
+FROM cgr.dev/chainguard/nginx:latest AS final
 
 COPY domains/redoc/health.html /usr/share/nginx/html/health/index.html
 COPY domains/redoc/nginx.conf /etc/nginx/conf.d/default.conf
