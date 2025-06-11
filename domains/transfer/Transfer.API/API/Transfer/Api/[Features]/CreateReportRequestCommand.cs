@@ -104,58 +104,18 @@ public class CreateReportRequestCommandHandler
             var fullHtml = $$"""
                              <!DOCTYPE html>
                              <html>
-                               <head>
+                             <head>
                                  <meta charset="UTF-8">
-                                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                 {{styleHtml}}
-                                 <title>Granulære Oprindelsesgarantier</title>
+                                 <title>Test PDF</title>
+                                 <style>
+                                     body { font-family: Arial, sans-serif; }
+                                     h1 { color: #333; }
+                                 </style>
                              </head>
-                               <body>
-                                 {{headerHtml}}
-                                 <div class="chart">
-                                 {{headlineHtml}}
-                                 {{svgHtml}}
-                                 </div>
-                                 <div class="details">
-                                 <p class="description">Granulære Oprindelsesgarantier er udelukkende udstedt på basis af sol- og vindproduktion.
-                                     Herunder kan du se en fordeling af geografisk oprindelse, teknologityper samt andelen fra statsstøttede
-                                     producenter.</p>
-
-                                 <div class="sections">
-                                     <div class="section-column">
-                                         <h6 class="section-title">Kommuner</h6>
-                                         <ul>
-                                             <li>Aabenraa: 50%</li>
-                                             <li>Ringkøbing-Skjern: 25%</li>
-                                             <li>Lolland: 20%</li>
-                                             <li>Andre kommuner: 5%</li>
-                                         </ul>
-                                     </div>
-                                     <div class="section-column">
-                                         <h6 class="section-title">Teknologi</h6>
-                                         <ul>
-                                             <li>Solenergi: 38%</li>
-                                             <li>Vindenergi: 62%</li>
-                                         </ul>
-                                     </div>
-                                     <div class="section-column">
-                                         <h6 class="section-title">Andel fra statsstøttede producenter</h6>
-                                         <ul>
-                                             <li>Ikke statsstøttede: 95%</li>
-                                             <li>Statsstøttede: 5%</li>
-                                         </ul>
-                                     </div>
-                                 </div>
-                             </div>
-                             {{logoHtml}}
-
-                                    <div class="disclaimer">
-                                        <p>Data grundlag & Godkendelse. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
-                                            Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
-                                            sit amet risus. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio
-                                            sem nec elit. </p>
-                                    </div>
-                               </body>
+                             <body>
+                                 <h1>Hello World</h1>
+                                 <p>Simple PDF test</p>
+                             </body>
                              </html>
                              """;
 
