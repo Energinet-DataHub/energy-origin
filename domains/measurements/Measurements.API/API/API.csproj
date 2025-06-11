@@ -29,12 +29,12 @@
         <PackageReference Include="MassTransit" Version="8.2.3" />
         <PackageReference Include="MassTransit.Abstractions" Version="8.2.3" />
         <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.3" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.6" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.3" />
         <PackageReference Include="OpenTelemetry" Version="1.12.0" />
