@@ -20,14 +20,14 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Resolve image version
-        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@5c08f24c90ae96740aefae31d99808d89c68a45d # v14
+        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
 
       - name: Resolve image name
         shell: bash
         run: echo "name=$(yq '.name' 'domains/html-pdf-generator/configuration.yaml')" | tee -a $GITHUB_ENV
 
       - name: Build and push Docker image
-        uses: Energinet-DataHub/.github/.github/actions/docker-build-and-push@5c08f24c90ae96740aefae31d99808d89c68a45d # v14
+        uses: Energinet-Datahub/.github/.github/actions/docker-build-and-push@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
         with:
           dockerfile: ./domains/html-pdf-generator/Dockerfile
           image-name: ${{ env.name }}
@@ -36,7 +36,7 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
       - name: Scan image
-        uses: Energinet-DataHub/.github/.github/actions/docker-scan@5c08f24c90ae96740aefae31d99808d89c68a45d # v14
+        uses: Energinet-DataHub/.github/.github/actions/docker-scan@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
         with:
           image-name: ${{ env.name }}
           image-tag: ${{ env.version }}

@@ -12,6 +12,12 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+  packages: none
+  security-events: none
+  id-token: write
+
 jobs:
   build-api:
     name: Build Authorization.API
@@ -22,7 +28,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
-          dotnet-version: 9.0.300
+          dotnet-version: 9.0.x
 
       - uses: ./.github/actions/dotnet-build
         with:
@@ -40,7 +46,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
-          dotnet-version: 9.0.300
+          dotnet-version: 9.0.x
 
       - uses: ./.github/actions/dotnet-build
         with:
