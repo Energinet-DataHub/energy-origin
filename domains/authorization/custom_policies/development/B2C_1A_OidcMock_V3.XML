@@ -14,6 +14,28 @@
 
         <ClaimsSchema>
 
+            <ClaimType Id="acr_values">
+                <DisplayName>Authentication Context Class Reference Values</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Login intent (normal/trial) provided by the client application</UserHelpText>
+                <Restriction>
+                    <Pattern RegularExpression="^(?!(?:.*(?<!\S)ett:login:type:(?:trial|normal)(?!\S).*(?<!\S)ett:login:type:(?:trial|normal)(?!\S)|.*(?<!\S)ett:login:type:(?!(?:trial|normal)(?!\S))\S*(?!\S))).*?(?<!\S)ett:login:type:(?:trial|normal)(?!\S).*$"
+                             HelpText="Exactly one of ett:login:type:trial or ett:login:type:normal must be specified, space-delimited." />
+                </Restriction>
+            </ClaimType>
+
+            <ClaimType Id="login_type">
+                <DisplayName>Login Type Extracted</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Internal login type claim passed to the login validator</UserHelpText>
+            </ClaimType>
+
+            <ClaimType Id="status">
+                <DisplayName>Status Claim</DisplayName>
+                <DataType>string</DataType>
+                <UserHelpText>Status claim to be issued in the token (normal/trial)</UserHelpText>
+            </ClaimType>
+
             <ClaimType Id="name">
                 <DisplayName>name</DisplayName>
                 <DataType>string</DataType>
@@ -234,6 +256,31 @@
         </ClaimsSchema>
 
         <ClaimsTransformations>
+
+            <ClaimsTransformation Id="GetAcrValuesFromOidcContext" TransformationMethod="GetClaimFromOidcContext">
+                <InputClaims />
+                <InputParameters>
+                    <InputParameter Id="OidcContextKey" DataType="string" Value="acr_values" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="acr_values" />
+                </OutputClaims>
+            </ClaimsTransformation>
+
+            <ClaimsTransformation Id="ExtractLoginTypeFromAcrValues" TransformationMethod="ExtractStringClaim">
+                <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="acr_values" TransformationClaimType="inputString" />
+                </InputClaims>
+                <InputParameters>
+                    <InputParameter Id="pattern" DataType="string" Value="(^| )ett:login:type:(normal|trial)( |$)" />
+                    <InputParameter Id="captureGroupNumber" DataType="int" Value="2" />
+                    <InputParameter Id="submatchIndex" DataType="int" Value="1" />
+                    <InputParameter Id="defaultValue" DataType="string" Value="normal" />
+                </InputParameters>
+                <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="login_type" TransformationClaimType="outputClaim" />
+                </OutputClaims>
+            </ClaimsTransformation>
 
             <ClaimsTransformation Id="CreateAlternativeSecurityId" TransformationMethod="CreateAlternativeSecurityId">
                 <InputClaims>
@@ -458,6 +505,19 @@
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
 
+                <TechnicalProfile Id="OIDCContextExtractor">
+                    <DisplayName>Extract data from OIDC context</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="acr_values" DefaultValue="" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="GetAcrValuesFromOidcContext" />
+                        <OutputClaimsTransformation ReferenceId="ExtractLoginTypeFromAcrValues" />
+                    </OutputClaimsTransformations>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+
                 <TechnicalProfile Id="authorizationMethod">
                     <DisplayName>Consent</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
@@ -508,7 +568,30 @@
                     <InputClaims>
                         <InputClaim ClaimTypeReferenceId="self_access_token"/>
                         <InputClaim ClaimTypeReferenceId="org_cvr" />
+                        <InputClaim ClaimTypeReferenceId="login_type" />
                     </InputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="validateLoginType">
+                    <DisplayName>Validate login type</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">https://energytrackandtrace.dk/api/authorization/validate-login-type</Item>
+                        <Item Key="SendClaimsIn">Body</Item>
+                        <Item Key="AuthenticationType">Bearer</Item>
+                        <Item Key="UseClaimAsBearerToken">self_access_token</Item>
+                        <Item Key="DebugMode">false</Item>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="self_access_token"/>
+                        <InputClaim ClaimTypeReferenceId="org_cvr" />
+                        <InputClaim ClaimTypeReferenceId="login_type" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="status" />
+                    </OutputClaims>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
             </TechnicalProfiles>
@@ -534,6 +617,7 @@
                         <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
                         <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
                         <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                        <OutputClaim ClaimTypeReferenceId="status"/>
                         <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
                     </OutputClaims>
                 </TechnicalProfile>
@@ -589,17 +673,23 @@
 
                 <OrchestrationStep Order="2" Type="ClaimsExchange">
                     <ClaimsExchanges>
-                        <ClaimsExchange Id="MitIDExchange" TechnicalProfileReferenceId="OidcMock-OAUTH"/>
+                        <ClaimsExchange Id="GetOidcContext" TechnicalProfileReferenceId="OIDCContextExtractor" />
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="3" Type="ClaimsExchange">
                     <ClaimsExchanges>
-                        <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId"/>
+                        <ClaimsExchange Id="MitIDExchange" TechnicalProfileReferenceId="OidcMock-OAUTH"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="5" Type="ClaimsExchange">
                     <Preconditions>
                         <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
                             <Value>objectId</Value>
@@ -611,25 +701,31 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="5" Type="ClaimsExchange">
+                <OrchestrationStep Order="6" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="6" Type="ClaimsExchange">
+                <OrchestrationStep Order="7" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="AuthorizationExchange" TechnicalProfileReferenceId="authorizationMethod"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="7" Type="ClaimsExchange">
+                <OrchestrationStep Order="8" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="8" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
+                <OrchestrationStep Order="9" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ValidateLoginTypeExchange" TechnicalProfileReferenceId="validateLoginType" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="10" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
             </OrchestrationSteps>
         </UserJourney>
 
@@ -660,7 +756,13 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+                <OrchestrationStep Order="5" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ValidateLoginTypeExchange" TechnicalProfileReferenceId="validateLoginType" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
             </OrchestrationSteps>
         </UserJourney>
 
@@ -688,6 +790,7 @@
                 <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
                 <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                <OutputClaim ClaimTypeReferenceId="status"/>
                 <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
