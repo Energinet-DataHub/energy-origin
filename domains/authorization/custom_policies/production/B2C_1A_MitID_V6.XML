@@ -648,7 +648,7 @@
                     </DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"/>
                     <Metadata>
-                        <Item Key="ServiceUrl">https://netseidbroker.dk/op/api/v1/session/logout</Item> <!-- From: https://netseidbroker.dk/op/swagger/index.html -->
+                        <Item Key="ServiceUrl">https://netseidbroker.dk/op/api/v1/session/logout</Item><!-- From: https://netseidbroker.dk/op/swagger/index.html -->
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="UseClaimAsBearerToken">mitIDBearerToken</Item>
                         <Item Key="SendClaimsIn">Body</Item>
