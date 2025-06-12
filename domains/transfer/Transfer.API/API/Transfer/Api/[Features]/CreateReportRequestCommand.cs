@@ -140,15 +140,15 @@ public class CreateReportRequestCommandHandler
                                      <div class="section-column">
                                          <h6 class="section-title">Teknologi</h6>
                                          <ul>
-                                             <li>Solenergi: 38%</li>
-                                             <li>Vindenergi: 62%</li>
+                                             <li>Solenergi: 0%</li>
+                                             <li>Vindenergi: 100%</li>
                                          </ul>
                                      </div>
                                      <div class="section-column">
                                          <h6 class="section-title">Andel fra statsstøttede producenter</h6>
                                          <ul>
-                                             <li>Ikke statsstøttede: 95%</li>
-                                             <li>Statsstøttede: 5%</li>
+                                             <li>Ikke statsstøttede: 100%</li>
+                                             <li>Statsstøttede: 0%</li>
                                          </ul>
                                      </div>
                                  </div>
@@ -164,6 +164,7 @@ public class CreateReportRequestCommandHandler
                                </body>
                              </html>
                              """;
+
 
             // Convert to base64 and generate PDF
             var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(fullHtml));

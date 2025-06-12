@@ -4,9 +4,11 @@ WORKDIR /app
 
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/ms-playwright
 
-COPY . .
+COPY package.json .
+COPY server.js .
 
-RUN npm ci
+
+RUN npm install
 
 RUN npx playwright install chromium --with-deps --only-shell
 

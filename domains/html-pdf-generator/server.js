@@ -2,7 +2,7 @@ const express = require('express');
 const { chromium } = require('playwright-core');
 const app = express();
 
-app.use(express.json({limit: '300mb'}));
+app.use(express.json({limit: '1000mb'}));
 
 app.get('/health', (_, res) => {
     res.sendStatus(200);
