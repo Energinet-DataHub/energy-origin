@@ -846,13 +846,13 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="6" Type="ClaimsExchange">
+                <OrchestrationStep Order="5" Type="ClaimsExchange">
                     <ClaimsExchanges>
                         <ClaimsExchange Id="ValidateLoginTypeExchange" TechnicalProfileReferenceId="validateLoginType" />
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+                <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
             </OrchestrationSteps>
         </UserJourney>
     </UserJourneys>
