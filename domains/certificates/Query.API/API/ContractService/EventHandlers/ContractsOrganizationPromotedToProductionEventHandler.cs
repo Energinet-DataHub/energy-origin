@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace API.ContractService.EventHandlers;
 
-public class ContractsOrganizationPromotedToProductionEventHandler : IConsumer<OrganizationPromotedToProduction>
+public class ContractsOrganizationPromotedToProductionEventHandler : IConsumer<OrganizationPromotedToNormal>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<ContractsOrganizationPromotedToProductionEventHandler> _logger;
@@ -19,7 +19,7 @@ public class ContractsOrganizationPromotedToProductionEventHandler : IConsumer<O
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<OrganizationPromotedToProduction> context)
+    public async Task Consume(ConsumeContext<OrganizationPromotedToNormal> context)
     {
         var orgId = context.Message.OrganizationId;
 

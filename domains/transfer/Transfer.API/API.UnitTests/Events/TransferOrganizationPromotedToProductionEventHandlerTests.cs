@@ -19,8 +19,8 @@ public class TransferOrganizationPromotedToProductionEventHandlerTests
         var mediatrMock = Substitute.For<IMediator>();
         var sut = new TransferOrganizationPromotedToProductionEventHandler(mediatrMock, Substitute.For<ILogger<TransferOrganizationPromotedToProductionEventHandler>>());
 
-        var mockContext = Substitute.For<ConsumeContext<OrganizationPromotedToProduction>>();
-        var message = OrganizationPromotedToProduction.Create(Guid.NewGuid(), Any.Tin().ToString());
+        var mockContext = Substitute.For<ConsumeContext<OrganizationPromotedToNormal>>();
+        var message = OrganizationPromotedToNormal.Create(Guid.NewGuid(), Any.Tin().ToString());
         mockContext.Message.Returns(message);
 
         await sut.Consume(mockContext);

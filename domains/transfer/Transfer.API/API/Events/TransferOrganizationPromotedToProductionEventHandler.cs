@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using API.Transfer.Api._Features_;
 using EnergyOrigin.Domain.ValueObjects;
@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace API.Events;
 
-public class TransferOrganizationPromotedToProductionEventHandler : IConsumer<OrganizationPromotedToProduction>
+public class TransferOrganizationPromotedToProductionEventHandler : IConsumer<OrganizationPromotedToNormal>
 {
     private readonly IMediator _mediator;
     private readonly ILogger<TransferOrganizationPromotedToProductionEventHandler> _logger;
@@ -20,7 +20,7 @@ public class TransferOrganizationPromotedToProductionEventHandler : IConsumer<Or
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<OrganizationPromotedToProduction> context)
+    public async Task Consume(ConsumeContext<OrganizationPromotedToNormal> context)
     {
         var e = context.Message;
 

@@ -23,8 +23,8 @@ public class ContractsOrganizationPromotedToProductionEventHandlerTests
         var mediatrMock = Substitute.For<IMediator>();
         var sut = new ContractsOrganizationPromotedToProductionEventHandler(mediatrMock, Substitute.For<ILogger<ContractsOrganizationPromotedToProductionEventHandler>>());
 
-        var mockContext = Substitute.For<ConsumeContext<OrganizationPromotedToProduction>>();
-        var message = OrganizationPromotedToProduction.Create(Guid.NewGuid(), EnergyTrackAndTrace.Testing.Any.Tin().ToString());
+        var mockContext = Substitute.For<ConsumeContext<OrganizationPromotedToNormal>>();
+        var message = OrganizationPromotedToNormal.Create(Guid.NewGuid(), EnergyTrackAndTrace.Testing.Any.Tin().ToString());
         mockContext.Message.Returns(message);
 
         await sut.Consume(mockContext);
