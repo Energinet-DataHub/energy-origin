@@ -1,5 +1,7 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
@@ -9,6 +11,7 @@ using Energinet.DataHub.Measurements.Client.Extensions.Options;
 using Energinet.DataHub.Measurements.Client.ResponseParsers;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
+using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -53,14 +56,22 @@ public static class Startup
             client.BaseAddress = new Uri(options.Url);
         });
 
-        services.AddHttpClient("Measurements", delegate (IServiceProvider serviceProvider, HttpClient httpClient)
-        {
-            var value = serviceProvider.GetRequiredService<IOptions<DataHub3Options>>().Value;
-            httpClient.BaseAddress = new Uri(value.Url);
-        }).AddHttpMessageHandler<AuthHeaderHandler>();
+        /*services.AddHttpClient("Measurements", delegate (IServiceProvider serviceProvider, HttpClient httpClient)*/
+        /*{*/
+        /*    var value = serviceProvider.GetRequiredService<IOptions<DataHub3Options>>().Value;*/
+        /*    httpClient.BaseAddress = new Uri(value.Url);*/
+        /*}).AddHttpMessageHandler<AuthHeaderHandler>();*/
 
-        services.AddScoped<IMeasurementsForDateResponseParser, MeasurementsForDateResponseParser>();
-        services.AddScoped<IMeasurementsClient, MeasurementsClient>();
+        static async Task<AuthenticationHeaderValue> authorizationHeaderProviderAsync(IServiceProvider sp)
+        {
+            var tokenService = sp.GetRequiredService<ITokenService>();
+            var token = await tokenService.GetToken();
+            var headerValue = new AuthenticationHeaderValue("Bearer", token);
+            return headerValue;
+        }
+
+        services.AddMeasurementsClient(authorizationHeaderProviderAsync);
         services.AddScoped<IMeasurementClient, MeasurementClient>();
+        services.AddScoped<IMeasurementsForPeriodResponseParser, MeasurementsForPeriodResponseParser>();
     }
 }

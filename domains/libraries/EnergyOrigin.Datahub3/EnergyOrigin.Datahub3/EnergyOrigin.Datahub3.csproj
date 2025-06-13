@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Polly" Version="8.5.2" />
-    <PackageReference Include="Energinet.DataHub.Measurements.Client" Version="8.3.0" />
+    <PackageReference Include="Energinet.DataHub.Measurements.Client" Version="8.6.0" />
   </ItemGroup>
 
   <ItemGroup>

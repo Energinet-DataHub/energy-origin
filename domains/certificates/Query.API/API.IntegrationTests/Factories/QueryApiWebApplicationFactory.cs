@@ -97,6 +97,9 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("B2C:CustomPolicyClientId", IssuerIdpClientId.ToString());
         builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", AdminPortalEnterpriseAppRegistrationObjectId.ToString());
 
+        builder.UseSetting("MeasurementsHttpClient:BaseAddress", DataHub3Url);
+        builder.UseSetting("MeasurementsHttpClient:ApplicationIdUri", "test_001: api://dummy-EO/ETT-entra-app-id");
+
         builder.ConfigureTestServices(services =>
         {
             services.Configure<ActivityLogOptions>(options =>

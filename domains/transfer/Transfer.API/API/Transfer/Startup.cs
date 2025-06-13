@@ -1,6 +1,8 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using API.ReportGenerator.Infrastructure;
 using API.ReportGenerator.Processing;
 using API.ReportGenerator.Rendering;
@@ -79,17 +81,15 @@ public static class Startup
             client.BaseAddress = new Uri(options.Url);
         });
 
-        // TODO: CABOL - Use extension made from measurements or library
-        services.AddScoped<ITokenService, TokenService>();
-        services.AddHttpClient("Measurements", delegate (IServiceProvider serviceProvider, HttpClient httpClient)
+        static async Task<AuthenticationHeaderValue> authorizationHeaderProviderAsync(IServiceProvider sp)
         {
-            var value = serviceProvider.GetRequiredService<IOptions<DataHub3Options>>().Value;
-            httpClient.BaseAddress = new Uri(value.Url);
-            httpClient.Timeout = TimeSpan.FromSeconds(300); // Databricks can autoscale under high load, which can take a long time. So this is so we don't lose the call if that happens.
-        }).AddHttpMessageHandler<AuthHeaderHandler>();
+            var tokenService = sp.GetRequiredService<ITokenService>();
+            var token = await tokenService.GetToken();
+            return new AuthenticationHeaderValue("Bearer", token);
+        }
 
-        services.AddScoped<IMeasurementsForDateResponseParser, MeasurementsForDateResponseParser>();
-        services.AddScoped<IMeasurementsClient, MeasurementsClient>();
+        services.AddMeasurementsClient(authorizationHeaderProviderAsync);
         services.AddScoped<IMeasurementClient, MeasurementClient>();
+        services.AddScoped<IMeasurementsForPeriodResponseParser, MeasurementsForPeriodResponseParser>();
     }
 }
