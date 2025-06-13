@@ -53,6 +53,7 @@ builder.AddSerilogWithoutOutboxLogs();
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
     x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler, TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
+    x.AddConsumer<TransferOrganizationPromotedToProductionEventHandler, TransferOrganizationPromotedToProductionEventHandlerDefinition>();
 });
 
 builder.Services.AddPdfOptions();
