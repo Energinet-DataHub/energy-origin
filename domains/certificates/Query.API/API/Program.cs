@@ -65,6 +65,7 @@ builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
     x.AddConsumer<EnergyMeasuredIntegrationEventHandler, EnergyMeasuredIntegrationEventHandlerDefinition>();
     x.AddConsumer<ContractsOrganizationRemovedFromWhitelistEventHandler, ContractsOrganizationRemovedFromWhitelistEventHandlerDefinition>();
+    x.AddConsumer<ContractsOrganizationPromotedToProductionEventHandler, ContractsOrganizationPromotedToProductionEventHandlerDefinition>();
 });
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

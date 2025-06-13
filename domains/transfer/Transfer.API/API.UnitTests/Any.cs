@@ -31,16 +31,11 @@ public static class Any
             SenderName = OrganizationName(),
             Id = Guid.NewGuid(),
             ReceiverReference = Guid.NewGuid(),
-            ReceiverTin = Tin(),
-            SenderTin = Tin(),
+            ReceiverTin = EnergyTrackAndTrace.Testing.Any.Tin(),
+            SenderTin = EnergyTrackAndTrace.Testing.Any.Tin(),
             TransferAgreementNumber = 0,
             Type = TransferAgreementType.TransferAllCertificates
         };
-    }
-
-    public static Tin Tin()
-    {
-        return EnergyOrigin.Domain.ValueObjects.Tin.Create(IntString(8));
     }
 
     public static Gsrn Gsrn()
