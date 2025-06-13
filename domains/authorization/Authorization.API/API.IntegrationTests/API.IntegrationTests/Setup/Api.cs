@@ -91,6 +91,11 @@ public class Api : IAsyncLifetime
         return await _client.PostAsJsonAsync("/api/authorization/whitelisted-organization/", request, SerializerOptions);
     }
 
+    public async Task<HttpResponseMessage> GetDoesLoginTypeMatch(DoesOrganizationStatusMatchLoginTypeRequest request)
+    {
+        return await _client.PostAsJsonAsync("/api/authorization/organization-status/", request, SerializerOptions);
+    }
+
     public async Task<HttpResponseMessage> CreateClient(Guid idpClientId, string name, ClientType clientType,
         string redirectUrl)
     {

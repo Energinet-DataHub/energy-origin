@@ -22,6 +22,7 @@ public record AcceptTermsCommand(string OrgCvr, string OrgName, Guid UserId) : I
 public class AcceptTermsCommandHandler(
     IOrganizationRepository organizationRepository,
     ITermsRepository termsRepository,
+    IWhitelistedRepository whitelistedRepository,
     IUnitOfWork unitOfWork,
     IWalletClient walletClient,
     IPublishEndpoint publishEndpoint)
@@ -31,16 +32,22 @@ public class AcceptTermsCommandHandler(
     {
         await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        var usersOrganizationsCvr = Tin.Create(request.OrgCvr);
+        var tin = Tin.Create(request.OrgCvr);
+        var organizationName = OrganizationName.Create(request.OrgName);
 
-        var usersAffiliatedOrganization = await organizationRepository.Query()
-            .FirstOrDefaultAsync(o => o.Tin == usersOrganizationsCvr, cancellationToken);
+        var isWhitelisted = await whitelistedRepository.Query()
+            .AnyAsync(w => w.Tin == tin, cancellationToken);
 
-        if (usersAffiliatedOrganization == null)
+        var organization = await organizationRepository.Query()
+            .FirstOrDefaultAsync(o => o.Tin == tin, cancellationToken);
+
+        if (organization == null)
         {
-            usersAffiliatedOrganization =
-                Organization.Create(usersOrganizationsCvr, OrganizationName.Create(request.OrgName));
-            await organizationRepository.AddAsync(usersAffiliatedOrganization, cancellationToken);
+            organization = isWhitelisted
+                ? Organization.Create(tin, organizationName)
+                : Organization.CreateTrial(tin, organizationName);
+
+            await organizationRepository.AddAsync(organization, cancellationToken);
         }
 
         var latestTerms = await termsRepository.Query()
@@ -48,23 +55,20 @@ public class AcceptTermsCommandHandler(
             .FirstOrDefaultAsync(cancellationToken);
 
         if (latestTerms == null)
-        {
             throw new InvalidConfigurationException("No Terms configured");
-        }
 
-        if (!usersAffiliatedOrganization.TermsAccepted ||
-            usersAffiliatedOrganization.TermsVersion != latestTerms.Version)
+        if (!organization.TermsAccepted || organization.TermsVersion != latestTerms.Version)
         {
-            usersAffiliatedOrganization.AcceptTerms(latestTerms);
+            organization.AcceptTerms(latestTerms, isWhitelisted);
         }
 
-        await EnsureWalletExistsAsync(usersAffiliatedOrganization.Id);
+        await EnsureWalletExistsAsync(organization.Id);
 
         await publishEndpoint.Publish(new OrgAcceptedTerms(
             Guid.NewGuid(),
             Activity.Current?.Id ?? Guid.NewGuid().ToString(),
             DateTimeOffset.UtcNow,
-            usersAffiliatedOrganization.Id,
+            organization.Id,
             request.OrgCvr,
             request.UserId
         ), cancellationToken);

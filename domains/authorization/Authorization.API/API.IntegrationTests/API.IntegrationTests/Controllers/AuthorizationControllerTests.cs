@@ -84,7 +84,6 @@ public class AuthorizationControllerTests : IntegrationTestBase
         result.TermsAccepted.Should().BeFalse();
     }
 
-
     [Fact]
     public async Task GivenExistingUserAndOrganization_WhenGettingConsent_ThenAffiliationIsCreated()
     {
@@ -106,8 +105,9 @@ public class AuthorizationControllerTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task GivenExistingTinThatIsWhitelisted_WhenCheckingWhitelist_ThenHttpOk()
+    public async Task GivenNormalExistingTinThatIsWhitelisted_WhenCheckingWhitelist_ThenHttpOk()
     {
+        var loginType = "normal";
         await using var dbContext = new ApplicationDbContext(_options);
 
         var organization = Any.Organization(Any.Tin());
@@ -115,7 +115,7 @@ public class AuthorizationControllerTests : IntegrationTestBase
         await dbContext.Whitelisted.AddAsync(Whitelisted.Create(organization.Tin!), TestContext.Current.CancellationToken);
         await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var request = new WhitelistedOrganizationRequest(organization.Tin!.Value);
+        var request = new WhitelistedOrganizationRequest(organization.Tin!.Value, loginType);
 
         var response = await _api.GetIsWhitelistedOrganization(request);
 
@@ -123,15 +123,49 @@ public class AuthorizationControllerTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task GivenExistingTinThatIsNotWhitelisted_WhenCheckingWhitelist_ThenHttpForbidden()
+    public async Task GivenTrialExistingTinThatIsWhitelisted_WhenCheckingWhitelist_ThenHttpForbidden()
     {
+        var loginType = "trial";
+        await using var dbContext = new ApplicationDbContext(_options);
+
+        var organization = Any.TrialOrganization(Any.Tin());
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Whitelisted.AddAsync(Whitelisted.Create(organization.Tin!), TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var request = new WhitelistedOrganizationRequest(organization.Tin!.Value, loginType);
+
+        var response = await _api.GetIsWhitelistedOrganization(request);
+
+        response.Should().Be403Forbidden();
+    }
+
+    [Fact]
+    public async Task GivenTrialNonExistingTinThatIsNotWhitelisted_WhenCheckingWhitelist_ThenHttpOk()
+    {
+        var loginType = "trial";
+        await using var dbContext = new ApplicationDbContext(_options);
+
+        var organization = Any.TrialOrganization(Any.Tin());
+
+        var request = new WhitelistedOrganizationRequest(organization.Tin!.Value, loginType);
+
+        var response = await _api.GetIsWhitelistedOrganization(request);
+
+        response.Should().Be200Ok();
+    }
+
+    [Fact]
+    public async Task GivenNormalExistingTinThatIsNotWhitelisted_WhenCheckingWhitelist_ThenHttpForbidden()
+    {
+        var loginType = "normal";
         await using var dbContext = new ApplicationDbContext(_options);
 
         var organization = Any.Organization(Any.Tin());
         await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
         await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var request = new WhitelistedOrganizationRequest(organization.Tin!.Value);
+        var request = new WhitelistedOrganizationRequest(organization.Tin!.Value, loginType);
 
         var response = await _api.GetIsWhitelistedOrganization(request);
 
@@ -148,7 +182,7 @@ public class AuthorizationControllerTests : IntegrationTestBase
 
         var user = Any.User();
         var organization = Any.Organization(Any.Tin());
-        organization.AcceptTerms(dbContext.Terms.First());
+        organization.AcceptTerms(dbContext.Terms.First(), true);
 
         await dbContext.Users.AddAsync(user);
         await dbContext.Organizations.AddAsync(organization);
