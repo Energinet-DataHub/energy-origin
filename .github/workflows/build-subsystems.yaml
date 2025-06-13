@@ -99,16 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-#      - dotnet-lint-solution
-#      - test-subsystems-exclude-e2e
-#      - build-admin-portal
       - build-authorization
-#      - build-certificates
-#      - build-html-pdf-generator
-#      - build-measurements
-#      - build-oidc-mock
-#      - build-openapi
-#      - build-transfer
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
@@ -118,17 +109,17 @@ jobs:
         uses: Energinet-DataHub/.github/.github/actions/update-base-environment@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
         with:
           configurations: |
-#            domains/admin-portal/AdminPortal.Web/configuration.yaml
+            domains/admin-portal/AdminPortal.Web/configuration.yaml
             domains/authorization/Authorization.API/configuration.yaml
-#            domains/authorization/Proxy/configuration.yaml
-#            domains/certificates/Query.API/configuration.yaml
-#            domains/html-pdf-generator/configuration.yaml
-#            domains/measurements/Measurements.API/configuration.yaml
-#            domains/oidc-mock/API/configuration.yaml
-#            domains/transfer/Transfer.API/configuration.yaml
-#            domains/transfer/ClaimAutomation/configuration.yaml
-#            domains/transfer/TransferAgreementAutomation/configuration.yaml
-#            domains/redoc/configuration.yaml
+            domains/authorization/Proxy/configuration.yaml
+            domains/certificates/Query.API/configuration.yaml
+            domains/html-pdf-generator/configuration.yaml
+            domains/measurements/Measurements.API/configuration.yaml
+            domains/oidc-mock/API/configuration.yaml
+            domains/transfer/Transfer.API/configuration.yaml
+            domains/transfer/ClaimAutomation/configuration.yaml
+            domains/transfer/TransferAgreementAutomation/configuration.yaml
+            domains/redoc/configuration.yaml
           dry_run: ${{ inputs.dry-run }}
           github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
           github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
