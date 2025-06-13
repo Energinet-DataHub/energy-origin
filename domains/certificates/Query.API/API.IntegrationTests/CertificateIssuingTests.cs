@@ -60,10 +60,10 @@ public sealed class CertificateIssuingTests : TestBase
         factory.RegistryName = _integrationTestFixture.WebApplicationFactory.RegistryName;
         factory.MeasurementsSyncEnabled = true;
 
-        var dataHub3ClientMock = Substitute.For<IDataHub3Client>();
-        dataHub3ClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(
+        var measurementClientMock = Substitute.For<IMeasurementClient>();
+        measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(
             EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(utcMidnight.ToUnixTimeSeconds(), 42)]));
-        factory.DataHub3Client = dataHub3ClientMock;
+        factory.MeasurementClient = measurementClientMock;
 
         var dataHubFacadeClientMock = Substitute.For<IDataHubFacadeClient>();
         dataHubFacadeClientMock
