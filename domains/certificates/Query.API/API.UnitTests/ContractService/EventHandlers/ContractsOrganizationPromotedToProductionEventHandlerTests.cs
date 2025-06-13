@@ -18,13 +18,13 @@ namespace API.UnitTests.ContractService.EventHandlers;
 public class ContractsOrganizationPromotedToProductionEventHandlerTests
 {
     [Fact]
-    public async Task Consume()
+    public async Task CallsRemoveOrganizationContractsAndSlidingWindowsCommand()
     {
         var mediatrMock = Substitute.For<IMediator>();
         var sut = new ContractsOrganizationPromotedToProductionEventHandler(mediatrMock, Substitute.For<ILogger<ContractsOrganizationPromotedToProductionEventHandler>>());
 
         var mockContext = Substitute.For<ConsumeContext<OrganizationPromotedToNormal>>();
-        var message = OrganizationPromotedToNormal.Create(Guid.NewGuid(), EnergyTrackAndTrace.Testing.Any.Tin().ToString());
+        var message = OrganizationPromotedToNormal.Create(Guid.NewGuid());
         mockContext.Message.Returns(message);
 
         await sut.Consume(mockContext);

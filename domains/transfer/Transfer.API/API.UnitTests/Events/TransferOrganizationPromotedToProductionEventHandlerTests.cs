@@ -14,13 +14,13 @@ namespace API.UnitTests.Events;
 public class TransferOrganizationPromotedToProductionEventHandlerTests
 {
     [Fact]
-    public async Task Consume()
+    public async Task CallsDeleteTransferAgreementsCommandAndDeleteClaimAutomationArgsCommand()
     {
         var mediatrMock = Substitute.For<IMediator>();
         var sut = new TransferOrganizationPromotedToProductionEventHandler(mediatrMock, Substitute.For<ILogger<TransferOrganizationPromotedToProductionEventHandler>>());
 
         var mockContext = Substitute.For<ConsumeContext<OrganizationPromotedToNormal>>();
-        var message = OrganizationPromotedToNormal.Create(Guid.NewGuid(), Any.Tin().ToString());
+        var message = OrganizationPromotedToNormal.Create(Guid.NewGuid());
         mockContext.Message.Returns(message);
 
         await sut.Consume(mockContext);
