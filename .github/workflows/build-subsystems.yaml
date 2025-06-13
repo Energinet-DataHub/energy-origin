@@ -153,4 +153,10 @@ jobs:
           azure-client-id: 291fedbd-35c0-4fcb-9088-498d0c96c50d
           azure-client-secret: ${{ secrets.ENERGY_TRACK_AND_TRACE_B2C_CLIENT_SECRET_DEMO }}
 
-
+      - name: Update ConfigMap in IaC
+        if: ${{ success() }}
+        uses: ./.github/actions/update-b2c-configmap
+        with:
+          github-app-id: ${{ secrets.GITHUB_APP_ID }}
+          github-app-private-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+          preview-id: ${{ env.PREVIEW_ID }}
