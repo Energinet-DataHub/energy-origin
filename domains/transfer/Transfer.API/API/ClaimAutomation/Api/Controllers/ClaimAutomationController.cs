@@ -42,6 +42,7 @@ public class ClaimAutomationController(IUnitOfWork unitOfWork, AccessDescriptor 
         try
         {
             claim = await unitOfWork.ClaimAutomationRepository.AddClaimAutomationArgument(claimAutomationArgument);
+            await unitOfWork.SaveAsync();
             var claimAutomationArgumentDto = new ClaimAutomationArgumentDto(claim.CreatedAt.ToUnixTimeSeconds());
 
             return CreatedAtAction(nameof(GetClaimAutomation), null, claimAutomationArgumentDto);
@@ -72,7 +73,8 @@ public class ClaimAutomationController(IUnitOfWork unitOfWork, AccessDescriptor 
             return NoContent();
         }
 
-        await unitOfWork.ClaimAutomationRepository.DeleteClaimAutomationArgument(claim);
+        unitOfWork.ClaimAutomationRepository.DeleteClaimAutomationArgument(claim);
+        await unitOfWork.SaveAsync();
         return NoContent();
     }
 

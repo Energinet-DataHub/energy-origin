@@ -30,14 +30,11 @@ public class ClaimAutomationRepository : IClaimAutomationRepository
     public async Task<ClaimAutomationArgument> AddClaimAutomationArgument(ClaimAutomationArgument claimAutomationArgument)
     {
         await context.ClaimAutomationArguments.AddAsync(claimAutomationArgument);
-        await context.SaveChangesAsync();
-
         return claimAutomationArgument;
     }
 
-    public async Task DeleteClaimAutomationArgument(ClaimAutomationArgument claim)
+    public void DeleteClaimAutomationArgument(ClaimAutomationArgument claim)
     {
         context.ClaimAutomationArguments.Remove(claim);
-        await context.SaveChangesAsync();
     }
 }
