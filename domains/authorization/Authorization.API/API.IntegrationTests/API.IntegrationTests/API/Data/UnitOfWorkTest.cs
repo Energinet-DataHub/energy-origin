@@ -2,149 +2,158 @@ using API.Data;
 using API.IntegrationTests.Setup;
 using API.Models;
 using API.UnitTests;
-using EnergyTrackAndTrace.Testing.Testcontainers;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.IntegrationTests.API.Data;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class UnitOfWorkTest : IntegrationTestBase
+public sealed class UnitOfWorkTest : IntegrationTestBase
 {
-    private DatabaseInfo _databaseInfo;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
-    public UnitOfWorkTest(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
+    public UnitOfWorkTest(IntegrationTestFixture fixture) : base(fixture)
     {
-        _databaseInfo = integrationTestFixture.PostgresContainer.CreateNewDatabase().GetAwaiter().GetResult();
-        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(_databaseInfo.ConnectionString).Options;
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                   .UseNpgsql(fixture.ConnectionString)
+                   .Options;
+    }
+
+    public override async ValueTask InitializeAsync()
+    {
+        await base.InitializeAsync();
+
+        await using var db = new ApplicationDbContext(_options);
+        await db.Database.EnsureDeletedAsync();
+        await db.Database.EnsureCreatedAsync();
     }
 
     [Fact]
     public async Task GivenUnitOfWork_WhenCommitting_DataIsInserted()
     {
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Database.EnsureCreatedAsync(CancellationToken.None);
-        await using var sut = new UnitOfWork(dbContext);
+        await using var ctx = new ApplicationDbContext(_options);
+        await using var uow = new UnitOfWork(ctx);
 
-        await sut.BeginTransactionAsync(CancellationToken.None);
-        await dbContext.Organizations.AddAsync(Any.Organization(), CancellationToken.None);
-        await sut.CommitAsync(CancellationToken.None);
+        await uow.BeginTransactionAsync(TestContext.Current.CancellationToken);
+        await ctx.Organizations.AddAsync(Any.Organization(), TestContext.Current.CancellationToken);
+        await uow.CommitAsync(TestContext.Current.CancellationToken);
 
-        await using var newDbContext = new ApplicationDbContext(_options);
-        Assert.Single(newDbContext.Organizations.ToList());
+        await using var verify = new ApplicationDbContext(_options);
+        Assert.Single(verify.Organizations.ToList());
     }
 
     [Fact]
     public async Task GivenUnitOfWork_WhenRollingBack_DataIsNotInserted()
     {
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Database.EnsureCreatedAsync(CancellationToken.None);
-        await using var sut = new UnitOfWork(dbContext);
+        await using var ctx = new ApplicationDbContext(_options);
+        await using var uow = new UnitOfWork(ctx);
 
-        await sut.BeginTransactionAsync(CancellationToken.None);
-        await dbContext.Organizations.AddAsync(Any.Organization(), CancellationToken.None);
-        await sut.RollbackAsync(CancellationToken.None);
+        await uow.BeginTransactionAsync(TestContext.Current.CancellationToken);
+        await ctx.Organizations.AddAsync(Any.Organization(), TestContext.Current.CancellationToken);
+        await uow.RollbackAsync(TestContext.Current.CancellationToken);
 
-        await using var newDbContext = new ApplicationDbContext(_options);
-        Assert.Empty(newDbContext.Organizations.ToList());
+        await using var verify = new ApplicationDbContext(_options);
+        Assert.Empty(verify.Organizations.ToList());
     }
 
     [Fact]
     public async Task GivenNestedUnitOfWorks_WhenCommitting_OuterTransactionCommits()
     {
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Database.EnsureCreatedAsync(CancellationToken.None);
-        await using (var sut1 = new UnitOfWork(dbContext))
-        {
-            await sut1.BeginTransactionAsync(CancellationToken.None);
+        await using var ctx = new ApplicationDbContext(_options);
 
-            await using (new UnitOfWork(dbContext))
+        await using (var outer = new UnitOfWork(ctx))
+        {
+            await outer.BeginTransactionAsync(TestContext.Current.CancellationToken);
+
+            // inner UoW inherits the same DbContext / transaction
+            await using (new UnitOfWork(ctx))
             {
-                await dbContext.Organizations.AddAsync(Any.Organization(), CancellationToken.None);
+                await ctx.Organizations.AddAsync(Any.Organization(), TestContext.Current.CancellationToken);
             }
 
-            await sut1.CommitAsync(CancellationToken.None);
+            await outer.CommitAsync(TestContext.Current.CancellationToken);
         }
 
-        await using var newDbContext = new ApplicationDbContext(_options);
-        Assert.Single(newDbContext.Organizations.ToList());
+        await using var verify = new ApplicationDbContext(_options);
+        Assert.Single(verify.Organizations.ToList());
     }
 
     [Fact]
     public async Task GivenNestedUnitOfWorks_WhenCommitting_OuterTransactionRollsBack()
     {
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Database.EnsureCreatedAsync(CancellationToken.None);
-        await using (var sut1 = new UnitOfWork(dbContext))
-        {
-            await sut1.BeginTransactionAsync(CancellationToken.None);
+        await using var ctx = new ApplicationDbContext(_options);
 
-            await using (var sut2 = new UnitOfWork(dbContext))
+        await using (var outer = new UnitOfWork(ctx))
+        {
+            await outer.BeginTransactionAsync(TestContext.Current.CancellationToken);
+
+            await using (var inner = new UnitOfWork(ctx))
             {
-                await sut2.BeginTransactionAsync(CancellationToken.None);
-                await dbContext.Organizations.AddAsync(Any.Organization(), CancellationToken.None);
-                await sut2.CommitAsync(CancellationToken.None);
+                await inner.BeginTransactionAsync(TestContext.Current.CancellationToken);
+                await ctx.Organizations.AddAsync(Any.Organization(), TestContext.Current.CancellationToken);
+                await inner.CommitAsync(TestContext.Current.CancellationToken);
             }
 
-            await sut1.RollbackAsync(CancellationToken.None);
+            await outer.RollbackAsync(TestContext.Current.CancellationToken);
         }
 
-        await using var newDbContext = new ApplicationDbContext(_options);
-        Assert.Empty(newDbContext.Organizations.ToList());
+        await using var verify = new ApplicationDbContext(_options);
+        Assert.Empty(verify.Organizations.ToList());
     }
 
     [Fact]
     public async Task GivenNestedUnitOfWorks_WhenCommitting_InnerTransactionDoesNotRollBack()
     {
-        await using var dbContext = new ApplicationDbContext(_options);
-        await dbContext.Database.EnsureCreatedAsync(CancellationToken.None);
-        await using (var sut1 = new UnitOfWork(dbContext))
-        {
-            await sut1.BeginTransactionAsync(CancellationToken.None);
+        await using var ctx = new ApplicationDbContext(_options);
 
-            await using (var sut2 = new UnitOfWork(dbContext))
+        await using (var outer = new UnitOfWork(ctx))
+        {
+            await outer.BeginTransactionAsync(TestContext.Current.CancellationToken);
+
+            await using (var inner = new UnitOfWork(ctx))
             {
-                await sut2.BeginTransactionAsync(CancellationToken.None);
-                await dbContext.Organizations.AddAsync(Any.Organization(), CancellationToken.None);
-                await sut2.RollbackAsync(CancellationToken.None);
+                await inner.BeginTransactionAsync(TestContext.Current.CancellationToken);
+                await ctx.Organizations.AddAsync(Any.Organization(), TestContext.Current.CancellationToken);
+                await inner.RollbackAsync(TestContext.Current.CancellationToken);
             }
 
-            await sut1.CommitAsync(CancellationToken.None);
+            await outer.CommitAsync(TestContext.Current.CancellationToken);
         }
 
-        await using var newDbContext = new ApplicationDbContext(_options);
-        Assert.Single(newDbContext.Organizations.ToList());
+        await using var verify = new ApplicationDbContext(_options);
+        Assert.Single(verify.Organizations.ToList());
     }
 
     [Fact]
     public async Task GivenNestedUnitOfWorks_WhenThrowingException_OuterTransactionRollsBack()
     {
-        bool exceptionWasThrown = false;
+        var exceptionThrown = false;
+
         try
         {
-            await using var dbContext = new ApplicationDbContext(_options);
-            await dbContext.Database.EnsureCreatedAsync(CancellationToken.None);
-            await using (var sut1 = new UnitOfWork(dbContext))
-            {
-                await sut1.BeginTransactionAsync(CancellationToken.None);
+            await using var ctx = new ApplicationDbContext(_options);
 
-                await using (var sut2 = new UnitOfWork(dbContext))
+            await using (var outer = new UnitOfWork(ctx))
+            {
+                await outer.BeginTransactionAsync(TestContext.Current.CancellationToken);
+
+                await using (var inner = new UnitOfWork(ctx))
                 {
-                    await sut2.BeginTransactionAsync(CancellationToken.None);
-                    await dbContext.Organizations.AddAsync(Any.Organization(), CancellationToken.None);
-                    await sut2.CommitAsync(CancellationToken.None);
+                    await inner.BeginTransactionAsync(TestContext.Current.CancellationToken);
+                    await ctx.Organizations.AddAsync(Any.Organization(), TestContext.Current.CancellationToken);
+                    await inner.CommitAsync(TestContext.Current.CancellationToken);
                 }
 
-                throw new Exception();
+                throw new Exception("simulated-failure");
             }
         }
         catch (Exception)
         {
-            exceptionWasThrown = true;
+            exceptionThrown = true;
         }
 
-        Assert.True(exceptionWasThrown);
-        await using var newDbContext = new ApplicationDbContext(_options);
-        Assert.Empty(newDbContext.Organizations.ToList());
+        Assert.True(exceptionThrown);
+
+        await using var verify = new ApplicationDbContext(_options);
+        Assert.Empty(verify.Organizations.ToList());
     }
 }

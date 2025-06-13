@@ -1,18 +1,13 @@
 namespace API.IntegrationTests.Setup;
 
+[Collection(IntegrationTestCollection.CollectionName)]
 public abstract class IntegrationTestBase : IAsyncLifetime
 {
     protected readonly IntegrationTestFixture Fixture;
 
     protected IntegrationTestBase(IntegrationTestFixture fixture)
-    {
-        Fixture = fixture;
-    }
+        => Fixture = fixture;
 
-    public virtual async ValueTask InitializeAsync()
-    {
-        await Fixture.ResetDatabaseAsync();
-    }
-
+    public virtual ValueTask InitializeAsync() => ValueTask.CompletedTask;
     public virtual ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

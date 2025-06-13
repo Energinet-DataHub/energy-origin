@@ -1,0 +1,40 @@
+ARG SDK_VERSION
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-noble AS build
+
+WORKDIR /src
+COPY *.sln .
+COPY */*.csproj ./*/*.csproj
+
+RUN dotnet restore
+
+COPY . .
+
+ARG PROJECT
+RUN <<EOR
+grep -q "<AssemblyName>" ${PROJECT}
+if [ $? -eq 0 ]; then
+    sed -i ${PROJECT} -e "s|<AssemblyName>.*</AssemblyName>|<AssemblyName>main</AssemblyName>|"
+else
+    sed -i ${PROJECT} -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
+fi
+EOR
+
+RUN dotnet tool restore --disable-parallel || true
+RUN dotnet publish "$PROJECT" -c Release -o /app/publish
+
+ARG RUNTIME_VERSION
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-noble-chiseled-extra AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+
+COPY --from=build /app/publish .
+COPY --from=busybox:uclibc /bin/cp /bin/cp
+COPY --from=busybox:uclibc /bin/cat /bin/cat
+COPY --from=busybox:uclibc /bin/ls /bin/ls
+
+ARG MIGRATIONS
+COPY --from=build /src/${MIGRATIONS:-dummy} /migrations/
+
+EXPOSE 8080
+EXPOSE 8081
+ENTRYPOINT ["/app/main"]
