@@ -72,6 +72,18 @@ public class Any
         return API.Models.Organization.Create(tin ?? Tin(), organizationName ?? OrganizationName());
     }
 
+    public static Organization TrialOrganization(Tin? tin = null, OrganizationName? organizationName = null)
+    {
+        return API.Models.Organization.CreateTrial(tin ?? Tin(), organizationName ?? OrganizationName());
+    }
+
+    public static Organization DeactivatedOrganization(Tin? tin = null, OrganizationName? organizationName = null)
+    {
+        var organization = API.Models.Organization.Create(tin ?? Tin(), organizationName ?? OrganizationName());
+        organization.Deactivate();
+        return organization;
+    }
+
     public static OrganizationId OrganizationId()
     {
         return EnergyOrigin.Domain.ValueObjects.OrganizationId.Create(Guid());
