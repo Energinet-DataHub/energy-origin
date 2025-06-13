@@ -101,7 +101,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         }
 
         return new ObjectResult(
-            new AuthorizationErrorResponse("Organization not whitelisted"))
+            new AuthorizationErrorResponse($"Organization not whitelisted {request.LoginType}"))
         {
             StatusCode = StatusCodes.Status403Forbidden
         };

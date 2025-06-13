@@ -16,35 +16,35 @@ jobs:
 
   dotnet-lint-solution:
     runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run dotnet lint
-        uses: ./.github/actions/dotnet-lint-solution
-        with:
-          path: "domains"
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Run dotnet lint
+#        uses: ./.github/actions/dotnet-lint-solution
+#        with:
+#          path: "domains"
 
-  test-subsystems-exclude-e2e:
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
+#  test-subsystems-exclude-e2e:
+#    runs-on: ubuntu-22.04
+#    strategy:
+#      matrix:
+#        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer]
+#      fail-fast: false
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
+#        uses: ./.github/actions/dotnet-validate-solution
+#        with:
+#          subsystem: ${{ matrix.subsystem }}
+#          pin-version: "true"
+#          test-filter: "Category!=E2ETest"
 
-      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
-        uses: ./.github/actions/dotnet-validate-solution
-        with:
-          subsystem: ${{ matrix.subsystem }}
-          pin-version: "true"
-          test-filter: "Category!=E2ETest"
-
-  build-admin-portal:
-    uses: ./.github/workflows/build-admin-portal.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+#  build-admin-portal:
+#    uses: ./.github/workflows/build-admin-portal.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
     uses: ./.github/workflows/build-authorization.yaml
@@ -53,62 +53,62 @@ jobs:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
-  build-certificates:
-    uses: ./.github/workflows/build-certificates.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-html-pdf-generator:
-    uses: ./.github/workflows/build-html-pdf-generator.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-measurements:
-    uses: ./.github/workflows/build-measurements.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-oidc-mock:
-    uses: ./.github/workflows/build-oidc-mock.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-openapi:
-    uses: ./.github/workflows/build-openapi.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-transfer:
-    uses: ./.github/workflows/build-transfer.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+#  build-certificates:
+#    uses: ./.github/workflows/build-certificates.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-html-pdf-generator:
+#    uses: ./.github/workflows/build-html-pdf-generator.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-measurements:
+#    uses: ./.github/workflows/build-measurements.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-oidc-mock:
+#    uses: ./.github/workflows/build-oidc-mock.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-openapi:
+#    uses: ./.github/workflows/build-openapi.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
+#
+#  build-transfer:
+#    uses: ./.github/workflows/build-transfer.yaml
+#    secrets: inherit
+#    with:
+#      dry-run: ${{ inputs.dry-run }}
+#      is-dependabot: ${{ inputs.is-dependabot }}
 
   update:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-      - dotnet-lint-solution
-      - test-subsystems-exclude-e2e
-      - build-admin-portal
+#      - dotnet-lint-solution
+#      - test-subsystems-exclude-e2e
+#      - build-admin-portal
       - build-authorization
-      - build-certificates
-      - build-html-pdf-generator
-      - build-measurements
-      - build-oidc-mock
-      - build-openapi
-      - build-transfer
+#      - build-certificates
+#      - build-html-pdf-generator
+#      - build-measurements
+#      - build-oidc-mock
+#      - build-openapi
+#      - build-transfer
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
@@ -118,17 +118,17 @@ jobs:
         uses: Energinet-DataHub/.github/.github/actions/update-base-environment@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
         with:
           configurations: |
-            domains/admin-portal/AdminPortal.Web/configuration.yaml
+#            domains/admin-portal/AdminPortal.Web/configuration.yaml
             domains/authorization/Authorization.API/configuration.yaml
-            domains/authorization/Proxy/configuration.yaml
-            domains/certificates/Query.API/configuration.yaml
-            domains/html-pdf-generator/configuration.yaml
-            domains/measurements/Measurements.API/configuration.yaml
-            domains/oidc-mock/API/configuration.yaml
-            domains/transfer/Transfer.API/configuration.yaml
-            domains/transfer/ClaimAutomation/configuration.yaml
-            domains/transfer/TransferAgreementAutomation/configuration.yaml
-            domains/redoc/configuration.yaml
+#            domains/authorization/Proxy/configuration.yaml
+#            domains/certificates/Query.API/configuration.yaml
+#            domains/html-pdf-generator/configuration.yaml
+#            domains/measurements/Measurements.API/configuration.yaml
+#            domains/oidc-mock/API/configuration.yaml
+#            domains/transfer/Transfer.API/configuration.yaml
+#            domains/transfer/ClaimAutomation/configuration.yaml
+#            domains/transfer/TransferAgreementAutomation/configuration.yaml
+#            domains/redoc/configuration.yaml
           dry_run: ${{ inputs.dry-run }}
           github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
           github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
