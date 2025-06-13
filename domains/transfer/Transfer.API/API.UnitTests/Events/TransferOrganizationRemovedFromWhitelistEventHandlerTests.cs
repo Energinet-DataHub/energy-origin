@@ -20,7 +20,7 @@ public class TransferOrganizationRemovedFromWhitelistEventHandlerTests
         var sut = new TransferOrganizationRemovedFromWhitelistEventHandler(mediatrMock, Substitute.For<ILogger<TransferOrganizationRemovedFromWhitelistEventHandler>>());
 
         var mockContext = Substitute.For<ConsumeContext<OrganizationRemovedFromWhitelist>>();
-        var message = OrganizationRemovedFromWhitelist.Create(Guid.NewGuid(), Any.Tin().ToString());
+        var message = OrganizationRemovedFromWhitelist.Create(Guid.NewGuid(), EnergyTrackAndTrace.Testing.Any.Tin().ToString());
         mockContext.Message.Returns(message);
 
         await sut.Consume(mockContext);
