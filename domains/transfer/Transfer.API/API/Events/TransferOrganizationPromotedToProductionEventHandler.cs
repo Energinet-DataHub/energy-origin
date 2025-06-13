@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using API.Transfer.Api._Features_;
 using EnergyOrigin.Domain.ValueObjects;
