@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -11,10 +11,10 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Google.Protobuf" Version="3.31.1" />
-		<PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
-		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.71.0" />
-		<PackageReference Include="Grpc.Tools" Version="2.72.0" PrivateAssets="all" />
+		<PackageReference Include="Google.Protobuf" />
+		<PackageReference Include="Grpc.AspNetCore" />
+		<PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" />
+		<PackageReference Include="Grpc.Tools" PrivateAssets="all" />
 	</ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -7,15 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.Core.Testing" Version="2.46.6" />
-    <PackageReference Include="NSubstitute" Version="5.3.0" />
-    <PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" Version="1.2.0" />
-    <PackageReference Include="Testcontainers" Version="4.5.0" />
-    <PackageReference Include="Testcontainers.PostgreSql" Version="4.5.0" />
-    <PackageReference Include="Testcontainers.RabbitMq" Version="4.5.0" />
-    <PackageReference Include="xunit.v3.assert" Version="2.0.3" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
-    <PackageReference Include="xunit.v3.extensibility.core" Version="2.0.3" />
+    <PackageReference Include="Grpc.Core.Testing" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="ProjectOrigin.HierarchicalDeterministicKeys" />
+    <PackageReference Include="Testcontainers" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.RabbitMq" />
+    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="YamlDotNet" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 
   <ItemGroup>
