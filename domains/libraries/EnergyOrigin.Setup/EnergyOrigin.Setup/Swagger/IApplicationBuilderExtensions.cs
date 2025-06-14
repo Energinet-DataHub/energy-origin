@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
+using Microsoft.OpenApi.Writers;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace EnergyOrigin.Setup.Swagger;
@@ -41,9 +41,11 @@ public static class SwaggerApplicationBuilderExtensions
         var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
         var swagger = swaggerProvider.GetSwagger(apiVersion);
 
-        File.WriteAllText(
-            Path.Combine(env.ContentRootPath, filename),
-            swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
-        );
+        using var stringWriter = new StringWriter();
+        var yamlWriter = new OpenApiYamlWriter(stringWriter);
+
+        swagger.SerializeAsV3(yamlWriter);
+        yamlWriter.Flush();
+        File.WriteAllText(Path.Combine(env.ContentRootPath, filename), stringWriter.ToString());
     }
 }
