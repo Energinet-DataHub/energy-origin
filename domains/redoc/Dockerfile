@@ -1,6 +1,7 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0.300-noble AS builder
+FROM mcr.microsoft.com/dotnet/sdk:9.0.301-noble AS builder
 
 WORKDIR /app
+COPY Directory.Packages.props .
 COPY domains/authorization domains/authorization
 COPY domains/certificates domains/certificates
 COPY domains/measurements domains/measurements
