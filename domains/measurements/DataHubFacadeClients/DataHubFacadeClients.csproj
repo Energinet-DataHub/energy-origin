@@ -13,10 +13,10 @@
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	</PropertyGroup>
 	<ItemGroup>
-	  <PackageReference Include="Google.Protobuf" Version="3.29.3" />
-	  <PackageReference Include="Grpc.AspNetCore" Version="2.67.0" />
-	  <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.67.0" />
-	  <PackageReference Include="Grpc.Tools" Version="2.70.0">
+	  <PackageReference Include="Google.Protobuf" />
+	  <PackageReference Include="Grpc.AspNetCore" />
+	  <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" />
+	  <PackageReference Include="Grpc.Tools">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
