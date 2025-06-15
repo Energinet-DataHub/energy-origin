@@ -117,7 +117,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         var loginType = request.LoginType.ToLowerInvariant();
 
         if (queryHandlerResult.IsValid)
-            return Ok(new { status = loginType });
+            return Ok();
 
         var failureGuid = (queryHandlerResult.OrgStatus, loginType) switch
         {
