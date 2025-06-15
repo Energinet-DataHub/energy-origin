@@ -16,7 +16,6 @@ namespace API.Authorization.Controllers.Internal;
 [Authorize(Policy = Policy.B2CInternal)]
 [Route("api/authorization")]
 [ApiVersionNeutral]
-[ApiExplorerSettings(IgnoreApi = true)]
 public class B2CInternalController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
