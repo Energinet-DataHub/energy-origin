@@ -105,7 +105,7 @@ public class TermsControllerTests : IntegrationTestBase
         var orgCvr = Any.Tin();
 
         var organization = Organization.Create(orgCvr, OrganizationName.Create("Existing Org"));
-        organization.AcceptTerms(terms);
+        organization.AcceptTerms(terms, true);
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Existing User"));
         await SeedOrganizationAndUser(organization, user);
 
@@ -127,7 +127,9 @@ public class TermsControllerTests : IntegrationTestBase
 
     private async Task SeedOrganizationAndUser(Organization organization, User user)
     {
+        var orgCvr = organization.Tin!.Value;
         await using var dbContext = new ApplicationDbContext(_options);
+        await dbContext.Whitelisted.AddAsync(Whitelisted.Create(Tin.Create(orgCvr)), CancellationToken.None);
         await dbContext.Organizations.AddAsync(organization);
         await dbContext.Users.AddAsync(user);
         await dbContext.SaveChangesAsync();

@@ -40,6 +40,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .IsRequired();
 
         modelBuilder.Entity<Organization>().Property(o => o.Tin).HasConversion(new NullableTinValueConverter());
+        modelBuilder.Entity<Organization>().Property(r => r.Status).HasConversion<string>().HasColumnType("text").IsRequired();
 
         modelBuilder.Entity<Organization>().HasIndex(o => o.Tin).IsUnique();
 

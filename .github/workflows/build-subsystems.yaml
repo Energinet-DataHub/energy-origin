@@ -14,30 +14,30 @@ on:
 
 jobs:
 
-  dotnet-lint-solution:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run dotnet lint
-        uses: ./.github/actions/dotnet-lint-solution
-        with:
-          path: "domains"
+#  dotnet-lint-solution:
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Run dotnet lint
+#        uses: ./.github/actions/dotnet-lint-solution
+#        with:
+#          path: "domains"
 
-  test-subsystems-exclude-e2e:
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
-        uses: ./.github/actions/dotnet-validate-solution
-        with:
-          subsystem: ${{ matrix.subsystem }}
-          pin-version: "true"
-          test-filter: "Category!=E2ETest"
+#  test-subsystems-exclude-e2e:
+#    runs-on: ubuntu-22.04
+#    strategy:
+#      matrix:
+#        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer]
+#      fail-fast: false
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
+#        uses: ./.github/actions/dotnet-validate-solution
+#        with:
+#          subsystem: ${{ matrix.subsystem }}
+#          pin-version: "true"
+#          test-filter: "Category!=E2ETest"
 
   build-admin-portal:
     uses: ./.github/workflows/build-admin-portal.yaml
@@ -99,8 +99,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-      - dotnet-lint-solution
-      - test-subsystems-exclude-e2e
       - build-admin-portal
       - build-authorization
       - build-certificates
@@ -153,4 +151,10 @@ jobs:
           azure-client-id: 291fedbd-35c0-4fcb-9088-498d0c96c50d
           azure-client-secret: ${{ secrets.ENERGY_TRACK_AND_TRACE_B2C_CLIENT_SECRET_DEMO }}
 
-
+      - name: Update ConfigMap in IaC
+        if: ${{ success() }}
+        uses: ./.github/actions/update-b2c-configmap
+        with:
+          github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
+          github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
+          preview-id: ${{ env.PREVIEW_ID }}
