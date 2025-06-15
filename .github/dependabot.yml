@@ -7,8 +7,8 @@ updates:
       cronjob: "0 7 * * 1-5"
       timezone: "Europe/Copenhagen"
     groups:
-      applies-to: [ "version-updates", "security-updates" ]
       dependencies:
+        applies-to: [ "version-updates", "security-updates" ]
         patterns: [ "*" ]
     open-pull-requests-limit: 1
 
@@ -19,8 +19,8 @@ updates:
       cronjob: "0 7 * * 1-5"
       timezone: "Europe/Copenhagen"
     groups:
-      applies-to: [ "version-updates", "security-updates" ]
       dependencies:
+        applies-to: [ "version-updates", "security-updates" ]
         patterns: [ "*" ]
     open-pull-requests-limit: 1
 
@@ -31,8 +31,8 @@ updates:
       cronjob: "0 7 * * 1-5"
       timezone: "Europe/Copenhagen"
     groups:
-      applies-to: [ "version-updates", "security-updates" ]
       dependencies:
+        applies-to: [ "version-updates", "security-updates" ]
         patterns: [ "*" ]
     open-pull-requests-limit: 1
 
@@ -43,8 +43,8 @@ updates:
       cronjob: "0 7 * * 1-5"
       timezone: "Europe/Copenhagen"
     groups:
-      applies-to: [ "version-updates", "security-updates" ]
       dependencies:
+        applies-to: [ "version-updates", "security-updates" ]
         patterns: [ "*" ]
     open-pull-requests-limit: 1
 
@@ -55,8 +55,8 @@ updates:
       cronjob: "0 7 * * 1-5"
       timezone: "Europe/Copenhagen"
     groups:
-      applies-to: [ "version-updates", "security-updates" ]
       dependencies:
+        applies-to: [ "version-updates", "security-updates" ]
         patterns: [ "*" ]
     open-pull-requests-limit: 1
 
@@ -72,8 +72,8 @@ updates:
       - dependency-name: "MassTransit*" # https://masstransit.io/introduction/v9-announcement#we-are-transitioning-to-a-commercial-model
         versions: [ ">=9.0.0" ]
     groups:
-      applies-to: [ "version-updates", "security-updates" ]
       dependencies:
+        applies-to: [ "version-updates", "security-updates" ]
         patterns: [ "*" ]
     open-pull-requests-limit: 1
 
@@ -84,7 +84,7 @@ updates:
       cronjob: "0 7 * * 1-5"
       timezone: "Europe/Copenhagen"
     groups:
-      applies-to: [ "version-updates", "security-updates" ]
       dependencies:
+        applies-to: [ "version-updates", "security-updates" ]
         patterns: [ "*" ]
     open-pull-requests-limit: 1
