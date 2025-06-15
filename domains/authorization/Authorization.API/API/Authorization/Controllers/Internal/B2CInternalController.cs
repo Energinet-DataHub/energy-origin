@@ -107,7 +107,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost]
-    [Route("organization-status")]
+    [Route("organization-status/")]
     public async Task<ActionResult> GetDoesLoginTypeMatch(
         [FromServices] ILogger<B2CInternalController> logger,
         [FromBody] DoesOrganizationStatusMatchLoginTypeRequest request)
