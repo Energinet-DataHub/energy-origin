@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_.Internal;
 using API.Models;
@@ -119,6 +120,8 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         if (queryHandlerResult.IsValid)
             return Ok();
 
+
+
         var failureGuid = (queryHandlerResult.OrgStatus, loginType) switch
         {
             (OrganizationStatus.Trial, "normal") => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
@@ -128,12 +131,8 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             _ => LoginFailureReasons.UnhandledException
         };
 
-        var response = new AuthorizationErrorResponse(
-            UserMessage: failureGuid,
-            Version: "1.0",
-            Status: 409);
-
-        return new ObjectResult(response)
+        return new ObjectResult(
+            new AuthorizationErrorResponse($"Organization not whitelisted {request.LoginType}"))
         {
             StatusCode = StatusCodes.Status403Forbidden
         };
