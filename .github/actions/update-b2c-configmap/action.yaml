@@ -1,0 +1,96 @@
+name: Update B2C policy references in ConfigMaps
+description: |
+  Replace the hard-coded OIDC policy name in authorization-cm.yaml
+  with the policy that was just generated for the current preview branch.
+inputs:
+  preview-id:
+    description: Lower-case preview id (the same value you put at the end of the policy name)
+    required: true
+
+  github-app-id:
+    description: ID of the GitHub App that has write access to the IaC repo
+    required: true
+  github-app-private-key:
+    description: Private key for that GitHub App (PEM, multi-line secret)
+    required: true
+
+  repository:
+    description: Target IaC repository
+    default: ${{ github.repository_owner }}/eo-base-environment
+    required: false
+  branch:
+    description: Preview branch inside the IaC repo (usually the same name as in the caller repo)
+    default: ${{ github.head_ref || github.ref_name }}
+    required: false
+
+  dry-run:
+    description: Don’t commit – only show the diff in the logs
+    default: "false"
+    required: false
+runs:
+  using: composite
+  steps:
+
+    - name: Generate installation token
+      id: token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.github-app-id }}
+        private-key: ${{ inputs.github-app-private-key }}
+        owner: ${{ github.repository_owner }}
+
+    - name: Check out IaC repository
+      uses: actions/checkout@v4
+      with:
+        path: env
+        repository: ${{ inputs.repository }}
+        ref: main
+        token: ${{ steps.token.outputs.token }}
+
+    - name: Create / switch preview branch
+      shell: bash
+      working-directory: env
+      run: |
+        set -euo pipefail
+        if ! git rev-parse --verify --quiet "${{ inputs.branch }}"; then
+          git switch -c "${{ inputs.branch }}"
+        else
+          git switch "${{ inputs.branch }}"
+        fi
+
+    - name: Patch authorization-cm.yaml
+      shell: bash
+      working-directory: env
+      env:
+        PREVIEW_ID: ${{ inputs.preview-id }}
+      run: |
+        set -euo pipefail
+
+        FILE="k8s/energy-origin-apps/authorization/shared/resources/preview/authorization-configmap.yaml"
+
+        POLICY="B2C_1A_OIDCMOCK_${PREVIEW_ID}"
+        PREFIX="https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com"
+        ISSUER_URL="${PREFIX}/${POLICY}/v2.0/"
+        WELLKNOWN_URL="${ISSUER_URL}.well-known/openid-configuration"
+
+        echo "→ Setting .data.Frontend__AzureB2C__Issuer to ${ISSUER_URL}"
+        yq -ie ".data.Frontend__AzureB2C__Issuer = \"${ISSUER_URL}\"" "${FILE}"
+
+        echo "→ Setting .data.B2C__MitIDCustomPolicyWellKnownUrl to ${WELLKNOWN_URL}"
+        yq -ie ".data.B2C__MitIDCustomPolicyWellKnownUrl = \"${WELLKNOWN_URL}\"" "${FILE}"
+
+    - name: Show diff (dry-run only)
+      if: inputs.dry-run == 'true'
+      shell: bash
+      working-directory: env
+      run: git --no-pager diff
+
+    - name: Commit & push
+      if: inputs.dry-run != 'true'
+      uses: EndBug/add-and-commit@v9
+      with:
+        cwd: env
+        default_author: github_actions
+        message: "chore: point ConfigMap at ${POLICY}"
+        new_branch: ${{ inputs.branch }}
+        push: --force-with-lease --set-upstream origin ${{ inputs.branch }}

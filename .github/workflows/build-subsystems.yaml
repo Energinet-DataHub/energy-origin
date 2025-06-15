@@ -14,8 +14,8 @@ on:
 
 jobs:
 
-  dotnet-lint-solution:
-    runs-on: ubuntu-22.04
+#  dotnet-lint-solution:
+#    runs-on: ubuntu-22.04
 #    steps:
 #      - uses: actions/checkout@v4
 #      - name: Run dotnet lint
@@ -39,12 +39,12 @@ jobs:
 #          pin-version: "true"
 #          test-filter: "Category!=E2ETest"
 
-#  build-admin-portal:
-#    uses: ./.github/workflows/build-admin-portal.yaml
-#    secrets: inherit
-#    with:
-#      dry-run: ${{ inputs.dry-run }}
-#      is-dependabot: ${{ inputs.is-dependabot }}
+  build-admin-portal:
+    uses: ./.github/workflows/build-admin-portal.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
     uses: ./.github/workflows/build-authorization.yaml
@@ -53,62 +53,60 @@ jobs:
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
-#  build-certificates:
-#    uses: ./.github/workflows/build-certificates.yaml
-#    secrets: inherit
-#    with:
-#      dry-run: ${{ inputs.dry-run }}
-#      is-dependabot: ${{ inputs.is-dependabot }}
-#
-#  build-html-pdf-generator:
-#    uses: ./.github/workflows/build-html-pdf-generator.yaml
-#    secrets: inherit
-#    with:
-#      dry-run: ${{ inputs.dry-run }}
-#      is-dependabot: ${{ inputs.is-dependabot }}
-#
-#  build-measurements:
-#    uses: ./.github/workflows/build-measurements.yaml
-#    secrets: inherit
-#    with:
-#      dry-run: ${{ inputs.dry-run }}
-#      is-dependabot: ${{ inputs.is-dependabot }}
-#
-#  build-oidc-mock:
-#    uses: ./.github/workflows/build-oidc-mock.yaml
-#    secrets: inherit
-#    with:
-#      dry-run: ${{ inputs.dry-run }}
-#      is-dependabot: ${{ inputs.is-dependabot }}
-#
-#  build-openapi:
-#    uses: ./.github/workflows/build-openapi.yaml
-#    secrets: inherit
-#    with:
-#      dry-run: ${{ inputs.dry-run }}
-#      is-dependabot: ${{ inputs.is-dependabot }}
-#
-#  build-transfer:
-#    uses: ./.github/workflows/build-transfer.yaml
-#    secrets: inherit
-#    with:
-#      dry-run: ${{ inputs.dry-run }}
-#      is-dependabot: ${{ inputs.is-dependabot }}
+  build-certificates:
+    uses: ./.github/workflows/build-certificates.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-html-pdf-generator:
+    uses: ./.github/workflows/build-html-pdf-generator.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-measurements:
+    uses: ./.github/workflows/build-measurements.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-oidc-mock:
+    uses: ./.github/workflows/build-oidc-mock.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-openapi:
+    uses: ./.github/workflows/build-openapi.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
+
+  build-transfer:
+    uses: ./.github/workflows/build-transfer.yaml
+    secrets: inherit
+    with:
+      dry-run: ${{ inputs.dry-run }}
+      is-dependabot: ${{ inputs.is-dependabot }}
 
   update:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-#      - dotnet-lint-solution
-#      - test-subsystems-exclude-e2e
-#      - build-admin-portal
+      - build-admin-portal
       - build-authorization
-#      - build-certificates
-#      - build-html-pdf-generator
-#      - build-measurements
-#      - build-oidc-mock
-#      - build-openapi
-#      - build-transfer
+      - build-certificates
+      - build-html-pdf-generator
+      - build-measurements
+      - build-oidc-mock
+      - build-openapi
+      - build-transfer
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
@@ -118,17 +116,17 @@ jobs:
         uses: Energinet-DataHub/.github/.github/actions/update-base-environment@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
         with:
           configurations: |
-#            domains/admin-portal/AdminPortal.Web/configuration.yaml
+            domains/admin-portal/AdminPortal.Web/configuration.yaml
             domains/authorization/Authorization.API/configuration.yaml
-#            domains/authorization/Proxy/configuration.yaml
-#            domains/certificates/Query.API/configuration.yaml
-#            domains/html-pdf-generator/configuration.yaml
-#            domains/measurements/Measurements.API/configuration.yaml
-#            domains/oidc-mock/API/configuration.yaml
-#            domains/transfer/Transfer.API/configuration.yaml
-#            domains/transfer/ClaimAutomation/configuration.yaml
-#            domains/transfer/TransferAgreementAutomation/configuration.yaml
-#            domains/redoc/configuration.yaml
+            domains/authorization/Proxy/configuration.yaml
+            domains/certificates/Query.API/configuration.yaml
+            domains/html-pdf-generator/configuration.yaml
+            domains/measurements/Measurements.API/configuration.yaml
+            domains/oidc-mock/API/configuration.yaml
+            domains/transfer/Transfer.API/configuration.yaml
+            domains/transfer/ClaimAutomation/configuration.yaml
+            domains/transfer/TransferAgreementAutomation/configuration.yaml
+            domains/redoc/configuration.yaml
           dry_run: ${{ inputs.dry-run }}
           github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
           github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
@@ -153,4 +151,10 @@ jobs:
           azure-client-id: 291fedbd-35c0-4fcb-9088-498d0c96c50d
           azure-client-secret: ${{ secrets.ENERGY_TRACK_AND_TRACE_B2C_CLIENT_SECRET_DEMO }}
 
-
+      - name: Update ConfigMap in IaC
+        if: ${{ success() }}
+        uses: ./.github/actions/update-b2c-configmap
+        with:
+          github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
+          github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
+          preview-id: ${{ env.PREVIEW_ID }}
