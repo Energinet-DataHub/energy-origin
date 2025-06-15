@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using API.Authorization._Features_.Internal;
 using API.Models;
@@ -120,8 +119,6 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         if (queryHandlerResult.IsValid)
             return Ok();
 
-
-
         var failureGuid = (queryHandlerResult.OrgStatus, loginType) switch
         {
             (OrganizationStatus.Trial, "normal") => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
@@ -131,10 +128,13 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             _ => LoginFailureReasons.UnhandledException
         };
 
-        return new ObjectResult(
-            new AuthorizationErrorResponse($"Organization not whitelisted {request.LoginType}"))
+        return new ObjectResult(new AuthorizationErrorResponse(
+            UserMessage: failureGuid,
+            Version: "1.0",
+            Status: StatusCodes.Status409Conflict
+        ))
         {
-            StatusCode = StatusCodes.Status403Forbidden
+            StatusCode = StatusCodes.Status409Conflict
         };
     }
 }
