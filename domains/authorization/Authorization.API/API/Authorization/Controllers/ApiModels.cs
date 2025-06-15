@@ -52,6 +52,7 @@ public record AuthorizationErrorResponse(
     [property: JsonPropertyName("status")] int Status = StatusCodes.Status409Conflict
 );
 
+
 public static class LoginFailureReasons
 {
     public const string TrialOrganizationIsNotAllowedToLogInAsNormalOrganization = "a1b2c3d4-e111-4444-aaaa-aaaaaaaaaaaa - Trial Organization is not allowed to log in as a Normal Organization - Please log in as Trial Organization, or contact support, if you think this is an error";
