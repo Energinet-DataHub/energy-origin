@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
+using Microsoft.OpenApi.Writers;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace EnergyOrigin.Setup.Swagger;
@@ -34,12 +33,12 @@ public static class SwaggerApplicationBuilderExtensions
 
     public static void BuildSwaggerYamlFile(this WebApplication app, IWebHostEnvironment env, string filename, string apiVersion = ApiVersions.Version1)
     {
-        var swaggerProvider = app.Services.GetRequiredService<ISwaggerProvider>();
-        var swagger = swaggerProvider.GetSwagger(apiVersion);
+        var swagger = app.Services
+            .GetRequiredService<ISwaggerProvider>()
+            .GetSwagger(apiVersion);
 
-        File.WriteAllText(
-            Path.Combine(env.ContentRootPath, filename),
-            swagger.SerializeAsYaml(OpenApiSpecVersion.OpenApi3_0)
-        );
+        using var writer = new StringWriter();
+        swagger.SerializeAsV3(new OpenApiYamlWriter(writer));
+        File.WriteAllText(Path.Combine(env.ContentRootPath, filename), writer.ToString());
     }
 }

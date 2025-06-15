@@ -1,20 +1,83 @@
 version: 2
 updates:
+  - package-ecosystem: devcontainers
+    directory: /
+    schedule:
+      interval: "cron"
+      cronjob: "0 7 * * 1-5"
+      timezone: "Europe/Copenhagen"
+    groups:
+      dependencies:
+        patterns: [ "*" ]
+    open-pull-requests-limit: 1
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: "cron"
+      cronjob: "0 7 * * 1-5"
+      timezone: "Europe/Copenhagen"
     groups:
-      pages-and-artifact-actions:
-        patterns:
-          - actions/*pages*
-          - actions/*-artifact
+      dependencies:
+        patterns: [ "*" ]
+    open-pull-requests-limit: 1
+
   - package-ecosystem: docker
-    directory: /libraries/docker/static-files
+    directory: /
     schedule:
-      interval: daily
+      interval: "cron"
+      cronjob: "0 7 * * 1-5"
+      timezone: "Europe/Copenhagen"
+    groups:
+      dependencies:
+        patterns: [ "*" ]
+    open-pull-requests-limit: 1
+
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: "cron"
+      cronjob: "0 7 * * 1-5"
+      timezone: "Europe/Copenhagen"
+    groups:
+      dependencies:
+        patterns: [ "*" ]
+    open-pull-requests-limit: 1
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: "cron"
+      cronjob: "0 7 * * 1-5"
+      timezone: "Europe/Copenhagen"
+    groups:
+      dependencies:
+        patterns: [ "*" ]
+    open-pull-requests-limit: 1
+
   - package-ecosystem: nuget
-    directory: /domains
+    directory: /
     schedule:
-      interval: daily
-    open-pull-requests-limit: 0
+      interval: "cron"
+      cronjob: "0 7 * * 1-5"
+      timezone: "Europe/Copenhagen"
+    ignore:
+      - dependency-name: "FluentAssertions*" # https://fluentassertions.com/releases/#800
+        versions: [ ">=8.0.0" ]
+      - dependency-name: "MassTransit*" # https://masstransit.io/introduction/v9-announcement#we-are-transitioning-to-a-commercial-model
+        versions: [ ">=9.0.0" ]
+    groups:
+      dependencies:
+        patterns: [ "*" ]
+    open-pull-requests-limit: 1
+
+  - package-ecosystem: dotnet-sdk
+    directory: /
+    schedule:
+      interval: "cron"
+      cronjob: "0 7 * * 1-5"
+      timezone: "Europe/Copenhagen"
+    groups:
+      dependencies:
+        patterns: [ "*" ]
+    open-pull-requests-limit: 1
