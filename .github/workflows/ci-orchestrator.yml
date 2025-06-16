@@ -36,10 +36,6 @@ jobs:
     uses: ./.github/workflows/dependabot-validate.yaml
     secrets: inherit
 
-  structurizr-update-pages:
-    uses: ./.github/workflows/structurizr-update-pages.yaml
-    secrets: inherit
-
   workflow-validate:
     runs-on: ubuntu-latest
     steps:
@@ -58,7 +54,6 @@ jobs:
         build-subsystems,
         check-licenses,
         dependabot-validate,
-        structurizr-update-pages,
         workflow-validate,
       ]
     if: always()
