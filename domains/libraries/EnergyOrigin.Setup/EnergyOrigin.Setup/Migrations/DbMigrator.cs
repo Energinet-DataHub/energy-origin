@@ -75,28 +75,16 @@ public class DbMigrator
         }
     }
 
-    private sealed class LoggerWrapper : IUpgradeLog
+    private sealed class LoggerWrapper(ILogger logger) : IUpgradeLog
     {
-        private readonly ILogger _logger;
+        private static string BuildMessage(string fmt, object[] args) =>
+            args is { Length: > 0 } ? string.Format(fmt, args) : fmt;
 
-        public LoggerWrapper(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        public void WriteError(string format, params object[] args)
-        {
-            _logger.LogError(format, args);
-        }
-
-        public void WriteInformation(string format, params object[] args)
-        {
-            _logger.LogInformation(format, args);
-        }
-
-        public void WriteWarning(string format, params object[] args)
-        {
-            _logger.LogWarning(format, args);
-        }
+        public void LogTrace(string fmt, params object[] args) => logger.LogTrace("{message}", BuildMessage(fmt, args));
+        public void LogDebug(string fmt, params object[] args) => logger.LogDebug("{message}", BuildMessage(fmt, args));
+        public void LogInformation(string fmt, params object[] args) => logger.LogInformation("{message}", BuildMessage(fmt, args));
+        public void LogWarning(string fmt, params object[] args) => logger.LogWarning("{message}", BuildMessage(fmt, args));
+        public void LogError(string fmt, params object[] args) => logger.LogError("{message}", BuildMessage(fmt, args));
+        public void LogError(Exception ex, string fmt, params object[] a) => logger.LogError(ex, "{message}", BuildMessage(fmt, a));
     }
 }

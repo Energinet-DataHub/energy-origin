@@ -3,25 +3,25 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using API.Transfer.Api.Repository;
 using API.UnitOfWork;
-using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using API.ReportGenerator.Infrastructure;
 using API.ReportGenerator.Processing;
 using API.ReportGenerator.Rendering;
-using DataContext.Models;
 
 namespace API.Transfer.Api._Features_;
 
-public class CreateReportRequestCommandHandler
-    : IRequestHandler<CreateReportRequestCommand, Unit>
+public record PopulateReportCommand(
+    Guid ReportId
+) : IRequest<Unit>;
+
+public class PopulateReportCommandHandler
+    : IRequestHandler<PopulateReportCommand, Unit>
 {
-    private readonly IReportRepository _reports;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
-    private readonly ILogger<CreateReportRequestCommandHandler> _logger;
+    private readonly ILogger<PopulateReportCommandHandler> _logger;
     private readonly IEnergyDataFetcher _dataFetcher;
     private readonly IEnergyDataFormatter _dataFormatter;
     private readonly IHeadlinePercentageProcessor _percentageProcessor;
@@ -33,11 +33,10 @@ public class CreateReportRequestCommandHandler
     private readonly ILogoRenderer _logoRenderer;
     private readonly IStyleRenderer _styleRenderer;
 
-    public CreateReportRequestCommandHandler(
-        IReportRepository reports,
+    public PopulateReportCommandHandler(
         IUnitOfWork unitOfWork,
         IMediator mediator,
-        ILogger<CreateReportRequestCommandHandler> logger,
+        ILogger<PopulateReportCommandHandler> logger,
         IEnergyDataFetcher dataFetcher,
         IEnergyDataFormatter dataFormatter,
         IHeadlinePercentageProcessor percentageProcessor,
@@ -49,7 +48,6 @@ public class CreateReportRequestCommandHandler
         ILogoRenderer logoRenderer,
         IStyleRenderer styleRenderer)
     {
-        _reports = reports;
         _unitOfWork = unitOfWork;
         _mediator = mediator;
         _logger = logger;
@@ -66,25 +64,20 @@ public class CreateReportRequestCommandHandler
     }
 
     public async Task<Unit> Handle(
-        CreateReportRequestCommand request,
+        PopulateReportCommand request,
         CancellationToken cancellationToken)
     {
-        var report = Report.Create(
-            id: request.ReportId,
-            organizationId: request.OrganizationId,
-            organizationName: request.OrganizationName,
-            organizationTin: request.OrganizationTin,
-            startDate: request.StartDate,
-            endDate: request.EndDate);
-
-        await _reports.AddAsync(report, cancellationToken);
-        await _unitOfWork.SaveAsync();
+        var report = await _unitOfWork.ReportRepository.GetByIdAsync(request.ReportId, cancellationToken);
+        if (report == null)
+        {
+            throw new ArgumentNullException($"Cannot generate report with unknown report id {request.ReportId}");
+        }
 
         try
         {
-            var from = DateTimeOffset.FromUnixTimeSeconds(request.StartDate.EpochSeconds);
-            var to = DateTimeOffset.FromUnixTimeSeconds(request.EndDate.EpochSeconds);
-            var (consumptionRaw, claims) = await _dataFetcher.GetAsync(request.OrganizationId, from, to, cancellationToken);
+            var from = DateTimeOffset.FromUnixTimeSeconds(report.StartDate.EpochSeconds);
+            var to = DateTimeOffset.FromUnixTimeSeconds(report.EndDate.EpochSeconds);
+            var (consumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, cancellationToken);
 
             var (consumption, strictProd, allProd) = _dataFormatter.Format(consumptionRaw, claims);
 
@@ -98,8 +91,8 @@ public class CreateReportRequestCommandHandler
 
             // Render HTML fragments
             var headerHtml = _headerRenderer.Render(
-                HttpUtility.HtmlEncode(request.OrganizationName.Value),
-                HttpUtility.HtmlEncode(request.OrganizationTin.Value));
+                HttpUtility.HtmlEncode(report.OrganizationName.Value),
+                HttpUtility.HtmlEncode(report.OrganizationTin.Value));
             var headlineHtml = _percentageRenderer.Render(headlinePercent, periodLabel);
             var svgHtml = _svgRenderer.Render(hourlyData).Svg;
             var logoHtml = _logoRenderer.Render();
@@ -192,18 +185,9 @@ public class CreateReportRequestCommandHandler
         }
 
         // Persist final status
-        await _reports.UpdateAsync(report, cancellationToken);
+        await _unitOfWork.ReportRepository.UpdateAsync(report, cancellationToken);
         await _unitOfWork.SaveAsync();
 
         return Unit.Value;
     }
 }
-
-public record CreateReportRequestCommand(
-    Guid ReportId,
-    OrganizationId OrganizationId,
-    OrganizationName OrganizationName,
-    Tin OrganizationTin,
-    UnixTimestamp StartDate,
-    UnixTimestamp EndDate
-) : IRequest<Unit>;

@@ -56,6 +56,38 @@ public class ReportsControllerTests
     }
 
     [Fact]
+    public async Task RequestReportGeneration_WhenEndDateIsLessThan7DaysFromStartDate_BadRequest()
+    {
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var startDate = DateTimeOffset.UtcNow.AddDays(-6).ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var requestBody = new { StartDate = startDate, EndDate = endDate };
+
+        var response = await client.PostAsJsonAsync($"/api/reports?organizationId={orgId}", requestBody, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task RequestReportGeneration_WhenEndDateIsMoreThan1YearFromStartDate_BadRequest()
+    {
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var startDate = DateTimeOffset.UtcNow.AddYears(1).AddDays(1).ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var requestBody = new { StartDate = startDate, EndDate = endDate };
+
+        var response = await client.PostAsJsonAsync($"/api/reports?organizationId={orgId}", requestBody, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task
         GivenReportsFromMultipleOrganizations_WhenGettingStatuses_ThenOnlyReportsFromRequestedOrganizationAreReturned()
     {
