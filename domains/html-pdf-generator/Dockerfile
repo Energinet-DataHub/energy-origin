@@ -1,17 +1,26 @@
-FROM node:24-slim
+FROM cgr.dev/chainguard/wolfi-base:latest AS build
+
+RUN apk add --no-cache \
+        nodejs-24 \
+        npm \
+        chromium
 
 WORKDIR /app
+COPY package.json .
+RUN npm install --omit=dev
+COPY server.js .
 
-ENV PLAYWRIGHT_BROWSERS_PATH=/app/ms-playwright
+FROM cgr.dev/chainguard/glibc-dynamic:latest
 
-COPY . .
+COPY --from=build /usr /usr
+COPY --from=build /lib /lib
 
-RUN npm ci
+COPY --from=build /app /app
 
-RUN npx playwright-core install chromium --with-deps --only-shell
+WORKDIR /app
+USER 65532:65532
 
+
+ENV LANG=C.UTF-8
 EXPOSE 8080
-
-USER node
-
 CMD ["node", "server.js"]
