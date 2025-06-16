@@ -13,6 +13,7 @@ public interface IUnitOfWork : IAsyncDisposable
     IActivityLogEntryRepository ActivityLogEntryRepo { get; }
     ITransferAgreementProposalRepository TransferAgreementProposalRepo { get; }
     IClaimAutomationRepository ClaimAutomationRepository { get; }
+    IReportRepository ReportRepository { get; }
 
     Task SaveAsync();
 }
@@ -24,6 +25,7 @@ public class UnitOfWork : IUnitOfWork
     private IActivityLogEntryRepository activityLogEntryRepo = null!;
     private ITransferAgreementProposalRepository transferAgreementProposalRepo = null!;
     private IClaimAutomationRepository claimAutomationRepository = null!;
+    private IReportRepository reportRepository = null!;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -48,6 +50,11 @@ public class UnitOfWork : IUnitOfWork
     public IClaimAutomationRepository ClaimAutomationRepository
     {
         get => claimAutomationRepository ??= new ClaimAutomationRepository(context);
+    }
+
+    public IReportRepository ReportRepository
+    {
+        get => reportRepository ??= new ReportRepository(context);
     }
 
     public Task SaveAsync()
