@@ -20,6 +20,7 @@ COPY --from=build /app /app
 WORKDIR /app
 USER 65532:65532
 
+
 ENV LANG=C.UTF-8
 EXPOSE 8080
 CMD ["node", "server.js"]
