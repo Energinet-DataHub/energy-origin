@@ -56,6 +56,38 @@ public class ReportsControllerTests
     }
 
     [Fact]
+    public async Task RequestReportGeneration_WhenEndDateIsLessThan7DaysFromStartDate_BadRequest()
+    {
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var startDate = DateTimeOffset.UtcNow.AddDays(-6).ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var requestBody = new { StartDate = startDate, EndDate = endDate };
+
+        var response = await client.PostAsJsonAsync($"/api/reports?organizationId={orgId}", requestBody, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task RequestReportGeneration_WhenEndDateIsMoreThan1YearFromStartDate_BadRequest()
+    {
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
+
+        var startDate = DateTimeOffset.UtcNow.AddYears(1).AddDays(1).ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var requestBody = new { StartDate = startDate, EndDate = endDate };
+
+        var response = await client.PostAsJsonAsync($"/api/reports?organizationId={orgId}", requestBody, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task
         GivenReportsFromMultipleOrganizations_WhenGettingStatuses_ThenOnlyReportsFromRequestedOrganizationAreReturned()
     {
@@ -67,7 +99,7 @@ public class ReportsControllerTests
             id: Guid.NewGuid(),
             organizationId: orgId,
             Any.OrganizationName(),
-            Any.Tin(),
+            EnergyTrackAndTrace.Testing.Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-7)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
@@ -75,7 +107,7 @@ public class ReportsControllerTests
             id: Guid.NewGuid(),
             organizationId: orgId,
             Any.OrganizationName(),
-            Any.Tin(),
+            EnergyTrackAndTrace.Testing.Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-14)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
@@ -83,7 +115,7 @@ public class ReportsControllerTests
             id: Guid.NewGuid(),
             organizationId: OrganizationId.Create(Guid.NewGuid()),
             Any.OrganizationName(),
-            Any.Tin(),
+            EnergyTrackAndTrace.Testing.Any.Tin(),
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-30)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
@@ -120,7 +152,7 @@ public class ReportsControllerTests
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
         var content = new byte[] { 1, 2, 3, 4, 5 };
-        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), EnergyTrackAndTrace.Testing.Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
         report.MarkCompleted(content);
 
         using (var scope = _factory.Services.CreateScope())
@@ -146,7 +178,7 @@ public class ReportsControllerTests
         var reportId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), EnergyTrackAndTrace.Testing.Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
         report.MarkFailed();
 
         using (var scope = _factory.Services.CreateScope())
