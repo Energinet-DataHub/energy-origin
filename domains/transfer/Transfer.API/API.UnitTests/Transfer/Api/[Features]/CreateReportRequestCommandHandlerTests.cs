@@ -13,7 +13,6 @@ using API.Transfer.Api.Services;
 using API.UnitOfWork;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.WalletClient;
 using FluentAssertions;
 using MediatR;
@@ -41,6 +40,7 @@ public class PopulateReportCommandHandlerTests
 
     public PopulateReportCommandHandlerTests()
     {
+        _unitOfWork.ReportRepository.Returns(_reports);
         _unitOfWork.SaveAsync().Returns(Task.CompletedTask);
         _dataFetcher
             .GetAsync(Arg.Any<OrganizationId>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
@@ -86,6 +86,10 @@ public class PopulateReportCommandHandlerTests
         var start = UnixTimestamp.Now().AddDays(-7);
         var end = UnixTimestamp.Now();
         var reportId = Guid.NewGuid();
+
+        var report = Report.Create(reportId, orgId, Any.OrganizationName(), Any.Tin(), start, end);
+        _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
+
         var cmd = new PopulateReportCommand(reportId);
 
         Report captured = null!;
@@ -104,12 +108,9 @@ public class PopulateReportCommandHandlerTests
         captured.Content.Should().Equal(new byte[] { 0x01, 0x02, 0x03 });
 
         await _reports.Received(1)
-            .AddAsync(Arg.Is<Report>(r => r.Id == reportId), Arg.Any<CancellationToken>());
-        await _reports.Received(1)
             .UpdateAsync(Arg.Is<Report>(r => r.Id == reportId && r.Status == ReportStatus.Completed),
                 Arg.Any<CancellationToken>());
-
-        await _unitOfWork.Received(2).SaveAsync();
+        await _unitOfWork.Received(1).SaveAsync();
     }
 
     [Fact]
@@ -131,6 +132,9 @@ public class PopulateReportCommandHandlerTests
         var reportId = Guid.NewGuid();
         var cmd = new PopulateReportCommand(reportId);
 
+        var report = Report.Create(reportId, orgId, Any.OrganizationName(), Any.Tin(), start, end);
+        _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
+
         Report captured = null!;
         _reports
             .When(x => x.AddAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
@@ -145,24 +149,9 @@ public class PopulateReportCommandHandlerTests
         captured.Content.Should().BeNull();
 
         await _reports.Received(1)
-            .AddAsync(Arg.Is<Report>(r => r.Id == reportId), Arg.Any<CancellationToken>());
-        await _reports.Received(1)
             .UpdateAsync(Arg.Is<Report>(r => r.Id == reportId && r.Status == ReportStatus.Failed),
                 Arg.Any<CancellationToken>());
 
-        await _unitOfWork.Received(2).SaveAsync();
-    }
-
-    [Fact]
-    public async Task GivenRangeExceedsOneYear_WhenCallingHandler_ThenThrowsBusinessException()
-    {
-        var cmd = new PopulateReportCommand(Guid.NewGuid());
-
-        await Assert.ThrowsAsync<BusinessException>(() =>
-            _sut.Handle(cmd, CancellationToken.None));
-
-        await _reports.DidNotReceive().AddAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>());
-        await _reports.DidNotReceive().UpdateAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>());
-        await _unitOfWork.DidNotReceive().SaveAsync();
+        await _unitOfWork.Received(1).SaveAsync();
     }
 }
