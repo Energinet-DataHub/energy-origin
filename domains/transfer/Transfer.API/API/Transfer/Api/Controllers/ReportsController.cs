@@ -1,18 +1,21 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using API.Transfer.Api._Features_;
+using API.UnitOfWork;
 using Asp.Versioning;
+using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Exceptions;
 using EnergyOrigin.TokenValidation.b2c;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Annotations;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentValidation.AspNetCore;
 
 namespace API.Transfer.Api.Controllers;
 
@@ -23,18 +26,20 @@ namespace API.Transfer.Api.Controllers;
 public class ReportsController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly AccessDescriptor _accessDescriptor;
     private readonly IdentityDescriptor _identityDescriptor;
     private readonly IServiceScopeFactory _scopeFactory;
 
-
     public ReportsController(
         IMediator mediator,
+        IUnitOfWork unitOfWork,
         AccessDescriptor accessDescriptor,
         IdentityDescriptor identityDescriptor,
         IServiceScopeFactory scopeFactory)
     {
         _mediator = mediator;
+        _unitOfWork = unitOfWork;
         _accessDescriptor = accessDescriptor;
         _identityDescriptor = identityDescriptor;
         _scopeFactory = scopeFactory;
@@ -46,20 +51,38 @@ public class ReportsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [SwaggerOperation(Summary = "Initiates asynchronous report generation.")]
-    public IActionResult RequestReportGeneration(
+    public async Task<IActionResult> RequestReportGeneration(
+        [FromServices] IValidator<ReportGenerationStartRequest> validator,
         [FromQuery] Guid organizationId,
         [FromBody] ReportGenerationStartRequest request,
         CancellationToken cancellationToken)
     {
         _accessDescriptor.AssertAuthorizedToAccessOrganization(organizationId);
 
-        var cmd = new CreateReportRequestCommand(
-            ReportId: Guid.NewGuid(),
-            OrganizationId: OrganizationId.Create(organizationId),
-            OrganizationName: OrganizationName.Create(_identityDescriptor.OrganizationName),
-            OrganizationTin: Tin.Create(_identityDescriptor.OrganizationCvr ?? throw new BusinessException("Organization CVR is missing")),
-            StartDate: UnixTimestamp.Create(request.StartDate),
-            EndDate: UnixTimestamp.Create(request.EndDate)
+        var tin = Tin.TryParse(_identityDescriptor.OrganizationCvr);
+        if (tin == null)
+            return BadRequest("Organization must have a valid tin.");
+
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            validationResult.AddToModelState(ModelState, null);
+            return ValidationProblem(ModelState);
+        }
+
+        var report = Report.Create(
+            id: Guid.NewGuid(),
+            organizationId: OrganizationId.Create(organizationId),
+            organizationName: OrganizationName.Create(_identityDescriptor.OrganizationName),
+            organizationTin: tin,
+            startDate: UnixTimestamp.Create(request.StartDate),
+            endDate: UnixTimestamp.Create(request.EndDate));
+
+        await _unitOfWork.ReportRepository.AddAsync(report, cancellationToken);
+        await _unitOfWork.SaveAsync();
+
+        var cmd = new PopulateReportCommand(
+            ReportId: report.Id
         );
 
         _ = Task.Run(async () =>
