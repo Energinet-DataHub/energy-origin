@@ -23,12 +23,12 @@ using Xunit;
 
 namespace API.UnitTests.Transfer.Api._Features_;
 
-public class CreateReportRequestCommandHandlerTests
+public class PopulateReportCommandHandlerTests
 {
     private readonly IReportRepository _reports = Substitute.For<IReportRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly IMediator _mediator = Substitute.For<IMediator>();
-    private readonly ILogger<CreateReportRequestCommandHandler> _logger = Substitute.For<ILogger<CreateReportRequestCommandHandler>>();
+    private readonly ILogger<PopulateReportCommandHandler> _logger = Substitute.For<ILogger<PopulateReportCommandHandler>>();
     private readonly IEnergyDataFetcher _dataFetcher = Substitute.For<IEnergyDataFetcher>();
     private readonly IHeadlinePercentageProcessor _percentageProcessor = Substitute.For<IHeadlinePercentageProcessor>();
     private readonly IEnergySvgRenderer _svgRenderer = Substitute.For<IEnergySvgRenderer>();
@@ -37,9 +37,9 @@ public class CreateReportRequestCommandHandlerTests
     private readonly ILogoRenderer _logoRenderer = Substitute.For<ILogoRenderer>();
     private readonly IStyleRenderer _styleRenderer = Substitute.For<IStyleRenderer>();
 
-    private readonly CreateReportRequestCommandHandler _sut;
+    private readonly PopulateReportCommandHandler _sut;
 
-    public CreateReportRequestCommandHandlerTests()
+    public PopulateReportCommandHandlerTests()
     {
         _unitOfWork.SaveAsync().Returns(Task.CompletedTask);
         _dataFetcher
@@ -62,8 +62,7 @@ public class CreateReportRequestCommandHandlerTests
             .Send(Arg.Any<GeneratePdfCommand>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(successResult));
 
-        _sut = new CreateReportRequestCommandHandler(
-            _reports,
+        _sut = new PopulateReportCommandHandler(
             _unitOfWork,
             _mediator,
             _logger,
@@ -87,7 +86,7 @@ public class CreateReportRequestCommandHandlerTests
         var start = UnixTimestamp.Now().AddDays(-7);
         var end = UnixTimestamp.Now();
         var reportId = Guid.NewGuid();
-        var cmd = new CreateReportRequestCommand(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var cmd = new PopulateReportCommand(reportId);
 
         Report captured = null!;
         _reports
@@ -130,7 +129,7 @@ public class CreateReportRequestCommandHandlerTests
         var start = UnixTimestamp.Now().AddDays(-7);
         var end = UnixTimestamp.Now();
         var reportId = Guid.NewGuid();
-        var cmd = new CreateReportRequestCommand(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var cmd = new PopulateReportCommand(reportId);
 
         Report captured = null!;
         _reports
@@ -157,10 +156,7 @@ public class CreateReportRequestCommandHandlerTests
     [Fact]
     public async Task GivenRangeExceedsOneYear_WhenCallingHandler_ThenThrowsBusinessException()
     {
-        var orgId = OrganizationId.Create(Guid.NewGuid());
-        var start = UnixTimestamp.Now().AddDays(-400);
-        var end = UnixTimestamp.Now();
-        var cmd = new CreateReportRequestCommand(Guid.NewGuid(), orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var cmd = new PopulateReportCommand(Guid.NewGuid());
 
         await Assert.ThrowsAsync<BusinessException>(() =>
             _sut.Handle(cmd, CancellationToken.None));
