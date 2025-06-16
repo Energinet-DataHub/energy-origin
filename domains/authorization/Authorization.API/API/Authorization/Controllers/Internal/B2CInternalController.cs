@@ -107,19 +107,16 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost]
-    [Route("organization-status/")]
-    public async Task<ActionResult> GetDoesLoginTypeMatch(
-        [FromServices] ILogger<B2CInternalController> logger,
-        [FromBody] DoesOrganizationStatusMatchLoginTypeRequest request)
+    [Route("organization-status")]
+    [SwaggerOperation(Summary = "Gets the organizations status",
+        Description = "This endpoint is only used by Azure B2C")]
+    public async Task<ActionResult> GetDoesLoginTypeMatch([FromBody] DoesOrganizationStatusMatchLoginTypeRequest request)
     {
         var queryHandlerResult = await mediator.Send(new GetOrganizationStatusQuery(request.OrgCvr, request.LoginType));
         var loginType = request.LoginType.ToLowerInvariant();
 
         if (queryHandlerResult.IsValid)
-        {
-            logger.LogInformation("Returning 200 OK for organization status match");
-            return Ok();
-        }
+            return Ok(new { status = loginType });
 
         var failureGuid = (queryHandlerResult.OrgStatus, loginType) switch
         {
@@ -130,16 +127,12 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             _ => LoginFailureReasons.UnhandledException
         };
 
-        var errorResponse = new AuthorizationErrorResponse(
+        var response = new AuthorizationErrorResponse(
             UserMessage: failureGuid,
             Version: "1.0",
-            Status: StatusCodes.Status409Conflict
-        );
+            Status: 409);
 
-        var errorJson = System.Text.Json.JsonSerializer.Serialize(errorResponse);
-        logger.LogWarning("Returning 409 Conflict with response: {ErrorJson}", errorJson);
-
-        return new ObjectResult(errorResponse)
+        return new ObjectResult(response)
         {
             StatusCode = StatusCodes.Status403Forbidden
         };
