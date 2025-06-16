@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace API.ContractService.EventHandlers;
 
-public class ContractsOrganizationPromotedToProductionEventHandler : IConsumer<OrganizationPromotedToNormal>
+public class ContractsOrganizationPromotedToNormalEventHandler : IConsumer<OrganizationPromotedToNormal>
 {
     private readonly IMediator _mediator;
-    private readonly ILogger<ContractsOrganizationPromotedToProductionEventHandler> _logger;
+    private readonly ILogger<ContractsOrganizationPromotedToNormalEventHandler> _logger;
 
-    public ContractsOrganizationPromotedToProductionEventHandler(IMediator mediator, ILogger<ContractsOrganizationPromotedToProductionEventHandler> logger)
+    public ContractsOrganizationPromotedToNormalEventHandler(IMediator mediator, ILogger<ContractsOrganizationPromotedToNormalEventHandler> logger)
     {
         _mediator = mediator;
         _logger = logger;
@@ -23,16 +23,16 @@ public class ContractsOrganizationPromotedToProductionEventHandler : IConsumer<O
     {
         var orgId = context.Message.OrganizationId;
 
-        _logger.LogInformation("Organization promoted to production from trial, removing all contracts and slidingWindows");
+        _logger.LogInformation("Organization promoted to normal from trial, removing all contracts and slidingWindows");
         var removeContractsAndSlidingWindowsCommand = new RemoveOrganizationContractsAndSlidingWindowsCommand(orgId);
         await _mediator.Send(removeContractsAndSlidingWindowsCommand, context.CancellationToken);
     }
 }
 
-public class ContractsOrganizationPromotedToProductionEventHandlerDefinition : ConsumerDefinition<ContractsOrganizationPromotedToProductionEventHandler>
+public class ContractsOrganizationPromotedToProductionEventHandlerDefinition : ConsumerDefinition<ContractsOrganizationPromotedToNormalEventHandler>
 {
     protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator,
-        IConsumerConfigurator<ContractsOrganizationPromotedToProductionEventHandler> consumerConfigurator,
+        IConsumerConfigurator<ContractsOrganizationPromotedToNormalEventHandler> consumerConfigurator,
         IRegistrationContext context)
     {
         endpointConfigurator.UseMessageRetry(r =>

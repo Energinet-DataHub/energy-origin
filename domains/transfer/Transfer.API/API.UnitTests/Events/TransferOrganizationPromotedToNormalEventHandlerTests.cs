@@ -11,13 +11,13 @@ using NSubstitute;
 using Xunit;
 
 namespace API.UnitTests.Events;
-public class TransferOrganizationPromotedToProductionEventHandlerTests
+public class TransferOrganizationPromotedToNormalEventHandlerTests
 {
     [Fact]
     public async Task CallsDeleteTransferAgreementsCommandAndDeleteClaimAutomationArgsCommand()
     {
         var mediatrMock = Substitute.For<IMediator>();
-        var sut = new TransferOrganizationPromotedToProductionEventHandler(mediatrMock, Substitute.For<ILogger<TransferOrganizationPromotedToProductionEventHandler>>());
+        var sut = new TransferOrganizationPromotedToNormalEventHandler(mediatrMock, Substitute.For<ILogger<TransferOrganizationPromotedToNormalEventHandler>>());
 
         var mockContext = Substitute.For<ConsumeContext<OrganizationPromotedToNormal>>();
         var message = OrganizationPromotedToNormal.Create(Guid.NewGuid());

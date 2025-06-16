@@ -2,9 +2,6 @@ using EnergyOrigin.IntegrationEvents.Events.OrganizationPromotedToProduction.V1;
 using MassTransit;
 using NSubstitute;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -15,13 +12,13 @@ using API.ContractService.Internal;
 
 namespace API.UnitTests.ContractService.EventHandlers;
 
-public class ContractsOrganizationPromotedToProductionEventHandlerTests
+public class ContractsOrganizationPromotedToNormalEventHandlerTests
 {
     [Fact]
     public async Task CallsRemoveOrganizationContractsAndSlidingWindowsCommand()
     {
         var mediatrMock = Substitute.For<IMediator>();
-        var sut = new ContractsOrganizationPromotedToProductionEventHandler(mediatrMock, Substitute.For<ILogger<ContractsOrganizationPromotedToProductionEventHandler>>());
+        var sut = new ContractsOrganizationPromotedToNormalEventHandler(mediatrMock, Substitute.For<ILogger<ContractsOrganizationPromotedToNormalEventHandler>>());
 
         var mockContext = Substitute.For<ConsumeContext<OrganizationPromotedToNormal>>();
         var message = OrganizationPromotedToNormal.Create(Guid.NewGuid());

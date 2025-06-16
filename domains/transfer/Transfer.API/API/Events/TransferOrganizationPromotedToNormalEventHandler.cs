@@ -9,12 +9,12 @@ using Microsoft.Extensions.Logging;
 
 namespace API.Events;
 
-public class TransferOrganizationPromotedToProductionEventHandler : IConsumer<OrganizationPromotedToNormal>
+public class TransferOrganizationPromotedToNormalEventHandler : IConsumer<OrganizationPromotedToNormal>
 {
     private readonly IMediator _mediator;
-    private readonly ILogger<TransferOrganizationPromotedToProductionEventHandler> _logger;
+    private readonly ILogger<TransferOrganizationPromotedToNormalEventHandler> _logger;
 
-    public TransferOrganizationPromotedToProductionEventHandler(IMediator mediator, ILogger<TransferOrganizationPromotedToProductionEventHandler> logger)
+    public TransferOrganizationPromotedToNormalEventHandler(IMediator mediator, ILogger<TransferOrganizationPromotedToNormalEventHandler> logger)
     {
         _mediator = mediator;
         _logger = logger;
@@ -26,21 +26,21 @@ public class TransferOrganizationPromotedToProductionEventHandler : IConsumer<Or
 
         var orgId = OrganizationId.Create(e.OrganizationId);
 
-        _logger.LogInformation("Organization promoted to production from trial, removing all transfer agreements for organization");
+        _logger.LogInformation("Organization promoted to normal from trial, removing all transfer agreements for organization");
         var deleteTasCmd = new DeleteTransferAgreementsCommand(orgId);
         await _mediator.Send(deleteTasCmd);
 
-        _logger.LogInformation("Organization promoted to production from trial, deleting claim automation arguments for organization");
+        _logger.LogInformation("Organization promoted to normal from trial, deleting claim automation arguments for organization");
         var deleteArgsCmd = new DeleteClaimAutomationArgsCommand(orgId);
         await _mediator.Send(deleteArgsCmd);
     }
 }
 
-public class TransferOrganizationPromotedToProductionEventHandlerDefinition : ConsumerDefinition<TransferOrganizationPromotedToProductionEventHandler>
+public class TransferOrganizationPromotedToProductionEventHandlerDefinition : ConsumerDefinition<TransferOrganizationPromotedToNormalEventHandler>
 {
     protected override void ConfigureConsumer(
         IReceiveEndpointConfigurator endpointConfigurator,
-        IConsumerConfigurator<TransferOrganizationPromotedToProductionEventHandler> consumerConfigurator,
+        IConsumerConfigurator<TransferOrganizationPromotedToNormalEventHandler> consumerConfigurator,
         IRegistrationContext context
     )
     {
