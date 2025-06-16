@@ -87,7 +87,7 @@ public class PopulateReportCommandHandlerTests
         var end = UnixTimestamp.Now();
         var reportId = Guid.NewGuid();
 
-        var report = Report.Create(reportId, orgId, Any.OrganizationName(), Any.Tin(), start, end);
+        var report = Report.Create(reportId, orgId, Any.OrganizationName(), EnergyTrackAndTrace.Testing.Any.Tin(), start, end);
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         var cmd = new PopulateReportCommand(reportId);
@@ -132,7 +132,7 @@ public class PopulateReportCommandHandlerTests
         var reportId = Guid.NewGuid();
         var cmd = new PopulateReportCommand(reportId);
 
-        var report = Report.Create(reportId, orgId, Any.OrganizationName(), Any.Tin(), start, end);
+        var report = Report.Create(reportId, orgId, Any.OrganizationName(), EnergyTrackAndTrace.Testing.Any.Tin(), start, end);
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         Report captured = null!;
