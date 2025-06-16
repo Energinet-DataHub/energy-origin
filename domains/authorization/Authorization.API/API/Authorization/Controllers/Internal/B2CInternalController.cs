@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
+using API.Models;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
@@ -16,7 +16,6 @@ namespace API.Authorization.Controllers.Internal;
 [Authorize(Policy = Policy.B2CInternal)]
 [Route("api/authorization")]
 [ApiVersionNeutral]
-[ApiExplorerSettings(IgnoreApi = true)]
 public class B2CInternalController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
@@ -93,16 +92,56 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
     )]
     public async Task<ActionResult<bool>> GetIsWhitelistedOrganization([FromBody] WhitelistedOrganizationRequest request)
     {
-        var isWhitelisted = await mediator.Send(new GetWhitelistedOrganizationQuery(request.OrgCvr));
-        if (isWhitelisted)
+        var isWhitelisted = await mediator.Send(new GetWhitelistedOrganizationQuery(request.OrgCvr, request.LoginType));
+        var loginType = request.LoginType.ToLowerInvariant();
+        if (isWhitelisted && loginType == "normal" || !isWhitelisted && loginType == "trial")
         {
             return Ok();
         }
 
         return new ObjectResult(
-            new AuthorizationErrorResponse("Organization not whitelisted"))
+            new AuthorizationErrorResponse($"Organization not whitelisted {request.LoginType}"))
         {
             StatusCode = StatusCodes.Status403Forbidden
+        };
+    }
+
+    [HttpPost]
+    [Route("organization-status/")]
+    public async Task<ActionResult> GetDoesLoginTypeMatch(
+        [FromServices] ILogger<B2CInternalController> logger,
+        [FromBody] DoesOrganizationStatusMatchLoginTypeRequest request)
+    {
+        var queryHandlerResult = await mediator.Send(new GetOrganizationStatusQuery(request.OrgCvr, request.LoginType));
+        var loginType = request.LoginType.ToLowerInvariant();
+
+        if (queryHandlerResult.IsValid)
+        {
+            logger.LogInformation("Returning 200 OK for organization status match.");
+            return Ok();
+        }
+
+        var failureGuid = (queryHandlerResult.OrgStatus, loginType) switch
+        {
+            (OrganizationStatus.Trial, "normal") => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
+            (OrganizationStatus.Normal, "trial") => LoginFailureReasons.NormalOrganizationsAreNotAllowedToLogInAsTrial,
+            (OrganizationStatus.Deactivated, _) => LoginFailureReasons.OrganizationIsDeactivated,
+            (_, "normal") or (_, "trial") => LoginFailureReasons.UnknownLoginTypeSpecifiedInRequest,
+            _ => LoginFailureReasons.UnhandledException
+        };
+
+        var errorResponse = new AuthorizationErrorResponse(
+            UserMessage: failureGuid,
+            Version: "1.0",
+            Status: StatusCodes.Status409Conflict
+        );
+
+        var errorJson = System.Text.Json.JsonSerializer.Serialize(errorResponse);
+        logger.LogWarning("Returning 409 Conflict with response: {ErrorJson}", errorJson);
+
+        return new ObjectResult(errorResponse)
+        {
+            StatusCode = StatusCodes.Status409Conflict
         };
     }
 }
