@@ -117,7 +117,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
 
         if (queryHandlerResult.IsValid)
         {
-            logger.LogInformation("Returning 200 OK for organization status match.");
+            logger.LogInformation("Returning 200 OK for organization status match");
             return Ok();
         }
 
@@ -141,7 +141,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
 
         return new ObjectResult(errorResponse)
         {
-            StatusCode = StatusCodes.Status409Conflict
+            StatusCode = StatusCodes.Status403Forbidden
         };
     }
 }
