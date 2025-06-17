@@ -245,7 +245,7 @@ public class ClaimServiceTests
     [InlineData(false, true)]
     [InlineData(true, null)]
     [InlineData(null, true)]
-    public async Task Run_DoesNotCallClaimCertificatesAsync_WhenIsOnlyTrialIsTrue(bool? consumptionIsTrial, bool? productionIsTrial)
+    public async Task Run_DoesNotCallClaimCertificatesAsync_WhenOnlyOneIsTrialIsTrue(bool? consumptionIsTrial, bool? productionIsTrial)
     {
         var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
         claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
