@@ -5,14 +5,42 @@
         xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
         PolicySchemaVersion="0.3.0.0"
         TenantId="datahubeouenerginet.onmicrosoft.com"
-        PolicyId="B2C_1A_OidcMock_V3"
-        PublicPolicyUri="http://datahubeouenerginet.onmicrosoft.com/B2C_1A_OidcMock_V3"
+        PolicyId="B2C_1A_OidcMock_V4"
+        PublicPolicyUri="http://datahubeouenerginet.onmicrosoft.com/B2C_1A_OidcMock_V4"
         DeploymentMode="Development"
         UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
 
     <BuildingBlocks>
 
         <ClaimsSchema>
+
+            <ClaimType Id="ettLoginType">
+              <DisplayName>{OAUTH-KV:ettLoginType}</DisplayName>
+              <DataType>string</DataType>
+              <UserHelpText>Identifier for the login type</UserHelpText>
+              <UserInputType>Readonly</UserInputType>
+            </ClaimType>
+
+            <ClaimType Id="login_type">
+              <DisplayName>Login Type</DisplayName>
+              <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="login_type_regex_validation">
+              <DisplayName>Login Type Regex Validation</DisplayName>
+              <DataType>string</DataType>
+            </ClaimType>
+
+            <ClaimType Id="login_type_regex_compare_result">
+              <DisplayName>Login Type Regex Compare Result</DisplayName>
+              <DataType>boolean</DataType>
+            </ClaimType>
+
+            <ClaimType Id="org_status">
+              <DisplayName>Organization Status</DisplayName>
+              <DataType>string</DataType>
+              <UserHelpText>Status of the organization (trial, normal, "", deactivated)</UserHelpText>
+            </ClaimType>
 
             <ClaimType Id="name">
                 <DisplayName>name</DisplayName>
@@ -235,6 +263,22 @@
 
         <ClaimsTransformations>
 
+          <ClaimsTransformation Id="ExtractLoginTypeFromLoginTypeQueryParam" TransformationMethod="SetClaimsIfRegexMatch">
+            <InputClaims>
+              <InputClaim ClaimTypeReferenceId="ettLoginType" TransformationClaimType="claimToMatch" />
+            </InputClaims>
+            <InputParameters>
+              <InputParameter Id="matchTo" DataType="string" Value="^(?!(?:.*(?&lt;!\S)ett:login:type:(?:trial|normal)(?!\S).*(?&lt;!\S)ett:login:type:(?:trial|normal)(?!\S)|.*(?&lt;!\S)ett:login:type:(?!(?:trial|normal)(?!\S))\S*(?!\S))).*?(?&lt;!\S)ett:login:type:(?&lt;login_type&gt;trial|normal)(?!\S).*$" />
+              <InputParameter Id="outputClaimIfMatched" DataType="string" Value="valid" />
+              <InputParameter Id="extractGroups" DataType="boolean" Value="true" />
+            </InputParameters>
+            <OutputClaims>
+              <OutputClaim ClaimTypeReferenceId="login_type_regex_validation" TransformationClaimType="outputClaim" />
+              <OutputClaim ClaimTypeReferenceId="login_type_regex_compare_result" TransformationClaimType="regexCompareResultClaim" />
+              <OutputClaim ClaimTypeReferenceId="login_type" />
+            </OutputClaims>
+          </ClaimsTransformation>
+
             <ClaimsTransformation Id="CreateAlternativeSecurityId" TransformationMethod="CreateAlternativeSecurityId">
                 <InputClaims>
                     <InputClaim ClaimTypeReferenceId="issuerUserId" TransformationClaimType="key"/>
@@ -429,6 +473,53 @@
                     </OutputClaimsTransformations>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
+                <TechnicalProfile Id="InitEttLoginType">
+                  <DisplayName>Init ettLoginType from OAUTH-KV param</DisplayName>
+                  <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                  <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="ettLoginType" DefaultValue="{OAUTH-KV:ettLoginType}" AlwaysUseDefaultValue="true" />
+                  </OutputClaims>
+                </TechnicalProfile>
+                <TechnicalProfile Id="ExtractLoginType">
+                  <DisplayName>Extract login type from ettLoginType</DisplayName>
+                  <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                  <Metadata>
+                    <Item Key="DebugMode">false</Item>
+                    <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                  </Metadata>
+                  <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="ettLoginType" DefaultValue="{OAUTH-KV:ettLoginType}" AlwaysUseDefaultValue="true" />
+                  </InputClaims>
+                  <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="login_type" />
+                    <OutputClaim ClaimTypeReferenceId="login_type_regex_validation" />
+                    <OutputClaim ClaimTypeReferenceId="login_type_regex_compare_result" />
+                  </OutputClaims>
+                  <OutputClaimsTransformations>
+                    <OutputClaimsTransformation ReferenceId="ExtractLoginTypeFromLoginTypeQueryParam" />
+                  </OutputClaimsTransformations>
+                </TechnicalProfile>
+                <TechnicalProfile Id="validateLoginType">
+                  <DisplayName>Validate Login Type</DisplayName>
+                  <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                  <Metadata>
+                    <Item Key="ServiceUrl">https://demo.energytrackandtrace.dk/api/authorization/organization-status</Item>
+                    <Item Key="SendClaimsIn">Body</Item>
+                    <Item Key="AuthenticationType">Bearer</Item>
+                    <Item Key="UseClaimAsBearerToken">self_access_token</Item>
+                    <Item Key="DebugMode">false</Item>
+                    <Item Key="DefaultUserMessageIfRequestFailed">Failed to validate login type</Item>
+                  </Metadata>
+                  <InputClaims>
+                    <InputClaim ClaimTypeReferenceId="self_access_token" />
+                    <InputClaim ClaimTypeReferenceId="org_cvr" />
+                    <InputClaim ClaimTypeReferenceId="login_type" />
+                  </InputClaims>
+                  <OutputClaims>
+                    <OutputClaim ClaimTypeReferenceId="org_status" />
+                  </OutputClaims>
+                  <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
             </TechnicalProfiles>
         </ClaimsProvider>
 
@@ -500,7 +591,7 @@
                         <Item Key="SendClaimsIn">Body</Item>
                         <Item Key="AuthenticationType">Bearer</Item>
                         <Item Key="UseClaimAsBearerToken">self_access_token</Item>
-                        <Item Key="DebugMode">true</Item>
+                        <Item Key="DebugMode">false</Item>
                         <!-- c73c2d14-4463-41f2-9e5e-aee59b2a2189 = organization is not whitelisted-->
                         <Item Key="DefaultUserMessageIfRequestFailed">c73c2d14-4463-41f2-9e5e-aee59b2a2189 - Failed to obtain whitelist information.</Item>
                         <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
@@ -508,6 +599,7 @@
                     <InputClaims>
                         <InputClaim ClaimTypeReferenceId="self_access_token"/>
                         <InputClaim ClaimTypeReferenceId="org_cvr" />
+                        <InputClaim ClaimTypeReferenceId="login_type" />
                     </InputClaims>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
@@ -534,6 +626,8 @@
                         <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
                         <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
                         <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                        <OutputClaim ClaimTypeReferenceId="login_type" />
+                        <OutputClaim ClaimTypeReferenceId="org_status" />
                         <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
                     </OutputClaims>
                 </TechnicalProfile>
@@ -581,86 +675,112 @@
     <UserJourneys>
         <UserJourney Id="OidcMockJourney">
             <OrchestrationSteps>
-                <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp">
-                    <ClaimsProviderSelections>
-                        <ClaimsProviderSelection TargetClaimsExchangeId="MitIDExchange"/>
-                    </ClaimsProviderSelections>
+
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="InitEttLoginTypeExchange" TechnicalProfileReferenceId="InitEttLoginType" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="2" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="MitIDExchange" TechnicalProfileReferenceId="OidcMock-OAUTH"/>
-                    </ClaimsExchanges>
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="ExtractLoginTypeExchange" TechnicalProfileReferenceId="ExtractLoginType" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="3" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId"/>
-                    </ClaimsExchanges>
+                <OrchestrationStep Order="3" Type="CombinedSignInAndSignUp">
+                  <ClaimsProviderSelections>
+                    <ClaimsProviderSelection TargetClaimsExchangeId="MitIDExchange" />
+                  </ClaimsProviderSelections>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="4" Type="ClaimsExchange">
-                    <Preconditions>
-                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
-                            <Value>objectId</Value>
-                            <Action>SkipThisOrchestrationStep</Action>
-                        </Precondition>
-                    </Preconditions>
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId"/>
-                    </ClaimsExchanges>
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="MitIDExchange" TechnicalProfileReferenceId="OidcMock-OAUTH" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="5" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
-                    </ClaimsExchanges>
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="6" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="AuthorizationExchange" TechnicalProfileReferenceId="authorizationMethod"/>
-                    </ClaimsExchanges>
+                  <Preconditions>
+                    <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                      <Value>objectId</Value>
+                      <Action>SkipThisOrchestrationStep</Action>
+                    </Precondition>
+                  </Preconditions>
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="7" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
-                    </ClaimsExchanges>
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="8" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
+                <OrchestrationStep Order="8" Type="ClaimsExchange">
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="AuthorizationExchange" TechnicalProfileReferenceId="authorizationMethod" />
+                  </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="9" Type="ClaimsExchange">
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted" />
+                  </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="10" Type="ClaimsExchange">
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="OrganizationStatusExchange" TechnicalProfileReferenceId="validateLoginType" />
+                  </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="11" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
             </OrchestrationSteps>
         </UserJourney>
 
         <UserJourney Id="RedeemRefreshToken">
             <PreserveOriginalAssertion>false</PreserveOriginalAssertion>
             <OrchestrationSteps>
+
                 <OrchestrationStep Order="1" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="RefreshTokenSetupExchange" TechnicalProfileReferenceId="RefreshTokenReadAndSetup" />
-                    </ClaimsExchanges>
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="RefreshTokenSetupExchange" TechnicalProfileReferenceId="RefreshTokenReadAndSetup" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="2" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="CheckRefreshTokenDateFromAadExchange" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId-CheckRefreshTokenDate" />
-                    </ClaimsExchanges>
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="CheckRefreshTokenDateFromAadExchange" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId-CheckRefreshTokenDate" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="3" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
-                    </ClaimsExchanges>
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
                 <OrchestrationStep Order="4" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
-                    </ClaimsExchanges>
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted" />
+                  </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+                <OrchestrationStep Order="5" Type="ClaimsExchange">
+                  <ClaimsExchanges>
+                    <ClaimsExchange Id="ValidateLoginTypeExchange" TechnicalProfileReferenceId="validateLoginType" />
+                  </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
             </OrchestrationSteps>
         </UserJourney>
 
@@ -688,6 +808,8 @@
                 <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
                 <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                <OutputClaim ClaimTypeReferenceId="login_type" />
+                <OutputClaim ClaimTypeReferenceId="org_status" />
                 <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
             </OutputClaims>
             <SubjectNamingInfo ClaimType="sub"/>
