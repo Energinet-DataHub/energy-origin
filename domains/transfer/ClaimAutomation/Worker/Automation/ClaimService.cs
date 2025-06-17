@@ -48,12 +48,24 @@ public class ClaimService(
 
                     foreach (var certGrp in certificatesGrouped)
                     {
-                        var productionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Production)
-                            .ToList();
-                        var consumptionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Consumption)
+                        var productionCertsTrial = certGrp
+                            .Where(x => x.CertificateType == CertificateType.Production && IsTrialCertificate(x))
                             .ToList();
 
-                        await Claim(subjectId, consumptionCerts, productionCerts, stoppingToken);
+                        var productionCertsNonTrial = certGrp
+                            .Where(x => x.CertificateType == CertificateType.Production && !IsTrialCertificate(x))
+                            .ToList();
+
+                        var consumptionCertsTrial = certGrp
+                            .Where(x => x.CertificateType == CertificateType.Consumption && IsTrialCertificate(x))
+                            .ToList();
+
+                        var consumptionCertsNonTrial = certGrp
+                            .Where(x => x.CertificateType == CertificateType.Consumption && !IsTrialCertificate(x))
+                            .ToList();
+
+                        await Claim(subjectId, consumptionCertsNonTrial, productionCertsNonTrial, stoppingToken);
+                        await Claim(subjectId, consumptionCertsTrial, productionCertsTrial, stoppingToken);
                     }
                 }
             }
@@ -73,6 +85,9 @@ public class ClaimService(
             await Sleep(stoppingToken);
         }
     }
+
+    private static bool IsTrialCertificate(GranularCertificate certificate) =>
+        certificate.Attributes.TryGetValue("IsTrial", out var val) && string.Equals(val, "true", StringComparison.OrdinalIgnoreCase);
 
     private async Task<List<GranularCertificate>> FetchAllCertificatesFromWallet(Guid subjectId, CancellationToken stoppingToken)
     {
@@ -112,18 +127,6 @@ public class ClaimService(
         return certificates;
     }
 
-
-    private static bool IsOnlyOneTrial(GranularCertificate prodCert, GranularCertificate conCert)
-    {
-        prodCert.Attributes.TryGetValue("IsTrial", out var prodAttributeValue);
-        var prodIsTrial = string.Equals(prodAttributeValue, "true", StringComparison.OrdinalIgnoreCase);
-
-        conCert.Attributes.TryGetValue("IsTrial", out var conAttributeValue);
-        var conIsTrial = string.Equals(conAttributeValue, "true", StringComparison.OrdinalIgnoreCase);
-
-        return prodIsTrial ^ conIsTrial;
-    }
-
     private async Task Claim(Guid subjectId, List<GranularCertificate> consumptionCertificates, List<GranularCertificate> productionCertificates, CancellationToken cancellationToken)
     {
         while (productionCertificates.Any(x => x.Quantity > 0) && consumptionCertificates.Any(x => x.Quantity > 0))
@@ -131,8 +134,6 @@ public class ClaimService(
 
             var productionCert = productionCertificates.First(x => x.Quantity > 0);
             var consumptionCert = consumptionCertificates.First(x => x.Quantity > 0);
-
-            if (IsOnlyOneTrial(productionCert, consumptionCert)) continue;
 
             var quantity = Math.Min(productionCert.Quantity, consumptionCert.Quantity);
             logger.LogInformation("Claiming Quanitity: {Quantity}. " +
