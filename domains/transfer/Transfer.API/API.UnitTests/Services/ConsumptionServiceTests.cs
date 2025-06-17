@@ -95,7 +95,6 @@ public class ConsumptionServiceTests
             Rejections = new List<Rejection>()
         });
 
-        // TODO: CABOL - Test that this works as before with setting Quantity to 1
         var mpData = EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 1);
 
         _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
@@ -139,7 +138,6 @@ public class ConsumptionServiceTests
 
         var mpData = EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
 
-        // TODO: CABOL - Validate that this works as before with settings PointAggregation
         foreach (var mp in mpData)
         {
             var groups = new List<PointAggregationGroup>();
