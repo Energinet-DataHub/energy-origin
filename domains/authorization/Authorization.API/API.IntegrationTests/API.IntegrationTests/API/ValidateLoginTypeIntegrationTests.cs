@@ -30,6 +30,7 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
     public async Task GivenLoginTypeAndOrganizationStatusMatch_WhenQueryingEndpoint_Then_Return200AndOrganizationStatus()
     {
         var org = Any.TrialOrganization();
+        const string loginType = "trial";
 
         await using (var dbContext = new ApplicationDbContext(_options))
         {
@@ -37,7 +38,7 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
             await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
-        var request = new DoesOrganizationStatusMatchLoginTypeRequest(org.Tin!.Value, "trial");
+        var request = new DoesOrganizationStatusMatchLoginTypeRequest(org.Tin!.Value, loginType);
         var response = await _api.GetDoesLoginTypeMatch(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -50,9 +51,8 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
     [InlineData("normal", "trial", "a1b2c3d4-e111-4444-aaaa-aaaaaaaaaaaa - Trial Organization is not allowed to log in as a Normal Organization - Please log in as Trial Organization, or contact support, if you think this is an error")]
     [InlineData("trial", "normal", "b2c3d4e5-e222-5555-bbbb-bbbbbbbbbbbb - Normal Organization is not allowed to log in as a Trial organization - Please log in as Normal Organization, or contact support, if you think this is an error")]
     [InlineData("trial", "deactivated", "c3d4e5f6-e333-6666-cccc-cccccccccccc - Organization is deactivated - Please contact support, if you think this is an error")]
-    [InlineData("normal", "deactivated", "c3d4e5f6-e333-6666-cccc-cccccccccccc - Organization is deactivated - Please contact support, if you think this is an error")]
     [InlineData("vip", "normal", "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee - Unhandled Exception")]
-    public async Task GivenLoginTypeAndOrgStatusMismatch_WhenQueryingEndpoint_Then_ReturnHttp403WithB2cStatus409_And_ExpectedFailureReason(string loginTypeRequestParameter, string orgStatusQueryHandlerResult, string expectedReason)
+    public async Task GivenLoginTypeAndOrgStatusMismatch_WhenQueryingEndpoint_Then_ReturnHttp409WithB2cStatus409_And_ExpectedFailureReason(string loginTypeRequestParameter, string orgStatusQueryHandlerResult, string expectedReason)
     {
         var tin = orgStatusQueryHandlerResult switch
         {
@@ -87,14 +87,36 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
     }
 
     [Fact]
-    public async Task GivenValidLoginType_WhenOrganizationDoesNotExist_Then_Returns200OkAndOrganizationStatus()
+    public async Task GivenTrialLoginType_WhenOrganizationDoesNotExist_Then_Return200Ok_And_OrganizationStatusTrial()
     {
-        var request = new DoesOrganizationStatusMatchLoginTypeRequest(Any.Tin().Value, "trial");
+        const string loginType = "trial";
+        var request = new DoesOrganizationStatusMatchLoginTypeRequest(Any.Tin().Value, loginType);
         var response = await _api.GetDoesLoginTypeMatch(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal("trial", json.GetProperty("org_status").GetString());
+    }
+
+    [Fact]
+    public async Task GivenNormalLoginType_WhenOrganizationIsDeactivated_Then_Return200Ok_And_OrganizationStatusDeactivated()
+    {
+        var org = Any.DeactivatedOrganization();
+        const string loginType = "normal";
+
+        await using (var dbContext = new ApplicationDbContext(_options))
+        {
+            await dbContext.Organizations.AddAsync(org, CancellationToken.None);
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        var request = new DoesOrganizationStatusMatchLoginTypeRequest(org.Tin!.Value, loginType);
+        var response = await _api.GetDoesLoginTypeMatch(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("deactivated", json.GetProperty("org_status").GetString());
     }
 }

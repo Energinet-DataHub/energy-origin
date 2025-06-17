@@ -115,10 +115,10 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         var queryHandlerResult = await mediator.Send(new GetOrganizationStatusQuery(request.OrgCvr, request.LoginType));
         var loginType = request.LoginType.ToLowerInvariant();
 
-        if (queryHandlerResult.IsValid)
+        if (queryHandlerResult.IsAllowedAccess)
             return Ok(new DoesOrganizationStatusMatchLoginTypeResponse(request.LoginType.ToLowerInvariant()));
 
-        var failureGuid = (queryHandlerResult.OrgStatus, loginType) switch
+        var failureGuid = (OrgStatus: queryHandlerResult.GrantedAccessAsTypeOf, loginType) switch
         {
             (OrganizationStatus.Trial, "normal") => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
             (OrganizationStatus.Normal, "trial") => LoginFailureReasons.NormalOrganizationsAreNotAllowedToLogInAsTrial,

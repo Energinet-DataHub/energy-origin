@@ -33,15 +33,15 @@ public class GetOrganizationStatusQueryHandlerTests
     [InlineData("87654321", "normal", false, OrganizationStatus.Trial)]
     [InlineData("12345678", "trial", false, OrganizationStatus.Normal)]
     [InlineData("69696969", "trial", false, OrganizationStatus.Deactivated)]
-    [InlineData("69696969", "normal", false, OrganizationStatus.Deactivated)]
+    [InlineData("69696969", "normal", true, OrganizationStatus.Deactivated)]
     [InlineData("87654321", "TrIaL", true, OrganizationStatus.Trial)]
     public async Task LoginTypeValidation_ReturnsExpectedResult(string tin, string loginType, bool expectedValid, OrganizationStatus? expectedStatus)
     {
         var query = new GetOrganizationStatusQuery(tin, loginType);
         var result = await _sut.Handle(query, CancellationToken.None);
 
-        Assert.Equal(expectedValid, result.IsValid);
-        Assert.Equal(expectedStatus, result.OrgStatus);
+        Assert.Equal(expectedValid, result.IsAllowedAccess);
+        Assert.Equal(expectedStatus, result.GrantedAccessAsTypeOf);
     }
 
     [Theory]
@@ -71,6 +71,6 @@ public class GetOrganizationStatusQueryHandlerTests
     {
         var query = new GetOrganizationStatusQuery(tin, loginType);
         var result = await _sut.Handle(query, CancellationToken.None);
-        Assert.False(result.IsValid);
+        Assert.False(result.IsAllowedAccess);
     }
 }

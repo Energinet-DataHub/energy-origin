@@ -17,19 +17,20 @@ public class GetOrganizationStatusQueryHandler(IOrganizationRepository organizat
         var organization = await organizationRepository.Query()
             .FirstOrDefaultAsync(w => w.Tin == tin, cancellationToken);
 
-        var status = organization?.Status;
-        var loginType = request.LoginType.ToLowerInvariant();
+        var orgStatus = organization?.Status;
+        var clientLoginType = request.LoginType.ToLowerInvariant();
 
-        return (loginType, status) switch
+        return (loginType: clientLoginType, status: orgStatus) switch
         {
-            ("normal", OrganizationStatus.Normal) => new LoginTypeValidationResult(true, OrganizationStatus.Normal),
-            ("normal", null) => new LoginTypeValidationResult(true, OrganizationStatus.Normal),
-            ("trial", OrganizationStatus.Trial) => new LoginTypeValidationResult(true, OrganizationStatus.Trial),
-            ("trial", null) => new LoginTypeValidationResult(true, OrganizationStatus.Trial),
-            _ => new LoginTypeValidationResult(false, status)
+            ("normal", OrganizationStatus.Deactivated) => new LoginTypeValidationResult(IsAllowedAccess: true, GrantedAccessAsTypeOf: OrganizationStatus.Deactivated),
+            ("normal", OrganizationStatus.Normal) => new LoginTypeValidationResult(IsAllowedAccess: true, GrantedAccessAsTypeOf: OrganizationStatus.Normal),
+            ("normal", null) => new LoginTypeValidationResult(IsAllowedAccess: true, GrantedAccessAsTypeOf: OrganizationStatus.Normal),
+            ("trial", OrganizationStatus.Trial) => new LoginTypeValidationResult(IsAllowedAccess: true, GrantedAccessAsTypeOf: OrganizationStatus.Trial),
+            ("trial", null) => new LoginTypeValidationResult(IsAllowedAccess: true, GrantedAccessAsTypeOf: OrganizationStatus.Trial),
+            _ => new LoginTypeValidationResult(IsAllowedAccess: false, orgStatus)
         };
     }
 }
 
 public record GetOrganizationStatusQuery(string Tin, string LoginType) : IRequest<LoginTypeValidationResult>;
-public record LoginTypeValidationResult(bool IsValid, OrganizationStatus? OrgStatus);
+public record LoginTypeValidationResult(bool IsAllowedAccess, OrganizationStatus? GrantedAccessAsTypeOf);
