@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Polly" />
+    <PackageReference Include="Energinet.DataHub.Measurements.Client" />
   </ItemGroup>
 
   <ItemGroup>
