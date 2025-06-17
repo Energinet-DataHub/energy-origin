@@ -45,6 +45,10 @@ public record DoesOrganizationStatusMatchLoginTypeRequest(
     [property: JsonPropertyName("login_type")] string LoginType
 );
 
+public record DoesOrganizationStatusMatchLoginTypeResponse(
+    [property: JsonPropertyName("org_status")] string OrgStatus
+);
+
 // B2C error model - https://learn.microsoft.com/en-us/azure/active-directory-b2c/restful-technical-profile#returning-validation-error-message
 public record AuthorizationErrorResponse(
     [property: JsonPropertyName("userMessage")] string UserMessage,

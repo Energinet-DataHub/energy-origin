@@ -116,7 +116,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         var loginType = request.LoginType.ToLowerInvariant();
 
         if (queryHandlerResult.IsValid)
-            return Ok(new { status = loginType });
+            return Ok(new DoesOrganizationStatusMatchLoginTypeResponse(request.LoginType.ToLowerInvariant()));
 
         var failureGuid = (queryHandlerResult.OrgStatus, loginType) switch
         {
@@ -127,14 +127,10 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             _ => LoginFailureReasons.UnhandledException
         };
 
-        var response = new AuthorizationErrorResponse(
-            UserMessage: failureGuid,
-            Version: "1.0",
-            Status: 409);
-
-        return new ObjectResult(response)
+        return new ObjectResult(
+            new AuthorizationErrorResponse($"{failureGuid}"))
         {
-            StatusCode = StatusCodes.Status403Forbidden
+            StatusCode = StatusCodes.Status409Conflict
         };
     }
 }

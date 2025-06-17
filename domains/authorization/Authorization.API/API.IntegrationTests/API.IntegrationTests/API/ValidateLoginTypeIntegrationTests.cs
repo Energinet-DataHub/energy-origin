@@ -43,7 +43,7 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.Equal("trial", json.GetProperty("status").GetString());
+        Assert.Equal("trial", json.GetProperty("org_status").GetString());
     }
 
     [Theory]
@@ -79,7 +79,7 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
         var request = new DoesOrganizationStatusMatchLoginTypeRequest(org.Tin!.Value, loginTypeRequestParameter);
         var response = await _api.GetDoesLoginTypeMatch(request);
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(expectedReason, json.GetProperty("userMessage").GetString());
         Assert.Equal("1.0", json.GetProperty("version").GetString());
@@ -89,12 +89,12 @@ public class ValidateLoginTypeIntegrationTest : IntegrationTestBase
     [Fact]
     public async Task GivenValidLoginType_WhenOrganizationDoesNotExist_Then_Returns200OkAndOrganizationStatus()
     {
-        var request = new DoesOrganizationStatusMatchLoginTypeRequest("00000000", "trial");
+        var request = new DoesOrganizationStatusMatchLoginTypeRequest(Any.Tin().Value, "trial");
         var response = await _api.GetDoesLoginTypeMatch(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
-        Assert.Equal("trial", json.GetProperty("status").GetString());
+        Assert.Equal("trial", json.GetProperty("org_status").GetString());
     }
 }
