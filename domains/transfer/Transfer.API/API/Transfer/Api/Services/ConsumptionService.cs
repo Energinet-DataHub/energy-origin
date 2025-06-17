@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Energinet.DataHub.Measurements.Abstractions.Api.Models;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
@@ -21,15 +22,15 @@ public class ConsumptionService : IConsumptionService
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _meteringPointClient;
     private readonly IDataHubFacadeClient _dhFacadeClient;
-    private readonly IDataHub3Client _dh3Client;
+    private readonly IMeasurementClient _measurementClient;
 
     public ConsumptionService(Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointClient,
         IDataHubFacadeClient dhFacadeClient,
-        IDataHub3Client dh3Client)
+        IMeasurementClient measurementClient)
     {
         _meteringPointClient = meteringPointClient;
         _dhFacadeClient = dhFacadeClient;
-        _dh3Client = dh3Client;
+        _measurementClient = measurementClient;
     }
 
     public async Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken)
@@ -52,12 +53,12 @@ public class ConsumptionService : IConsumptionService
 
         var validRelations = mpRelations.Relations.Where(x => x.IsValid()).ToList();
 
-        var totalConsumption = await _dh3Client.GetMeasurements(validRelations.Select(x => new Gsrn(x.MeteringPointId)).ToList(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), cancellationToken);
+        var totalConsumption = await _measurementClient.GetMeasurements(validRelations.Select(x => new Gsrn(x.MeteringPointId)).ToList(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), cancellationToken);
 
         if (totalConsumption == null)
             return new List<ConsumptionHour>();
 
-        return MapToTotalHourFormat(totalConsumption);
+        return MapToTotalHourFormat([.. totalConsumption]);
     }
 
     public async Task<List<ConsumptionHour>> GetAverageHourlyConsumption(
@@ -70,21 +71,21 @@ public class ConsumptionService : IConsumptionService
         return ComputeHourlyAverages(data);
     }
 
-    private async Task<MeteringPointData[]> GetRawMeteringDataAsync(
+    private async Task<MeasurementAggregationByPeriodDto[]> GetRawMeteringDataAsync(
         OrganizationId orgId,
         DateTimeOffset from,
         DateTimeOffset to,
         CancellationToken ct)
     {
         var gsrns = await GetValidGsrnsAsync(orgId, ct);
-        if (gsrns.Count == 0) return Array.Empty<MeteringPointData>();
+        if (gsrns.Count == 0) return [];
 
-        return await _dh3Client.GetMeasurements(
-                   gsrns.ToList(),
+        return (await _measurementClient.GetMeasurements(
+                   [.. gsrns],
                    from.ToUnixTimeSeconds(),
                    to.ToUnixTimeSeconds(),
-                   ct)
-               ?? Array.Empty<MeteringPointData>();
+                   ct)).ToArray()
+               ?? [];
     }
 
 
@@ -114,7 +115,7 @@ public class ConsumptionService : IConsumptionService
         return valid;
     }
 
-    private List<ConsumptionHour> ComputeHourlyAverages(MeteringPointData[] data)
+    private List<ConsumptionHour> ComputeHourlyAverages(MeasurementAggregationByPeriodDto[] data)
     {
         return Enumerable.Range(0, 24)
             .Select(hour => new ConsumptionHour(hour)
@@ -123,9 +124,9 @@ public class ConsumptionService : IConsumptionService
                     .SelectMany(mp => mp.PointAggregationGroups.Values)
                     .SelectMany(pg => pg.PointAggregations)
                     .Where(p => DateTimeOffset
-                        .FromUnixTimeSeconds(p.MinObservationTime)
+                        .FromUnixTimeSeconds(p.From.ToUnixTimeSeconds())
                         .Hour == hour)
-                    .Select(p => p.AggregatedQuantity)
+                    .Select(p => p.Quantity ?? 0)
                     .DefaultIfEmpty(0m)
                     .Average()
             })
@@ -137,7 +138,7 @@ public class ConsumptionService : IConsumptionService
         return typeOfMp.Trim().ToUpper() == "E17";
     }
 
-    private List<ConsumptionHour> MapToTotalHourFormat(MeteringPointData[] totalConsumption)
+    private List<ConsumptionHour> MapToTotalHourFormat(MeasurementAggregationByPeriodDto[] totalConsumption)
     {
         var result = Enumerable.Range(0, 24).Select(x => new ConsumptionHour(x)).ToList();
 
@@ -147,9 +148,9 @@ public class ConsumptionService : IConsumptionService
             {
                 foreach (var entry in day.Value.PointAggregations)
                 {
-                    var hour = DateTimeOffset.FromUnixTimeSeconds(entry.MinObservationTime).Hour;
+                    var hour = DateTimeOffset.FromUnixTimeSeconds(entry.From.ToUnixTimeSeconds()).Hour;
 
-                    result.First(x => x.HourOfDay == hour).KwhQuantity += entry.AggregatedQuantity;
+                    result.First(x => x.HourOfDay == hour).KwhQuantity += entry.Quantity ?? 0;
                 }
             }
         }
