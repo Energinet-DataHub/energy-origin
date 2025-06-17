@@ -240,6 +240,74 @@ public class ClaimServiceTests
             Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<CancellationToken>());
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, null)]
+    [InlineData(null, true)]
+    public async Task Run_DoesNotCallClaimCertificatesAsync_WhenOnlyOneIsTrialIsTrue(bool? consumptionIsTrial, bool? productionIsTrial)
+    {
+        var claimAutomationArgument = new ClaimAutomationArgument(Guid.NewGuid(), DateTimeOffset.UtcNow);
+        claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
+
+        var productionCertificate = new GranularCertificate
+        {
+            FederatedStreamId = new FederatedStreamId
+            {
+                Registry = "test",
+                StreamId = Guid.NewGuid()
+            },
+            Quantity = 10,
+            Start = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            End = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds(),
+            GridArea = "DK1",
+            CertificateType = CertificateType.Production,
+            Attributes = productionIsTrial != null ? new Dictionary<string, string>
+            {
+                { "IsTrial", productionIsTrial.ToString()! }
+            } : new Dictionary<string, string>()
+        };
+
+        var consumptionCertificate = new GranularCertificate
+        {
+            FederatedStreamId = new FederatedStreamId
+            {
+                Registry = "test",
+                StreamId = Guid.NewGuid()
+            },
+            Quantity = 10,
+            Start = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            End = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds(),
+            GridArea = "DK1",
+            CertificateType = CertificateType.Consumption,
+            Attributes = consumptionIsTrial != null ? new Dictionary<string, string>
+            {
+                { "IsTrial", consumptionIsTrial.ToString()! }
+            } : new Dictionary<string, string>()
+        };
+
+        var certs = new ResultList<GranularCertificate>
+        {
+            Result = new List<GranularCertificate> { productionCertificate, consumptionCertificate },
+            Metadata = new PageInfo { Count = 2, Offset = 0, Total = 2, Limit = 100 }
+        };
+        using var cts = new CancellationTokenSource();
+
+        walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
+            .Returns(certs).AndDoes(_ => cts.Cancel());
+
+        var act = async () => await claimService.Run(cts.Token);
+        await act.Should().ThrowAsync<TaskCanceledException>();
+
+        await walletClient.DidNotReceiveWithAnyArgs().ClaimCertificatesAsync(
+            claimAutomationArgument.SubjectId,
+            Arg.Any<GranularCertificate>(),
+            Arg.Any<GranularCertificate>(),
+            Arg.Any<uint>(),
+            cts.Token);
+
+    }
+
     private List<GranularCertificate> BuildGranularCertificates(int count)
     {
         var certs = new List<GranularCertificate>();

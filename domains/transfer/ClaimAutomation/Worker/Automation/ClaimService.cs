@@ -48,12 +48,24 @@ public class ClaimService(
 
                     foreach (var certGrp in certificatesGrouped)
                     {
-                        var productionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Production)
-                            .ToList();
-                        var consumptionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Consumption)
+                        var productionCertsTrial = certGrp
+                            .Where(x => x is { CertificateType: CertificateType.Production, IsTrialCertificate: true })
                             .ToList();
 
-                        await Claim(subjectId, consumptionCerts, productionCerts, stoppingToken);
+                        var productionCertsNonTrial = certGrp
+                            .Where(x => x is { CertificateType: CertificateType.Production, IsTrialCertificate: false })
+                            .ToList();
+
+                        var consumptionCertsTrial = certGrp
+                            .Where(x => x is { CertificateType: CertificateType.Consumption, IsTrialCertificate: true })
+                            .ToList();
+
+                        var consumptionCertsNonTrial = certGrp
+                            .Where(x => x is { CertificateType: CertificateType.Consumption, IsTrialCertificate: false })
+                            .ToList();
+
+                        await Claim(subjectId, consumptionCertsNonTrial, productionCertsNonTrial, stoppingToken);
+                        await Claim(subjectId, consumptionCertsTrial, productionCertsTrial, stoppingToken);
                     }
                 }
             }
