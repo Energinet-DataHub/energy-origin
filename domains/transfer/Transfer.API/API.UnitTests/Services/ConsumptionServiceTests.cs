@@ -4,13 +4,16 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Services;
-using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
 using Meteringpoint.V1;
 using NSubstitute;
 using Xunit;
 using EnergyTrackAndTrace.Testing.Extensions;
+using EnergyOrigin.Datahub3;
+using Energinet.DataHub.Measurements.Abstractions.Api.Models;
+using Microsoft.AspNetCore.Components.Web;
+using MassTransit.Internals;
 
 namespace API.UnitTests.Services;
 
@@ -18,13 +21,13 @@ public class ConsumptionServiceTests
 {
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _meteringPointClientMock;
     private readonly IDataHubFacadeClient _dhFacadeClientMock;
-    private readonly IDataHub3Client _dh3ClientMock;
+    private readonly IMeasurementClient _measurementClientMock;
 
     public ConsumptionServiceTests()
     {
         _meteringPointClientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
         _dhFacadeClientMock = Substitute.For<IDataHubFacadeClient>();
-        _dh3ClientMock = Substitute.For<IDataHub3Client>();
+        _measurementClientMock = Substitute.For<IMeasurementClient>();
     }
 
     [Fact]
@@ -55,10 +58,10 @@ public class ConsumptionServiceTests
 
         var mpData = EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
 
-        _dh3ClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+        _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
-        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _dh3ClientMock);
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
 
         var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
@@ -92,23 +95,13 @@ public class ConsumptionServiceTests
             Rejections = new List<Rejection>()
         });
 
-        var mpData = EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
+        // TODO: CABOL - Test that this works as before with setting Quantity to 1
+        var mpData = EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 1);
 
-        foreach (var mp in mpData)
-        {
-            foreach (var day in mp.PointAggregationGroups)
-            {
-                for (int i = 0; i < 24; i++)
-                {
-                    day.Value.PointAggregations.First(x => DateTimeOffset.FromUnixTimeSeconds(x.MinObservationTime).Hour == i).AggregatedQuantity = 1;
-                }
-            }
-        }
-
-        _dh3ClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+        _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
-        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _dh3ClientMock);
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
 
         var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
@@ -146,18 +139,20 @@ public class ConsumptionServiceTests
 
         var mpData = EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
 
+        // TODO: CABOL - Validate that this works as before with settings PointAggregation
         foreach (var mp in mpData)
         {
+            var groups = new List<PointAggregationGroup>();
             foreach (var day in mp.PointAggregationGroups)
             {
-                day.Value.PointAggregations = day.Value.PointAggregations.Where(x => DateTimeOffset.FromUnixTimeSeconds(x.MinObservationTime).Hour != 2).ToList();
+                var aggs = day.Value.PointAggregations.RemoveAll(x => DateTimeOffset.FromUnixTimeSeconds(x.From.ToUnixTimeSeconds()).Hour == 2);
             }
         }
 
-        _dh3ClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+        _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
-        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _dh3ClientMock);
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
 
         var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
