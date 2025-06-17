@@ -31,6 +31,18 @@ public class Tin : ValueObject
         return new Tin(value);
     }
 
+    public static Tin? TryParse(string? value)
+    {
+        try
+        {
+            return new Tin(value);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
     public static Tin Empty()
     {
         return new Tin();

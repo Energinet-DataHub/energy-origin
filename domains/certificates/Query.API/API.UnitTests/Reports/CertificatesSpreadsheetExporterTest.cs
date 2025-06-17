@@ -63,23 +63,23 @@ public class CertificatesSpreadsheetExporterTest
             _result = result;
         }
 
-        public Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken)
+        public Task<CreateWalletResponse> CreateWalletAsync(Guid ownerSubject, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        Task<ResultList<WalletRecord>> IWalletClient.GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
+        Task<ResultList<WalletRecord>> IWalletClient.GetWalletsAsync(Guid ownerSubject, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference, string textReference,
+        public Task<CreateExternalEndpointResponse> CreateExternalEndpointAsync(Guid ownerSubject, WalletEndpointReference walletEndpointReference, string textReference,
             CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<RequestStatus> GetRequestStatus(Guid ownerSubject, Guid requestId, CancellationToken cancellationToken)
+        public Task<RequestStatus> GetRequestStatusAsync(Guid ownerSubject, Guid requestId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -89,23 +89,23 @@ public class CertificatesSpreadsheetExporterTest
             throw new NotImplementedException();
         }
 
-        public Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+        public Task<WalletEndpointReference> CreateWalletEndpointAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId)
+        public Task<TransferResponse> TransferCertificatesAsync(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate,
-            GranularCertificate productionCertificate, uint quantity)
+        public Task<ClaimResponse> ClaimCertificatesAsync(Guid ownerSubject, GranularCertificate consumptionCertificate,
+            GranularCertificate productionCertificate, uint quantity, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken,
+        public async Task<ResultList<GranularCertificate>?> GetGranularCertificatesAsync(Guid ownerSubject, CancellationToken cancellationToken,
             int? limit, int skip = 0, CertificateType? certificateType = null)
         {
             await Task.CompletedTask;
@@ -114,22 +114,22 @@ public class CertificatesSpreadsheetExporterTest
             return resultList;
         }
 
-        public Task<DisableWalletResponse> DisableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+        public Task<DisableWalletResponse> DisableWalletAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+        public Task<EnableWalletResponse> EnableWalletAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ResultList<Claim>?> GetClaims(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken)
+        public Task<ResultList<Claim>?> GetClaimsAsync(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ResultList<Claim>?> GetClaims(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, TimeMatch timeMatch,
+        public Task<ResultList<Claim>?> GetClaimsAsync(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, TimeMatch timeMatch,
             CancellationToken cancellationToken)
         {
             throw new NotImplementedException();

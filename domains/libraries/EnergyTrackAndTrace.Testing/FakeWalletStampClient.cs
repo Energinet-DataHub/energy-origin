@@ -22,7 +22,7 @@ public class FakeWalletStampClient : IWalletClient, IStampClient
 
     }
 
-    public Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken)
+    public Task<CreateWalletResponse> CreateWalletAsync(Guid ownerSubject, CancellationToken cancellationToken)
     {
         var walletRecord = new WalletRecord() { Id = Guid.NewGuid(), PublicKey = Substitute.For<IHDPublicKey>(), DisabledDate = null };
         if (!_wallets.ContainsKey(ownerSubject))
@@ -34,7 +34,7 @@ public class FakeWalletStampClient : IWalletClient, IStampClient
         return Task.FromResult(new CreateWalletResponse() { WalletId = walletRecord.Id });
     }
 
-    public Task<ResultList<WalletRecord>> GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
+    public Task<ResultList<WalletRecord>> GetWalletsAsync(Guid ownerSubject, CancellationToken cancellationToken)
     {
         if (!_wallets.TryGetValue(ownerSubject, out var result))
         {
@@ -48,37 +48,37 @@ public class FakeWalletStampClient : IWalletClient, IStampClient
         });
     }
 
-    public Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject, WalletEndpointReference walletEndpointReference,
+    public Task<CreateExternalEndpointResponse> CreateExternalEndpointAsync(Guid ownerSubject, WalletEndpointReference walletEndpointReference,
         string textReference,
         CancellationToken cancellationToken)
     {
         return Task.FromResult(new CreateExternalEndpointResponse() { ReceiverId = Guid.NewGuid() });
     }
 
-    public Task<RequestStatus> GetRequestStatus(Guid ownerSubject, Guid requestId, CancellationToken cancellationToken)
+    public Task<RequestStatus> GetRequestStatusAsync(Guid ownerSubject, Guid requestId, CancellationToken cancellationToken)
     {
         return Task.FromResult(new RequestStatus());
     }
 
-    public Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    public Task<WalletEndpointReference> CreateWalletEndpointAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
     {
         var wallet = _wallets[ownerSubject].Single(w => w.Id == walletId);
 
         return Task.FromResult(new WalletEndpointReference(1, new Uri("http://eo"), Substitute.For<IHDPublicKey>()));
     }
 
-    public Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId)
+    public Task<TransferResponse> TransferCertificatesAsync(Guid ownerSubject, GranularCertificate certificate, uint quantity, Guid receiverId, CancellationToken cancellationToken)
     {
         return Task.FromResult(new TransferResponse() { TransferRequestId = Guid.NewGuid() });
     }
 
-    public Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate,
-        GranularCertificate productionCertificate, uint quantity)
+    public Task<ClaimResponse> ClaimCertificatesAsync(Guid ownerSubject, GranularCertificate consumptionCertificate,
+        GranularCertificate productionCertificate, uint quantity, CancellationToken cancellationToken)
     {
         return Task.FromResult(new ClaimResponse() { ClaimRequestId = Guid.NewGuid() });
     }
 
-    public Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject, CancellationToken cancellationToken, int? limit,
+    public Task<ResultList<GranularCertificate>?> GetGranularCertificatesAsync(Guid ownerSubject, CancellationToken cancellationToken, int? limit,
         int skip = 0,
         CertificateType? certificateType = null)
     {
@@ -89,22 +89,22 @@ public class FakeWalletStampClient : IWalletClient, IStampClient
         });
     }
 
-    public Task<DisableWalletResponse> DisableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    public Task<DisableWalletResponse> DisableWalletAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    public Task<EnableWalletResponse> EnableWalletAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public Task<ResultList<Claim>?> GetClaims(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken)
+    public Task<ResultList<Claim>?> GetClaimsAsync(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public Task<ResultList<Claim>?> GetClaims(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, TimeMatch timeMatch,
+    public Task<ResultList<Claim>?> GetClaimsAsync(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, TimeMatch timeMatch,
         CancellationToken cancellationToken)
     {
         throw new NotImplementedException();

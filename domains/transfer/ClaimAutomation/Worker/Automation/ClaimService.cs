@@ -52,7 +52,8 @@ public class ClaimService(
                             .ToList();
                         var consumptionCerts = certGrp.Where(x => x.CertificateType == CertificateType.Consumption)
                             .ToList();
-                        await Claim(subjectId, consumptionCerts, productionCerts);
+
+                        await Claim(subjectId, consumptionCerts, productionCerts, stoppingToken);
                     }
                 }
             }
@@ -75,23 +76,36 @@ public class ClaimService(
 
     private async Task<List<GranularCertificate>> FetchAllCertificatesFromWallet(Guid subjectId, CancellationToken stoppingToken)
     {
+
+        var subjectIdStr = subjectId.ToString();
+        var maskedSubjectId = subjectIdStr[..^6] + new string('*', 6);
+
         var hasMoreCertificates = true;
         var certificates = new List<GranularCertificate>();
+
         while (hasMoreCertificates)
         {
-            var response = await walletClient.GetGranularCertificates(subjectId, stoppingToken,
-                limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
-
-            if (response == null)
+            try
             {
-                throw new ClaimCertificatesException(
-                    $"Something went wrong when getting certificates from the wallet for {subjectId}. Response is null.");
-            }
+                var response = await walletClient.GetGranularCertificatesAsync(subjectId, stoppingToken,
+                    limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
 
-            certificates.AddRange(response.Result);
-            if (certificates.Count >= response.Metadata.Total)
+                if (response == null)
+                {
+                    throw new ClaimCertificatesException(
+                        $"Something went wrong when getting certificates from the wallet for {maskedSubjectId}. Response is null.");
+                }
+
+                certificates.AddRange(response.Result);
+                if (certificates.Count >= response.Metadata.Total)
+                {
+                    hasMoreCertificates = false;
+                }
+            }
+            catch (Exception e)
             {
                 hasMoreCertificates = false;
+                logger.LogError(e, "Error fetching certificates for subject {MaskedSubjectId}", maskedSubjectId);
             }
         }
 
@@ -110,7 +124,7 @@ public class ClaimService(
         return prodIsTrial ^ conIsTrial;
     }
 
-    private async Task Claim(Guid subjectId, List<GranularCertificate> consumptionCertificates, List<GranularCertificate> productionCertificates)
+    private async Task Claim(Guid subjectId, List<GranularCertificate> consumptionCertificates, List<GranularCertificate> productionCertificates, CancellationToken cancellationToken)
     {
         while (productionCertificates.Any(x => x.Quantity > 0) && consumptionCertificates.Any(x => x.Quantity > 0))
         {
@@ -127,7 +141,8 @@ public class ClaimService(
                                   "Organization: {SubjectId}",
                 quantity, consumptionCert.FederatedStreamId.StreamId, consumptionCert.Quantity, productionCert.FederatedStreamId.StreamId, productionCert.Quantity, subjectId);
 
-            await walletClient.ClaimCertificates(subjectId, consumptionCert, productionCert, quantity);
+            await walletClient.ClaimCertificatesAsync(subjectId, consumptionCert, productionCert, quantity, cancellationToken);
+
             SetClaimAttempt(consumptionCert.FederatedStreamId.StreamId.ToString());
             SetClaimAttempt(productionCert.FederatedStreamId.StreamId.ToString());
             metrics.AddClaim();

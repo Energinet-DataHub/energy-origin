@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: CodeReaper/find-diff-action@v3
+      - uses: CodeReaper/find-diff-action@32270be07c813f344cd5428deb11c7270dfb79af # v3
         id: diff
         with:
           paths: domains/*/ libraries/*/*/
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         if: ${{ steps.diff.outputs.pattern != '' }}
 
       - name: Build relevant project matrix
@@ -23,7 +23,7 @@ jobs:
 
       - name: Check license
         if: ${{ steps.diff.outputs.pattern != '' }}
-        uses: Energinet-DataHub/acorn-actions/actions/dotnet-check-license@v4
+        uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
         with:
           project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json

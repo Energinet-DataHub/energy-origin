@@ -33,9 +33,9 @@ public class AcceptTermsCommandHandlerTests
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _publishEndpoint = Substitute.For<IPublishEndpoint>();
         _walletClient = Substitute.For<IWalletClient>();
-        _walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
+        _walletClient.GetWalletsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
         { Metadata = new PageInfo() { Count = 0, Limit = 0, Offset = 0, Total = 0 }, Result = new List<WalletRecord>() });
-        _walletClient.CreateWallet(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new CreateWalletResponse() { WalletId = Guid.NewGuid() });
+        _walletClient.CreateWalletAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new CreateWalletResponse() { WalletId = Guid.NewGuid() });
         _handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, _walletClient, _publishEndpoint);
     }
 
@@ -101,7 +101,7 @@ public class AcceptTermsCommandHandlerTests
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
         var walletClient = Substitute.For<IWalletClient>();
-        walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
+        walletClient.GetWalletsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(new ResultList<WalletRecord>()
         { Metadata = new PageInfo() { Count = 0, Limit = 0, Offset = 0, Total = 0 }, Result = new List<WalletRecord>() });
 
         var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
@@ -140,7 +140,7 @@ public class AcceptTermsCommandHandlerTests
             DisabledDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };
 
-        walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        walletClient.GetWalletsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo
@@ -154,7 +154,7 @@ public class AcceptTermsCommandHandlerTests
             });
 
         walletClient
-            .EnableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .EnableWalletAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Throws(new BusinessException("Failed to enable wallet."));
 
         var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);
@@ -182,7 +182,7 @@ public class AcceptTermsCommandHandlerTests
             DisabledDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };
 
-        walletClient.GetWallets(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        walletClient.GetWalletsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new ResultList<WalletRecord>
             {
                 Metadata = new PageInfo
@@ -195,7 +195,7 @@ public class AcceptTermsCommandHandlerTests
                 Result = new List<WalletRecord> { disabledWallet }
             });
 
-        walletClient.EnableWallet(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+        walletClient.EnableWalletAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new EnableWalletResponse { WalletId = disabledWallet.Id });
 
         var handler = new AcceptTermsCommandHandler(_organizationRepository, _termsRepository, _unitOfWork, walletClient, _publishEndpoint);

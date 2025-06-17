@@ -1,4 +1,4 @@
-﻿## Specific Workflows for Each Subsystem
+## Specific Workflows for Each Subsystem
 
 ### Overview
 
@@ -13,7 +13,7 @@ Each subsystem workflow automates the test, build, and deployment process for a 
 Each workflow for a subsystem follows a standardized process:
 
 1. **Test**: The entire .NET solution is tested to ensure the integrity of the solution's codebase using a custom [dotnet-test](./dotnet-test.md) action.
-2. **Build**: Docker images are built for each project within the .NET solution using a standardized [Dockerfile](https://github.com/Energinet-DataHub/acorn-actions/Dockerfile.simplified) provided by Team Fusion, and a custom [dotnet-build](./dotnet-build.md) action.
+2. **Build**: Docker images are built for each project within the .NET solution using a standardized [Dockerfile](https://github.com/Energinet-DataHub/.github/Dockerfile.simplified) provided by Team Fusion, and a custom [dotnet-build](./dotnet-build.md) action.
 3. **Update**: If all tests pass and the images are built successfully, the workflow will:
     - Push the newly built images to the GitHub Container Registry (ghcr.io).
     - Update the Infrastructure as Code (IaC) repository, `eo-base`, with the names of the latest images. This allows ArgoCD to pull the updated images from the registry.
@@ -32,6 +32,7 @@ The workflow accepts the following inputs, passed from the invoking workflow:
 The `test` job runs tests on the .NET solution to ensure the code is functioning correctly. It runs on the `ubuntu-latest` runner.
 
 **Steps**:
+
 - **Checkout Code**: Uses the [actions/checkout@v4](https://github.com/actions/checkout) action to check out the repository.
 - **Run Tests**: Uses a custom [dotnet-test](./dotnet-test.md) action to run tests on the specified .NET solution.
 
@@ -42,6 +43,7 @@ These jobs build Docker images for specific projects within the .NET solution. E
 **Example Build Job for a Project**:
 
 **Steps**:
+
 - **Checkout Code**: Uses the [actions/checkout@v4](https://github.com/actions/checkout) action to check out the repository.
 - **Build Project**: Uses a custom [dotnet-build](./dotnet-build.md) action to build the project and create a Docker image.
 
@@ -50,6 +52,7 @@ These jobs build Docker images for specific projects within the .NET solution. E
 The `update` job updates the environment with the new build artifacts. This job runs on the `ubuntu-latest` runner and depends on the successful completion of all test and build jobs.
 
 **Steps**:
+
 - **Checkout Code**: Uses the [actions/checkout@v4](https://github.com/actions/checkout) action to check out the repository.
 - **Upload Images**: Pushes the newly built Docker images to the GitHub Container Registry (ghcr.io).
 - **Update IaC Repository**: Updates the `eo-base` repository with the names of the latest images, enabling ArgoCD to deploy the new images.
@@ -65,6 +68,7 @@ To add a new subsystem workflow, follow these steps:
 3. **Define the Jobs**:
 
     - **Test Job**: Add a job to run tests on the .NET solution:
+
 ```yaml
      jobs:
        test:
@@ -76,7 +80,9 @@ To add a new subsystem workflow, follow these steps:
              with:
                solution: domains/new-subsystem/NewSubsystem.sln
 ```
+
 - **Build Jobs**: Add jobs to build Docker images for each project within the .NET solution.
+
 ```yaml
      jobs:
        build-project1:
@@ -92,7 +98,9 @@ To add a new subsystem workflow, follow these steps:
                  migrations: domains/new-subsystem/migrations/Project1.sql # Migration script for the project, if applicable
                  dry-run: ${{ inputs.dry-run }} # Dry run flag
 ```
+
 - **Update Environment Job**: Add a job to update the environment with the new build artifacts.
+
 ```yaml
       jobs:
         update-transfer:
@@ -107,7 +115,7 @@ To add a new subsystem workflow, follow these steps:
             - uses: actions/checkout@v4
 
             - name: Update environment
-              uses: Energinet-DataHub/acorn-actions/actions/update-base-environment@v4
+              uses: Energinet-DataHub/.github/.github/actions/update-base-environment@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
               with:
                 configurations: | # Configuration files for each project
                   domains/new-subsystem/Project1.API/configuration.yaml

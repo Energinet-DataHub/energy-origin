@@ -2,7 +2,7 @@
 
 <script>
     function onRemoveTinClicked(tin) {
-        showConfirmationModal('Remove ' + tin + ' from whitelist', () => {
+        showRemoveOrgFromWhitelistModal(tin, () => {
             let tinFormElement = document.getElementById("removeTin");
             let form = document.getElementById("removeOrganizationForm");
             tinFormElement.value = tin
@@ -63,6 +63,7 @@
                 <table class="table table-hover table-bordered mb-0" id="organizationsTable">
                     <thead class="table-light">
                     <tr>
+                        <th>Organization Id</th>
                         <th>TIN</th>
                         <th>Organization Name</th>
                         <th>Manage</th>
@@ -72,6 +73,7 @@
                     @foreach (var org in Model)
                     {
                         <tr>
+                            <td>@org.OrganizationId</td>
                             <td onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Tin</td>
                             <td>@org.CompanyName</td>
                             <td>
@@ -91,6 +93,7 @@
 <partial name="_ConfirmationModal" />
 <partial name="_AddOrganizationModal" />
 <partial name="_RemoveOrganizationModal" />
+<partial name="_RemoveOrganizationFromWhitelistModal" />
 
 <style>
     .filter-highlight {

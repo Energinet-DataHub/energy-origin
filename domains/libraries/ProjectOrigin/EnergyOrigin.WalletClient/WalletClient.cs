@@ -13,7 +13,7 @@ public class WalletClient(HttpClient client) : IWalletClient
 {
     private const string WalletOwnerHeader = "wallet-owner";
 
-    public async Task<CreateWalletResponse> CreateWallet(Guid ownerSubject, CancellationToken cancellationToken)
+    public async Task<CreateWalletResponse> CreateWalletAsync(Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
 
@@ -34,7 +34,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<CreateWalletResponse>(response, cancellationToken);
     }
 
-    public async Task<ResultList<WalletRecord>> GetWallets(Guid ownerSubject, CancellationToken cancellationToken)
+    public async Task<ResultList<WalletRecord>> GetWalletsAsync(Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
 
@@ -65,7 +65,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return result;
     }
 
-    public async Task<CreateExternalEndpointResponse> CreateExternalEndpoint(Guid ownerSubject,
+    public async Task<CreateExternalEndpointResponse> CreateExternalEndpointAsync(Guid ownerSubject,
         WalletEndpointReference walletEndpointReference,
         string textReference, CancellationToken cancellationToken)
     {
@@ -80,7 +80,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
-        var res = await client.PostAsync("v1/external-endpoints", content);
+        var res = await client.PostAsync("v1/external-endpoints", content, cancellationToken);
         if (!res.IsSuccessStatusCode)
         {
             var error = await res.Content.ReadAsStringAsync(cancellationToken);
@@ -89,10 +89,10 @@ public class WalletClient(HttpClient client) : IWalletClient
         if (res == null || res.Content == null)
             throw new HttpRequestException("Failed to create wallet external endpoint.");
 
-        return (await res.Content.ReadFromJsonAsync<CreateExternalEndpointResponse>())!;
+        return await ParseResponse<CreateExternalEndpointResponse>(res, cancellationToken);
     }
 
-    public async Task<RequestStatus> GetRequestStatus(Guid ownerSubject, Guid requestId,
+    public async Task<RequestStatus> GetRequestStatusAsync(Guid ownerSubject, Guid requestId,
         CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
@@ -107,7 +107,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return responseObj!.Status;
     }
 
-    public async Task<WalletEndpointReference> CreateWalletEndpoint(Guid walletId, Guid ownerSubject,
+    public async Task<WalletEndpointReference> CreateWalletEndpointAsync(Guid walletId, Guid ownerSubject,
         CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
@@ -127,8 +127,8 @@ public class WalletClient(HttpClient client) : IWalletClient
         return new WalletEndpointReference(dto.WalletReference.Version, dto.WalletReference.Endpoint, hdPublicKey);
     }
 
-    public async Task<TransferResponse> TransferCertificates(Guid ownerSubject, GranularCertificate certificate,
-        uint quantity, Guid receiverId)
+    public async Task<TransferResponse> TransferCertificatesAsync(Guid ownerSubject, GranularCertificate certificate,
+        uint quantity, Guid receiverId, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
         var request = new TransferRequest
@@ -141,21 +141,21 @@ public class WalletClient(HttpClient client) : IWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
-        var res = await client.PostAsync("v1/transfers", content);
+        var res = await client.PostAsync("v1/transfers", content, cancellationToken);
         if (!res.IsSuccessStatusCode)
         {
-            var error = await res.Content.ReadAsStringAsync();
+            var error = await res.Content.ReadAsStringAsync(cancellationToken);
             throw new HttpRequestException(message: $"Failed to transfer {requestStr}. Error: {error}", inner: null, statusCode: res.StatusCode);
         }
 
         if (res == null || res.Content == null)
             throw new HttpRequestException("Failed to transfer certificate.");
 
-        return (await res.Content.ReadFromJsonAsync<TransferResponse>())!;
+        return await ParseResponse<TransferResponse>(res, cancellationToken);
     }
 
-    public async Task<ClaimResponse> ClaimCertificates(Guid ownerSubject, GranularCertificate consumptionCertificate,
-        GranularCertificate productionCertificate, uint quantity)
+    public async Task<ClaimResponse> ClaimCertificatesAsync(Guid ownerSubject, GranularCertificate consumptionCertificate,
+        GranularCertificate productionCertificate, uint quantity, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
         var request = new ClaimRequest
@@ -167,17 +167,17 @@ public class WalletClient(HttpClient client) : IWalletClient
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
 
-        var res = await client.PostAsync("v1/claims", content);
+        var res = await client.PostAsync("v1/claims", content, cancellationToken);
         if (!res.IsSuccessStatusCode)
         {
-            var error = await res.Content.ReadAsStringAsync();
+            var error = await res.Content.ReadAsStringAsync(cancellationToken);
             throw new HttpRequestException(message: $"Failed to claim {requestStr}. Error: {error}", inner: null, statusCode: res.StatusCode);
         }
 
-        return (await res.Content.ReadFromJsonAsync<ClaimResponse>())!;
+        return await ParseResponse<ClaimResponse>(res, cancellationToken);
     }
 
-    public async Task<ResultList<GranularCertificate>?> GetGranularCertificates(Guid ownerSubject,
+    public async Task<ResultList<GranularCertificate>?> GetGranularCertificatesAsync(Guid ownerSubject,
         CancellationToken cancellationToken, int? limit,
         int skip = 0, CertificateType? certificateType = null)
     {
@@ -190,11 +190,18 @@ public class WalletClient(HttpClient client) : IWalletClient
             requestUri = $"{requestUri}&type={certificateType}";
         }
 
-        return await client.GetFromJsonAsync<ResultList<GranularCertificate>?>(requestUri, _jsonSerializerOptions,
-            cancellationToken: cancellationToken);
+        var response = await client.GetAsync(requestUri, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to get granular certificates. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
+
+        return await ParseResponse<ResultList<GranularCertificate>?>(response, cancellationToken);
     }
 
-    public async Task<DisableWalletResponse> DisableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    public async Task<DisableWalletResponse> DisableWalletAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
 
@@ -209,7 +216,7 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<DisableWalletResponse>(response, cancellationToken);
     }
 
-    public async Task<EnableWalletResponse> EnableWallet(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
+    public async Task<EnableWalletResponse> EnableWalletAsync(Guid walletId, Guid ownerSubject, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
         var response = await client.PutAsync($"v1/wallets/{walletId}/enable", null, cancellationToken);
@@ -221,14 +228,23 @@ public class WalletClient(HttpClient client) : IWalletClient
         return await ParseResponse<EnableWalletResponse>(response, cancellationToken);
     }
 
-    public async Task<ResultList<Claim>?> GetClaims(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken)
+    public async Task<ResultList<Claim>?> GetClaimsAsync(Guid ownerSubject, DateTimeOffset? start, DateTimeOffset? end, CancellationToken cancellationToken)
     {
         SetOwnerHeader(ownerSubject);
+        var requestUri = $"v1/claims?start={start?.ToUnixTimeSeconds()}&end={end?.ToUnixTimeSeconds()}";
 
-        return await client.GetFromJsonAsync<ResultList<Claim>>($"v1/claims?start={start?.ToUnixTimeSeconds()}&end={end?.ToUnixTimeSeconds()}", _jsonSerializerOptions, cancellationToken);
+        var response = await client.GetAsync(requestUri, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to get claims. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
+
+        return await ParseResponse<ResultList<Claim>?>(response, cancellationToken);
     }
 
-    public async Task<ResultList<Claim>?> GetClaims(
+    public async Task<ResultList<Claim>?> GetClaimsAsync(
         Guid ownerSubject,
         DateTimeOffset? start,
         DateTimeOffset? end,
@@ -242,7 +258,15 @@ public class WalletClient(HttpClient client) : IWalletClient
             .Append($"timeMatch={timeMatch.ToString().ToLowerInvariant()}")
             .ToString();
 
-        return await client.GetFromJsonAsync<ResultList<Claim>>(url, _jsonSerializerOptions, cancellationToken);
+        var response = await client.GetAsync(url, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new HttpRequestException(message: $"Failed to get claims. Error: {error}", inner: null, statusCode: response.StatusCode);
+        }
+
+        return await ParseResponse<ResultList<Claim>?>(response, cancellationToken);
     }
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
@@ -258,7 +282,7 @@ public class WalletClient(HttpClient client) : IWalletClient
             throw new HttpRequestException("Null response");
         }
 
-        return (await responseMessage.Content.ReadFromJsonAsync<T>(cancellationToken))!;
+        return (await responseMessage.Content.ReadFromJsonAsync<T>(_jsonSerializerOptions, cancellationToken))!;
     }
 
     private void SetOwnerHeader(Guid owner)

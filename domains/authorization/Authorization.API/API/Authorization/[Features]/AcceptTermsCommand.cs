@@ -74,18 +74,18 @@ public class AcceptTermsCommandHandler(
 
     private async Task EnsureWalletExistsAsync(Guid organizationId)
     {
-        var wallets = await walletClient.GetWallets(organizationId, CancellationToken.None);
+        var wallets = await walletClient.GetWalletsAsync(organizationId, CancellationToken.None);
         var wallet = wallets.Result.FirstOrDefault();
 
         if (wallet is null)
         {
-            var createWalletResponse = await walletClient.CreateWallet(organizationId, CancellationToken.None);
+            var createWalletResponse = await walletClient.CreateWalletAsync(organizationId, CancellationToken.None);
             if (createWalletResponse == null)
                 throw new WalletNotCreated("Failed to create wallet.");
             return;
         }
 
-        var enableWalletResponse = walletClient.EnableWallet(wallet.Id, organizationId, CancellationToken.None);
+        var enableWalletResponse = walletClient.EnableWalletAsync(wallet.Id, organizationId, CancellationToken.None);
         if (enableWalletResponse == null)
             throw new BusinessException("Failed to create wallet.");
     }

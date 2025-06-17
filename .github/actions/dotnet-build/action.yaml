@@ -60,17 +60,17 @@ runs:
 
     - name: Fetch Dockerfile
       shell: bash
-      run: wget https://raw.githubusercontent.com/Energinet-DataHub/acorn-actions/main/Dockerfile.simplified -O Dockerfile
+      run: cp ./Dockerfile.simplified ./Dockerfile
 
     - name: Resolve image version
-      uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v4
+      uses: Energinet-DataHub/.github/.github/actions/docker-image-version@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
 
     - name: Resolve image name
       shell: bash
       run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
 
     - name: Build image
-      uses: Energinet-Datahub/acorn-actions/actions/docker-build-and-push@v4
+      uses: Energinet-Datahub/.github/.github/actions/docker-build-and-push@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
       with:
         dockerfile: Dockerfile
         image-name: ${{ env.name }}
@@ -83,7 +83,7 @@ runs:
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
     - name: Scan image
-      uses: Energinet-DataHub/acorn-actions/actions/docker-scan@v4
+      uses: Energinet-DataHub/.github/.github/actions/docker-scan@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
       with:
         image-name: ${{ env.name }}
         image-tag: ${{ env.version }}

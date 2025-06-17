@@ -3,80 +3,83 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using API.Transfer.Api.Repository;
 using API.UnitOfWork;
-using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using API.ReportGenerator.Infrastructure;
 using API.ReportGenerator.Processing;
 using API.ReportGenerator.Rendering;
-using DataContext.Models;
 
 namespace API.Transfer.Api._Features_;
 
-public class CreateReportRequestCommandHandler
-    : IRequestHandler<CreateReportRequestCommand, Unit>
+public record PopulateReportCommand(
+    Guid ReportId
+) : IRequest<Unit>;
+
+public class PopulateReportCommandHandler
+    : IRequestHandler<PopulateReportCommand, Unit>
 {
-    private readonly IReportRepository _reports;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
-    private readonly ILogger<CreateReportRequestCommandHandler> _logger;
+    private readonly ILogger<PopulateReportCommandHandler> _logger;
     private readonly IEnergyDataFetcher _dataFetcher;
+    private readonly IEnergyDataFormatter _dataFormatter;
     private readonly IHeadlinePercentageProcessor _percentageProcessor;
+    private readonly IMunicipalityPercentageProcessor _municipalityPercentageProcessor;
     private readonly IEnergySvgRenderer _svgRenderer;
     private readonly IOrganizationHeaderRenderer _headerRenderer;
     private readonly IHeadlinePercentageRenderer _percentageRenderer;
+    private readonly IMunicipalityPercentageRenderer _municipalityPercentageRenderer;
     private readonly ILogoRenderer _logoRenderer;
     private readonly IStyleRenderer _styleRenderer;
 
-    public CreateReportRequestCommandHandler(
-        IReportRepository reports,
+    public PopulateReportCommandHandler(
         IUnitOfWork unitOfWork,
         IMediator mediator,
-        ILogger<CreateReportRequestCommandHandler> logger,
+        ILogger<PopulateReportCommandHandler> logger,
         IEnergyDataFetcher dataFetcher,
+        IEnergyDataFormatter dataFormatter,
         IHeadlinePercentageProcessor percentageProcessor,
+        IMunicipalityPercentageProcessor municipalityPercentageProcessor,
         IEnergySvgRenderer svgRenderer,
         IOrganizationHeaderRenderer headerRenderer,
         IHeadlinePercentageRenderer percentageRenderer,
+        IMunicipalityPercentageRenderer municipalityPercentageRenderer,
         ILogoRenderer logoRenderer,
         IStyleRenderer styleRenderer)
     {
-        _reports = reports;
         _unitOfWork = unitOfWork;
         _mediator = mediator;
         _logger = logger;
         _dataFetcher = dataFetcher;
+        _dataFormatter = dataFormatter;
         _percentageProcessor = percentageProcessor;
+        _municipalityPercentageProcessor = municipalityPercentageProcessor;
         _svgRenderer = svgRenderer;
         _headerRenderer = headerRenderer;
         _percentageRenderer = percentageRenderer;
+        _municipalityPercentageRenderer = municipalityPercentageRenderer;
         _logoRenderer = logoRenderer;
         _styleRenderer = styleRenderer;
     }
 
     public async Task<Unit> Handle(
-        CreateReportRequestCommand request,
+        PopulateReportCommand request,
         CancellationToken cancellationToken)
     {
-        var report = Report.Create(
-            id: request.ReportId,
-            organizationId: request.OrganizationId,
-            organizationName: request.OrganizationName,
-            organizationTin: request.OrganizationTin,
-            startDate: request.StartDate,
-            endDate: request.EndDate);
-
-        await _reports.AddAsync(report, cancellationToken);
-        await _unitOfWork.SaveAsync();
+        var report = await _unitOfWork.ReportRepository.GetByIdAsync(request.ReportId, cancellationToken);
+        if (report == null)
+        {
+            throw new ArgumentNullException($"Cannot generate report with unknown report id {request.ReportId}");
+        }
 
         try
         {
-            var from = DateTimeOffset.FromUnixTimeSeconds(request.StartDate.EpochSeconds);
-            var to = DateTimeOffset.FromUnixTimeSeconds(request.EndDate.EpochSeconds);
-            var (consumption, strictProd, allProd) =
-                await _dataFetcher.GetAsync(request.OrganizationId, from, to, cancellationToken);
+            var from = DateTimeOffset.FromUnixTimeSeconds(report.StartDate.EpochSeconds);
+            var to = DateTimeOffset.FromUnixTimeSeconds(report.EndDate.EpochSeconds);
+            var (consumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, cancellationToken);
+
+            var (consumption, strictProd, allProd) = _dataFormatter.Format(consumptionRaw, claims);
 
             // Process into hourly aggregates
             var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);
@@ -84,15 +87,17 @@ public class CreateReportRequestCommandHandler
             // Calculate coverage headline
             var headlinePercent = _percentageProcessor.Calculate(hourlyData);
             var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
+            var municipalities = _municipalityPercentageProcessor.Calculate(claims);
 
             // Render HTML fragments
             var headerHtml = _headerRenderer.Render(
-                HttpUtility.HtmlEncode(request.OrganizationName.Value),
-                HttpUtility.HtmlEncode(request.OrganizationTin.Value));
+                HttpUtility.HtmlEncode(report.OrganizationName.Value),
+                HttpUtility.HtmlEncode(report.OrganizationTin.Value));
             var headlineHtml = _percentageRenderer.Render(headlinePercent, periodLabel);
             var svgHtml = _svgRenderer.Render(hourlyData).Svg;
             var logoHtml = _logoRenderer.Render();
             var styleHtml = _styleRenderer.Render();
+            var municipalitiesHtml = _municipalityPercentageRenderer.Render(municipalities);
 
             if (string.IsNullOrEmpty(svgHtml) || !svgHtml.Contains("<svg"))
             {
@@ -123,13 +128,7 @@ public class CreateReportRequestCommandHandler
 
                                  <div class="sections">
                                      <div class="section-column">
-                                         <h6 class="section-title">Kommuner</h6>
-                                         <ul>
-                                             <li>Aabenraa: 50%</li>
-                                             <li>Ringkøbing-Skjern: 25%</li>
-                                             <li>Lolland: 20%</li>
-                                             <li>Andre kommuner: 5%</li>
-                                         </ul>
+                                         {{municipalitiesHtml}}
                                      </div>
                                      <div class="section-column">
                                          <h6 class="section-title">Teknologi</h6>
@@ -186,18 +185,9 @@ public class CreateReportRequestCommandHandler
         }
 
         // Persist final status
-        await _reports.UpdateAsync(report, cancellationToken);
+        await _unitOfWork.ReportRepository.UpdateAsync(report, cancellationToken);
         await _unitOfWork.SaveAsync();
 
         return Unit.Value;
     }
 }
-
-public record CreateReportRequestCommand(
-    Guid ReportId,
-    OrganizationId OrganizationId,
-    OrganizationName OrganizationName,
-    Tin OrganizationTin,
-    UnixTimestamp StartDate,
-    UnixTimestamp EndDate
-) : IRequest<Unit>;

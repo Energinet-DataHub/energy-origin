@@ -11,5 +11,5 @@ public interface IClaimAutomationRepository
     Task<ClaimAutomationArgument?> GetClaimAutomationArgument(Guid subject);
 
     Task<ClaimAutomationArgument> AddClaimAutomationArgument(ClaimAutomationArgument claimAutomationArgument);
-    Task DeleteClaimAutomationArgument(ClaimAutomationArgument claim);
+    void DeleteClaimAutomationArgument(ClaimAutomationArgument claim);
 }
