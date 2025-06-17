@@ -49,19 +49,19 @@ public class ClaimService(
                     foreach (var certGrp in certificatesGrouped)
                     {
                         var productionCertsTrial = certGrp
-                            .Where(x => x.CertificateType == CertificateType.Production && IsTrialCertificate(x))
+                            .Where(x => x is { CertificateType: CertificateType.Production, IsTrialCertificate: true })
                             .ToList();
 
                         var productionCertsNonTrial = certGrp
-                            .Where(x => x.CertificateType == CertificateType.Production && !IsTrialCertificate(x))
+                            .Where(x => x is { CertificateType: CertificateType.Production, IsTrialCertificate: false })
                             .ToList();
 
                         var consumptionCertsTrial = certGrp
-                            .Where(x => x.CertificateType == CertificateType.Consumption && IsTrialCertificate(x))
+                            .Where(x => x is { CertificateType: CertificateType.Consumption, IsTrialCertificate: true })
                             .ToList();
 
                         var consumptionCertsNonTrial = certGrp
-                            .Where(x => x.CertificateType == CertificateType.Consumption && !IsTrialCertificate(x))
+                            .Where(x => x is { CertificateType: CertificateType.Consumption, IsTrialCertificate: false })
                             .ToList();
 
                         await Claim(subjectId, consumptionCertsNonTrial, productionCertsNonTrial, stoppingToken);
@@ -85,9 +85,6 @@ public class ClaimService(
             await Sleep(stoppingToken);
         }
     }
-
-    private static bool IsTrialCertificate(GranularCertificate certificate) =>
-        certificate.Attributes.TryGetValue("IsTrial", out var val) && string.Equals(val, "true", StringComparison.OrdinalIgnoreCase);
 
     private async Task<List<GranularCertificate>> FetchAllCertificatesFromWallet(Guid subjectId, CancellationToken stoppingToken)
     {
