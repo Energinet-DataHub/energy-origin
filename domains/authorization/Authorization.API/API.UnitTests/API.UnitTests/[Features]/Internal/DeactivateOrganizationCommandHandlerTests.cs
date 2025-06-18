@@ -3,6 +3,7 @@ using API.Models;
 using API.UnitTests.Repository;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Exceptions;
+using Microsoft.Extensions.Logging;
 
 
 namespace API.UnitTests._Features_.Internal;
@@ -11,13 +12,15 @@ public class DeactivateOrganizationCommandHandlerTests
 {
     private readonly FakeOrganizationRepository _fakeRepo;
     private readonly FakeUnitOfWork _fakeUnitOfWork;
+    private readonly ILogger<DeactivateOrganizationCommandHandler> _logger;
     private readonly DeactivateOrganizationCommandHandler _sut;
 
     public DeactivateOrganizationCommandHandlerTests()
     {
         _fakeRepo = new FakeOrganizationRepository();
         _fakeUnitOfWork = new FakeUnitOfWork();
-        _sut = new DeactivateOrganizationCommandHandler(_fakeRepo, _fakeUnitOfWork);
+        _logger = NSubstitute.Substitute.For<ILogger<DeactivateOrganizationCommandHandler>>();
+        _sut = new DeactivateOrganizationCommandHandler(_fakeRepo, _fakeUnitOfWork, _logger);
     }
 
     [Fact]
