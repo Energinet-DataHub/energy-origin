@@ -5,6 +5,7 @@ using API.Data;
 using API.Repository;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace API.Authorization._Features_.Internal;
 
@@ -14,7 +15,8 @@ public class DeactivateOrganizationCommandResult { }
 
 public class DeactivateOrganizationCommandHandler(
     IOrganizationRepository organizationRepository,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    ILogger<DeactivateOrganizationCommandHandler> logger
 ) : IRequestHandler<DeactivateOrganizationCommand, DeactivateOrganizationCommandResult>
 {
     public async Task<DeactivateOrganizationCommandResult> Handle(
@@ -29,8 +31,11 @@ public class DeactivateOrganizationCommandHandler(
 
         if (organization is not null)
         {
-            // This will throw if it's not in the “Normal” state
             organization.Deactivate();
+        }
+        else
+        {
+            logger.LogWarning("This should never happen - You are trying to deactivate a non-existent organization");
         }
 
         await unitOfWork.CommitAsync(cancellationToken);
