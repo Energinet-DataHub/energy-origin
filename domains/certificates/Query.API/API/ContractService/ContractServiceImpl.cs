@@ -107,6 +107,7 @@ internal class ContractServiceImpl : IContractService
                 endDate,
                 recipientResponse.Id,
                 Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology),
+                false,
                 sponsorshipEndDate);
 
             newContracts.Add(issuingContract);
