@@ -36,7 +36,17 @@ public record UserAuthorizationResponse(
 );
 
 public record WhitelistedOrganizationRequest(
-    [property: JsonPropertyName("org_cvr")] string OrgCvr
+    [property: JsonPropertyName("org_cvr")] string OrgCvr,
+    [property: JsonPropertyName("login_type")] string LoginType
+);
+
+public record DoesOrganizationStatusMatchLoginTypeRequest(
+    [property: JsonPropertyName("org_cvr")] string OrgCvr,
+    [property: JsonPropertyName("login_type")] string LoginType
+);
+
+public record DoesOrganizationStatusMatchLoginTypeResponse(
+    [property: JsonPropertyName("org_status")] string OrgStatus
 );
 
 // B2C error model - https://learn.microsoft.com/en-us/azure/active-directory-b2c/restful-technical-profile#returning-validation-error-message
@@ -45,6 +55,16 @@ public record AuthorizationErrorResponse(
     [property: JsonPropertyName("version")] string Version = "1.0",
     [property: JsonPropertyName("status")] int Status = StatusCodes.Status409Conflict
 );
+
+
+public static class LoginFailureReasons
+{
+    public const string TrialOrganizationIsNotAllowedToLogInAsNormalOrganization = "a1b2c3d4-e111-4444-aaaa-aaaaaaaaaaaa - Trial Organization is not allowed to log in as a Normal Organization - Please log in as Trial Organization, or contact support, if you think this is an error";
+    public const string NormalOrganizationsAreNotAllowedToLogInAsTrial = "b2c3d4e5-e222-5555-bbbb-bbbbbbbbbbbb - Normal Organization is not allowed to log in as a Trial organization - Please log in as Normal Organization, or contact support, if you think this is an error";
+    public const string OrganizationIsDeactivated = "c3d4e5f6-e333-6666-cccc-cccccccccccc - Organization is deactivated - Please contact support, if you think this is an error";
+    public const string UnknownLoginTypeSpecifiedInRequest = "e5f6g7h8-e444-7777-dddd-dddddddddddd - Unknown login type specified in request - Have you configured your client correctly?";
+    public const string UnhandledException = "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee - Unhandled Exception";
+}
 
 public record GrantConsentToClientRequest(Guid IdpClientId);
 

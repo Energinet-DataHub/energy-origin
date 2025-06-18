@@ -86,7 +86,7 @@ public class AuthorizationFlowTests : IntegrationTestBase
 
         await using var dbContext = new ApplicationDbContext(_options);
         var org = Organization.Create(Tin.Create(user.OrgCvr), OrganizationName.Create(user.OrgName));
-        org.AcceptTerms(dbContext.Terms.First());
+        org.AcceptTerms(dbContext.Terms.First(), true);
         dbContext.Organizations.Add(org);
         await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 

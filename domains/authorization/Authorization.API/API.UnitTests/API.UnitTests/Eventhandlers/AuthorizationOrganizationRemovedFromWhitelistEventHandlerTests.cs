@@ -1,4 +1,3 @@
-using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using API.Authorization.EventHandlers;
 using EnergyOrigin.IntegrationEvents.Events.OrganizationRemovedFromWhitelist.V1;
@@ -19,14 +18,14 @@ public class AuthorizationOrganizationRemovedFromWhitelistEventHandlerTests
 
         var removeConsentsResult = new RemoveOrganizationConsentsCommandResult();
         var removeClientsResult = new RemoveOrganizationClientsCommandResult();
-        var revokeTermsResult = new RevokeTermsCommandResult();
+        var deactivateOrganizationCommandResult = new DeactivateOrganizationCommandResult();
 
         mediator.Send(Arg.Any<RemoveOrganizationConsentsCommand>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(removeConsentsResult));
         mediator.Send(Arg.Any<RemoveOrganizationClientsCommand>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(removeClientsResult));
-        mediator.Send(Arg.Any<RevokeTermsCommand>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(revokeTermsResult));
+        mediator.Send(Arg.Any<DeactivateOrganizationCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(deactivateOrganizationCommandResult));
 
         var harness = new InMemoryTestHarness();
         var consumerHarness = harness.Consumer(() =>
@@ -58,7 +57,7 @@ public class AuthorizationOrganizationRemovedFromWhitelistEventHandlerTests
                     Arg.Any<CancellationToken>());
 
             await mediator.Received(1)
-                .Send(Arg.Is((RevokeTermsCommand cmd) => cmd.OrganizationId == evt.OrganizationId),
+                .Send(Arg.Is((DeactivateOrganizationCommand cmd) => cmd.OrganizationId == evt.OrganizationId),
                     Arg.Any<CancellationToken>());
         }
         finally
