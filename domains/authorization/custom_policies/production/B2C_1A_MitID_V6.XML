@@ -14,8 +14,8 @@
 
         <ClaimsSchema>
 
-            <ClaimType Id="ettLoginType">
-                <DisplayName>{OAUTH-KV:ettLoginType}</DisplayName>
+            <ClaimType Id="ett_login_intent">
+                <DisplayName>{OAUTH-KV:ett_login_intent}</DisplayName>
                 <DataType>string</DataType>
                 <UserHelpText>Identifier for the login type</UserHelpText>
                 <UserInputType>Readonly</UserInputType>
@@ -281,7 +281,7 @@
 
             <ClaimsTransformation Id="ExtractLoginTypeFromLoginTypeQueryParam" TransformationMethod="SetClaimsIfRegexMatch">
                 <InputClaims>
-                    <InputClaim ClaimTypeReferenceId="ettLoginType" TransformationClaimType="claimToMatch" />
+                    <InputClaim ClaimTypeReferenceId="ett_login_intent" TransformationClaimType="claimToMatch" />
                 </InputClaims>
                 <InputParameters>
                     <InputParameter Id="matchTo" DataType="string" Value="^(?!(?:.*(?&lt;!\S)ett:login:type:(?:trial|normal)(?!\S).*(?&lt;!\S)ett:login:type:(?:trial|normal)(?!\S)|.*(?&lt;!\S)ett:login:type:(?!(?:trial|normal)(?!\S))\S*(?!\S))).*?(?&lt;!\S)ett:login:type:(?&lt;login_type&gt;trial|normal)(?!\S).*$" />
@@ -494,22 +494,22 @@
                     </OutputClaimsTransformations>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop"/>
                 </TechnicalProfile>
-                <TechnicalProfile Id="InitEttLoginType">
-                    <DisplayName>Init ettLoginType from OAUTH-KV param</DisplayName>
+                <TechnicalProfile Id="Initett_login_intent">
+                    <DisplayName>Init ett_login_intent from OAUTH-KV param</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <OutputClaims>
-                        <OutputClaim ClaimTypeReferenceId="ettLoginType" DefaultValue="{OAUTH-KV:ettLoginType}" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="ett_login_intent" DefaultValue="{OAUTH-KV:ett_login_intent}" AlwaysUseDefaultValue="true" />
                     </OutputClaims>
                 </TechnicalProfile>
                 <TechnicalProfile Id="ExtractLoginType">
-                    <DisplayName>Extract login type from ettLoginType</DisplayName>
+                    <DisplayName>Extract login type from ett_login_intent</DisplayName>
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
                         <Item Key="DebugMode">false</Item>
                         <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
                     </Metadata>
                     <InputClaims>
-                        <InputClaim ClaimTypeReferenceId="ettLoginType" DefaultValue="{OAUTH-KV:ettLoginType}" AlwaysUseDefaultValue="true" />
+                        <InputClaim ClaimTypeReferenceId="ett_login_intent" DefaultValue="{OAUTH-KV:ett_login_intent}" AlwaysUseDefaultValue="true" />
                     </InputClaims>
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="login_type" />
@@ -744,7 +744,7 @@
             <OrchestrationSteps>
                 <OrchestrationStep Order="1" Type="ClaimsExchange">
                     <ClaimsExchanges>
-                        <ClaimsExchange Id="InitEttLoginTypeExchange" TechnicalProfileReferenceId="InitEttLoginType" />
+                        <ClaimsExchange Id="Initett_login_intentExchange" TechnicalProfileReferenceId="Initett_login_intent" />
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
