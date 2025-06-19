@@ -1,4 +1,5 @@
 using System;
+using Energinet.DataHub.Measurements.Abstractions.Api.Models;
 
 namespace API.Models;
 
@@ -23,13 +24,13 @@ public enum EnergyQuality
 
 public static class MeasurementExtensions
 {
-    public static EnergyQuality ToEnergyQuality(this string quality) =>
+    public static EnergyQuality ToEnergyQuality(this Quality quality) =>
         quality switch
         {
-            "measured" => EnergyQuality.Measured,
-            "estimated" => EnergyQuality.Estimated,
-            "calculated" => EnergyQuality.Calculated,
-            "missing" => EnergyQuality.Missing,
+            Quality.Measured => EnergyQuality.Measured,
+            Quality.Estimated => EnergyQuality.Estimated,
+            Quality.Calculated => EnergyQuality.Calculated,
+            Quality.Missing => EnergyQuality.Missing,
             _ => throw new ArgumentException($"Unknown quality: {quality}")
         };
 
