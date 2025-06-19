@@ -12,8 +12,11 @@ on:
         required: true
         type: string
 
-jobs:
+permissions:
+  contents: read
+  checks: write
 
+jobs:
   dotnet-lint-solution:
     runs-on: ubuntu-22.04
     steps:
