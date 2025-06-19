@@ -4,6 +4,7 @@
 
 name: Scorecard supply-chain security
 on:
+  workflow_dispatch: {}
   schedule:
     - cron: '20 7 * * 2'
   pull_request:
