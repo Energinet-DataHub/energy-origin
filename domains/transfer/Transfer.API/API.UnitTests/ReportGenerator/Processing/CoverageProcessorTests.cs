@@ -11,7 +11,7 @@ namespace API.UnitTests.ReportGenerator.Processing;
 public class CoverageProcessorTests
 {
     [Fact]
-    public void Calculate()
+    public void Calculate_WhenHalfConsumptionDistributedOnCoverageTypes_Expect50YearlyPercentage()
     {
         var now = DateTimeOffset.Now;
         var hourly = GenerateClaims(2, now, now);
@@ -40,6 +40,28 @@ public class CoverageProcessorTests
         Assert.Equal(33.3, Math.Round(result.WeeklyPercentage, 1));
         Assert.Equal(41.7, Math.Round(result.MonthlyPercentage!.Value, 1));
         Assert.Equal(50, Math.Round(result.YearlyPercentage!.Value));
+    }
+
+    [Fact]
+    public void Calculate_WhenHalfConsumptionOnHourly_Expect50HourlyPercentageAndOtherCoverages()
+    {
+        var now = DateTimeOffset.Now;
+        var hourly = GenerateClaims(12, now, now);
+
+        var claims = new List<Claim>();
+        claims.AddRange(hourly);
+
+        var consumption = GenerateConsumption();
+
+        var sut = new CoverageProcessor();
+
+        var result = sut.Calculate(claims, consumption, now, now.AddYears(1));
+
+        Assert.Equal(50, result.HourlyPercentage);
+        Assert.Equal(50, result.DailyPercentage);
+        Assert.Equal(50, result.WeeklyPercentage);
+        Assert.Equal(50, result.MonthlyPercentage!.Value);
+        Assert.Equal(50, result.YearlyPercentage!.Value);
     }
 
     [Fact]

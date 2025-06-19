@@ -13,7 +13,7 @@ public class OtherCoverageRendererTests
     {
         var sut = new OtherCoverageRenderer();
 
-        var values = new CoveragePercentage(50.5,60.1, 70, 80.9, null);
+        var values = new CoveragePercentage(50.5, 60.1, 70, 80.9, null);
 
         var html = sut.Render(values);
 
