@@ -39,7 +39,13 @@ public class GetActiveContractsQueryHandler : IRequestHandler<GetActiveContracts
                     Tin = org.Tin,
                     Created = contract.Created,
                     StartDate = contract.StartDate,
-                    EndDate = contract.EndDate
+                    EndDate = contract.EndDate,
+                    Status = org.Status switch
+                    {
+                        "Normal" => "Active",
+                        "Trial" => "Test",
+                        _ => org.Status
+                    }
                 })
             .ToList();
 
