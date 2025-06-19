@@ -12,8 +12,6 @@ using Xunit;
 using EnergyTrackAndTrace.Testing.Extensions;
 using EnergyOrigin.Datahub3;
 using Energinet.DataHub.Measurements.Abstractions.Api.Models;
-using Microsoft.AspNetCore.Components.Web;
-using MassTransit.Internals;
 
 namespace API.UnitTests.Services;
 
