@@ -27,9 +27,16 @@ jobs:
 
       - name: Check SARIF file validity
         id: check_sarif
+        shell: bash
         run: |
           if [ -s ethicalcheck-results.sarif ] && jq empty ethicalcheck-results.sarif; then
             echo "valid=true" >> $GITHUB_OUTPUT
           else
             echo "valid=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Dump SARIF file contents
+        shell: bash
+        run: |
+          echo "SARIF output:"
+          cat ethicalcheck-results.sarif || echo "No SARIF file generated"
