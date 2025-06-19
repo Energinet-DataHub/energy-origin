@@ -52,6 +52,12 @@ public class MeasurementClient(IMeasurementsClient client, IOptions<DataHub3Opti
                 Instant.FromUnixTimeSeconds(dateToEpoch),
                 Aggregation.Hour);
 
+            logger.LogInformation(
+                "Getting measurements for GSRNs: {GSRNs}, From: {From}, To: {To}",
+                string.Join(",", singleGsrnQuery.MeteringPointIds),
+                singleGsrnQuery.From.ToString(),
+                singleGsrnQuery.To.ToString());
+
             tasks.Add(client.GetAggregatedByPeriodAsync(singleGsrnQuery, cancellationToken));
         }
 
