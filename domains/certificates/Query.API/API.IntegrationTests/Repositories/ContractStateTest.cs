@@ -215,6 +215,19 @@ public class ContractStateTest
     }
 
     [Fact]
+    public async Task GivenTrialContract_WhenGettingSyncInfo_FlagIsSetCorrectly()
+    {
+        await using var db = _dbContextFactoryMock.CreateDbContext();
+        var now = UnixTimestamp.Now().AddHours(-_minimumAgeThresholdHours - 1);
+        db.Contracts.Add(Any.CertificateIssuingContract(Any.Gsrn(), now, null, trial: true));
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var syncInfos = await _sut.GetSyncInfos(TestContext.Current.CancellationToken);
+
+        syncInfos.Should().ContainSingle(i => i.IsTrial.Equals(true));
+    }
+
+    [Fact]
     public async Task GivenSponsoredAndUnsponsoredContracts_WhenGettingSyncInfo_FlagIsSetCorrectly()
     {
         await using var db = _dbContextFactoryMock.CreateDbContext();

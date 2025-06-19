@@ -45,6 +45,8 @@ public class ContractsController(IdentityDescriptor identityDescriptor, AccessDe
             return Forbid();
         }
 
+
+
         foreach (var createContract in createContracts.Contracts)
         {
             var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
@@ -54,9 +56,9 @@ public class ContractsController(IdentityDescriptor identityDescriptor, AccessDe
                 return ValidationProblem(ModelState);
             }
         }
-
+        var isTrial = identityDescriptor.OrganizationStatus == OrganizationStatus.Trial;
         var result = await service.Create(createContracts, organizationId, identityDescriptor.Subject, identityDescriptor.Name,
-            identityDescriptor.OrganizationName, identityDescriptor.OrganizationCvr ?? string.Empty, cancellationToken);
+            identityDescriptor.OrganizationName, identityDescriptor.OrganizationCvr ?? string.Empty, isTrial, cancellationToken);
 
         return result switch
         {

@@ -22,6 +22,7 @@ public class IdentityDescriptor
         ThrowExceptionIfUnsupportedAuthenticationScheme();
     }
 
+    public OrganizationStatus OrganizationStatus => GetClaimAsEnum<OrganizationStatus>(ClaimType.OrgStatus);
     public Guid Subject => GetClaimAsGuid(ClaimType.Sub);
 
     public SubjectType SubjectType => GetClaimAsEnum<SubjectType>(ClaimType.SubType);

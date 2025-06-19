@@ -243,6 +243,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },
             { ClaimType.TermsAccepted, termsAccepted.ToString() },
+            { ClaimType.OrgStatus, "trial" },
             { UserClaimName.AccessToken, "" },
             { UserClaimName.IdentityToken, "" },
             { UserClaimName.ProviderKeys, "" }

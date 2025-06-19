@@ -36,7 +36,8 @@ public class MeasurementsSyncServiceTest
         MeteringPointType.Production,
         "DK1",
         Guid.NewGuid(),
-        new Technology("T12345", "T54321"));
+        new Technology("T12345", "T54321"),
+        false);
 
     private readonly ILogger<MeasurementsSyncService> _fakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly ISlidingWindowState _fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
@@ -288,7 +289,8 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new Technology("T12345", "T54321"),
+            false);
 
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(
             syncInfo.Gsrn,
@@ -476,7 +478,8 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new Technology("T12345", "T54321"),
+            false);
 
         var slidingWindow =
             MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, UnixTimestamp.Create(syncInfo.StartSyncDate));
@@ -563,7 +566,8 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new Technology("T12345", "T54321"),
+            false);
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStart);
 
         // When fetching measurements
@@ -603,7 +607,8 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new Technology("T12345", "T54321"),
+            false);
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStart);
 
         // When fetching measurements
@@ -693,7 +698,8 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new Technology("T12345", "T54321"),
+            false);
 
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, syncStart);
 
