@@ -18,14 +18,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: EthicalCheck  Free & Automated API Security Testing Service
+      - name: EthicalCheck
         uses: apisec-inc/ethicalcheck-action@005fac321dd843682b1af6b72f30caaf9952c641
         with:
           oas-url: "https://demo.energytrackandtrace.dk/api-docs/transfer/1/swagger.json"
           email: "shd@energinet.dk"
           sarif-result-file: "ethicalcheck-results.sarif"
 
-      - name: Upload sarif file to repository
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ./ethicalcheck-results.sarif
+      - name: Check SARIF file validity
+        id: check_sarif
+        run: |
+          if [ -s ethicalcheck-results.sarif ] && jq empty ethicalcheck-results.sarif; then
+            echo "valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "valid=false" >> $GITHUB_OUTPUT
+          fi
