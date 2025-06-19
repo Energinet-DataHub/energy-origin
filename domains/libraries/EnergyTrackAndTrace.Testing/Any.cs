@@ -95,16 +95,6 @@ public class Any
         return new Gsrn(sb.ToString());
     }
 
-    public static Guid Guid()
-    {
-        return System.Guid.NewGuid();
-    }
-
-    public static OrganizationId OrganizationId()
-    {
-        return EnergyOrigin.Domain.ValueObjects.OrganizationId.Create(Guid());
-    }
-
     public static Tin Tin()
     {
         return EnergyOrigin.Domain.ValueObjects.Tin.Create(IntString(8));

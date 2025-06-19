@@ -6,11 +6,13 @@ namespace API.IntegrationTests.Setup.Tooling;
 
 public class MockAuthorizationClient : IAuthorizationClient
 {
-    public static List<UserOrganizationConsentsResponseItem> MockedConsents { get; set; } = [];
+    public static List<UserOrganizationConsentsResponseItem> MockedConsents = new();
 
     public async Task<UserOrganizationConsentsResponse?> GetConsentsAsync()
     {
         await Task.Delay(1);
-        return new UserOrganizationConsentsResponse(MockedConsents);
+        var response = new UserOrganizationConsentsResponse(MockedConsents);
+
+        return response;
     }
 }
