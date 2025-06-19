@@ -1,0 +1,34 @@
+name: EthicalCheck-Workflow
+
+on:
+  push:
+    branches: [ $default-branch, $protected-branches ]
+  pull_request:
+    branches: [ $default-branch ]
+  schedule:
+    - cron: $cron-weekly
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  Trigger_EthicalCheck:
+    permissions:
+      security-events: write
+      actions: read
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: EthicalCheck  Free & Automated API Security Testing Service
+        uses: apisec-inc/ethicalcheck-action@005fac321dd843682b1af6b72f30caaf9952c641
+        with:
+          oas-url: "https://demo.energytrackandtrace.dk/api-docs/transfer/1/swagger.json"
+          email: "shd@energinet.dk"
+          sarif-result-file: "ethicalcheck-results.sarif"
+
+      - name: Upload sarif file to repository
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ./ethicalcheck-results.sarif
