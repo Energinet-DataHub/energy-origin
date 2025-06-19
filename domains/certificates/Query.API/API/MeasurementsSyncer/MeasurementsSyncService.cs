@@ -157,7 +157,7 @@ public class MeasurementsSyncService
                     {
                         Gsrn = slidingWindow.GSRN,
                         DateFrom = x.From.ToUnixTimeSeconds(),
-                        DateTo = UnixTimestamp.Create(x.To.ToUnixTimeSeconds()).AddHours(1).EpochSeconds,
+                        DateTo = UnixTimestamp.Create(x.From.ToUnixTimeSeconds()).AddHours(1).EpochSeconds,
                         Quantity = x.Quantity ?? 0,
                         Quality = x.Quality.ToEnergyQuality(),
                     }));

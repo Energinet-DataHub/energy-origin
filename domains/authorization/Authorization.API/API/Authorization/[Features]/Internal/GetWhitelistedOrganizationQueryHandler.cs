@@ -16,4 +16,4 @@ public class GetWhitelistedOrganizationQueryHandler(IWhitelistedRepository white
     }
 }
 
-public record GetWhitelistedOrganizationQuery(string Tin) : IRequest<bool>;
+public record GetWhitelistedOrganizationQuery(string Tin, string LoginType) : IRequest<bool>;
