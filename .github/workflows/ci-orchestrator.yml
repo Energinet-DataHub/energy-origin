@@ -1,5 +1,8 @@
 name: CI orchestrator
 
+# Start with ZERO permissions
+permissions: {}
+
 on:
   pull_request:
     branches:
@@ -8,15 +11,15 @@ on:
     branches:
       - main
 
-permissions: { }
-
 jobs:
   setup:
     runs-on: ubuntu-latest
+    # Minimal permissions for metadata access
+    permissions:
+      pull-requests: read
     outputs:
       dry-run: ${{ (github.event_name == 'push' && github.ref_name == 'main') == false && false == (github.event_name == 'pull_request' && (startsWith(github.event.pull_request.head.ref, 'preview/') || startsWith(github.event.pull_request.head.ref, 'vcluster/'))) }}
       is-dependabot: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'dependabot/') }}
-
     steps:
       - name: Setup variables
         run: exit 0
@@ -28,21 +31,36 @@ jobs:
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+    # Elevate only for image building
+    permissions:
+      contents: read
+      packages: write
+      secrets: read
+      id-token: write
 
   check-licenses:
     if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/check-licenses.yml
     secrets: inherit
+    # Only need read access
+    permissions:
+      contents: read
 
   dependabot-validate:
     uses: ./.github/workflows/dependabot-validate.yaml
     secrets: inherit
+    # Only need read access
+    permissions:
+      contents: read
 
   workflow-validate:
     runs-on: ubuntu-latest
+    # Only need read access
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: asdf-vm/actions/install@1902764435ca0dd2f3388eea723a4f92a4eb8302 # v4.0.0
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: asdf-vm/actions/install@1902764435ca0dd2f3388eea723a4f92a4eb8302
         with:
           tool_versions: |
             action-validator 0.5.1
@@ -59,6 +77,10 @@ jobs:
         workflow-validate,
       ]
     if: always()
+    # Only need status checks
+    permissions:
+      checks: read
+      statuses: read
     steps:
       - name: Print needs
         run: |

@@ -12,8 +12,13 @@ on:
         required: true
         type: string
 
+permissions: {}
+
 jobs:
   build-api:
+    permissions:
+      contents: read
+      packages: write
     name: Build Transfer.API
     runs-on: ubuntu-latest
     steps:
@@ -32,6 +37,9 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-claim-automation:
+    permissions:
+      contents: read
+      packages: write
     name: Build ClaimAutomation.Worker
     runs-on: ubuntu-latest
     steps:
@@ -50,6 +58,9 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-transfer-automation:
+    permissions:
+      contents: read
+      packages: write
     name: Build TransferAutomation.Worker
     runs-on: ubuntu-latest
     steps:
