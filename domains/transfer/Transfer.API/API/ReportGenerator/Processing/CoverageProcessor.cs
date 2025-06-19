@@ -17,6 +17,15 @@ public class CoverageProcessor : ICoverageProcessor
     {
         var totalConsumption = (double)consumption.Sum(x => x.KwhQuantity * 1000);
 
+        if (totalConsumption == 0)
+        {
+            return new CoveragePercentage(100,
+                100,
+                100,
+                (endDate - startDate).Duration() >= TimeSpan.FromDays(30) ? 100 : null,
+                (endDate - startDate).Duration() >= TimeSpan.FromDays(365) ? 100 : null);
+        }
+
         var hourly = (double)claims.Where(x => x.ProductionCertificate.Start == x.ConsumptionCertificate.Start)
             .Sum(x => x.Quantity);
         var hourlyPercentage = (hourly / totalConsumption) * 100;

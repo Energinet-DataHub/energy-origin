@@ -29,7 +29,6 @@ public class PopulateReportCommandHandlerTests
     private readonly IMediator _mediator = Substitute.For<IMediator>();
     private readonly ILogger<PopulateReportCommandHandler> _logger = Substitute.For<ILogger<PopulateReportCommandHandler>>();
     private readonly IEnergyDataFetcher _dataFetcher = Substitute.For<IEnergyDataFetcher>();
-    private readonly IHeadlinePercentageProcessor _percentageProcessor = Substitute.For<IHeadlinePercentageProcessor>();
     private readonly IEnergySvgRenderer _svgRenderer = Substitute.For<IEnergySvgRenderer>();
     private readonly IOrganizationHeaderRenderer _headerRenderer = Substitute.For<IOrganizationHeaderRenderer>();
     private readonly IHeadlinePercentageRenderer _percentageRenderer = Substitute.For<IHeadlinePercentageRenderer>();
@@ -45,7 +44,6 @@ public class PopulateReportCommandHandlerTests
         _dataFetcher
             .GetAsync(Arg.Any<OrganizationId>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns((Enumerable.Empty<ConsumptionHour>().ToList(), Enumerable.Empty<Claim>().ToList()));
-        _percentageProcessor.Calculate(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(100);
         _svgRenderer.Render(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(new EnergySvgResult("<svg></svg>"));
         _headerRenderer.Render(Arg.Any<string>(), Arg.Any<string>()).Returns("<header/>");
         _percentageRenderer.Render(Arg.Any<double>(), Arg.Any<string>()).Returns("<percent/>");
@@ -68,7 +66,6 @@ public class PopulateReportCommandHandlerTests
             _logger,
             _dataFetcher,
             new EnergyDataFormatter(),
-            _percentageProcessor,
             new MunicipalityPercentageProcessor(),
             new CoverageProcessor(),
             _svgRenderer,

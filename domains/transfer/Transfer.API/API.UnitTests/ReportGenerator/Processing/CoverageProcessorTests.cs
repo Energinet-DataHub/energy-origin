@@ -43,6 +43,40 @@ public class CoverageProcessorTests
     }
 
     [Fact]
+    public void Calculate_WhenNoClaimsProvided_ReturnsZero()
+    {
+        var now = DateTimeOffset.Now;
+
+        var consumption = GenerateConsumption();
+
+        var sut = new CoverageProcessor();
+
+        var result = sut.Calculate(new List<Claim>(), consumption, now, now.AddYears(1));
+
+        Assert.Equal(0, result.HourlyPercentage);
+        Assert.Equal(0, result.DailyPercentage);
+        Assert.Equal(0, result.WeeklyPercentage);
+        Assert.Equal(0, result.MonthlyPercentage!.Value);
+        Assert.Equal(0, result.YearlyPercentage!.Value);
+    }
+
+    [Fact]
+    public void Calculate_WhenTotalConsumptionIsZero_ReturnsHundredPercent()
+    {
+        var now = DateTimeOffset.Now;
+
+        var sut = new CoverageProcessor();
+
+        var result = sut.Calculate(new List<Claim>(), new List<ConsumptionHour>(), now, now.AddYears(1));
+
+        Assert.Equal(100, result.HourlyPercentage);
+        Assert.Equal(100, result.DailyPercentage);
+        Assert.Equal(100, result.WeeklyPercentage);
+        Assert.Equal(100, result.MonthlyPercentage!.Value);
+        Assert.Equal(100, result.YearlyPercentage!.Value);
+    }
+
+    [Fact]
     public void Calculate_WhenEndDateIsLessThan1Month_ExpectYearlyAndMonthlyPercentageNull()
     {
         var now = DateTimeOffset.Now;
