@@ -15,7 +15,7 @@ using API.Transfer.Api.Dto.Responses;
 using DataContext;
 using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects.Tests;
+using EnergyTrackAndTrace.Testing;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -26,7 +26,7 @@ using Xunit;
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class TransferAgreementsControllerTests
+public class TransferAgreementsControllerTests : IAsyncLifetime
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly ITestOutputHelper output;
@@ -35,6 +35,23 @@ public class TransferAgreementsControllerTests
     {
         factory = integrationTestFixture.Factory;
         this.output = output;
+    }
+
+    public async ValueTask InitializeAsync()
+    {
+        await CleanupTransferAgreements();
+        MockAuthorizationClient.MockedConsents = new List<UserOrganizationConsentsResponseItem>();
+    }
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+    private async Task CleanupTransferAgreements()
+    {
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.TransferAgreements.RemoveRange(dbContext.TransferAgreements);
+        dbContext.TransferAgreementProposals.RemoveRange(dbContext.TransferAgreementProposals);
+        await dbContext.SaveChangesAsync();
     }
 
     [Fact]
