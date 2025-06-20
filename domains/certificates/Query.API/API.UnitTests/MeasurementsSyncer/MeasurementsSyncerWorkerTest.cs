@@ -42,7 +42,7 @@ public class MeasurementsSyncerWorkerTest
     private readonly MeasurementsSyncerWorker _worker;
     private readonly IMeasurementSyncPublisher _fakeMeasurementPublisher = Substitute.For<IMeasurementSyncPublisher>();
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _fakeMeteringPointsClient = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-    private readonly IDataHub3Client _dataHub3Client = Substitute.For<IDataHub3Client>();
+    private readonly IMeasurementClient _measurementClient = Substitute.For<IMeasurementClient>();
     private readonly IDataHubFacadeClient _dataHubFacadeClient = Substitute.For<IDataHubFacadeClient>();
     private readonly IContractState _contractState = Substitute.For<IContractState>();
 
@@ -50,7 +50,7 @@ public class MeasurementsSyncerWorkerTest
     {
         var measurementSyncMetrics = Substitute.For<MeasurementSyncMetrics>();
         var syncService = new MeasurementsSyncService(_syncServiceFakeLogger, _fakeSlidingWindowState, new SlidingWindowService(measurementSyncMetrics),
-            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, _options, _dataHub3Client, _dataHubFacadeClient, _contractState);
+            new MeasurementSyncMetrics(), _fakeMeasurementPublisher, _fakeMeteringPointsClient, _options, _measurementClient, _dataHubFacadeClient, _contractState);
         _scopeFactory.CreateScope().Returns(_scope);
         _scope.ServiceProvider.Returns(_serviceProvider);
         _serviceProvider.GetService<MeasurementsSyncService>().Returns(syncService);
@@ -75,6 +75,6 @@ public class MeasurementsSyncerWorkerTest
 
         // Assert no timeout and no data fetched
         Assert.True(workerTask.IsCompleted);
-        _ = _dataHub3Client.DidNotReceive().GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+        _ = _measurementClient.DidNotReceive().GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
     }
 }

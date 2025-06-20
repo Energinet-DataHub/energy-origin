@@ -12,4 +12,4 @@ public record HourlyEnergy
     double Overmatched
 );
 
-public record MunicipalityDistribution(string Municipality, double Percentage);
+public record MunicipalityDistribution(string? Municipality, double Percentage);

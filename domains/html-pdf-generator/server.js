@@ -78,6 +78,7 @@ const server = http.createServer(async (req, res) => {
                         executablePath: '/usr/bin/chromium-browser',
                         args: [
                             '--no-sandbox',
+                            '--disable-gpu',
                             '--disable-setuid-sandbox',
                             '--disable-dev-shm-usage',
                             '--single-process'

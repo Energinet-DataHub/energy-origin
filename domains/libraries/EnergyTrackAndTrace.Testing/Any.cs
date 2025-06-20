@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using EnergyOrigin.Datahub3;
+using Energinet.DataHub.Measurements.Abstractions.Api.Models;
 using EnergyOrigin.Domain.ValueObjects;
-using MeteringPoint = EnergyOrigin.Datahub3.MeteringPoint;
+using NodaTime;
 
 namespace EnergyTrackAndTrace.Testing;
 
 public class Any
 {
-    public static MeteringPointData[] TimeSeriesApiResponse(Gsrn gsrn, long dateFrom, long dateTo, long initValue)
+    public static MeasurementAggregationByPeriodDto[] MeasurementsApiResponse(Gsrn gsrn, long dateFrom, long dateTo, long initValue, int? quantity = null)
     {
         var dateFromDateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(dateFrom);
         var dateToDateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(dateTo);
@@ -28,37 +28,31 @@ public class Any
         var pags = new Dictionary<string, PointAggregationGroup>();
         foreach (var day in daysRange)
         {
-            var pag = new PointAggregationGroup
-            {
-                MinObservationTime = day.ToUnixTimeSeconds(),
-                MaxObservationTime = day.AddDays(1).ToUnixTimeSeconds(),
-                Resolution = "PT1H",
-                PointAggregations = new List<PointAggregation>()
-            };
+            var pag = new PointAggregationGroup(
+                    Instant.FromUnixTimeSeconds(day.ToUnixTimeSeconds()),
+                    Instant.FromUnixTimeSeconds(day.AddDays(1).ToUnixTimeSeconds()),
+                    Resolution.Hourly,
+                    []);
 
             for (int i = 0; i < 24; i++)
             {
-                var pa = new PointAggregation
-                {
-                    MinObservationTime = day.AddHours(i).ToUnixTimeSeconds(),
-                    MaxObservationTime = day.AddHours(i + 1).ToUnixTimeSeconds(),
-                    AggregatedQuantity = initValue + i,
-                    Quality = "measured"
-                };
+                var pa = new PointAggregation(
+                        Instant.FromUnixTimeSeconds(day.AddHours(i).ToUnixTimeSeconds()),
+                        Instant.FromUnixTimeSeconds(day.AddHours(i + 1).ToUnixTimeSeconds()),
+                        quantity is null ? initValue + i : quantity,
+                        Quality.Measured);
+
                 pag.PointAggregations.Add(pa);
             }
 
             pags.Add(gsrn.Value + "_" + day.ToString("yyyy-MM-dd"), pag);
         }
 
-        return [new MeteringPointData
-        {
-            MeteringPoint = new MeteringPoint { Id = gsrn.Value },
-            PointAggregationGroups = pags
-        }];
+        return [new MeasurementAggregationByPeriodDto(new MeteringPoint(gsrn.Value), pags)];
     }
 
-    public static MeteringPointData[] TimeSeriesApiResponse(Gsrn gsrn, List<PointAggregation> pas)
+
+    public static MeasurementAggregationByPeriodDto[] DH3MeasurementsApiResponse(Gsrn gsrn, List<PointAggregation> pas)
     {
         var pags = new Dictionary<string, PointAggregationGroup>();
 
@@ -72,21 +66,20 @@ public class Any
             var buffer = new PointAggregation[chunkSize];
             Array.Copy(pasArray, startIndex, buffer, 0, chunkSize);
 
-            var pag = new PointAggregationGroup
-            {
-                MinObservationTime = buffer.Min(x => x.MinObservationTime),
-                MaxObservationTime = buffer.Max(x => x.MaxObservationTime),
-                Resolution = "PT1H",
-                PointAggregations = buffer.ToList()
-            };
-            pags.Add(gsrn.Value + "_" + UnixTimestamp.Create(pag.MinObservationTime).ToDateTimeOffset().ToString("yyyy-MM-dd"), pag);
+            var pag = new PointAggregationGroup(
+                    buffer.Min(x => x.From),
+                    buffer.Max(x => x.To),
+                    Resolution.Hourly,
+                    [.. buffer]);
+
+            pags.Add(
+                    gsrn.Value + "_" + UnixTimestamp.Create(pag.From.ToUnixTimeSeconds()).ToDateTimeOffset().ToString("yyyy-MM-dd"),
+                    pag);
         }
 
-        return [new MeteringPointData
-        {
-            MeteringPoint = new MeteringPoint { Id = gsrn.Value },
-            PointAggregationGroups = pags
-        }];
+        return [new MeasurementAggregationByPeriodDto(
+               new MeteringPoint(gsrn.Value),
+               pags )];
     }
 
     public static Gsrn Gsrn()
@@ -118,12 +111,23 @@ public class Any
     public static PointAggregation PointAggregation(long minObservationTime, decimal aggregatedQuantity)
     {
         return new PointAggregation
-        {
-            MinObservationTime = minObservationTime,
-            MaxObservationTime = minObservationTime,
-            AggregatedQuantity = aggregatedQuantity,
-            Quality = "measured"
-        };
+        (
+            Instant.FromUnixTimeSeconds(minObservationTime),
+            Instant.FromUnixTimeSeconds(minObservationTime),
+            aggregatedQuantity,
+            Quality.Measured
+        );
+    }
+
+    public static PointAggregation PointAggregation(long minObservationTime, long maxObservationTime, decimal aggregatedQuantity)
+    {
+        return new PointAggregation
+        (
+            Instant.FromUnixTimeSeconds(minObservationTime),
+            Instant.FromUnixTimeSeconds(maxObservationTime),
+            aggregatedQuantity,
+            Quality.Measured
+        );
     }
 
     public static Meteringpoint.V1.MeteringPoint MeteringPoint(Gsrn gsrn)

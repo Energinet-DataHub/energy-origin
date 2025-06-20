@@ -16,23 +16,28 @@ public class WhitelistedMigrationsTests : IAsyncLifetime
     {
         var databaseInfo = await StartPostgresDatabase();
         var dbMigrator = new DbMigrator(databaseInfo.ConnectionString, typeof(Program).Assembly, NullLogger<DbMigrator>.Instance);
+
         await dbMigrator.MigrateAsync("20250320-0001-AddWhitelistedTable.sql");
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseNpgsql(databaseInfo.ConnectionString)
             .Options;
 
-        var organizations = new[]
-        {
-            Organization.Create(null, Any.OrganizationName()),
-            Organization.Create(Any.Tin(), Any.OrganizationName()),
-            Organization.Create(Any.Tin(), Any.OrganizationName())
-        };
-
         await using (var dbContext = new ApplicationDbContext(options))
         {
-            await dbContext.Organizations.AddRangeAsync(organizations, TestContext.Current.CancellationToken);
-            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+            var orgName1 = Any.OrganizationName().Value;
+            var orgName2 = Any.OrganizationName().Value;
+            var orgName3 = Any.OrganizationName().Value;
+            var tin2 = Any.Tin().Value;
+            var tin3 = Any.Tin().Value;
+            var sql = $@"
+            INSERT INTO ""Organizations"" (""Id"", ""Name"", ""Tin"", ""TermsAccepted"", ""ServiceProviderTermsAccepted"")
+            VALUES
+                ('{Guid.NewGuid()}', '{orgName1.Replace("'", "''")}', NULL, false, false),
+                ('{Guid.NewGuid()}', '{orgName2.Replace("'", "''")}', '{tin2.Replace("'", "''")}', false, false),
+                ('{Guid.NewGuid()}', '{orgName3.Replace("'", "''")}', '{tin3.Replace("'", "''")}', false, false);
+        ";
+            await dbContext.Database.ExecuteSqlRawAsync(sql, CancellationToken.None);
         }
 
         await dbMigrator.MigrateAsync("20250320-0011-CopyOrganizationRecordsToWhitelistedTable.sql");
@@ -40,15 +45,15 @@ public class WhitelistedMigrationsTests : IAsyncLifetime
         await using (var dbContext = new ApplicationDbContext(options))
         {
             var whitelistedRecords = await dbContext.Whitelisted.ToListAsync(TestContext.Current.CancellationToken);
-            Assert.DoesNotContain(whitelistedRecords, w => w.Tin.Value == organizations[0].Tin?.Value);
+
+            Assert.DoesNotContain(whitelistedRecords, w => w.Tin.Value == null);
         }
     }
 
     private async Task<DatabaseInfo> StartPostgresDatabase()
     {
         await _postgresContainer.InitializeAsync();
-        var databaseInfo = await _postgresContainer.CreateNewDatabase();
-        return databaseInfo;
+        return await _postgresContainer.CreateNewDatabase();
     }
 
     public ValueTask InitializeAsync() => ValueTask.CompletedTask;

@@ -41,4 +41,7 @@ public record GranularCertificate()
     /// The attributes of the certificate.
     /// </summary>
     public required Dictionary<string, string> Attributes { get; init; }
+
+    public bool IsTrialCertificate =>
+        Attributes.TryGetValue("IsTrial", out var val) && string.Equals(val, "true", StringComparison.OrdinalIgnoreCase);
 }
