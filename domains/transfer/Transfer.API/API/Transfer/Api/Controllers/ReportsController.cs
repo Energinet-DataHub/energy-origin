@@ -75,6 +75,7 @@ public class ReportsController : ControllerBase
             organizationId: OrganizationId.Create(organizationId),
             organizationName: OrganizationName.Create(_identityDescriptor.OrganizationName),
             organizationTin: tin,
+            orgStatus: _identityDescriptor.OrganizationStatus,
             startDate: UnixTimestamp.Create(request.StartDate),
             endDate: UnixTimestamp.Create(request.EndDate));
 

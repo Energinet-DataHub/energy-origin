@@ -80,14 +80,22 @@ public class PopulateReportCommandHandlerTests
     }
 
     [Fact]
-    public async Task GivenValidRangeAndPdfSucceeds_WhenCallingHandler_ThenReportIsCompletedAndBytesPersisted()
+    public async Task GivenValidRangeAndTrialPdfSucceeds_WhenCallingHandler_ThenReportIsCompletedAndBytesPersisted()
     {
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var start = UnixTimestamp.Now().AddDays(-7);
         var end = UnixTimestamp.Now();
         var reportId = Guid.NewGuid();
 
-        var report = Report.Create(reportId, orgId, Any.OrganizationName(), EnergyTrackAndTrace.Testing.Any.Tin(), start, end);
+        var report = Report.Create(
+            reportId,
+            orgId,
+            Any.OrganizationName(),
+            EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "trial",
+            start,
+            end
+            );
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         var cmd = new PopulateReportCommand(reportId);
@@ -105,6 +113,50 @@ public class PopulateReportCommandHandlerTests
         captured.Should().NotBeNull();
         captured.Id.Should().Be(reportId);
         captured.Status.Should().Be(ReportStatus.Completed);
+        captured.IsTrial.Should().Be(true);
+        captured.Content.Should().Equal(new byte[] { 0x01, 0x02, 0x03 });
+
+        await _reports.Received(1)
+            .UpdateAsync(Arg.Is<Report>(r => r.Id == reportId && r.Status == ReportStatus.Completed),
+                Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveAsync();
+    }
+
+    [Fact]
+    public async Task GivenValidRangeAndNormalPdfSucceeds_WhenCallingHandler_ThenReportIsCompletedAndBytesPersisted()
+    {
+        var orgId = OrganizationId.Create(Guid.NewGuid());
+        var start = UnixTimestamp.Now().AddDays(-7);
+        var end = UnixTimestamp.Now();
+        var reportId = Guid.NewGuid();
+
+        var report = Report.Create(
+            reportId,
+            orgId,
+            Any.OrganizationName(),
+            EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
+            start,
+            end
+        );
+        _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
+
+        var cmd = new PopulateReportCommand(reportId);
+
+        Report captured = null!;
+        _reports
+            .When(x => x.AddAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .Do(ci => captured = ci.Arg<Report>());
+        _reports
+            .When(x => x.UpdateAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .Do(ci => captured = ci.Arg<Report>());
+
+        await _sut.Handle(cmd, CancellationToken.None);
+
+        captured.Should().NotBeNull();
+        captured.Id.Should().Be(reportId);
+        captured.Status.Should().Be(ReportStatus.Completed);
+        captured.IsTrial.Should().Be(false);
         captured.Content.Should().Equal(new byte[] { 0x01, 0x02, 0x03 });
 
         await _reports.Received(1)
@@ -132,7 +184,15 @@ public class PopulateReportCommandHandlerTests
         var reportId = Guid.NewGuid();
         var cmd = new PopulateReportCommand(reportId);
 
-        var report = Report.Create(reportId, orgId, Any.OrganizationName(), EnergyTrackAndTrace.Testing.Any.Tin(), start, end);
+        var report = Report.Create(
+            reportId,
+            orgId,
+            Any.OrganizationName(),
+            EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
+            start,
+            end
+            );
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         Report captured = null!;
