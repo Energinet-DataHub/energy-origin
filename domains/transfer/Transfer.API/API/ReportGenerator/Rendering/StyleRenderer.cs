@@ -40,31 +40,26 @@ public class StyleRenderer : IStyleRenderer
                              --logo-height: 40px;
                          }
 
-                     @media print {
-                         @page {
-                             size: 210mm 297mm;
+                         @media print {
+                             @page {
+                                 size: 210mm 297mm;
+                                 margin: 0;
+                             }
+                             body {
+                                 zoom: 123%
+                             }
+                         }
+
+                         body {
+                             font-family: "OpenSansNormal", sans-serif;
+                             display: flex;
+                             flex-direction: column;
+                             justify-content: space-between;
+                             width: 595px;
+                             height: 842px;
+                             padding: 16px 16px;
                              margin: 0;
                          }
-                         body {
-                             zoom: 123%
-                         }
-                         .watermark {
-                             position: fixed;
-                             top: 50%;
-                             left: 50%;
-                             transform: translate(-50%, -50%) rotate(-45deg);
-                             font-size: 200px;
-                             color: rgba(0, 0, 0, 0.10);
-                             white-space: nowrap;
-                             pointer-events: none;
-                             user-select: none;
-                             z-index: 0;
-                             font-weight: bold;
-                             font-family: "OpenSansNormal", sans-serif;
-                             text-align: center;
-                             width: 100%;
-                         }
-                     }
 
                          .top {
                              display: flex;
