@@ -106,8 +106,8 @@ public class PopulateReportCommandHandler
             }
 
             var watermarkHtml = report.IsTrial
-            ? string.Empty
-            : "<div class=\"watermark\">TRIAL</div>";
+                ? "<div style=\"\n position: fixed;\n top: 50%;\n left: 50%;\n transform: translate(-50%, -50%) rotate(-45deg);\n font-size: 200px;\n color: rgba(0, 0, 0, 0.15);\n z-index: 1000;\n pointer-events: none;\n white-space: nowrap;\n\">\n TRIAL\n </div>"
+                : string.Empty;
 
             // Assemble full HTML
             var fullHtml = $$"""
@@ -178,7 +178,7 @@ public class PopulateReportCommandHandler
             }
             else
             {
-                report.MarkCompleted(pdfResult.PdfBytes!);
+                report.MarkCompleted(pdfResult.PdfBytes ?? throw new InvalidOperationException());
                 _logger.LogInformation(
                     "Report {ReportId} completed successfully", report.Id);
             }
