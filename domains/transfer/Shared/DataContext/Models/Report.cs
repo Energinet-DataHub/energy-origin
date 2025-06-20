@@ -24,6 +24,7 @@ public class Report
         UnixTimestamp startDate,
         UnixTimestamp endDate,
         ReportStatus status,
+        bool isNormal,
         byte[]? content)
     {
         Id = id;
@@ -34,6 +35,7 @@ public class Report
         StartDate = startDate;
         EndDate = endDate;
         Status = status;
+        IsNormal = isNormal;
         Content = content;
     }
 
@@ -44,6 +46,7 @@ public class Report
         OrganizationId organizationId,
         OrganizationName organizationName,
         Tin organizationTin,
+        string orgStatus,
         UnixTimestamp startDate,
         UnixTimestamp endDate)
     {
@@ -67,6 +70,7 @@ public class Report
             startDate: startDate,
             endDate: endDate,
             status: ReportStatus.Pending,
+            isNormal: orgStatus == "normal",
             content: null
         );
     }
@@ -79,6 +83,7 @@ public class Report
     public UnixTimestamp StartDate { get; private set; } = UnixTimestamp.Empty();
     public UnixTimestamp EndDate { get; private set; } = UnixTimestamp.Empty();
     public ReportStatus Status { get; private set; }
+    public bool IsNormal { get; private set; }
     public byte[]? Content { get; private set; }
 
     public void MarkCompleted(byte[] pdfBytes)

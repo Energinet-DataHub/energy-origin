@@ -100,6 +100,7 @@ public class ReportsControllerTests
             organizationId: orgId,
             Any.OrganizationName(),
             EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-7)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
@@ -108,6 +109,7 @@ public class ReportsControllerTests
             organizationId: orgId,
             Any.OrganizationName(),
             EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-14)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
@@ -116,6 +118,7 @@ public class ReportsControllerTests
             organizationId: OrganizationId.Create(Guid.NewGuid()),
             Any.OrganizationName(),
             EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-30)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
@@ -152,7 +155,16 @@ public class ReportsControllerTests
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
         var content = new byte[] { 1, 2, 3, 4, 5 };
-        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), EnergyTrackAndTrace.Testing.Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(
+            reportId,
+            OrganizationId.Create(orgId),
+            Any.OrganizationName(),
+            EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
+            UnixTimestamp.Now().AddDays(-14),
+            UnixTimestamp.Now().AddDays(-7)
+            );
+
         report.MarkCompleted(content);
 
         using (var scope = _factory.Services.CreateScope())
@@ -178,7 +190,15 @@ public class ReportsControllerTests
         var reportId = Guid.NewGuid();
         var client = _factory.CreateB2CAuthenticatedClient(sub, orgId);
 
-        var report = Report.Create(reportId, OrganizationId.Create(orgId), Any.OrganizationName(), EnergyTrackAndTrace.Testing.Any.Tin(), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(reportId,
+            OrganizationId.Create(orgId),
+            Any.OrganizationName(),
+            EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
+            UnixTimestamp.Now().AddDays(-14),
+            UnixTimestamp.Now().AddDays(-7)
+            );
+
         report.MarkFailed();
 
         using (var scope = _factory.Services.CreateScope())
