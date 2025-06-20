@@ -6,9 +6,11 @@
     --text-color-dark: #333333;
     --background-color: #f4f7f6;
     --card-background: #ffffff;
+    --card-hover-background: #fdfdfd;
     --border-radius: 8px;
     --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --transition-speed: 0.3s;
+    --box-shadow-strong: 0 6px 16px rgba(0, 0, 0, 0.1);
+    --transition-speed: 0.25s;
 }
 
 html {
@@ -49,7 +51,7 @@ p {
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 100;
 }
 
 .logo {
@@ -98,16 +100,23 @@ p {
     transition: transform var(--transition-speed) ease-in-out, box-shadow var(--transition-speed) ease-in-out;
     font-family: inherit;
     width: 100%;
+    position: relative;
     overflow: hidden;
 }
 
 .peopleButton:hover,
 .peopleButton:focus {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--box-shadow-strong);
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    z-index: 10;
+}
+.peopleButton:focus-visible {
     outline: 2px solid var(--accent-color);
     outline-offset: 2px;
 }
+
 
 .peopleButton .image img {
     width: 80px;
@@ -123,6 +132,8 @@ p {
     flex-direction: column;
     gap: 0.35rem;
     flex-grow: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .details-name {
@@ -145,21 +156,34 @@ p {
 }
 
 .details-description {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--card-hover-background);
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid #e0e0e0;
+    box-shadow: 0 -4px 8px rgba(0,0,0,0.05);
+
     font-size: 0.9rem;
-    color: #666;
+    color: #333;
     line-height: 1.5;
-    max-height: 0;
+
     opacity: 0;
-    overflow: hidden;
-    transition: max-height var(--transition-speed) ease-in-out, opacity var(--transition-speed) ease-in-out, margin-top var(--transition-speed) ease-in-out;
-    margin-top: 0;
+    transform: translateY(20px);
+    visibility: hidden;
+    transition: opacity var(--transition-speed) ease-out,
+    transform var(--transition-speed) ease-out,
+    visibility var(--transition-speed) ease-out;
+    z-index: 5;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
 
 .peopleButton:hover .details-description,
 .peopleButton:focus .details-description {
-    max-height: 200px;
     opacity: 1;
-    margin-top: 0.5rem;
+    transform: translateY(0);
+    visibility: visible;
 }
 
 @media (max-width: 768px) {
@@ -182,5 +206,9 @@ p {
     }
     .details-org-name {
         font-size: 0.9rem;
+    }
+    .details-description {
+        padding: 0.75rem 1rem 1rem;
+        font-size: 0.85rem;
     }
 }

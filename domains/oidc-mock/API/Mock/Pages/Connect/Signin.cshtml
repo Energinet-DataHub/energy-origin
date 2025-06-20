@@ -6,7 +6,7 @@
 
 <main class="signin-container">
     <h2 class="action-text">Sign in as a specific persona</h2>
-    <p class="action-subtext">Select one of the personas below to continue the sign-in process. Hover over a card for more details.</p>
+    <p class="action-subtext">Select a persona below. Hover over a card to see a detailed description.</p>
 
     <form asp-antiforgery="false" method="post" id="user-selection-form">
         @foreach (var user in Model.Users)
