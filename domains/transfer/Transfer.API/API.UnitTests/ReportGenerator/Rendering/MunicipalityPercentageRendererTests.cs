@@ -19,8 +19,24 @@ public class MunicipalityPercentageRendererTests
             new("155", 10),
             new("147", 20),
             new("157", 10),
-            new("482", 10),
-            new("151", 15)
+            new(null, 15)
+        };
+
+        var sut = new MunicipalityPercentageRenderer();
+
+        var html = sut.Render(municipalities);
+
+        await Verifier.Verify(html, extension: "html");
+    }
+
+    [Fact]
+    public async Task Render_WhenLessThan4AndIncludesNull_ExpectRendered()
+    {
+        var municipalities = new List<MunicipalityDistribution>
+        {
+            new("101", 25),
+            new("151", 15),
+            new(null, 41)
         };
 
         var sut = new MunicipalityPercentageRenderer();
