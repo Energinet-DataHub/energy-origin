@@ -694,7 +694,6 @@
                         <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
                         <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
                         <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
-                        <OutputClaim ClaimTypeReferenceId="login_type"/>
                         <OutputClaim ClaimTypeReferenceId="org_status"/>
                         <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
                     </OutputClaims>
@@ -740,135 +739,136 @@
     </ClaimsProviders>
 
     <UserJourneys>
-        <UserJourney Id="MitIdJourney">
-            <OrchestrationSteps>
-                <OrchestrationStep Order="1" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="Initett_login_intentExchange" TechnicalProfileReferenceId="Initett_login_intent" />
-                    </ClaimsExchanges>
-                </OrchestrationStep>
+      <UserJourney Id="MitIdJourney">
+        <OrchestrationSteps>
+          <OrchestrationStep Order="1" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="Initett_login_intentExchange" TechnicalProfileReferenceId="Initett_login_intent" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
 
-                <OrchestrationStep Order="2" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="ExtractLoginTypeExchange" TechnicalProfileReferenceId="ExtractLoginType" />
-                    </ClaimsExchanges>
-                </OrchestrationStep>
+          <OrchestrationStep Order="2" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="ExtractLoginTypeExchange" TechnicalProfileReferenceId="ExtractLoginType" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
+          <OrchestrationStep Order="3" Type="CombinedSignInAndSignUp">
+            <ClaimsProviderSelections>
+              <ClaimsProviderSelection TargetClaimsExchangeId="MitIDExchange" />
+            </ClaimsProviderSelections>
+          </OrchestrationStep>
+          <OrchestrationStep Order="4" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="MitIDExchange" TechnicalProfileReferenceId="MitID-OAUTH" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
+          <OrchestrationStep Order="5" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
+          <OrchestrationStep Order="6" Type="ClaimsExchange">
+            <Preconditions>
+              <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                <Value>objectId</Value>
+                <Action>SkipThisOrchestrationStep</Action>
+              </Precondition>
+            </Preconditions>
+            <ClaimsExchanges>
+              <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
+          <OrchestrationStep Order="7" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
+          <OrchestrationStep Order="8" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="userinfoExample" TechnicalProfileReferenceId="userinfo" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
+          <OrchestrationStep Order="9" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="AuthorizationExchange" TechnicalProfileReferenceId="authorizationMethod" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
+          <OrchestrationStep Order="10" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
+            </ClaimsExchanges>
+          </OrchestrationStep>
 
-                <OrchestrationStep Order="3" Type="CombinedSignInAndSignUp">
-                    <ClaimsProviderSelections>
-                        <ClaimsProviderSelection TargetClaimsExchangeId="MitIDExchange"/>
-                    </ClaimsProviderSelections>
-                </OrchestrationStep>
+          <OrchestrationStep Order="11" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="OrganizationStatusExchange" TechnicalProfileReferenceId="validateLoginType" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
+          <OrchestrationStep Order="12" Type="ClaimsExchange">
+            <!-- If tos_accepted == true then logout user in MitID provider (otherwise we expect another login after accepting terms) -->
+            <Preconditions>
+              <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                <Value>tos_accepted</Value>
+                <Value>true</Value>
+                <Action>SkipThisOrchestrationStep</Action>
+              </Precondition>
+            </Preconditions>
+            <ClaimsExchanges>
+              <ClaimsExchange Id="ConditionalMitIDLogoutExchange" TechnicalProfileReferenceId="ConditionalMitIDLogoutMethod"/>
+            </ClaimsExchanges>
+          </OrchestrationStep>
+          <OrchestrationStep Order="13" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+        </OrchestrationSteps>
+      </UserJourney>
+      <UserJourney Id="RedeemRefreshToken">
+        <PreserveOriginalAssertion>false</PreserveOriginalAssertion>
+        <OrchestrationSteps>
 
-                <OrchestrationStep Order="4" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="MitIDExchange" TechnicalProfileReferenceId="MitID-OAUTH"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
+          <OrchestrationStep Order="1" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="Initett_login_intentExchange" TechnicalProfileReferenceId="Initett_login_intent" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
 
-                <OrchestrationStep Order="5" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId"
-                                        TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
+          <OrchestrationStep Order="2" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="ExtractLoginTypeExchange" TechnicalProfileReferenceId="ExtractLoginType" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
 
-                <OrchestrationStep Order="6" Type="ClaimsExchange">
-                    <Preconditions>
-                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
-                            <Value>objectId</Value>
-                            <Action>SkipThisOrchestrationStep</Action>
-                        </Precondition>
-                    </Preconditions>
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
+          <OrchestrationStep Order="3" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="RefreshTokenSetupExchange" TechnicalProfileReferenceId="RefreshTokenReadAndSetup" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
 
-                <OrchestrationStep Order="7" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
+          <OrchestrationStep Order="4" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="CheckRefreshTokenDateFromAadExchange" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId-CheckRefreshTokenDate" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
 
-                <OrchestrationStep Order="8" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="userinfoExample" TechnicalProfileReferenceId="userinfo"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
+          <OrchestrationStep Order="5" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
+            </ClaimsExchanges>
+          </OrchestrationStep>
 
-                <OrchestrationStep Order="9" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="AuthorizationExchange" TechnicalProfileReferenceId="authorizationMethod"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
+          <OrchestrationStep Order="6" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
+            </ClaimsExchanges>
+          </OrchestrationStep>
 
-                <OrchestrationStep Order="10" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
+          <OrchestrationStep Order="7" Type="ClaimsExchange">
+            <ClaimsExchanges>
+              <ClaimsExchange Id="ValidateLoginTypeExchange" TechnicalProfileReferenceId="validateLoginType" />
+            </ClaimsExchanges>
+          </OrchestrationStep>
 
-                <OrchestrationStep Order="11" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="OrganizationStatusExchange" TechnicalProfileReferenceId="validateLoginType" />
-                    </ClaimsExchanges>
-                </OrchestrationStep>
-
-                <OrchestrationStep Order="12" Type="ClaimsExchange">
-                    <!-- If tos_accepted == true then logout user in MitID provider (otherwise we expect another login after accepting terms) -->
-                    <Preconditions>
-                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
-                            <Value>tos_accepted</Value>
-                            <Value>true</Value>
-                            <Action>SkipThisOrchestrationStep</Action>
-                        </Precondition>
-                    </Preconditions>
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="ConditionalMitIDLogoutExchange" TechnicalProfileReferenceId="ConditionalMitIDLogoutMethod"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
-
-                <OrchestrationStep Order="13" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer"/>
-            </OrchestrationSteps>
-        </UserJourney>
-
-        <UserJourney Id="RedeemRefreshToken">
-            <PreserveOriginalAssertion>false</PreserveOriginalAssertion>
-            <OrchestrationSteps>
-                <OrchestrationStep Order="1" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="RefreshTokenSetupExchange" TechnicalProfileReferenceId="RefreshTokenReadAndSetup" />
-                    </ClaimsExchanges>
-                </OrchestrationStep>
-
-                <OrchestrationStep Order="2" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="CheckRefreshTokenDateFromAadExchange" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId-CheckRefreshTokenDate" />
-                    </ClaimsExchanges>
-                </OrchestrationStep>
-
-                <OrchestrationStep Order="3" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
-
-                <OrchestrationStep Order="4" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
-                    </ClaimsExchanges>
-                </OrchestrationStep>
-
-                <OrchestrationStep Order="5" Type="ClaimsExchange">
-                    <ClaimsExchanges>
-                        <ClaimsExchange Id="ValidateLoginTypeExchange" TechnicalProfileReferenceId="validateLoginType" />
-                    </ClaimsExchanges>
-                </OrchestrationStep>
-
-                <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
-            </OrchestrationSteps>
-        </UserJourney>
+          <OrchestrationStep Order="8" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+        </OrchestrationSteps>
+      </UserJourney>
     </UserJourneys>
 
     <RelyingParty>
@@ -894,7 +894,6 @@
                 <OutputClaim ClaimTypeReferenceId="scope"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type"/>
                 <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
-                <OutputClaim ClaimTypeReferenceId="login_type" />
                 <OutputClaim ClaimTypeReferenceId="org_status" />
                 <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
             </OutputClaims>

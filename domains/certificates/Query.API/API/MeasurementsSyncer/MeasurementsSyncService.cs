@@ -83,7 +83,7 @@ public class MeasurementsSyncService
 
         var ownedMps = await GetOwnedMeteringPoints(syncInfo);
 
-        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, newSyncPoint, stoppingToken);
+        var fetchedMeasurements = await FetchMeasurements(slidingWindow, newSyncPoint, stoppingToken);
         var meteringPoint = ownedMps.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
         if (meteringPoint.PhysicalStatusOfMp != "E22")
         {
@@ -130,8 +130,10 @@ public class MeasurementsSyncService
         return pointInTimeItShouldSyncUpTo;
     }
 
-    public async Task<List<Measurement>> FetchMeasurements(MeteringPointTimeSeriesSlidingWindow slidingWindow, string meteringPointOwner,
-        UnixTimestamp newSyncPoint, CancellationToken cancellationToken)
+    public async Task<List<Measurement>> FetchMeasurements(
+            MeteringPointTimeSeriesSlidingWindow slidingWindow,
+            UnixTimestamp newSyncPoint,
+            CancellationToken cancellationToken)
     {
         var dateFrom = slidingWindow.GetFetchIntervalStart().EpochSeconds;
 
