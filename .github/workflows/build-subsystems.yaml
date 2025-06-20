@@ -126,7 +126,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Update environment
-        uses: Energinet-DataHub/.github/.github/actions/update-base-environment@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
+        uses: Energinet-DataHub/.github/.github/actions/update-base-environment@502f9383a50bc018639d7481a8fa308055d82f7a # v14.39.0
         with:
           configurations: |
             domains/admin-portal/AdminPortal.Web/configuration.yaml
