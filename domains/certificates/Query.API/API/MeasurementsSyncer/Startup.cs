@@ -1,17 +1,12 @@
 using System;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
-using Energinet.DataHub.Measurements.Client;
 using Energinet.DataHub.Measurements.Client.Extensions.DependencyInjection;
-using Energinet.DataHub.Measurements.Client.Extensions.Options;
-using Energinet.DataHub.Measurements.Client.ResponseParsers;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
-using EnergyOrigin.TokenValidation.Utilities.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
