@@ -1,8 +1,3 @@
-@using Oidc.Mock.Models
-@using Microsoft.AspNetCore.Http
-@inject User[] Users
-@inject IHttpContextAccessor HttpContextAccessor
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,36 +10,10 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-    @{
-        var clientId = HttpContextAccessor.HttpContext?.Request.Query["client_id"];
-        var redirectUri = HttpContextAccessor.HttpContext?.Request.Query["redirect_uri"];
-        var state = HttpContextAccessor.HttpContext?.Request.Query["state"];
-        var showPersonaSwitcher = !string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(redirectUri);
-    }
+<header class="page-header">
+    <img src="~/logo.svg" alt="Energy Origin Logo" class="logo">
+</header>
 
-    <header class="page-header">
-        <img src="~/logo.svg" alt="Energy Origin Logo" class="logo">
-        @if (showPersonaSwitcher)
-        {
-            <form asp-page="/Connect/Signin" method="post" id="persona-switcher-form" asp-antiforgery="false">
-                <input type="hidden" name="ClientId" value="@clientId" />
-                <input type="hidden" name="RedirectUri" value="@redirectUri" />
-                <input type="hidden" name="State" value="@state" />
-                <div class="persona-switcher">
-                    <label for="persona-select">Switch Persona</label>
-                    <select name="Name" id="persona-select" onchange="this.form.submit()">
-                        <option disabled selected>Select a persona to sign in</option>
-                        @foreach (var user in Users.Where(u => u.isSelectable))
-                        {
-                            <option value="@user.Name">@user.Name</option>
-                        }
-                    </select>
-                </div>
-                <noscript><button type="submit">Switch</button></noscript>
-            </form>
-        }
-    </header>
-
-    @RenderBody()
+@RenderBody()
 </body>
 </html>
