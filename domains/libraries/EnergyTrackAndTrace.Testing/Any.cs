@@ -10,7 +10,7 @@ namespace EnergyTrackAndTrace.Testing;
 
 public class Any
 {
-    public static MeasurementAggregationByPeriodDto[] TimeSeriesApiResponse(Gsrn gsrn, long dateFrom, long dateTo, long initValue, int? quantity = null)
+    public static MeasurementAggregationByPeriodDto[] MeasurementsApiResponse(Gsrn gsrn, long dateFrom, long dateTo, long initValue, int? quantity = null)
     {
         var dateFromDateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(dateFrom);
         var dateToDateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(dateTo);
@@ -52,7 +52,7 @@ public class Any
     }
 
 
-    public static MeasurementAggregationByPeriodDto[] TimeSeriesApiResponse(Gsrn gsrn, List<PointAggregation> pas)
+    public static MeasurementAggregationByPeriodDto[] MeasurementsApiResponse(Gsrn gsrn, List<PointAggregation> pas)
     {
         var pags = new Dictionary<string, PointAggregationGroup>();
 
@@ -114,6 +114,17 @@ public class Any
         (
             Instant.FromUnixTimeSeconds(minObservationTime),
             Instant.FromUnixTimeSeconds(minObservationTime),
+            aggregatedQuantity,
+            Quality.Measured
+        );
+    }
+
+    public static PointAggregation PointAggregation(long minObservationTime, long maxObservationTime, decimal aggregatedQuantity)
+    {
+        return new PointAggregation
+        (
+            Instant.FromUnixTimeSeconds(minObservationTime),
+            Instant.FromUnixTimeSeconds(maxObservationTime),
             aggregatedQuantity,
             Quality.Measured
         );
