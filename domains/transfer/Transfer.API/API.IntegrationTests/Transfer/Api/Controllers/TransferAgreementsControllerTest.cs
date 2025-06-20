@@ -25,8 +25,7 @@ using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
 
-[Collection(IntegrationTestCollection.CollectionName)]
-public class TransferAgreementsControllerTests
+public class TransferAgreementsControllerTests : IClassFixture<IntegrationTestFixture>
 {
     private readonly TransferAgreementsApiWebApplicationFactory factory;
     private readonly ITestOutputHelper output;
