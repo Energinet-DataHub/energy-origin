@@ -75,16 +75,7 @@ const server = http.createServer(async (req, res) => {
                 (async () => {
                     browser = await chromium.launch({
                         headless: true,
-                        executablePath: '/usr/bin/chromium-browser',
-                        args: [
-                            '--no-sandbox',
-                            '--disable-gpu',
-                            '--disable-setuid-sandbox',
-                            '--disable-dev-shm-usage',
-                            '--single-process',
-                            '--disable-breakpad',
-                            '--disable-crash-reporter'
-                        ]
+                        executablePath: '/usr/bin/chromium-browser'
                     });
                     const context = await browser.newContext({
                         offline: true,
