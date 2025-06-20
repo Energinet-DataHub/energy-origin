@@ -117,6 +117,26 @@ public class PopulateReportCommandHandler
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 {{styleHtml}}
+                <style>
+                  body {
+                    position: relative;
+                  }
+                  .watermark {
+                    position: absolute;
+                    top: 60%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) rotate(-45deg);
+                    font-size: 15vw;
+                    color: rgba(0,0,0,0.1);
+                    white-space: nowrap;
+                    pointer-events: none;
+                    z-index: 0;
+                  }
+                  .content {
+                    position: relative;
+                    z-index: 1;
+                  }
+                </style>
                 <title>Granulære Oprindelsesgarantier</title>
               </head>
               <body>
