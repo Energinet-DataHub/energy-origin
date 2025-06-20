@@ -22,4 +22,5 @@ public class MeteringPoint
     public long Created { get; set; }
     public long StartDate { get; set; }
     public long? EndDate { get; set; }
+    public required string Status { get; set; }
 }

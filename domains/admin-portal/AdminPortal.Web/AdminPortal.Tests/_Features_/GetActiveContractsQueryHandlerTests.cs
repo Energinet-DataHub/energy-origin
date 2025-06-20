@@ -20,10 +20,11 @@ public class GetActiveContractsQueryHandlerTests
         var organizationId = Guid.NewGuid();
         var organizationName = "Peter Producent A/S";
         var organizationTin = "11223344";
+        var organizationStatus = "Normal";
 
         var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>
         {
-            new(organizationId, organizationName, organizationTin)
+            new(organizationId, organizationName, organizationTin, organizationStatus)
         });
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
@@ -53,7 +54,7 @@ public class GetActiveContractsQueryHandlerTests
 
         var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>
         {
-            new(Guid.NewGuid(), "Peter Producent A/S", "11223344")
+            new(Guid.NewGuid(), "Peter Producent A/S", "11223344", "Normal")
         });
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>());
@@ -99,10 +100,11 @@ public class GetActiveContractsQueryHandlerTests
         var organizationId = Guid.NewGuid();
         var organizationName = "Peter Producent A/S";
         var organizationTin = "11223344";
+        var organizationStatus = "Trial";
 
         var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>
         {
-            new(organizationId, organizationName, organizationTin)
+            new(organizationId, organizationName, organizationTin, organizationStatus)
         });
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
@@ -144,14 +146,16 @@ public class GetActiveContractsQueryHandlerTests
         var organizationId1 = Guid.NewGuid();
         var organizationId2 = Guid.NewGuid();
         var organizationName1 = "Peter Producent A/S";
-        var organizationName2 = "John Distributor A/S";
+        var organizationName2 = "TrialCorp";
         var organizationTin1 = "11223344";
-        var organizationTin2 = "55667788";
+        var organizationTin2 = "133713337";
+        var organizationStatus1 = "Normal";
+        var organizationStatus2 = "Trial";
 
         var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>
         {
-            new(organizationId1, organizationName1, organizationTin1),
-            new(organizationId2, organizationName2, organizationTin2)
+            new(organizationId1, organizationName1, organizationTin1, organizationStatus1),
+            new(organizationId2, organizationName2, organizationTin2, organizationStatus2)
         });
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>

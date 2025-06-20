@@ -32,7 +32,7 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
         var queryResult = await mediator.Send(new GetFirstPartyOrganizationsQuery(), cancellationToken);
 
         var responseItems = queryResult.Result
-            .Select(o => new FirstPartyOrganizationsResponseItem(o.OrganizationId, o.OrganizationName, o.Tin)).ToList();
+            .Select(o => new FirstPartyOrganizationsResponseItem(o.OrganizationId, o.OrganizationName, o.Tin, o.Status)).ToList();
 
         return Ok(new FirstPartyOrganizationsResponse(responseItems));
     }
