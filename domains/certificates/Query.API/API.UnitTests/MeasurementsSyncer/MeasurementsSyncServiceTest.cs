@@ -197,7 +197,7 @@ public class MeasurementsSyncServiceTest
         var dateFrom = slidingWindow.SynchronizationPoint.EpochSeconds;
         var pa1 = EnergyTrackAndTrace.Testing.Any.PointAggregation(dateFrom, 5);
         var pa2 = EnergyTrackAndTrace.Testing.Any.PointAggregation(dateFrom + 3600, 7);
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [pa1, pa2]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [pa1, pa2]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
@@ -228,7 +228,7 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(missingIntervals.From.EpochSeconds, 5)]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(missingIntervals.From.EpochSeconds, 5)]);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
         var relationsResponse = new ListMeteringPointForCustomerCaResponse
         {
@@ -259,7 +259,7 @@ public class MeasurementsSyncServiceTest
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
         // When getting measurement later than sync point (in the future)
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(now.AddHours(1).EpochSeconds, 5)]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(now.AddHours(1).EpochSeconds, 5)]);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
@@ -299,7 +299,7 @@ public class MeasurementsSyncServiceTest
         var paOutsideThreshold = EnergyTrackAndTrace.Testing.Any.PointAggregation(now.AddHours(-10).EpochSeconds, 7);
         var paWithinThreshold = EnergyTrackAndTrace.Testing.Any.PointAggregation(missingInterval.From.EpochSeconds, 5);
 
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(syncInfo.Gsrn, [paOutsideThreshold, paWithinThreshold]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(syncInfo.Gsrn, [paOutsideThreshold, paWithinThreshold]);
 
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
         var relationsResponse = new ListMeteringPointForCustomerCaResponse
@@ -330,7 +330,7 @@ public class MeasurementsSyncServiceTest
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, slidingWindowSyncPoint);
 
         var pa1 = EnergyTrackAndTrace.Testing.Any.PointAggregation(slidingWindowSyncPoint.EpochSeconds, 5);
-        var timeSeriesApiResponse1 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [pa1]);
+        var timeSeriesApiResponse1 = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [pa1]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
@@ -355,7 +355,7 @@ public class MeasurementsSyncServiceTest
         _options.MinimumAgeThresholdHours = 20;
 
         var pa2 = EnergyTrackAndTrace.Testing.Any.PointAggregation(slidingWindowSyncPoint.AddHours(1).EpochSeconds, 5);
-        var timeSeriesApiResponse2 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [pa2]);
+        var timeSeriesApiResponse2 = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [pa2]);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse2);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
@@ -375,7 +375,7 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
-        var initialResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, []);
+        var initialResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, []);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(initialResponse);
 
         var relationsResponse = new ListMeteringPointForCustomerCaResponse
@@ -388,7 +388,7 @@ public class MeasurementsSyncServiceTest
 
         _options.MinimumAgeThresholdHours = 0;
         var pa = EnergyTrackAndTrace.Testing.Any.PointAggregation(now.Add(TimeSpan.FromHours(-4)).EpochSeconds, 10);
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [pa]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [pa]);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
@@ -407,7 +407,7 @@ public class MeasurementsSyncServiceTest
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, syncPoint);
 
         var pa = EnergyTrackAndTrace.Testing.Any.PointAggregation(now.Add(TimeSpan.FromHours(-2)).EpochSeconds, 10);
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [pa]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [pa]);
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: TestContext.Current.CancellationToken).Returns(meteringPointsResponse);
@@ -433,7 +433,7 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
-        var emptyResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, []);
+        var emptyResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, []);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(emptyResponse);
 
         var relationsResponse = new ListMeteringPointForCustomerCaResponse
@@ -453,7 +453,7 @@ public class MeasurementsSyncServiceTest
 
         _options.MinimumAgeThresholdHours = 2;
         var pa = EnergyTrackAndTrace.Testing.Any.PointAggregation(now.Add(TimeSpan.FromHours(-3)).EpochSeconds, 10);
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [pa]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [pa]);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
@@ -483,7 +483,7 @@ public class MeasurementsSyncServiceTest
         var pa1 = EnergyTrackAndTrace.Testing.Any.PointAggregation(dateFrom, 5);
 
         var pa2 = EnergyTrackAndTrace.Testing.Any.PointAggregation(dateFrom - TimeSpan.FromHours(200).Seconds, 7);
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(syncInfo.Gsrn, [pa1, pa2]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(syncInfo.Gsrn, [pa1, pa2]);
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
 
         _options.MinimumAgeThresholdHours = 168;
@@ -527,7 +527,7 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(missingIntervalOutsideThreshold.From.EpochSeconds, 5)]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(missingIntervalOutsideThreshold.From.EpochSeconds, 5)]);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         var relationsResponse = new ListMeteringPointForCustomerCaResponse
@@ -568,7 +568,7 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(syncInfo.Gsrn, []);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(syncInfo.Gsrn, []);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         var relationsResponse = new ListMeteringPointForCustomerCaResponse
@@ -608,7 +608,7 @@ public class MeasurementsSyncServiceTest
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
 
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(syncInfo.Gsrn, []);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(syncInfo.Gsrn, []);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         var relationsResponse = new ListMeteringPointForCustomerCaResponse
@@ -650,7 +650,7 @@ public class MeasurementsSyncServiceTest
             currentTime = currentTime.Add(TimeSpan.FromHours(1));
         }
 
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, measurementsWithinThreshold);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, measurementsWithinThreshold);
         _measurementClient.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>()).Returns(timeSeriesApiResponse);
 
         var relationsResponse = new ListMeteringPointForCustomerCaResponse
@@ -706,7 +706,7 @@ public class MeasurementsSyncServiceTest
             currentTime = currentTime.Add(TimeSpan.FromHours(1));
         }
 
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, measurementsWithinThreshold);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, measurementsWithinThreshold);
         var meteringPointsResponse = Any.MeteringPointsResponse(syncInfo.Gsrn);
 
         _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
@@ -744,7 +744,7 @@ public class MeasurementsSyncServiceTest
         var dateFrom = slidingWindow.SynchronizationPoint.EpochSeconds;
         var quarterHourInSeconds = 900;
         var pa = EnergyTrackAndTrace.Testing.Any.PointAggregation(dateFrom, dateFrom + quarterHourInSeconds, 5);
-        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [pa]);
+        var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(_syncInfo.Gsrn, [pa]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
 
