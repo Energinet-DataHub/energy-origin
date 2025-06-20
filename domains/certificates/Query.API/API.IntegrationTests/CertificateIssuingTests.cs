@@ -62,7 +62,7 @@ public sealed class CertificateIssuingTests : TestBase
 
         var measurementClientMock = Substitute.For<IMeasurementClient>();
         measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(
-            EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(utcMidnight.ToUnixTimeSeconds(), 42)]));
+            EnergyTrackAndTrace.Testing.Any.DH3MeasurementsApiResponse(gsrn, [EnergyTrackAndTrace.Testing.Any.PointAggregation(utcMidnight.ToUnixTimeSeconds(), 42)]));
         factory.MeasurementClient = measurementClientMock;
 
         var dataHubFacadeClientMock = Substitute.For<IDataHubFacadeClient>();
