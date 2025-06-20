@@ -52,7 +52,7 @@ public class Any
     }
 
 
-    public static MeasurementAggregationByPeriodDto[] MeasurementsApiResponse(Gsrn gsrn, List<PointAggregation> pas)
+    public static MeasurementAggregationByPeriodDto[] DH3MeasurementsApiResponse(Gsrn gsrn, List<PointAggregation> pas)
     {
         var pags = new Dictionary<string, PointAggregationGroup>();
 
