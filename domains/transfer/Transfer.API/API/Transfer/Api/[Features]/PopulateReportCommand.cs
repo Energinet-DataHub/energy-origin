@@ -105,7 +105,7 @@ public class PopulateReportCommandHandler
                 svgHtml = "<p>Chart data could not be displayed</p>"; // Fallback content
             }
 
-            var watermarkHtml = report.IsNormal
+            var watermarkHtml = report.IsTrial
             ? string.Empty
             : "<div class=\"watermark\">TRIAL</div>";
 

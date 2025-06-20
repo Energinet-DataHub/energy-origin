@@ -113,7 +113,7 @@ public class PopulateReportCommandHandlerTests
         captured.Should().NotBeNull();
         captured.Id.Should().Be(reportId);
         captured.Status.Should().Be(ReportStatus.Completed);
-        captured.IsNormal.Should().Be(false);
+        captured.IsTrial.Should().Be(true);
         captured.Content.Should().Equal(new byte[] { 0x01, 0x02, 0x03 });
 
         await _reports.Received(1)
@@ -156,7 +156,7 @@ public class PopulateReportCommandHandlerTests
         captured.Should().NotBeNull();
         captured.Id.Should().Be(reportId);
         captured.Status.Should().Be(ReportStatus.Completed);
-        captured.IsNormal.Should().Be(true);
+        captured.IsTrial.Should().Be(false);
         captured.Content.Should().Equal(new byte[] { 0x01, 0x02, 0x03 });
 
         await _reports.Received(1)

@@ -5,20 +5,20 @@ BEGIN
         FROM information_schema.columns
         WHERE table_schema = 'public'
           AND table_name = 'Reports'
-          AND column_name = 'IsNormal'
+          AND column_name = 'IsTrial'
     ) THEN
         ALTER TABLE public."Reports"
-            ADD COLUMN "IsNormal" boolean DEFAULT FALSE;
+            ADD COLUMN "IsTrial" boolean DEFAULT FALSE;
 
         UPDATE public."Reports"
-        SET "IsNormal" = FALSE
-        WHERE "IsNormal" IS NULL;
+        SET "IsTrial" = FALSE
+        WHERE "IsTrial" IS NULL;
 
         ALTER TABLE public."Reports"
-            ALTER COLUMN "IsNormal" SET NOT NULL;
+            ALTER COLUMN "IsTrial" SET NOT NULL;
 
         ALTER TABLE public."Reports"
-            ALTER COLUMN "IsNormal" DROP DEFAULT;
+            ALTER COLUMN "IsTrial" DROP DEFAULT;
     END IF;
 END
 $$;
