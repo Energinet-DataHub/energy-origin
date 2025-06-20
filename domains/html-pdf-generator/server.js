@@ -81,7 +81,9 @@ const server = http.createServer(async (req, res) => {
                             '--disable-gpu',
                             '--disable-setuid-sandbox',
                             '--disable-dev-shm-usage',
-                            '--single-process'
+                            '--single-process',
+                            '--disable-breakpad',
+                            '--disable-crash-reporter'
                         ]
                     });
                     const context = await browser.newContext({
