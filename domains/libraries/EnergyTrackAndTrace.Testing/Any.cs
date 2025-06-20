@@ -119,7 +119,6 @@ public class Any
         );
     }
 
-    // TODO: Use this method to get error in test
     public static PointAggregation PointAggregation(long minObservationTime, long maxObservationTime, decimal aggregatedQuantity)
     {
         return new PointAggregation
