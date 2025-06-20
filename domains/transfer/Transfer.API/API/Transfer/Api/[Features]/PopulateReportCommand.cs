@@ -106,8 +106,8 @@ public class PopulateReportCommandHandler
             }
 
             var watermarkHtml = report.IsTrial
-            ? string.Empty
-            : "    <div style=\"\n  position: fixed;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%) rotate(-45deg);\n  font-size: 200px;\n  color: rgba(0, 0, 0, 0.15);\n  z-index: 1000;\n  pointer-events: none;\n  white-space: nowrap;\n\">\n        TRIAL\n    </div>";
+                ? "<div style=\"\n position: fixed;\n top: 50%;\n left: 50%;\n transform: translate(-50%, -50%) rotate(-45deg);\n font-size: 200px;\n color: rgba(0, 0, 0, 0.15);\n z-index: 1000;\n pointer-events: none;\n white-space: nowrap;\n\">\n TRIAL\n </div>"
+                : string.Empty;
 
             // Assemble full HTML
             var fullHtml = $$"""
@@ -162,8 +162,6 @@ public class PopulateReportCommandHandler
               </body>
             </html>
             """;
-
-            _logger.LogInformation("Generated HTML for ReportId={ReportId}:\n{Html}", report.Id, fullHtml);
 
             // Convert to base64 and generate PDF
             var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(fullHtml));
