@@ -24,12 +24,13 @@ public class PopulateReportCommandHandler
     private readonly ILogger<PopulateReportCommandHandler> _logger;
     private readonly IEnergyDataFetcher _dataFetcher;
     private readonly IEnergyDataFormatter _dataFormatter;
-    private readonly IHeadlinePercentageProcessor _percentageProcessor;
     private readonly IMunicipalityPercentageProcessor _municipalityPercentageProcessor;
+    private readonly ICoverageProcessor _coverageProcessor;
     private readonly IEnergySvgRenderer _svgRenderer;
     private readonly IOrganizationHeaderRenderer _headerRenderer;
     private readonly IHeadlinePercentageRenderer _percentageRenderer;
     private readonly IMunicipalityPercentageRenderer _municipalityPercentageRenderer;
+    private readonly IOtherCoverageRenderer _otherCoverageRenderer;
     private readonly ILogoRenderer _logoRenderer;
     private readonly IStyleRenderer _styleRenderer;
 
@@ -39,12 +40,13 @@ public class PopulateReportCommandHandler
         ILogger<PopulateReportCommandHandler> logger,
         IEnergyDataFetcher dataFetcher,
         IEnergyDataFormatter dataFormatter,
-        IHeadlinePercentageProcessor percentageProcessor,
         IMunicipalityPercentageProcessor municipalityPercentageProcessor,
+        ICoverageProcessor coverageProcessor,
         IEnergySvgRenderer svgRenderer,
         IOrganizationHeaderRenderer headerRenderer,
         IHeadlinePercentageRenderer percentageRenderer,
         IMunicipalityPercentageRenderer municipalityPercentageRenderer,
+        IOtherCoverageRenderer otherCoverageRenderer,
         ILogoRenderer logoRenderer,
         IStyleRenderer styleRenderer)
     {
@@ -53,12 +55,13 @@ public class PopulateReportCommandHandler
         _logger = logger;
         _dataFetcher = dataFetcher;
         _dataFormatter = dataFormatter;
-        _percentageProcessor = percentageProcessor;
         _municipalityPercentageProcessor = municipalityPercentageProcessor;
+        _coverageProcessor = coverageProcessor;
         _svgRenderer = svgRenderer;
         _headerRenderer = headerRenderer;
         _percentageRenderer = percentageRenderer;
         _municipalityPercentageRenderer = municipalityPercentageRenderer;
+        _otherCoverageRenderer = otherCoverageRenderer;
         _logoRenderer = logoRenderer;
         _styleRenderer = styleRenderer;
     }
@@ -84,20 +87,23 @@ public class PopulateReportCommandHandler
             // Process into hourly aggregates
             var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);
 
+            var coverage = _coverageProcessor.Calculate(claims, consumptionRaw, from, to);
+
             // Calculate coverage headline
-            var headlinePercent = _percentageProcessor.Calculate(hourlyData);
             var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
+
             var municipalities = _municipalityPercentageProcessor.Calculate(claims);
 
             // Render HTML fragments
             var headerHtml = _headerRenderer.Render(
                 HttpUtility.HtmlEncode(report.OrganizationName.Value),
                 HttpUtility.HtmlEncode(report.OrganizationTin.Value));
-            var headlineHtml = _percentageRenderer.Render(headlinePercent, periodLabel);
+            var headlineHtml = _percentageRenderer.Render(coverage.HourlyPercentage, periodLabel);
             var svgHtml = _svgRenderer.Render(hourlyData).Svg;
             var logoHtml = _logoRenderer.Render();
             var styleHtml = _styleRenderer.Render();
             var municipalitiesHtml = _municipalityPercentageRenderer.Render(municipalities);
+            var otherCoverageHtml = _otherCoverageRenderer.Render(coverage);
 
             if (string.IsNullOrEmpty(svgHtml) || !svgHtml.Contains("<svg"))
             {
@@ -120,6 +126,7 @@ public class PopulateReportCommandHandler
                                  <div class="chart">
                                  {{headlineHtml}}
                                  {{svgHtml}}
+                                 {{otherCoverageHtml}}
                                  </div>
                                  <div class="details">
                                  <p class="description">Granulære Oprindelsesgarantier er udelukkende udstedt på basis af sol- og vindproduktion.
