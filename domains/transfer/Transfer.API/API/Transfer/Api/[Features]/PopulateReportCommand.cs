@@ -163,6 +163,8 @@ public class PopulateReportCommandHandler
             </html>
             """;
 
+            _logger.LogInformation("Generated HTML for ReportId={ReportId}:\n{Html}", report.Id, fullHtml);
+
             // Convert to base64 and generate PDF
             var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(fullHtml));
             var pdfResult = await _mediator.Send(
