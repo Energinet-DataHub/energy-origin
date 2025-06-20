@@ -8,6 +8,7 @@
     --card-background: #ffffff;
     --border-radius: 8px;
     --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --transition-speed: 0.3s;
 }
 
 html {
@@ -91,12 +92,13 @@ p {
     padding: 1.5rem;
     text-align: left;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 1.5rem;
     box-shadow: var(--box-shadow);
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: transform var(--transition-speed) ease-in-out, box-shadow var(--transition-speed) ease-in-out;
     font-family: inherit;
     width: 100%;
+    overflow: hidden;
 }
 
 .peopleButton:hover,
@@ -113,37 +115,55 @@ p {
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--accent-color);
+    flex-shrink: 0;
 }
 
 .peopleButton .details {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-}
-
-.details-company {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--secondary-color);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    gap: 0.35rem;
+    flex-grow: 1;
 }
 
 .details-name {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-color);
+    margin-bottom: 0.1rem;
 }
 
-.details p {
+.details-org-name {
     font-size: 1rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.details-org-cvr {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.25rem;
+}
+
+.details-description {
+    font-size: 0.9rem;
     color: #666;
     line-height: 1.5;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-speed) ease-in-out, opacity var(--transition-speed) ease-in-out, margin-top var(--transition-speed) ease-in-out;
+    margin-top: 0;
+}
+
+.peopleButton:hover .details-description,
+.peopleButton:focus .details-description {
+    max-height: 200px;
+    opacity: 1;
+    margin-top: 0.5rem;
 }
 
 @media (max-width: 768px) {
     .page-header {
-        /* justify-content: center;  */
         padding: 1rem;
         position: static;
     }
@@ -153,5 +173,14 @@ p {
     }
     #user-selection-form {
         grid-template-columns: 1fr;
+    }
+    .peopleButton {
+        align-items: center;
+    }
+    .details-name {
+        font-size: 1.3rem;
+    }
+    .details-org-name {
+        font-size: 0.9rem;
     }
 }

@@ -6,7 +6,7 @@
 
 <main class="signin-container">
     <h2 class="action-text">Sign in as a specific persona</h2>
-    <p class="action-subtext">Select one of the personas below to continue the sign-in process.</p>
+    <p class="action-subtext">Select one of the personas below to continue the sign-in process. Hover over a card for more details.</p>
 
     <form asp-antiforgery="false" method="post" id="user-selection-form">
         @foreach (var user in Model.Users)
@@ -18,12 +18,16 @@
                         <img src="@user.ImageUrl" alt="Profile image for @user.Name" />
                     </div>
                     <div class="details">
-                        @if (user.UserinfoToken.ContainsKey("nemid.company_name"))
-                        {
-                            <div class="details-company">@user.UserinfoToken["nemid.company_name"]</div>
-                        }
                         <div class="details-name">@user.Name</div>
-                        <p>@user.Description</p>
+                        @if (user.IdToken.ContainsKey("org_name"))
+                        {
+                            <div class="details-org-name">@user.IdToken["org_name"]</div>
+                        }
+                        @if (user.IdToken.ContainsKey("org_cvr"))
+                        {
+                            <div class="details-org-cvr">CVR: @user.IdToken["org_cvr"]</div>
+                        }
+                        <p class="details-description">@user.Description</p>
                     </div>
                 </button>
             }
