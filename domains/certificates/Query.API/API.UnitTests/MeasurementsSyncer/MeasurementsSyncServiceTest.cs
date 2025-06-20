@@ -742,7 +742,8 @@ public class MeasurementsSyncServiceTest
 
         // When 2 measurements where fetched
         var dateFrom = slidingWindow.SynchronizationPoint.EpochSeconds;
-        var pa = EnergyTrackAndTrace.Testing.Any.PointAggregation(dateFrom, dateFrom + 900, 5);
+        var quarterHourInSeconds = 900;
+        var pa = EnergyTrackAndTrace.Testing.Any.PointAggregation(dateFrom, dateFrom + quarterHourInSeconds, 5);
         var timeSeriesApiResponse = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(_syncInfo.Gsrn, [pa]);
 
         var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
