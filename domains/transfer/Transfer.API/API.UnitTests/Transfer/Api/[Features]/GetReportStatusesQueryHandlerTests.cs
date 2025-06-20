@@ -31,6 +31,7 @@ public class GetReportStatusesQueryHandlerTests
             organizationId: orgId,
             Any.OrganizationName(),
             EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-7)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
@@ -39,6 +40,7 @@ public class GetReportStatusesQueryHandlerTests
             organizationId: orgId,
             Any.OrganizationName(),
             EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-60)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
@@ -47,6 +49,7 @@ public class GetReportStatusesQueryHandlerTests
             organizationId: OrganizationId.Create(Guid.NewGuid()),
             Any.OrganizationName(),
             EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-180)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 
@@ -55,6 +58,7 @@ public class GetReportStatusesQueryHandlerTests
             organizationId: OrganizationId.Create(Guid.NewGuid()),
             Any.OrganizationName(),
             EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
             startDate: UnixTimestamp.Create(DateTimeOffset.UtcNow.AddDays(-365)),
             endDate: UnixTimestamp.Create(DateTimeOffset.UtcNow));
 

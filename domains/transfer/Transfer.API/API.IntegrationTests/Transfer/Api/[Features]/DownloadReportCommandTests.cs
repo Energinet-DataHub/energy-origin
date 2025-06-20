@@ -18,7 +18,16 @@ public class DownloadReportCommandTests
         var reportId = Guid.NewGuid();
         var content = new byte[] { 1, 2, 3 };
         var orgId = OrganizationId.Create(Guid.NewGuid());
-        var report = Report.Create(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(
+            reportId,
+            orgId,
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "normal",
+            UnixTimestamp.Now().AddDays(-14),
+            UnixTimestamp.Now().AddDays(-7)
+            );
+
         report.MarkCompleted(content);
         var repo = Substitute.For<IReportRepository>();
         repo.GetByIdAsync(reportId, Arg.Any<CancellationToken>()).Returns(report);
@@ -37,7 +46,16 @@ public class DownloadReportCommandTests
     {
         var reportId = Guid.NewGuid();
         var orgId = OrganizationId.Create(Guid.NewGuid());
-        var report = Report.Create(reportId, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), UnixTimestamp.Now().AddDays(-14), UnixTimestamp.Now().AddDays(-7));
+        var report = Report.Create(
+            reportId,
+            orgId,
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "normal",
+            UnixTimestamp.Now().AddDays(-14),
+            UnixTimestamp.Now().AddDays(-7)
+            );
+
         report.MarkFailed();
         var repo = Substitute.For<IReportRepository>();
         repo.GetByIdAsync(reportId, Arg.Any<CancellationToken>()).Returns(report);
