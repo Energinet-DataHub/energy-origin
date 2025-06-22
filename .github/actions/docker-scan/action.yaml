@@ -1,6 +1,5 @@
 name: Scans docker container in ghcr.io
-description: |
-  This action scan an image in ghcr.io reporting on its vulnerabilities and can upload a sarif result to GitHub.
+description: This action scans an image in ghcr.io with keyless signing for SBOM and vulnerability reports.
 
 inputs:
   image-name:
@@ -18,11 +17,13 @@ inputs:
     default: grype
 
 runs:
-  using: composite
+  using: "composite"
   steps:
     - name: Resolve container image name
       shell: bash
-      run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      run: |
+        owner=$(echo "${{ github.repository }}" | cut -d'/' -f1)
+        echo "LOWERCASED=ghcr.io/$owner/${{ inputs.image-name }}" | tr '[:upper:]' '[:lower:]' >> $GITHUB_ENV
 
     - name: Log in to Container registry
       uses: docker/login-action@v3
@@ -34,66 +35,73 @@ runs:
     - name: Install Security Tools
       shell: bash
       run: |
+        sudo apt-get update && sudo apt-get install -y jq
         curl -sSfL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o cosign
         chmod +x cosign
         sudo mv cosign /usr/local/bin
 
         curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-
         curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
 
-        curl -sSfL https://github.com/sigstore/rekor/releases/latest/download/rekor-cli-linux-amd64 -o rekor-cli
-        chmod +x rekor-cli
-        sudo mv rekor-cli /usr/local/bin
+    - name: Get Image Digest
+      shell: bash
+      run: |
+        # Get image digest instead of using tag directly
+        digest=$(docker image inspect ${{ env.LOWERCASED }}:${{ inputs.image-tag }} --format '{{.RepoDigests}}' | grep -Eo 'sha256:[a-f0-9]+')
+        echo "IMAGE_DIGEST=${{ env.LOWERCASED }}@$digest" >> $GITHUB_ENV
 
     - name: Generate and Attest SBOM (Keyless)
       shell: bash
       env:
-        COSIGN_EXPERIMENTAL: 1
+        COSIGN_EXPERIMENTAL: "1"
       run: |
-        syft attest ${LOWERCASED}:${{ inputs.image-tag }} \
+        # Use digest instead of tag
+        syft attest ${{ env.IMAGE_DIGEST }} \
           --output spdx-json \
           | cosign attest --yes --type spdxjson \
-          --predicate - ${LOWERCASED}:${{ inputs.image-tag }}
+          --predicate - ${{ env.IMAGE_DIGEST }}
 
-        cosign verify-attestation ${LOWERCASED}:${{ inputs.image-tag }} \
-          --type spdxjson \
-          | jq -r '.[].Bundle.Payload.body' | base64 -d | jq -r '.dsseEnvelope.payload' | base64 -d \
-          > sbom-payload.json
-
-        echo "SBOM_DIGEST=$(sha256sum sbom-payload.json | awk '{print $1}')" >> $GITHUB_ENV
-        echo "REKOR_UUID=$(cosign verify-attestation ${LOWERCASED}:${{ inputs.image-tag }} --type spdxjson | jq -r '.[].Bundle.Payload.logIndex')" >> $GITHUB_ENV
+        # Capture Rekor UUID
+        rekor_uuid=$(cosign verify-attestation ${{ env.IMAGE_DIGEST }} \
+          --type spdxjson | jq -r '.[].Bundle.Payload.logIndex')
+        echo "REKOR_UUID=$rekor_uuid" >> $GITHUB_ENV
 
     - name: Scan with Grype using Attested SBOM
       shell: bash
       run: |
-        cosign verify-attestation ${LOWERCASED}:${{ inputs.image-tag }} \
+        # Extract SBOM from attestation
+        cosign verify-attestation ${{ env.IMAGE_DIGEST }} \
           --type spdxjson \
           | jq -r '.[].Bundle.Payload.body' | base64 -d | jq -r '.dsseEnvelope.payload' | base64 -d | jq .predicate \
           | grype -o sarif --file results.sarif
 
-        echo "SARIF_DIGEST=$(sha256sum results.sarif | awk '{print $1}')" >> $GITHUB_ENV
+        # Store SARIF digest
+        sarif_digest=$(sha256sum results.sarif | awk '{print $1}')
+        echo "SARIF_DIGEST=$sarif_digest" >> $GITHUB_ENV
 
     - name: Attest SARIF Report (Keyless)
       shell: bash
       env:
-        COSIGN_EXPERIMENTAL: 1
+        COSIGN_EXPERIMENTAL: "1"
       run: |
+        # Create provenance statement
         cat <<EOF > provenance.json
         {
-          "image": "${LOWERCASED}:${{ inputs.image-tag }}",
-          "sbomDigest": "${{ env.SBOM_DIGEST }}",
-          "scannedAt": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')",
-          "rekorUUID": "${{ env.REKOR_UUID }}"
+          "image": "${{ env.IMAGE_DIGEST }}",
+          "sbomRekorUUID": "${{ env.REKOR_UUID }}",
+          "scannedAt": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
         }
         EOF
 
+        # Attest SARIF with provenance
         cosign attest-blob --yes \
           --type application/sarif+json \
           --predicate provenance.json \
           results.sarif
 
-        echo "SARIF_ATTESTATION_REF=$(cosign triangulate $(sha256sum results.sarif | awk '{print $1}'))" >> $GITHUB_ENV
+        # Get SARIF attestation reference
+        sarif_ref=$(cosign triangulate $(sha256sum results.sarif | awk '{print $1}'))
+        echo "SARIF_ATTESTATION_REF=$sarif_ref" >> $GITHUB_ENV
 
     - name: Upload SARIF to GitHub Security
       if: ${{ inputs.upload-sarif == 'true' }}
@@ -109,8 +117,7 @@ runs:
         ## 🔐 Keyless Security Verification
 
         ### SBOM Attestation
-        - **Image**: ${LOWERCASED}:${{ inputs.image-tag }}
-        - **SBOM Digest**: \`${{ env.SBOM_DIGEST }}\`
+        - **Image**: ${{ env.IMAGE_DIGEST }}
         - **Rekor Entry**: [View in Transparency Log](https://search.sigstore.dev/?logIndex=${{ env.REKOR_UUID }})
 
         ### Vulnerability Report
@@ -122,7 +129,7 @@ runs:
         \`\`\`bash
         cosign verify-attestation \\
           --type spdxjson \\
-          ${LOWERCASED}:${{ inputs.image-tag }}
+          ${{ env.IMAGE_DIGEST }}
         \`\`\`
 
         Verify SARIF attestation:
@@ -130,16 +137,5 @@ runs:
         cosign verify-attestation \\
           --type application/sarif+json \\
           ${{ env.SARIF_ATTESTATION_REF }}
-        \`\`\`
-
-        Verify end-to-end provenance:
-        \`\`\`bash
-        # Extract SBOM digest from SARIF attestation
-        SARIF_SBOM_DIGEST=\$(cosign verify-attestation ${{ env.SARIF_ATTESTATION_REF }} \\
-          | jq -r '.payload | @base64d | fromjson | .predicate.sbomDigest')
-
-        # Compare with original SBOM digest
-        [[ "\$SARIF_SBOM_DIGEST" == "${{ env.SBOM_DIGEST }}" ]] \\
-          && echo "✅ Provenance Verified" || echo "❌ Provenance Mismatch"
         \`\`\`
         EOF
