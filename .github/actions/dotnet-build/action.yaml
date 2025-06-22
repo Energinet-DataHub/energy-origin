@@ -83,7 +83,7 @@ runs:
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
     - name: Scan image
-      uses: Energinet-DataHub/.github/.github/actions/docker-scan@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
+      uses: ./.github/actions/docker-scan
       with:
         image-name: ${{ env.name }}
         image-tag: ${{ env.version }}
