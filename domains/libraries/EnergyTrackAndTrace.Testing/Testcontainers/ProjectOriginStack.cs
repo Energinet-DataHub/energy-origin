@@ -87,7 +87,7 @@ public class ProjectOriginStack : RegistryFixture
             var configFile = networkOptions.ToTempYamlFile();
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/vault:2.0.7")
+                .WithImage("ghcr.io/project-origin/vault:2.1.4-rc.1")
                 .WithNetwork(Network)
                 .WithNetworkAliases(WalletAlias)
                 .WithResourceMapping(configFile, "/app/tmp/")
@@ -109,7 +109,10 @@ public class ProjectOriginStack : RegistryFixture
                 .WithEnvironment("Job__CheckForWithdrawnCertificatesIntervalInSeconds", "5")
                 .WithEnvironment("Job__ExpireCertificatesIntervalInSeconds", "5")
                 .WithEnvironment("network__ConfigurationUri", "file:///app/tmp/" + Path.GetFileName(configFile))
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(WalletHttpPort))
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(request => request
+                    .ForPort(WalletHttpPort)
+                    .ForPath($"{PathBase}/health/live")
+                    .ForStatusCode(HttpStatusCode.OK)))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
         });
