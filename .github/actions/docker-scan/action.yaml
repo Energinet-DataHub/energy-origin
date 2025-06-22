@@ -46,34 +46,37 @@ runs:
     - name: Get Image Digest
       shell: bash
       run: |
-        # Get image digest instead of using tag directly
-        digest=$(docker image inspect ${{ env.LOWERCASED }}:${{ inputs.image-tag }} --format '{{.RepoDigests}}' | grep -Eo 'sha256:[a-f0-9]+')
+        # Pull image to get its digest
+        docker pull ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
+        digest=$(docker image inspect ${{ env.LOWERCASED }}:${{ inputs.image-tag }} --format '{{index .RepoDigests 0}}' | sed 's/.*@//')
         echo "IMAGE_DIGEST=${{ env.LOWERCASED }}@$digest" >> $GITHUB_ENV
 
-    - name: Generate and Attest SBOM (Keyless)
+    - name: Generate SBOM
+      shell: bash
+      run: |
+        # Generate SBOM to file
+        syft ${{ env.IMAGE_DIGEST }} -o spdx-json > sbom.spdx.json
+
+    - name: Attest SBOM (Keyless)
       shell: bash
       env:
         COSIGN_EXPERIMENTAL: "1"
       run: |
-        # Use digest instead of tag
-        syft attest ${{ env.IMAGE_DIGEST }} \
-          --output spdx-json \
-          | cosign attest --yes --type spdxjson \
-          --predicate - ${{ env.IMAGE_DIGEST }}
+        # Attest the SBOM file
+        cosign attest --yes --type spdxjson \
+          --predicate sbom.spdx.json \
+          ${{ env.IMAGE_DIGEST }}
 
         # Capture Rekor UUID
         rekor_uuid=$(cosign verify-attestation ${{ env.IMAGE_DIGEST }} \
           --type spdxjson | jq -r '.[].Bundle.Payload.logIndex')
         echo "REKOR_UUID=$rekor_uuid" >> $GITHUB_ENV
 
-    - name: Scan with Grype using Attested SBOM
+    - name: Scan with Grype using SBOM
       shell: bash
       run: |
-        # Extract SBOM from attestation
-        cosign verify-attestation ${{ env.IMAGE_DIGEST }} \
-          --type spdxjson \
-          | jq -r '.[].Bundle.Payload.body' | base64 -d | jq -r '.dsseEnvelope.payload' | base64 -d | jq .predicate \
-          | grype -o sarif --file results.sarif
+        # Scan using the generated SBOM file
+        grype sbom:sbom.spdx.json -o sarif --file results.sarif
 
         # Store SARIF digest
         sarif_digest=$(sha256sum results.sarif | awk '{print $1}')
