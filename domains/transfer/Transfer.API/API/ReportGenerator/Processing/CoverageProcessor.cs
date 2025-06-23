@@ -26,6 +26,7 @@ public class CoverageProcessor : ICoverageProcessor
         var totalConsumption = (double)consumption.Sum(x => x.KwhQuantity * 1000);
 
         _logger.LogInformation("TotalConsumption: " + totalConsumption);
+        _logger.LogInformation("TotalClaimed: " + claims.Sum(x => x.Quantity));
 
         if (totalConsumption == 0)
         {
