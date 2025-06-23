@@ -82,12 +82,13 @@ public class PopulateReportCommandHandler
             var to = DateTimeOffset.FromUnixTimeSeconds(report.EndDate.EpochSeconds);
             var (consumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, cancellationToken);
 
+            var coverage = _coverageProcessor.Calculate(claims, consumptionRaw, from, to);
+
             var (consumption, strictProd, allProd) = _dataFormatter.Format(consumptionRaw, claims);
 
             // Process into hourly aggregates
             var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);
 
-            var coverage = _coverageProcessor.Calculate(claims, consumptionRaw, from, to);
 
             // Calculate coverage headline
             var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
