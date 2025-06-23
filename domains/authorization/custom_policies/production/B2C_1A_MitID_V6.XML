@@ -827,47 +827,35 @@
 
           <OrchestrationStep Order="1" Type="ClaimsExchange">
             <ClaimsExchanges>
-              <ClaimsExchange Id="Initett_login_intentExchange" TechnicalProfileReferenceId="Initett_login_intent" />
+              <ClaimsExchange Id="RefreshTokenSetupExchange" TechnicalProfileReferenceId="RefreshTokenReadAndSetup" />
             </ClaimsExchanges>
           </OrchestrationStep>
 
           <OrchestrationStep Order="2" Type="ClaimsExchange">
             <ClaimsExchanges>
-              <ClaimsExchange Id="ExtractLoginTypeExchange" TechnicalProfileReferenceId="ExtractLoginType" />
+              <ClaimsExchange Id="CheckRefreshTokenDateFromAadExchange" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId-CheckRefreshTokenDate" />
             </ClaimsExchanges>
           </OrchestrationStep>
 
           <OrchestrationStep Order="3" Type="ClaimsExchange">
             <ClaimsExchanges>
-              <ClaimsExchange Id="RefreshTokenSetupExchange" TechnicalProfileReferenceId="RefreshTokenReadAndSetup" />
+              <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
             </ClaimsExchanges>
           </OrchestrationStep>
 
           <OrchestrationStep Order="4" Type="ClaimsExchange">
             <ClaimsExchanges>
-              <ClaimsExchange Id="CheckRefreshTokenDateFromAadExchange" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId-CheckRefreshTokenDate" />
+              <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
             </ClaimsExchanges>
           </OrchestrationStep>
 
           <OrchestrationStep Order="5" Type="ClaimsExchange">
             <ClaimsExchanges>
-              <ClaimsExchange Id="ClientCredentialsExchange" TechnicalProfileReferenceId="clientCredentialsMethod"/>
-            </ClaimsExchanges>
-          </OrchestrationStep>
-
-          <OrchestrationStep Order="6" Type="ClaimsExchange">
-            <ClaimsExchanges>
-              <ClaimsExchange Id="WhitelistExchange" TechnicalProfileReferenceId="validateOrganizationWhitelisted"/>
-            </ClaimsExchanges>
-          </OrchestrationStep>
-
-          <OrchestrationStep Order="7" Type="ClaimsExchange">
-            <ClaimsExchanges>
               <ClaimsExchange Id="ValidateLoginTypeExchange" TechnicalProfileReferenceId="validateLoginType" />
             </ClaimsExchanges>
           </OrchestrationStep>
 
-          <OrchestrationStep Order="8" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+          <OrchestrationStep Order="6" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
         </OrchestrationSteps>
       </UserJourney>
     </UserJourneys>
