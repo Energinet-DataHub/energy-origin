@@ -694,6 +694,7 @@
                         <OutputClaim ClaimTypeReferenceId="scope" DefaultValue="dashboard production meters certificates wallet"/>
                         <OutputClaim ClaimTypeReferenceId="sub_type" DefaultValue="User"/>
                         <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                        <OutputClaim ClaimTypeReferenceId="login_type" />
                         <OutputClaim ClaimTypeReferenceId="org_status"/>
                         <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
                     </OutputClaims>
@@ -894,6 +895,7 @@
                 <OutputClaim ClaimTypeReferenceId="scope"/>
                 <OutputClaim ClaimTypeReferenceId="sub_type"/>
                 <OutputClaim ClaimTypeReferenceId="tos_accepted"/>
+                <OutputClaim ClaimTypeReferenceId="login_type" />
                 <OutputClaim ClaimTypeReferenceId="org_status" />
                 <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="oid"/>
             </OutputClaims>
