@@ -23,7 +23,7 @@ public class CoverageProcessor : ICoverageProcessor
 
     public CoveragePercentage Calculate(IReadOnlyList<Claim> claims, IReadOnlyList<ConsumptionHour> consumption, DateTimeOffset startDate, DateTimeOffset endDate)
     {
-        var totalConsumption = (double)consumption.Sum(x => x.KwhQuantity * 1000);
+        var totalConsumption = (double)consumption.Sum(x => x.KwhQuantity) * 1000;
 
         _logger.LogInformation("TotalConsumption: " + totalConsumption);
         _logger.LogInformation("TotalClaimed: " + claims.Sum(x => x.Quantity));
