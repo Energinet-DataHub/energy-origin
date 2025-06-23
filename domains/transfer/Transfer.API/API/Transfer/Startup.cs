@@ -1,5 +1,8 @@
 using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using API.ReportGenerator.Infrastructure;
 using API.ReportGenerator.Processing;
 using API.ReportGenerator.Rendering;
@@ -10,6 +13,10 @@ using API.Transfer.TransferAgreementCleanup;
 using API.Transfer.TransferAgreementCleanup.Options;
 using API.Transfer.TransferAgreementProposalCleanup;
 using API.Transfer.TransferAgreementProposalCleanup.Options;
+using Energinet.DataHub.Measurements.Client;
+using Energinet.DataHub.Measurements.Client.Extensions.DependencyInjection;
+using Energinet.DataHub.Measurements.Client.Extensions.Options;
+using Energinet.DataHub.Measurements.Client.ResponseParsers;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.WalletClient;
@@ -78,14 +85,15 @@ public static class Startup
             client.BaseAddress = new Uri(options.Url);
         });
 
-        services.AddScoped<ITokenService, TokenService>();
-        services.AddTransient<AuthHeaderHandler>();
-
-        services.AddHttpClient<IDataHub3Client, DataHub3Client>((sp, client) =>
+        services.AddTransient<ITokenService, TokenService>();
+        static async Task<AuthenticationHeaderValue> authorizationHeaderProviderAsync(IServiceProvider sp)
         {
-            var options = sp.GetRequiredService<IOptions<DataHub3Options>>().Value;
-            client.BaseAddress = new Uri(options.Url);
-            client.Timeout = TimeSpan.FromSeconds(300); // Databricks can autoscale under high load, which can take a long time. So this is so we don't lose the call if that happens.
-        }).AddHttpMessageHandler<AuthHeaderHandler>();
+            var tokenService = sp.GetRequiredService<ITokenService>();
+            var token = await tokenService.GetToken();
+            return new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        services.AddMeasurementsClient(authorizationHeaderProviderAsync);
+        services.AddScoped<IMeasurementClient, MeasurementClient>();
     }
 }

@@ -89,7 +89,7 @@ public class GetConsentForUserQueryHandlerTests
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
         var terms = Terms.Create(1);
-        organization.AcceptTerms(terms);
+        organization.AcceptTerms(terms, true);
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
         await _fakeTermsRepository.AddAsync(terms, CancellationToken.None);
 
@@ -109,7 +109,7 @@ public class GetConsentForUserQueryHandlerTests
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
         var terms = Terms.Create(1);
-        organization.AcceptTerms(terms);
+        organization.AcceptTerms(terms, true);
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Test User"));
         Affiliation.Create(user, organization);
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);
@@ -132,7 +132,7 @@ public class GetConsentForUserQueryHandlerTests
     {
         var organization = Organization.Create(Tin.Create("12345678"), OrganizationName.Create("Test Org"));
         var oldTerms = Terms.Create(1);
-        organization.AcceptTerms(oldTerms);
+        organization.AcceptTerms(oldTerms, true);
         var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Test User"));
         Affiliation.Create(user, organization);
         await _fakeOrganizationRepository.AddAsync(organization, CancellationToken.None);

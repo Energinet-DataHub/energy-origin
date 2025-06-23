@@ -7,14 +7,11 @@ using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using API.Models;
-using DataContext;
 using DataContext.Models;
-using DataContext.ValueObjects;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
 using Meteringpoint.V1;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -29,7 +26,7 @@ public class MeasurementsSyncService
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _meteringPointsClient;
     private readonly ILogger<MeasurementsSyncService> _logger;
     private readonly IOptions<MeasurementsSyncOptions> _options;
-    private readonly IDataHub3Client _dataHub3Client;
+    private readonly IMeasurementClient _measurementsClient;
     private readonly IDataHubFacadeClient _dataHubFacadeClient;
     private readonly IContractState _contractState;
 
@@ -40,7 +37,7 @@ public class MeasurementsSyncService
         IMeasurementSyncPublisher measurementSyncPublisher,
         Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient,
         IOptions<MeasurementsSyncOptions> measurementSyncOptions,
-        IDataHub3Client dataHub3Client,
+        IMeasurementClient measurementsClient,
         IDataHubFacadeClient dataHubFacadeClient,
         IContractState contractState)
     {
@@ -51,7 +48,7 @@ public class MeasurementsSyncService
         _measurementSyncPublisher = measurementSyncPublisher;
         _meteringPointsClient = meteringPointsClient;
         _options = measurementSyncOptions;
-        _dataHub3Client = dataHub3Client;
+        _measurementsClient = measurementsClient;
         _dataHubFacadeClient = dataHubFacadeClient;
         _contractState = contractState;
     }
@@ -86,7 +83,7 @@ public class MeasurementsSyncService
 
         var ownedMps = await GetOwnedMeteringPoints(syncInfo);
 
-        var fetchedMeasurements = await FetchMeasurements(slidingWindow, syncInfo.MeteringPointOwner, newSyncPoint, stoppingToken);
+        var fetchedMeasurements = await FetchMeasurements(slidingWindow, newSyncPoint, stoppingToken);
         var meteringPoint = ownedMps.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
         if (meteringPoint.PhysicalStatusOfMp != "E22")
         {
@@ -133,34 +130,37 @@ public class MeasurementsSyncService
         return pointInTimeItShouldSyncUpTo;
     }
 
-    public async Task<List<Measurement>> FetchMeasurements(MeteringPointTimeSeriesSlidingWindow slidingWindow, string meteringPointOwner,
-        UnixTimestamp newSyncPoint, CancellationToken cancellationToken)
+    public async Task<List<Measurement>> FetchMeasurements(
+            MeteringPointTimeSeriesSlidingWindow slidingWindow,
+            UnixTimestamp newSyncPoint,
+            CancellationToken cancellationToken)
     {
         var dateFrom = slidingWindow.GetFetchIntervalStart().EpochSeconds;
 
         if (dateFrom < newSyncPoint.EpochSeconds)
         {
-            var gsrns = new List<Gsrn> { new(slidingWindow.GSRN) };
-            var mp = await _dataHub3Client.GetMeasurements(gsrns, dateFrom, newSyncPoint.EpochSeconds, cancellationToken);
+            var gsrn = new Gsrn(slidingWindow.GSRN);
+            var mp = await _measurementsClient.GetMeasurements([gsrn], dateFrom, newSyncPoint.EpochSeconds, cancellationToken);
 
-            if (mp == null || mp.Length == 0)
+            if (mp == null || !mp.Any())
             {
                 _logger.LogInformation("No meteringPointData found for GSRN {GSRN} in period from {from} to: {to}", slidingWindow.GSRN,
                     DateTimeOffset.FromUnixTimeSeconds(dateFrom).ToString("o"), DateTimeOffset.FromUnixTimeSeconds(newSyncPoint.EpochSeconds).ToString("o"));
                 return [];
             }
 
-            var days = mp[0].PointAggregationGroups;
+
+            var days = mp.First();
             var measurements = new List<Measurement>();
-            foreach (var day in days)
+            foreach (var day in days.PointAggregationGroups)
             {
                 day.Value.PointAggregations.ForEach(x =>
                     measurements.Add(new Measurement
                     {
                         Gsrn = slidingWindow.GSRN,
-                        DateFrom = x.MinObservationTime,
-                        DateTo = UnixTimestamp.Create(x.MinObservationTime).AddHours(1).EpochSeconds,
-                        Quantity = x.AggregatedQuantity,
+                        DateFrom = x.From.ToUnixTimeSeconds(),
+                        DateTo = UnixTimestamp.Create(x.From.ToUnixTimeSeconds()).AddHours(1).EpochSeconds,
+                        Quantity = x.Quantity ?? 0,
                         Quality = x.Quality.ToEnergyQuality(),
                     }));
             }

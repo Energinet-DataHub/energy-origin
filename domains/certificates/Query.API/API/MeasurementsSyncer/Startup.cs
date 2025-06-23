@@ -1,7 +1,10 @@
 using System;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using API.Configurations;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
+using Energinet.DataHub.Measurements.Client.Extensions.DependencyInjection;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +27,6 @@ public static class Startup
             .ValidateOnStart();
 
         services.AddTransient<ITokenService, TokenService>();
-        services.AddTransient<AuthHeaderHandler, AuthHeaderHandler>();
 
         services.AddScoped<MeasurementsSyncService>();
         services.AddScoped<SlidingWindowService>();
@@ -48,11 +50,15 @@ public static class Startup
             client.BaseAddress = new Uri(options.Url);
         });
 
-        services.AddHttpClient<IDataHub3Client, DataHub3Client>((sp, client) =>
+        static async Task<AuthenticationHeaderValue> authorizationHeaderProviderAsync(IServiceProvider sp)
         {
-            var options = sp.GetRequiredService<IOptions<DataHub3Options>>().Value;
-            client.BaseAddress = new Uri(options.Url);
-            client.Timeout = TimeSpan.FromSeconds(300); // Databricks can autoscale under high load, which can take a long time. So this is so we don't lose the call if that happens.
-        }).AddHttpMessageHandler<AuthHeaderHandler>();
+            var tokenService = sp.GetRequiredService<ITokenService>();
+            var token = await tokenService.GetToken();
+            var headerValue = new AuthenticationHeaderValue("Bearer", token);
+            return headerValue;
+        }
+
+        services.AddMeasurementsClient(authorizationHeaderProviderAsync);
+        services.AddScoped<IMeasurementClient, MeasurementClient>();
     }
 }
