@@ -67,7 +67,7 @@ public class PopulateReportCommandHandlerTests
             _dataFetcher,
             new EnergyDataFormatter(),
             new MunicipalityPercentageProcessor(),
-            new CoverageProcessor(),
+            new CoverageProcessor(Substitute.For<ILogger<CoverageProcessor>>()),
             _svgRenderer,
             _headerRenderer,
             _percentageRenderer,
