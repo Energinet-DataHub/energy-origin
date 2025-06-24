@@ -70,6 +70,7 @@ runs:
       run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
 
     - name: Build image
+      id: image
       uses: Energinet-Datahub/.github/.github/actions/docker-build-and-push@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
       with:
         dockerfile: Dockerfile
@@ -85,4 +86,4 @@ runs:
     - name: Scan image
       uses: ./.github/actions/attest-sign
       with:
-        image_ref: '${{ env.name }}${{ env.version }}'
+        image_ref: '${{ steps.image.outputs.digest }}'
