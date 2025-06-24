@@ -12,5 +12,4 @@ public static class ClaimType
     public const string OrgId = "org_id";
     public const string Scope = "scope";
     public const string TermsAccepted = "tos_accepted";
-    public const string OrgStatus = "org_status";
 }

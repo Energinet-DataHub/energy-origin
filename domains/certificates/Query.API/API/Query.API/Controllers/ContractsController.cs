@@ -56,7 +56,8 @@ public class ContractsController(IdentityDescriptor identityDescriptor, AccessDe
                 return ValidationProblem(ModelState);
             }
         }
-        var isTrial = identityDescriptor.OrganizationStatus == OrganizationStatus.Trial;
+        var isTrial = identityDescriptor.IsTrial();
+
         var result = await service.Create(createContracts, organizationId, identityDescriptor.Subject, identityDescriptor.Name,
             identityDescriptor.OrganizationName, identityDescriptor.OrganizationCvr ?? string.Empty, isTrial, cancellationToken);
 

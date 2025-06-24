@@ -15,7 +15,7 @@ public class EnergyMeasuredIntegrationEventMapper
         List<Measurement> measurements)
     {
         return measurements.Select(measurement =>
-                MapToIntegrationEvent(meteringPoint, syncInfo.MeteringPointType, syncInfo.GridArea, syncInfo.Technology, syncInfo.RecipientId, measurement, syncInfo.IsTrial, syncInfo.IsStateSponsored))
+                MapToIntegrationEvent(meteringPoint, syncInfo.MeteringPointType, syncInfo.GridArea, syncInfo.Technology, syncInfo.RecipientId, measurement, syncInfo.IsStateSponsored, syncInfo.IsTrial))
             .ToList();
     }
 

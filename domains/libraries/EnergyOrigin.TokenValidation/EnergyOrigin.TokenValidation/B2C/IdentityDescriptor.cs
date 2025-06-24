@@ -22,7 +22,6 @@ public class IdentityDescriptor
         ThrowExceptionIfUnsupportedAuthenticationScheme();
     }
 
-    public OrganizationStatus OrganizationStatus => GetClaimAsEnum<OrganizationStatus>(ClaimType.OrgStatus);
     public Guid Subject => GetClaimAsGuid(ClaimType.Sub);
 
     public SubjectType SubjectType => GetClaimAsEnum<SubjectType>(ClaimType.SubType);
@@ -97,6 +96,11 @@ public class IdentityDescriptor
     private string? GetClaimAsOptionalString(string claimName)
     {
         return _user.FindFirstValue(claimName);
+    }
+
+    public bool IsTrial()
+    {
+        return OrganizationStatus == "trial";
     }
 
     public static bool IsSupported(HttpContext httpContext)
