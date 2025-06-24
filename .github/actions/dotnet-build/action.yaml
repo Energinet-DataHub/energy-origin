@@ -71,7 +71,7 @@ runs:
 
     - name: Build image
       id: image
-      uses: Energinet-Datahub/.github/.github/actions/docker-build-and-push@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
+      uses: ./.github/actions/docker-build-push
       with:
         dockerfile: Dockerfile
         image-name: ${{ env.name }}
