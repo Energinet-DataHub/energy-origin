@@ -77,7 +77,7 @@ public record OrganizationResponse(Guid OrganizationId, string OrganizationName,
 public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName, string? Tin);
 public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Result);
 
-public record FirstPartyOrganizationsResponseItem(Guid OrganizationId, string OrganizationName, string Tin);
+public record FirstPartyOrganizationsResponseItem(Guid OrganizationId, string OrganizationName, string Tin, string Status);
 public record FirstPartyOrganizationsResponse(IEnumerable<FirstPartyOrganizationsResponseItem> Result);
 
 public record GetWhitelistedOrganizationsResponseItem(Guid OrganizationId, string Tin);
