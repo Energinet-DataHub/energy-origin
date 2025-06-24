@@ -59,11 +59,12 @@ runs:
         upload-artifact: false
 
     - name: Scan SBOM with Grype
+      id: scan
       uses: anchore/scan-action@v6
       with:
         sbom: ${{ inputs.sbom }}
-        output-format: json
-        output-file: auto-grype-report.json
+        output-format: sarif
+        output-file: results.sarif
         fail-build: false
 
     - name: Sign and attest image
@@ -78,7 +79,7 @@ runs:
           --type cyclonedx \
           "${IMAGE_REF}"
         cosign attest --yes \
-          --predicate "auto-grype-report.json" \
+          --predicate "results.sarif" \
           --type vuln \
           "${IMAGE_REF}"
 
@@ -99,16 +100,24 @@ runs:
         DIGEST_ID=$(echo "${IMAGE_REF#*@}" | cut -c1-12 | tr -cd '[:alnum:]')
         echo "id=$DIGEST_ID" >> "$GITHUB_OUTPUT"
 
-    # Upload SBOM
     - name: Upload SBOM artifact
       uses: actions/upload-artifact@v4
       with:
         name: sbom-${{ steps.digest.outputs.id }}
         path: ${{ inputs.sbom }}
 
-    # Upload Grype report
-    - name: Upload Grype report artifact
-      uses: actions/upload-artifact@v4
+    - name: Print scanning summary
+      shell: bash
+      run: |
+        pipx install sarif-tools
+        {
+          echo \`\`\`
+          sarif summary results.sarif
+          echo \`\`\`
+        } >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload sarif report
+      uses: github/codeql-action/upload-sarif@v3
       with:
-        name: grype-${{ steps.digest.outputs.id }}
-        path: auto-grype-report.json
+        sarif_file: ${{ steps.scan.outputs.sarif }}
+        category: ${{ inputs.grype-category }}
