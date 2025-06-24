@@ -89,14 +89,26 @@ runs:
         SBOM: ${{ inputs.sbom }}
       run: echo "SBOM=${SBOM}" >> $GITHUB_OUTPUT
 
+    - name: Derive a short digest id
+      id: digest
+      shell: bash
+      env:
+        IMAGE_REF: ${{ inputs.image_ref }}
+      run: |
+        # grab everything after the '@', keep first 12 chars, remove non-alnum just in case
+        DIGEST_ID=$(echo "${IMAGE_REF#*@}" | cut -c1-12 | tr -cd '[:alnum:]')
+        echo "id=$DIGEST_ID" >> "$GITHUB_OUTPUT"
+
+    # Upload SBOM
     - name: Upload SBOM artifact
       uses: actions/upload-artifact@v4
       with:
-        name: sbom-${{ github.job }}-${{ github.run_id }}
+        name: sbom-${{ steps.digest.outputs.id }}
         path: ${{ inputs.sbom }}
 
+    # Upload Grype report
     - name: Upload Grype report artifact
       uses: actions/upload-artifact@v4
       with:
-        name: grype-report-${{ github.job }}-${{ github.run_id }}
+        name: grype-${{ steps.digest.outputs.id }}
         path: auto-grype-report.json
