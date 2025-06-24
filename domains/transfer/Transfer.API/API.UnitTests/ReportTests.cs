@@ -18,7 +18,15 @@ public class ReportTests
         var start = now.AddDays(-30);
         var end = now.AddDays(-5);
 
-        var report = Report.Create(id, orgId, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var report = Report.Create(
+            id,
+            orgId,
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "normal",
+            start,
+            end
+            );
 
         report.Should().NotBeNull();
         report.OrganizationId.Should().Be(orgId);
@@ -29,12 +37,21 @@ public class ReportTests
     }
 
     [Fact]
-    public void Given_NullOrganizationId_When_CreatingReport_Then_ThrowsBusinessException()
+    public void Given_EmptyOrganizationId_When_CreatingReport_Then_ThrowsBusinessException()
     {
         var start = UnixTimestamp.Now().AddDays(-30);
         var end = start.AddDays(10);
+        var emptyOrgId = OrganizationId.Empty();
 
-        var act = () => Report.Create(Guid.NewGuid(), null!, OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var act = () => Report.Create(
+            Guid.NewGuid(),
+            emptyOrgId,
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "normal",
+            start,
+            end
+            );
 
         act.Should().Throw<BusinessException>()
             .WithMessage("*organizationId*");
@@ -47,7 +64,15 @@ public class ReportTests
         var start = now.AddDays(-30);
         var end = start.AddDays(6);
 
-        var act = () => Report.Create(Guid.NewGuid(), OrganizationId.Create(Guid.NewGuid()), OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var act = () => Report.Create(
+            Guid.NewGuid(),
+            OrganizationId.Create(Guid.NewGuid()),
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "normal",
+            start,
+            end
+            );
 
         act.Should().Throw<BusinessException>()
             .WithMessage("*1 week*");
@@ -60,7 +85,15 @@ public class ReportTests
         var start = now.AddDays(-300);
         var end = start.AddYears(1).AddDays(1);
 
-        var act = () => Report.Create(Guid.NewGuid(), OrganizationId.Create(Guid.NewGuid()), OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var act = () => Report.Create(
+            Guid.NewGuid(),
+            OrganizationId.Create(Guid.NewGuid()),
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "normal",
+            start,
+            end
+            );
 
         act.Should().Throw<BusinessException>()
             .WithMessage("EndDate cannot be in the future.");
@@ -75,7 +108,15 @@ public class ReportTests
         var end = now.AddDays(10);
 
         // Act
-        var act = () => Report.Create(Guid.NewGuid(), OrganizationId.Create(Guid.NewGuid()), OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var act = () => Report.Create(
+            Guid.NewGuid(),
+            OrganizationId.Create(Guid.NewGuid()),
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "normal",
+            start,
+            end
+            );
 
         // Assert
         act.Should().Throw<BusinessException>().Where(e => e.Message.Contains("EndDate cannot be in the future."));
@@ -87,7 +128,15 @@ public class ReportTests
         var start = UnixTimestamp.Now().AddDays(-365);
         var end = start.AddYears(1);
 
-        var report = Report.Create(Guid.NewGuid(), OrganizationId.Create(Guid.NewGuid()), OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var report = Report.Create(
+            Guid.NewGuid(),
+            OrganizationId.Create(Guid.NewGuid()),
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "normal",
+            start,
+            end
+            );
 
         report.StartDate.Should().Be(start);
         report.EndDate.Should().Be(end);
@@ -100,9 +149,38 @@ public class ReportTests
         var start = now.AddDays(-5);
         var end = now.AddDays(-20);
 
-        var act = () => Report.Create(Guid.NewGuid(), OrganizationId.Create(Guid.NewGuid()), OrganizationName.Create("Organization Name"), Tin.Create("13371337"), start, end);
+        var act = () => Report.Create(
+            Guid.NewGuid(),
+            OrganizationId.Create(Guid.NewGuid()),
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "normal",
+            start,
+            end
+            );
 
         act.Should().Throw<BusinessException>()
             .WithMessage("*1 week*");
+    }
+
+    [Fact]
+    public void Given_NonTrial_Or_NonNormalOrganizationStatus_When_CreatingReport_Then_ThrowsBusinessException()
+    {
+        var now = UnixTimestamp.Now();
+        var start = now.AddDays(-30);
+        var end = now.AddDays(-5);
+
+        var act = () => Report.Create(
+            Guid.NewGuid(),
+            OrganizationId.Create(Guid.NewGuid()),
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "hest",
+            start,
+            end
+        );
+
+        act.Should().Throw<BusinessException>()
+            .WithMessage("Organization status must be either 'trial' or 'normal'");
     }
 }

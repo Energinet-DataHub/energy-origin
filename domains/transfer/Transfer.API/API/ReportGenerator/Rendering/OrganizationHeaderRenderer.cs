@@ -23,7 +23,7 @@ public class OrganizationHeaderRenderer : IOrganizationHeaderRenderer
 
         var html = $"""
                     <div data-layer="Top" class="Top" style="width: 563px; padding-left: 16px; padding-right: 16px; padding-top: 10px; padding-bottom: 10px; justify-content: space-between; align-items: center; display: inline-flex">
-                        <div data-layer="{organizationName}" class="organization-name"><span style="color: #002433; font-size: 12px; font-family: OpenSansNormal; font-weight: 700; padding-left: 12px; text-transform: uppercase; line-height: 16px; letter-spacing: 1.20px; word-wrap: break-word">{firstLetter}</span><span style="color: #002433; font-size: 12px; font-family: Open Sans; font-weight: 700; line-height: 16px; letter-spacing: 1.20px; word-wrap: break-word">{restOfName}</span></div>
+                        <div data-layer="{organizationName}" class="organization-name"><span style="color: #002433; font-size: 12px; font-family: OpenSansNormal; font-weight: 700; padding-left: 12px; text-transform: uppercase; line-height: 16px; letter-spacing: 1.20px; word-wrap: break-word">{firstLetter}</span><span style="color: #002433; font-size: 12px; font-family: OpenSansNormal; font-weight: 700; line-height: 16px; letter-spacing: 1.20px; word-wrap: break-word">{restOfName}</span></div>
                         <div data-layer="{taxIdentificationNumber}" class="tin" style="color: #002433; font-size: 12px; font-family: OpenSansNormal; font-weight: 400; padding-right: 12px; line-height: 16px; letter-spacing: 1.20px; word-wrap: break-word">{taxIdentificationNumber}</div>
                     </div>
                     <div data-layer="header" class="header" style="width: 531px;height: 104px;position: relative;padding-bottom: 22px;">
