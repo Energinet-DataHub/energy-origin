@@ -105,3 +105,9 @@ runs:
       run: |-
         sbom="${SBOM}"
         echo "SBOM=$sbom" >> $GITHUB_OUTPUT
+
+    - name: Upload SBOM
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: ${{ inputs.sbom }}
