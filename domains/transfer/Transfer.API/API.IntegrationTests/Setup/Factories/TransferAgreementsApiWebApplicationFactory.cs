@@ -203,12 +203,12 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     }
 
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string orgIds = "", string name = "Peter Producent",
-        string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
+        string apiVersion = ApiVersions.Version1, bool termsAccepted = true, string organizationStatus = "normal" )
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer",
-                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), orgIds: orgIds, termsAccepted: termsAccepted));
+                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), orgIds: orgIds, orgStatus: organizationStatus, termsAccepted: termsAccepted));
         client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
 
         return client;
@@ -224,6 +224,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
         string audience = "Users",
         string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
         string orgIds = "",
+        string orgStatus = "",
         bool termsAccepted = true)
     {
         var claims = new Dictionary<string, object>()
@@ -234,6 +235,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
             { ClaimType.OrgIds, orgIds },
             { ClaimType.OrgCvr, tin },
             { ClaimType.OrgName, cpn },
+            { ClaimType.OrgStatus, orgStatus },
             { ClaimType.SubType, "User" },
             { ClaimType.TermsAccepted, termsAccepted.ToString() },
             { UserClaimName.AccessToken, "" },
