@@ -26,7 +26,7 @@ public class GetMeteringPointsQueryHandlerTest
             .Returns(new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>()
             {
                 new(Guid.NewGuid(), "TestOrg", tin, "Normal"),
-                new(Guid.NewGuid(), "TestOrg1", tin1, "Deactivated")
+                new(Guid.NewGuid(), "TestOrg1", tin1, "Trial")
             }));
 
         _measurementsService.GetMeteringPointsHttpRequestAsync(Arg.Any<Guid>())
