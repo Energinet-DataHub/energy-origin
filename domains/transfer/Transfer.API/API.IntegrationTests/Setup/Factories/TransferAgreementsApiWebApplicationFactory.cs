@@ -203,7 +203,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     }
 
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string orgIds = "", string name = "Peter Producent",
-        string apiVersion = ApiVersions.Version1, bool termsAccepted = true, string organizationStatus = "normal" )
+        string apiVersion = ApiVersions.Version1, bool termsAccepted = true, string organizationStatus = "normal")
     {
         var client = CreateClient();
         client.DefaultRequestHeaders.Authorization =
