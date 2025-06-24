@@ -55,7 +55,7 @@ public class IssuingContractCleanupTests
             new Technology("SomeFuelCode", "SomeTechCode"),
             false);
 
-        var endDateContract =  CertificateIssuingContract.Create(
+        var endDateContract = CertificateIssuingContract.Create(
             3,
             new Gsrn("5734567890123458"),
             "932",
