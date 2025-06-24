@@ -16,17 +16,18 @@ public class GetClientGrantedConsentsQueryHandler(IClientRepository clientReposi
 {
     public async Task<GetClientGrantedConsentsQueryResult> Handle(GetClientGrantedConsentsQuery request, CancellationToken cancellationToken)
     {
-        var client = await clientRepository
+        var isTrial = await clientRepository
             .Query()
             .Where(x => x.IdpClientId == request.IdpClientId)
+            .Select(x => (bool?)x.IsTrial)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (client?.IsTrial is null)
+        if (isTrial is null)
         {
             return new GetClientGrantedConsentsQueryResult([]);
         }
 
-        if (client.IsTrial)
+        if ((bool)isTrial)
         {
             var trialConsents = await clientRepository.Query()
                 .Where(x => x.IdpClientId == request.IdpClientId)
