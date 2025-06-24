@@ -1,0 +1,107 @@
+name: 'attest-sign'
+description: 'Generate SBOM, attest and sign docker image'
+branding:
+  icon: 'lock'
+  color: 'green'
+inputs:
+  image_ref:
+    description: |
+      'form <image>@<digest>'
+      'image ref, i.e. "europe-north1-docker.pkg.dev/nais-io/nais/images/canary-deployer@sha256:eac1f85bee008dfe4ca0eadd1f32256946a171b445d129dba8f00cc67d43582b"'
+    required: true
+  sbom:
+    description: 'existing SBOM in cyclonedx format'
+    default: 'auto-generate-for-me-please.json'
+  trivy_java_db_repositories:
+    description: 'specify the --java-db-repository strings for Trivy'
+    default: "europe-north1-docker.pkg.dev/nais-io/github-ptc/aquasecurity/trivy-java-db:1,public.ecr.aws/aquasecurity/trivy-java-db,ghcr.io/aquasecurity/trivy-java-db:1"
+outputs:
+  sbom:
+    description: 'SBOM.json in cyclonedx format'
+    value: ${{ steps.set-outputs.outputs.SBOM }}
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Validate image ref'
+      env:
+        IMAGE_REF: ${{ inputs.image_ref }}
+      run: |
+        image_ref="${IMAGE_REF}"
+        if [[ $image_ref != *@sha256:* ]]; then
+          echo "Image must be in the form of <image>@<digest>"
+          exit 1
+        fi
+      shell: 'bash'
+    - name: 'Install cosign'
+      uses: 'sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb' # ratchet:sigstore/cosign-installer@v3
+
+    # Check if the 'sbom' input is provided, and output a message if it is empty
+    - name: "Check SBOM input"
+      env:
+        SBOM: ${{ inputs.sbom }}
+      shell: 'bash'
+      run: |
+        sbom="${SBOM}"
+        if [ -z $sbom ]; then
+          echo "SBOM input is empty. Please provide a valid SBOM for attestation."
+        else
+          echo "SBOM input is provided: $sbom"
+        fi
+
+    - uses: oras-project/setup-oras@8d34698a59f5ffe24821f0b48ab62a3de8b64b20 # ratchet:oras-project/setup-oras@v1
+      name: Setup ORAS for manifest fetch
+
+    - name: Fetch Trivy Java DB digest
+      shell: 'bash'
+      id: fetch-trivy-java-db-digest
+      run: |
+        TRIVY_JAVA_DB_DIGEST=$(oras manifest fetch europe-north1-docker.pkg.dev/nais-io/remote-ghcr/aquasecurity/trivy-java-db:1 | jq -r '.layers[0].digest')
+        echo "TRIVY_JAVA_DB_DIGEST=$TRIVY_JAVA_DB_DIGEST" >> $GITHUB_OUTPUT
+
+    - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # ratchet:actions/cache@v4
+      id: cache-trivy-java-db
+      with:
+        path: .trivy
+        key: trivy-db-${{ steps.fetch-trivy-java-db-digest.outputs.TRIVY_JAVA_DB_DIGEST }}
+
+    - name: 'Generate SBOM'
+      if: inputs.sbom == 'auto-generate-for-me-please.json'
+      uses: 'aquasecurity/trivy-action@76071ef0d7ec797419534a183b498b4d6366cf37' # ratchet:aquasecurity/trivy-action@0.31.0
+      env:
+        TRIVY_SKIP_DB_UPDATE: "true"
+        TRIVY_JAVA_DB_REPOSITORY: "${{ inputs.trivy_java_db_repositories }}"
+      with:
+        scan-type: 'image'
+        format: 'cyclonedx'
+        output: 'auto-generate-for-me-please.json'
+        image-ref: "${{ inputs.image_ref }}"
+        cache-dir: ".trivy"
+
+        # See https://github.com/yogeshlonkar/trivy-cache-action?tab=readme-ov-file#trivy-cache-action-
+    - name: Fix .trivy permissions
+      shell: 'bash'
+      run: |
+        if [ -d ".trivy" ]; then
+          sudo chown -R $(stat . -c %u:%g) .trivy
+        else
+          echo ".trivy directory does not exist, skipping chown."
+        fi
+
+    - name: 'Sign and attest image'
+      env:
+        IMAGE_REF: ${{ inputs.image_ref }}
+        SBOM: ${{ inputs.sbom }}
+      shell: 'bash'
+      run: |
+        image_ref="${IMAGE_REF}"
+        sbom="${SBOM}"
+        cosign sign --yes "${image_ref}"
+        cosign attest --yes --predicate "$sbom" --type cyclonedx "${image_ref}"
+    - name: Set outputs
+      env:
+        SBOM: ${{ inputs.sbom }}
+      shell: bash
+      id: set-outputs
+      run: |-
+        sbom="${SBOM}"
+        echo "SBOM=$sbom" >> $GITHUB_OUTPUT
