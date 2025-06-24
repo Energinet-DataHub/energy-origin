@@ -79,7 +79,7 @@ runs:
           "${IMAGE_REF}"
         cosign attest --yes \
           --predicate "auto-grype-report.json" \
-          --type vuln-report \
+          --type vuln \
           "${IMAGE_REF}"
 
     - name: Set outputs
