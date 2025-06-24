@@ -90,4 +90,4 @@ runs:
     - name: Scan image
       uses: ./.github/actions/attest-sign
       with:
-        image_ref: ${{ env.LOWERCASED }}@${{ steps.build.outputs.digest }}
+        image_ref: ${{ env.LOWERCASED }}@${{ steps.image.outputs.digest }}
