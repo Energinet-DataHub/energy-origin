@@ -1,26 +1,27 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using API.Configurations;
+using API.ContractService.Clients;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.MeasurementsSyncer.Persistence;
 using API.Models;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using Energinet.DataHub.Measurements.Abstractions.Api.Models;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
+using EnergyTrackAndTrace.Testing.Extensions;
 using FluentAssertions;
 using Meteringpoint.V1;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
-using EnergyTrackAndTrace.Testing.Extensions;
-using Energinet.DataHub.Measurements.Abstractions.Api.Models;
 
 namespace API.UnitTests.MeasurementsSyncer;
 
@@ -34,7 +35,7 @@ public class MeasurementsSyncServiceTest
         MeteringPointType.Production,
         "DK1",
         Guid.NewGuid(),
-        new Technology("T12345", "T54321"));
+        new DataContext.ValueObjects.Technology("T12345", "T54321"));
 
     private readonly ILogger<MeasurementsSyncService> _fakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
     private readonly ISlidingWindowState _fakeSlidingWindowState = Substitute.For<ISlidingWindowState>();
@@ -106,6 +107,55 @@ public class MeasurementsSyncServiceTest
         await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
 
         _ = _measurementClient.DidNotReceive().GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FetchAndPublishMeasurements_WhenMeteringPointDisconnected_NoDataFetched()
+    {
+        var startSync = UnixTimestamp.Create(_syncInfo.StartSyncDate);
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, startSync);
+        var relationsResponse = new ListMeteringPointForCustomerCaResponse
+        {
+            Relations = [new() { MeteringPointId = _syncInfo.Gsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) }],
+            Rejections = []
+        };
+        _dataHubFacadeClient.ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(relationsResponse);
+
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+        foreach (var mp in meteringPointsResponse.MeteringPoints)
+        {
+            mp.PhysicalStatusOfMp = "E23"; //Disconnected
+        }
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        _ = _measurementClient.DidNotReceive().GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FetchAndPublishMeasurements_WhenMeteringPointClosedDown_NoDataFetchedAndContractAndSlidingWindowDeleted()
+    {
+        var startSync = UnixTimestamp.Create(_syncInfo.StartSyncDate);
+        var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(_syncInfo.Gsrn, startSync);
+        var relationsResponse = new ListMeteringPointForCustomerCaResponse
+        {
+            Relations = [new() { MeteringPointId = _syncInfo.Gsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) }],
+            Rejections = []
+        };
+        _dataHubFacadeClient.ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(relationsResponse);
+
+        var meteringPointsResponse = Any.MeteringPointsResponse(_syncInfo.Gsrn);
+        foreach (var mp in meteringPointsResponse.MeteringPoints)
+        {
+            mp.PhysicalStatusOfMp = "D02"; //Closed down
+        }
+        _fakeMeteringPointsClient.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>()).Returns(meteringPointsResponse);
+
+        await _service.FetchAndPublishMeasurements(_syncInfo, slidingWindow, CancellationToken.None);
+
+        _ = _measurementClient.DidNotReceive().GetMeasurements(Arg.Any<List<Gsrn>>(), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+        await _contractState.Received(1).DeleteContractAndSlidingWindow(Arg.Is<Gsrn>(x => x == _syncInfo.Gsrn));
     }
 
     [Fact]
@@ -286,7 +336,7 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new DataContext.ValueObjects.Technology("T12345", "T54321"));
 
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(
             syncInfo.Gsrn,
@@ -474,7 +524,7 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new DataContext.ValueObjects.Technology("T12345", "T54321"));
 
         var slidingWindow =
             MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, UnixTimestamp.Create(syncInfo.StartSyncDate));
@@ -561,7 +611,7 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new DataContext.ValueObjects.Technology("T12345", "T54321"));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStart);
 
         // When fetching measurements
@@ -601,7 +651,7 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new DataContext.ValueObjects.Technology("T12345", "T54321"));
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, contractStart);
 
         // When fetching measurements
@@ -691,7 +741,7 @@ public class MeasurementsSyncServiceTest
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new DataContext.ValueObjects.Technology("T12345", "T54321"));
 
         var slidingWindow = MeteringPointTimeSeriesSlidingWindow.Create(syncInfo.Gsrn, syncStart);
 

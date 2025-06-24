@@ -82,13 +82,18 @@ public class MeasurementsSyncService
         var newSyncPoint = GetNextSyncPoint(syncInfo);
 
         var ownedMps = await GetOwnedMeteringPoints(syncInfo);
+        var meteringPoint = ownedMps.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
+        if (meteringPoint.PhysicalStatusOfMp != "E22") //Connected
+        {
+            _logger.LogWarning("Metering point {GSRN} is not in status E22. Status: {status}", slidingWindow.GSRN, meteringPoint.PhysicalStatusOfMp);
+            if (meteringPoint.PhysicalStatusOfMp == "D02") //Closed down
+            {
+                await _contractState.DeleteContractAndSlidingWindow(gsrn);
+            }
+            return;
+        }
 
         var fetchedMeasurements = await FetchMeasurements(slidingWindow, newSyncPoint, stoppingToken);
-        var meteringPoint = ownedMps.MeteringPoints.First(mp => mp.MeteringPointId == slidingWindow.GSRN);
-        if (meteringPoint.PhysicalStatusOfMp != "E22")
-        {
-            _logger.LogWarning("Metering point {GSRN} is not in status E22", slidingWindow.GSRN);
-        }
         _measurementSyncMetrics.AddNumberOfMeasurementsFetched(fetchedMeasurements.Count);
 
         if (fetchedMeasurements.Count > 0)
