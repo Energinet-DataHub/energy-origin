@@ -83,7 +83,11 @@ runs:
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
+    - name: Resolve container image name
+      shell: bash
+      run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ env.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
     - name: Scan image
       uses: ./.github/actions/attest-sign
       with:
-        image_ref: 'ghcr.io/${{ github.repository_owner }}/${{ env.name }}@${{ steps.image.outputs.digest }}'
+        image_ref: ${{ env.LOWERCASED }}@${{ steps.build.outputs.digest }}
