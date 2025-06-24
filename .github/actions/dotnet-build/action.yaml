@@ -86,4 +86,4 @@ runs:
     - name: Scan image
       uses: ./.github/actions/attest-sign
       with:
-        image_ref: '${{ steps.image.outputs.digest }}'
+        image_ref: '${{ env.name }}${{ steps.image.outputs.digest }}'
