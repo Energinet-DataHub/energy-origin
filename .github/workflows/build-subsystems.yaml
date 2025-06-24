@@ -17,7 +17,6 @@ permissions:
   security-events: write
   contents: read
   packages: write
-  attestations: write
 
 jobs:
 
