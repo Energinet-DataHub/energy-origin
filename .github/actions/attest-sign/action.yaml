@@ -96,7 +96,6 @@ runs:
       env:
         IMAGE_REF: ${{ inputs.image_ref }}
       run: |
-        # grab everything after the '@', keep first 12 chars, remove non-alnum just in case
         DIGEST_ID=$(echo "${IMAGE_REF#*@}" | cut -c1-12 | tr -cd '[:alnum:]')
         echo "id=$DIGEST_ID" >> "$GITHUB_OUTPUT"
 
