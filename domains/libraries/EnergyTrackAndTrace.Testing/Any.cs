@@ -145,7 +145,7 @@ public class Any
             MunicipalityCode = "101", // Copenhagen
             CitySubDivisionName = "vesterbro",
             MeteringGridAreaId = "932",
-            PhysicalStatusOfMp = "E22"
+            PhysicalStatusOfMp = "E22" //Connected
         };
     }
 
