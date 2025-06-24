@@ -30,6 +30,7 @@ public class IdentityDescriptor
     public string Name => GetClaimAsString(ClaimType.Name);
 
     public string OrganizationName => GetClaimAsString(ClaimType.OrgName);
+    public string OrganizationStatus => GetClaimAsString(ClaimType.OrgStatus);
 
     public string? OrganizationCvr => GetClaimAsOptionalString(ClaimType.OrgCvr);
 

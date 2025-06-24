@@ -12,8 +12,6 @@ using Xunit;
 using EnergyTrackAndTrace.Testing.Extensions;
 using EnergyOrigin.Datahub3;
 using Energinet.DataHub.Measurements.Abstractions.Api.Models;
-using Microsoft.AspNetCore.Components.Web;
-using MassTransit.Internals;
 
 namespace API.UnitTests.Services;
 
@@ -56,7 +54,7 @@ public class ConsumptionServiceTests
             Rejections = new List<Rejection>()
         });
 
-        var mpData = EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
+        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
 
         _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
@@ -95,7 +93,7 @@ public class ConsumptionServiceTests
             Rejections = new List<Rejection>()
         });
 
-        var mpData = EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 1);
+        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 1);
 
         _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
@@ -136,7 +134,7 @@ public class ConsumptionServiceTests
             Rejections = new List<Rejection>()
         });
 
-        var mpData = EnergyTrackAndTrace.Testing.Any.TimeSeriesApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
+        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
 
         foreach (var mp in mpData)
         {

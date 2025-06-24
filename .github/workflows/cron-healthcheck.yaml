@@ -45,7 +45,7 @@ jobs:
         run: echo "solution=$(find domains -maxdepth 1 -name "*.sln")" | tee -a "$GITHUB_ENV"
 
       - name: Check license
-        uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
+        uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@502f9383a50bc018639d7481a8fa308055d82f7a # v14.39.0
         with:
           project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json
@@ -94,7 +94,7 @@ jobs:
           } >> $GITHUB_ENV
 
       - name: Validate project
-        uses: Energinet-DataHub/.github/.github/actions/dotnet-validate@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
+        uses: Energinet-DataHub/.github/.github/actions/dotnet-validate@502f9383a50bc018639d7481a8fa308055d82f7a # v14.39.0
         with:
           dotnet-version: ${{ matrix.build.sdkVersion }}
           pin-version: true

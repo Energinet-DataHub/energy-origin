@@ -108,11 +108,7 @@ public static class MunicipalityCodeMapper
 
     public static string? GetMunicipalityName(string municipalityCode)
     {
-        if (municipalityCodes.TryGetValue(municipalityCode, out string? municipalityName))
-        {
-            return municipalityName;
-        }
-        return null;
+        return municipalityCodes.GetValueOrDefault(municipalityCode);
     }
 
     public static bool IsMunicipalityCodeValid(string municipalityCode)

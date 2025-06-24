@@ -24,6 +24,7 @@ public class Report
         UnixTimestamp startDate,
         UnixTimestamp endDate,
         ReportStatus status,
+        bool isTrial,
         byte[]? content)
     {
         Id = id;
@@ -34,6 +35,7 @@ public class Report
         StartDate = startDate;
         EndDate = endDate;
         Status = status;
+        IsTrial = isTrial;
         Content = content;
     }
 
@@ -44,10 +46,11 @@ public class Report
         OrganizationId organizationId,
         OrganizationName organizationName,
         Tin organizationTin,
+        string orgStatus,
         UnixTimestamp startDate,
         UnixTimestamp endDate)
     {
-        if (organizationId == null)
+        if (organizationId.Value == Guid.Empty)
             throw new BusinessException(nameof(organizationId));
 
         var createdAt = UnixTimestamp.Now();
@@ -58,6 +61,9 @@ public class Report
         if (endDate < startDate.AddDays(7) || endDate > startDate.AddYears(1))
             throw new BusinessException("Date range must be between 1 week and 1 year.");
 
+        if (orgStatus is not ("trial" or "normal"))
+            throw new BusinessException("Organization status must be either 'trial' or 'normal'");
+
         return new Report(
             id: id,
             organizationId: organizationId,
@@ -67,6 +73,7 @@ public class Report
             startDate: startDate,
             endDate: endDate,
             status: ReportStatus.Pending,
+            isTrial: orgStatus == "trial",
             content: null
         );
     }
@@ -79,6 +86,7 @@ public class Report
     public UnixTimestamp StartDate { get; private set; } = UnixTimestamp.Empty();
     public UnixTimestamp EndDate { get; private set; } = UnixTimestamp.Empty();
     public ReportStatus Status { get; private set; }
+    public bool IsTrial { get; private set; }
     public byte[]? Content { get; private set; }
 
     public void MarkCompleted(byte[] pdfBytes)

@@ -15,16 +15,17 @@ public class MunicipalityPercentageRenderer : IMunicipalityPercentageRenderer
 {
     public string Render(List<MunicipalityDistribution> municipalities)
     {
-        var ordered = municipalities.OrderByDescending(x => x.Percentage).ToList();
-        var top3Municipalities = ordered.Take(3);
-        var rest = ordered.Skip(3);
+        var orderedWithoutNull = municipalities.Where(x => !string.IsNullOrWhiteSpace(x.Municipality)).OrderByDescending(x => x.Percentage).ToList();
+        var top3Municipalities = orderedWithoutNull.Take(3);
+        var rest = orderedWithoutNull.Skip(3).ToList();
+        rest.AddRange(municipalities.Where(x => string.IsNullOrWhiteSpace(x.Municipality)));
 
         var html2 = @"<h6 class=""section-title"">Kommuner</h6>
                     <ul>";
 
         foreach (var municipality in top3Municipalities)
         {
-            var name = MunicipalityCodeMapper.GetMunicipalityName(municipality.Municipality);
+            var name = municipality.Municipality != null ? MunicipalityCodeMapper.GetMunicipalityName(municipality.Municipality) : null;
             if (name != null)
                 html2 += $"<li>{name}: {municipality.Percentage:0}%</li>";
         }

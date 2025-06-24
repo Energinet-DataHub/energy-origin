@@ -20,18 +20,24 @@ public class GetFirstPartyOrganizationsQueryTests
     {
         var query = new GetFirstPartyOrganizationsQuery();
 
-        var organization1 = Any.Organization(Tin.Create("12345678"), OrganizationName.Create("Brian Bolighaj A/S"));
-        var organization2 = Any.Organization(Tin.Create("87654321"), OrganizationName.Create("Bolig Brianhaj S/A"));
+        var normalOrganization = Any.Organization(Tin.Create("12345678"), OrganizationName.Create("Brian Bolighaj from Bolighaj A/S"));
+        var trialOrganization = Any.TrialOrganization(Tin.Create("13371337"), OrganizationName.Create("Thomas Trial from TrialCorp"));
+        var deactivatedOrganization = Any.DeactivatedOrganization(Tin.Create("90009000"), OrganizationName.Create("Deactivated Dario from Dario ApS"));
 
-        await _fakeOrganizationRepository.AddAsync(organization1, CancellationToken.None);
-        await _fakeOrganizationRepository.AddAsync(organization2, CancellationToken.None);
+        await _fakeOrganizationRepository.AddAsync(normalOrganization, CancellationToken.None);
+        await _fakeOrganizationRepository.AddAsync(trialOrganization, CancellationToken.None);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
+        Assert.Equal("Normal", normalOrganization.Status.ToString());
+        Assert.Equal("Trial", trialOrganization.Status.ToString());
+        Assert.Equal("Deactivated", deactivatedOrganization.Status.ToString());
+
+
         Assert.Equal(new List<GetFirstPartyOrganizationsQueryResultItem>
         {
-            new(organization1.Id, organization1.Name.Value, organization1.Tin!.Value),
-            new(organization2.Id, organization2.Name.Value, organization2.Tin!.Value)
+            new(normalOrganization.Id, normalOrganization.Name.Value, normalOrganization.Tin!.Value, normalOrganization.Status.ToString()),
+            new(trialOrganization.Id, trialOrganization.Name.Value, trialOrganization.Tin!.Value, trialOrganization.Status.ToString())
         }, result.Result);
     }
 
@@ -50,7 +56,7 @@ public class GetFirstPartyOrganizationsQueryTests
 
         Assert.Equal(new List<GetFirstPartyOrganizationsQueryResultItem>
         {
-            new(firstPartyOrganization.Id, firstPartyOrganization.Name.Value, firstPartyOrganization.Tin!.Value)
+            new(firstPartyOrganization.Id, firstPartyOrganization.Name.Value, firstPartyOrganization.Tin!.Value, firstPartyOrganization.Status.ToString())
         }, result.Result);
     }
 
