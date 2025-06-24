@@ -50,7 +50,7 @@ public class Report
         UnixTimestamp startDate,
         UnixTimestamp endDate)
     {
-        if (organizationId == null)
+        if (organizationId.Value == Guid.Empty)
             throw new BusinessException(nameof(organizationId));
 
         var createdAt = UnixTimestamp.Now();
@@ -60,6 +60,9 @@ public class Report
 
         if (endDate < startDate.AddDays(7) || endDate > startDate.AddYears(1))
             throw new BusinessException("Date range must be between 1 week and 1 year.");
+
+        if (orgStatus is not ("trial" or "normal"))
+            throw new BusinessException("Organization status must be either 'trial' or 'normal'");
 
         return new Report(
             id: id,

@@ -37,14 +37,15 @@ public class ReportTests
     }
 
     [Fact]
-    public void Given_NullOrganizationId_When_CreatingReport_Then_ThrowsBusinessException()
+    public void Given_EmptyOrganizationId_When_CreatingReport_Then_ThrowsBusinessException()
     {
         var start = UnixTimestamp.Now().AddDays(-30);
         var end = start.AddDays(10);
+        var emptyOrgId = OrganizationId.Empty();
 
         var act = () => Report.Create(
             Guid.NewGuid(),
-            null!,
+            emptyOrgId,
             OrganizationName.Create("Organization Name"),
             Tin.Create("13371337"),
             orgStatus: "normal",
@@ -160,5 +161,26 @@ public class ReportTests
 
         act.Should().Throw<BusinessException>()
             .WithMessage("*1 week*");
+    }
+
+    [Fact]
+    public void Given_NonTrial_Or_NonNormalOrganizationStatus_When_CreatingReport_Then_ThrowsBusinessException()
+    {
+        var now = UnixTimestamp.Now();
+        var start = now.AddDays(-30);
+        var end = now.AddDays(-5);
+
+        var act = () => Report.Create(
+            Guid.NewGuid(),
+            OrganizationId.Create(Guid.NewGuid()),
+            OrganizationName.Create("Organization Name"),
+            Tin.Create("13371337"),
+            orgStatus: "hest",
+            start,
+            end
+        );
+
+        act.Should().Throw<BusinessException>()
+            .WithMessage("Organization status must be either 'trial' or 'normal'");
     }
 }
