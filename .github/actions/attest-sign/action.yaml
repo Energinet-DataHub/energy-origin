@@ -13,6 +13,9 @@ inputs:
   sbom:
     description: 'Existing SBOM in CycloneDX format, or will be generated'
     default: 'auto-generate-for-me-please.json'
+  grype-category:
+    description: 'Optional category name for SARIF upload'
+    default: 'grype'
 
 outputs:
   sbom:
@@ -32,23 +35,16 @@ runs:
           exit 1
         fi
 
-    - name: Install Cosign
-      uses: sigstore/cosign-installer@v3
-
-    - name: Check SBOM input
+    - name: Parse image info
+      id: parse
       shell: bash
       env:
-        SBOM: ${{ inputs.sbom }}
+        IMAGE_REF: ${{ inputs.image_ref }}
       run: |
-        if [ -z "${SBOM}" ]; then
-          echo "SBOM input is empty. Please provide a valid SBOM."
-          exit 1
-        else
-          echo "SBOM input: ${SBOM}"
-        fi
-
-    - name: Setup ORAS
-      uses: oras-project/setup-oras@v1
+        DIGEST="${IMAGE_REF#*@}"
+        NAME="${IMAGE_REF%@*}"
+        echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+        echo "name=${NAME}" >> $GITHUB_OUTPUT
 
     - name: Generate SBOM
       if: ${{ inputs.sbom == 'auto-generate-for-me-please.json' }}
@@ -67,28 +63,23 @@ runs:
         output-file: results.sarif
         fail-build: false
 
-    - name: Sign and attest image
-      shell: bash
-      env:
-        IMAGE_REF: ${{ inputs.image_ref }}
-        SBOM: ${{ inputs.sbom }}
-      run: |
-        cosign sign --yes "${IMAGE_REF}"
-        cosign attest --yes \
-          --predicate "${SBOM}" \
-          --type cyclonedx \
-          "${IMAGE_REF}"
-        cosign attest --yes \
-          --predicate "results.sarif" \
-          --type vuln \
-          "${IMAGE_REF}"
+    - name: Sign image (Cosign)
+      uses: sigstore/cosign-installer@v3
+    - shell: bash
+      run: cosign sign --yes "${{ inputs.image_ref }}"
+
+    - name: Attest SBOM using GitHub-native action
+      uses: actions/attest-sbom@v1
+      with:
+        subject-name: ${{ steps.parse.outputs.name }}
+        subject-digest: ${{ steps.parse.outputs.digest }}
+        sbom-path: ${{ inputs.sbom }}
+        push-to-registry: true
 
     - name: Set outputs
       id: set-outputs
       shell: bash
-      env:
-        SBOM: ${{ inputs.sbom }}
-      run: echo "SBOM=${SBOM}" >> $GITHUB_OUTPUT
+      run: echo "SBOM=${{ inputs.sbom }}" >> $GITHUB_OUTPUT
 
     - name: Derive a short digest id
       id: digest
@@ -115,7 +106,7 @@ runs:
           echo \`\`\`
         } >> $GITHUB_STEP_SUMMARY
 
-    - name: Upload sarif report
+    - name: Upload SARIF report to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
