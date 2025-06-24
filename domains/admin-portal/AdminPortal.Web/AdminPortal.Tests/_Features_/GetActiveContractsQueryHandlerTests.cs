@@ -51,10 +51,13 @@ public class GetActiveContractsQueryHandlerTests
     {
         var mockAuthorizationFacade = Substitute.For<IAuthorizationService>();
         var mockCertificatesFacade = Substitute.For<ICertificatesService>();
+        var organizationName = "Peter Producent A/S";
+        var organizationTin = "11223344";
+        var organizationStatus = "Normal";
 
         var predefinedOrganizations = new GetOrganizationsResponse(new List<GetOrganizationsResponseItem>
         {
-            new(Guid.NewGuid(), "Peter Producent A/S", "11223344", "Normal")
+            new(Guid.NewGuid(), organizationName, organizationTin, organizationStatus)
         });
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>());
