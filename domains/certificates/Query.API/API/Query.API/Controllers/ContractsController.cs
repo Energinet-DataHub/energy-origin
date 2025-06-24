@@ -45,8 +45,6 @@ public class ContractsController(IdentityDescriptor identityDescriptor, AccessDe
             return Forbid();
         }
 
-
-
         foreach (var createContract in createContracts.Contracts)
         {
             var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
