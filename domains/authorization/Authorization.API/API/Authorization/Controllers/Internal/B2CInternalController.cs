@@ -86,40 +86,36 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
 
     [HttpPost]
     [Route("whitelisted-organization")]
-    [Produces("application/json")]
     [SwaggerOperation(
-        Summary = "Gets whether an organisation is whitelisted",
-        Description = "This endpoint is called only by Azure AD B2C")]
+        Summary = "Gets whether an organization is whitelisted",
+        Description = "This endpoint is only used by Azure B2C")]
     public async Task<IActionResult> GetIsWhitelistedOrganization(
         [FromBody] WhitelistedOrganizationRequest request)
     {
-        bool isWhitelisted = await mediator
-            .Send(new GetWhitelistedOrganizationQuery(request.OrgCvr, request.LoginType));
+        var isWhitelisted = await mediator.Send(new GetWhitelistedOrganizationQuery(request.OrgCvr, request.LoginType));
 
-        string loginType = request.LoginType.Trim().ToLowerInvariant();
+        var loginType = request.LoginType.ToLowerInvariant();
 
-        if ((isWhitelisted && loginType == "normal") ||
-            (!isWhitelisted && loginType == "trial"))
+        if (isWhitelisted && loginType == "normal" || !isWhitelisted && loginType == "trial")
         {
             return Ok();
         }
 
-        var (code, userMessage) = (isWhitelisted, loginType) switch
+        if (isWhitelisted && loginType == "trial")
         {
-            (true,  "trial")  => ("ORG_WHITELISTED_AS_TRIAL",
-                "Normal organisations can’t sign in using the trial login type."),
-            (false, "normal") => ("ORG_TRIAL_NOT_WHITELISTED",
-                "Trial organisations must use the trial login type to sign in."),
-            _ => ("ORG_UNKNOWN_LOGIN_TYPE", "Unknown login type. Check your client configuration.")
-        };
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new AuthorizationErrorResponse(LoginFailureReasons.NormalOrganizationsAreNotAllowedToLogInAsTrial));
+        }
 
-        return StatusCode(StatusCodes.Status409Conflict, new
+        if (!isWhitelisted && loginType == "normal")
         {
-            version = "1.0.0",
-            status = 409,
-            code,
-            userMessage
-        });
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new AuthorizationErrorResponse(
+                    LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization));
+        }
+
+        return StatusCode(StatusCodes.Status403Forbidden,
+            new AuthorizationErrorResponse(LoginFailureReasons.UnknownLoginTypeSpecifiedInRequest));
     }
 
     [HttpPost]
