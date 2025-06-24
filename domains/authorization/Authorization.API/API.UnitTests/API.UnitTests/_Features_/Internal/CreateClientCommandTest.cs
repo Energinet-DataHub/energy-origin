@@ -2,7 +2,6 @@ using API.Authorization._Features_.Internal;
 using API.Models;
 using API.UnitTests.Repository;
 using API.ValueObjects;
-using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 
 namespace API.UnitTests._Features_.Internal;
@@ -17,11 +16,11 @@ public class CreateClientCommandTest
     public void GivenValidInput_WhenCreatingClient_ThenClientIsCreated()
     {
         // Arrange
-        CreateClientCommand createClientCommand = new(new IdpClientId(Guid.NewGuid()), new ClientName("Test Client"), ClientType.External, "http://localhost:5000");
+        CreateClientCommand createClientCommand = new(new IdpClientId(Guid.NewGuid()), new ClientName("Test Client"), ClientType.External, "http://localhost:5000", false);
         CreateClientCommandHandler createClientCommandHandler = new(_fakeUnitOfWork, _fakeClientRepository, _fakeOrganization);
 
         // Act
-        var result = createClientCommandHandler.Handle(createClientCommand, CancellationToken.None);
+        var _ = createClientCommandHandler.Handle(createClientCommand, CancellationToken.None);
         var clients = _fakeClientRepository.Query().ToList();
         var organizations = _fakeOrganization.Query().ToList();
 
@@ -31,6 +30,7 @@ public class CreateClientCommandTest
         clients[0].Name.Should().Be(createClientCommand.Name);
         clients[0].RedirectUrl.Should().Be(createClientCommand.RedirectUrl);
         clients[0].ClientType.Should().Be(ClientType.External);
+        clients[0].IsTrial.Should().Be(false);
 
         // Assert Organization
         organizations.Count.Should().Be(1);

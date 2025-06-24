@@ -31,7 +31,7 @@ public class GetClientGrantedConsentsQueryTest : IntegrationTestBase
         // Given
         await using var dbContext = new ApplicationDbContext(_options);
 
-        var client = Client.Create(new IdpClientId(_sub), new("Loz"), ClientType.Internal, "https://localhost:5001");
+        var client = Client.Create(new IdpClientId(_sub), new("Loz"), ClientType.Internal, "https://localhost:5001", false);
         var organization = Any.Organization();
         var organizationWithClient = Any.OrganizationWithClient(client: client);
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, DateTimeOffset.UtcNow);
