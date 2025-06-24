@@ -11,9 +11,7 @@ BEGIN
     ) THEN
 
 ALTER TABLE public."Contracts"
-    ADD COLUMN "Trial" boolean;
-
-UPDATE public."Contracts" SET "Trial" = FALSE WHERE "Trial" IS NULL;
+    ADD COLUMN "Trial" boolean DEFAULT FALSE;
 
 END IF;
 END;
