@@ -1,6 +1,6 @@
 namespace EnergyOrigin.Domain.ValueObjects;
 
-public class OrganizationId
+public class OrganizationId : ValueObject
 {
     public Guid Value { get; private set; }
 
