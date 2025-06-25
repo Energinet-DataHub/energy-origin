@@ -31,7 +31,7 @@ public class AdminController : ControllerBase
     public async Task<ActionResult> CreateClient([FromBody] CreateClientRequest request)
     {
         var result = await _mediator.Send(new CreateClientCommand(new IdpClientId(request.IdpClientId), new ClientName(request.Name),
-            ClientTypeMapper.MapToDatabaseClientType(request.ClientType), request.RedirectUrl));
+            ClientTypeMapper.MapToDatabaseClientType(request.ClientType), request.RedirectUrl, request.IsTrial));
 
         return Created($"api/authorization/admin/client/{result.Id}",
             new CreateClientResponse(result.Id, result.IdpClientId.Value, result.Name.Value, ClientTypeMapper.MapToApiClientType(result.ClientType),
