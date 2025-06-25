@@ -77,7 +77,7 @@ public class EnergyMeasuredIntegrationEventHandler : IConsumer<EnergyMeasuredInt
         {
             hashedAttributes.Add(new HashedAttribute { Key = EnergyTagAttributeKeys.AssetId, Value = measurementEvent.GSRN });
         }
-        clearTextAttributes.Add("IsTrial", measurementEvent.IsTrial.ToString());
+        clearTextAttributes.Add("isTrial", measurementEvent.IsTrial.ToString());
 
         var certificate = new CertificateDto
         {
