@@ -13,7 +13,6 @@ BEGIN
 
     UPDATE public."Clients" SET "IsTrial" = false WHERE "IsTrial" IS NULL;
 
-    -- Step 3: Set NOT NULL constraint
     ALTER TABLE public."Clients"
         ALTER COLUMN "IsTrial" SET NOT NULL;
 
