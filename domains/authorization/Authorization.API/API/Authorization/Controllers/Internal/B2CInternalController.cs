@@ -7,6 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Authorization.Controllers.Internal;
@@ -24,7 +25,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         Description = "This endpoint is only used by Azure B2C"
     )]
     public async Task<ActionResult<UserinfoResponse>> GetUserinfo(
-        [FromBody] UserinfoRequest request)
+        [FromServices] ILogger<B2CInternalController> logger, [FromBody] UserinfoRequest request)
     {
         var queryResult = await mediator.Send(new GetUserinfoFromMitIdQuery(request.MitIDBearerToken));
 
@@ -44,7 +45,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         Description = "This endpoint is only used by Azure B2C"
     )]
     public async Task<ActionResult<AuthorizationResponse>> GetConsentForClient(
-        [FromBody] AuthorizationClientRequest request)
+        [FromServices] ILogger<B2CInternalController> logger, [FromBody] AuthorizationClientRequest request)
     {
         var queryResult = await mediator.Send(new GetConsentForClientQuery(request.ClientId));
 
@@ -54,8 +55,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
             queryResult.OrgName,
             queryResult.OrgId,
             queryResult.OrgIds,
-            queryResult.Scope,
-            queryResult.OrgStatus.ToString())
+            queryResult.Scope)
         );
     }
 
@@ -66,7 +66,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         Description = "This endpoint is only used by Azure B2C"
     )]
     public async Task<ActionResult<UserAuthorizationResponse>> GetConsentForUser(
-        [FromBody] AuthorizationUserRequest request)
+        [FromServices] ILogger<B2CInternalController> logger, [FromBody] AuthorizationUserRequest request)
     {
         var commandResult = await mediator.Send(new GetConsentForUserCommand(
             request.Sub,
