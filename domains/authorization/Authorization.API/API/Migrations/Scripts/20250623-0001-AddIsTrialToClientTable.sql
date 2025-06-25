@@ -8,10 +8,18 @@ BEGIN
        AND table_name   = 'Clients'
        AND column_name  = 'IsTrial'
   ) THEN
-ALTER TABLE public."Clients"
-    ADD COLUMN "IsTrial" boolean DEFAULT false NOT NULL;
+    ALTER TABLE public."Clients"
+        ADD COLUMN "IsTrial" boolean;
 
-END IF;
+    UPDATE public."Clients" SET "IsTrial" = false WHERE "IsTrial" IS NULL;
+
+    -- Step 3: Set NOT NULL constraint
+    ALTER TABLE public."Clients"
+        ALTER COLUMN "IsTrial" SET NOT NULL;
+
+    ALTER TABLE public."Clients"
+        ALTER COLUMN "IsTrial" DROP DEFAULT;
+  END IF;
 END
 $$;
 
