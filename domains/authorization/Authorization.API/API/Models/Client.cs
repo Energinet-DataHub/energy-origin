@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using API.ValueObjects;
 using OrganizationId = EnergyOrigin.Domain.ValueObjects.OrganizationId;
 
@@ -7,13 +6,14 @@ namespace API.Models;
 
 public class Client : IEntity<Guid>
 {
-    private Client(Guid id, IdpClientId idpClientId, ClientName name, ClientType clientType, string redirectUrl)
+    private Client(Guid id, IdpClientId idpClientId, ClientName name, ClientType clientType, string redirectUrl, bool isTrial)
     {
         Id = id;
         IdpClientId = idpClientId;
         Name = name;
         ClientType = clientType;
         RedirectUrl = redirectUrl;
+        IsTrial = isTrial;
     }
 
     private Client()
@@ -26,12 +26,13 @@ public class Client : IEntity<Guid>
     public ClientType ClientType { get; private set; }
     public string RedirectUrl { get; set; } = null!;
     public Guid? OrganizationId { get; set; }
+    public bool IsTrial { get; set; }
 
     public Organization? Organization { get; set; }
 
-    public static Client Create(IdpClientId idpClientId, ClientName name, ClientType clientType, string redirectUrl)
+    public static Client Create(IdpClientId idpClientId, ClientName name, ClientType clientType, string redirectUrl, bool isTrial)
     {
-        return new Client(Guid.NewGuid(), idpClientId, name, clientType, redirectUrl);
+        return new Client(Guid.NewGuid(), idpClientId, name, clientType, redirectUrl, isTrial);
     }
 
     public void SetOrganization(OrganizationId organizationId)

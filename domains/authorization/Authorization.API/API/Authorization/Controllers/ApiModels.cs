@@ -92,7 +92,7 @@ public enum ClientType
     Internal = 1
 }
 
-public record CreateClientRequest(Guid IdpClientId, string Name, ClientType ClientType, string RedirectUrl);
+public record CreateClientRequest(Guid IdpClientId, string Name, ClientType ClientType, string RedirectUrl, bool IsTrial);
 
 public record CreateClientResponse(Guid Id, Guid IdpClientId, string Name, ClientType ClientType, string RedirectUrl);
 

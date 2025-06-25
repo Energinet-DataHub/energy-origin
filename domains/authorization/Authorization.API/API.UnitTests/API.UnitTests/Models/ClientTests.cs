@@ -12,11 +12,12 @@ public class ClientTests
         var idpClientId = new IdpClientId(Guid.NewGuid());
         var clientType = ClientType.External;
 
-        var client = Client.Create(idpClientId, new ClientName("Client"), clientType, "https://redirect.url");
+        var client = Client.Create(idpClientId, new ClientName("Client"), clientType, "https://redirect.url", false);
 
         client.Should().NotBeNull();
         client.Id.Should().NotBeEmpty();
         client.IdpClientId.Should().Be(idpClientId);
         client.ClientType.Should().Be(clientType);
+        client.IsTrial.Should().Be(false);
     }
 }

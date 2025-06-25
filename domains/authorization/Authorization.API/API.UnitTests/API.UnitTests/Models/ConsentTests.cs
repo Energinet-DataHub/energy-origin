@@ -16,7 +16,7 @@ public class ConsentTests
 
         var clientIdpClientId = new IdpClientId(Guid.NewGuid());
         var role = ClientType.External;
-        var organizationWithClient = Any.OrganizationWithClient(client: Client.Create(clientIdpClientId, new ClientName("Client"), role, "https://redirect.url"));
+        var organizationWithClient = Any.OrganizationWithClient(client: Client.Create(clientIdpClientId, new ClientName("Client"), role, "https://redirect.url", false));
 
         var consentDate = DateTimeOffset.UtcNow;
         var consent = OrganizationConsent.Create(organization.Id, organizationWithClient.Id, consentDate);
