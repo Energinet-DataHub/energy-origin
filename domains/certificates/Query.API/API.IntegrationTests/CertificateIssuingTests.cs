@@ -24,7 +24,6 @@ using Meteringpoint.V1;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Xunit;
-using MeteringPoint = Meteringpoint.V1.MeteringPoint;
 
 namespace API.IntegrationTests;
 
@@ -83,20 +82,7 @@ public sealed class CertificateIssuingTests : TestBase
         factory.DataHubFacadeClient = dataHubFacadeClientMock;
 
         var meteringpointClientMock = Substitute.For<Meteringpoint.V1.Meteringpoint.MeteringpointClient>();
-        var meteringPoint = new MeteringPoint
-        {
-            MeteringPointId = gsrn.Value,
-            MeteringPointAlias = "alias",
-            ConsumerStartDate = "consumerStartDate",
-            Capacity = "123",
-            BuildingNumber = "buildingNumber",
-            CityName = "cityName",
-            Postcode = "8240",
-            StreetName = "streetName",
-            MunicipalityCode = "101", // Copenhagen
-            CitySubDivisionName = "vesterbro",
-            MeteringGridAreaId = "932"
-        };
+        var meteringPoint = EnergyTrackAndTrace.Testing.Any.MeteringPoint(gsrn);
         var mockedMeteringPointsResponse = new MeteringPointsResponse
         {
             MeteringPoints = { meteringPoint }
