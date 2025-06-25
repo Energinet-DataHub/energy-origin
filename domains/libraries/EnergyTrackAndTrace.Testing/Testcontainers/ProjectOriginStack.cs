@@ -87,7 +87,7 @@ public class ProjectOriginStack : RegistryFixture
             var configFile = networkOptions.ToTempYamlFile();
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/vault:2.1.4-rc.1")
+                .WithImage("ghcr.io/project-origin/vault:2.1.4")
                 .WithNetwork(Network)
                 .WithNetworkAliases(WalletAlias)
                 .WithResourceMapping(configFile, "/app/tmp/")
@@ -126,7 +126,7 @@ public class ProjectOriginStack : RegistryFixture
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/stamp:6.1.2-rc.1")
+                .WithImage("ghcr.io/project-origin/stamp:6.1.2")
                 .WithNetwork(Network)
                 .WithNetworkAliases(StampAlias)
                 .WithPortBinding(hostPort, StampHttpPort)
