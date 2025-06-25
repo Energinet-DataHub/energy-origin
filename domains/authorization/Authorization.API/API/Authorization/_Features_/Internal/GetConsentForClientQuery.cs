@@ -29,9 +29,6 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
     public async Task<GetConsentForClientQueryResult> Handle(GetConsentForClientQuery query,
         CancellationToken cancellationToken)
     {
-        // TODO: CABOL - We need to handle internal and external clients. Only external clients can be trial or non trial. It does not make sense for internal clients
-        // TODO: CABOL - Change database layout or do something different?
-
         var requestedClientId = new IdpClientId(query.IdpClientId);
 
         var client = await _clientRepository.Query()
