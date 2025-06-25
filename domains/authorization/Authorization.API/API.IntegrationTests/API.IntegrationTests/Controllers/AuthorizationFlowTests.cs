@@ -119,7 +119,7 @@ public class AuthorizationFlowTests : IntegrationTestBase
     {
         // Given
         var user = Any.User();
-        var client = Any.Client(isTrial: false);
+        var client = Any.Client();
         var thirdPartyWithClient = Any.OrganizationWithClient(client: client);
 
         var organization = Any.Organization();
@@ -179,7 +179,7 @@ public class AuthorizationFlowTests : IntegrationTestBase
     {
         // Given
         var user = Any.User();
-        var client = Any.Client(isTrial: true);
+        var client = Any.TrialClient();
         var thirdPartyWithClient = Any.OrganizationWithClient(client: client);
 
         var organization = Any.Organization();
@@ -238,7 +238,7 @@ public class AuthorizationFlowTests : IntegrationTestBase
     {
         // Given
         var user = Any.User();
-        var client = Any.Client(isTrial: false);
+        var client = Any.Client();
         var thirdPartyWithClient = Any.OrganizationWithClient(client: client);
 
         var organization = Any.Organization();
@@ -288,7 +288,7 @@ public class AuthorizationFlowTests : IntegrationTestBase
     {
         // Given
         var user = Any.User();
-        var client = Any.Client(isTrial: true);
+        var client = Any.TrialClient();
         var thirdPartyWithClient = Any.OrganizationWithClient(client: client);
 
         var organization = Any.Organization();

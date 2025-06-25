@@ -99,10 +99,16 @@ public class Any
         return API.ValueObjects.ClientName.Create("client-" + IntString(10));
     }
 
-    public static Client Client(bool isTrial = false)
+    public static Client Client()
     {
         return API.Models.Client.Create(IdpClientId(), new ClientName("ClientName"), ClientType.External,
-            "https://redirect.url", isTrial);
+            "https://redirect.url", false);
+    }
+
+    public static Client TrialClient()
+    {
+        return API.Models.Client.Create(IdpClientId(), new ClientName("ClientName"), ClientType.External,
+            "https://redirect.url", true);
     }
 
     public static Organization OrganizationWithClient(Tin? tin = null, Client? client = null)
