@@ -23,7 +23,7 @@ public class ProjectOriginStack : RegistryFixture
     private const int WalletHttpPort = 5000;
     private const int StampHttpPort = 5000;
 
-    private const string PathBase = "/wallet-api";
+    private const string WalletPathBase = "/wallet-api";
     private const string StampPathBase = "/stamp-api";
 
     private const string WalletAlias = "wallet-container";
@@ -87,14 +87,14 @@ public class ProjectOriginStack : RegistryFixture
             var configFile = networkOptions.ToTempYamlFile();
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/vault:2.0.7")
+                .WithImage("ghcr.io/project-origin/vault:2.1.4")
                 .WithNetwork(Network)
                 .WithNetworkAliases(WalletAlias)
                 .WithResourceMapping(configFile, "/app/tmp/")
                 .WithPortBinding(WalletHttpPort, true)
                 .WithCommand("--serve", "--migrate")
                 .WithEnvironment("ServiceOptions__EndpointAddress", $"http://{WalletAlias}:{WalletHttpPort}/")
-                .WithEnvironment("ServiceOptions__PathBase", PathBase)
+                .WithEnvironment("ServiceOptions__PathBase", WalletPathBase)
                 .WithEnvironment($"RegistryUrls__{RegistryName}", RegistryContainerUrl)
                 .WithEnvironment("Otlp__Endpoint", "http://foo")
                 .WithEnvironment("Otlp__Enabled", "false")
@@ -109,7 +109,10 @@ public class ProjectOriginStack : RegistryFixture
                 .WithEnvironment("Job__CheckForWithdrawnCertificatesIntervalInSeconds", "5")
                 .WithEnvironment("Job__ExpireCertificatesIntervalInSeconds", "5")
                 .WithEnvironment("network__ConfigurationUri", "file:///app/tmp/" + Path.GetFileName(configFile))
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(WalletHttpPort))
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(request => request
+                    .ForPort(WalletHttpPort)
+                    .ForPath($"{WalletPathBase}/health/live")
+                    .ForStatusCode(HttpStatusCode.OK)))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
         });
@@ -123,7 +126,7 @@ public class ProjectOriginStack : RegistryFixture
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/stamp:5.0.1")
+                .WithImage("ghcr.io/project-origin/stamp:6.1.2")
                 .WithNetwork(Network)
                 .WithNetworkAliases(StampAlias)
                 .WithPortBinding(hostPort, StampHttpPort)
@@ -140,14 +143,17 @@ public class ProjectOriginStack : RegistryFixture
                 .WithEnvironment($"IssuerPrivateKeyPems__DK2", Convert.ToBase64String(Encoding.UTF8.GetBytes(Dk1IssuerKey.ExportPkixText())))
                 .WithEnvironment("ConnectionStrings__Database", connectionString)
                 .WithEnvironment("MessageBroker__Type", "InMemory")
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(StampHttpPort))
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(request => request
+                    .ForPort(StampHttpPort)
+                    .ForPath($"{StampPathBase}/health/live")
+                    .ForStatusCode(HttpStatusCode.OK)))
                 //.WithEnvironment("Logging__LogLevel__Default", "Trace")
                 .Build();
         });
     }
 
     public string WalletUrl =>
-        new UriBuilder("http", _walletContainer.Value.Hostname, _walletContainer.Value.GetMappedPublicPort(WalletHttpPort), PathBase).Uri.ToString();
+        new UriBuilder("http", _walletContainer.Value.Hostname, _walletContainer.Value.GetMappedPublicPort(WalletHttpPort), WalletPathBase).Uri.ToString();
 
     public string StampUrl =>
         new UriBuilder("http", _stampContainer.Value.Hostname, _stampContainer.Value.GetMappedPublicPort(StampHttpPort), StampPathBase).Uri.ToString();
