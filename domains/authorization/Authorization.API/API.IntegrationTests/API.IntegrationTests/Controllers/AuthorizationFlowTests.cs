@@ -232,4 +232,104 @@ public class AuthorizationFlowTests : IntegrationTestBase
         grantedConsentsOrganizationIds.Should().NotContain(id => id == organization.Id || id == organization2.Id);
         grantedConsentsOrganizationIds.Should().Contain(id => id == trialOrganization.Id);
     }
+
+    [Fact]
+    public async Task GivenOrganizationWithReceivedConsents_WhenGettingClaimConsentsWithNonTrialClient_ThenCorrectClaimsAreReturnedForOrganization()
+    {
+        // Given
+        var user = Any.User();
+        var client = Any.Client(isTrial: false);
+        var thirdPartyWithClient = Any.OrganizationWithClient(client: client);
+
+        var organization = Any.Organization();
+        var affiliation = Affiliation.Create(user, organization);
+        var consent = OrganizationConsent.Create(organization.Id, thirdPartyWithClient.Id, DateTimeOffset.UtcNow);
+
+        var trialOrganization = Any.TrialOrganization();
+        var trialAffiliation = Affiliation.Create(user, trialOrganization);
+        var trialConsent = OrganizationConsent.Create(trialOrganization.Id, thirdPartyWithClient.Id, DateTimeOffset.UtcNow);
+
+        await using var dbContext = new ApplicationDbContext(_options);
+
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(trialAffiliation, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(consent, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(trialConsent, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(thirdPartyWithClient, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(trialOrganization, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var consentForClientQueryHandler =
+            new GetConsentForClientQueryHandler(new ClientRepository(dbContext), new AuthorizationMetrics());
+
+        // When
+        var thirdPartyIdpClientId = thirdPartyWithClient.Clients.First().IdpClientId.Value;
+        var consentForClientQueryResult =
+            await consentForClientQueryHandler.Handle(new GetConsentForClientQuery(thirdPartyIdpClientId),
+                CancellationToken.None);
+
+        // Then
+        var authorizationClaimOrganizationsIds = consentForClientQueryResult.OrgIds;
+
+        var thirdPartyClient = thirdPartyWithClient.Clients.First();
+
+        consentForClientQueryResult.Sub.Should().Be(thirdPartyIdpClientId);
+        consentForClientQueryResult.OrgStatus.Should().Be(OrganizationStatus.Normal);
+        consentForClientQueryResult.Scope.Should().Be("dashboard production meters certificates wallet");
+        consentForClientQueryResult.OrgName.Should().Be(thirdPartyClient.Name.Value);
+        consentForClientQueryResult.SubType.Should().Be(thirdPartyClient.ClientType.ToString());
+        consentForClientQueryResult.OrgId.Should().Be(thirdPartyClient.Organization!.Id.ToString());
+    }
+
+    [Fact]
+    public async Task GivenOrganizationWithReceivedConsents_WhenGettingClaimConsentsWithTrialClient_ThenCorrectClaimsAreReturnedForOrganization()
+    {
+        // Given
+        var user = Any.User();
+        var client = Any.Client(isTrial: true);
+        var thirdPartyWithClient = Any.OrganizationWithClient(client: client);
+
+        var organization = Any.Organization();
+        var affiliation = Affiliation.Create(user, organization);
+        var consent = OrganizationConsent.Create(organization.Id, thirdPartyWithClient.Id, DateTimeOffset.UtcNow);
+
+        var trialOrganization = Any.TrialOrganization();
+        var trialAffiliation = Affiliation.Create(user, trialOrganization);
+        var trialConsent = OrganizationConsent.Create(trialOrganization.Id, thirdPartyWithClient.Id, DateTimeOffset.UtcNow);
+
+        await using var dbContext = new ApplicationDbContext(_options);
+
+        await dbContext.Users.AddAsync(user, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(affiliation, TestContext.Current.CancellationToken);
+        await dbContext.Affiliations.AddAsync(trialAffiliation, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(consent, TestContext.Current.CancellationToken);
+        await dbContext.OrganizationConsents.AddAsync(trialConsent, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(thirdPartyWithClient, TestContext.Current.CancellationToken);
+        await dbContext.Organizations.AddAsync(trialOrganization, TestContext.Current.CancellationToken);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var consentForClientQueryHandler =
+            new GetConsentForClientQueryHandler(new ClientRepository(dbContext), new AuthorizationMetrics());
+
+        // When
+        var thirdPartyIdpClientId = thirdPartyWithClient.Clients.First().IdpClientId.Value;
+        var consentForClientQueryResult =
+            await consentForClientQueryHandler.Handle(new GetConsentForClientQuery(thirdPartyIdpClientId),
+                CancellationToken.None);
+
+        // Then
+        var authorizationClaimOrganizationsIds = consentForClientQueryResult.OrgIds;
+
+        var thirdPartyClient = thirdPartyWithClient.Clients.First();
+
+        consentForClientQueryResult.Sub.Should().Be(thirdPartyIdpClientId);
+        consentForClientQueryResult.OrgStatus.Should().Be(OrganizationStatus.Trial);
+        consentForClientQueryResult.Scope.Should().Be("dashboard production meters certificates wallet");
+        consentForClientQueryResult.OrgName.Should().Be(thirdPartyClient.Name.Value);
+        consentForClientQueryResult.SubType.Should().Be(thirdPartyClient.ClientType.ToString());
+        consentForClientQueryResult.OrgId.Should().Be(thirdPartyClient.Organization!.Id.ToString());
+    }
 }
