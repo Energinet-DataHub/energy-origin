@@ -13,14 +13,14 @@ public class CreateClientCommandTest
     private readonly FakeUnitOfWork _fakeUnitOfWork = new();
 
     [Fact]
-    public void GivenValidInput_WhenCreatingClient_ThenClientIsCreated()
+    public async Task GivenValidInput_WhenCreatingClient_ThenClientIsCreated()
     {
         // Arrange
         CreateClientCommand createClientCommand = new(new IdpClientId(Guid.NewGuid()), new ClientName("Test Client"), ClientType.External, "http://localhost:5000", false);
         CreateClientCommandHandler createClientCommandHandler = new(_fakeUnitOfWork, _fakeClientRepository, _fakeOrganization);
 
         // Act
-        _ = createClientCommandHandler.Handle(createClientCommand, CancellationToken.None);
+        await createClientCommandHandler.Handle(createClientCommand, CancellationToken.None);
         var clients = _fakeClientRepository.Query().ToList();
         var organizations = _fakeOrganization.Query().ToList();
 
