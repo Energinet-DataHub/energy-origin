@@ -4,9 +4,9 @@
     ViewData["Title"] = "Sign in";
 }
 
-<main>
-    <img src="~/logo.svg" alt="logo" class="logo">
-    <h2 class="action-text">Sign in as specific personas</h2>
+<main class="signin-container">
+    <h2 class="action-text">Sign in as a specific persona</h2>
+    <p class="action-subtext">Select one of the personas below to continue the sign-in process.</p>
 
     <form asp-antiforgery="false" method="post" id="user-selection-form">
         @foreach (var user in Model.Users)
@@ -15,7 +15,7 @@
             {
                 <button name="name" value="@user.Name" type="submit" class="peopleButton">
                     <div class="image">
-                        <img src="@user.ImageUrl" />
+                        <img src="@user.ImageUrl" alt="Profile image for @user.Name" />
                     </div>
                     <div class="details">
                         @if (user.UserinfoToken.ContainsKey("nemid.company_name"))
