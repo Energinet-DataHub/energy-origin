@@ -59,7 +59,7 @@ public class AuthorizationControllerTests : IntegrationTestBase
     public async Task GivenNonExistingOrganization_WhenGettingConsent_ThenHttpOkAndTermsNotAccepted()
     {
         await using var dbContext = new ApplicationDbContext(_options);
-        var client = Client.Create(new IdpClientId(_integrationTestFixture.WebAppFactory.IssuerIdpClientId), ClientName.Create("Internal Client"), ClientType.Internal, "https://localhost:5001", false);
+        var client = Client.Create(new IdpClientId(_integrationTestFixture.WebAppFactory.IssuerIdpClientId), ClientName.Create("Internal Normal Client"), ClientType.Internal, "https://localhost:5001", false);
         await dbContext.Clients.AddAsync(client, TestContext.Current.CancellationToken);
         await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 

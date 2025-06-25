@@ -20,7 +20,7 @@ public class CreateClientCommandTest
         CreateClientCommandHandler createClientCommandHandler = new(_fakeUnitOfWork, _fakeClientRepository, _fakeOrganization);
 
         // Act
-        var _ = createClientCommandHandler.Handle(createClientCommand, CancellationToken.None);
+        _ = createClientCommandHandler.Handle(createClientCommand, CancellationToken.None);
         var clients = _fakeClientRepository.Query().ToList();
         var organizations = _fakeOrganization.Query().ToList();
 
