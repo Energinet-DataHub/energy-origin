@@ -95,6 +95,11 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new BusinessException("Only the receiver company can accept this Transfer Agreement Proposal");
         }
 
+        if ((proposal.IsTrial && _identityDescriptor.OrganizationStatus != "trial") || (!proposal.IsTrial && _identityDescriptor.OrganizationStatus != "normal"))
+        {
+            throw new BusinessException("Organization Status must match the proposal");
+        }
+
         var taRepo = _unitOfWork.TransferAgreementRepo;
 
         var hasConflict = await taRepo.HasDateOverlap(proposal, cancellationToken);
