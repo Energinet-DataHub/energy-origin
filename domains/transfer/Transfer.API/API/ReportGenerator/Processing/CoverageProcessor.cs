@@ -54,6 +54,10 @@ public class CoverageProcessor : ICoverageProcessor
             .Sum(x => x.Quantity);
         var weeklyPercentage = (weekly / totalConsumption) * 100;
 
+        _logger.LogInformation("hourlyPercentage " + (hourly / totalConsumptionKwh) * 100);
+        _logger.LogInformation("dailyPercentage " + (daily / totalConsumptionKwh) * 100);
+        _logger.LogInformation("weeklyPercentage " + (weekly / totalConsumptionKwh) * 100);
+
         double? monthlyPercentage = null;
         if ((endDate - startDate).Duration() >= TimeSpan.FromDays(30))
         {
@@ -61,6 +65,7 @@ public class CoverageProcessor : ICoverageProcessor
                     (DateTimeOffset.FromUnixTimeSeconds(x.ProductionCertificate.Start) - DateTimeOffset.FromUnixTimeSeconds(x.ConsumptionCertificate.Start)).Duration() <= TimeSpan.FromDays(30))
                 .Sum(x => x.Quantity);
             monthlyPercentage = (monthly / totalConsumption) * 100;
+            _logger.LogInformation("monthlyPercentage " + (monthly / totalConsumptionKwh) * 100);
         }
 
         double? yearlyPercentage = null;
@@ -70,6 +75,7 @@ public class CoverageProcessor : ICoverageProcessor
                 (DateTimeOffset.FromUnixTimeSeconds(x.ProductionCertificate.Start) - DateTimeOffset.FromUnixTimeSeconds(x.ConsumptionCertificate.Start)).Duration() <= TimeSpan.FromDays(365))
             .Sum(x => x.Quantity);
             yearlyPercentage = (yearly / totalConsumption) * 100;
+            _logger.LogInformation("yearlyPercentage " + (yearly / totalConsumptionKwh) * 100);
         }
 
         _logger.LogInformation("hourlyPercentage " + hourlyPercentage);
@@ -77,6 +83,8 @@ public class CoverageProcessor : ICoverageProcessor
         _logger.LogInformation("weeklyPercentage " + weeklyPercentage);
         _logger.LogInformation("monthlyPercentage " + monthlyPercentage);
         _logger.LogInformation("yearlyPercentage " + yearlyPercentage);
+
+
 
         return new CoveragePercentage(hourlyPercentage,
             dailyPercentage,
