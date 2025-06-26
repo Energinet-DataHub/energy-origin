@@ -2,6 +2,10 @@
 
 This is a small document describing how we want to manually onboard 3rd party clients to Energy Track and Trace. This could be companies like Flexidao or Granular. There are two versions of the onboarding process below. Too Long Didn't Read version and Detailed with screenshots guide
 
+A client can be created as a normal-client or a trial-client. A normal-client has access to normal organizations and a trial-client has access to trial organizations.
+
+A customer can be provided with both client types (they will have different ids/secrets).
+
 ## TLDR Version
 
 Onboarding clients to Demo:
@@ -9,7 +13,9 @@ Onboarding clients to Demo:
 * Goto <https://portal.azure.com/#view/Microsoft_AAD_B2CAdmin/TenantManagementMenuBlade/~/registeredApps> (Remember to be on Developer tenant - datahubeo**u**energinet and not datahubeo**p**energinet)
 * Create new client registration with name ett-external-{Name}
 * Insert customer into Authorization Database.
-  * Run: doc\onboarding-create-client.rest (to make admin call to create a new client)
+  * **Here you have to choose if the client should be a normal-client or a trial-client**
+    * Run: doc\onboarding-create-client-normal.rest (to make admin call to create a new client)
+    * Run: doc\onboarding-create-client-trial.rest (to make admin call to create a new client)
 * Add Client Secret with expire date of default 6 months
   * Note down Client Secret (value field.)
 * Test that your newly created client works
@@ -22,13 +28,16 @@ At the moment we have the issue, that clients onboarded on VClusters also need t
 
 ## Detailed with screenshots guide
 
+### 1.
 First we need to register the new client on azure portal. To do so, we need to go to: <https://portal.azure.com/#view/Microsoft_AAD_B2CAdmin/TenantManagementMenuBlade/~/registeredApps>
 
-press
+Press
 
 ![New registration](new_registration.png)
 
 to register a new client.
+
+### 2.
 
 Fill in the form as shown below:
 
@@ -48,25 +57,37 @@ to get into overview of client secrets.
 
 ![client secrtes](client_secrets.png)
 
+### 3.
+
 Here we can click on "New Client Secret", to create a a new client secret. The description isn't that important.
 
-The client secret should have a 6 months expiration in demo and a **1 month expiration in prod**.
+The client secret should have a **1 months expiration in production** and a 6 month expiration in production.
 
 ![save secret](save_secret.png)
 
-You will get redirected back to prior page with the newly created secret. Copy secret value and store it somewhere secure for now.
+You will get redirected back to the prior page with the newly created secret. Copy the secret value and store it somewhere secure for now.
 
-With the newly created secret you should be able to test a login with our .REST scripts at:
+### 4.
 
-With Client ID and Client Secret we can now onboard and test to our application:
+With a Client ID and Client Secret we can now onboard and test to our application.
 
-Creation of client
+#### Creation of client
 
-* doc\onboarding-create-client.rest
+**You can create a normal-client and/or a trial-client**
+
+A normal-client has access to normal organizations and a trial-client has access to trial organizations.
+
+Normal:
+* doc\onboarding-create-client-normal.rest
   * Use Energinet Issuer Client Credentials to login and get token
-  * Use token to Create client.
+  * Use token to Create normal-client.
 
-Test of client
+Trial:
+* doc\onboarding-create-client-trial.rest
+  * Use Energinet Issuer Client Credentials to login and get token
+  * Use token to Create trial-client.
+
+####  Test of client
 
 * doc\onboarding-test-client-credentials.rest
   * Login as created client
