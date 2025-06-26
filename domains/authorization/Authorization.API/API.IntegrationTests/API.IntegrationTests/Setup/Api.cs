@@ -99,7 +99,7 @@ public class Api : IAsyncLifetime
     public async Task<HttpResponseMessage> CreateClient(Guid idpClientId, string name, ClientType clientType,
         string redirectUrl)
     {
-        var request = new CreateClientRequest(idpClientId, name, clientType, redirectUrl);
+        var request = new CreateClientRequest(idpClientId, name, clientType, redirectUrl, false);
         return await _client.PostAsJsonAsync("/api/authorization/Admin/Client", request, SerializerOptions);
     }
 

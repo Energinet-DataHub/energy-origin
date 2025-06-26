@@ -16,7 +16,7 @@ public record CreateClientCommandHandler(IUnitOfWork UnitOfWork, IClientReposito
     public async Task<CreateClientCommandResult> Handle(CreateClientCommand request, CancellationToken cancellationToken)
     {
         await UnitOfWork.BeginTransactionAsync(cancellationToken);
-        var client = Client.Create(request.IdpClientId, request.Name, request.ClientType, request.RedirectUrl);
+        var client = Client.Create(request.IdpClientId, request.Name, request.ClientType, request.RedirectUrl, request.IsTrial);
         var organization = Organization.Create(null, OrganizationName.Create(request.Name.Value));
         client.SetOrganization(OrganizationId.Create(organization.Id));
 
@@ -30,6 +30,6 @@ public record CreateClientCommandHandler(IUnitOfWork UnitOfWork, IClientReposito
     }
 }
 
-public record CreateClientCommand(IdpClientId IdpClientId, ClientName Name, ClientType ClientType, string RedirectUrl) : IRequest<CreateClientCommandResult>;
+public record CreateClientCommand(IdpClientId IdpClientId, ClientName Name, ClientType ClientType, string RedirectUrl, bool IsTrial) : IRequest<CreateClientCommandResult>;
 
 public record CreateClientCommandResult(Guid Id, IdpClientId IdpClientId, ClientName Name, ClientType ClientType, string RedirectUrl);
