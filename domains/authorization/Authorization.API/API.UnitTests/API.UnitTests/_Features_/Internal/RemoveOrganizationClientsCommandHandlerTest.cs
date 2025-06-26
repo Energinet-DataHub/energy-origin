@@ -29,9 +29,9 @@ public class RemoveOrganizationClientsCommandHandlerTest
     public async Task GivenClients_WhenRemovingAllOrganizationClients_AllClientsAreRemoved()
     {
         var orgId = Any.Guid();
-        var client1 = Client.Create(Any.IdpClientId(), Any.ClientName(), ClientType.External, "");
+        var client1 = Client.Create(Any.IdpClientId(), Any.ClientName(), ClientType.External, "", false);
         client1.SetOrganization(OrganizationId.Create(orgId));
-        var client2 = Client.Create(Any.IdpClientId(), Any.ClientName(), ClientType.External, "");
+        var client2 = Client.Create(Any.IdpClientId(), Any.ClientName(), ClientType.External, "", false);
         client2.SetOrganization(OrganizationId.Create(orgId));
 
         await _fakeRepo.AddAsync(client1, CancellationToken.None);
@@ -50,7 +50,7 @@ public class RemoveOrganizationClientsCommandHandlerTest
     public async Task GivenUnrelatedClient_WhenRemovingAllOrganizationClients_UnrelatedClientsAreNotRemoved()
     {
         var orgId = Any.Guid();
-        var unrelatedClient = Client.Create(Any.IdpClientId(), Any.ClientName(), ClientType.External, "");
+        var unrelatedClient = Client.Create(Any.IdpClientId(), Any.ClientName(), ClientType.External, "", false);
         unrelatedClient.SetOrganization(Any.OrganizationId());
 
         await _fakeRepo.AddAsync(unrelatedClient, CancellationToken.None);

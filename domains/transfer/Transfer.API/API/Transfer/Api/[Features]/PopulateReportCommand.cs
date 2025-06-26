@@ -112,59 +112,64 @@ public class PopulateReportCommandHandler
                 svgHtml = "<p>Chart data could not be displayed</p>"; // Fallback content
             }
 
+            var watermarkHtml = report.IsTrial
+                ? "<div style=\"\n position: fixed;\n top: 50%;\n left: 50%;\n transform: translate(-50%, -50%) rotate(-45deg);\n font-size: 200px;\n color: rgba(0, 0, 0, 0.15);\n z-index: 1000;\n pointer-events: none;\n white-space: nowrap;\n\">\n TRIAL\n </div>"
+                : string.Empty;
+
             // Assemble full HTML
             var fullHtml = $$"""
-                             <!DOCTYPE html>
-                             <html>
-                               <head>
-                                 <meta charset="UTF-8">
-                                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                 {{styleHtml}}
-                                 <title>Granulære Oprindelsesgarantier</title>
-                             </head>
-                               <body>
-                                 {{headerHtml}}
-                                 <div class="chart">
-                                 {{headlineHtml}}
-                                 {{svgHtml}}
-                                 {{otherCoverageHtml}}
-                                 </div>
-                                 <div class="details">
-                                 <p class="description">Granulære Oprindelsesgarantier er udelukkende udstedt på basis af sol- og vindproduktion.
-                                     Herunder kan du se en fordeling af geografisk oprindelse, teknologityper samt andelen fra statsstøttede
-                                     producenter.</p>
-
-                                 <div class="sections">
-                                     <div class="section-column">
-                                         {{municipalitiesHtml}}
-                                     </div>
-                                     <div class="section-column">
-                                         <h6 class="section-title">Teknologi</h6>
-                                         <ul>
-                                             <li>Solenergi: 38%</li>
-                                             <li>Vindenergi: 62%</li>
-                                         </ul>
-                                     </div>
-                                     <div class="section-column">
-                                         <h6 class="section-title">Andel fra statsstøttede producenter</h6>
-                                         <ul>
-                                             <li>Ikke statsstøttede: 95%</li>
-                                             <li>Statsstøttede: 5%</li>
-                                         </ul>
-                                     </div>
-                                 </div>
-                             </div>
-                             {{logoHtml}}
-
-                                    <div class="disclaimer">
-                                        <p>Data grundlag & Godkendelse. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
-                                            Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
-                                            sit amet risus. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio
-                                            sem nec elit. </p>
-                                    </div>
-                               </body>
-                             </html>
-                             """;
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                {{styleHtml}}
+                <title>Granulære Oprindelsesgarantier</title>
+              </head>
+              <body>
+                {{watermarkHtml}}
+                <div class="content">
+                  {{headerHtml}}
+                  <div class="chart">
+                    {{headlineHtml}}
+                    {{svgHtml}}
+                    {{otherCoverageHtml}}
+                  </div>
+                  <div class="details">
+                    <p class="description">Granulære Oprindelsesgarantier er udelukkende udstedt på basis af sol- og vindproduktion.
+                       Herunder kan du se en fordeling af geografisk oprindelse, teknologityper samt andelen fra statsstøttede
+                       producenter.</p>
+                    <div class="sections">
+                      <div class="section-column">
+                        {{municipalitiesHtml}}
+                      </div>
+                      <div class="section-column">
+                        <h6 class="section-title">Teknologi</h6>
+                        <ul>
+                          <li>Solenergi: 38%</li>
+                          <li>Vindenergi: 62%</li>
+                        </ul>
+                      </div>
+                      <div class="section-column">
+                        <h6 class="section-title">Andel fra statsstøttede producenter</h6>
+                        <ul>
+                          <li>Ikke statsstøttede: 95%</li>
+                          <li>Statsstøttede: 5%</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  {{logoHtml}}
+                  <div class="disclaimer">
+                    <p>Data grundlag & Godkendelse. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
+                       Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
+                       sit amet risus. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio
+                       sem nec elit.</p>
+                  </div>
+                </div>
+              </body>
+            </html>
+            """;
 
             // Convert to base64 and generate PDF
             var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(fullHtml));
@@ -181,7 +186,7 @@ public class PopulateReportCommandHandler
             }
             else
             {
-                report.MarkCompleted(pdfResult.PdfBytes!);
+                report.MarkCompleted(pdfResult.PdfBytes ?? throw new InvalidOperationException());
                 _logger.LogInformation(
                     "Report {ReportId} completed successfully", report.Id);
             }

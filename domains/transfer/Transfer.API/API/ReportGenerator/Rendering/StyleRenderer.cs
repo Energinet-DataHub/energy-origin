@@ -61,6 +61,22 @@ public class StyleRenderer : IStyleRenderer
                              margin: 0;
                          }
 
+                         .watermark {
+                           position: absolute;
+                           top: 60%;
+                           left: 50%;
+                           transform: translate(-50%, -50%) rotate(-45deg);
+                           font-size: 15vw;
+                           color: rgba(0,0,0,0.1);
+                           white-space: nowrap;
+                           pointer-events: none;
+                           z-index: 0;
+                         }
+                         .content {
+                           position: relative;
+                           z-index: 1;
+                         }
+
                          .top {
                              display: flex;
                              flex-direction: row;

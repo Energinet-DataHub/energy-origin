@@ -21,7 +21,8 @@ public class GetFirstPartyOrganizationsQueryHandler(
             .Select(o => new GetFirstPartyOrganizationsQueryResultItem(
                 o.Id,
                 o.Name.Value,
-                o.Tin!.Value)
+                o.Tin!.Value,
+                o.Status.ToString())
             )
             .ToListAsync(cancellationToken);
 
@@ -33,4 +34,4 @@ public record GetFirstPartyOrganizationsQuery() : IRequest<GetFirstPartyOrganiza
 
 public record GetFirstPartyOrganizationsQueryResult(List<GetFirstPartyOrganizationsQueryResultItem> Result);
 
-public record GetFirstPartyOrganizationsQueryResultItem(Guid OrganizationId, string OrganizationName, string Tin);
+public record GetFirstPartyOrganizationsQueryResultItem(Guid OrganizationId, string OrganizationName, string Tin, string Status);

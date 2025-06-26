@@ -27,7 +27,7 @@ public class ClientRepositoryTest
     {
         // Arrange
         var client = Client.Create(Any.IdpClientId(), ClientName.Create("ClientName"), ClientType.External,
-            "https://redirect.url");
+            "https://redirect.url", false);
 
         var organization = Any.OrganizationWithClient(client: client);
         await _db.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
@@ -49,9 +49,9 @@ public class ClientRepositoryTest
     {
         // Arrange
         var client = Client.Create(Any.IdpClientId(), ClientName.Create("ClientName"), ClientType.External,
-            "https://redirect.url");
+            "https://redirect.url", false);
         var clientTwo = Client.Create(Any.IdpClientId(), ClientName.Create("ClientName"), ClientType.External,
-            "https://redirect.url");
+            "https://redirect.url", false);
         var organization = Any.OrganizationWithClient(client: client);
         var organizationTwo = Any.OrganizationWithClient(client: clientTwo);
 
@@ -75,7 +75,7 @@ public class ClientRepositoryTest
     {
         // Arrange
         var client = Client.Create(Any.IdpClientId(), ClientName.Create("ClientName"), ClientType.Internal,
-            "https://redirect.url");
+            "https://redirect.url", false);
 
         var organization = Any.OrganizationWithClient(client: client);
         await _db.Organizations.AddAsync(organization, TestContext.Current.CancellationToken);
