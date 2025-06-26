@@ -80,11 +80,11 @@ public class PopulateReportCommandHandler
         {
             var from = DateTimeOffset.FromUnixTimeSeconds(report.StartDate.EpochSeconds);
             var to = DateTimeOffset.FromUnixTimeSeconds(report.EndDate.EpochSeconds);
-            var (consumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, cancellationToken);
+            var (totalConsumptionRaw, averageHourConsumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, cancellationToken);
 
-            var coverage = _coverageProcessor.Calculate(claims, consumptionRaw, from, to);
+            var coverage = _coverageProcessor.Calculate(claims, totalConsumptionRaw, from, to);
 
-            var (consumption, strictProd, allProd) = _dataFormatter.Format(consumptionRaw, claims);
+            var (consumption, strictProd, allProd) = _dataFormatter.Format(averageHourConsumptionRaw, claims);
 
             // Process into hourly aggregates
             var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);

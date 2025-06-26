@@ -16,6 +16,7 @@ public interface IConsumptionService
 {
     Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken);
     Task<List<ConsumptionHour>> GetAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
+    Task<(List<ConsumptionHour>, List<ConsumptionHour>)> GetTotalAndAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
 }
 
 public class ConsumptionService : IConsumptionService
@@ -71,6 +72,14 @@ public class ConsumptionService : IConsumptionService
         return ComputeHourlyAverages(data);
     }
 
+    public async Task<(List<ConsumptionHour>, List<ConsumptionHour>)> GetTotalAndAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to,
+        CancellationToken ct = default)
+    {
+        var data = await GetRawMeteringDataAsync(orgId, from, to, ct);
+
+        return (MapToTotalHourFormat(data), ComputeHourlyAverages(data));
+    }
+
     private async Task<MeasurementAggregationByPeriodDto[]> GetRawMeteringDataAsync(
         OrganizationId orgId,
         DateTimeOffset from,
@@ -98,7 +107,7 @@ public class ConsumptionService : IConsumptionService
             cancellationToken: ct);
 
         var consumptionGs = owned.MeteringPoints
-            .Where(mp => mp.TypeOfMp.Trim().Equals("E17", StringComparison.OrdinalIgnoreCase))
+            .Where(mp => IsConsumption(mp.TypeOfMp))
             .Select(mp => new Gsrn(mp.MeteringPointId))
             .ToList();
 
@@ -135,7 +144,7 @@ public class ConsumptionService : IConsumptionService
 
     private static bool IsConsumption(string typeOfMp)
     {
-        return typeOfMp.Trim().ToUpper() == "E17";
+        return typeOfMp.Trim().Equals("E17", StringComparison.OrdinalIgnoreCase);
     }
 
     private List<ConsumptionHour> MapToTotalHourFormat(MeasurementAggregationByPeriodDto[] totalConsumption)
