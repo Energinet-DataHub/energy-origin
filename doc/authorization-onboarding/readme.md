@@ -14,8 +14,8 @@ Onboarding clients to Demo:
 * Create new client registration with name ett-external-{Name}
 * Insert customer into Authorization Database.
   * **Here you have to choose if the client should be a normal-client or a trial-client**
-    * Run: doc\onboarding-create-client-normal.rest (to make admin call to create a new client)
-    * Run: doc\onboarding-create-client-trial.rest (to make admin call to create a new client)
+    * Run: doc\onboarding-create-client-normal.rest (to make admin call to create a new normal-client)
+    * Run: doc\onboarding-create-client-trial.rest (to make admin call to create a new trial-client)
 * Add Client Secret with expire date of default 6 months
   * Note down Client Secret (value field.)
 * Test that your newly created client works
