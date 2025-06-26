@@ -8,7 +8,7 @@ namespace API.UnitTests._Features_.Internal;
 
 public class AddOrganizationToWhitelistCommandHandlerTests
 {
-    private readonly FakeWhitelistedRepository _repository = new();
+    private readonly FakeWhitelistedRepository _whitelistedRepository = new();
     private readonly FakeOrganizationRepository _orgRepository = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
 
@@ -17,10 +17,26 @@ public class AddOrganizationToWhitelistCommandHandlerTests
     {
         var tin = Tin.Create("12345678");
         var command = new AddOrganizationToWhitelistCommand(tin);
-        var handler = new AddOrganizationToWhitelistCommandHandler(_repository, _orgRepository, _unitOfWork);
+        var handler = new AddOrganizationToWhitelistCommandHandler(_whitelistedRepository, _orgRepository, _unitOfWork);
 
         await handler.Handle(command, CancellationToken.None);
 
-        _repository.Query().Should().ContainSingle(w => w.Tin == tin);
+        _whitelistedRepository.Query().Should().ContainSingle(w => w.Tin == tin);
+    }
+
+    [Fact]
+    public async Task Handle_WhenOrganizationIsKnown_InvalidatesTerms()
+    {
+        var tin = Tin.Create("12345678");
+        var org = Any.Organization(tin);
+        await _orgRepository.AddAsync(org, new CancellationToken());
+
+        var command = new AddOrganizationToWhitelistCommand(tin);
+        var handler = new AddOrganizationToWhitelistCommandHandler(_whitelistedRepository, _orgRepository, _unitOfWork);
+
+        await handler.Handle(command, CancellationToken.None);
+
+        _whitelistedRepository.Query().Should().ContainSingle(w => w.Tin == tin);
+        _orgRepository.Query().Should().ContainSingle(w => w.Tin == tin && w.TermsAccepted == false);
     }
 }
