@@ -28,14 +28,17 @@ public class ClaimService(
 {
     public async Task Run(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        var done = false;
+        while (!done)
         {
-            logger.LogInformation("ClaimService running at: {time}", DateTimeOffset.Now);
-            metrics.ResetCertificatesClaimed();
-            metrics.ResetClaimErrors();
-            metrics.ResetNumberOfClaims();
             try
             {
+                stoppingToken.ThrowIfCancellationRequested();
+                logger.LogInformation("ClaimService running at: {time}", DateTimeOffset.Now);
+                metrics.ResetCertificatesClaimed();
+                metrics.ResetClaimErrors();
+                metrics.ResetNumberOfClaims();
+
                 var claimAutomationArguments = await claimAutomationRepository.GetClaimAutomationArguments();
                 logger.LogInformation("Number of ClaimAutomationArguments for current run: {claimAutomationArguments}",
                     claimAutomationArguments.Count);
@@ -68,6 +71,12 @@ public class ClaimService(
                         await Claim(subjectId, consumptionCertsTrial, productionCertsTrial, stoppingToken);
                     }
                 }
+                await Sleep(stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogInformation("ClaimService was cancelled");
+                done = true;
             }
             catch (Exception e)
             {
@@ -82,7 +91,6 @@ public class ClaimService(
                 }
             }
 
-            await Sleep(stoppingToken);
         }
     }
 
@@ -99,6 +107,7 @@ public class ClaimService(
         {
             try
             {
+                stoppingToken.ThrowIfCancellationRequested();
                 var response = await walletClient.GetGranularCertificatesAsync(subjectId, stoppingToken,
                     limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
 
@@ -138,7 +147,7 @@ public class ClaimService(
                                   "Production Certificate: {ProductionCert}. Production Quantity: {ProductionQuantity}" +
                                   "Organization: {SubjectId}",
                 quantity, consumptionCert.FederatedStreamId.StreamId, consumptionCert.Quantity, productionCert.FederatedStreamId.StreamId, productionCert.Quantity, subjectId);
-
+            cancellationToken.ThrowIfCancellationRequested();
             await walletClient.ClaimCertificatesAsync(subjectId, consumptionCert, productionCert, quantity, cancellationToken);
 
             SetClaimAttempt(consumptionCert.FederatedStreamId.StreamId.ToString());
