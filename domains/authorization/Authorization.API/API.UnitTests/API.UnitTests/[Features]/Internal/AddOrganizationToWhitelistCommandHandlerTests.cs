@@ -9,6 +9,7 @@ namespace API.UnitTests._Features_.Internal;
 public class AddOrganizationToWhitelistCommandHandlerTests
 {
     private readonly FakeWhitelistedRepository _repository = new();
+    private readonly FakeOrganizationRepository _orgRepository = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
 
     [Fact]
@@ -16,7 +17,7 @@ public class AddOrganizationToWhitelistCommandHandlerTests
     {
         var tin = Tin.Create("12345678");
         var command = new AddOrganizationToWhitelistCommand(tin);
-        var handler = new AddOrganizationToWhitelistCommandHandler(_repository, _unitOfWork);
+        var handler = new AddOrganizationToWhitelistCommandHandler(_repository, _orgRepository, _unitOfWork);
 
         await handler.Handle(command, CancellationToken.None);
 
