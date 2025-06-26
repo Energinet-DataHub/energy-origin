@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using API.Transfer.Api.Services;
 using EnergyOrigin.WalletClient;
+using Microsoft.Extensions.Logging;
 
 namespace API.ReportGenerator.Processing;
 
@@ -13,9 +14,22 @@ public interface ICoverageProcessor
 
 public class CoverageProcessor : ICoverageProcessor
 {
+    private readonly ILogger<CoverageProcessor> _logger;
+
+    public CoverageProcessor(ILogger<CoverageProcessor> logger)
+    {
+        _logger = logger;
+    }
+
     public CoveragePercentage Calculate(IReadOnlyList<Claim> claims, IReadOnlyList<ConsumptionHour> consumption, DateTimeOffset startDate, DateTimeOffset endDate)
     {
+        var totalConsumptionKwh = (double)consumption.Sum(x => x.KwhQuantity);
+
+        _logger.LogInformation("totalConsumptionKwh " + totalConsumptionKwh);
+
         var totalConsumption = (double)consumption.Sum(x => x.KwhQuantity) * 1000;
+
+        _logger.LogInformation("totalConsumption " + totalConsumption);
 
         if (totalConsumption == 0)
         {
@@ -57,6 +71,12 @@ public class CoverageProcessor : ICoverageProcessor
             .Sum(x => x.Quantity);
             yearlyPercentage = (yearly / totalConsumption) * 100;
         }
+
+        _logger.LogInformation("hourlyPercentage " + hourlyPercentage);
+        _logger.LogInformation("dailyPercentage " + dailyPercentage);
+        _logger.LogInformation("weeklyPercentage " + weeklyPercentage);
+        _logger.LogInformation("monthlyPercentage " + monthlyPercentage);
+        _logger.LogInformation("yearlyPercentage " + yearlyPercentage);
 
         return new CoveragePercentage(hourlyPercentage,
             dailyPercentage,
