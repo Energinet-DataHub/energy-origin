@@ -31,6 +31,8 @@ public class CoverageProcessor : ICoverageProcessor
 
         _logger.LogInformation("totalConsumption " + totalConsumption);
 
+        _logger.LogInformation("totalClaims: " + claims.Sum(x => x.Quantity));
+
         if (totalConsumption == 0)
         {
             return new CoveragePercentage(100,
