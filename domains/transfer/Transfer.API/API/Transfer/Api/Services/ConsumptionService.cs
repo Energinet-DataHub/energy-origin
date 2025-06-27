@@ -40,25 +40,8 @@ public class ConsumptionService : IConsumptionService
 
     public async Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken)
     {
-        var mpsRequest = new OwnedMeteringPointsRequest
-        {
-            Subject = organizationId.Value.ToString()
-        };
-
-        var mps = await _meteringPointClient.GetOwnedMeteringPointsAsync(mpsRequest, cancellationToken: cancellationToken);
-
-        var consumptionGsrns = mps.MeteringPoints
-            .Where(x => IsConsumption(x.TypeOfMp))
-            .Select(x => new Gsrn(x.MeteringPointId))
-            .ToList();
-
-        var mpRelations = await _dhFacadeClient.ListCustomerRelations(organizationId.Value.ToString(), consumptionGsrns, cancellationToken);
-        if (mpRelations == null)
-            return new List<ConsumptionHour>();
-
-        var validRelations = mpRelations.Relations.Where(x => x.IsValid()).ToList();
-
-        var totalConsumption = await _measurementClient.GetMeasurements(validRelations.Select(x => new Gsrn(x.MeteringPointId)).ToList(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), cancellationToken);
+        var gsrns = await GetValidGsrnsAsync(organizationId, cancellationToken);
+        var totalConsumption = await _measurementClient.GetMeasurements(gsrns, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), cancellationToken);
 
         if (totalConsumption == null)
             return new List<ConsumptionHour>();
@@ -127,11 +110,14 @@ public class ConsumptionService : IConsumptionService
         var valid = (relations?.Relations ?? Enumerable.Empty<CustomerRelation>())
             .Where(r => r.IsValid())
             .Select(r => new Gsrn(r.MeteringPointId))
-            .ToList()
-            .AsReadOnly();
+            .ToList();
 
         _logger.LogInformation("valid: " + string.Join(',', valid.Select(x => x.Value)));
-        return valid;
+
+        var consumptionOnly = valid.Where(x => consumptionGs.Contains(x)).ToList().AsReadOnly();
+
+        _logger.LogInformation("consumptionOnly: " + string.Join(',', consumptionOnly.Select(x => x.Value)));
+        return consumptionOnly;
     }
 
     private List<ConsumptionHour> ComputeHourlyAverages(MeasurementAggregationByPeriodDto[] data)

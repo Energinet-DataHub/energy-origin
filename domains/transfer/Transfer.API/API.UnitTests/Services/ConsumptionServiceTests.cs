@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,6 +67,50 @@ public class ConsumptionServiceTests
         var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
         Assert.Equal(24, result.Count);
+    }
+
+    [Fact]
+    public async Task GetTotalHourlyConsumption_WhenProductionMeteringPointAndConsumptionMeteringPoint_ExpectGetMeasurementsOnlyCalledWithConsumptionMeteringPoint()
+    {
+        var subject = Guid.NewGuid();
+        var dateTo = DateTimeOffset.Now;
+        var dateFrom = dateTo.AddDays(-30);
+        var consumptionGsrn = Any.Gsrn();
+        var productionGsrn = Any.Gsrn();
+
+        _meteringPointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(new MeteringPointsResponse
+            {
+                MeteringPoints =
+                {
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(consumptionGsrn),
+                    EnergyTrackAndTrace.Testing.Any.ProductionMeteringPoint(productionGsrn)
+                }
+            });
+
+        _dhFacadeClientMock.ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(new ListMeteringPointForCustomerCaResponse
+        {
+            Relations =
+            [
+                new () { MeteringPointId = consumptionGsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) },
+                new () { MeteringPointId = productionGsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) }
+            ],
+            Rejections = new List<Rejection>()
+        });
+
+        var mpDataConsumption = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(consumptionGsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
+        var mpDataProduction = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(productionGsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100);
+        var both = mpDataConsumption.Concat(mpDataProduction).ToArray();
+
+        _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+            .Returns(mpDataConsumption);
+
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
+
+        var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
+        
+        await _measurementClientMock.Received(1)
+            .GetMeasurements(Arg.Is((ReadOnlyCollection<Gsrn> x) => x.First() == consumptionGsrn && x.Count == 1), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
