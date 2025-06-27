@@ -28,12 +28,10 @@ public class ClaimService(
 {
     public async Task Run(CancellationToken stoppingToken)
     {
-        var done = false;
-        while (!done)
+        while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                stoppingToken.ThrowIfCancellationRequested();
                 logger.LogInformation("ClaimService running at: {time}", DateTimeOffset.Now);
                 metrics.ResetCertificatesClaimed();
                 metrics.ResetClaimErrors();
@@ -76,7 +74,6 @@ public class ClaimService(
             catch (OperationCanceledException)
             {
                 logger.LogInformation("ClaimService was cancelled");
-                done = true;
             }
             catch (Exception e)
             {
