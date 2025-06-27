@@ -9,6 +9,7 @@ using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
 using Meteringpoint.V1;
+using Microsoft.Extensions.Logging;
 
 namespace API.Transfer.Api.Services;
 
@@ -24,14 +25,17 @@ public class ConsumptionService : IConsumptionService
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _meteringPointClient;
     private readonly IDataHubFacadeClient _dhFacadeClient;
     private readonly IMeasurementClient _measurementClient;
+    private readonly ILogger<ConsumptionService> _logger;
 
     public ConsumptionService(Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointClient,
         IDataHubFacadeClient dhFacadeClient,
-        IMeasurementClient measurementClient)
+        IMeasurementClient measurementClient,
+        ILogger<ConsumptionService> logger)
     {
         _meteringPointClient = meteringPointClient;
         _dhFacadeClient = dhFacadeClient;
         _measurementClient = measurementClient;
+        _logger = logger;
     }
 
     public async Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken)
@@ -87,6 +91,7 @@ public class ConsumptionService : IConsumptionService
         CancellationToken ct)
     {
         var gsrns = await GetValidGsrnsAsync(orgId, ct);
+        _logger.LogInformation("Gsrns " + string.Join(',', gsrns.Select(x => x.Value)));
         if (gsrns.Count == 0) return [];
 
         return (await _measurementClient.GetMeasurements(
@@ -111,6 +116,8 @@ public class ConsumptionService : IConsumptionService
             .Select(mp => new Gsrn(mp.MeteringPointId))
             .ToList();
 
+        _logger.LogInformation("consumptionGs: " + string.Join(',', consumptionGs.Select(x => x.Value)));
+
         var relations = await _dhFacadeClient.ListCustomerRelations(
             orgId.Value.ToString(),
             consumptionGs, ct);
@@ -121,6 +128,7 @@ public class ConsumptionService : IConsumptionService
             .ToList()
             .AsReadOnly();
 
+        _logger.LogInformation("valid: " + string.Join(',', valid.Select(x => x.Value)));
         return valid;
     }
 
