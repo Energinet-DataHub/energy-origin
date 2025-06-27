@@ -72,10 +72,11 @@ public class MeasurementClient(IMeasurementsClient client, IOptions<DataHub3Opti
             }
         }
 
-        //As the wiremock is stupid and does not make sure that we only get entries within dateFrom and dateTo
+        //As the wiremock is stupid and does not only get entries within dateFrom and dateTo
         return FilterByDateRange(combinedAggregations, dateFromEpoch, dateToEpoch);
     }
 
+    //TODO write tests
     private static List<MeasurementAggregationByPeriodDto> FilterByDateRange(
         List<MeasurementAggregationByPeriodDto> data,
         long startDate,

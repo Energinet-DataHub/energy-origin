@@ -59,6 +59,7 @@ public class ConsumptionService : IConsumptionService
         return ComputeHourlyAverages(data);
     }
 
+    //TODO write tests
     public async Task<(List<ConsumptionHour>, List<ConsumptionHour>)> GetTotalAndAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to,
         CancellationToken ct = default)
     {
@@ -84,7 +85,6 @@ public class ConsumptionService : IConsumptionService
                    ct)).ToArray()
                ?? [];
     }
-
 
     private async Task<ReadOnlyCollection<Gsrn>> GetValidGsrnsAsync(
         OrganizationId orgId,
