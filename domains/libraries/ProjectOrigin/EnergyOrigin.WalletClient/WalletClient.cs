@@ -103,8 +103,8 @@ public class WalletClient(HttpClient client) : IWalletClient
             var error = await response.Content.ReadAsStringAsync(cancellationToken);
             throw new HttpRequestException(message: $"Failed to get requestStatus {requestId}. Error: {error}", inner: null, statusCode: response.StatusCode);
         }
-        var responseObj = await response.Content.ReadFromJsonAsync<RequestStatusResponse>(cancellationToken);
-        return responseObj!.Status;
+        var requestStatus = await ParseResponse<RequestStatusResponse>(response, cancellationToken);
+        return requestStatus.Status;
     }
 
     public async Task<WalletEndpointReference> CreateWalletEndpointAsync(Guid walletId, Guid ownerSubject,
