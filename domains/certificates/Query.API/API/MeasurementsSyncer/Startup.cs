@@ -26,7 +26,7 @@ public static class Startup
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddTransient<ITokenService, TokenService>();
+        services.AddSingleton<ITokenService, TokenService>();
 
         services.AddScoped<MeasurementsSyncService>();
         services.AddScoped<SlidingWindowService>();
