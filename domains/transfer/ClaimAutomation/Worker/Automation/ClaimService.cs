@@ -73,7 +73,7 @@ public class ClaimService(
             }
             catch (OperationCanceledException)
             {
-                logger.LogInformation("ClaimService was cancelled");
+                logger.LogWarning("ClaimService was cancelled");
             }
             catch (Exception e)
             {
@@ -144,7 +144,6 @@ public class ClaimService(
                                   "Production Certificate: {ProductionCert}. Production Quantity: {ProductionQuantity}" +
                                   "Organization: {SubjectId}",
                 quantity, consumptionCert.FederatedStreamId.StreamId, consumptionCert.Quantity, productionCert.FederatedStreamId.StreamId, productionCert.Quantity, subjectId);
-            cancellationToken.ThrowIfCancellationRequested();
             await walletClient.ClaimCertificatesAsync(subjectId, consumptionCert, productionCert, quantity, cancellationToken);
 
             SetClaimAttempt(consumptionCert.FederatedStreamId.StreamId.ToString());
