@@ -111,6 +111,8 @@ public class ConsumptionService : IConsumptionService
             new OwnedMeteringPointsRequest { Subject = orgId.Value.ToString() },
             cancellationToken: ct);
 
+        _logger.LogInformation("TypeOfMps: " + string.Join(',', owned.MeteringPoints.Select(x => x.TypeOfMp)));
+
         var consumptionGs = owned.MeteringPoints
             .Where(mp => IsConsumption(mp.TypeOfMp))
             .Select(mp => new Gsrn(mp.MeteringPointId))
