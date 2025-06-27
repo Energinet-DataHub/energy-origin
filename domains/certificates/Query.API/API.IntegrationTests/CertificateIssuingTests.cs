@@ -130,7 +130,7 @@ public sealed class CertificateIssuingTests : TestBase
             { EnergyTagAttributeKeys.EnergyTagDisclosure, "True" },
             { "municipality_code", meteringPoint.MunicipalityCode },
             { EnergyTagAttributeKeys.EnergyTagSponsored, "True" },
-            { "isTrial", "True" }
+            { "isTrial", "False" }
         });
     }
 
