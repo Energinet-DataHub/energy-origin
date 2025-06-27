@@ -114,7 +114,7 @@ public class ConsumptionServiceTests
     }
 
     [Fact]
-    public async Task GetTotalHourlyConsumption_AllOwnersMeteringPoints()
+    public async Task GetTotalHourlyConsumption_WhenThirtyDaysOfData_Expect30DaysOfDataDistributedOn24Hour()
     {
         var subject = Guid.NewGuid();
         var numberOfDays = 30;
@@ -142,7 +142,7 @@ public class ConsumptionServiceTests
 
         var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 1);
 
-        _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+        _measurementClientMock.GetMeasurements(Arg.Any<ReadOnlyCollection<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
         var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
