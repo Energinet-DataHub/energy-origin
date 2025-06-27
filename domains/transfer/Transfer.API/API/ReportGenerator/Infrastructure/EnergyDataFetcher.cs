@@ -11,7 +11,7 @@ namespace API.ReportGenerator.Infrastructure;
 
 public interface IEnergyDataFetcher
 {
-    Task<(List<ConsumptionHour> consumption, List<Claim> claims)> GetAsync(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
+    Task<(List<ConsumptionHour> totalHourConsumption, List<ConsumptionHour> averageHourConsumption, List<Claim> claims)> GetAsync(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
 }
 
 public sealed class EnergyDataFetcher : IEnergyDataFetcher
@@ -27,7 +27,7 @@ public sealed class EnergyDataFetcher : IEnergyDataFetcher
         _walletClient = walletClient ?? throw new ArgumentNullException(nameof(walletClient));
     }
 
-    public async Task<(List<ConsumptionHour> consumption, List<Claim> claims)> GetAsync(
+    public async Task<(List<ConsumptionHour> totalHourConsumption, List<ConsumptionHour> averageHourConsumption, List<Claim> claims)> GetAsync(
         OrganizationId orgId,
         DateTimeOffset from,
         DateTimeOffset to,
@@ -35,14 +35,14 @@ public sealed class EnergyDataFetcher : IEnergyDataFetcher
     {
         if (orgId is null) throw new ArgumentNullException(nameof(orgId));
 
-        var allConsumptionFetchedFromDatahub = _consumptionService.GetAverageHourlyConsumption(orgId, from, to, ct);
+        var allConsumptionFetchedFromDatahub = _consumptionService.GetTotalAndAverageHourlyConsumption(orgId, from, to, ct);
         var allClamsFetchedFromWallet = _walletClient.GetClaimsAsync(orgId.Value, from, to, TimeMatch.All, ct);
 
         await Task.WhenAll(allConsumptionFetchedFromDatahub, allClamsFetchedFromWallet);
 
-        var consumption = await allConsumptionFetchedFromDatahub;
+        var (totalHourConsumption, averageHourConsumption) = await allConsumptionFetchedFromDatahub;
         var claimList = (await allClamsFetchedFromWallet)?.Result.ToList() ?? new List<Claim>();
 
-        return (consumption: consumption, claims: claimList);
+        return (totalHourConsumption, averageHourConsumption, claims: claimList);
     }
 }

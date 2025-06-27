@@ -175,4 +175,31 @@ public class Any
             WebAccessCode = "Some web access code"
         };
     }
+
+    public static Meteringpoint.V1.MeteringPoint ProductionMeteringPoint(Gsrn gsrn)
+    {
+        return new Meteringpoint.V1.MeteringPoint
+        {
+            MeteringGridAreaId = "932",
+            Postcode = "8240",
+            AssetType = "D12", //Wind
+            BuildingNumber = "1",
+            Capacity = "1234",
+            CityName = "Some city",
+            CitySubDivisionName = "Some sub division name",
+            ConsumerCvr = "12345678",
+            ConsumerStartDate = "Some date",
+            DataAccessCvr = "12345678",
+            FloorId = "1",
+            MeteringPointAlias = "Some alias",
+            MeteringPointId = gsrn.Value,
+            TypeOfMp = "E18", //Production
+            MunicipalityCode = "101", //Copenhagen
+            PhysicalStatusOfMp = "E22",
+            RoomId = "1",
+            StreetName = "Some street",
+            SubtypeOfMp = "D01", //Physical
+            WebAccessCode = "Some web access code"
+        };
+    }
 }
