@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using API.Transfer.Api.Services;
-using Castle.Core.Logging;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
 using Meteringpoint.V1;
@@ -108,7 +107,7 @@ public class ConsumptionServiceTests
         var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
         var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
-        
+
         await _measurementClientMock.Received(1)
             .GetMeasurements(Arg.Is((ReadOnlyCollection<Gsrn> x) => x.First() == consumptionGsrn && x.Count == 1), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
     }
