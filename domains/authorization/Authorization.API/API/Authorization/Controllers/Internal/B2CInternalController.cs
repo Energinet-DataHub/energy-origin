@@ -88,22 +88,34 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
     [Route("whitelisted-organization")]
     [SwaggerOperation(
         Summary = "Gets whether an organization is whitelisted",
-        Description = "This endpoint is only used by Azure B2C"
-    )]
-    public async Task<ActionResult<bool>> GetIsWhitelistedOrganization([FromBody] WhitelistedOrganizationRequest request)
+        Description = "This endpoint is only used by Azure B2C")]
+    public async Task<IActionResult> GetIsWhitelistedOrganization(
+        [FromBody] WhitelistedOrganizationRequest request)
     {
         var isWhitelisted = await mediator.Send(new GetWhitelistedOrganizationQuery(request.OrgCvr, request.LoginType));
+
         var loginType = request.LoginType.ToLowerInvariant();
+
         if (isWhitelisted && loginType == "normal" || !isWhitelisted && loginType == "trial")
         {
             return Ok();
         }
 
-        return new ObjectResult(
-            new AuthorizationErrorResponse($"Organization not whitelisted {request.LoginType}"))
+        if (isWhitelisted && loginType == "trial")
         {
-            StatusCode = StatusCodes.Status403Forbidden
-        };
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new AuthorizationErrorResponse(LoginFailureReasons.NormalOrganizationsAreNotAllowedToLogInAsTrial));
+        }
+
+        if (!isWhitelisted && loginType == "normal")
+        {
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new AuthorizationErrorResponse(
+                    LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization));
+        }
+
+        return StatusCode(StatusCodes.Status403Forbidden,
+            new AuthorizationErrorResponse(LoginFailureReasons.UnknownLoginTypeSpecifiedInRequest));
     }
 
     [HttpPost]
@@ -130,7 +142,7 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         return new ObjectResult(
             new AuthorizationErrorResponse($"{failureGuid}"))
         {
-            StatusCode = StatusCodes.Status409Conflict
+            StatusCode = StatusCodes.Status403Forbidden
         };
     }
 }

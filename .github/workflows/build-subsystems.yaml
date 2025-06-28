@@ -12,6 +12,13 @@ on:
         required: true
         type: string
 
+permissions:
+  id-token: write
+  security-events: write
+  contents: read
+  attestations: write
+  packages: write
+
 jobs:
 
   dotnet-lint-solution:

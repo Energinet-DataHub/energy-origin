@@ -70,7 +70,8 @@ runs:
       run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
 
     - name: Build image
-      uses: Energinet-Datahub/.github/.github/actions/docker-build-and-push@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
+      id: image
+      uses: ./.github/actions/docker-build-push
       with:
         dockerfile: Dockerfile
         image-name: ${{ env.name }}
@@ -82,9 +83,11 @@ runs:
           SDK_VERSION=${{ env.SDK }}
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
+    - name: Resolve container image name
+      shell: bash
+      run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ env.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
     - name: Scan image
-      uses: Energinet-DataHub/.github/.github/actions/docker-scan@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
+      uses: ./.github/actions/attest-sign
       with:
-        image-name: ${{ env.name }}
-        image-tag: ${{ env.version }}
-        upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        image_ref: ${{ env.LOWERCASED }}@${{ steps.image.outputs.digest }}
