@@ -1,0 +1,185 @@
+name: "Datahub Docker Build Push"
+description: "Build and push docker image to the GHCR.io Registry"
+inputs:
+  push_image:
+    description: "Push image to registry"
+    required: true
+    default: "true"
+  dockerfile:
+    description: "Path to the Dockerfile. (default {docker_context}/Dockerfile)"
+    required: false
+  docker_context:
+    description: "Docker build's context is the set of files located in the specified PATH or URL (default Git context)"
+    required: true
+    default: "."
+  tag:
+    description: "Custom docker tag"
+    required: false
+  cache_from:
+    description: "Docker buildx cache from"
+    required: false
+    default: "type=gha"
+  cache_to:
+    description: "Docker buildx cache to"
+    required: false
+    default: "type=gha,mode=max"
+  image_suffix:
+    description: "Adds a suffiks to the generated docker image name"
+    required: false
+  pull:
+    description: "Pull image before building"
+    required: false
+    default: "true"
+  build_args:
+    description: "List of build-time variables"
+    required: false
+  outputs:
+    description: "List of output destinations (format: type=local,dest=path)"
+    required: false
+  target:
+    description: "Sets the target stage to build"
+    required: false
+  salsa:
+    description: "enable image attestation for SLSA"
+    required: false
+    default: "true"
+  byosbom:
+    description: "Bring your own existing SBOM for SLSA"
+    required: false
+    default: "auto-generate-for-me-please.json"
+  platforms:
+    description: "List of target platforms for build"
+    required: false
+outputs:
+  salsa:
+    description: "SLSA attestation"
+    value: ${{ steps.set-outputs.outputs.SALSA }}
+  digest:
+    description: "Image digest"
+    value: ${{ steps.set-outputs.outputs.DIGEST }}
+  tag:
+    description: "Release tag"
+    value: ${{ steps.set-outputs.outputs.NEW_VERSION }}
+  image:
+    description: "Image name"
+    value: ${{ steps.set-outputs.outputs.IMAGE }}
+  telemetry:
+    description: "OpenTelemetry tracing data"
+    value: ${{ steps.set-outputs.outputs.TELEMETRY }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Initialize Telemetry
+      id: telemetry_init
+      shell: bash
+      run: |
+        echo "TELEMETRY_LATEST_COMMIT=$(git show --no-patch --format=%ct $GITHUB_SHA)" >> $GITHUB_OUTPUT
+        echo "TELEMETRY_PIPELINE_START=$(date +'%s')" >> $GITHUB_OUTPUT
+
+    - name: Log in to the Container registry
+      id: login
+      uses: docker/login-action@5139682d94efc37792e6b54386b5b470a68a4737
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+        ecr: false
+
+    - name: Setup environment
+      shell: bash
+      id: "setup"
+      run: |
+        if [ ! -d "${{ inputs.docker_context }}" ]; then
+          echo "::error ::Docker context not found: ${{ inputs.docker_context }}."
+          exit 1
+        fi
+
+        dockerfile="${{ inputs.docker_context }}/Dockerfile"
+        if [ -n "${{ inputs.dockerfile }}" ]; then
+          dockerfile="${{ inputs.dockerfile }}"
+        fi
+
+        if [ ! -f "$dockerfile" ]; then
+        echo "::error ::Dockerfile not found: $dockerfile. Do you need to prepend context or working directory?"
+          exit 1
+        fi
+
+        echo "DOCKERFILE=$dockerfile" >> $GITHUB_OUTPUT
+
+        suffix="${{ inputs.image_suffix }}"
+        suffix=${suffix:+-$suffix} # Ensure we only add a dash if suffix is set
+        repo_name="${GITHUB_REPOSITORY/$GITHUB_REPOSITORY_OWNER\//}$suffix"
+        repo_name="$(tr '[:upper:]' '[:lower:]' <<< "$repo_name")"
+        echo "REPO_NAME=$repo_name" >> $GITHUB_OUTPUT
+
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@369eb591f429131d6889c46b94e711f089e6ca96 # v5
+      with:
+        images: |
+          ${{ steps.login.outputs.registry }}/${{ steps.setup.outputs.REPO_NAME }}
+        tags: |
+          type=sha,prefix={{date 'YYYY.MM.DD-HH.mm'}}-,priority=9002
+          type=raw,enable=${{ inputs.tag != '' }},value=${{ inputs.tag }},priority=9001
+
+    - name: Telemetry record build start time
+      id: telemetry_build
+      shell: bash
+      run: |
+        echo "TELEMETRY_BUILD_START=$(date +'%s')" >> $GITHUB_OUTPUT
+
+    - name: Build and push
+      uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3520991 # v5
+      id: build_push
+      with:
+        context: ${{ inputs.docker_context }}
+        file: ${{ steps.setup.outputs.DOCKERFILE }}
+        push: ${{ inputs.push_image }}
+        pull: ${{ inputs.pull }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: ${{ inputs.cache_from }}
+        cache-to: ${{ inputs.cache_to }}
+        build-args: ${{ inputs.build_args }}
+        platforms: ${{ inputs.platforms }}
+        target: ${{ inputs.target }}
+        outputs: ${{ inputs.outputs }}
+
+    - name: Check for errors
+      if: ${{ failure() && steps.build_push.outcome == 'failure' }}
+      shell: bash
+      run: |
+        echo "::error ::Failed during image build. Is your docker_context set to where your build files are?"
+        exit 1
+
+    - name: Telemetry record attestation start time
+      id: telemetry_attest
+      shell: bash
+      run: |
+        echo "TELEMETRY_ATTEST_START=$(date +'%s')" >> $GITHUB_OUTPUT
+
+    - name: Generate SBOM, attest and sign image
+      if: ${{ inputs.push_image == 'true' && inputs.salsa == 'true' }}
+      id: attest-sign
+      uses: nais/attest-sign@v1
+      with:
+        image_ref: ${{ steps.login.outputs.registry }}/${{ steps.setup.outputs.REPO_NAME }}@${{ steps.build_push.outputs.digest }}
+        sbom: ${{ inputs.byosbom }}
+
+    - name: Telemetry record end time
+      id: telemetry_end
+      shell: bash
+      run: |
+        echo "TELEMETRY_PIPELINE_END=$(date +'%s')" >> $GITHUB_OUTPUT
+
+    # For some reason, nested composite outputs aren't properly evaluated, so we need to set them again.
+    - name: Set outputs
+      shell: bash
+      id: set-outputs
+      run: |
+        echo "NEW_VERSION=${{ steps.meta.outputs.version }}" >> $GITHUB_OUTPUT
+        echo "IMAGE=${{ fromJSON(steps.meta.outputs.json).tags[0] }}" >> $GITHUB_OUTPUT
+        echo "DIGEST=${{ steps.build_push.outputs.digest }}" >> $GITHUB_OUTPUT
+        echo "SALSA=${{ steps.attest-sign.outputs.sbom }}" >> $GITHUB_OUTPUT
+        echo "TELEMETRY=latest_commit=${{ steps.telemetry_init.outputs.TELEMETRY_LATEST_COMMIT }},pipeline_start=${{ steps.telemetry_init.outputs.TELEMETRY_PIPELINE_START }},build_start=${{ steps.telemetry_build.outputs.TELEMETRY_BUILD_START }},attest_start=${{ steps.telemetry_attest.outputs.TELEMETRY_ATTEST_START }},pipeline_end=${{ steps.telemetry_end.outputs.TELEMETRY_PIPELINE_END }}" >> $GITHUB_OUTPUT
