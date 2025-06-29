@@ -29,10 +29,8 @@ on:
         type: string
         default: '.'
     outputs:
-      image-name:
-        value: ${{ jobs.build.outputs.image-name }}
-      image-digest:
-        value: ${{ jobs.build.outputs.image-digest }}
+      image-name: ${{ jobs.build.outputs.image-name }}
+      image-digest: ${{ jobs.build.outputs.image-digest }}
 
 permissions:
   contents: read
