@@ -32,7 +32,8 @@ inputs:
 outputs:
   image-name:
     description: The resolved image name
-    value: ${{ steps.build-image.outputs.name }}
+    value: ${{ steps.build-image.outputs.lowercased }}
+
   image-digest:
     description: The digest of the built image
     value: ${{ steps.build-image.outputs.digest }}
@@ -76,7 +77,10 @@ runs:
     - name: Resolve image name
       id: resolve-name
       shell: bash
-      run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
+      run: |
+        name=$(yq '.name' '${{ inputs.configuration }}')
+        echo "name=$name" | tee -a $GITHUB_ENV
+        echo "image-name=$name" >> "$GITHUB_OUTPUT"
 
     - name: Build image
       id: build-image
