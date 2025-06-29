@@ -1,0 +1,140 @@
+# =====================================================================
+#  Reusable workflow: Build • Push • SBOM • Scan • Provenance (SLSA-3)
+# =====================================================================
+name: Build Dotnet Container
+
+on:
+  workflow_call:
+    inputs:
+      solution:
+        required: true
+        type: string
+      project:
+        required: true
+        type: string
+      configuration:
+        required: true
+        type: string
+      dry-run:
+        required: true
+        type: string
+      sdk-version:
+        required: true
+        type: string
+      runtime-version:
+        required: true
+        type: string
+      docker-context:
+        required: false
+        type: string
+        default: '.'
+    outputs:
+      image-name: ${{ jobs.build.outputs.image-name }}
+      image-digest: ${{ jobs.build.outputs.image-digest }}
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      image-name: ${{ steps.meta.outputs.image }}
+      image-digest: ${{ steps.push.outputs.digest }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.sdk-version }}
+
+      - name: Compute metadata
+        id: meta
+        shell: bash
+        env:
+          CFG: ${{ inputs.configuration }}
+        run: |
+          NAME=$(yq '.name' "$CFG")
+          IMAGE=$(echo "ghcr.io/${{ github.repository_owner }}/$NAME" | tr '[:upper:]' '[:lower:]')
+          echo "image=$IMAGE" >>"$GITHUB_OUTPUT"
+
+      - name: Resolve version tag
+        id: ver
+        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@83315db621b8631cc0db734ad6f1499add009b46
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build & push image
+        id: push
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        with:
+          context: ${{ inputs.docker-context }}
+          file: Dockerfile.simplified
+          pull: true
+          push: ${{ inputs.dry-run != 'true' }}
+          tags: ${{ steps.meta.outputs.image }}:${{ steps.ver.outputs.version }}
+          build-args: |
+            PROJECT=${{ inputs.project }}
+            SDK_VERSION=${{ inputs.sdk-version }}
+            RUNTIME_VERSION=${{ inputs.runtime-version }}
+
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0.20.1
+        with:
+          image: ${{ steps.meta.outputs.image }}@${{ steps.push.outputs.digest }}
+          format: cyclonedx-json
+          output-file: sbom.cyclonedx.json
+          upload-artifact: false
+
+      - name: Attest SBOM
+        uses: actions/attest-sbom@v2
+        with:
+          subject-name: ${{ steps.meta.outputs.image }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          sbom-path: sbom.cyclonedx.json
+          push-to-registry: true
+          show-summary: true
+
+      - name: Scan SBOM (Grype)
+        id: scan
+        uses: anchore/scan-action@v6
+        continue-on-error: true
+        with:
+          sbom: sbom.cyclonedx.json
+          fail-build: true
+          severity-cutoff: medium
+          output-format: sarif
+          output-file: results.sarif
+
+      - name: Attest vulnerability report
+        if: steps.scan.outcome == 'success'
+        uses: actions/attest@v2
+        with:
+          subject-name: ${{ steps.meta.outputs.image }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          predicate-type: https://in-toto.io/attestation/vulns
+          predicate-path: results.sarif
+
+      - name: Attest build provenance (SLSA L3)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ steps.meta.outputs.image }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+          show-summary: true
