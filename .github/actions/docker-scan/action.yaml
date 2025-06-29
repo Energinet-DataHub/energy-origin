@@ -43,20 +43,22 @@ runs:
         output-file: sbom.cyclonedx.json
         upload-artifact: true
 
+    - name: Attest Provenance for docker image using SLSA framework
+      uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      with:
+        subject-name:  "${{ env.LOWERCASED }}"
+        subject-digest: "${{ inputs.image-digest }}"
+        push-to-registry: true
+        show-summary: true
+
     - name: Attest SBOM with cosign
       uses: actions/attest-sbom@bd218ad0dbcb3e146bd073d1d9c6d78e08aa8a0b # v2.4.0
       with:
-        subject-name: "${{ env.LOWERCASED }}"
+        subject-name:  "${{ env.LOWERCASED }}"
         subject-digest: "${{ inputs.image-digest }}"
         sbom-path: sbom.cyclonedx.json
         push-to-registry: true
         show-summary: true
-
-    - name: Attest Provenance for docker image using SLSA framework
-      uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
-      with:
-        image: "${{ env.LOWERCASED }}"
-        digest: "${{ inputs.image-digest }}"
 
     - name: Scan SBOM with Grype
       uses: anchore/scan-action@be7a22da4f22dde446c4c4c099887ff5b256526c # v6.3.0
