@@ -20,6 +20,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Read SDK and runtime versions
+        id: versions
+        shell: bash
+        run: |
+          sdk=$(jq -r '.sdk.version      // empty' global.json)
+          rt=$( jq -r '.runtime.version // empty' global.json)
+
+          [[ -z $sdk ]] && { echo "::error::sdk.version missing in global.json"; exit 1; }
+          [[ -z $rt  ]] && { echo "::error::runtime.version missing in global.json"; exit 1; }
+
+          echo "SDK_VERSION=$sdk"     >>"$GITHUB_ENV"
+          echo "RUNTIME_VERSION=$rt"  >>"$GITHUB_ENV"
+          echo "sdk=$sdk"             >>"$GITHUB_OUTPUT"
+          echo "rt=$rt"               >>"$GITHUB_OUTPUT"
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
@@ -29,39 +44,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sol='domains/EnergyTrackAndTrace.sln'
+          sol=domains/EnergyTrackAndTrace.sln
           re='(^|/)libraries/|/Shared/|/Testing/|Tests\.csproj$'
 
-          mapfile -t ENTRIES < <(dotnet sln "$sol" list | awk '/\.csproj$/' | grep -Ev "$re")
+          mapfile -t ENT < <(dotnet sln "$sol" list | awk '/\.csproj$/' | grep -Ev "$re")
+          ENT+=(domains/html-pdf-generator domains/redoc)
 
-          for cfg in domains/html-pdf-generator/configuration.yaml domains/redoc/configuration.yaml; do
-            [[ -f $cfg ]] && ENTRIES+=("$(dirname "$cfg")")
-          done
+          sdk=$SDK_VERSION
+          rt=$RUNTIME_VERSION
 
-          sdk=$(jq -r '.sdk.version' global.json)
-          rt=$(jq  -r '.runtime.version' global.json)
-
-          objs=$(for ent in "${ENTRIES[@]}"; do
-                   if [[ $ent == *.csproj ]]; then
-                     dir=$ent
-                     while [[ ! -f ${dir%/*}/configuration.yaml && $dir == */* ]]; do dir=${dir%/*}; done
-                     cfg=${dir%/*}/configuration.yaml
+          objs=$(for p in "${ENT[@]}"; do
+                   if [[ $p == *.csproj ]]; then
+                     d=$(dirname "$p")
+                     while [[ $d != "." && $d != "/" && ! -f "$d/configuration.yaml" ]]; do
+                       d=$(dirname "$d")
+                     done
+                     cfg=$d/configuration.yaml
                    else
-                     cfg=$(find "$ent" -maxdepth 2 -name configuration.yaml | head -n1)
-                     cfg=${cfg:-"$ent/configuration.yaml"}
+                     cfg=$(find "$p" -maxdepth 2 -name configuration.yaml | head -n1)
+                     cfg=${cfg:-$p/configuration.yaml}
                    fi
-                   jq -nc --arg p "$ent" --arg c "$cfg" --arg sdk "$sdk" --arg rt "$rt" \
-                      '{path:$p,configuration:$c,sdkVersion:$sdk,runtimeVersion:$rt}'
+                   jq -nc --arg p "$p" --arg c "$cfg" --arg sdk "$sdk" --arg rt "$rt" \
+                     '{path:$p,configuration:$c,sdkVersion:$sdk,runtimeVersion:$rt}'
                  done)
 
           matrix=$(printf '%s\n' "$objs" | jq -s .)
 
-          {
-            echo 'matrix<<EOF'
-            echo "$matrix"
-            echo 'EOF'
-          } >>"$GITHUB_OUTPUT"
-
+          { echo 'matrix<<EOF'; echo "$matrix"; echo 'EOF'; } >>"$GITHUB_OUTPUT"
           echo "::group::Matrix"; echo "$matrix" | jq .; echo "::endgroup::"
 
   build:
