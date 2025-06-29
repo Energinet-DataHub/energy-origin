@@ -29,7 +29,7 @@ outputs:
     value: ${{ steps.build.outputs.digest }}
   lowercased:
     description: Lowercased full image name
-    value: ${{ steps.resolve-name.outputs.lowercased }}
+    value: ${{ env.LOWERCASED }}
 
 runs:
   using: composite

@@ -24,7 +24,7 @@ jobs:
   build-api:
     runs-on: ubuntu-latest
     outputs:
-      image-name: ${{ steps.dotnet-build.outputs.lowercased }}
+      image-name: ${{ steps.dotnet-build.outputs.image-name }}
       digest: ${{ steps.dotnet-build.outputs.image-digest }}
 
     steps:
