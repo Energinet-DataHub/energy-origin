@@ -28,38 +28,22 @@ jobs:
         id: gen
         shell: bash
         run: |
-          MAIN_SOLUTION=domains/EnergyTrackAndTrace.sln
-
           mapfile -t PROJECTS < <(
-            dotnet sln "$MAIN_SOLUTION" list | awk '/\.csproj$/' \
-              | grep -Ev '(^|/)libraries/|/Shared/|/Testing/|Tests\.csproj$'
+            dotnet sln domains/EnergyTrackAndTrace.sln list | tail -n +2 \
+              | grep -Ev '(^|/)libraries/|/Shared/|Tests\.csproj$'
           )
 
-          EXTRA_CONFIGS=(
-            domains/html-pdf-generator/configuration.yaml
-            domains/redoc/configuration.yaml
-          )
-          for cfg in "${EXTRA_CONFIGS[@]}"; do
-            [[ -f "$cfg" ]] || continue
-            dir=$(dirname "$cfg")
-            PROJECTS+=("$dir")
-          done
-
-          SDK=$(jq -r '.sdk.version'      global.json)
+          SDK=$(jq -r '.sdk.version'     global.json)
           RUNTIME=$(jq -r '.runtime.version' global.json)
 
-          JSON=$(
-            printf '%s\n' "${PROJECTS[@]}" | jq -R '
-              . as $rel
-              | ( test("\\.csproj$")
-                  | if . then {path:$rel, configuration:($rel|sub("\\.csproj$";"/configuration.yaml"))}
-                         else {path:$rel, configuration:($rel+"/configuration.yaml")} end )' |
+          JSON=$(printf '%s\n' "${PROJECTS[@]}" | jq -R '
+            { path: ., configuration: (. | sub("\\.csproj$"; "/configuration.yaml")) }' |
             jq -sc --arg sdk "$SDK" --arg rt "$RUNTIME" '
-              map(. + { sdkVersion:$sdk, runtimeVersion:$rt })' )
+              map(. + { sdkVersion: $sdk, runtimeVersion: $rt })' )
 
           [[ -z "$JSON" ]] && JSON='[]'
 
-          echo "matrix=$JSON" >>"$GITHUB_OUTPUT"
+          echo "matrix=$JSON" >> "$GITHUB_OUTPUT"
 
           echo "::group::Matrix"
           echo "$JSON" | jq .
