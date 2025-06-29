@@ -27,6 +27,9 @@ outputs:
   digest:
     description: "The digest of the pushed image"
     value: ${{ steps.build.outputs.digest }}
+  lowercased:
+    description: Lowercased full image name
+    value: ${{ steps.resolve-name.outputs.lowercased }}
 
 runs:
   using: composite
@@ -37,8 +40,12 @@ runs:
         path: artifacts/
 
     - name: Resolve container image name
+      id: resolve-name
       shell: bash
-      run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      run: |
+        lowercased=$(echo "ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}" | tr '[:upper:]' '[:lower:]')
+        echo "LOWERCASED=$lowercased" >> "$GITHUB_ENV"
+        echo "lowercased=$lowercased" >> "$GITHUB_OUTPUT"
 
     - name: Log in to the Container registry
       uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
