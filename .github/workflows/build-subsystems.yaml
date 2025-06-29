@@ -50,24 +50,30 @@ jobs:
           mapfile -t items < <(dotnet sln "$sol" list | awk '/\.csproj$/' | grep -Ev "$re")
           items+=(domains/html-pdf-generator domains/redoc)
 
-          sdk=$SDK_VERSION   # provided by caller
-          rt=$RUNTIME_VERSION
+          sdk=$SDK_VERSION ; rt=$RUNTIME_VERSION
+          json='[]'
 
-          objs=$(for p in "${items[@]}"; do
-                   if [[ $p == *.csproj ]]; then
-                     cfg=$(dirname "$(dirname "$p")")/configuration.yaml
-                   else
-                     cfg=$p/configuration.yaml
-                   fi
-                   [[ -f $cfg ]] || { echo "::error::$cfg not found"; exit 1; }
-                   jq -nc --arg p "$p" --arg c "$cfg" --arg sdk "$sdk" --arg rt "$rt" \
-                     '{path:$p,configuration:$c,sdkVersion:$sdk,runtimeVersion:$rt}'
-                 done)
+          for p in "${items[@]}"; do
+            base=${p%.csproj}
+            [[ -d $base ]] || base=$(dirname "$p")
 
-          matrix=$(printf '%s\n' "$objs" | jq -s .)
-          { echo 'matrix<<EOF'; echo "$matrix"; echo 'EOF'; } >>"$GITHUB_OUTPUT"
+            cfg=''
+            d=$base
+            for _ in {0..3}; do
+              [[ -f $d/configuration.yaml ]] && { cfg=$d/configuration.yaml; break; }
+              d=${d%/*}
+            done
 
-          echo "::group::Matrix"; echo "$matrix" | jq .; echo "::endgroup::"
+            [[ -z $cfg ]] && cfg=$(find "$base" -maxdepth 3 -name configuration.yaml | head -n1)
+            [[ -f $cfg ]] || { echo "::error::$p → configuration.yaml not found (±3 levels)"; exit 1; }
+
+            json=$(jq -c --arg path "$p" --arg cfg "$cfg" --arg sdk "$sdk" --arg rt "$rt" \
+                     --argjson arr "$json" \
+                     '$arr + [{path:$path,configuration:$cfg,sdkVersion:$sdk,runtimeVersion:$rt}]')
+          done
+
+          { echo 'matrix<<EOF'; echo "$json"; echo 'EOF'; } >>"$GITHUB_OUTPUT"
+          echo "::group::Matrix"; echo "$json" | jq .; echo "::endgroup::"
 
   build:
     needs: discover
