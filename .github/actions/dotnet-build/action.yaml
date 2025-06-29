@@ -32,7 +32,7 @@ inputs:
 outputs:
   image-name:
     description: The resolved image name
-    value: ${{ steps.build-image.outputs.name }}
+    value: ${{ steps.build-image.outputs.lowercased }}
   image-digest:
     description: The digest of the built image
     value: ${{ steps.build-image.outputs.digest }}
@@ -74,7 +74,6 @@ runs:
       uses: Energinet-DataHub/.github/.github/actions/docker-image-version@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
 
     - name: Resolve image name
-      id: resolve-name
       shell: bash
       run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
 
