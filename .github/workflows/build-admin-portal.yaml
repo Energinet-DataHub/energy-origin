@@ -45,8 +45,9 @@ jobs:
   provenance:
     needs: build-api
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+
     with:
-      image: ${{ needs.build-api.outputs.image-name }}
+      image: ${{ needs.build-api.outputs.image }}
       digest: ${{ needs.build-api.outputs.digest }}
       registry-username: ${{ github.actor }}
     secrets:
