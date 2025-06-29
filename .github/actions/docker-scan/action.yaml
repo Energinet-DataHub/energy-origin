@@ -1,4 +1,4 @@
-name: Sbom and scan
+name: Docker scan
 description: |
   This action scan an image in ghcr.io reporting on its vulnerabilities and can upload a sarif result to GitHub.
 
@@ -38,7 +38,7 @@ runs:
     - name: Generate SBOM with syft
       uses: anchore/sbom-action@9246b90769f852b3a8921f330c59e0b3f439d6e9 # v0.20.1
       with:
-        image: "${{ env.LOWERCASED }}:${{ inputs.image-tag }}"
+        image: "${{ env.LOWERCASED }}@sha265:${{ inputs.image-digest }}"
         format: spdx-json
         output-file: sbom.spdx.json
         upload-artifact: true
