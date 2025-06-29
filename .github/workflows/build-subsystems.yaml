@@ -20,6 +20,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
       - name: Generate build matrix
         id: gen
         shell: bash
