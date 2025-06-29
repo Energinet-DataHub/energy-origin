@@ -28,43 +28,44 @@ jobs:
         id: gen
         shell: bash
         run: |
+          set -euo pipefail
           MAIN_SOLUTION=domains/EnergyTrackAndTrace.sln
 
-          mapfile -t PROJECTS < <(
+          mapfile -t ENTRIES < <(
             dotnet sln "$MAIN_SOLUTION" list | awk '/\.csproj$/' \
               | grep -Ev '(^|/)libraries/|/Shared/|/Testing/|Tests\.csproj$'
           )
 
-          EXTRA_CONFIGS=(
-            domains/html-pdf-generator/configuration.yaml
-            domains/redoc/configuration.yaml
-          )
-          for cfg in "${EXTRA_CONFIGS[@]}"; do
-            [[ -f "$cfg" ]] && PROJECTS+=("$(dirname "$cfg")")
+          for cfg in domains/html-pdf-generator/configuration.yaml \
+                     domains/redoc/configuration.yaml; do
+            [[ -f "$cfg" ]] && ENTRIES+=("$(dirname "$cfg")")
           done
 
           SDK=$(jq -r '.sdk.version'      global.json)
           RUNTIME=$(jq -r '.runtime.version' global.json)
 
-          JSON=$(
-            printf '%s\n' "${PROJECTS[@]}" | jq -R '
-              if test("\\.csproj$") then
-                { path: .
-                , configuration:(. | sub("/[^/]+\\.csproj$"; "/configuration.yaml")) }
-              else
-                { path: .
-                , configuration:(. + "/configuration.yaml") }
-              end' |
-            jq -sc --arg sdk "$SDK" --arg rt "$RUNTIME" '
-              map(. + { sdkVersion:$sdk, runtimeVersion:$rt })' )
-
-          [[ -z "$JSON" ]] && JSON='[]'
+          JSON="[]"
+          for ent in "${ENTRIES[@]}"; do
+            if [[ "$ent" == *.csproj ]]; then
+              dir=$(dirname "$ent")
+              while [[ "$dir" != "." && "$dir" != "/" ]]; do
+                [[ -f "$dir/configuration.yaml" ]] && { cfg="$dir/configuration.yaml"; break; }
+                dir=$(dirname "$dir")
+              done
+              cfg=${cfg:-"$dir/configuration.yaml"}   # fallback (may not exist)
+              j=$(jq -n --arg p "$ent" --arg c "$cfg" --arg s "$SDK" --arg r "$RUNTIME" \
+                   '{path:$p, configuration:$c, sdkVersion:$s, runtimeVersion:$r}')
+            else
+              cfg=$(find "$ent" -maxdepth 2 -name configuration.yaml | head -n1)
+              cfg=${cfg:-"$ent/configuration.yaml"}
+              j=$(jq -n --arg p "$ent" --arg c "$cfg" --arg s "$SDK" --arg r "$RUNTIME" \
+                   '{path:$p, configuration:$c, sdkVersion:$s, runtimeVersion:$r}')
+            fi
+            JSON=$(jq -sc --argjson new "$j" '$ARGS.positional[0] + [$new]' "$JSON")
+          done
 
           echo "matrix=$JSON" >>"$GITHUB_OUTPUT"
-
-          echo "::group::Matrix"
-          echo "$JSON" | jq .
-          echo "::endgroup::"
+          echo "::group::Matrix"; echo "$JSON" | jq .; echo "::endgroup::"
 
   build:
     needs: discover
