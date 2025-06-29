@@ -32,15 +32,8 @@ jobs:
           dotnet-version: 9.0.x
 
       - uses: ./.github/actions/dotnet-build
-        id: dotnet-build
         with:
           solution: domains/admin-portal/AdminPortal.sln
           project: domains/admin-portal/AdminPortal.Web/AdminPortal/AdminPortal.csproj
           configuration: domains/admin-portal/AdminPortal.Web/configuration.yaml
           dry-run: ${{ inputs.dry-run }}
-
-      - name: Attest Provenance for docker image using SLSA framework
-        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
-        with:
-          image: ${{ steps.build-dotnet.outputs.name }}
-          digest: ${{ steps.build-dotnet.outputs.image-digest }}
