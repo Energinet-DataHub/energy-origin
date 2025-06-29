@@ -32,14 +32,22 @@ jobs:
             dotnet sln domains/EnergyTrackAndTrace.sln list | tail -n +2 \
               | grep -Ev '/libraries/|Tests\.csproj$'
           )
-          SDK=$(jq -r '.sdk.version' global.json)
+
+          SDK=$(jq -r '.sdk.version'     global.json)
           RUNTIME=$(jq -r '.runtime.version' global.json)
-          printf -v JSON '%s\n' "${PROJECTS[@]}" | jq -R '
-            { path: ., configuration: (. | sub("\\.csproj$"; "/configuration.yaml")) }' \
-            | jq -sc --arg sdk "$SDK" --arg rt "$RUNTIME" '
-                map(. + { sdkVersion: $sdk, runtimeVersion: $rt })'
-          echo "matrix=$JSON" >>"$GITHUB_OUTPUT"
-          echo "::group::Matrix"; echo "$JSON" | jq .; echo "::endgroup::"
+
+          JSON=$(printf '%s\n' "${PROJECTS[@]}" | jq -R '
+            { path: ., configuration: (. | sub("\\.csproj$"; "/configuration.yaml")) }' |
+            jq -sc --arg sdk "$SDK" --arg rt "$RUNTIME" '
+              map(. + { sdkVersion: $sdk, runtimeVersion: $rt })' )
+
+          [[ -z "$JSON" ]] && JSON='[]'
+
+          echo "matrix=$JSON" >> "$GITHUB_OUTPUT"
+
+          echo "::group::Matrix"
+          echo "$JSON" | jq .
+          echo "::endgroup::"
 
   build:
     needs: discover
