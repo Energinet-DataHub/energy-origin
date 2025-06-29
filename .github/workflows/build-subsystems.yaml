@@ -30,7 +30,7 @@ jobs:
         run: |
           mapfile -t PROJECTS < <(
             dotnet sln domains/EnergyTrackAndTrace.sln list | tail -n +2 \
-              | grep -Ev '(^|/)libraries/|/Shared/|Tests\.csproj$'
+              | grep -Ev '/libraries/|Tests\.csproj$'
           )
 
           SDK=$(jq -r '.sdk.version'     global.json)
