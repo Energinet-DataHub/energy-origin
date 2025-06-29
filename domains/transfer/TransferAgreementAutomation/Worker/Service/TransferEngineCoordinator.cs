@@ -29,6 +29,7 @@ public class TransferEngineCoordinator : ITransferEngineCoordinator
             if (engine.IsSupported(transferAgreement))
             {
                 _logger.LogInformation("Handling transfer agreement with id {Id}", transferAgreement.Id);
+                cancellationToken.ThrowIfCancellationRequested();
                 await engine.TransferCertificates(transferAgreement, cancellationToken);
                 return;
             }
