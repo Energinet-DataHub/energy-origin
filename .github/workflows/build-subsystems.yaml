@@ -40,9 +40,7 @@ jobs:
             domains/redoc/configuration.yaml
           )
           for cfg in "${EXTRA_CONFIGS[@]}"; do
-            [[ -f "$cfg" ]] || continue
-            dir=$(dirname "$cfg")
-            PROJECTS+=("$dir")
+            [[ -f "$cfg" ]] && PROJECTS+=("$(dirname "$cfg")")
           done
 
           SDK=$(jq -r '.sdk.version'      global.json)
@@ -50,10 +48,13 @@ jobs:
 
           JSON=$(
             printf '%s\n' "${PROJECTS[@]}" | jq -R '
-              . as $rel
-              | ( test("\\.csproj$")
-                  | if . then {path:$rel, configuration:($rel|sub("\\.csproj$";"/configuration.yaml"))}
-                         else {path:$rel, configuration:($rel+"/configuration.yaml")} end )' |
+              if test("\\.csproj$") then
+                { path: .
+                , configuration:(. | sub("/[^/]+\\.csproj$"; "/configuration.yaml")) }
+              else
+                { path: .
+                , configuration:(. + "/configuration.yaml") }
+              end' |
             jq -sc --arg sdk "$SDK" --arg rt "$RUNTIME" '
               map(. + { sdkVersion:$sdk, runtimeVersion:$rt })' )
 
