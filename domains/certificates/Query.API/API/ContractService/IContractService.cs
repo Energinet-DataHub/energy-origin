@@ -10,7 +10,7 @@ namespace API.ContractService;
 public interface IContractService
 {
     Task<CreateContractResult> Create(CreateContracts contracts, Guid meteringPointOwnerId, Guid subjectId, string subjectName, string organizationName,
-        string organizationTin, CancellationToken cancellationToken);
+        string organizationTin, bool isTrial, CancellationToken cancellationToken);
 
     Task<SetEndDateResult> SetEndDate(EditContracts contracts, Guid meteringPointOwnerId, Guid subjectId, string subjectName, string organizationName,
         string organizationTin, CancellationToken cancellationToken);

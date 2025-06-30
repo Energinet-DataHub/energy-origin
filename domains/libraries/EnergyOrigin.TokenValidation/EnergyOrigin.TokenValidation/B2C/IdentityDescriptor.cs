@@ -98,6 +98,11 @@ public class IdentityDescriptor
         return _user.FindFirstValue(claimName);
     }
 
+    public bool IsTrial()
+    {
+        return OrganizationStatus == "trial";
+    }
+
     public static bool IsSupported(HttpContext httpContext)
     {
         var usedAuthenticationScheme = GetUsedAuthenticationScheme(httpContext);
