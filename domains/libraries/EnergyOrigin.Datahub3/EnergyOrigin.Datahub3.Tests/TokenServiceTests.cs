@@ -119,7 +119,7 @@ public class TokenServiceTests
         var tokenService = new TokenService(httpClient, options, _fakeTimeProvider, _logger);
 
         await tokenService.GetToken(); // Fetch first token
-        _fakeTimeProvider.SetUtcNow(currentTime.AddSeconds(expiresIn - seconds)); // Simulate passing time
+        _fakeTimeProvider.SetUtcNow(currentTime.AddSeconds(expiresIn - seconds)); // Simulate time passing
 
         // Act
         var accessToken = await tokenService.GetToken();
@@ -164,7 +164,7 @@ public class TokenServiceTests
         var tokenService = new TokenService(httpClient, options, _fakeTimeProvider, _logger);
 
         await tokenService.GetToken(); // Set initial token
-        _fakeTimeProvider.SetUtcNow(currentTime.AddSeconds(expiresIn - seconds)); // Simulate passing time
+        _fakeTimeProvider.SetUtcNow(currentTime.AddSeconds(expiresIn - seconds)); // Simulate time passing
 
         // Act
         var accessToken = await tokenService.GetToken();
