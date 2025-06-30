@@ -231,6 +231,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         string issuer = "demo.energioprindelse.dk",
         string audience = "Users",
         string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
+        string orgStatus = "normal",
         bool termsAccepted = true)
     {
         var claims = new Dictionary<string, object>()
@@ -243,6 +244,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },
             { ClaimType.TermsAccepted, termsAccepted.ToString() },
+            { ClaimType.OrgStatus, orgStatus },
             { UserClaimName.AccessToken, "" },
             { UserClaimName.IdentityToken, "" },
             { UserClaimName.ProviderKeys, "" }
