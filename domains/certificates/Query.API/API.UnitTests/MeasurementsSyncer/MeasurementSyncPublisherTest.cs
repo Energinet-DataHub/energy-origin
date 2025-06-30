@@ -28,7 +28,7 @@ public class MeasurementSyncPublisherTest
         var meteringPoint = EnergyTrackAndTrace.Testing.Any.MeteringPoint(gsrn);
         var meteringPointOwner = Guid.NewGuid().ToString();
         var syncInfo = new MeteringPointSyncInfo(gsrn, DateTimeOffset.UtcNow, null, meteringPointOwner, MeteringPointType.Production, "DK1", Guid.NewGuid(),
-            Any.Technology());
+            Any.Technology(), false);
         var measurement1 = Any.Measurement(gsrn, DateTimeOffset.UtcNow.AddHours(-6).ToUnixTimeSeconds(), 10);
         var measurement2 = Any.Measurement(gsrn, DateTimeOffset.UtcNow.AddHours(-5).ToUnixTimeSeconds(), 10);
         await sut.PublishIntegrationEvents(meteringPoint, syncInfo, [measurement1, measurement2], CancellationToken.None);

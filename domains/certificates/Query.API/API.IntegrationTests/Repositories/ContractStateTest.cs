@@ -38,7 +38,7 @@ public class ContractStateTest
         var endDate = DateTimeOffset.Parse("2024-12-31 23:00:00+00");
         var gsrn = new Gsrn("571311111100111111");
         var contract = CertificateIssuingContract.Create(0, gsrn, "DK1", MeteringPointType.Production, "abc",
-            startDate, endDate, Guid.NewGuid(), null);
+            startDate, endDate, Guid.NewGuid(), null, false);
         dbContext.Contracts.Add(contract);
 
         var syncPoint = UnixTimestamp.Create(new DateTimeOffset(2024, 12, 31, 22, 0, 0, TimeSpan.FromHours(0)));
@@ -72,7 +72,7 @@ public class ContractStateTest
         var endDate = DateTimeOffset.Parse("2024-12-31 23:00:00+00");
         var gsrn = new Gsrn("571311111100111111");
         var contract = CertificateIssuingContract.Create(0, gsrn, "DK1", MeteringPointType.Production, "abc",
-            startDate, endDate, Guid.NewGuid(), null);
+            startDate, endDate, Guid.NewGuid(), null, false);
         dbContext.Contracts.Add(contract);
 
         var syncPoint = UnixTimestamp.Create(endDate);
@@ -94,7 +94,7 @@ public class ContractStateTest
         var endDate = DateTimeOffset.Parse("2024-12-31 23:00:00+00");
         var gsrn = new Gsrn("571311111100111111");
         var contract = CertificateIssuingContract.Create(0, gsrn, "DK1", MeteringPointType.Production, "abc",
-            startDate, endDate, Guid.NewGuid(), null);
+            startDate, endDate, Guid.NewGuid(), null, false);
         dbContext.Contracts.Add(contract);
 
         var syncPoint = UnixTimestamp.Create(endDate);
@@ -212,6 +212,19 @@ public class ContractStateTest
         var gsrn1SlidingWindows = dbContext.MeteringPointTimeSeriesSlidingWindows.Where(x => x.GSRN == gsrn1.Value).ToList();
 
         gsrn1SlidingWindows.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GivenTrialContract_WhenGettingSyncInfo_FlagIsSetCorrectly()
+    {
+        await using var db = _dbContextFactoryMock.CreateDbContext();
+        var now = UnixTimestamp.Now().AddHours(-_minimumAgeThresholdHours - 1);
+        db.Contracts.Add(Any.CertificateIssuingContract(Any.Gsrn(), now, null, trial: true));
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var syncInfos = await _sut.GetSyncInfos(TestContext.Current.CancellationToken);
+
+        syncInfos.Should().ContainSingle(i => i.IsTrial.Equals(true));
     }
 
     [Fact]

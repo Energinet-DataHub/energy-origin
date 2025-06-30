@@ -41,7 +41,8 @@ public class SlidingWindowStateTests
             MeteringPointType.Production,
             "DK1",
             Guid.NewGuid(),
-            new Technology("T12345", "T54321"));
+            new Technology("T12345", "T54321"),
+            false);
 
     [Fact]
     public async Task GetSlidingWindowStartTime_NoDataInStore_ReturnsContractStartDate()

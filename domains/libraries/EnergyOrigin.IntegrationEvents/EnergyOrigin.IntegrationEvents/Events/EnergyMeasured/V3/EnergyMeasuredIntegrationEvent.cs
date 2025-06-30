@@ -15,7 +15,8 @@ public record EnergyMeasuredIntegrationEvent(
     MeterType MeterType,
     Quality Quality,
     string BiddingZone,
-    bool IsStateSponsored
+    bool IsStateSponsored,
+    bool IsTrial
 );
 
 public enum MeterType

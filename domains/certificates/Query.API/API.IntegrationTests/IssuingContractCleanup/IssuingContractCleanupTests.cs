@@ -5,6 +5,7 @@ using API.IntegrationTests.Extensions;
 using DataContext;
 using DataContext.Models;
 using DataContext.ValueObjects;
+using EnergyOrigin.Domain.ValueObjects;
 using EnergyTrackAndTrace.Testing.Testcontainers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -30,48 +31,42 @@ public class IssuingContractCleanupTests
         dbContext.Contracts.RemoveRange(dbContext.Contracts);
         await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var expiredContract = new CertificateIssuingContract
-        {
-            GSRN = "5734567890123456",
-            EndDate = DateTimeOffset.UtcNow.AddHours(-1),
-            MeteringPointOwner = Guid.NewGuid().ToString(),
-            ContractNumber = 0,
-            Created = DateTimeOffset.UtcNow.AddHours(-2),
-            GridArea = "932",
-            Id = Guid.NewGuid(),
-            MeteringPointType = MeteringPointType.Production,
-            StartDate = DateTimeOffset.UtcNow.AddHours(-2),
-            Technology = new Technology("SomeFuelCode", "SomeTechCode"),
-            RecipientId = Guid.NewGuid()
-        };
-        var nullEndDateContract = new CertificateIssuingContract
-        {
-            GSRN = "5734567890123457",
-            EndDate = null,
-            MeteringPointOwner = Guid.NewGuid().ToString(),
-            ContractNumber = 1,
-            Created = DateTimeOffset.UtcNow.AddHours(-2),
-            GridArea = "932",
-            Id = Guid.NewGuid(),
-            MeteringPointType = MeteringPointType.Production,
-            StartDate = DateTimeOffset.UtcNow.AddHours(-2),
-            Technology = new Technology("SomeFuelCode", "SomeTechCode"),
-            RecipientId = Guid.NewGuid()
-        };
-        var endDateContract = new CertificateIssuingContract
-        {
-            GSRN = "5734567890123458",
-            EndDate = DateTimeOffset.UtcNow.AddHours(1),
-            MeteringPointOwner = Guid.NewGuid().ToString(),
-            ContractNumber = 2,
-            Created = DateTimeOffset.UtcNow.AddHours(-2),
-            GridArea = "932",
-            Id = Guid.NewGuid(),
-            MeteringPointType = MeteringPointType.Production,
-            StartDate = DateTimeOffset.UtcNow.AddHours(-2),
-            Technology = new Technology("SomeFuelCode", "SomeTechCode"),
-            RecipientId = Guid.NewGuid()
-        };
+        var expiredContract = CertificateIssuingContract.Create(
+            1,
+            new Gsrn("5734567890123456"),
+            "932",
+            MeteringPointType.Production,
+            Guid.NewGuid().ToString(),
+            DateTimeOffset.UtcNow.AddHours(-2),
+            DateTimeOffset.UtcNow.AddHours(-1),
+            Guid.NewGuid(),
+            new Technology("SomeFuelCode", "SomeTechCode"),
+            false);
+
+        var nullEndDateContract = CertificateIssuingContract.Create(
+            2,
+            new Gsrn("5734567890123457"),
+            "932",
+            MeteringPointType.Production,
+            Guid.NewGuid().ToString(),
+            DateTimeOffset.UtcNow.AddHours(-2),
+            null, // No end date
+            Guid.NewGuid(),
+            new Technology("SomeFuelCode", "SomeTechCode"),
+            false);
+
+        var endDateContract = CertificateIssuingContract.Create(
+            3,
+            new Gsrn("5734567890123458"),
+            "932",
+            MeteringPointType.Production,
+            Guid.NewGuid().ToString(),
+            DateTimeOffset.UtcNow.AddHours(-2),
+            DateTimeOffset.UtcNow.AddHours(1),
+            Guid.NewGuid(),
+            new Technology("SomeFuelCode", "SomeTechCode"),
+            false);
+
         dbContext.Contracts.AddRange(expiredContract, nullEndDateContract, endDateContract);
         await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
