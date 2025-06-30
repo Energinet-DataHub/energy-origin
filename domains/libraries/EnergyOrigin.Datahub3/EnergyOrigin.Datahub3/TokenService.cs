@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace EnergyOrigin.Datahub3;
@@ -14,7 +13,7 @@ public class TokenService : ITokenService
     private readonly HttpClient _httpClient;
     private readonly IOptions<DataHub3Options> _dataHub3Options;
     private readonly TimeProvider _timeProvider;
-    private readonly ILogger<TokenService> _logger;
+
     private readonly FormUrlEncodedContent _body;
     private Token? _token;
     private readonly SemaphoreSlim _semaphore;
@@ -22,12 +21,11 @@ public class TokenService : ITokenService
     private readonly int _tokenLifetimeSeconds = 3600;
     private readonly int _halvingFactor = 2;
 
-    public TokenService(HttpClient httpclient, IOptions<DataHub3Options> dataHub3Options, TimeProvider timeProvider, ILogger<TokenService> logger)
+    public TokenService(HttpClient httpclient, IOptions<DataHub3Options> dataHub3Options, TimeProvider timeProvider)
     {
         _httpClient = httpclient;
         _dataHub3Options = dataHub3Options;
         _timeProvider = timeProvider;
-        _logger = logger;
 
         var bodyValues = new Dictionary<string, string>
         {
@@ -87,17 +85,12 @@ public class TokenService : ITokenService
     {
         if (_token is null)
         {
-            _logger.LogInformation("Token is null - Refreshing");
             return true;
         }
 
         var difference = _token.ExpiresOn - _timeProvider.GetUtcNow().ToUnixTimeSeconds();
         if (difference < _tokenLifetimeSeconds / _halvingFactor)
         {
-            _logger.LogInformation(
-                    "Token is stale or expired {ExpiresOn}, {ExpiresIn}, {Difference}. Refreshing",
-                    _token.ExpiresOn, _token.ExpiresIn, difference);
-
             return true;
         }
 
