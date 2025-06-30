@@ -35,7 +35,6 @@ public class TransferAgreementsAutomationWorker(
         {
             try
             {
-                stoppingToken.ThrowIfCancellationRequested();
                 logger.LogInformation("TransferAgreementsAutomationWorker running at: {time}", DateTimeOffset.Now);
                 metrics.ResetCertificatesTransferred();
                 var transferAgreements = await GetTransferAgreements(stoppingToken);
