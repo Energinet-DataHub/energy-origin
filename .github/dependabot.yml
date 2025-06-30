@@ -8,8 +8,8 @@ updates:
       timezone: "Europe/Copenhagen"
     groups:
       dependencies:
-        patterns: [ "*" ]
-    open-pull-requests-limit: 1
+        patterns:
+          - "*"
 
   - package-ecosystem: github-actions
     directory: /
@@ -19,8 +19,8 @@ updates:
       timezone: "Europe/Copenhagen"
     groups:
       dependencies:
-        patterns: [ "*" ]
-    open-pull-requests-limit: 1
+        patterns:
+          - "*"
 
   - package-ecosystem: docker
     directory: /
@@ -30,8 +30,8 @@ updates:
       timezone: "Europe/Copenhagen"
     groups:
       dependencies:
-        patterns: [ "*" ]
-    open-pull-requests-limit: 1
+        patterns:
+          - "*"
 
   - package-ecosystem: docker-compose
     directory: /
@@ -41,8 +41,8 @@ updates:
       timezone: "Europe/Copenhagen"
     groups:
       dependencies:
-        patterns: [ "*" ]
-    open-pull-requests-limit: 1
+        patterns:
+          - "*"
 
   - package-ecosystem: npm
     directory: /
@@ -52,8 +52,8 @@ updates:
       timezone: "Europe/Copenhagen"
     groups:
       dependencies:
-        patterns: [ "*" ]
-    open-pull-requests-limit: 1
+        patterns:
+          - "*"
 
   - package-ecosystem: nuget
     directory: /
@@ -68,8 +68,8 @@ updates:
         versions: [ ">=9.0.0" ]
     groups:
       dependencies:
-        patterns: [ "*" ]
-    open-pull-requests-limit: 1
+        patterns:
+          - "*"
 
   - package-ecosystem: dotnet-sdk
     directory: /
@@ -79,5 +79,5 @@ updates:
       timezone: "Europe/Copenhagen"
     groups:
       dependencies:
-        patterns: [ "*" ]
-    open-pull-requests-limit: 1
+        patterns:
+          - "*"
