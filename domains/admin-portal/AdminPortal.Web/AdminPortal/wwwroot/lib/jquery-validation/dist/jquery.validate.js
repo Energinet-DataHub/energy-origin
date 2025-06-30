@@ -393,9 +393,9 @@ $.extend( $.validator, {
 	prototype: {
 
 		init: function() {
-			this.labelContainer = $( this.settings.errorLabelContainer );
+            this.labelContainer = $( document ).find( this.settings.errorLabelContainer );
 			this.errorContext = this.labelContainer.length && this.labelContainer || $( this.currentForm );
-			this.containers = $( this.settings.errorContainer ).add( this.settings.errorLabelContainer );
+            this.containers = $( document ).find( this.settings.errorContainer ).add( this.settings.errorLabelContainer );
 			this.submitted = {};
 			this.valueCache = {};
 			this.pendingRequest = 0;
