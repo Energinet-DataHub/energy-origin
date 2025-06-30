@@ -12,6 +12,8 @@ on:
         required: true
         type: string
 
+permissions: { }
+
 jobs:
 
   dotnet-lint-solution:
@@ -33,7 +35,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer]
+        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer, libraries]
       fail-fast: false
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -51,6 +53,13 @@ jobs:
           test-filter: "Category!=E2ETest"
 
   build-admin-portal:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     uses: ./.github/workflows/build-admin-portal.yaml
     secrets: inherit
     with:
@@ -58,6 +67,13 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     uses: ./.github/workflows/build-authorization.yaml
     secrets: inherit
     with:
@@ -65,6 +81,13 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-certificates:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     uses: ./.github/workflows/build-certificates.yaml
     secrets: inherit
     with:
@@ -72,6 +95,13 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-html-pdf-generator:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     uses: ./.github/workflows/build-html-pdf-generator.yaml
     secrets: inherit
     with:
@@ -79,6 +109,13 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-measurements:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     uses: ./.github/workflows/build-measurements.yaml
     secrets: inherit
     with:
@@ -86,6 +123,13 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-oidc-mock:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     uses: ./.github/workflows/build-oidc-mock.yaml
     secrets: inherit
     with:
@@ -93,6 +137,13 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-openapi:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     uses: ./.github/workflows/build-openapi.yaml
     secrets: inherit
     with:
@@ -100,6 +151,13 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-transfer:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
@@ -107,6 +165,10 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   update:
+    permissions:
+      actions: 'read'
+      id-token: 'write'
+      contents: 'write'
     runs-on: ubuntu-latest
     name: Update environment
     needs:
@@ -146,6 +208,10 @@ jobs:
 
   deploy-b2c-preview:
     name: 🌀 Deploy B2C Policy for Preview
+    permissions:
+      actions: 'read'
+      id-token: 'write'
+      contents: 'write'
     runs-on: ubuntu-latest
     needs: update
     concurrency: commits-base-environment

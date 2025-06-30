@@ -29,7 +29,8 @@ public class MeasurementsSyncerWorkerTest
         MeteringPointType.Production,
         "DK1",
         Guid.NewGuid(),
-        new Technology("T12345", "T54321"));
+        new Technology("T12345", "T54321"),
+        false);
 
     private readonly ILogger<MeasurementsSyncerWorker> _fakeLogger = Substitute.For<ILogger<MeasurementsSyncerWorker>>();
     private readonly ILogger<MeasurementsSyncService> _syncServiceFakeLogger = Substitute.For<ILogger<MeasurementsSyncService>>();
