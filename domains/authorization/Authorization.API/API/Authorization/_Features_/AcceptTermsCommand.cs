@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Authorization.Exceptions;
 using API.Data;
+using API.Events;
 using API.Models;
 using API.Repository;
 using EnergyOrigin.Domain.ValueObjects;
@@ -25,7 +26,8 @@ public class AcceptTermsCommandHandler(
     IWhitelistedRepository whitelistedRepository,
     IUnitOfWork unitOfWork,
     IWalletClient walletClient,
-    IPublishEndpoint publishEndpoint)
+    IPublishEndpoint publishEndpoint,
+    IDomainEventDispatcher domainEventDispatcher)
     : IRequestHandler<AcceptTermsCommand>
 {
     public async Task Handle(AcceptTermsCommand request, CancellationToken cancellationToken)
@@ -64,6 +66,8 @@ public class AcceptTermsCommandHandler(
 
         await EnsureWalletExistsAsync(organization.Id);
 
+        await domainEventDispatcher.DispatchAsync(organization.DomainEvents);
+
         await publishEndpoint.Publish(new OrgAcceptedTerms(
             Guid.NewGuid(),
             Activity.Current?.Id ?? Guid.NewGuid().ToString(),
@@ -74,6 +78,8 @@ public class AcceptTermsCommandHandler(
         ), cancellationToken);
 
         await unitOfWork.CommitAsync(cancellationToken);
+
+        organization.ClearDomainEvents();
     }
 
     private async Task EnsureWalletExistsAsync(Guid organizationId)
