@@ -22,6 +22,10 @@
                         {
                             <div class="details-company">@user.UserinfoToken["nemid.company_name"]</div>
                         }
+                        @if (user.UserinfoToken.ContainsKey("nemid.cvr"))
+                        {
+                            <div class="details-company">@user.UserinfoToken["nemid.cvr"]</div>
+                        }
                         <div class="details-name">@user.Name</div>
                         <p>@user.Description</p>
                     </div>
