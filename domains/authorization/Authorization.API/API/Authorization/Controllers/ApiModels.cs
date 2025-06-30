@@ -22,7 +22,8 @@ public record AuthorizationResponse(
     [property: JsonPropertyName("org_name")] string OrgName,
     [property: JsonPropertyName("org_id")] Guid OrgId,
     [property: JsonPropertyName("org_ids")] IEnumerable<Guid> OrgIds,
-    [property: JsonPropertyName("scope")] string Scope
+    [property: JsonPropertyName("scope")] string Scope,
+    [property: JsonPropertyName("org_status")] string OrgStatus
 );
 
 public record UserAuthorizationResponse(

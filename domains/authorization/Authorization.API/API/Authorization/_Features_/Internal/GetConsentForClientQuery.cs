@@ -42,7 +42,8 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
                         .Where(x => client.IsTrial ? x.ConsentGiverOrganization.Status == OrganizationStatus.Trial : x.ConsentGiverOrganization.Status == OrganizationStatus.Normal)
                         .Select(x => x.ConsentGiverOrganizationId),
                     client.Organization.Id,
-                    Scope)
+                    Scope,
+                    client.IsTrial ? OrganizationStatus.Trial : OrganizationStatus.Normal)
             )
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -64,4 +65,5 @@ public record GetConsentForClientQueryResult(
     string OrgName,
     IEnumerable<Guid> OrgIds,
     Guid OrgId,
-    string Scope);
+    string Scope,
+    OrganizationStatus OrgStatus);

@@ -85,7 +85,8 @@ public static class Startup
             client.BaseAddress = new Uri(options.Url);
         });
 
-        services.AddTransient<ITokenService, TokenService>();
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<ITokenService, TokenService>();
         static async Task<AuthenticationHeaderValue> authorizationHeaderProviderAsync(IServiceProvider sp)
         {
             var tokenService = sp.GetRequiredService<ITokenService>();
