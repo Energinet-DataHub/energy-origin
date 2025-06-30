@@ -175,6 +175,8 @@ public class PopulateReportCommandHandler
 
             // Convert to base64 and generate PDF
             var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(fullHtml));
+
+            _logger.LogInformation("FULLHTML: " + fullHtml);
             var pdfResult = await _mediator.Send(
                 new GeneratePdfCommand(base64Html),
                 cancellationToken);
