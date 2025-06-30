@@ -31,8 +31,7 @@ public class TransferAgreementsAutomationWorker(
             return;
         }
 
-        var done = false;
-        while (!done)
+        while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
@@ -55,7 +54,6 @@ public class TransferAgreementsAutomationWorker(
             catch (OperationCanceledException)
             {
                 logger.LogInformation("TransferAgreementsAutomationWorker has been cancelled");
-                done = true;
             }
             catch (Exception ex)
             {
