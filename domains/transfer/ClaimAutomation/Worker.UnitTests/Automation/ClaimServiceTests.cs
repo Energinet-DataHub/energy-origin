@@ -181,20 +181,25 @@ public class ClaimServiceTests
         walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(),
                 Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
-                {
-                    Metadata =
+            {
+                Metadata =
                         new PageInfo()
                         {
-                            Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize,
+                            Offset = 0,
+                            Count = 2,
+                            Limit = _claimAutomationOptions.Value.CertificateFetchBachSize,
                             Total = certs.Count
                         },
-                    Result = certs.Take(2)
-                },
+                Result = certs.Take(2)
+            },
                 new ResultList<GranularCertificate>()
                 {
                     Metadata = new PageInfo()
                     {
-                        Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = 3
+                        Offset = 0,
+                        Count = 2,
+                        Limit = _claimAutomationOptions.Value.CertificateFetchBachSize,
+                        Total = 3
                     },
                     Result = certs.Skip(2).Take(1)
                 });

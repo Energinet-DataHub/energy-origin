@@ -59,7 +59,7 @@ public class ClaimService(
 
                 var consumptionCertsNonTrial = certGrp
                     .Where(x => x is
-                        { CertificateType: CertificateType.Consumption, IsTrialCertificate: false })
+                    { CertificateType: CertificateType.Consumption, IsTrialCertificate: false })
                     .ToList();
 
                 await Claim(subjectId, consumptionCertsNonTrial, productionCertsNonTrial, stoppingToken);
