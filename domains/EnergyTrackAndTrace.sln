@@ -146,6 +146,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.DatahubFacade.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.Datahub3", "libraries\EnergyOrigin.Datahub3\EnergyOrigin.Datahub3\EnergyOrigin.Datahub3.csproj", "{F3FFC9D2-36E8-EB43-2149-3A9084B6CDCE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnergyOrigin.Datahub3.Tests", "EnergyOrigin.Datahub3.Tests\EnergyOrigin.Datahub3.Tests.csproj", "{5C460D0E-DA37-49E4-A3AD-292ABE446724}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -332,6 +334,10 @@ Global
 		{F3FFC9D2-36E8-EB43-2149-3A9084B6CDCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3FFC9D2-36E8-EB43-2149-3A9084B6CDCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3FFC9D2-36E8-EB43-2149-3A9084B6CDCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C460D0E-DA37-49E4-A3AD-292ABE446724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C460D0E-DA37-49E4-A3AD-292ABE446724}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C460D0E-DA37-49E4-A3AD-292ABE446724}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C460D0E-DA37-49E4-A3AD-292ABE446724}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -402,6 +408,7 @@ Global
 		{22C2B421-25C4-1CFB-77F8-1B06FA5C8E02} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{565FE3A8-D5D4-E4FE-99CD-72280E440DB4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{F3FFC9D2-36E8-EB43-2149-3A9084B6CDCE} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{5C460D0E-DA37-49E4-A3AD-292ABE446724} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0D05EA23-618A-4F1F-B4EB-13AFA96B9C56}

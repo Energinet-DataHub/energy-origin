@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,9 +62,10 @@ public class ConsumptionServiceTests
 
         var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
-        var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
+        var (total, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
-        Assert.Equal(24, result.Count);
+        Assert.Equal(24, total.Count);
+        Assert.Equal(24, average.Count);
     }
 
     [Fact]
@@ -106,10 +106,10 @@ public class ConsumptionServiceTests
 
         var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
-        var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
+        var (total, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
         await _measurementClientMock.Received(1)
-            .GetMeasurements(Arg.Is((ReadOnlyCollection<Gsrn> x) => x.First() == consumptionGsrn && x.Count == 1), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+            .GetMeasurements(Arg.Is((IList<Gsrn> x) => x.First() == consumptionGsrn && x.Count == 1), Arg.Any<long>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -141,16 +141,20 @@ public class ConsumptionServiceTests
 
         var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 1);
 
-        _measurementClientMock.GetMeasurements(Arg.Any<ReadOnlyCollection<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+        _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
         var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
-        var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
+        var (total, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
-        foreach (var hour in result)
+        foreach (var hour in total)
         {
             Assert.Equal(numberOfDays, hour.KwhQuantity);
+        }
+        foreach (var hour in average)
+        {
+            Assert.Equal(1, hour.KwhQuantity);
         }
     }
 
@@ -196,8 +200,9 @@ public class ConsumptionServiceTests
 
         var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
-        var result = await sut.GetTotalHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
+        var (total, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
-        Assert.Equal(0, result.First(x => x.HourOfDay == 2).KwhQuantity);
+        Assert.Equal(0, total.First(x => x.HourOfDay == 2).KwhQuantity);
+        Assert.Equal(0, average.First(x => x.HourOfDay == 2).KwhQuantity);
     }
 }

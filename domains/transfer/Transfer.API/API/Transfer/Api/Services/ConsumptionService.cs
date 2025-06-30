@@ -15,8 +15,6 @@ namespace API.Transfer.Api.Services;
 
 public interface IConsumptionService
 {
-    Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken);
-    Task<List<ConsumptionHour>> GetAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
     Task<(List<ConsumptionHour>, List<ConsumptionHour>)> GetTotalAndAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
 }
 
@@ -38,28 +36,6 @@ public class ConsumptionService : IConsumptionService
         _logger = logger;
     }
 
-    public async Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken)
-    {
-        var gsrns = await GetValidGsrnsAsync(organizationId, cancellationToken);
-        var totalConsumption = await _measurementClient.GetMeasurements(gsrns, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), cancellationToken);
-
-        if (totalConsumption == null)
-            return new List<ConsumptionHour>();
-
-        return MapToTotalHourFormat([.. totalConsumption]);
-    }
-
-    public async Task<List<ConsumptionHour>> GetAverageHourlyConsumption(
-        OrganizationId orgId,
-        DateTimeOffset from,
-        DateTimeOffset to,
-        CancellationToken ct = default)
-    {
-        var data = await GetRawMeteringDataAsync(orgId, from, to, ct);
-        return ComputeHourlyAverages(data);
-    }
-
-    //TODO write tests
     public async Task<(List<ConsumptionHour>, List<ConsumptionHour>)> GetTotalAndAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to,
         CancellationToken ct = default)
     {
