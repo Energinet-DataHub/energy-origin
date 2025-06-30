@@ -80,6 +80,9 @@ public class PopulateReportCommandHandler
         {
             var from = DateTimeOffset.FromUnixTimeSeconds(report.StartDate.EpochSeconds);
             var to = DateTimeOffset.FromUnixTimeSeconds(report.EndDate.EpochSeconds);
+
+            _logger.LogInformation("FROM: " + from);
+            _logger.LogInformation("TO: " + to);
             var (totalConsumptionRaw, averageHourConsumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, cancellationToken);
 
             var coverage = _coverageProcessor.Calculate(claims, totalConsumptionRaw, from, to);
