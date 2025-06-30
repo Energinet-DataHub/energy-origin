@@ -5,6 +5,7 @@ using NSubstitute;
 using System.Net;
 using Microsoft.Extensions.Time.Testing;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace EnergyOrigin.Datahub3.Tests;
 
@@ -12,6 +13,7 @@ public class TokenServiceTests
 {
     private readonly DataHub3Options _dataHub3Options;
     private readonly FakeTimeProvider _fakeTimeProvider;
+    private readonly ILogger<TokenService> _logger;
 
     private readonly JsonSerializerOptions _jsonSerialilzerOptions = new()
     {
@@ -32,13 +34,14 @@ public class TokenServiceTests
         };
 
         _fakeTimeProvider = new FakeTimeProvider();
+        _logger = Substitute.For<ILogger<TokenService>>();
     }
 
     [Fact]
     public async Task GetToken_WhenMockEnabled_ReturnsGuid()
     {
         // Arrange
-        var token = new Token("FakeAccessToken", 100L);
+        var token = new Token("FakeAccessToken", 100L, 3600);
 
         var mockHttp = new MockHttpMessageHandler();
         mockHttp
@@ -49,7 +52,7 @@ public class TokenServiceTests
 
         _dataHub3Options.EnableMock = true;
         var options = Options.Create(_dataHub3Options);
-        var tokenService = new TokenService(httpClient, options, _fakeTimeProvider);
+        var tokenService = new TokenService(httpClient, options, _fakeTimeProvider, _logger);
 
         // Act
         var accessToken = await tokenService.GetToken();
@@ -62,7 +65,7 @@ public class TokenServiceTests
     public async Task GetToken_WhenNoTokenFetchedYet_ReturnsNewToken()
     {
         // Arrange
-        var token = new Token("FakeAccessToken", 100L);
+        var token = new Token("FakeAccessToken", 100L, 3600);
 
         var mockHttp = new MockHttpMessageHandler();
         mockHttp
@@ -72,7 +75,7 @@ public class TokenServiceTests
         httpClient.BaseAddress = new Uri(_baseUrl);
 
         var options = Options.Create(_dataHub3Options);
-        var tokenService = new TokenService(httpClient, options, _fakeTimeProvider);
+        var tokenService = new TokenService(httpClient, options, _fakeTimeProvider, _logger);
 
         // Act
         var accessToken = await tokenService.GetToken();
@@ -91,9 +94,10 @@ public class TokenServiceTests
         var currentTime = new DateTime(2025, 12, 5, 7, 20, 0).ToUniversalTime();
         _fakeTimeProvider.SetUtcNow(currentTime);
 
-        long expiresInUnixTime = ((DateTimeOffset)currentTime).AddSeconds(seconds).ToUnixTimeSeconds();
-        var token = new Token("FakeAccessToken", expiresInUnixTime);
-        var token2 = new Token("FakeAccessToken2", expiresInUnixTime);
+        long expiresOnUnixtime = ((DateTimeOffset)currentTime).AddSeconds(seconds).ToUnixTimeSeconds();
+        var expiresIn = 3600;
+        var token = new Token("FakeAccessToken", expiresOnUnixtime, expiresIn);
+        var token2 = new Token("FakeAccessToken2", expiresOnUnixtime, expiresIn);
         var tokens = new[] { token, token2 };
 
         var callCount = 0;
@@ -113,7 +117,7 @@ public class TokenServiceTests
         httpClient.BaseAddress = new Uri(_baseUrl);
 
         var options = Options.Create(_dataHub3Options);
-        var tokenService = new TokenService(httpClient, options, _fakeTimeProvider);
+        var tokenService = new TokenService(httpClient, options, _fakeTimeProvider, _logger);
 
         await tokenService.GetToken(); // Set initial token
 
@@ -135,9 +139,10 @@ public class TokenServiceTests
         var currentTime = new DateTime(2025, 12, 5, 7, 20, 0).ToUniversalTime();
         _fakeTimeProvider.SetUtcNow(currentTime);
 
-        long expiresInUnixTime = ((DateTimeOffset)currentTime).AddSeconds(seconds).ToUnixTimeSeconds();
-        var token = new Token("FakeAccessToken", expiresInUnixTime);
-        var token2 = new Token("FakeAccessToken2", expiresInUnixTime);
+        long expiresOnUnixtime = ((DateTimeOffset)currentTime).AddSeconds(seconds).ToUnixTimeSeconds();
+        var expiresIn = 3600;
+        var token = new Token("FakeAccessToken", expiresOnUnixtime, expiresIn);
+        var token2 = new Token("FakeAccessToken2", expiresOnUnixtime, expiresIn);
         var tokens = new[] { token, token2 };
 
         var callCount = 0;
@@ -157,7 +162,7 @@ public class TokenServiceTests
         httpClient.BaseAddress = new Uri(_baseUrl);
 
         var options = Options.Create(_dataHub3Options);
-        var tokenService = new TokenService(httpClient, options, _fakeTimeProvider);
+        var tokenService = new TokenService(httpClient, options, _fakeTimeProvider, _logger);
 
         await tokenService.GetToken(); // Set initial token
 
