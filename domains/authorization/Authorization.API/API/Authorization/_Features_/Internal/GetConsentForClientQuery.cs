@@ -38,9 +38,12 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
                     query.IdpClientId,
                     client.ClientType.ToString(),
                     client.Name.Value,
-                client.Organization!.OrganizationReceivedConsents.Select(x => x.ConsentGiverOrganizationId),
-                client.Organization.Id,
-                    Scope)
+                    client.Organization!.OrganizationReceivedConsents
+                        .Where(x => client.IsTrial ? x.ConsentGiverOrganization.Status == OrganizationStatus.Trial : x.ConsentGiverOrganization.Status == OrganizationStatus.Normal)
+                        .Select(x => x.ConsentGiverOrganizationId),
+                    client.Organization.Id,
+                    Scope,
+                    client.IsTrial ? OrganizationStatus.Trial : OrganizationStatus.Normal)
             )
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -48,6 +51,7 @@ public class GetConsentForClientQueryHandler : IRequestHandler<GetConsentForClie
         {
             throw new EntityNotFoundException(query.IdpClientId, typeof(Client));
         }
+
         _metrics.AddUniqueClientOrganizationLogin(client.OrgId.ToString());
         return client;
     }
@@ -61,4 +65,5 @@ public record GetConsentForClientQueryResult(
     string OrgName,
     IEnumerable<Guid> OrgIds,
     Guid OrgId,
-    string Scope);
+    string Scope,
+    OrganizationStatus OrgStatus);

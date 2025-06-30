@@ -26,5 +26,6 @@ X-API-Version: 20230101
   "idpClientId": "f75da90c-3429-4454-b6d8-603159b1805d",
   "name": "{name}",
   "clientType": "External",
-  "redirectUrl": "https://localhost:8080/callback"
+  "redirectUrl": "https://localhost:8080/callback",
+  "isTrial": "false"
 }

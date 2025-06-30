@@ -102,7 +102,13 @@ public class Any
     public static Client Client()
     {
         return API.Models.Client.Create(IdpClientId(), new ClientName("ClientName"), ClientType.External,
-            "https://redirect.url");
+            "https://redirect.url", false);
+    }
+
+    public static Client TrialClient()
+    {
+        return API.Models.Client.Create(IdpClientId(), new ClientName("ClientName"), ClientType.External,
+            "https://redirect.url", true);
     }
 
     public static Organization OrganizationWithClient(Tin? tin = null, Client? client = null)

@@ -6,20 +6,27 @@ namespace EnergyOrigin.Datahub3;
 public interface ITokenService
 {
     Task<string> GetToken();
-    Task<string> RefreshToken();
 }
 
 public class TokenService : ITokenService
 {
-    readonly HttpClient _httpClient;
-    readonly IOptions<DataHub3Options> _dataHub3Options;
-    readonly FormUrlEncodedContent _body;
-    Token? _token;
+    private readonly HttpClient _httpClient;
+    private readonly IOptions<DataHub3Options> _dataHub3Options;
+    private readonly TimeProvider _timeProvider;
 
-    public TokenService(HttpClient httpclient, IOptions<DataHub3Options> dataHub3Options)
+    private readonly FormUrlEncodedContent _body;
+    private Token? _token;
+    private readonly SemaphoreSlim _semaphore;
+
+    private readonly int _tokenLifetimeSeconds = 3600;
+    private readonly int _halvingFactor = 2;
+
+    public TokenService(HttpClient httpclient, IOptions<DataHub3Options> dataHub3Options, TimeProvider timeProvider)
     {
         _httpClient = httpclient;
         _dataHub3Options = dataHub3Options;
+        _timeProvider = timeProvider;
+
         var bodyValues = new Dictionary<string, string>
         {
             ["grant_type"] = "client_credentials",
@@ -28,6 +35,8 @@ public class TokenService : ITokenService
             ["scope"] = dataHub3Options.Value.Scope!
         };
         _body = new FormUrlEncodedContent(bodyValues);
+
+        _semaphore = new SemaphoreSlim(1, 1);
     }
 
     public async Task<string> GetToken()
@@ -37,19 +46,30 @@ public class TokenService : ITokenService
             return Guid.NewGuid().ToString();
         }
 
-        if (_token == null)
-            return await RefreshToken();
-
-        return _token.AccessToken;
-    }
-
-    public async Task<string> RefreshToken()
-    {
-        if (_dataHub3Options.Value.EnableMock)
+        if (_token is not null && !IsTokenStaleOrExpired())
         {
-            return Guid.NewGuid().ToString();
+            return _token.AccessToken;
         }
 
+        await _semaphore.WaitAsync();
+        try
+        {
+            // Double-checked locking
+            if (_token is not null && !IsTokenStaleOrExpired())
+            {
+                return _token.AccessToken;
+            }
+
+            return await RefreshToken();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    private async Task<string> RefreshToken()
+    {
         var response = await _httpClient.PostAsync(_dataHub3Options.Value.TokenUrl, _body);
 
         if (response.IsSuccessStatusCode)
@@ -59,5 +79,21 @@ public class TokenService : ITokenService
         }
 
         return string.Empty;
+    }
+
+    private bool IsTokenStaleOrExpired()
+    {
+        if (_token is null)
+        {
+            return true;
+        }
+
+        var difference = _token.ExpiresOn - _timeProvider.GetUtcNow().ToUnixTimeSeconds();
+        if (difference < _tokenLifetimeSeconds / _halvingFactor)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
