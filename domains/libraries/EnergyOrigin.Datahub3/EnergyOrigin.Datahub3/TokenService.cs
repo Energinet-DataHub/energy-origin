@@ -46,7 +46,7 @@ public class TokenService : ITokenService
             return Guid.NewGuid().ToString();
         }
 
-        if (_token is not null && !IsTokenStale())
+        if (_token is not null && !IsTokenStaleOrExpired())
         {
             return _token.AccessToken;
         }
@@ -55,7 +55,7 @@ public class TokenService : ITokenService
         try
         {
             // Double-checked locking
-            if (_token is not null && !IsTokenStale())
+            if (_token is not null && !IsTokenStaleOrExpired())
             {
                 return _token.AccessToken;
             }
@@ -81,7 +81,7 @@ public class TokenService : ITokenService
         return string.Empty;
     }
 
-    private bool IsTokenStale()
+    private bool IsTokenStaleOrExpired()
     {
         if (_token is null)
         {
