@@ -53,7 +53,7 @@ public class TransferAgreementsAutomationWorker(
             }
             catch (OperationCanceledException)
             {
-                logger.LogInformation("TransferAgreementsAutomationWorker has been cancelled");
+                logger.LogWarning("TransferAgreementsAutomationWorker has been cancelled");
             }
             catch (Exception ex)
             {
