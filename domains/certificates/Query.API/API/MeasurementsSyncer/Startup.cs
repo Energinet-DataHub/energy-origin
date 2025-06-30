@@ -26,6 +26,7 @@ public static class Startup
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddSingleton(TimeProvider.System);
         services.AddSingleton<ITokenService, TokenService>();
 
         services.AddScoped<MeasurementsSyncService>();
