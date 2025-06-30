@@ -81,7 +81,6 @@ public class ClaimService(
         {
             try
             {
-                stoppingToken.ThrowIfCancellationRequested();
                 var response = await walletClient.GetGranularCertificatesAsync(subjectId, stoppingToken,
                     limit: options.Value.CertificateFetchBachSize, skip: certificates.Count);
 
