@@ -43,7 +43,7 @@ public class ClaimWorker : BackgroundService
             }
             catch (OperationCanceledException)
             {
-                logger.LogWarning("ClaimService was cancelled");
+                logger.LogWarning("ClaimWorker has been cancelled");
             }
             catch (Exception e)
             {
