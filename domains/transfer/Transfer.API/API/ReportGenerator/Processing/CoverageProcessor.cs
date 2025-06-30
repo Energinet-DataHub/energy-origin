@@ -44,6 +44,8 @@ public class CoverageProcessor : ICoverageProcessor
 
         var hourly = (double)claims.Where(x => x.ProductionCertificate.Start == x.ConsumptionCertificate.Start)
             .Sum(x => x.Quantity);
+        _logger.LogInformation("HOURLY: " + hourly);
+
         var hourlyPercentage = (hourly / totalConsumption) * 100;
 
         var daily = (double)claims.Where(x =>
