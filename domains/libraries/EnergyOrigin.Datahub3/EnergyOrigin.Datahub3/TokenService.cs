@@ -88,7 +88,7 @@ public class TokenService : ITokenService
             return true;
         }
 
-        var difference = _token.Expires - _timeProvider.GetUtcNow().ToUnixTimeSeconds();
+        var difference = _token.ExpiresOn - _timeProvider.GetUtcNow().ToUnixTimeSeconds();
         if (difference < _tokenLifetimeSeconds / _halvingFactor)
         {
             return true;
