@@ -3,6 +3,7 @@ using System.Linq;
 using API.Authorization;
 using API.Authorization.EventHandlers;
 using API.Data;
+using API.Events;
 using API.Metrics;
 using API.Models;
 using API.Options;
@@ -88,6 +89,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+
+builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
 // Register specific repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
