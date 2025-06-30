@@ -39,6 +39,7 @@ public class ClaimWorker : BackgroundService
             try
             {
                 await claimService.Run(stoppingToken);
+                await Sleep(stoppingToken);
             }
             catch (OperationCanceledException)
             {
@@ -56,7 +57,6 @@ public class ClaimWorker : BackgroundService
                         break;
                 }
             }
-            await Sleep(stoppingToken);
         }
     }
     private async Task Sleep(CancellationToken cancellationToken)
