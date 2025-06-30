@@ -9,5 +9,5 @@ public class Token(string accessToken, long expiresOn, int expiresIn)
     [JsonPropertyName("expires_on")]
     public long ExpiresOn { get; set; } = expiresOn;
     [JsonPropertyName("expires_in")]
-    public long ExpiresIn { get; set; } = expiresIn;
+    public int ExpiresIn { get; set; } = expiresIn;
 }
