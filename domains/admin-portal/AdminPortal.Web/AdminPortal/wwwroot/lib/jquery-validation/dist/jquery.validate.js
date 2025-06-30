@@ -1083,7 +1083,7 @@ $.extend( $.validator, {
 			}
 
 			// Always apply ignore filter
-			return $( element ).not( this.settings.ignore )[ 0 ];
+            return $( this.escapeCssMeta( element ) ).not( this.settings.ignore )[ 0 ];
 		},
 
 		checkable: function( element ) {
