@@ -46,7 +46,7 @@ public class Any
         };
     }
 
-    public static CertificateIssuingContract CertificateIssuingContract(Gsrn gsrn, UnixTimestamp start, UnixTimestamp? end, int contractNumber = 0, bool isStateSponsored = false)
+    public static CertificateIssuingContract CertificateIssuingContract(Gsrn gsrn, UnixTimestamp start, UnixTimestamp? end, bool trial = true, int contractNumber = 0, bool isStateSponsored = false)
     {
         return new CertificateIssuingContract
         {
@@ -54,6 +54,7 @@ public class Any
             StartDate = start.ToDateTimeOffset(),
             EndDate = end?.ToDateTimeOffset(),
             ContractNumber = contractNumber,
+            Trial = trial,
             SponsorshipEndDate = isStateSponsored
                 ? DateTimeOffset.MaxValue : null
         };

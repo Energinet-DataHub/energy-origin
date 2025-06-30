@@ -43,7 +43,7 @@ internal class ContractServiceImpl : IContractService
     }
 
     public async Task<CreateContractResult> Create(CreateContracts contracts, Guid meteringPointOwnerId, Guid subjectId, string subjectName, string organizationName,
-        string organizationTin, CancellationToken cancellationToken)
+        string organizationTin, bool isTrial, CancellationToken cancellationToken)
     {
         var meteringPoints = await meteringPointsClient.GetMeteringPoints(meteringPointOwnerId.ToString(), cancellationToken);
         var contractsByGsrn =
@@ -107,6 +107,7 @@ internal class ContractServiceImpl : IContractService
                 endDate,
                 recipientResponse.Id,
                 Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology),
+                isTrial,
                 sponsorshipEndDate);
 
             newContracts.Add(issuingContract);
