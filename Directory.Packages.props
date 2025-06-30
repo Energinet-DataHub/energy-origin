@@ -43,6 +43,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="9.6.0" />
     <PackageVersion Include="Microsoft.Graph" Version="5.81.0" />
     <PackageVersion Include="Microsoft.Identity.Web" Version="3.9.3" />
     <PackageVersion Include="Microsoft.Identity.Web.GraphServiceClient" Version="3.9.3" />

@@ -2,16 +2,10 @@ using System.Text.Json.Serialization;
 
 namespace EnergyOrigin.Datahub3;
 
-public class Token
+public class Token(string accessToken, long expires)
 {
-    public Token(string accessToken, int expires)
-    {
-        AccessToken = accessToken;
-        Expires = expires;
-    }
-
     [JsonPropertyName("access_token")]
-    public string AccessToken { get; set; }
-    [JsonPropertyName("expires_in")]
-    public int Expires { get; set; }
+    public string AccessToken { get; set; } = accessToken;
+    [JsonPropertyName("expires_on")]
+    public long Expires { get; set; } = expires;
 }
