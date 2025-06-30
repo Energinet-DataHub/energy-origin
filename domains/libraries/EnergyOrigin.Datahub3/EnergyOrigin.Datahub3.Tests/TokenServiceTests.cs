@@ -41,7 +41,7 @@ public class TokenServiceTests
     public async Task GetToken_WhenMockEnabled_ReturnsGuid()
     {
         // Arrange
-        var token = new Token("FakeAccessToken", 100L, 3600);
+        var token = new Token("FakeAccessToken", 3600);
 
         var mockHttp = new MockHttpMessageHandler();
         mockHttp
@@ -65,7 +65,7 @@ public class TokenServiceTests
     public async Task GetToken_WhenNoTokenFetchedYet_ReturnsNewToken()
     {
         // Arrange
-        var token = new Token("FakeAccessToken", 100L, 3600);
+        var token = new Token("FakeAccessToken", 3600);
 
         var mockHttp = new MockHttpMessageHandler();
         mockHttp
@@ -94,10 +94,9 @@ public class TokenServiceTests
         var currentTime = new DateTime(2025, 12, 5, 7, 20, 0).ToUniversalTime();
         _fakeTimeProvider.SetUtcNow(currentTime);
 
-        long expiresOnUnixtime = ((DateTimeOffset)currentTime).AddSeconds(seconds).ToUnixTimeSeconds();
         var expiresIn = 3600;
-        var token = new Token("FakeAccessToken", expiresOnUnixtime, expiresIn);
-        var token2 = new Token("FakeAccessToken2", expiresOnUnixtime, expiresIn);
+        var token = new Token("FakeAccessToken", expiresIn);
+        var token2 = new Token("FakeAccessToken2", expiresIn);
         var tokens = new[] { token, token2 };
 
         var callCount = 0;
@@ -107,10 +106,10 @@ public class TokenServiceTests
             .When(_dataHub3Options.TokenUrl!)
             .Respond(req =>
             {
-                var token = tokens[callCount++];
+                var selectedToken = tokens[callCount++];
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent(JsonSerializer.Serialize(token, _jsonSerialilzerOptions))
+                    Content = new StringContent(JsonSerializer.Serialize(selectedToken, _jsonSerialilzerOptions))
                 };
             });
         var httpClient = mockHttp.ToHttpClient();
@@ -119,7 +118,8 @@ public class TokenServiceTests
         var options = Options.Create(_dataHub3Options);
         var tokenService = new TokenService(httpClient, options, _fakeTimeProvider, _logger);
 
-        await tokenService.GetToken(); // Set initial token
+        await tokenService.GetToken(); // Fetch first token
+        _fakeTimeProvider.SetUtcNow(currentTime.AddSeconds(expiresIn - seconds)); // Simulate passing time
 
         // Act
         var accessToken = await tokenService.GetToken();
@@ -139,10 +139,9 @@ public class TokenServiceTests
         var currentTime = new DateTime(2025, 12, 5, 7, 20, 0).ToUniversalTime();
         _fakeTimeProvider.SetUtcNow(currentTime);
 
-        long expiresOnUnixtime = ((DateTimeOffset)currentTime).AddSeconds(seconds).ToUnixTimeSeconds();
         var expiresIn = 3600;
-        var token = new Token("FakeAccessToken", expiresOnUnixtime, expiresIn);
-        var token2 = new Token("FakeAccessToken2", expiresOnUnixtime, expiresIn);
+        var token = new Token("FakeAccessToken", expiresIn);
+        var token2 = new Token("FakeAccessToken2", expiresIn);
         var tokens = new[] { token, token2 };
 
         var callCount = 0;
@@ -152,10 +151,10 @@ public class TokenServiceTests
             .When(_dataHub3Options.TokenUrl!)
             .Respond(req =>
             {
-                var token = tokens[callCount++];
+                var selectedToken = tokens[callCount++];
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent(JsonSerializer.Serialize(token, _jsonSerialilzerOptions))
+                    Content = new StringContent(JsonSerializer.Serialize(selectedToken, _jsonSerialilzerOptions))
                 };
             });
         var httpClient = mockHttp.ToHttpClient();
@@ -165,6 +164,7 @@ public class TokenServiceTests
         var tokenService = new TokenService(httpClient, options, _fakeTimeProvider, _logger);
 
         await tokenService.GetToken(); // Set initial token
+        _fakeTimeProvider.SetUtcNow(currentTime.AddSeconds(expiresIn - seconds)); // Simulate passing time
 
         // Act
         var accessToken = await tokenService.GetToken();
