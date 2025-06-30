@@ -1,0 +1,31 @@
+@grantType = client_credentials
+@clientId = f00...
+@clientSecret = 6Dv...
+@scope = https://datahubeouenerginet.onmicrosoft.com/energy-origin/.default
+###
+
+# @name tokenResponse
+POST https://login.microsoftonline.com/d3803538-de83-47f3-bc72-54843a8592f2/oauth2/v2.0/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type={{grantType}}
+&client_id={{clientId}}
+&client_secret={{clientSecret}}
+&scope={{scope}}
+
+###
+
+@accessToken = {{tokenResponse.response.body.access_token}}
+
+POST https://demo.energytrackandtrace.dk/api/authorization/Admin/Client
+Authorization: bearer {{accessToken}}
+Content-Type: application/json
+X-API-Version: 20230101
+
+{
+  "idpClientId": "f75da90c-3429-4454-b6d8-603159b1805d",
+  "name": "{name}",
+  "clientType": "External",
+  "redirectUrl": "https://localhost:8080/callback",
+  "isTrial": "true"
+}
