@@ -84,6 +84,7 @@ runs:
           RUNTIME_VERSION=${{ env.RUNTIME }}
 
     - name: Scan image
+      if: ${{ inputs.dry-run != 'true' }}
       uses: ./.github/actions/docker-scan
       with:
         image-name: ${{ env.name }}
