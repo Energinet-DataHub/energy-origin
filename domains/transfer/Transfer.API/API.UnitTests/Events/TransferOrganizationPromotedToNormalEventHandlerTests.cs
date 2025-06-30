@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Events;
 using API.Transfer.Api._Features_;
-using EnergyOrigin.IntegrationEvents.Events.OrganizationPromotedToProduction.V1;
+using EnergyOrigin.IntegrationEvents.Events.OrganizationPromotedToNormal.V1;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;

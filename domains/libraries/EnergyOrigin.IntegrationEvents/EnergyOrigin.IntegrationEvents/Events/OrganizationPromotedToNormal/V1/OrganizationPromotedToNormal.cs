@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace EnergyOrigin.IntegrationEvents.Events.OrganizationPromotedToProduction.V1;
+namespace EnergyOrigin.IntegrationEvents.Events.OrganizationPromotedToNormal.V1;
 
 public record OrganizationPromotedToNormal : IntegrationEvent
 {

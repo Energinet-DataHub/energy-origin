@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using API.ContractService.Internal;
-using EnergyOrigin.IntegrationEvents.Events.OrganizationPromotedToProduction.V1;
+using EnergyOrigin.IntegrationEvents.Events.OrganizationPromotedToNormal.V1;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;

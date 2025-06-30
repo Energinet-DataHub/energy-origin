@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using API.Events;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.Setup.Exceptions;
+using OrganizationId = API.ValueObjects.OrganizationId;
 
 namespace API.Models;
 
@@ -22,6 +24,9 @@ public enum OrganizationStatus
 
 public class Organization : IEntity<Guid>
 {
+    private readonly List<IDomainEvent> _domainEvents = new();
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
     private Organization(
         Guid id,
         Tin? tin,
@@ -102,6 +107,7 @@ public class Organization : IEntity<Guid>
 
             case (OrganizationStatus.Trial, isWhitelisted: true):
                 PromoteToNormal();
+                _domainEvents.Add(OrganizationPromotedToNormalDomainEvent.Create(OrganizationId.Create(Id)));
                 break;
 
             case (OrganizationStatus.Deactivated, isWhitelisted: true):
@@ -114,7 +120,6 @@ public class Organization : IEntity<Guid>
             case (OrganizationStatus.Normal, isWhitelisted: true):
                 break;
 
-            // Defensive programming
             default:
                 throw new BusinessException(
                     $"Unexpected organization state: {Status} (whitelisted: {isWhitelisted})");
@@ -163,6 +168,11 @@ public class Organization : IEntity<Guid>
     {
         ServiceProviderTermsAccepted = false;
         ServiceProviderTermsAcceptanceDate = null;
+    }
+
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
     }
 
     public void InvalidateTerms() => TermsAccepted = false;

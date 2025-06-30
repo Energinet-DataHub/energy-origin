@@ -1,4 +1,3 @@
-using EnergyOrigin.IntegrationEvents.Events.OrganizationPromotedToProduction.V1;
 using MassTransit;
 using NSubstitute;
 using System;
@@ -9,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 using API.ContractService.EventHandlers;
 using API.ContractService.Internal;
+using EnergyOrigin.IntegrationEvents.Events.OrganizationPromotedToNormal.V1;
 
 namespace API.UnitTests.ContractService.EventHandlers;
 
