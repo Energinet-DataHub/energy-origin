@@ -13,11 +13,11 @@ on:
     branches:
       - main
 
-permissions:
-  contents: read
+permissions: { }
 
 jobs:
   test-subsystems-e2e:
+    permissions: { }
     runs-on: ubuntu-22.04
     if: github.event.pull_request.draft == false
     strategy:
@@ -40,14 +40,13 @@ jobs:
           test-filter: "Category=E2ETest"
 
   allow-merge-e2e-tests:
+    permissions: { }
     runs-on: ubuntu-latest
     needs:
       [
         test-subsystems-e2e,
       ]
     if: always()
-    permissions:
-      pull-requests: write
     steps:
       - name: Print needs
         run: |

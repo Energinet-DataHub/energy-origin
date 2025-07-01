@@ -3,10 +3,13 @@ name: Check Licenses
 on:
   workflow_call: {}
 
+permissions: { }
+
 jobs:
   check-licenses:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
-
     steps:
       - uses: CodeReaper/find-diff-action@32270be07c813f344cd5428deb11c7270dfb79af # v3
         id: diff
@@ -23,7 +26,7 @@ jobs:
 
       - name: Check license
         if: ${{ steps.diff.outputs.pattern != '' }}
-        uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@502f9383a50bc018639d7481a8fa308055d82f7a # v14.39.0
+        uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@ee21233cce88e1b8be9bbf186ae903a377059aef # v14.39.1
         with:
           project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json

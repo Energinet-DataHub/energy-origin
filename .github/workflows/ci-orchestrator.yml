@@ -8,6 +8,8 @@ on:
     branches:
       - main
 
+permissions: { }
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -20,6 +22,13 @@ jobs:
         run: exit 0
 
   build-subsystems:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     needs: setup
     uses: ./.github/workflows/build-subsystems.yaml
     secrets: inherit
@@ -28,15 +37,20 @@ jobs:
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
 
   check-licenses:
+    permissions:
+      contents: read
     if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/check-licenses.yml
     secrets: inherit
 
   dependabot-validate:
+    permissions:
+      contents: read
     uses: ./.github/workflows/dependabot-validate.yaml
     secrets: inherit
 
   allow-merge-ci-orchestrator:
+    permissions: { }
     runs-on: ubuntu-latest
     needs:
       [
