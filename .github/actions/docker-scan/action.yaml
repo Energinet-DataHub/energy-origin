@@ -63,7 +63,6 @@ runs:
     - name: Scan SBOM with Grype
       uses: anchore/scan-action@be7a22da4f22dde446c4c4c099887ff5b256526c # v6.3.0
       id: scan
-      continue-on-error: true
       with:
         sbom: sbom.cyclonedx.json
         fail-build: false
@@ -88,11 +87,6 @@ runs:
           sarif summary results.sarif
           echo \`\`\`
         } >> $GITHUB_STEP_SUMMARY
-
-    - name: Fail if vulnerabilities found
-      shell: bash
-      if: steps.scan.outcome == 'failure'
-      run: exit 1
 
     - name: Upload sarif report
       if: ${{ inputs.upload-sarif == 'true' }}
