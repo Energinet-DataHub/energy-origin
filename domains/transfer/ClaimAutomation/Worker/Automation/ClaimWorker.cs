@@ -1,4 +1,6 @@
 using System;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using ClaimAutomation.Worker.Options;
@@ -32,7 +34,43 @@ public class ClaimWorker : BackgroundService
 
         using var scope = serviceProvider.CreateScope();
         var claimService = scope.ServiceProvider.GetRequiredService<IClaimService>();
-
-        await claimService.Run(stoppingToken);
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await claimService.Run(stoppingToken);
+                await Sleep(stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("ClaimWorker has been cancelled");
+            }
+            catch (Exception e)
+            {
+                switch (e)
+                {
+                    case HttpRequestException { StatusCode: HttpStatusCode.BadRequest }:
+                        logger.LogWarning("Wallet returned bad request: {exception}", e);
+                        break;
+                    default:
+                        logger.LogError("Something went wrong with the ClaimService: {exception}", e);
+                        break;
+                }
+            }
+        }
+    }
+    private async Task Sleep(CancellationToken cancellationToken)
+    {
+        if (options.ScheduleInterval == ScheduleInterval.EveryHourHalfPast)
+        {
+            var minutesToNextHalfHour = TimeSpanHelper.GetMinutesToNextHalfHour(DateTime.Now.Minute);
+            logger.LogInformation("Sleeping until next half past {minutesToNextHalfHour}", minutesToNextHalfHour);
+            await Task.Delay(TimeSpan.FromMinutes(minutesToNextHalfHour), cancellationToken);
+        }
+        else
+        {
+            logger.LogInformation("Sleeping 5 seconds");
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+        }
     }
 }
