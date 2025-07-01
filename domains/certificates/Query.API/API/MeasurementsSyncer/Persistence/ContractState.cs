@@ -81,7 +81,7 @@ public class ContractState : IContractState
                 .Where(g => GetNumberOfOwners(g) == 1)
                 .Select(g =>
                 {
-                    var oldestContract = g.OrderBy(c => c.StartDate).First();
+                    var oldestContract = g.OrderByDescending(c => c.ContractNumber).First();
                     var gsrn = g.Key;
                     return new MeteringPointSyncInfo(new Gsrn(gsrn), oldestContract.StartDate, oldestContract.EndDate,
                         oldestContract.MeteringPointOwner, oldestContract.MeteringPointType, oldestContract.GridArea, oldestContract.RecipientId,

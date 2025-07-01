@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using API.Configurations;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer.Persistence;
@@ -10,8 +6,13 @@ using DataContext.Models;
 using DataContext.ValueObjects;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace API.IntegrationTests.Repositories;
@@ -62,6 +63,32 @@ public class ContractStateTest
         // Should sync when 'now' is more than an hour after contract end and contract not 100% synced to the end
         syncInfos = await _sut.GetSyncInfos(new DateTimeOffset(2025, 1, 1, 3, 1, 0, TimeSpan.FromHours(1)), TestContext.Current.CancellationToken);
         Assert.Single(syncInfos);
+    }
+
+    [Fact]
+    public async Task Bug_GivenContractWhereOneIsNeverThanTheOther_WhenFetchingSyncInfos_ExpectOnlyNewest()
+    {
+        var gsrn = Any.Gsrn();
+        var contract0 = Any.CertificateIssuingContract(gsrn,
+            UnixTimestamp.Create(new DateTimeOffset(2025, 6, 18, 5, 55, 27, TimeSpan.FromHours(0))),
+            end: UnixTimestamp.Create(new DateTimeOffset(2025, 6, 20, 14, 5, 10, TimeSpan.FromHours(0))),
+            trial: false,
+            contractNumber: 0);
+        var contract1 = Any.CertificateIssuingContract(gsrn,
+            UnixTimestamp.Create(new DateTimeOffset(2025, 6, 20, 14, 5, 13, TimeSpan.FromHours(0))),
+            end: null,
+            trial: false,
+            contractNumber: 1);
+
+        await using var dbContext = _dbContextFactoryMock.CreateDbContext();
+        dbContext.Contracts.Add(contract0);
+        dbContext.Contracts.Add(contract1);
+
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var syncInfo = await _sut.GetSyncInfos(DateTimeOffset.Now, TestContext.Current.CancellationToken);
+        Assert.NotNull(syncInfo);
+        Assert.Equal(contract1.EndDate, syncInfo.First().EndSyncDate); //null
     }
 
     [Fact]
