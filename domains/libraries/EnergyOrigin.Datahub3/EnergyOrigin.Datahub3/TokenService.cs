@@ -16,10 +16,12 @@ public class TokenService : ITokenService
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<TokenService> _logger;
     private readonly FormUrlEncodedContent _body;
-    private Token? _token;
+
     private readonly SemaphoreSlim _semaphore;
 
-    private readonly int _tokenLifetimeSeconds = 3600;
+    private Token? _token;
+    private long _expiresOn;
+
     private readonly int _halvingFactor = 2;
 
     public TokenService(HttpClient httpclient, IOptions<DataHub3Options> dataHub3Options, TimeProvider timeProvider, ILogger<TokenService> logger)
@@ -77,6 +79,11 @@ public class TokenService : ITokenService
         if (response.IsSuccessStatusCode)
         {
             _token = JsonSerializer.Deserialize<Token>(await response.Content.ReadAsStringAsync());
+            if (_token is not null)
+            {
+                _expiresOn = _timeProvider.GetUtcNow().ToUnixTimeSeconds() + _token.ExpiresIn;
+            }
+
             return _token!.AccessToken;
         }
 
@@ -91,12 +98,12 @@ public class TokenService : ITokenService
             return true;
         }
 
-        var difference = _token.ExpiresOn - _timeProvider.GetUtcNow().ToUnixTimeSeconds();
-        if (difference < _tokenLifetimeSeconds / _halvingFactor)
+        var difference = _expiresOn - _timeProvider.GetUtcNow().ToUnixTimeSeconds();
+        if (difference < _token.ExpiresIn / _halvingFactor)
         {
             _logger.LogInformation(
-                    "Token is stale or expired {ExpiresOn}, {ExpiresIn}, {Difference}. Refreshing",
-                    _token.ExpiresOn, _token.ExpiresIn, difference);
+                    "Token is stale or expired {ExpiresIn}, {Difference}. Refreshing",
+                    _token.ExpiresIn, difference);
 
             return true;
         }
