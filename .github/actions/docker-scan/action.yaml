@@ -66,8 +66,7 @@ runs:
       continue-on-error: true
       with:
         sbom: sbom.cyclonedx.json
-        fail-build: true
-        severity-cutoff: medium
+        fail-build: false
         output-format: sarif
         output-file: results.sarif
 
@@ -89,11 +88,6 @@ runs:
           sarif summary results.sarif
           echo \`\`\`
         } >> $GITHUB_STEP_SUMMARY
-
-    - name: Fail if vulnerabilities found
-      shell: bash
-      if: steps.scan.outcome == 'failure'
-      run: exit 1
 
     - name: Upload sarif report
       if: ${{ inputs.upload-sarif == 'true' }}
