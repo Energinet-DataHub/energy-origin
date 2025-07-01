@@ -10,6 +10,7 @@ permissions: { }
 
 jobs:
   update:
+    if: ${{ inputs.is-dependabot == 'false' }}
     name: Update
     permissions:
       contents: read
