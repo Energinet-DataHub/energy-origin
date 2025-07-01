@@ -3,8 +3,13 @@ name: dependabot validate
 on:
   workflow_call: {}
 
+permissions:
+  contents: read
+
 jobs:
   setup:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     outputs:
       run: ${{ env.matched }}
@@ -21,6 +26,8 @@ jobs:
           paths: .github/dependabot.yml
 
   validate:
+    permissions:
+      contents: read
     needs: setup
     if: ${{ needs.setup.outputs.run == 'true' }}
     runs-on: ubuntu-latest
