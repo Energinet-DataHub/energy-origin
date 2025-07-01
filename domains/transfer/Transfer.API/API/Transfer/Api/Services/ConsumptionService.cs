@@ -129,7 +129,7 @@ public class ConsumptionService : IConsumptionService
             {
                 foreach (var entry in day.Value.PointAggregations)
                 {
-                    _logger.LogInformation("Entry " + entry.From + " - "+ entry.To + ": " + (entry.Quantity ?? 0));
+                    _logger.LogInformation("Entry " + entry.From + " - " + entry.To + ": " + (entry.Quantity ?? 0));
                     var hour = DateTimeOffset.FromUnixTimeSeconds(entry.From.ToUnixTimeSeconds()).Hour;
 
                     result.First(x => x.HourOfDay == hour).KwhQuantity += entry.Quantity ?? 0;
