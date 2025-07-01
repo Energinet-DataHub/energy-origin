@@ -62,8 +62,12 @@ public class TransferAllCertificatesEngine : ITransferEngine
         logger.LogInformation("Found {certificatesCount} certificates to transfer for transfer agreement with id {id}", certificates.Count,
             transferAgreement.Id);
 
-        var certificatesCount = certificates.Count();
-        foreach (var certificate in certificates)
+        var certificatesToTransfer = certificates
+            .Where(c => transferAgreement.IsTrial == c.IsTrialCertificate)
+            .ToList();
+        var certificatesCount = certificatesToTransfer.Count;
+
+        foreach (var certificate in certificatesToTransfer)
         {
             if (!IsPeriodMatching(transferAgreement, certificate))
             {
