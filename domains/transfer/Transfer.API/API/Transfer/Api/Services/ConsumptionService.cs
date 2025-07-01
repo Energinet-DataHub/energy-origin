@@ -23,17 +23,14 @@ public class ConsumptionService : IConsumptionService
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _meteringPointClient;
     private readonly IDataHubFacadeClient _dhFacadeClient;
     private readonly IMeasurementClient _measurementClient;
-    private readonly ILogger<ConsumptionService> _logger;
 
     public ConsumptionService(Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointClient,
         IDataHubFacadeClient dhFacadeClient,
-        IMeasurementClient measurementClient,
-        ILogger<ConsumptionService> logger)
+        IMeasurementClient measurementClient)
     {
         _meteringPointClient = meteringPointClient;
         _dhFacadeClient = dhFacadeClient;
         _measurementClient = measurementClient;
-        _logger = logger;
     }
 
     public async Task<(List<ConsumptionHour>, List<ConsumptionHour>)> GetTotalAndAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to,
@@ -51,7 +48,6 @@ public class ConsumptionService : IConsumptionService
         CancellationToken ct)
     {
         var gsrns = await GetValidGsrnsAsync(orgId, ct);
-        _logger.LogInformation("Gsrns " + string.Join(',', gsrns.Select(x => x.Value)));
         if (gsrns.Count == 0) return [];
 
         return (await _measurementClient.GetMeasurements(
@@ -70,14 +66,10 @@ public class ConsumptionService : IConsumptionService
             new OwnedMeteringPointsRequest { Subject = orgId.Value.ToString() },
             cancellationToken: ct);
 
-        _logger.LogInformation("TypeOfMps: " + string.Join(',', owned.MeteringPoints.Select(x => x.TypeOfMp)));
-
         var consumptionGs = owned.MeteringPoints
             .Where(mp => IsConsumption(mp.TypeOfMp))
             .Select(mp => new Gsrn(mp.MeteringPointId))
             .ToList();
-
-        _logger.LogInformation("consumptionGs: " + string.Join(',', consumptionGs.Select(x => x.Value)));
 
         var relations = await _dhFacadeClient.ListCustomerRelations(
             orgId.Value.ToString(),
@@ -88,11 +80,8 @@ public class ConsumptionService : IConsumptionService
             .Select(r => new Gsrn(r.MeteringPointId))
             .ToList();
 
-        _logger.LogInformation("valid: " + string.Join(',', valid.Select(x => x.Value)));
-
         var consumptionOnly = valid.Where(x => consumptionGs.Contains(x)).ToList().AsReadOnly();
 
-        _logger.LogInformation("consumptionOnly: " + string.Join(',', consumptionOnly.Select(x => x.Value)));
         return consumptionOnly;
     }
 
@@ -129,7 +118,6 @@ public class ConsumptionService : IConsumptionService
             {
                 foreach (var entry in day.Value.PointAggregations)
                 {
-                    _logger.LogInformation("Entry " + entry.From + " - " + entry.To + ": " + (entry.Quantity ?? 0));
                     var hour = DateTimeOffset.FromUnixTimeSeconds(entry.From.ToUnixTimeSeconds()).Hour;
 
                     result.First(x => x.HourOfDay == hour).KwhQuantity += entry.Quantity ?? 0;
