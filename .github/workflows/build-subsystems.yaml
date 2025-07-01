@@ -210,7 +210,7 @@ jobs:
 
   deploy-b2c-preview:
     name: 🌀 Deploy B2C Policy for Preview
-    if: ${{ inputs.is-dependabot == 'false' }}
+    if: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/') }}
     permissions:
       actions: 'read'
       id-token: 'write'
