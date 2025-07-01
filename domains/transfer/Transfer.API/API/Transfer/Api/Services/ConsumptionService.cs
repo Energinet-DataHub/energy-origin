@@ -119,7 +119,6 @@ public class ConsumptionService : IConsumptionService
         return typeOfMp.Trim().Equals("E17", StringComparison.OrdinalIgnoreCase);
     }
 
-    //TODO Test this
     private List<ConsumptionHour> MapToTotalHourFormat(MeasurementAggregationByPeriodDto[] totalConsumption)
     {
         var result = Enumerable.Range(0, 24).Select(x => new ConsumptionHour(x)).ToList();

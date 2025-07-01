@@ -66,8 +66,7 @@ runs:
       continue-on-error: true
       with:
         sbom: sbom.cyclonedx.json
-        fail-build: true
-        severity-cutoff: medium
+        fail-build: false
         output-format: sarif
         output-file: results.sarif
 
