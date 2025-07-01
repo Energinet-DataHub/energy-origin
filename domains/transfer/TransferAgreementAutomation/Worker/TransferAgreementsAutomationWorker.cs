@@ -33,10 +33,10 @@ public class TransferAgreementsAutomationWorker(
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            logger.LogInformation("TransferAgreementsAutomationWorker running at: {time}", DateTimeOffset.Now);
-            metrics.ResetCertificatesTransferred();
             try
             {
+                logger.LogInformation("TransferAgreementsAutomationWorker running at: {time}", DateTimeOffset.Now);
+                metrics.ResetCertificatesTransferred();
                 var transferAgreements = await GetTransferAgreements(stoppingToken);
                 metrics.SetNumberOfTransferAgreements(transferAgreements.Count);
 
@@ -48,13 +48,17 @@ public class TransferAgreementsAutomationWorker(
                     var transferEngine = scope.ServiceProvider.GetRequiredService<ITransferEngineCoordinator>();
                     await transferEngine.TransferCertificate(transferAgreement, stoppingToken);
                 }
+                await SleepToNearestHour(stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("TransferAgreementsAutomationWorker has been cancelled");
             }
             catch (Exception ex)
             {
                 logger.LogError("Something went wrong with the TransferAgreementsAutomationWorker: {exception}", ex);
             }
 
-            await SleepToNearestHour(stoppingToken);
         }
     }
 
