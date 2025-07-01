@@ -3,10 +3,13 @@ name: Check Licenses
 on:
   workflow_call: {}
 
+permissions: { }
+
 jobs:
   check-licenses:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
-
     steps:
       - uses: CodeReaper/find-diff-action@32270be07c813f344cd5428deb11c7270dfb79af # v3
         id: diff

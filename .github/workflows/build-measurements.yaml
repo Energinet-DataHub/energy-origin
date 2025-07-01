@@ -12,16 +12,17 @@ on:
         required: true
         type: string
 
-permissions:
-  actions: 'read'
-  attestations: 'write'
-  contents: 'write'
-  id-token: 'write'
-  packages: 'write'
-  security-events: 'write'
+permissions: {}
 
 jobs:
   build-api:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     name: Build Measurements.API
     runs-on: ubuntu-latest
     steps:
