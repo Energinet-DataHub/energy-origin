@@ -39,6 +39,10 @@ public class TransferAgreementCleanupWorker(
                     await DeleteExpiredTransferAgreements(stoppingToken);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("TransferAgreementCleanupWorker has been cancelled");
+            }
             catch (Exception e)
             {
                 logger.LogError("Something went wrong with the TransferAgreementCleanupWorker: {Exception}", e);

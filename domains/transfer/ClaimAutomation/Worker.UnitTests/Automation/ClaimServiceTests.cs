@@ -64,14 +64,11 @@ public class ClaimServiceTests
             }
         };
 
-        walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>()).Returns(certs)
-            .AndDoes(_ => cts.Cancel());
+        walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>())
+            .Returns(certs);
+        await claimService.Run(cts.Token);
 
-
-        var act = async () => await claimService.Run(cts.Token);
-        await act.Should().ThrowAsync<TaskCanceledException>();
-
-        await walletClient.Received(1).ClaimCertificatesAsync(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, quantity, Arg.Any<CancellationToken>());
+        await walletClient.Received(1).ClaimCertificatesAsync(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, quantity, cts.Token);
     }
 
     [Fact]
@@ -106,11 +103,9 @@ public class ClaimServiceTests
 
         claimRepository.GetClaimAutomationArguments().Returns(new List<ClaimAutomationArgument> { claimAutomationArgument });
 
-        walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>()).Returns(certs)
-            .AndDoes(_ => cts.Cancel());
+        walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>()).Returns(certs);
 
-        var act = async () => await claimService.Run(cts.Token);
-        await act.Should().ThrowAsync<TaskCanceledException>();
+        await claimService.Run(cts.Token);
 
         await walletClient.Received(1)
             .ClaimCertificatesAsync(claimAutomationArgument.SubjectId, consumptionCertificate2, productionCertificate, consumptionQuantity, Arg.Any<CancellationToken>());
@@ -161,15 +156,14 @@ public class ClaimServiceTests
                 });
             }
         }
-
-        walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
-            .Returns(results[0], results.Skip(1).ToArray())
-            .AndDoes(_ => cts.Cancel());
-
-        var act = async () => await claimService.Run(cts.Token);
-        await act.Should().ThrowAsync<TaskCanceledException>();
-
         var numberOfCertificatesUsedPrClaim = 2;
+
+        walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(),
+                Arg.Any<int>())
+            .Returns(results[0], results.Skip(1).ToArray());
+
+        await claimService.Run(cts.Token);
+
         await walletClient.Received(numberOfCertificates / numberOfCertificatesUsedPrClaim).ClaimCertificatesAsync(claimAutomationArgument.SubjectId,
             Arg.Any<GranularCertificate>(), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<CancellationToken>());
     }
@@ -184,22 +178,33 @@ public class ClaimServiceTests
 
         using var cts = new CancellationTokenSource();
 
-        walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
+        walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(),
+                Arg.Any<int>())
             .Returns(new ResultList<GranularCertificate>()
             {
                 Metadata =
-                        new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = certs.Count },
+                        new PageInfo()
+                        {
+                            Offset = 0,
+                            Count = 2,
+                            Limit = _claimAutomationOptions.Value.CertificateFetchBachSize,
+                            Total = certs.Count
+                        },
                 Result = certs.Take(2)
             },
                 new ResultList<GranularCertificate>()
                 {
-                    Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = 3 },
+                    Metadata = new PageInfo()
+                    {
+                        Offset = 0,
+                        Count = 2,
+                        Limit = _claimAutomationOptions.Value.CertificateFetchBachSize,
+                        Total = 3
+                    },
                     Result = certs.Skip(2).Take(1)
-                })
-            .AndDoes(_ => cts.Cancel());
+                });
 
-        var act = async () => await claimService.Run(cts.Token);
-        await act.Should().ThrowAsync<TaskCanceledException>();
+        await claimService.Run(cts.Token);
 
         await walletClient.Received(1).ClaimCertificatesAsync(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(),
             Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<CancellationToken>());
@@ -230,11 +235,9 @@ public class ClaimServiceTests
                 {
                     Metadata = new PageInfo() { Offset = 0, Count = 2, Limit = _claimAutomationOptions.Value.CertificateFetchBachSize, Total = 5 },
                     Result = certs.Skip(4).Take(1)
-                })
-            .AndDoes(_ => cts.Cancel());
+                });
 
-        var act = async () => await claimService.Run(cts.Token);
-        await act.Should().ThrowAsync<TaskCanceledException>();
+        await claimService.Run(cts.Token);
 
         await walletClient.Received(2).ClaimCertificatesAsync(claimAutomationArgument.SubjectId, Arg.Any<GranularCertificate>(),
             Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<CancellationToken>());
@@ -294,10 +297,9 @@ public class ClaimServiceTests
         using var cts = new CancellationTokenSource();
 
         walletClient.GetGranularCertificatesAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
-            .Returns(certs).AndDoes(_ => cts.Cancel());
+            .Returns(certs);
 
-        var act = async () => await claimService.Run(cts.Token);
-        await act.Should().ThrowAsync<TaskCanceledException>();
+        await claimService.Run(cts.Token);
 
         await walletClient.DidNotReceiveWithAnyArgs().ClaimCertificatesAsync(
             claimAutomationArgument.SubjectId,
