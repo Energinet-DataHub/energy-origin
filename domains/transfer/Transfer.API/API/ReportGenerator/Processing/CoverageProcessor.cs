@@ -14,20 +14,9 @@ public interface ICoverageProcessor
 
 public class CoverageProcessor : ICoverageProcessor
 {
-    private readonly ILogger<CoverageProcessor> _logger;
-
-    public CoverageProcessor(ILogger<CoverageProcessor> logger)
-    {
-        _logger = logger;
-    }
-
     public CoveragePercentage Calculate(IReadOnlyList<Claim> claims, IReadOnlyList<ConsumptionHour> consumption, DateTimeOffset startDate, DateTimeOffset endDate)
     {
         var totalConsumption = (double)consumption.Sum(x => x.KwhQuantity) * 1000;
-
-        _logger.LogInformation("totalConsumption " + totalConsumption);
-
-        _logger.LogInformation("totalClaims: " + claims.Sum(x => x.Quantity));
 
         if (totalConsumption == 0)
         {
@@ -40,7 +29,6 @@ public class CoverageProcessor : ICoverageProcessor
 
         var hourly = (double)claims.Where(x => x.ProductionCertificate.Start == x.ConsumptionCertificate.Start)
             .Sum(x => x.Quantity);
-        _logger.LogInformation("HOURLY: " + hourly);
 
         var hourlyPercentage = (hourly / totalConsumption) * 100;
 
@@ -71,14 +59,6 @@ public class CoverageProcessor : ICoverageProcessor
             .Sum(x => x.Quantity);
             yearlyPercentage = (yearly / totalConsumption) * 100;
         }
-
-        _logger.LogInformation("hourlyPercentage " + hourlyPercentage);
-        _logger.LogInformation("dailyPercentage " + dailyPercentage);
-        _logger.LogInformation("weeklyPercentage " + weeklyPercentage);
-        _logger.LogInformation("monthlyPercentage " + monthlyPercentage);
-        _logger.LogInformation("yearlyPercentage " + yearlyPercentage);
-
-
 
         return new CoveragePercentage(hourlyPercentage,
             dailyPercentage,
