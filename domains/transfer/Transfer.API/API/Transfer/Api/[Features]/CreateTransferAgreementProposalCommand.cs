@@ -89,7 +89,8 @@ public class CreateTransferAgreementProposalCommandHandler : IRequestHandler<Cre
             ReceiverCompanyTin = command.ReceiverOrganizationTin,
             StartDate = command.StartDate,
             EndDate = command.EndDate,
-            Type = command.Type
+            Type = command.Type,
+            IsTrial = _identityDescriptor.IsTrial()
         };
 
         if (command.ReceiverOrganizationTin != Tin.Empty())

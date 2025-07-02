@@ -14,4 +14,5 @@ public class TransferAgreementProposal
     public UnixTimestamp? EndDate { get; set; }
     public Tin? ReceiverCompanyTin { get; set; }
     public TransferAgreementType Type { get; set; }
+    public bool IsTrial { get; set; }
 }
