@@ -19,25 +19,28 @@ public class IssuingContractCleanupWorker(
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            logger.LogInformation("IssuingContractCleanupWorker running at: {Time}", DateTimeOffset.UtcNow);
-            await PerformPeriodicTask(stoppingToken);
-            await Sleep(stoppingToken);
+            try
+            {
+                logger.LogInformation("IssuingContractCleanupWorker running at: {Time}", DateTimeOffset.UtcNow);
+                await PerformPeriodicTask(stoppingToken);
+                await Sleep(stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogWarning("IssuingContractCleanupWorker has been cancelled");
+            }
+            catch (Exception e)
+            {
+                logger.LogError("Something went wrong with the IssuingContractCleanupWorker: {Exception}", e);
+            }
         }
     }
 
     private async Task PerformPeriodicTask(CancellationToken stoppingToken)
     {
-        try
-        {
-            using var scope = scopeFactory.CreateScope();
-            var scopedCleanupService = scope.ServiceProvider.GetService<IssuingContractCleanupService>()!;
-            await scopedCleanupService.RunCleanupJob(stoppingToken);
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Something went wrong with the IssuingContractCleanupWorker: {Exception}", e);
-        }
-
+        using var scope = scopeFactory.CreateScope();
+        var scopedCleanupService = scope.ServiceProvider.GetService<IssuingContractCleanupService>()!;
+        await scopedCleanupService.RunCleanupJob(stoppingToken);
     }
 
     private async Task Sleep(CancellationToken cancellationToken)

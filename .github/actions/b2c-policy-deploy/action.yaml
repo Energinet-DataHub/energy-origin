@@ -15,7 +15,8 @@ inputs:
   policies-to-replace:
     description: Comma-separated list of existing B2C policy names to download & template
     required: false
-    default: "B2C_1A_OidcMock_V3,B2C_1A_ClientCredentials"
+    default: "B2C_1A_OidcMock_V4,B2C_1A_ClientCredentials"
+
 
 runs:
   using: "composite"

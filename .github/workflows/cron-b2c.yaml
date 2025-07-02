@@ -5,12 +5,14 @@ on:
   schedule:
     - cron: "*/15 * * * *"
   pull_request:
+    branches:
+      - 'preview/**'
 
 permissions: { }
 
 jobs:
   update:
-    if: ${{ inputs.is-dependabot == 'false' }}
+    if: ${{ github.actor != 'dependabot[bot]' }}
     name: Update
     permissions:
       contents: read

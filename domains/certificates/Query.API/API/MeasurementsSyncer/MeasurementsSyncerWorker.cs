@@ -42,41 +42,43 @@ public class MeasurementsSyncerWorker : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("MeasurementSyncer running job");
-            await PerformPeriodicTask(stoppingToken);
-            await Sleep(stoppingToken);
+            try
+            {
+                _logger.LogInformation("MeasurementSyncer running job");
+                await PerformPeriodicTask(stoppingToken);
+                await Sleep(stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("MeasurementSyncer has been cancelled");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error in MeasurementSyncer periodic task");
+            }
         }
-
-        _logger.LogInformation("MeasurementSyncer stopped");
     }
 
     private async Task PerformPeriodicTask(CancellationToken stoppingToken)
     {
+        var syncInfos = await _contractState.GetSyncInfos(stoppingToken);
+
+        if (!syncInfos.Any())
+        {
+            _logger.LogInformation("No sync infos found. Skipping sync");
+            return;
+        }
+
         try
         {
-            var syncInfos = await _contractState.GetSyncInfos(stoppingToken);
-
-            if (!syncInfos.Any())
+            foreach (var syncInfo in syncInfos)
             {
-                _logger.LogInformation("No sync infos found. Skipping sync");
-                return;
-            }
-
-            try
-            {
-                foreach (var syncInfo in syncInfos)
-                {
-                    await HandleMeteringPoint(stoppingToken, syncInfo);
-                }
-            }
-            finally
-            {
-                UpdateGauges();
+                await HandleMeteringPoint(stoppingToken, syncInfo);
             }
         }
-        catch (Exception e)
+        finally
         {
-            _logger.LogError(e, "Error in MeasurementSyncer periodic task");
+            UpdateGauges();
         }
     }
 
@@ -108,7 +110,8 @@ public class MeasurementsSyncerWorker : BackgroundService
         }
         else
         {
-            throw new InvalidOperationException($"Sleep option {nameof(_options.SleepType)} has invalid value {_options.SleepType}");
+            throw new InvalidOperationException(
+                $"Sleep option {nameof(_options.SleepType)} has invalid value {_options.SleepType}");
         }
     }
 
