@@ -87,6 +87,69 @@ public class TransferAgreementsControllerTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact]
+    public async Task Create_ShouldCreateNonTrialTransferAgreement_WhenOrgStatusIsNormal()
+    {
+        var subjectTin = "12334455";
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId, subjectTin, organizationStatus: "normal");
+
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, null);
+        var createdProposalId = await CreateTransferAgreementProposal(orgId, authenticatedClient, request);
+
+        var transferAgreement = new CreateTransferAgreement(createdProposalId);
+
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", transferAgreement, TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        var storedTransferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == OrganizationId.Create(orgId));
+        storedTransferAgreement.IsTrial.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Create_WhenOrgStatusTrialAcceptsNormalTransferAgreement_ReturnsBadRequest()
+    {
+        var subjectTin = "12334455";
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId, subjectTin, organizationStatus: "normal");
+
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, null);
+        var createdProposalId = await CreateTransferAgreementProposal(orgId, authenticatedClient, request);
+
+        var transferAgreement = new CreateTransferAgreement(createdProposalId);
+
+        var authenticatedTrialClient = factory.CreateB2CAuthenticatedClient(sub, orgId, subjectTin, organizationStatus: "trial");
+        var response = await authenticatedTrialClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", transferAgreement, TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+
+    [Fact]
+    public async Task Create_ShouldCreateTrialTransferAgreement_WhenOrgStatusIsTrial()
+    {
+        var subjectTin = "12334455";
+        var sub = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var authenticatedClient = factory.CreateB2CAuthenticatedClient(sub, orgId, subjectTin, organizationStatus: "trial");
+
+        var request = new CreateTransferAgreementProposal(DateTimeOffset.UtcNow.AddMinutes(1).ToUnixTimeSeconds(), null, null);
+        var createdProposalId = await CreateTransferAgreementProposal(orgId, authenticatedClient, request);
+
+        var transferAgreement = new CreateTransferAgreement(createdProposalId);
+
+        var response = await authenticatedClient.PostAsJsonAsync($"api/transfer/transfer-agreements?organizationId={orgId}", transferAgreement, TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var scope = factory.Services.CreateScope();
+        using var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        var storedTransferAgreement = dbContext.TransferAgreements.Single(x => x.SenderId == OrganizationId.Create(orgId));
+        storedTransferAgreement.IsTrial.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task Create_ShouldCreateTransferAgreementWithSubjectTin_WhenProposalReceiverTinIsNull()
     {
         var subjectTin = "12334455";

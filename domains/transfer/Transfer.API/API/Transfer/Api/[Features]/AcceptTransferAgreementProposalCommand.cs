@@ -83,7 +83,7 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new EntityNotFoundException(command.TransferAgreementProposalId, typeof(TransferAgreementProposal));
         }
 
-        if (proposal.IsTrial && !_identityDescriptor.IsTrial())
+        if (proposal.IsTrial != _identityDescriptor.IsTrial())
         {
             throw new BusinessException("This proposal is only available for trial users");
         }
