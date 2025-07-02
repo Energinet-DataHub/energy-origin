@@ -12,8 +12,17 @@ on:
         required: true
         type: string
 
+permissions: { }
+
 jobs:
   build-openapi-specifications:
+    permissions:
+      actions: 'read'
+      attestations: 'write'
+      contents: 'write'
+      id-token: 'write'
+      packages: 'write'
+      security-events: 'write'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -24,7 +33,7 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Resolve image version
-        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@502f9383a50bc018639d7481a8fa308055d82f7a # v14.39.0
+        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@ee21233cce88e1b8be9bbf186ae903a377059aef # v14.39.1
 
       - name: Resolve image name
         shell: bash

@@ -16,10 +16,12 @@ public class TokenService : ITokenService
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<TokenService> _logger;
     private readonly FormUrlEncodedContent _body;
-    private Token? _token;
+
     private readonly SemaphoreSlim _semaphore;
 
-    private readonly int _tokenLifetimeSeconds = 3600;
+    private Token? _token;
+    private long _expiresOn;
+
     private readonly int _halvingFactor = 2;
 
     public TokenService(HttpClient httpclient, IOptions<DataHub3Options> dataHub3Options, TimeProvider timeProvider, ILogger<TokenService> logger)
@@ -72,14 +74,24 @@ public class TokenService : ITokenService
 
     private async Task<string> RefreshToken()
     {
+
         var response = await _httpClient.PostAsync(_dataHub3Options.Value.TokenUrl, _body);
+
+        _logger.LogInformation("Token is stale or expired. Refreshing");
 
         if (response.IsSuccessStatusCode)
         {
             _token = JsonSerializer.Deserialize<Token>(await response.Content.ReadAsStringAsync());
+            if (_token is not null)
+            {
+                _expiresOn = _timeProvider.GetUtcNow().ToUnixTimeSeconds() + _token.ExpiresIn;
+                _logger.LogInformation("New token fetched. Expires on: {ExpiresOn}", _expiresOn);
+            }
+
             return _token!.AccessToken;
         }
 
+        _logger.LogWarning("New token could not be fetched.");
         return string.Empty;
     }
 
@@ -87,17 +99,12 @@ public class TokenService : ITokenService
     {
         if (_token is null)
         {
-            _logger.LogInformation("Token is null - Refreshing");
             return true;
         }
 
-        var difference = _token.ExpiresOn - _timeProvider.GetUtcNow().ToUnixTimeSeconds();
-        if (difference < _tokenLifetimeSeconds / _halvingFactor)
+        var difference = _expiresOn - _timeProvider.GetUtcNow().ToUnixTimeSeconds();
+        if (difference < _token.ExpiresIn / _halvingFactor)
         {
-            _logger.LogInformation(
-                    "Token is stale or expired {ExpiresOn}, {ExpiresIn}, {Difference}. Refreshing",
-                    _token.ExpiresOn, _token.ExpiresIn, difference);
-
             return true;
         }
 
