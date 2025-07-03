@@ -42,7 +42,7 @@ public class TransferEngineUtilityTest
     }
 
     [Fact]
-    public async Task GivenMultipleCertificates_WhenFetchingWithTrialTransferAgreement_OnlyTrialCertificatesAreFetched()
+    public async Task GetCertificates_GivenMultipleCertificates_WhenFetchingWithTrialTransferAgreement_OnlyTrialCertificatesAreFetched()
     {
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var result = new ResultList<GranularCertificate>()
@@ -61,7 +61,7 @@ public class TransferEngineUtilityTest
     }
 
     [Fact]
-    public async Task GivenMultipleProductionCertificates_WhenFetchingWithTrialTransferAgreement_OnlyTrialCertificatesAreFetched()
+    public async Task GetProductionCertificates_GivenMultipleProductionCertificates_WhenFetchingWithTrialTransferAgreement_OnlyTrialCertificatesAreFetched()
     {
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var result = new ResultList<GranularCertificate>()
