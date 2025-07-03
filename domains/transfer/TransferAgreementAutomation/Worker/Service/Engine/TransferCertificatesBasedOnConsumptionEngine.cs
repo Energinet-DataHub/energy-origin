@@ -91,11 +91,7 @@ public class TransferCertificatesBasedOnConsumptionEngine : ITransferEngine
 
             var senderCertificatesToTransfer = SelectSenderCertificatesForTransfer(receiverConsumptionPeriod.Quantity, senderCertificatesInPeriod);
 
-            var certificatesToTransfer = senderCertificatesToTransfer
-                .Where(cert => transferAgreement.IsTrial == cert.Certificate.IsTrialCertificate)
-                .ToList();
-
-            await TransferCertificates(transferAgreement, cancellationToken, certificatesToTransfer, senderOrganizationId, receiverOrganizationId);
+            await TransferCertificates(transferAgreement, cancellationToken, senderCertificatesToTransfer, senderOrganizationId, receiverOrganizationId);
         }
     }
 

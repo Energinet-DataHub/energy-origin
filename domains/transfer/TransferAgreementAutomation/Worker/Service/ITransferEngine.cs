@@ -7,8 +7,6 @@ namespace TransferAgreementAutomation.Worker.Service;
 public interface ITransferEngine
 {
     bool IsSupported(TransferAgreement transferAgreement);
-
     void SetTrial(TransferAgreement transferAgreement);
-
     Task TransferCertificates(TransferAgreement transferAgreement, CancellationToken cancellationToken);
 }
