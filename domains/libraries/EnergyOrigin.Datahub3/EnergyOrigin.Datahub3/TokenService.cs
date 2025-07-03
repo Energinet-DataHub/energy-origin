@@ -74,10 +74,7 @@ public class TokenService : ITokenService
 
     private async Task<string> RefreshToken()
     {
-
         var response = await _httpClient.PostAsync(_dataHub3Options.Value.TokenUrl, _body);
-
-        _logger.LogInformation("Token is stale or expired. Refreshing");
 
         if (response.IsSuccessStatusCode)
         {
@@ -85,7 +82,6 @@ public class TokenService : ITokenService
             if (_token is not null)
             {
                 _expiresOn = _timeProvider.GetUtcNow().ToUnixTimeSeconds() + _token.ExpiresIn;
-                _logger.LogInformation("New token fetched. Expires on: {ExpiresOn}", _expiresOn);
             }
 
             return _token!.AccessToken;
