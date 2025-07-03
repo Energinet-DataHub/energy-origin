@@ -27,7 +27,7 @@ public class OidcSingleSignOnTests
         var response = await client.GetAsync("/ett-admin-portal/ActiveContracts", TestContext.Current.CancellationToken);
         var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
-        Assert.Contains("Active Contracts", body);
+        Assert.Contains("GSRN", body);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }
