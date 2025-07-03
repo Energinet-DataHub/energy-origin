@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using API.ReportGenerator.Infrastructure;
@@ -26,9 +27,9 @@ public class EnergySvgRendererTests
         const int seed = 5;
 
         var consSvc = Substitute.For<IConsumptionService>();
-        var consHours = MockedDataGenerators.GenerateMockConsumption(seed);
-        consSvc.GetAverageHourlyConsumption(orgId, from, to, Arg.Any<CancellationToken>())
-                   .Returns(consHours);
+        var consAverageHours = MockedDataGenerators.GenerateMockConsumption(seed);
+        consSvc.GetTotalAndAverageHourlyConsumption(orgId, from, to, Arg.Any<CancellationToken>())
+                   .Returns((new List<ConsumptionHour>(), consAverageHours));
 
         var wallet = Substitute.For<IWalletClient>();
         var strictClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to, strictHourlyOnly: true);
@@ -76,8 +77,8 @@ public class EnergySvgRendererTests
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
-        var (rawConsumption, claims) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
-        var (rawCons, strictProd, allProd) = formatter.Format(rawConsumption, claims);
+        var (rawTotalHourConsumption, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
+        var (rawCons, strictProd, allProd) = formatter.Format(rawAverageHourConsumption, claims);
 
         // Pass all three to processor
         var hourly = EnergyDataProcessor.ToHourly(rawCons, strictProd, allProd);
