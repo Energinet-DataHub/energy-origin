@@ -35,10 +35,48 @@ public class TransferEngineUtilityTest
             .Returns(result);
 
         // When fetching
-        var certificates = await _sut.GetCertificates(orgId);
+        var certificates = await _sut.GetCertificates(orgId, CancellationToken.None);
 
         // No certificates is returned
         certificates.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GivenMultipleCertificates_WhenFetchingWithTrialTransferAgreement_OnlyTrialCertificatesAreFetched()
+    {
+        var orgId = OrganizationId.Create(Guid.NewGuid());
+        var result = new ResultList<GranularCertificate>()
+        {
+            Result = Enumerable.Range(0, 2000).Select(i => Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, isTrial: i % 2 == 0)),
+            Metadata = new PageInfo() { Count = 2000, Offset = 0, Total = 2000, Limit = 0 }
+        };
+        _mockWalletClient.GetGranularCertificatesAsync(orgId.Value, Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
+            .Returns(result);
+        _sut.IsTrial = true;
+
+        var certificates = await _sut.GetCertificates(orgId, CancellationToken.None);
+
+        certificates.Should().HaveCount(1000);
+        certificates.Should().OnlyContain(cert => cert.IsTrialCertificate);
+    }
+
+    [Fact]
+    public async Task GivenMultipleProductionCertificates_WhenFetchingWithTrialTransferAgreement_OnlyTrialCertificatesAreFetched()
+    {
+        var orgId = OrganizationId.Create(Guid.NewGuid());
+        var result = new ResultList<GranularCertificate>()
+        {
+            Result = Enumerable.Range(0, 2000).Select(i => Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, isTrial: i % 2 == 0)),
+            Metadata = new PageInfo() { Count = 2000, Offset = 0, Total = 2000, Limit = 0 }
+        };
+        _mockWalletClient.GetGranularCertificatesAsync(orgId.Value, Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>(), CertificateType.Production)
+            .Returns(result);
+        _sut.IsTrial = true;
+
+        var certificates = await _sut.GetProductionCertificates(orgId, CancellationToken.None);
+
+        certificates.Should().HaveCount(1000);
+        certificates.Should().OnlyContain(cert => cert.IsTrialCertificate);
     }
 
     [Fact]
@@ -60,7 +98,7 @@ public class TransferEngineUtilityTest
             .Returns(result1, result2);
 
         // When fetching
-        var certificates = await _sut.GetCertificates(orgId);
+        var certificates = await _sut.GetCertificates(orgId, CancellationToken.None);
 
         // All certificates are returned
         certificates.Should().HaveCount(3000);

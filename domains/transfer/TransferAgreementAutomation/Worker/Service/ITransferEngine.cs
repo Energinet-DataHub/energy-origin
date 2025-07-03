@@ -8,5 +8,7 @@ public interface ITransferEngine
 {
     bool IsSupported(TransferAgreement transferAgreement);
 
-    Task TransferCertificates(TransferAgreement transferAgreement, CancellationToken cancellationToken = default);
+    void SetTrial(TransferAgreement transferAgreement);
+
+    Task TransferCertificates(TransferAgreement transferAgreement, CancellationToken cancellationToken);
 }
