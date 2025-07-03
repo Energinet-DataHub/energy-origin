@@ -9,13 +9,13 @@ using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
 using EnergyOrigin.Domain.ValueObjects;
 using Meteringpoint.V1;
+using Microsoft.Extensions.Logging;
 
 namespace API.Transfer.Api.Services;
 
 public interface IConsumptionService
 {
-    Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken);
-    Task<List<ConsumptionHour>> GetAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
+    Task<(List<ConsumptionHour>, List<ConsumptionHour>)> GetTotalAndAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
 }
 
 public class ConsumptionService : IConsumptionService
@@ -33,42 +33,12 @@ public class ConsumptionService : IConsumptionService
         _measurementClient = measurementClient;
     }
 
-    public async Task<List<ConsumptionHour>> GetTotalHourlyConsumption(OrganizationId organizationId, DateTimeOffset dateFrom, DateTimeOffset dateTo, CancellationToken cancellationToken)
-    {
-        var mpsRequest = new OwnedMeteringPointsRequest
-        {
-            Subject = organizationId.Value.ToString()
-        };
-
-        var mps = await _meteringPointClient.GetOwnedMeteringPointsAsync(mpsRequest, cancellationToken: cancellationToken);
-
-        var consumptionGsrns = mps.MeteringPoints
-            .Where(x => IsConsumption(x.TypeOfMp))
-            .Select(x => new Gsrn(x.MeteringPointId))
-            .ToList();
-
-        var mpRelations = await _dhFacadeClient.ListCustomerRelations(organizationId.Value.ToString(), consumptionGsrns, cancellationToken);
-        if (mpRelations == null)
-            return new List<ConsumptionHour>();
-
-        var validRelations = mpRelations.Relations.Where(x => x.IsValid()).ToList();
-
-        var totalConsumption = await _measurementClient.GetMeasurements(validRelations.Select(x => new Gsrn(x.MeteringPointId)).ToList(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), cancellationToken);
-
-        if (totalConsumption == null)
-            return new List<ConsumptionHour>();
-
-        return MapToTotalHourFormat([.. totalConsumption]);
-    }
-
-    public async Task<List<ConsumptionHour>> GetAverageHourlyConsumption(
-        OrganizationId orgId,
-        DateTimeOffset from,
-        DateTimeOffset to,
+    public async Task<(List<ConsumptionHour>, List<ConsumptionHour>)> GetTotalAndAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to,
         CancellationToken ct = default)
     {
         var data = await GetRawMeteringDataAsync(orgId, from, to, ct);
-        return ComputeHourlyAverages(data);
+
+        return (MapToTotalHourFormat(data), ComputeHourlyAverages(data));
     }
 
     private async Task<MeasurementAggregationByPeriodDto[]> GetRawMeteringDataAsync(
@@ -88,7 +58,6 @@ public class ConsumptionService : IConsumptionService
                ?? [];
     }
 
-
     private async Task<ReadOnlyCollection<Gsrn>> GetValidGsrnsAsync(
         OrganizationId orgId,
         CancellationToken ct)
@@ -98,7 +67,7 @@ public class ConsumptionService : IConsumptionService
             cancellationToken: ct);
 
         var consumptionGs = owned.MeteringPoints
-            .Where(mp => mp.TypeOfMp.Trim().Equals("E17", StringComparison.OrdinalIgnoreCase))
+            .Where(mp => IsConsumption(mp.TypeOfMp))
             .Select(mp => new Gsrn(mp.MeteringPointId))
             .ToList();
 
@@ -109,10 +78,11 @@ public class ConsumptionService : IConsumptionService
         var valid = (relations?.Relations ?? Enumerable.Empty<CustomerRelation>())
             .Where(r => r.IsValid())
             .Select(r => new Gsrn(r.MeteringPointId))
-            .ToList()
-            .AsReadOnly();
+            .ToList();
 
-        return valid;
+        var consumptionOnly = valid.Where(x => consumptionGs.Contains(x)).ToList().AsReadOnly();
+
+        return consumptionOnly;
     }
 
     private List<ConsumptionHour> ComputeHourlyAverages(MeasurementAggregationByPeriodDto[] data)
@@ -135,7 +105,7 @@ public class ConsumptionService : IConsumptionService
 
     private static bool IsConsumption(string typeOfMp)
     {
-        return typeOfMp.Trim().ToUpper() == "E17";
+        return typeOfMp.Trim().Equals("E17", StringComparison.OrdinalIgnoreCase);
     }
 
     private List<ConsumptionHour> MapToTotalHourFormat(MeasurementAggregationByPeriodDto[] totalConsumption)

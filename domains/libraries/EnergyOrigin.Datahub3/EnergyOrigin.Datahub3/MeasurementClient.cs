@@ -61,7 +61,6 @@ public class MeasurementClient(IMeasurementsClient client, IOptions<DataHub3Opti
             tasks.Add(client.GetAggregatedByPeriodAsync(singleGsrnQuery, cancellationToken));
         }
 
-
         var responses = await Task.WhenAll(tasks);
 
         List<MeasurementAggregationByPeriodDto> combinedAggregations = [];
@@ -73,6 +72,34 @@ public class MeasurementClient(IMeasurementsClient client, IOptions<DataHub3Opti
             }
         }
 
-        return combinedAggregations;
+        //As the wiremock is stupid and does not only get entries within dateFrom and dateTo
+        return FilterByDateRange(combinedAggregations, dateFromEpoch, dateToEpoch);
+    }
+
+    private static List<MeasurementAggregationByPeriodDto> FilterByDateRange(
+        List<MeasurementAggregationByPeriodDto> data,
+        long startDate,
+        long endDate)
+    {
+        return data
+            .Select(dto => dto with
+            {
+                PointAggregationGroups = dto.PointAggregationGroups
+                    .Select(kvp =>
+                    {
+                        var filteredAggregations = kvp.Value.PointAggregations
+                            .Where(pa => pa.From.ToUnixTimeSeconds() >= startDate && pa.To.ToUnixTimeSeconds() <= endDate)
+                            .ToList();
+
+                        return new KeyValuePair<string, PointAggregationGroup>(
+                            kvp.Key,
+                            kvp.Value with { PointAggregations = filteredAggregations }
+                        );
+                    })
+                    .Where(kvp => kvp.Value.PointAggregations.Any())
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+            })
+            .Where(dto => dto.PointAggregationGroups.Any())
+            .ToList();
     }
 }
