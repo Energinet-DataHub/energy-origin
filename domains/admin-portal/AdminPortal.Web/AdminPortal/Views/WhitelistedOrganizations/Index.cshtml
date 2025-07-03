@@ -14,7 +14,7 @@
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0">Whitelisted Organizations</h2>
+            <h2 class="h4 mb-0">Organizations</h2>
             <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addOrganizationModal">
                 <i class="bi bi-plus-circle me-1"></i> Add Organization
             </button>
@@ -23,18 +23,18 @@
         <div class="card-body">
             @if (TempData["SuccessMessage"] != null)
             {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             }
 
             @if (TempData["ErrorMessage"] != null)
             {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             }
 
             <!-- Search and Filters Section -->
@@ -63,25 +63,25 @@
                 <table class="table table-hover table-bordered mb-0" id="organizationsTable">
                     <thead class="table-light">
                     <tr>
-                        <th>Organization Id</th>
-                        <th>TIN</th>
                         <th>Organization Name</th>
+                        <th>CVR Number</th>
+                        <th>Org ID</th>
                         <th>Manage</th>
                     </tr>
                     </thead>
                     <tbody>
                     @foreach (var org in Model)
                     {
-                        <tr>
-                            <td>@org.OrganizationId</td>
-                            <td onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Tin</td>
-                            <td>@org.CompanyName</td>
-                            <td>
-                                <button id="removeOrganizationButton" type="button" class="btn btn-light" onclick="onRemoveTinClicked(@org.Tin)">
-                                    <i class="bi bi-minus-circle me-1"></i> Remove
-                                </button>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.CompanyName</td>
+                        <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Tin</td>
+                        <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.OrganizationId</td>
+                        <td>
+                            <button id="removeOrganizationButton" type="button" class="btn btn-light" onclick="onRemoveTinClicked(@org.Tin)">
+                                <i class="bi bi-minus-circle me-1"></i> Remove
+                            </button>
+                        </td>
+                    </tr>
                     }
                     </tbody>
                 </table>
@@ -110,103 +110,110 @@
     .table th {
         white-space: nowrap;
     }
+    .clickable-cell {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .clickable-cell:hover {
+        background-color: #f8f9fa;
+    }
 </style>
 
 @section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const forms = document.querySelectorAll('.needs-validation');
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const forms = document.querySelectorAll('.needs-validation');
 
-            const searchInput = document.getElementById('searchInput');
-            const clearButton = document.getElementById('clearSearch');
-            const table = document.getElementById('organizationsTable');
-            let filterTimeout;
+        const searchInput = document.getElementById('searchInput');
+        const clearButton = document.getElementById('clearSearch');
+        const table = document.getElementById('organizationsTable');
+        let filterTimeout;
 
-            const addOrganizationForm = document.getElementById('addOrganizationForm');
-            const confirmAddBtn = document.getElementById('confirmAddBtn');
-            const tinInput = document.getElementById('tin');
+        const addOrganizationForm = document.getElementById('addOrganizationForm');
+        const confirmAddBtn = document.getElementById('confirmAddBtn');
+        const tinInput = document.getElementById('tin');
 
-            Array.prototype.slice.call(forms).forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-
-            confirmAddBtn.addEventListener('click', function() {
-                if (!addOrganizationForm.checkValidity()) {
-                    addOrganizationForm.classList.add('was-validated');
-                    return;
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
                 }
+                form.classList.add('was-validated');
+            }, false);
+        });
 
-                const addModal = bootstrap.Modal.getInstance(document.getElementById('addOrganizationModal'));
-                addModal.hide();
-                showConfirmationModal("Add organization with TIN: " + tinInput.value + " to whitelist?", () => {addOrganizationForm.submit();})
-            });
-
-            document.getElementById('addOrganizationModal').addEventListener('hidden.bs.modal', function () {
-                addOrganizationForm.classList.remove('was-validated');
-            });
-
-            function debounce(func, delay) {
-                return function(...args) {
-                    clearTimeout(filterTimeout);
-                    filterTimeout = setTimeout(() => {
-                        func.apply(this, args);
-                    }, delay);
-                };
+        confirmAddBtn.addEventListener('click', function() {
+            if (!addOrganizationForm.checkValidity()) {
+                addOrganizationForm.classList.add('was-validated');
+                return;
             }
 
-            function highlightMatches(text, filter) {
-                if (!filter) return text;
-                const regex = new RegExp(`(${filter})`, 'gi');
-                return text.replace(regex, '<span class="filter-highlight">$1</span>');
-            }
+            const addModal = bootstrap.Modal.getInstance(document.getElementById('addOrganizationModal'));
+            addModal.hide();
+            showConfirmationModal("Add organization with TIN: " + tinInput.value + " to whitelist?", () => {addOrganizationForm.submit();})
+        });
 
-            const applyFilters = debounce(function() {
-                const globalFilter = searchInput.value.toLowerCase();
+        document.getElementById('addOrganizationModal').addEventListener('hidden.bs.modal', function () {
+            addOrganizationForm.classList.remove('was-validated');
+        });
 
-                Array.from(table.rows).slice(1).forEach(row => {
-                    const cells = row.cells;
-                    let showRow = true;
+        function debounce(func, delay) {
+            return function(...args) {
+                clearTimeout(filterTimeout);
+                filterTimeout = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
 
-                    if (globalFilter) {
-                    const rowText = Array.from(cells).slice(0, 2).map(cell => cell.textContent).join(' ').toLowerCase();
-                        showRow = rowText.includes(globalFilter);
-                    }
+        function highlightMatches(text, filter) {
+            if (!filter) return text;
+            const regex = new RegExp(`(${filter})`, 'gi');
+            return text.replace(regex, '<span class="filter-highlight">$1</span>');
+        }
 
-                    Array.from(cells).forEach((cell, idx) => {
-                        if (globalFilter && idx < 2) {
-                            cell.innerHTML = highlightMatches(cell.dataset.originalHtml || cell.textContent, globalFilter);
-                        } else {
-                            cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
-                        }
-                    });
-
-                    row.style.display = showRow ? '' : 'none';
-                });
-            }, 300);
-
-            searchInput.addEventListener('input', applyFilters);
-            clearButton.addEventListener('click', () => {
-                searchInput.value = '';
-                Array.from(table.rows).slice(1).forEach(row => {
-                    Array.from(row.cells).forEach(cell => {
-                        cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
-                    });
-                    row.style.display = '';
-                });
-                applyFilters();
-            });
+        const applyFilters = debounce(function() {
+            const globalFilter = searchInput.value.toLowerCase();
 
             Array.from(table.rows).slice(1).forEach(row => {
-                Array.from(row.cells).forEach(cell => {
-                    cell.dataset.originalHtml = cell.innerHTML;
+                const cells = row.cells;
+                let showRow = true;
+
+                if (globalFilter) {
+                    const rowText = Array.from(cells).slice(0, 3).map(cell => cell.textContent).join(' ').toLowerCase();
+                    showRow = rowText.includes(globalFilter);
+                }
+
+                Array.from(cells).forEach((cell, idx) => {
+                    if (globalFilter && idx < 3) {
+                        cell.innerHTML = highlightMatches(cell.dataset.originalHtml || cell.textContent, globalFilter);
+                    } else {
+                        cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
+                    }
                 });
+
+                row.style.display = showRow ? '' : 'none';
+            });
+        }, 300);
+
+        searchInput.addEventListener('input', applyFilters);
+        clearButton.addEventListener('click', () => {
+            searchInput.value = '';
+            Array.from(table.rows).slice(1).forEach(row => {
+                Array.from(row.cells).forEach(cell => {
+                    cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
+                });
+                row.style.display = '';
+            });
+            applyFilters();
+        });
+
+        Array.from(table.rows).slice(1).forEach(row => {
+            Array.from(row.cells).forEach(cell => {
+                cell.dataset.originalHtml = cell.innerHTML;
             });
         });
-    </script>
+    });
+</script>
 }
