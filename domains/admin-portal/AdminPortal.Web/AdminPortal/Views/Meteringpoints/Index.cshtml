@@ -1,74 +1,73 @@
 ﻿@model List<AdminPortal._Features_.GetMeteringPointsQueryResultItem>
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white py-3">
-            <h2 class="h4 mb-0">Meteringpoints</h2>
+        <div class="card-header bg-light border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0 text-primary d-flex align-items-center">
+                    <i class="bi bi-speedometer2 me-2"></i>Meteringpoints
+                </h2>
+            </div>
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-4">
             <!-- Search and Filters Section -->
-            <div class="mb-4">
+            <div class="mb-4 p-3 border rounded bg-light-subtle">
                 <div class="row g-3 align-items-end">
                     <!-- Search Box -->
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Search Meteringpoints</label>
+                    <div class="col-lg-6 col-md-12">
+                        <label for="searchInput" class="form-label small fw-semibold text-muted">Global Search</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0">
-                                <i class="bi bi-search text-secondary"></i>
-                            </span>
-                            <input type="text" id="searchInput" class="form-control border-start-0"
-                                   placeholder="Search across all columns..."
-                                   aria-label="Search">
-                            <button id="clearSearch" class="btn btn-outline-secondary" type="button">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="searchInput" class="form-control"
+                                   placeholder="Search by Organization, TIN, GSRN, Type..."
+                                   aria-label="Search meteringpoints">
+                            <button id="clearSearch" class="btn btn-outline-secondary" type="button" title="Clear search">
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="row g-2">
-                            <div class="col">
-                                <label class="form-label text-muted small">Filter by Type</label>
-                                <select class="form-select column-filter" data-column="3">
-                                    <option value="">All Types</option>
-                                </select>
-                            </div>
-                        </div>
+                    <!-- Column Filters -->
+                    <div class="col-lg-3 col-md-6">
+                        <label for="typeFilter" class="form-label small fw-semibold text-muted">Filter by Type</label>
+                        <select id="typeFilter" class="form-select column-filter" data-column="3">
+                            <option value="">All Types</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
             <!-- Table -->
-            <div class="table-responsive rounded-3">
-                <table class="table table-hover table-bordered mb-0" id="meteringpointsTable">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-bordered mb-0" id="meteringpointsTable">
                     <thead class="table-light">
-                    <tr>
-                        <th>Organization</th>
-                        <th>Tin</th>
-                        <th>GSRN</th>
-                        <th>Type</th>
-                        <th>Issuing certificates</th>
-                    </tr>
+                        <tr>
+                            <th scope="col">Organization</th>
+                            <th scope="col">TIN</th>
+                            <th scope="col">GSRN</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Issuing certificates</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    @foreach (var point in Model)
-                    {
-                        <tr>
-                            <td class="fw-medium">@point.OrganizationName</td>
-                            <td class="fw-medium">@point.Tin</td>
-                            <td class="fw-medium">@point.GSRN</td>
-                            <td><span class="badge bg-info">@point.MeterType</span></td>
-                            @if (point.ActiveContract)
-                            {
-                                <td class="fw-medium">Yes</td>
-                            }
-                            else
-                            {
-                                <td class="fw-medium">No</td>
-                            }
-                        </tr>
-                    }
+                        @foreach (var point in Model)
+                        {
+                            <tr>
+                                <td class="fw-medium">@point.OrganizationName</td>
+                                <td class="fw-medium">@point.Tin</td>
+                                <td class="fw-medium">@point.GSRN</td>
+                                <td data-original-text="@point.MeterType"><span class="badge bg-info">@point.MeterType</span></td>
+                                @if (point.ActiveContract)
+                                {
+                                    <td class="fw-medium">Yes</td>
+                                }
+                                else
+                                {
+                                    <td class="fw-medium">No</td>
+                                }
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
@@ -77,12 +76,49 @@
 </div>
 
 <style>
-    .filter-highlight {
-        background-color: #fff3cd !important;
+    .card-header .h5 {
         font-weight: 500;
     }
+
     .table th {
+        font-weight: 600;
         white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .filter-highlight {
+        background-color: #ffe082 !important;
+        font-weight: 500;
+        border-radius: 2px;
+    }
+
+    .sortable {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .sortable:hover {
+        background-color: #e9ecef;
+    }
+    .sortable .bi {
+        font-size: 0.8em;
+    }
+
+    .form-label.small {
+        font-size: 0.875em;
+    }
+
+    .bg-light-subtle {
+        background-color: #f8f9fa !important;
+    }
+
+    .badge {
+        padding: 0.4em 0.65em;
+        font-size: 0.8em;
+        font-weight: 500;
     }
 </style>
 
@@ -92,8 +128,25 @@
             const searchInput = document.getElementById('searchInput');
             const clearButton = document.getElementById('clearSearch');
             const table = document.getElementById('meteringpointsTable');
+            const tbody = table.querySelector('tbody');
             const columnFilters = document.querySelectorAll('.column-filter');
             let filterTimeout;
+
+            // Store original content for badge cells
+            Array.from(tbody.rows).forEach(row => {
+                Array.from(row.cells).forEach((cell, index) => {
+                    if (index === 3) { // Type column with badge
+                        const badge = cell.querySelector('.badge');
+                        if (badge) {
+                            cell.dataset.originalText = badge.textContent.trim();
+                            cell.dataset.originalBadgeHtml = cell.innerHTML;
+                        } else {
+                            cell.dataset.originalText = cell.textContent.trim();
+                            cell.dataset.originalBadgeHtml = cell.innerHTML;
+                        }
+                    }
+                });
+            });
 
             document.querySelectorAll('#meteringpointsTable tbody td:nth-child(3), #meteringpointsTable tbody td:nth-child(4)')
                 .forEach(cell => {
@@ -105,25 +158,31 @@
                 });
 
             function initColumnFilters() {
-                const columns = Array.from(table.rows[0].cells).map((_, i) => i);
+                const columnIndicesToFilter = [3]; // Type column
 
-                columns.forEach(colIndex => {
-                    const columnData = Array.from(table.rows).slice(1).map(row => {
+                columnIndicesToFilter.forEach(colIndex => {
+                    const filter = document.querySelector(`.column-filter[data-column="${colIndex}"]`);
+                    if (!filter) return;
+
+                    const uniqueValues = new Set();
+                    Array.from(tbody.rows).forEach(row => {
                         const cell = row.cells[colIndex];
-                        return cell.textContent.trim().toLowerCase();
+                        const value = cell.dataset.originalText ? cell.dataset.originalText.trim() : cell.textContent.trim();
+                        if (value) {
+                            uniqueValues.add(value);
+                        }
                     });
 
-                    const uniqueValues = [...new Set(columnData)];
-                    const filter = document.querySelector(`.column-filter[data-column="${colIndex}"]`);
-
-                    if (filter) {
-                        uniqueValues.sort().forEach(value => {
-                            const option = document.createElement('option');
-                            option.value = value;
-                            option.textContent = value;
-                            filter.appendChild(option);
-                        });
+                    while (filter.options.length > 1) {
+                        filter.remove(1);
                     }
+
+                    Array.from(uniqueValues).sort().forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value.toLowerCase();
+                        option.textContent = value;
+                        filter.appendChild(option);
+                    });
                 });
             }
 
@@ -137,48 +196,66 @@
             }
 
             function highlightMatches(text, filter) {
-                if (!filter) return text;
-                const regex = new RegExp(`(${filter})`, 'gi');
+                if (!filter || !text) return text;
+                const escapedFilter = filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(${escapedFilter})`, 'gi');
                 return text.replace(regex, '<span class="filter-highlight">$1</span>');
             }
 
             const applyFilters = debounce(function() {
-                const globalFilter = searchInput.value.toLowerCase();
+                const globalFilter = searchInput.value.toLowerCase().trim();
                 const columnFiltersState = Array.from(columnFilters).map(filter => ({
                     index: parseInt(filter.dataset.column),
                     value: filter.value.toLowerCase()
                 }));
 
-                Array.from(table.rows).slice(1).forEach(row => {
+                Array.from(tbody.rows).forEach(row => {
                     const cells = row.cells;
                     let showRow = true;
 
-                    columnFiltersState.forEach(filter => {
-                        const cellText = cells[filter.index].textContent.toLowerCase();
-                        if (filter.value && cellText !== filter.value) {
-                            showRow = false;
+                    // Apply column filters
+                    columnFiltersState.forEach(filterState => {
+                        if (filterState.value) {
+                            const cell = cells[filterState.index];
+                            const cellText = (cell.dataset.originalText || cell.textContent).trim().toLowerCase();
+                            if (cellText !== filterState.value) {
+                                showRow = false;
+                            }
                         }
                     });
 
+                    // Apply global filter
                     if (showRow && globalFilter) {
-                        const rowText = Array.from(cells).map(cell => cell.textContent).join(' ').toLowerCase();
-                        showRow = rowText.includes(globalFilter);
+                        const rowText = Array.from(cells).map((cell, idx) => {
+                            if (idx === 3) return cell.dataset.originalText || cell.textContent;
+                            return cell.textContent;
+                        }).join(' ').toLowerCase();
+
+                        if (!rowText.includes(globalFilter)) {
+                            showRow = false;
+                        }
                     }
 
+                    // Reset and apply highlighting
                     Array.from(cells).forEach((cell, index) => {
-                        if (index === 3) {
-                            // Always force the badge markup for the MeteringPointType field.
-                            // Here we use the original text stored in a data attribute (or fallback to cell.textContent)
-                            const originalText = cell.dataset.originalText || cell.textContent;
-                            cell.innerHTML = `<span class="badge bg-info">${originalText}</span>`;
-                        } else {
-                            if (globalFilter) {
-                                cell.innerHTML = highlightMatches(cell.dataset.originalHtml || cell.textContent, globalFilter);
+                        if (index === 3 && cell.dataset.originalBadgeHtml) {
+                            cell.innerHTML = cell.dataset.originalBadgeHtml;
+                        } else if (!cell.dataset.originalBadgeHtml) {
+                            cell.innerHTML = cell.textContent;
+                        }
+
+                        if (globalFilter && showRow) {
+                            if (index === 3) {
+                                const badge = cell.querySelector('.badge');
+                                if (badge) {
+                                    const originalText = cell.dataset.originalText || badge.textContent;
+                                    badge.innerHTML = highlightMatches(originalText, globalFilter);
+                                }
                             } else {
-                                cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
+                                cell.innerHTML = highlightMatches(cell.textContent, globalFilter);
                             }
                         }
-});
+                    });
 
                     row.style.display = showRow ? '' : 'none';
                 });
@@ -188,23 +265,23 @@
             clearButton.addEventListener('click', () => {
                 searchInput.value = '';
                 columnFilters.forEach(filter => filter.value = '');
-                Array.from(table.rows).slice(1).forEach(row => {
+                Array.from(tbody.rows).forEach(row => {
                     Array.from(row.cells).forEach((cell, index) => {
-                        if (index === 3) {
-                            const originalText = cell.dataset.originalText || cell.textContent.trim();
-                            cell.innerHTML = `<span class="badge bg-info">${originalText}</span>`;
-                        } else {
-                            cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
+                        if (index === 3 && cell.dataset.originalBadgeHtml) {
+                            cell.innerHTML = cell.dataset.originalBadgeHtml;
+                        } else if (!cell.dataset.originalBadgeHtml) {
+                            cell.innerHTML = cell.textContent;
                         }
                     });
                     row.style.display = '';
                 });
-                applyFilters();
             });
 
             columnFilters.forEach(filter => filter.addEventListener('change', applyFilters));
 
-            initColumnFilters();
+            if (tbody.rows.length > 0) {
+                initColumnFilters();
+            }
         });
     </script>
 }
