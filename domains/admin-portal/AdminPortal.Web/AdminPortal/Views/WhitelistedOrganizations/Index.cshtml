@@ -11,16 +11,20 @@
     }
 </script>
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0">Whitelisted Organizations</h2>
-            <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addOrganizationModal">
-                <i class="bi bi-plus-circle me-1"></i> Add Organization
-            </button>
+        <div class="card-header bg-light border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0 text-primary d-flex align-items-center">
+                    <i class="bi bi-building me-2"></i>Organizations
+                </h2>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrganizationModal">
+                    <i class="bi bi-plus-circle me-1"></i> Add Organization
+                </button>
+            </div>
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-4">
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -38,19 +42,17 @@
             }
 
             <!-- Search and Filters Section -->
-            <div class="mb-4">
+            <div class="mb-4 p-3 border rounded bg-light-subtle">
                 <div class="row g-3 align-items-end">
                     <!-- Search Box -->
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Search organizations</label>
+                    <div class="col-lg-6 col-md-12">
+                        <label for="searchInput" class="form-label small fw-semibold text-muted">Global Search</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0">
-                                <i class="bi bi-search text-secondary"></i>
-                            </span>
-                            <input type="text" id="searchInput" class="form-control border-start-0"
-                                   placeholder="Search across all columns..."
-                                   aria-label="Search">
-                            <button id="clearSearch" class="btn btn-outline-secondary" type="button">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="searchInput" class="form-control"
+                                   placeholder="Search by Organization, CVR, Org ID..."
+                                   aria-label="Search organizations">
+                            <button id="clearSearch" class="btn btn-outline-secondary" type="button" title="Clear search">
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         </div>
@@ -59,30 +61,30 @@
             </div>
 
             <!-- Table -->
-            <div class="table-responsive rounded-3">
-                <table class="table table-hover table-bordered mb-0" id="organizationsTable">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped table-bordered mb-0" id="organizationsTable">
                     <thead class="table-light">
-                    <tr>
-                        <th>Organization Id</th>
-                        <th>TIN</th>
-                        <th>Organization Name</th>
-                        <th>Manage</th>
-                    </tr>
+                        <tr>
+                            <th scope="col">Organisation Name</th>
+                            <th scope="col">CVR Number</th>
+                            <th scope="col">Org ID</th>
+                            <th scope="col">Manage</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    @foreach (var org in Model)
-                    {
-                        <tr>
-                            <td>@org.OrganizationId</td>
-                            <td onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Tin</td>
-                            <td>@org.CompanyName</td>
-                            <td>
-                                <button id="removeOrganizationButton" type="button" class="btn btn-light" onclick="onRemoveTinClicked(@org.Tin)">
-                                    <i class="bi bi-minus-circle me-1"></i> Remove
-                                </button>
-                            </td>
-                        </tr>
-                    }
+                        @foreach (var org in Model)
+                        {
+                            <tr>
+                                <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.CompanyName</td>
+                                <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Tin</td>
+                                <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.OrganizationId</td>
+                                <td>
+                                    <button id="removeOrganizationButton" type="button" class="btn btn-light" onclick="onRemoveTinClicked(@org.Tin)">
+                                        <i class="bi bi-minus-circle me-1"></i> Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
@@ -96,19 +98,57 @@
 <partial name="_RemoveOrganizationFromWhitelistModal" />
 
 <style>
-    .filter-highlight {
-        background-color: #fff3cd !important;
+    .card-header .h5 {
         font-weight: 500;
     }
+
+    .table th {
+        font-weight: 600;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .filter-highlight {
+        background-color: #ffe082 !important;
+        font-weight: 500;
+        border-radius: 2px;
+    }
+
     .sortable {
         cursor: pointer;
         transition: background-color 0.2s;
     }
     .sortable:hover {
-        background-color: #f8f9fa;
+        background-color: #e9ecef;
     }
-    .table th {
-        white-space: nowrap;
+    .sortable .bi {
+        font-size: 0.8em;
+    }
+
+    .form-label.small {
+        font-size: 0.875em;
+    }
+
+    .bg-light-subtle {
+        background-color: #f8f9fa !important;
+    }
+
+    .badge {
+        padding: 0.4em 0.65em;
+        font-size: 0.8em;
+        font-weight: 500;
+    }
+
+    .clickable-cell {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .clickable-cell:hover {
+        background-color: #f8f9fa;
     }
 </style>
 
@@ -161,25 +201,26 @@
             }
 
             function highlightMatches(text, filter) {
-                if (!filter) return text;
-                const regex = new RegExp(`(${filter})`, 'gi');
+                if (!filter || !text) return text;
+                const escapedFilter = filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(${escapedFilter})`, 'gi');
                 return text.replace(regex, '<span class="filter-highlight">$1</span>');
             }
 
             const applyFilters = debounce(function() {
-                const globalFilter = searchInput.value.toLowerCase();
+                const globalFilter = searchInput.value.toLowerCase().trim();
 
                 Array.from(table.rows).slice(1).forEach(row => {
                     const cells = row.cells;
                     let showRow = true;
 
                     if (globalFilter) {
-                    const rowText = Array.from(cells).slice(0, 2).map(cell => cell.textContent).join(' ').toLowerCase();
+                        const rowText = Array.from(cells).slice(0, 3).map(cell => cell.textContent).join(' ').toLowerCase();
                         showRow = rowText.includes(globalFilter);
                     }
 
                     Array.from(cells).forEach((cell, idx) => {
-                        if (globalFilter && idx < 2) {
+                        if (globalFilter && idx < 3) {
                             cell.innerHTML = highlightMatches(cell.dataset.originalHtml || cell.textContent, globalFilter);
                         } else {
                             cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
