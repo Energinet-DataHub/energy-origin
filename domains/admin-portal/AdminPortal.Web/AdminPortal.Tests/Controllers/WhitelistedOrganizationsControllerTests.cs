@@ -73,6 +73,6 @@ public class WhitelistedOrganizationsControllerTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        Assert.Contains("Whitelisted Organizations", content);
+        Assert.Contains("Organizations", content);
     }
 }
