@@ -3,6 +3,7 @@ using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
+using MassTransit.SqlTransport;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -28,10 +29,42 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         mockWalletClient = Substitute.For<IWalletClient>();
         var fakeMetrics = Substitute.For<ITransferAgreementAutomationMetrics>();
         requestStatusStore = new InMemoryRequestStatusRepository();
-        var transferEngineUtility = new TransferEngineUtility(mockWalletClient, requestStatusStore, NullLogger<TransferEngineUtility>.Instance)
+        var transferEngineUtility = new TransferEngineUtility(mockWalletClient, requestStatusStore,
+                NullLogger<TransferEngineUtility>.Instance)
         { BatchSize = batchSize };
 
-        sut = new TransferCertificatesBasedOnConsumptionEngine(requestStatusStore, transferEngineUtility, fakeLogger, mockWalletClient);
+        sut = new TransferCertificatesBasedOnConsumptionEngine(requestStatusStore, transferEngineUtility, fakeLogger,
+            mockWalletClient);
+    }
+
+    [Fact]
+    public async Task TransferCertificates_WhenTwoTrialCertificatesOnTrialTransferAgreement_TwoTransactions()
+    {
+        var receiverId = Any.OrganizationId();
+        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow.AddHours(-10), receiverId, null, true);
+        sut.SetEngineTrialState(transferAgreement);
+        var receiverConsumptionCert =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Consumption, 11, isTrial: true);
+        SetupWalletServiceClient(transferAgreement.ReceiverId!.Value, [receiverConsumptionCert],
+            new TransferResponse() { TransferRequestId = Guid.NewGuid() });
+
+        var senderProductionCert1 =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 3, isTrial: false);
+        var senderProductionCert2 =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 4, isTrial: false);
+        var senderProductionCert3 =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 5, isTrial: true);
+        var senderProductionCert4 =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 6, isTrial: true);
+        SetupWalletServiceClient(transferAgreement.SenderId.Value,
+            [senderProductionCert1, senderProductionCert2, senderProductionCert3, senderProductionCert4],
+            new TransferResponse() { TransferRequestId = Guid.NewGuid() });
+
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
+
+        var transactions =
+            await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
+        transactions.Should().HaveCount(2);
     }
 
     [Fact]
@@ -61,7 +94,8 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, receiverId, null);
 
         // When transferring
-        await requestStatusStore.Add(new RequestStatus(transferAgreement.SenderId, OrganizationId.Empty(), Guid.NewGuid(),
+        await requestStatusStore.Add(new RequestStatus(transferAgreement.SenderId, OrganizationId.Empty(),
+            Guid.NewGuid(),
             UnixTimestamp.Now().AddMinutes(-2)), TestContext.Current.CancellationToken);
         await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
@@ -83,7 +117,9 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, receiverId, null);
 
         // When transferring
-        await requestStatusStore.Add(new RequestStatus(Any.OrganizationId(), receiverId, Guid.NewGuid(), UnixTimestamp.Now().AddMinutes(-2)), TestContext.Current.CancellationToken);
+        await requestStatusStore.Add(
+            new RequestStatus(Any.OrganizationId(), receiverId, Guid.NewGuid(), UnixTimestamp.Now().AddMinutes(-2)),
+            TestContext.Current.CancellationToken);
         await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then transfer agreement is skipped (no certificates fetched)
@@ -102,11 +138,14 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         // Given transfer agreement and a timed out transaction
         var receiverId = Any.OrganizationId();
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, receiverId, null);
-        await requestStatusStore.Add(new RequestStatus(Any.OrganizationId(), receiverId, Guid.NewGuid(), UnixTimestamp.Now().AddDays(-2)), TestContext.Current.CancellationToken);
+        await requestStatusStore.Add(
+            new RequestStatus(Any.OrganizationId(), receiverId, Guid.NewGuid(), UnixTimestamp.Now().AddDays(-2)),
+            TestContext.Current.CancellationToken);
 
         // When transferring
         var cert = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production);
-        SetupWalletServiceClient(receiverId.Value, [cert], new TransferResponse() { TransferRequestId = Guid.NewGuid() });
+        SetupWalletServiceClient(receiverId.Value, [cert],
+            new TransferResponse() { TransferRequestId = Guid.NewGuid() });
         await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then certificates are transferred
@@ -140,50 +179,63 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
                 Arg.Any<CancellationToken>(),
                 Arg.Any<int>()
             );
-        var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
+        var transactions =
+            await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
         transactions.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task GivenTransferAgreement_WhenReceiverHasUnmatchedConsumptionCertificates_SenderCertificatesAreFetched()
+    public async Task
+        GivenTransferAgreement_WhenReceiverHasUnmatchedConsumptionCertificates_SenderCertificatesAreFetched()
     {
         // Given transfer agreement
         var receiverId = Any.OrganizationId();
-        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow.AddHours(-10), receiverId, DateTimeOffset.UtcNow);
+        var transferAgreement =
+            CreateTransferAgreement(DateTimeOffset.UtcNow.AddHours(-10), receiverId, DateTimeOffset.UtcNow);
 
         // When transferring
-        var receiverConsumptionCert = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Consumption, 11);
-        var receiverProductionCert = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 5);
+        var receiverConsumptionCert =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Consumption, 11);
+        var receiverProductionCert =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 5);
         SetupWalletServiceClient(transferAgreement.ReceiverId!.Value, [receiverConsumptionCert, receiverProductionCert],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        var senderProductionCert = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 6);
+        var senderProductionCert =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 6);
         SetupWalletServiceClient(transferAgreement.SenderId.Value, [senderProductionCert],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
         await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         // Then certificates are transferred
-        var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
+        var transactions =
+            await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
         transactions.Should().HaveCount(1);
     }
 
     [Fact]
-    public async Task GivenTransferAgreement_WhenSenderHasSurplusOfProductionCertificates_SubsetOfSenderCertificatesAreTransferred()
+    public async Task
+        GivenTransferAgreement_WhenSenderHasSurplusOfProductionCertificates_SubsetOfSenderCertificatesAreTransferred()
     {
         // Given transfer agreement
         var receiverId = Any.OrganizationId();
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow.AddHours(-10), receiverId, null);
 
         // When transferring
-        var receiverConsumptionCert = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Consumption, 11);
+        var receiverConsumptionCert =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Consumption, 11);
         SetupWalletServiceClient(transferAgreement.ReceiverId!.Value, [receiverConsumptionCert],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        var senderProductionCert1 = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 3);
-        var senderProductionCert2 = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 4);
-        var senderProductionCert3 = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 5);
-        var senderProductionCert4 = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 6);
+        var senderProductionCert1 =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 3);
+        var senderProductionCert2 =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 4);
+        var senderProductionCert3 =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 5);
+        var senderProductionCert4 =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 6);
         SetupWalletServiceClient(transferAgreement.SenderId.Value,
             [senderProductionCert1, senderProductionCert2, senderProductionCert3, senderProductionCert4],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
@@ -191,34 +243,41 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
         // Then certificates are transferred
-        var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
+        var transactions =
+            await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
         transactions.Should().HaveCount(3);
     }
 
     [Fact]
-    public async Task GivenCertificateOutsideTransactionAgreementPeriod_WhenTransferringCertificates_NoCertificatesAreTransferred()
+    public async Task
+        GivenCertificateOutsideTransactionAgreementPeriod_WhenTransferringCertificates_NoCertificatesAreTransferred()
     {
         // Given transfer agreement
         var receiverId = Any.OrganizationId();
-        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, receiverId, DateTimeOffset.UtcNow.AddDays(1));
+        var transferAgreement =
+            CreateTransferAgreement(DateTimeOffset.UtcNow, receiverId, DateTimeOffset.UtcNow.AddDays(1));
 
         // When transferring
-        var receiverConsumptionCert = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Consumption, 11);
+        var receiverConsumptionCert =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Consumption, 11);
         SetupWalletServiceClient(transferAgreement.ReceiverId!.Value, [receiverConsumptionCert],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
-        var senderProductionCert = Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 3);
+        var senderProductionCert =
+            Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Production, 3);
         SetupWalletServiceClient(transferAgreement.SenderId.Value, [senderProductionCert],
             new TransferResponse() { TransferRequestId = Guid.NewGuid() });
 
         await sut.TransferCertificates(transferAgreement, TestContext.Current.CancellationToken);
 
         // Then certificates are transferred
-        var transactions = await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
+        var transactions =
+            await requestStatusStore.GetByOrganization(transferAgreement.SenderId, CancellationToken.None);
         transactions.Should().BeEmpty();
     }
 
-    private static TransferAgreement CreateTransferAgreement(DateTimeOffset startDate, OrganizationId? receiverId, DateTimeOffset? endDate)
+    private static TransferAgreement CreateTransferAgreement(DateTimeOffset startDate, OrganizationId? receiverId,
+        DateTimeOffset? endDate, bool isTrial = false)
     {
         var transferAgreement = new TransferAgreement
         {
@@ -232,7 +291,8 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
             SenderTin = Tin.Create("11223344"),
             TransferAgreementNumber = 0,
             Type = TransferAgreementType.TransferCertificatesBasedOnConsumption,
-            ReceiverId = receiverId
+            ReceiverId = receiverId,
+            IsTrial = isTrial
         };
         return transferAgreement;
     }
@@ -241,23 +301,29 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
         TransferResponse mockedTransferResponse)
     {
         var certificateCount = mockedGranularCertificatesResponse.Count;
-        mockWalletClient.GetGranularCertificatesAsync(Arg.Is(owner), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>(),
+        mockWalletClient.GetGranularCertificatesAsync(Arg.Is(owner), Arg.Any<CancellationToken>(), Arg.Any<int?>(),
+            Arg.Any<int>(),
             Arg.Any<CertificateType>()).Returns(
             new ResultList<GranularCertificate>()
             {
-                Metadata = new PageInfo() { Offset = 0, Count = certificateCount, Limit = 100, Total = certificateCount },
-                Result = mockedGranularCertificatesResponse
-            });
-
-        mockWalletClient.GetGranularCertificatesAsync(Arg.Is(owner), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>()).Returns(
-            new ResultList<GranularCertificate>()
-            {
-                Metadata = new PageInfo() { Offset = 0, Count = certificateCount, Limit = 100, Total = certificateCount },
+                Metadata = new PageInfo()
+                { Offset = 0, Count = certificateCount, Limit = 100, Total = certificateCount },
                 Result = mockedGranularCertificatesResponse
             });
 
         mockWalletClient
-            .TransferCertificatesAsync(Arg.Is(owner), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>(), CancellationToken.None)
+            .GetGranularCertificatesAsync(Arg.Is(owner), Arg.Any<CancellationToken>(), Arg.Any<int?>(), Arg.Any<int>())
+            .Returns(
+                new ResultList<GranularCertificate>()
+                {
+                    Metadata = new PageInfo()
+                    { Offset = 0, Count = certificateCount, Limit = 100, Total = certificateCount },
+                    Result = mockedGranularCertificatesResponse
+                });
+
+        mockWalletClient
+            .TransferCertificatesAsync(Arg.Is(owner), Arg.Any<GranularCertificate>(), Arg.Any<uint>(), Arg.Any<Guid>(),
+                CancellationToken.None)
             .Returns(mockedTransferResponse);
     }
 }

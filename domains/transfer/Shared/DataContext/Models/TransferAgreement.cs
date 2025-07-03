@@ -17,4 +17,5 @@ public class TransferAgreement
     public Guid ReceiverReference { get; set; }
     public int TransferAgreementNumber { get; set; }
     public TransferAgreementType Type { get; set; }
+    public bool IsTrial { get; set; }
 }

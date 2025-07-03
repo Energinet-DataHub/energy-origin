@@ -48,7 +48,8 @@ public class CreateTransferAgreementCommandHandler(IUnitOfWork UnitOfWork, IWall
             ReceiverId = ReceiverOrganizationId,
             ReceiverName = ReceiverName,
             ReceiverTin = ReceiverTin,
-            Type = command.Type
+            Type = command.Type,
+            IsTrial = IdentityDescriptor.IsTrial()
         };
 
         var hasConflict = await taRepo.HasDateOverlap(transferAgreement, CancellationToken.None);

@@ -18,6 +18,7 @@ public class TransferEngineUtility
     public int StatusUpdateIntervalMinutes { get; } = 1;
     public int StatusUpdateTimeoutMinutes { get; } = 120;
     public int StatusUpdateDeleteMinutes { get; } = 24 * 60;
+    public bool IsTrial { get; set; }
 
     private readonly IWalletClient _walletClient;
     private readonly IRequestStatusRepository _requestStatusRepository;
@@ -31,13 +32,13 @@ public class TransferEngineUtility
         _logger = logger;
     }
 
-    public async Task<List<GranularCertificate>> GetProductionCertificates(OrganizationId organizationId)
+    public async Task<List<GranularCertificate>> GetProductionCertificates(OrganizationId organizationId, CancellationToken cancellationToken)
     {
         var hasMoreCertificates = true;
         var certificates = new List<GranularCertificate>();
         while (hasMoreCertificates)
         {
-            var response = await _walletClient.GetGranularCertificatesAsync(organizationId.Value, new CancellationToken(), limit: BatchSize,
+            var response = await _walletClient.GetGranularCertificatesAsync(organizationId.Value, cancellationToken, limit: BatchSize,
                 skip: certificates.Count, CertificateType.Production);
 
             if (response == null)
@@ -53,16 +54,16 @@ public class TransferEngineUtility
             }
         }
 
-        return certificates;
+        return certificates.Where(cert => IsTrial == cert.IsTrialCertificate).ToList();
     }
 
-    public async Task<List<GranularCertificate>> GetCertificates(OrganizationId organizationId)
+    public async Task<List<GranularCertificate>> GetCertificates(OrganizationId organizationId, CancellationToken cancellationToken)
     {
         var hasMoreCertificates = true;
         var certificates = new List<GranularCertificate>();
         while (hasMoreCertificates)
         {
-            var response = await _walletClient.GetGranularCertificatesAsync(organizationId.Value, new CancellationToken(), limit: BatchSize,
+            var response = await _walletClient.GetGranularCertificatesAsync(organizationId.Value, cancellationToken, limit: BatchSize,
                 skip: certificates.Count);
 
             if (response == null)
@@ -78,7 +79,7 @@ public class TransferEngineUtility
             }
         }
 
-        return certificates;
+        return certificates.Where(cert => IsTrial == cert.IsTrialCertificate).ToList();
     }
 
     public async Task<bool> HasPendingTransactions(OrganizationId organizationId, CancellationToken cancellationToken = default)

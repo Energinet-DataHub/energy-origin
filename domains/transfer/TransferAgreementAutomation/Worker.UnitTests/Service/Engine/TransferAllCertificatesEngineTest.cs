@@ -169,6 +169,56 @@ public class TransferAllCertificatesEngineTest
             );
     }
 
+    [Fact]
+    public async Task TransferCertificates_WhenCalledWithTrialTransferAgreementAndTrialCertificates_ShouldCallWalletTransferCertificate()
+    {
+        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(3), isTrial: true);
+
+        var cert = CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2), isTrial: true);
+
+        SetupWalletServiceClient(
+            [cert],
+            new TransferResponse { TransferRequestId = Guid.NewGuid() });
+        sut.SetEngineTrialState(transferAgreement);
+
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
+
+        _ = mockWalletClient
+            .Received(1)
+            .TransferCertificatesAsync(
+                Arg.Any<Guid>(),
+                cert,
+                cert.Quantity,
+                transferAgreement.ReceiverReference,
+                CancellationToken.None
+            );
+    }
+
+    [Fact]
+    public async Task TransferCertificates_WhenCalledWithTrialTransferAgreementAndNoTrialCertificates_ShouldNotCallWalletTransferCertificate()
+    {
+        var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(3), isTrial: true);
+        sut.SetEngineTrialState(transferAgreement);
+
+        var cert = CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2));
+
+        SetupWalletServiceClient(
+            [cert],
+            new TransferResponse { TransferRequestId = Guid.NewGuid() });
+
+        await sut.TransferCertificates(transferAgreement, CancellationToken.None);
+
+        _ = mockWalletClient
+            .DidNotReceive()
+            .TransferCertificatesAsync(
+                Arg.Any<Guid>(),
+                cert,
+                cert.Quantity,
+                transferAgreement.ReceiverReference,
+                CancellationToken.None
+            );
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
@@ -304,7 +354,7 @@ public class TransferAllCertificatesEngineTest
             );
     }
 
-    private static TransferAgreement CreateTransferAgreement(DateTimeOffset startDate, DateTimeOffset? endDate)
+    private static TransferAgreement CreateTransferAgreement(DateTimeOffset startDate, DateTimeOffset? endDate, bool isTrial = false)
     {
         var transferAgreement = new TransferAgreement
         {
@@ -317,7 +367,8 @@ public class TransferAllCertificatesEngineTest
             SenderName = OrganizationName.Create("SomeSender"),
             SenderTin = Tin.Create("11223344"),
             TransferAgreementNumber = 0,
-            Type = TransferAgreementType.TransferAllCertificates
+            Type = TransferAgreementType.TransferAllCertificates,
+            IsTrial = isTrial,
         };
         return transferAgreement;
     }
@@ -338,7 +389,7 @@ public class TransferAllCertificatesEngineTest
             .Returns(mockedTransferResponse);
     }
 
-    private static GranularCertificate CreateGranularCertificate(DateTimeOffset start, DateTimeOffset end)
+    private static GranularCertificate CreateGranularCertificate(DateTimeOffset start, DateTimeOffset end, bool isTrial = false)
     {
         return new GranularCertificate
         {
@@ -348,7 +399,7 @@ public class TransferAllCertificatesEngineTest
             FederatedStreamId = new FederatedStreamId() { Registry = "DK1", StreamId = Guid.NewGuid() },
             GridArea = "DK1",
             Quantity = 123,
-            Attributes = new Dictionary<string, string>()
+            Attributes = new Dictionary<string, string>() { { "IsTrial", isTrial.ToString() } }
         };
     }
 }

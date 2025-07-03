@@ -34,7 +34,12 @@ public class TransferCertificatesBasedOnConsumptionEngine : ITransferEngine
         return transferAgreement.Type == TransferAgreementType.TransferCertificatesBasedOnConsumption;
     }
 
-    public async Task TransferCertificates(TransferAgreement transferAgreement, CancellationToken cancellationToken = default)
+    public void SetEngineTrialState(TransferAgreement transferAgreement)
+    {
+        _transferUtility.IsTrial = transferAgreement.IsTrial;
+    }
+
+    public async Task TransferCertificates(TransferAgreement transferAgreement, CancellationToken cancellationToken)
     {
         if (!IsSupported(transferAgreement))
         {
@@ -64,7 +69,7 @@ public class TransferCertificatesBasedOnConsumptionEngine : ITransferEngine
             return;
         }
 
-        var receiverUnmatchedConsumptionGroupedByPeriod = await GetUnmatchedReceiverConsumptionGroupedByPeriod(receiverOrganizationId);
+        var receiverUnmatchedConsumptionGroupedByPeriod = await GetUnmatchedReceiverConsumptionGroupedByPeriod(receiverOrganizationId, cancellationToken);
         if (receiverUnmatchedConsumptionGroupedByPeriod.Count == 0)
         {
             _logger.LogInformation("Skipping transfer agreement {Id}, receiver {OrgId} has no unmatched consumption", transferAgreement.Id,
@@ -72,7 +77,7 @@ public class TransferCertificatesBasedOnConsumptionEngine : ITransferEngine
             return;
         }
 
-        var senderProductionCertificatesGroupedByPeriod = await GetSenderProductionCertificatesGroupedByPeriod(senderOrganizationId);
+        var senderProductionCertificatesGroupedByPeriod = await GetSenderProductionCertificatesGroupedByPeriod(senderOrganizationId, cancellationToken);
 
         foreach (var receiverConsumptionPeriod in receiverUnmatchedConsumptionGroupedByPeriod)
         {
@@ -86,8 +91,7 @@ public class TransferCertificatesBasedOnConsumptionEngine : ITransferEngine
 
             var senderCertificatesToTransfer = SelectSenderCertificatesForTransfer(receiverConsumptionPeriod.Quantity, senderCertificatesInPeriod);
 
-            await TransferCertificates(transferAgreement, cancellationToken, senderCertificatesToTransfer, senderOrganizationId,
-                receiverOrganizationId);
+            await TransferCertificates(transferAgreement, cancellationToken, senderCertificatesToTransfer, senderOrganizationId, receiverOrganizationId);
         }
     }
 
@@ -119,18 +123,18 @@ public class TransferCertificatesBasedOnConsumptionEngine : ITransferEngine
     }
 
     private async Task<List<IGrouping<Period, GranularCertificate>>> GetSenderProductionCertificatesGroupedByPeriod(
-        OrganizationId senderOrganizationId)
+        OrganizationId senderOrganizationId, CancellationToken cancellationToken)
     {
-        var senderCertificates = await _transferUtility.GetProductionCertificates(senderOrganizationId);
+        var senderCertificates = await _transferUtility.GetProductionCertificates(senderOrganizationId, cancellationToken);
         var senderProductionCertificatesGroupedByPeriod = GetProductionCertificatesGroupedByPeriod(senderCertificates);
         _logger.LogInformation("Found {Count} periods where sender has production certificates", senderProductionCertificatesGroupedByPeriod.Count);
 
         return senderProductionCertificatesGroupedByPeriod;
     }
 
-    private async Task<List<ConsumptionPeriod>> GetUnmatchedReceiverConsumptionGroupedByPeriod(OrganizationId receiverOrganizationId)
+    private async Task<List<ConsumptionPeriod>> GetUnmatchedReceiverConsumptionGroupedByPeriod(OrganizationId receiverOrganizationId, CancellationToken cancellationToken)
     {
-        var receiverCertificates = await _transferUtility.GetCertificates(receiverOrganizationId);
+        var receiverCertificates = await _transferUtility.GetCertificates(receiverOrganizationId, cancellationToken);
         _logger.LogInformation("Found {Count} certificates for receiver", receiverCertificates.Count);
         var receiverUnmatchedConsumptionGroupedByPeriod = GetUnmatchedConsumptionGroupedByPeriod(receiverCertificates);
         _logger.LogInformation("Found {Count} periods where receiver has unmatched consumption", receiverUnmatchedConsumptionGroupedByPeriod.Count);

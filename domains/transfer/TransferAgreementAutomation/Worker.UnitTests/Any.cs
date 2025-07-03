@@ -5,7 +5,7 @@ namespace Worker.UnitTests;
 
 public static class Any
 {
-    public static GranularCertificate GranularCertificate(UnixTimestamp from, CertificateType certificateType, uint quantity = 10)
+    public static GranularCertificate GranularCertificate(UnixTimestamp from, CertificateType certificateType, uint quantity = 10, bool isTrial = false)
     {
         return new GranularCertificate()
         {
@@ -16,6 +16,9 @@ public static class Any
             GridArea = "DK1",
             Quantity = quantity,
             Attributes = new Dictionary<string, string>()
+            {
+                {"IsTrial", isTrial.ToString()}
+            }
         };
     }
 

@@ -83,6 +83,11 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             throw new EntityNotFoundException(command.TransferAgreementProposalId, typeof(TransferAgreementProposal));
         }
 
+        if (proposal.IsTrial != _identityDescriptor.IsTrial())
+        {
+            throw new BusinessException("This proposal is only available for trial users");
+        }
+
         if (proposal.EndDate is not null && proposal.EndDate < UnixTimestamp.Now())
         {
             throw new BusinessException("This proposal has run out");
@@ -124,7 +129,8 @@ public class AcceptTransferAgreementProposalCommandHandler : IRequestHandler<Acc
             ReceiverName = receiverOrganizationName,
             ReceiverTin = receiverOrganizationTin,
             ReceiverReference = externalEndpoint.ReceiverId,
-            Type = proposal.Type
+            Type = proposal.Type,
+            IsTrial = _identityDescriptor.IsTrial()
         };
 
         var result = await taRepo.AddTransferAgreementAndDeleteProposal(transferAgreement, command.TransferAgreementProposalId, cancellationToken);

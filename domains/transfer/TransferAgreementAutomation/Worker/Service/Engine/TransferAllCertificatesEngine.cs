@@ -41,7 +41,12 @@ public class TransferAllCertificatesEngine : ITransferEngine
         return transferAgreement.Type == TransferAgreementType.TransferAllCertificates;
     }
 
-    public async Task TransferCertificates(TransferAgreement transferAgreement, CancellationToken cancellationToken = default)
+    public void SetEngineTrialState(TransferAgreement transferAgreement)
+    {
+        transferUtility.IsTrial = transferAgreement.IsTrial;
+    }
+
+    public async Task TransferCertificates(TransferAgreement transferAgreement, CancellationToken cancellationToken)
     {
         if (!IsSupported(transferAgreement))
         {
@@ -57,12 +62,13 @@ public class TransferAllCertificatesEngine : ITransferEngine
 
         logger.LogInformation("Getting certificates for {senderId}", transferAgreement.SenderId);
 
-        var certificates = await transferUtility.GetProductionCertificates(transferAgreement.SenderId);
+        var certificates = await transferUtility.GetProductionCertificates(transferAgreement.SenderId, cancellationToken);
 
         logger.LogInformation("Found {certificatesCount} certificates to transfer for transfer agreement with id {id}", certificates.Count,
             transferAgreement.Id);
 
-        var certificatesCount = certificates.Count();
+        var certificatesCount = certificates.Count;
+
         foreach (var certificate in certificates)
         {
             if (!IsPeriodMatching(transferAgreement, certificate))
