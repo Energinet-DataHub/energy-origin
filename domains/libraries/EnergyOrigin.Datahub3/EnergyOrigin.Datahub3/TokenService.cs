@@ -87,6 +87,7 @@ public class TokenService : ITokenService
             return _token!.AccessToken;
         }
 
+        _logger.LogWarning("New token could not be fetched.");
         return string.Empty;
     }
 
@@ -94,17 +95,12 @@ public class TokenService : ITokenService
     {
         if (_token is null)
         {
-            _logger.LogInformation("Token is null - Refreshing");
             return true;
         }
 
         var difference = _expiresOn - _timeProvider.GetUtcNow().ToUnixTimeSeconds();
         if (difference < _token.ExpiresIn / _halvingFactor)
         {
-            _logger.LogInformation(
-                    "Token is stale or expired {ExpiresIn}, {Difference}. Refreshing",
-                    _token.ExpiresIn, difference);
-
             return true;
         }
 
