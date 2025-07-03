@@ -41,7 +41,7 @@ public class TransferAllCertificatesEngine : ITransferEngine
         return transferAgreement.Type == TransferAgreementType.TransferAllCertificates;
     }
 
-    public void SetTrial(TransferAgreement transferAgreement)
+    public void SetEngineTrialState(TransferAgreement transferAgreement)
     {
         transferUtility.IsTrial = transferAgreement.IsTrial;
     }

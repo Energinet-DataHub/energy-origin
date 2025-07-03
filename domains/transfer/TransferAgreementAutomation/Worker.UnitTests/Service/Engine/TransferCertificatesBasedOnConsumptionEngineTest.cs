@@ -42,7 +42,7 @@ public class TransferCertificatesBasedOnConsumptionEngineTest
     {
         var receiverId = Any.OrganizationId();
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow.AddHours(-10), receiverId, null, true);
-        sut.SetTrial(transferAgreement);
+        sut.SetEngineTrialState(transferAgreement);
         var receiverConsumptionCert =
             Any.GranularCertificate(UnixTimestamp.Now().AddHours(-5), CertificateType.Consumption, 11, isTrial: true);
         SetupWalletServiceClient(transferAgreement.ReceiverId!.Value, [receiverConsumptionCert],

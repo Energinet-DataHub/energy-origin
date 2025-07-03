@@ -179,7 +179,7 @@ public class TransferAllCertificatesEngineTest
         SetupWalletServiceClient(
             [cert],
             new TransferResponse { TransferRequestId = Guid.NewGuid() });
-        sut.SetTrial(transferAgreement);
+        sut.SetEngineTrialState(transferAgreement);
 
         await sut.TransferCertificates(transferAgreement, CancellationToken.None);
 
@@ -198,7 +198,7 @@ public class TransferAllCertificatesEngineTest
     public async Task TransferCertificates_WhenCalledWithTrialTransferAgreementAndNoTrialCertificates_ShouldNotCallWalletTransferCertificate()
     {
         var transferAgreement = CreateTransferAgreement(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(3), isTrial: true);
-        sut.SetTrial(transferAgreement);
+        sut.SetEngineTrialState(transferAgreement);
 
         var cert = CreateGranularCertificate(DateTimeOffset.UtcNow.AddHours(1), DateTimeOffset.UtcNow.AddHours(2));
 

@@ -29,7 +29,7 @@ public class TransferEngineCoordinator : ITransferEngineCoordinator
             if (engine.IsSupported(transferAgreement))
             {
                 _logger.LogInformation("Handling transfer agreement with id {Id}", transferAgreement.Id);
-                engine.SetTrial(transferAgreement);
+                engine.SetEngineTrialState(transferAgreement);
                 await engine.TransferCertificates(transferAgreement, cancellationToken);
                 return;
             }

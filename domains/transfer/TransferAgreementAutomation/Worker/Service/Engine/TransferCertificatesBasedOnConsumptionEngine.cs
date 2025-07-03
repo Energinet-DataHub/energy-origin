@@ -34,7 +34,7 @@ public class TransferCertificatesBasedOnConsumptionEngine : ITransferEngine
         return transferAgreement.Type == TransferAgreementType.TransferCertificatesBasedOnConsumption;
     }
 
-    public void SetTrial(TransferAgreement transferAgreement)
+    public void SetEngineTrialState(TransferAgreement transferAgreement)
     {
         _transferUtility.IsTrial = transferAgreement.IsTrial;
     }

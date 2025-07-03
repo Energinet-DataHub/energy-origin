@@ -22,6 +22,6 @@ public class TransferEngineCoordinatorTests
 
         await coordinator.TransferCertificate(transferAgreement, CancellationToken.None);
 
-        fakeEngine.Received(1).SetTrial(Arg.Any<TransferAgreement>());
+        fakeEngine.Received(1).SetEngineTrialState(Arg.Any<TransferAgreement>());
     }
 }
