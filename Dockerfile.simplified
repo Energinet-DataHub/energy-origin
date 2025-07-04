@@ -11,7 +11,7 @@ WORKDIR /src/
 COPY domains/EnergyTrackAndTrace.sln ./domains/
 COPY Directory.Packages.props Directory.Build.targets ./
 
-COPY --link --from=build-context domains/**/*.csproj ./
+COPY --link domains/**/*.csproj ./
 
 RUN dotnet restore ${PROJECT}
 

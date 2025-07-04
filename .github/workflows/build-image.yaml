@@ -105,9 +105,9 @@ jobs:
         if: ${{ inputs.solution == '' || inputs.project == '' }}
         shell: bash
         run: |
-          DOCKERFILE=Dockerfile  # relative to the context dir
-          if [ ! -f "${{ inputs.context }}/$DOCKERFILE" ]; then
-            echo "❌ Dockerfile not found at: ${{ inputs.context }}/$DOCKERFILE"
+          DOCKERFILE="${{ inputs.context }}/Dockerfile"
+          if [ ! -f "$DOCKERFILE" ]; then
+            echo "❌ Dockerfile not found at: $DOCKERFILE"
             ls -l "${{ inputs.context }}"
             exit 1
           fi
