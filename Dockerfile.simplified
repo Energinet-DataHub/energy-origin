@@ -21,7 +21,7 @@ RUN --mount=type=cache,target=/root/.nuget/packages \
     --mount=type=cache,target=/root/.dotnet/tools \
     --mount=type=cache,target=/src/obj \
     --mount=type=cache,target=/src/bin \
-    dotnet restore ${PROJECT} -c Release -o /app/publish
+    dotnet publish ${PROJECT} -c Release -o /app/publish
 
 WORKDIR /app/publish
 
