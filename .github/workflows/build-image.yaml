@@ -150,7 +150,6 @@ jobs:
           file: ${{ env.DOCKERFILE }}
           push: ${{ inputs.dry-run != 'true' }}
           provenance: false
-          pull: true
           sbom: false
           tags: ${{ env.LOWERCASED }}:${{ env.version }}
 
