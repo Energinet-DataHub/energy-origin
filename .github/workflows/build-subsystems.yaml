@@ -169,8 +169,8 @@ jobs:
   update:
     permissions:
       actions: 'read'
-      id-token: 'write'
       contents: 'write'
+      id-token: 'write'
     runs-on: ubuntu-latest
     name: Update environment
     needs:
@@ -213,8 +213,8 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/') }}
     permissions:
       actions: 'read'
-      id-token: 'write'
       contents: 'write'
+      id-token: 'write'
     runs-on: ubuntu-latest
     needs: update
     concurrency: commits-base-environment
@@ -227,6 +227,14 @@ jobs:
           azure-tenant-id: d3803538-de83-47f3-bc72-54843a8592f2
           azure-client-id: 291fedbd-35c0-4fcb-9088-498d0c96c50d
           azure-client-secret: ${{ secrets.ENERGY_TRACK_AND_TRACE_B2C_CLIENT_SECRET_DEMO }}
+          policies-to-replace: "B2C_1A_OidcMock_V4,B2C_1A_ClientCredentials"
+
+      - name: Update B2C configmap in eo-base
+        uses: ./.github/actions/update-b2c-configmap-in-eo-base
+        with:
+          github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
+          github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
+          policy-name-to-substitute: "B2C_1A_OIDCMOCK_V4"
 
 
 
