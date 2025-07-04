@@ -84,10 +84,10 @@ jobs:
             solution: Oidc.Mock.sln
 
           - configuration: domains/redoc/configuration.yaml
-            context: domains/redoc
+            context: ./domains/redoc
 
           - configuration: domains/html-pdf-generator/configuration.yaml
-            context: domains/html-pdf-generator
+            context: ./domains/html-pdf-generator
 
           - configuration: domains/transfer/Transfer.API/configuration.yaml
             project: domains/transfer/Transfer.API/API/API.csproj

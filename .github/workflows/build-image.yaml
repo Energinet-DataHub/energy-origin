@@ -95,12 +95,8 @@ jobs:
 
       - name: Prepare Dockerfile for build
         shell: bash
-        env:
-          SOLUTION: ${{ inputs.solution }}
-          PROJECT: ${{ inputs.project }}
-          DIRECTORY: ${{ env.DIRECTORY }}
         run: |
-          if [ "$SOLUTION" != "" ] && [ "$PROJECT" != "" ]; then
+          if ${{ inputs.solution != '' && inputs.project != '' }}; then
             cp Dockerfile.simplified Dockerfile
             echo "DOCKERFILE=./Dockerfile" >> $GITHUB_ENV
           else
