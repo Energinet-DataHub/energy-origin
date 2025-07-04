@@ -35,8 +35,8 @@ on:
       dry-run:
         description: 'Skip pushing & scanning if true.'
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: 'false'
       build-args:
         description: 'Additional docker build-args. Ignored if solution+project provided.'
         required: false
