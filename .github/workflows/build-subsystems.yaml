@@ -26,33 +26,45 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Find diff
-        id: diff
+        id: diff-for-build
         uses: ./.github/actions/find-diff-action
         with:
           paths: domains/**
 
-      - name: Extract subsystems from file paths
-        id: extract
+  find-subsystems:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build subsystem matrix
+        id: build-matrix
         shell: bash
         run: |
-          echo "Raw file changes:"
-          echo "${{ steps.diff.outputs.list }}"
+          subsystems=$(find domains/ -mindepth 1 -maxdepth 1 -type d \
+            | sed 's|domains/||' \
+            | grep -vE '^(redoc|html-pdf-generator|libraries)$')
 
-          SUBSYSTEMS=$(echo "${{ steps.diff.outputs.list }}" \
-            | awk -F/ '/^domains\// {print $2}' \
-            | grep -vE '^$' \
-            | grep -vE '^redoc$|^html-pdf-generator$' \
-            | sort -u \
-            | jq -R . \
-            | jq -s .)
+          if [[ -z "$subsystems" ]]; then
+            echo "No subsystems found."
+            echo "matrix=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-          echo "Extracted matrix: $SUBSYSTEMS"
+          matrix=$(echo "$subsystems" | jq -R . | jq -sc .)
 
-          echo "matrix=$SUBSYSTEMS" >> "$GITHUB_OUTPUT"
+          echo "Final matrix: $matrix"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  dotnet-lint-solution:
+  test-subsystems-exclude-e2e:
     permissions: { }
     runs-on: ubuntu-22.04
+    needs: find-subsystems
+    if: ${{ needs.find-subsystems.outputs.matrix != '[]' }}
+    strategy:
+      matrix:
+        subsystem: ${{ fromJson(needs.find-subsystems.outputs.matrix) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -61,35 +73,15 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Run dotnet lint
-        uses: ./.github/actions/dotnet-lint-solution
-        with:
-          path: "domains"
-
-  test-subsystems-exclude-e2e:
-    runs-on: ubuntu-22.04
-    needs: find-diff
-    if: ${{ needs.find-diff.outputs.subsystems != '[]' }}
-    strategy:
-      matrix:
-        subsystem: ${{ fromJson(needs.find-diff.outputs.subsystems) }}
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 9.0.x
-
-      - name: Run tests for ${{ matrix.subsystem }}
+      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
         uses: ./.github/actions/dotnet-validate-solution
         with:
           subsystem: ${{ matrix.subsystem }}
-          pin-version: true
+          pin-version: "true"
           test-filter: "Category!=E2ETest"
 
   build-admin-portal:
+    needs: find-diff
     if: ${{ contains(needs.find-diff.outputs.list, 'admin-portal') }}
     permissions:
       actions: 'read'
@@ -105,6 +97,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
+    needs: find-diff
     if: ${{ contains(needs.find-diff.outputs.list, 'authorization') }}
     permissions:
       actions: 'read'
@@ -121,6 +114,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-certificates:
+    needs: find-diff
     if: ${{ contains(needs.find-diff.outputs.list, 'certificates') }}
     permissions:
       actions: 'read'
@@ -136,6 +130,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-html-pdf-generator:
+    needs: find-diff
     if: ${{ contains(needs.find-diff.outputs.list, 'html-pdf-generator') }}
     permissions:
       actions: 'read'
@@ -151,6 +146,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-measurements:
+    needs: find-diff
     if: ${{ contains(needs.find-diff.outputs.list, 'measurements') }}
     permissions:
       actions: 'read'
@@ -166,6 +162,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-oidc-mock:
+    needs: find-diff
     if: ${{ contains(needs.find-diff.outputs.list, 'oidc-mock') }}
     permissions:
       actions: 'read'
@@ -181,6 +178,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-openapi:
+    needs: find-diff
     if: ${{ contains(needs.find-diff.outputs.list, 'redoc') }}
     permissions:
       actions: 'read'
@@ -196,6 +194,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-transfer:
+    needs: find-diff
     if: ${{ contains(needs.find-diff.outputs.list, 'transfer') }}
     permissions:
       actions: 'read'
