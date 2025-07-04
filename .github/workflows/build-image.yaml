@@ -13,16 +13,6 @@ on:
         required: false
         type: string
         default: ''
-      sdk-version:
-        description: 'Override .NET SDK version (x.y.zzz). Only used if solution & project provided.'
-        required: false
-        type: string
-        default: ''
-      runtime-version:
-        description: 'Override .NET runtime version (x.y.z). Only used if solution & project provided.'
-        required: false
-        type: string
-        default: ''
       configuration:
         description: 'Path to configuration.yaml for image name lookup.'
         required: true
@@ -37,11 +27,6 @@ on:
         required: false
         type: string
         default: 'false'
-      build-args:
-        description: 'Additional docker build-args. Ignored if solution+project provided.'
-        required: false
-        type: string
-        default: ''
 
 jobs:
   build:
@@ -140,7 +125,10 @@ jobs:
           DOCKER_BUILD_SUMMARY: false
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
-          build-args: ${{ inputs.solution != '' && inputs.project != '' && format('PROJECT=%s SDK_VERSION=%s RUNTIME_VERSION=%s', inputs.project, env.SDK, env.RUNTIME) || inputs.build-args }}
+          build-args: |
+            ${{ inputs.project }}
+            ${{ env.SDK }}
+            ${{ env.RUNTIME }}
           context: ${{ inputs.context }}
           file: ${{ env.DOCKERFILE }}
           push: ${{ inputs.dry-run != 'true' }}
