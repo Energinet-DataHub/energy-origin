@@ -98,9 +98,9 @@ jobs:
         run: |
           if ${{ inputs.solution != '' && inputs.project != '' }}; then
             cp Dockerfile.simplified Dockerfile
-            echo "DOCKERFILE=./Dockerfile" >> $GITHUB_ENV
+            echo "DOCKERFILE=Dockerfile" >> $GITHUB_ENV
           else
-            echo "DOCKERFILE=$DIRECTORY/Dockerfile" >> $GITHUB_ENV
+            echo "DOCKERFILE=${{ inputs.context }}/Dockerfile" >> $GITHUB_ENV
           fi
 
       - name: Resolve image name
