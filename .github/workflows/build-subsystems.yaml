@@ -21,13 +21,22 @@ jobs:
     outputs:
       list: ${{ steps.diff.outputs.list }}
       matches: ${{ steps.diff.outputs.matches }}
+      test-matrix: ${{ steps.diff_test.outputs.list }}
     steps:
       - uses: actions/checkout@v4
-      - name: Find diff
+      - name: Find diff (all)
         id: diff
         uses: ./.github/actions/find-diff-action
         with:
           paths: domains/*
+      - name: Find diff (test matrix, exclude redoc and html-pdf-generator)
+        id: diff_test
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: |
+            domains/*
+            !domains/redoc
+            !domains/html-pdf-generator
 
   dotnet-lint-solution:
     permissions: { }
@@ -52,7 +61,7 @@ jobs:
     if: ${{ needs.find-diff.outputs.matches == 'true' }}
     strategy:
       matrix:
-        subsystem: ${{ fromJson(needs.find-diff.outputs.list) }}
+        subsystem: ${{ fromJson(needs.find-diff.outputs.test-matrix) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -62,7 +71,6 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
-        if: ${{ !contains('["redoc","html-pdf-generator"]', format('"{0}"', matrix.subsystem)) }}
         uses: ./.github/actions/dotnet-validate-solution
         with:
           subsystem: ${{ matrix.subsystem }}
