@@ -45,6 +45,7 @@ on:
 
 jobs:
   build:
+    name: "Build ${{ inputs.project }}"
     runs-on: ubuntu-latest
     permissions:
       contents: write
