@@ -64,28 +64,33 @@ jobs:
         with:
           dotnet-version: ${{ inputs.sdk-version != '' && inputs.sdk-version || '9.0.x' }}
 
-      - name: Load global.json
-        if: ${{ inputs.solution != '' && inputs.project != '' }}
-        shell: bash
-        run: |
-          DIR=$(dirname "${{ inputs.solution }}")
-          if [ -f "$DIR/global.json" ]; then
-            echo "SDK=$(jq -r '.sdk.version' "$DIR/global.json")" >> $GITHUB_ENV
-            echo "RUNTIME=$(jq -r '.runtime.version' "$DIR/global.json")" >> $GITHUB_ENV
-          fi
-
       - name: Override SDK/runtime
         if: ${{ inputs.solution != '' && inputs.project != '' }}
         shell: bash
         run: |
-          [ -n "${{ inputs.sdk-version }}" ] && echo "SDK=${{ inputs.sdk-version }}" >> $GITHUB_ENV
-          [ -n "${{ inputs.runtime-version }}" ] && echo "RUNTIME=${{ inputs.runtime-version }}" >> $GITHUB_ENV
+          DIRECTORY=$(dirname '${{ inputs.solution }}')
+          test -f "$DIRECTORY/global.json" || exit 0
+          echo "DIRECTORY=$DIRECTORY" | tee -a $GITHUB_ENV
+          echo "SDK=$(jq -rc '.sdk.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
+          echo "RUNTIME=$(jq -rc '.runtime.version' "$DIRECTORY/global.json")" | tee -a $GITHUB_ENV
 
       - name: Validate SDK/runtime
         if: ${{ inputs.solution != '' && inputs.project != '' }}
         shell: bash
         run: |
-          test -n "$SDK" && test -n "$RUNTIME"
+          if [ ! -z "${{ inputs.sdk-version }}" ]; then
+            echo "SDK=${{ inputs.sdk-version }}" | tee -a $GITHUB_ENV
+          fi
+          if [ ! -z "${{ inputs.runtime-version }}" ]; then
+            echo "RUNTIME=${{ inputs.runtime-version }}" | tee -a $GITHUB_ENV
+          fi
+
+      - name: Fail - if versions are not present
+        shell: bash
+        run: |
+          set +e
+          ! test -z "${{ env.SDK }}"
+          ! test -z "${{ env.RUNTIME }}"
 
       - name: Prepare Dockerfile for build
         shell: bash
