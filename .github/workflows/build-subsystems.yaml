@@ -60,44 +60,55 @@ jobs:
       matrix:
         subsystem:
           - configuration: domains/admin-portal/AdminPortal.Web/configuration.yaml
+            name: Admin Portal
             project: domains/admin-portal/AdminPortal.Web/AdminPortal/AdminPortal.csproj
             solution: domains/admin-portal/AdminPortal.sln
 
           - configuration: domains/authorization/Authorization.API/configuration.yaml
+            name: Authorization API
             project: domains/authorization/Authorization.API/API/API.csproj
             solution: Authorization.sln
 
           - configuration: domains/authorization/Proxy/configuration.yaml
+            name: Authorization Proxy
             project: domains/authorization/Proxy/Proxy.csproj
             solution: Authorization.sln
 
           - configuration: domains/certificates/Query.API/configuration.yaml
+            name: Certificates Query.API
             project: domains/certificates/Query.API/API/API.csproj
             solution: Certificates.sln
 
           - configuration: domains/measurements/Measurements.API/configuration.yaml
+            name: measurements/Measurements.API
             project: domains/measurements/Measurements.API/API/API.csproj
             solution: Measurements.sln
 
           - configuration: domains/oidc-mock/API/configuration.yaml
+            name: OIDC Mock
             project: domains/oidc-mock/API/Mock/Oidc.Mock.csproj
             solution: Oidc.Mock.sln
 
           - configuration: domains/redoc/configuration.yaml
+            name: Developer Docs
             context: ./domains/redoc
 
           - configuration: domains/html-pdf-generator/configuration.yaml
+            name: PDF Generator
             context: ./domains/html-pdf-generator
 
           - configuration: domains/transfer/Transfer.API/configuration.yaml
+            name: Transfer API
             project: domains/transfer/Transfer.API/API/API.csproj
             solution: Transfer.sln
 
           - configuration: domains/transfer/ClaimAutomation/configuration.yaml
+            name: ClaimAutomation Worker
             project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
             solution: Transfer.sln
 
           - configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
+            name: TransferAutomation Worker
             project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
             solution: Transfer.sln
 
@@ -110,6 +121,7 @@ jobs:
       id-token: write
       security-events: write
     with:
+      name: ${{ matrix.subsystem.name }}
       configuration: ${{ matrix.subsystem.configuration }}
       context: ${{ matrix.subsystem.context }}
       dry-run: ${{ inputs.dry-run }}

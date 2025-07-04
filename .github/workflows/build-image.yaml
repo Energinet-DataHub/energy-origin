@@ -3,16 +3,6 @@ name: Build & Push Container Image
 on:
   workflow_call:
     inputs:
-      solution:
-        description: 'Path to a .NET solution file (.sln). If provided alongside `project`, enables .NET steps.'
-        required: false
-        type: string
-        default: ''
-      project:
-        description: 'Path to a .NET project file (.csproj). If provided alongside `solution`, enables .NET steps.'
-        required: false
-        type: string
-        default: ''
       configuration:
         description: 'Path to configuration.yaml for image name lookup.'
         required: true
@@ -27,10 +17,25 @@ on:
         required: false
         type: string
         default: 'false'
+      name:
+        description: 'Name of project'
+        required: false
+        type: string
+        default: ''
+      project:
+        description: 'Path to a .NET project file (.csproj). If provided alongside `solution`, enables .NET steps.'
+        required: false
+        type: string
+        default: ''
+      solution:
+        description: 'Path to a .NET solution file (.sln). If provided alongside `project`, enables .NET steps.'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   build:
-    name: "Build ${{ inputs.project }}"
+    name: "Build ${{ inputs.name }}"
     runs-on: ubuntu-latest
     permissions:
       contents: write
