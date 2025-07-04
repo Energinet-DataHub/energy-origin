@@ -49,11 +49,6 @@ jobs:
     uses: ./.github/workflows/dependabot-validate.yaml
     secrets: inherit
 
-  editorconfig-check:
-    permissions:
-      contents: read
-    uses: ./.github/workflows/editorconfig.yaml
-
   allow-merge-ci-orchestrator:
     permissions: { }
     runs-on: ubuntu-latest
