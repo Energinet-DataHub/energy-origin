@@ -211,7 +211,7 @@ jobs:
 
   build-transfer:
     needs: find-diff
-    if: ${{ contains(needs.find-diff.outputs.list, 'transfer') }}
+    if: ${{ contains(join(split(needs.find-diff.outputs.list, '\n'), ','), 'domains/transfer') }}
     permissions:
       actions: 'read'
       attestations: 'write'
