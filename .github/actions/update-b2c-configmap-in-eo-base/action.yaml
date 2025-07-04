@@ -18,7 +18,7 @@ inputs:
   branch:
     description: Branch in the target repo to update
     required: false
-    default: ${{ github.ref_name }}
+    default: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
   configmap-path:
     description: Path to the authorization ConfigMap in the repo
     required: false
