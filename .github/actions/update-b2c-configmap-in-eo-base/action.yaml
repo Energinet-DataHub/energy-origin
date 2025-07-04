@@ -26,15 +26,20 @@ inputs:
   policy-name-to-substitute:
     description: The original B2C policy identifier to replace
     required: false
-    default: "B2C_1A_OIDCMOCK_V4"
+    default: B2C_1A_OIDCMOCK_V4
 
 runs:
   using: composite
   steps:
-    - name: Extract PREVIEW_ID from branch
+    - name: Extract PREVIEW_ID from branch (uppercase)
       shell: bash
       run: |
-        BRANCH="${{ inputs.branch }}"
+        if [[ -n "$GITHUB_HEAD_REF" ]]; then
+          BRANCH="$GITHUB_HEAD_REF"
+        else
+          BRANCH="${GITHUB_REF#refs/heads/}"
+        fi
+
         RAW_ID="${BRANCH#preview/}"
         PREVIEW_ID=$(echo "$RAW_ID" \
           | tr '[:lower:]' '[:upper:]' \
@@ -58,6 +63,14 @@ runs:
         path: base
         fetch-depth: 0
 
+    - name: Use correct branch
+      working-directory: base
+      shell: bash
+      run: |
+        git fetch origin ${{ inputs.branch }} \
+          && git checkout ${{ inputs.branch }} 2>/dev/null \
+          || git checkout -b ${{ inputs.branch }}
+
     - name: Check if ConfigMap already patched
       shell: bash
       run: |
@@ -67,12 +80,13 @@ runs:
           exit 0
         fi
 
-    - name: Patch B2C URLs in ConfigMap
+    - name: Patch B2C policy identifier in ConfigMap
       shell: bash
       run: |
         FILE=base/${{ inputs.configmap-path }}
+        # Append _PREVIEW_ID to the original policy name
         sed -i \
-          -e "s|${{ inputs.policy-name-to-substitute }}|${{ env.PREVIEW_ID }}|g" \
+          -e "s|${{ inputs.policy-name-to-substitute }}|&_${{ env.PREVIEW_ID }}|g" \
           "$FILE"
 
     - name: Commit & Push ConfigMap update
