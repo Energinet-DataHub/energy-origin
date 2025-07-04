@@ -123,9 +123,6 @@ jobs:
               }
             }
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Log in to GHCR
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
