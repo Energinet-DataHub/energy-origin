@@ -38,3 +38,5 @@
 - [EnergyOrigin.IntegrationEvents](./libraries/dotnet/EnergyOrigin.IntegrationEvents/README.md)
 - [EnergyOrigin.Setup](./libraries/dotnet/EnergyOrigin.Setup/README.md)
 - [EnergyOrigin.TokenValidation](./libraries/dotnet/EnergyOrigin.TokenValidation/README.md)
+
+# DIFF HERE SHOULD NOT TRIGGER EITHER TESTING OR BUILDING!
