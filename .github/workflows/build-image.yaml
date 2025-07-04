@@ -134,6 +134,8 @@ jobs:
             RUNTIME_VERSION=${{ env.RUNTIME }}
             SDK_VERSION=${{ env.SDK }}
           context: ${{ inputs.solution != '' && inputs.project != '' && '.' || inputs.context }}
+          build-contexts: |
+            build-context=.
           file: ${{ env.DOCKERFILE }}
           push: ${{ inputs.dry-run != 'true' }}
           provenance: false
