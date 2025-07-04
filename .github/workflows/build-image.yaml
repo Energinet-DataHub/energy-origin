@@ -153,6 +153,7 @@ jobs:
             SDK_VERSION=${{ env.SDK }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          load: true
           context: ${{ inputs.solution != '' && inputs.project != '' && '.' || inputs.context }}
           file: ${{ env.DOCKERFILE }}
           push: ${{ inputs.dry-run != 'true' }}
