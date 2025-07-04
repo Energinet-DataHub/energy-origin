@@ -126,7 +126,7 @@ public class ProjectOriginStack : RegistryFixture
             var hostPort = ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
 
             return new ContainerBuilder()
-                .WithImage("ghcr.io/project-origin/stamp:6.1.2")
+                .WithImage("ghcr.io/project-origin/stamp:6.1.6")
                 .WithNetwork(Network)
                 .WithNetworkAliases(StampAlias)
                 .WithPortBinding(hostPort, StampHttpPort)
