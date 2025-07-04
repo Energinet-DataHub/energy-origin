@@ -99,16 +99,15 @@ jobs:
         shell: bash
         run: |
           cp Dockerfile.simplified Dockerfile
-          echo "DOCKERFILE=./Dockerfile" >> $GITHUB_ENV
+          echo "DOCKERFILE=$GITHUB_WORKSPACE/Dockerfile" >> $GITHUB_ENV
 
       - name: Use Dockerfile from context path
         if: ${{ inputs.solution == '' || inputs.project == '' }}
         shell: bash
         run: |
-          DOCKERFILE="${{ inputs.context }}/Dockerfile"
-          if [ ! -f "$DOCKERFILE" ]; then
-            echo "❌ Dockerfile not found at: $DOCKERFILE"
-            echo "Available files in context:"
+          DOCKERFILE=Dockerfile  # relative to the context dir
+          if [ ! -f "${{ inputs.context }}/$DOCKERFILE" ]; then
+            echo "❌ Dockerfile not found at: ${{ inputs.context }}/$DOCKERFILE"
             ls -l "${{ inputs.context }}"
             exit 1
           fi
