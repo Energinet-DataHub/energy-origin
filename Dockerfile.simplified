@@ -8,9 +8,9 @@ ARG MIGRATIONS
 
 WORKDIR /src/
 
-COPY domains/EnergyTrackAndTrace.sln ./domains/
-COPY Directory.Packages.props Directory.Build.targets ./
-COPY --link --from=build-context domains/**/*.csproj ./domains/
+COPY domains/EnergyTrackAndTrace.sln ./src/
+COPY Directory.Packages.props Directory.Build.targets ./src/
+COPY --link --from=build-context domains/**/*.csproj ./src/
 
 RUN dotnet restore ${PROJECT}
 COPY --link . .
