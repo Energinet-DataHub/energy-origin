@@ -97,14 +97,16 @@ jobs:
             echo "DOCKERFILE=${{ inputs.context }}/Dockerfile" >> $GITHUB_ENV
           fi
 
+      - name: Resolve image name
+        shell: bash
+        run: echo "name=$(yq '.name' '${{ inputs.configuration }}')" | tee -a $GITHUB_ENV
+
       - name: Resolve image version
         uses: Energinet-DataHub/.github/.github/actions/docker-image-version@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
 
-      - name: Resolve image name
+      - name: Resolve container image tag
         shell: bash
-        run: |
-          NAME=$(yq '.name' "${{ inputs.configuration }}")
-          echo "LOWERCASED=ghcr.io/${{ github.repository_owner }}/${NAME,,}" >> $GITHUB_ENV
+        run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ env.name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Log in to GHCR
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
@@ -129,13 +131,13 @@ jobs:
           provenance: false
           pull: true
           sbom: false
-          tags: ${{ env.LOWERCASED }}:${{ inputs.solution != '' && inputs.project != '' && env.version || inputs.dry-run && 'local' || env.version }}
+          tags: ${{ env.LOWERCASED }}:${{ env.version }}
 
       - name: Scan image
         if: ${{ inputs.dry_run != 'true' && ( (github.event_name == 'pull_request' && github.event.pull_request.draft == false && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'push' && github.ref_name == 'main') ) }}
         uses: ./.github/actions/docker-scan
         with:
-          image-name: ${{ env.LOWERCASED }}
-          image-tag: ${{ steps.build.outputs.digest }}
+          image-name: ${{ env.name }}
+          image-tag: ${{ env.version }}
           image-digest: ${{ steps.build.outputs.digest }}
           upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
