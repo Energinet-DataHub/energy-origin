@@ -21,13 +21,30 @@ jobs:
     outputs:
       list: ${{ steps.diff.outputs.list }}
       matches: ${{ steps.diff.outputs.matches }}
+      filtered-matrix: ${{ steps.filter.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+
       - name: Find diff
         id: diff
         uses: ./.github/actions/find-diff-action
         with:
           paths: domains/*
+
+      - name: Filter out redoc & html-pdf-generator
+        id: filter
+        shell: bash
+        run: |
+          echo "Raw input:"
+          echo "${{ steps.diff.outputs.list }}"
+
+          FILTERED=$(echo "${{ steps.diff.outputs.list }}" \
+            | grep -vE '^redoc$|^html-pdf-generator$' \
+            | jq -R . \
+            | jq -s .)
+
+          echo "Filtered matrix: $FILTERED"
+          echo "matrix=$FILTERED" >> "$GITHUB_OUTPUT"
 
   dotnet-lint-solution:
     permissions: { }
@@ -46,27 +63,25 @@ jobs:
           path: "domains"
 
   test-subsystems-exclude-e2e:
-    permissions: { }
     runs-on: ubuntu-22.04
     needs: find-diff
-    if: ${{ needs.find-diff.outputs.matches == 'true' }}
+    if: ${{ fromJson(needs.find-diff.outputs.filtered-matrix) != '[]' }}
     strategy:
       matrix:
-        subsystem: ${{ fromJson(needs.find-diff.outputs.list) }}
+        subsystem: ${{ fromJson(needs.find-diff.outputs.filtered-matrix) }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@v4
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
 
-      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
-        if: ${{ !contains('["redoc","html-pdf-generator"]', format('"{0}"', matrix.subsystem)) }}
+      - name: Run tests for ${{ matrix.subsystem }}
         uses: ./.github/actions/dotnet-validate-solution
         with:
           subsystem: ${{ matrix.subsystem }}
-          pin-version: "true"
+          pin-version: true
           test-filter: "Category!=E2ETest"
 
   build-admin-portal:
