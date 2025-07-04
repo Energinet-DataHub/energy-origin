@@ -94,15 +94,25 @@ jobs:
           ! test -z "${{ env.SDK }}"
           ! test -z "${{ env.RUNTIME }}"
 
-      - name: Prepare Dockerfile for build
+      - name: Use simplified Dockerfile
+        if: ${{ inputs.solution != '' && inputs.project != '' }}
         shell: bash
         run: |
-          if ${{ inputs.solution != '' && inputs.project != '' }}; then
-            cp Dockerfile.simplified Dockerfile
-            echo "DOCKERFILE=Dockerfile" >> $GITHUB_ENV
-          else
-            echo "DOCKERFILE=${{ inputs.context }}/Dockerfile" >> $GITHUB_ENV
+          cp Dockerfile.simplified Dockerfile
+          echo "DOCKERFILE=./Dockerfile" >> $GITHUB_ENV
+
+      - name: Use Dockerfile from context path
+        if: ${{ inputs.solution == '' || inputs.project == '' }}
+        shell: bash
+        run: |
+          DOCKERFILE="${{ inputs.context }}/Dockerfile"
+          if [ ! -f "$DOCKERFILE" ]; then
+            echo "❌ Dockerfile not found at: $DOCKERFILE"
+            echo "Available files in context:"
+            ls -l "${{ inputs.context }}"
+            exit 1
           fi
+          echo "DOCKERFILE=$DOCKERFILE" >> $GITHUB_ENV
 
       - name: Resolve image name
         shell: bash
