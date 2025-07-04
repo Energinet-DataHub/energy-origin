@@ -10,7 +10,7 @@ WORKDIR /src/
 
 COPY Directory.Packages.props Directory.Build.targets ./
 
-COPY domains/**/*.csproj ./
+COPY domains/**/*.csproj ./domains/
 
 COPY domains/EnergyTrackAndTrace.sln ./domains/
 
