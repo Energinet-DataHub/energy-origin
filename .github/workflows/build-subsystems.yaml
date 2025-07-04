@@ -59,67 +59,62 @@ jobs:
       fail-fast: false
       matrix:
         subsystem:
-          - name: admin-portal
-            configuration: domains/admin-portal/AdminPortal.Web/configuration.yaml
-            dockerfile: Dockerfile.simplified
+          - configuration: domains/admin-portal/AdminPortal.Web/configuration.yaml
             project: domains/admin-portal/AdminPortal.Web/AdminPortal/AdminPortal.csproj
             solution: domains/admin-portal/AdminPortal.sln
 
-          - name: authorization-api
-            configuration: domains/authorization/Authorization.API/configuration.yaml
-            dockerfile: Dockerfile
+          - configuration: domains/authorization/Authorization.API/configuration.yaml
             project: domains/authorization/Authorization.API/API/API.csproj
             solution: Authorization.sln
 
-          - name: authorization-proxy
-            configuration: domains/authorization/Proxy/configuration.yaml
-            dockerfile: domains/authorization/Proxy/Dockerfile
+          - configuration: domains/authorization/Proxy/configuration.yaml
             project: domains/authorization/Proxy/Proxy.csproj
             solution: Authorization.sln
 
-          - name: certificates
-            configuration: domains/certificates/Query.API/configuration.yaml
-            dockerfile: Dockerfile
+          - configuration: domains/certificates/Query.API/configuration.yaml
             project: domains/certificates/Query.API/API/API.csproj
             solution: Certificates.sln
 
-          - name: measurements
-            configuration: domains/measurements/Measurements.API/configuration.yaml
-            dockerfile: Dockerfile
+          - configuration: domains/measurements/Measurements.API/configuration.yaml
             project: domains/measurements/Measurements.API/API/API.csproj
             solution: Measurements.sln
 
-          - name: oidc-mock
-            configuration: domains/oidc-mock/configuration.yaml
-            dockerfile: domains/oidc-mock/Dockerfile
+          - configuration: domains/oidc-mock/API/configuration.yaml
             project: domains/oidc-mock/API/Mock/Oidc.Mock.csproj
             solution: Oidc.Mock.sln
 
-          - name: transfer
-            configuration: domains/transfer/configuration.yaml
-            dockerfile: domains/transfer/Dockerfile
+          - configuration: domains/redoc/configuration.yaml
+            context: domains/redoc
+
+          - configuration: domains/html-pdf-generator/configuration.yaml
+            context: domains/html-pdf-generator
+
+          - configuration: domains/transfer/Transfer.API/configuration.yaml
             project: domains/transfer/Transfer.API/API/API.csproj
             solution: Transfer.sln
 
-          - name: TransferAutomation.Worker
-            configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
-            dockerfile: ./Dockerfile.simplified
+          - configuration: domains/transfer/ClaimAutomation/configuration.yaml
+            project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
+            solution: Transfer.sln
+
+          - configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
             project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
             solution: Transfer.sln
 
-          - name: ClaimAutomation.Worker
-            configuration: domains/transfer/ClaimAutomation/configuration.yaml
-            dockerfile: ./Dockerfile.simplified
-            project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
-            solution: Transfer.sln
     uses: ./.github/workflows/build-image.yaml
+    permissions:
+      contents: write
+      packages: write
+      actions: read
+      attestations: write
+      id-token: write
+      security-events: write
     with:
-      configuration: ${{ matrix.subsystem.configuration }}
-      dockerfile: ${{ matrix.subsystem.dockerfile }}
+      configuration: ${{ matrix.configuration }}
+      context: ${{ matrix.context }}
       dry-run: ${{ inputs.dry-run }}
-      project: ${{ matrix.subsystem.project }}
-      solution: ${{ matrix.subsystem.solution }}
-    secrets: inherit
+      project: ${{ matrix.project }}
+      solution: ${{ matrix.solution }}
 
   update:
     permissions:

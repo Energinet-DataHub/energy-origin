@@ -4,22 +4,22 @@ on:
   workflow_call:
     inputs:
       solution:
-        description: 'Path to a .NET solution file (.sln). If provided alongside `project`, enables .NET build steps.'
+        description: 'Path to a .NET solution file (.sln). If provided alongside `project`, enables .NET steps.'
         required: false
         type: string
         default: ''
       project:
-        description: 'Path to a .NET project file (.csproj). If provided alongside `solution`, enables .NET build steps.'
+        description: 'Path to a .NET project file (.csproj). If provided alongside `solution`, enables .NET steps.'
         required: false
         type: string
         default: ''
       sdk-version:
-        description: 'Override .NET SDK version (x.y.zzz). Only used if solution & project are provided.'
+        description: 'Override .NET SDK version (x.y.zzz). Only used if solution & project provided.'
         required: false
         type: string
         default: ''
       runtime-version:
-        description: 'Override .NET runtime version (x.y.z). Only used if solution & project are provided.'
+        description: 'Override .NET runtime version (x.y.z). Only used if solution & project provided.'
         required: false
         type: string
         default: ''
@@ -27,12 +27,8 @@ on:
         description: 'Path to configuration.yaml for image name lookup.'
         required: true
         type: string
-      dockerfile:
-        description: 'Path to the Dockerfile to build.'
-        required: true
-        type: string
       context:
-        description: 'Docker build context directory.'
+        description: 'Docker build context directory. For non-.NET: where Dockerfile resides.'
         required: false
         type: string
         default: '.'
@@ -42,13 +38,10 @@ on:
         type: boolean
         default: false
       build-args:
-        description: 'Additional docker build-args. Ignored if solution+project are provided.'
+        description: 'Additional docker build-args. Ignored if solution+project provided.'
         required: false
         type: string
         default: ''
-    outputs:
-      digest:
-        description: 'Digest of the pushed image.'
 
 jobs:
   build:
@@ -63,11 +56,11 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup .NET SDK
         if: ${{ inputs.solution != '' && inputs.project != '' }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: ${{ inputs.sdk-version != '' && inputs.sdk-version || '9.0.x' }}
 
@@ -94,53 +87,55 @@ jobs:
         run: |
           test -n "$SDK" && test -n "$RUNTIME"
 
-      - name: Copy simplified Dockerfile
-        if: ${{ inputs.solution != '' && inputs.project != '' }}
-        run: cp ./Dockerfile.simplified ./Dockerfile
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts/
+      - name: Prepare Dockerfile for build
+        shell: bash
+        run: |
+          if [ "${{ inputs.solution }}" != "" ] && [ "${{ inputs.project }}" != "" ]; then
+            cp Dockerfile.simplified Dockerfile
+            echo "DOCKERFILE=./Dockerfile" >> $GITHUB_ENV
+          else
+            echo "DOCKERFILE=${{ inputs.context }}/Dockerfile" >> $GITHUB_ENV
+          fi
 
       - name: Resolve image version
-        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@v14
+        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@83315db621b8631cc0db734ad6f1499add009b46 # v14.38.4
 
       - name: Resolve image name
         shell: bash
         run: |
-          NAME=$(yq '.name' '${{ inputs.configuration }}')
+          NAME=$(yq '.name' "${{ inputs.configuration }}")
           echo "LOWERCASED=ghcr.io/${{ github.repository_owner }}/${NAME,,}" >> $GITHUB_ENV
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
+          ecr: false
 
       - name: Build & push image
         id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        env:
+          DOCKER_BUILDKIT: 1
+          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
+          build-args: ${{ inputs.solution != '' && inputs.project != '' && format('PROJECT=%s SDK_VERSION=%s RUNTIME_VERSION=%s', inputs.project, env.SDK, env.RUNTIME) || inputs.build-args }}
           context: ${{ inputs.context }}
-          file: ${{ inputs.dockerfile }}
-          push: ${{ !inputs.dry-run }}
-          tags: ${{ env.LOWERCASED }}:${{ inputs.solution != '' && inputs.project != '' && env.version || inputs.dry-run && 'local' || env.version }}
-          build-args: |
-            ${{ inputs.solution != '' && inputs.project != '' && format('PROJECT=%s SDK_VERSION=%s RUNTIME_VERSION=%s', inputs.project, env.SDK, env.RUNTIME) || inputs.build-args }}
-          sbom: false
+          file: ${{ env.DOCKERFILE }}
+          push: ${{ inputs.dry-run != 'true' }}
           provenance: false
           pull: true
+          sbom: false
+          tags: ${{ env.LOWERCASED }}:${{ inputs.solution != '' && inputs.project != '' && env.version || inputs.dry-run && 'local' || env.version }}
 
       - name: Scan image
-        if: ${{ !inputs.dry-run }}
+        if: ${{ inputs.dry_run != 'true' && ( (github.event_name == 'pull_request' && github.event.pull_request.draft == false && startsWith(github.event.pull_request.head.ref, 'preview/')) || (github.event_name == 'push' && github.ref_name == 'main') ) }}
         uses: ./.github/actions/docker-scan
         with:
           image-name: ${{ env.LOWERCASED }}
           image-tag: ${{ steps.build.outputs.digest }}
           image-digest: ${{ steps.build.outputs.digest }}
           upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-
-      - name: Set output
-        run: echo "digest=${{ steps.build.outputs.digest }}" >> $GITHUB_OUTPUT
