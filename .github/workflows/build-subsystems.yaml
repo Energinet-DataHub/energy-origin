@@ -110,11 +110,11 @@ jobs:
       id-token: write
       security-events: write
     with:
-      configuration: ${{ matrix.configuration }}
-      context: ${{ matrix.context }}
+      configuration: ${{ matrix.subsystem.configuration }}
+      context: ${{ matrix.subsystem.context }}
       dry-run: ${{ inputs.dry-run }}
-      project: ${{ matrix.project }}
-      solution: ${{ matrix.solution }}
+      project: ${{ matrix.subsystem.project }}
+      solution: ${{ matrix.subsystem.solution }}
 
   update:
     permissions:
