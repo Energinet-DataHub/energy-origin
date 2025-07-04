@@ -23,7 +23,7 @@ jobs:
       matches: ${{ steps.diff.outputs.matches }}
       subsystems: ${{ steps.extract.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Find diff
         id: diff-for-build
@@ -37,7 +37,7 @@ jobs:
     outputs:
       matrix: ${{ steps.build-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Build subsystem matrix from diff
         id: build-matrix
