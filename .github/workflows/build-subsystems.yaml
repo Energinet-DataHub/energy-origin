@@ -16,6 +16,19 @@ permissions: { }
 
 jobs:
 
+  find-diff:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.diff.outputs.list }}
+      matches: ${{ steps.diff.outputs.matches }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find diff
+        id: diff
+        uses: ./.github/actions/find-diff-action
+        with:
+          paths: domains/*
+
   dotnet-lint-solution:
     permissions: { }
     runs-on: ubuntu-22.04
@@ -35,10 +48,11 @@ jobs:
   test-subsystems-exclude-e2e:
     permissions: { }
     runs-on: ubuntu-22.04
+    needs: find-diff
+    if: ${{ needs.find-diff.outputs.matches == 'true' }}
     strategy:
       matrix:
-        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer, libraries]
-      fail-fast: false
+        subsystem: ${{ fromJson(needs.find-diff.outputs.list) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -48,6 +62,7 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
+        if: ${{ !contains('["redoc","html-pdf-generator"]', format('"{0}"', matrix.subsystem)) }}
         uses: ./.github/actions/dotnet-validate-solution
         with:
           subsystem: ${{ matrix.subsystem }}
@@ -55,6 +70,7 @@ jobs:
           test-filter: "Category!=E2ETest"
 
   build-admin-portal:
+    if: ${{ contains(needs.find-diff.outputs.list, 'admin-portal') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -69,6 +85,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-authorization:
+    if: ${{ contains(needs.find-diff.outputs.list, 'authorization') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -79,10 +96,12 @@ jobs:
     uses: ./.github/workflows/build-authorization.yaml
     secrets: inherit
     with:
+      diff-list: ${{ needs.find-diff.outputs.list }}
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-certificates:
+    if: ${{ contains(needs.find-diff.outputs.list, 'certificates') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -97,6 +116,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-html-pdf-generator:
+    if: ${{ contains(needs.find-diff.outputs.list, 'html-pdf-generator') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -111,6 +131,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-measurements:
+    if: ${{ contains(needs.find-diff.outputs.list, 'measurements') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -125,6 +146,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-oidc-mock:
+    if: ${{ contains(needs.find-diff.outputs.list, 'oidc-mock') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -139,6 +161,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-openapi:
+    if: ${{ contains(needs.find-diff.outputs.list, 'redoc') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -153,6 +176,7 @@ jobs:
       is-dependabot: ${{ inputs.is-dependabot }}
 
   build-transfer:
+    if: ${{ contains(needs.find-diff.outputs.list, 'transfer') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -163,6 +187,7 @@ jobs:
     uses: ./.github/workflows/build-transfer.yaml
     secrets: inherit
     with:
+      diff-list: ${{ needs.find-diff.outputs.list }}
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 

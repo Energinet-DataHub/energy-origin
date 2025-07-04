@@ -3,6 +3,10 @@ name: Build Transfer
 on:
   workflow_call:
     inputs:
+      diff-list:
+        description: "List of files that has changes"
+        required: true
+        type: string
       dry-run:
         description: "An indication of whether to commit/publish results"
         required: true
@@ -15,7 +19,9 @@ on:
 permissions: { }
 
 jobs:
+
   build-api:
+    if: ${{ contains(inputs.diff-list, 'transfer/Transfer.API') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -41,6 +47,7 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-claim-automation:
+    if: ${{ contains(inputs.diff-list, 'transfer/ClaimAutomation') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -66,6 +73,7 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-transfer-automation:
+    if: ${{ contains(inputs.diff-list, 'transfer/TransferAgreementAutomation') }}
     permissions:
       actions: 'read'
       attestations: 'write'

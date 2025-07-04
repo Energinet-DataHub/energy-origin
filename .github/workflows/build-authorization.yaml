@@ -3,6 +3,10 @@ name: Build Authorization
 on:
   workflow_call:
     inputs:
+      diff-list:
+        description: "List of files that has changes"
+        required: true
+        type: string
       dry-run:
         description: "An indication of whether to commit/publish results"
         required: true
@@ -15,7 +19,9 @@ on:
 permissions: { }
 
 jobs:
+
   build-api:
+    if: ${{ contains(inputs.diff-list, 'authorization/Authorization.API') }}
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -41,6 +47,7 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
 
   build-proxy:
+    if: ${{ contains(inputs.diff-list, 'authorization/Proxy') || contains(inputs.diff-list, 'authorization/Proxy.IntegrationTests') }}
     permissions:
       actions: 'read'
       attestations: 'write'
