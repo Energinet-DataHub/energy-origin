@@ -1,0 +1,146 @@
+name: Build & Push Container Image
+
+on:
+  workflow_call:
+    inputs:
+      solution:
+        description: 'Path to a .NET solution file (.sln). If provided alongside `project`, enables .NET build steps.'
+        required: false
+        type: string
+        default: ''
+      project:
+        description: 'Path to a .NET project file (.csproj). If provided alongside `solution`, enables .NET build steps.'
+        required: false
+        type: string
+        default: ''
+      sdk-version:
+        description: 'Override .NET SDK version (x.y.zzz). Only used if solution & project are provided.'
+        required: false
+        type: string
+        default: ''
+      runtime-version:
+        description: 'Override .NET runtime version (x.y.z). Only used if solution & project are provided.'
+        required: false
+        type: string
+        default: ''
+      configuration:
+        description: 'Path to configuration.yaml for image name lookup.'
+        required: true
+        type: string
+      dockerfile:
+        description: 'Path to the Dockerfile to build.'
+        required: true
+        type: string
+      context:
+        description: 'Docker build context directory.'
+        required: false
+        type: string
+        default: '.'
+      dry-run:
+        description: 'Skip pushing & scanning if true.'
+        required: false
+        type: boolean
+        default: false
+      build-args:
+        description: 'Additional docker build-args. Ignored if solution+project are provided.'
+        required: false
+        type: string
+        default: ''
+    outputs:
+      digest:
+        description: 'Digest of the pushed image.'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      actions: read
+      attestations: write
+      id-token: write
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        if: ${{ inputs.solution != '' && inputs.project != '' }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.sdk-version != '' && inputs.sdk-version || '9.0.x' }}
+
+      - name: Load global.json
+        if: ${{ inputs.solution != '' && inputs.project != '' }}
+        shell: bash
+        run: |
+          DIR=$(dirname "${{ inputs.solution }}")
+          if [ -f "$DIR/global.json" ]; then
+            echo "SDK=$(jq -r '.sdk.version' "$DIR/global.json")" >> $GITHUB_ENV
+            echo "RUNTIME=$(jq -r '.runtime.version' "$DIR/global.json")" >> $GITHUB_ENV
+          fi
+
+      - name: Override SDK/runtime
+        if: ${{ inputs.solution != '' && inputs.project != '' }}
+        shell: bash
+        run: |
+          [ -n "${{ inputs.sdk-version }}" ] && echo "SDK=${{ inputs.sdk-version }}" >> $GITHUB_ENV
+          [ -n "${{ inputs.runtime-version }}" ] && echo "RUNTIME=${{ inputs.runtime-version }}" >> $GITHUB_ENV
+
+      - name: Validate SDK/runtime
+        if: ${{ inputs.solution != '' && inputs.project != '' }}
+        shell: bash
+        run: |
+          test -n "$SDK" && test -n "$RUNTIME"
+
+      - name: Copy simplified Dockerfile
+        if: ${{ inputs.solution != '' && inputs.project != '' }}
+        run: cp ./Dockerfile.simplified ./Dockerfile
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Resolve image version
+        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@v14
+
+      - name: Resolve image name
+        shell: bash
+        run: |
+          NAME=$(yq '.name' '${{ inputs.configuration }}')
+          echo "LOWERCASED=ghcr.io/${{ github.repository_owner }}/${NAME,,}" >> $GITHUB_ENV
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build & push image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          push: ${{ !inputs.dry-run }}
+          tags: ${{ env.LOWERCASED }}:${{ inputs.solution != '' && inputs.project != '' && env.version || inputs.dry-run && 'local' || env.version }}
+          build-args: |
+            ${{ inputs.solution != '' && inputs.project != '' && format('PROJECT=%s SDK_VERSION=%s RUNTIME_VERSION=%s', inputs.project, env.SDK, env.RUNTIME) || inputs.build-args }}
+          sbom: false
+          provenance: false
+          pull: true
+
+      - name: Scan image
+        if: ${{ !inputs.dry-run }}
+        uses: ./.github/actions/docker-scan
+        with:
+          image-name: ${{ env.LOWERCASED }}
+          image-tag: ${{ steps.build.outputs.digest }}
+          image-digest: ${{ steps.build.outputs.digest }}
+          upload-sarif: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+      - name: Set output
+        run: echo "digest=${{ steps.build.outputs.digest }}" >> $GITHUB_OUTPUT

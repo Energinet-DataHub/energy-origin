@@ -54,117 +54,69 @@ jobs:
           pin-version: "true"
           test-filter: "Category!=E2ETest"
 
-  build-admin-portal:
-    permissions:
-      actions: 'read'
-      attestations: 'write'
-      contents: 'write'
-      id-token: 'write'
-      packages: 'write'
-      security-events: 'write'
-    uses: ./.github/workflows/build-admin-portal.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        subsystem:
+          - name: admin-portal
+            configuration: domains/admin-portal/AdminPortal.Web/configuration.yaml
+            dockerfile: Dockerfile.simplified
+            project: domains/admin-portal/AdminPortal.Web/AdminPortal/AdminPortal.csproj
+            solution: domains/admin-portal/AdminPortal.sln
+          - name: authorization-api
+            configuration: domains/authorization/Authorization.API/configuration.yaml
+            dockerfile: Dockerfile
+            project: domains/authorization/Authorization.API/API/API.csproj
+            solution: Authorization.sln
+          - name: authorization-proxy
+            configuration: domains/authorization/Proxy/configuration.yaml
+            dockerfile: domains/authorization/Proxy/Dockerfile
+            project: domains/authorization/Proxy/Proxy.csproj
+            solution: Authorization.sln
+          - name: certificates
+            configuration: domains/certificates/Query.API/configuration.yaml
+            dockerfile: Dockerfile
+            project: domains/certificates/Query.API/API/API.csproj
+            solution: Certificates.sln
+          - name: measurements
+            configuration: domains/measurements/Measurements.API/configuration.yaml
+            dockerfile: Dockerfile
+            project: domains/measurements/Measurements.API/API/API.csproj
+            solution: Measurements.sln
+          - name: oidc-mock
+            configuration: domains/oidc-mock/configuration.yaml
+            dockerfile: domains/oidc-mock/Dockerfile
+            project: domains/oidc-mock/API/Mock/Oidc.Mock.csproj
+            solution: Oidc.Mock.sln
+          - name: transfer
+            configuration: domains/transfer/configuration.yaml
+            dockerfile: domains/transfer/Dockerfile
+            project: domains/transfer/Transfer.API/API/API.csproj
+            solution: Transfer.sln
+          - name: TransferAutomation.Worker
+            configuration: domains/transfer/TransferAgreementAutomation/configuration.yaml
+            dockerfile: ./Dockerfile.simplified
+            project: domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj
+            solution: Transfer.sln
+          - name: ClaimAutomation.Worker
+            configuration: domains/transfer/ClaimAutomation/configuration.yaml
+            dockerfile: ./Dockerfile.simplified
+            project: domains/transfer/ClaimAutomation/Worker/Worker.csproj
+            solution: Transfer.sln
 
-  build-authorization:
-    permissions:
-      actions: 'read'
-      attestations: 'write'
-      contents: 'write'
-      id-token: 'write'
-      packages: 'write'
-      security-events: 'write'
-    uses: ./.github/workflows/build-authorization.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+    steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-  build-certificates:
-    permissions:
-      actions: 'read'
-      attestations: 'write'
-      contents: 'write'
-      id-token: 'write'
-      packages: 'write'
-      security-events: 'write'
-    uses: ./.github/workflows/build-certificates.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-html-pdf-generator:
-    permissions:
-      actions: 'read'
-      attestations: 'write'
-      contents: 'write'
-      id-token: 'write'
-      packages: 'write'
-      security-events: 'write'
-    uses: ./.github/workflows/build-html-pdf-generator.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-measurements:
-    permissions:
-      actions: 'read'
-      attestations: 'write'
-      contents: 'write'
-      id-token: 'write'
-      packages: 'write'
-      security-events: 'write'
-    uses: ./.github/workflows/build-measurements.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-oidc-mock:
-    permissions:
-      actions: 'read'
-      attestations: 'write'
-      contents: 'write'
-      id-token: 'write'
-      packages: 'write'
-      security-events: 'write'
-    uses: ./.github/workflows/build-oidc-mock.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-openapi:
-    permissions:
-      actions: 'read'
-      attestations: 'write'
-      contents: 'write'
-      id-token: 'write'
-      packages: 'write'
-      security-events: 'write'
-    uses: ./.github/workflows/build-openapi.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
-  build-transfer:
-    permissions:
-      actions: 'read'
-      attestations: 'write'
-      contents: 'write'
-      id-token: 'write'
-      packages: 'write'
-      security-events: 'write'
-    uses: ./.github/workflows/build-transfer.yaml
-    secrets: inherit
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
+    - name: Build ${{ matrix.subsystem }}
+      uses: ./.github/workflows/build-image.yaml
+      with:
+        configuration: ${{ matrix.configuration }}
+        dockerfile: ${{ matrix.dockerfile }}
+        dry-run: ${{ inputs.dry-run }}
+        project: ${{ matrix.project }}
+        solution: ${{ matrix.solution }}
 
   update:
     permissions:
@@ -176,14 +128,7 @@ jobs:
     needs:
       - dotnet-lint-solution
       - test-subsystems-exclude-e2e
-      - build-admin-portal
-      - build-authorization
-      - build-certificates
-      - build-html-pdf-generator
-      - build-measurements
-      - build-oidc-mock
-      - build-openapi
-      - build-transfer
+      - build
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
