@@ -40,11 +40,18 @@ jobs:
 
           FILTERED=$(echo "${{ steps.diff.outputs.list }}" \
             | grep -vE '^redoc$|^html-pdf-generator$' \
+            | sed '/^$/d' \
             | jq -R . \
             | jq -s .)
 
           echo "Filtered matrix: $FILTERED"
-          echo "matrix=$FILTERED" >> "$GITHUB_OUTPUT"
+
+          # Only set output if FILTERED is not an empty array
+          if [ "$FILTERED" != "[]" ]; then
+            echo "matrix=$FILTERED" >> "$GITHUB_OUTPUT"
+          else
+            echo "matrix=[]" >> "$GITHUB_OUTPUT"
+          fi
 
   dotnet-lint-solution:
     permissions: { }
