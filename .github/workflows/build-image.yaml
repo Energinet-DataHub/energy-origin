@@ -84,21 +84,20 @@ jobs:
           ! test -z "${{ env.SDK }}"
           ! test -z "${{ env.RUNTIME }}"
 
-      - name: Use simplified Dockerfile
+      - name: Use simplified Dockerfile (for .NET)
         if: ${{ inputs.solution != '' && inputs.project != '' }}
         shell: bash
         run: |
-          cp Dockerfile.simplified Dockerfile
-          echo "DOCKERFILE=$GITHUB_WORKSPACE/Dockerfile" >> $GITHUB_ENV
+          echo "DOCKERFILE=$GITHUB_WORKSPACE/Dockerfile.simplified" >> $GITHUB_ENV
 
       - name: Use Dockerfile from context path
         if: ${{ inputs.solution == '' || inputs.project == '' }}
         shell: bash
         run: |
-          DOCKERFILE="${{ inputs.context }}/Dockerfile"
+          DOCKERFILE="$GITHUB_WORKSPACE/${{ inputs.context }}/Dockerfile"
           if [ ! -f "$DOCKERFILE" ]; then
             echo "❌ Dockerfile not found at: $DOCKERFILE"
-            ls -l "${{ inputs.context }}"
+            ls -l "$GITHUB_WORKSPACE/${{ inputs.context }}"
             exit 1
           fi
           echo "DOCKERFILE=$DOCKERFILE" >> $GITHUB_ENV
