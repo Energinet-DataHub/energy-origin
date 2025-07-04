@@ -8,10 +8,11 @@ ARG MIGRATIONS
 
 WORKDIR /src/
 
-COPY domains/EnergyTrackAndTrace.sln ./domains/
 COPY Directory.Packages.props Directory.Build.targets ./
 
-COPY --link domains/**/*.csproj ./
+COPY domains/**/*.csproj ./
+
+COPY domains/EnergyTrackAndTrace.sln ./domains/
 
 RUN dotnet restore ${PROJECT}
 
