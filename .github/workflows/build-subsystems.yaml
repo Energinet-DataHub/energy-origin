@@ -21,7 +21,7 @@ jobs:
     outputs:
       list: ${{ steps.diff.outputs.list }}
       matches: ${{ steps.diff.outputs.matches }}
-      filtered-matrix: ${{ steps.filter.outputs.matrix }}
+      subsystems: ${{ steps.extract.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,29 +29,26 @@ jobs:
         id: diff
         uses: ./.github/actions/find-diff-action
         with:
-          paths: domains/*
+          paths: domains/**
 
-      - name: Filter out redoc & html-pdf-generator
-        id: filter
+      - name: Extract subsystems from file paths
+        id: extract
         shell: bash
         run: |
-          echo "Raw input:"
+          echo "Raw file changes:"
           echo "${{ steps.diff.outputs.list }}"
 
-          FILTERED=$(echo "${{ steps.diff.outputs.list }}" \
+          SUBSYSTEMS=$(echo "${{ steps.diff.outputs.list }}" \
+            | awk -F/ '/^domains\// {print $2}' \
+            | grep -vE '^$' \
             | grep -vE '^redoc$|^html-pdf-generator$' \
-            | sed '/^$/d' \
+            | sort -u \
             | jq -R . \
             | jq -s .)
 
-          echo "Filtered matrix: $FILTERED"
+          echo "Extracted matrix: $SUBSYSTEMS"
 
-          # Only set output if FILTERED is not an empty array
-          if [ "$FILTERED" != "[]" ]; then
-            echo "matrix=$FILTERED" >> "$GITHUB_OUTPUT"
-          else
-            echo "matrix=[]" >> "$GITHUB_OUTPUT"
-          fi
+          echo "matrix=$SUBSYSTEMS" >> "$GITHUB_OUTPUT"
 
   dotnet-lint-solution:
     permissions: { }
@@ -72,10 +69,11 @@ jobs:
   test-subsystems-exclude-e2e:
     runs-on: ubuntu-22.04
     needs: find-diff
-    if: ${{ fromJson(needs.find-diff.outputs.filtered-matrix) != '[]' }}
+    if: ${{ needs.find-diff.outputs.subsystems != '[]' }}
     strategy:
       matrix:
-        subsystem: ${{ fromJson(needs.find-diff.outputs.filtered-matrix) }}
+        subsystem: ${{ fromJson(needs.find-diff.outputs.subsystems) }}
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
 
