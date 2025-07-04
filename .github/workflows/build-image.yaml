@@ -86,6 +86,7 @@ jobs:
           fi
 
       - name: Fail - if versions are not present
+        if: ${{ inputs.solution != '' && inputs.project != '' }}
         shell: bash
         run: |
           set +e
@@ -99,7 +100,7 @@ jobs:
             cp Dockerfile.simplified Dockerfile
             echo "DOCKERFILE=./Dockerfile" >> $GITHUB_ENV
           else
-            echo "DOCKERFILE=${{ inputs.context }}/Dockerfile" >> $GITHUB_ENV
+            echo "DOCKERFILE=${{ env.DIRECTORY }}/Dockerfile" >> $GITHUB_ENV
           fi
 
       - name: Resolve image name
