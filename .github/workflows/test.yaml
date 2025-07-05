@@ -133,4 +133,4 @@ jobs:
           version: ""
         run: |
           filter="${{ inputs.test-filter }}"
-          dotnet test ${{ matrix.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter "$filter" -p:ParallelizeAssemblies=true -p:ParallelizeTestCollections=true
+          dotnet test ${{ matrix.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter "$filter"
