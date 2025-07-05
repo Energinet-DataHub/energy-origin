@@ -6,6 +6,7 @@
     "NoColor": false,
     "Exclude": [
         ".*\\.csproj$",
+        "**/*.csproj",
         "\\.sln$",
         "\\.props$",
         "\\.targets$",
