@@ -136,6 +136,11 @@ jobs:
             ${{ matrix.build-type == 'dotnet' && format('PROJECT={0} SDK_VERSION={1} RUNTIME_VERSION={2}', matrix.project, env.SDK, env.RUNTIME) || '' }}
 
   scan:
+    permissions:
+      attestations: 'write'
+      contents: 'read'
+      id-token: 'write'
+      security-events: 'write'
     needs: build
     if: ${{ inputs.dry-run != 'true' }}
     uses: ./.github/workflows/scan.yaml
