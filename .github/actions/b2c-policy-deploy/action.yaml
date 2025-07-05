@@ -57,11 +57,11 @@ runs:
 
           echo "→ Checking if ${NEW_POLICY} exists"
           if az rest \
-             --only-show-errors \
-             --method GET \
-             --uri "https://graph.microsoft.com/beta/trustFramework/policies/${NEW_POLICY}" \
-             --headers Accept=application/json \
-             --output none 2>/dev/null; then
+               --only-show-errors \
+               --method GET \
+               --uri "https://graph.microsoft.com/beta/trustFramework/policies/${NEW_POLICY}" \
+               --headers Accept=application/json \
+               --output none 2>/dev/null; then
             echo "✔ ${NEW_POLICY} exists; skipping"
             continue
           fi
