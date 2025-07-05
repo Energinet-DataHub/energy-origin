@@ -144,7 +144,6 @@ jobs:
     needs: build
     if: ${{ inputs.dry-run != 'true' }}
     uses: ./.github/workflows/scan.yaml
-    secrets: inherit
     with:
       image-name: ${{ needs.build.outputs.image-name }}
       image-tag: ${{ needs.build.outputs.image-tag }}

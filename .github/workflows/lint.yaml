@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       path:
-        description: "Path to check (e.g. domains)"
+        description: "Path to solution (.sln) file"
         required: true
         type: string
 

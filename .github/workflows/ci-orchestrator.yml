@@ -33,6 +33,7 @@ jobs:
     permissions: { }
     needs: setup
     uses: ./.github/workflows/test.yaml
+    secrets: inherit
 
   build:
     permissions:
@@ -44,6 +45,7 @@ jobs:
       security-events: 'write'
     needs: setup
     uses: ./.github/workflows/build.yaml
+    secrets: inherit
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}

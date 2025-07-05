@@ -8,17 +8,6 @@ on:
         required: false
         type: string
         default: "Category!=E2ETest"
-  pull_request:
-    branches:
-      - main
-    types:
-      - opened
-      - synchronize
-      - reopened
-      - ready_for_review
-  push:
-    branches:
-      - main
 
 permissions: { }
 
