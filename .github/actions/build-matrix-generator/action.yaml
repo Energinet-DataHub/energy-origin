@@ -31,75 +31,8 @@ runs:
       shell: bash
       run: |
         CHANGES="${{ steps.find-changes.outputs.list }}"
-
-        if [ "${{ steps.find-changes.outputs.matches }}" != "true" ]; then
-          echo "No changes detected in any buildable projects"
-          matrix_json="[]"
-        else
-          echo "Changes detected:"
-          echo "$CHANGES"
-
-          matrix_entries=()
-
-          while IFS= read -r -d '' csproj; do
-            if [[ "$csproj" =~ /Tests/ ]] || [[ "$csproj" =~ /Shared/ ]] || [[ "$csproj" =~ Test\.csproj$ ]]; then
-              continue
-            fi
-
-            project_dir=$(dirname "$csproj")
-            domain_dir=$(echo "$project_dir" | sed 's|/.*/.*$||')
-            project_name=$(basename "$project_dir")
-
-            config_file=""
-            if [ -f "$project_dir/configuration.yaml" ]; then
-              config_file="$project_dir/configuration.yaml"
-            elif [ -f "$(dirname "$project_dir")/configuration.yaml" ]; then
-              config_file="$(dirname "$project_dir")/configuration.yaml"
-            fi
-
-            if [ -n "$config_file" ]; then
-              if echo "$CHANGES" | grep -q "$project_dir\|$config_file"; then
-                echo "Changes detected in $project_name ($project_dir)"
-
-                solution_file=""
-                if [ -f "$domain_dir/$(basename "$domain_dir").sln" ]; then
-                  solution_file="$domain_dir/$(basename "$domain_dir").sln"
-                elif [ -f "$domain_dir/$(basename "$project_dir").sln" ]; then
-                  solution_file="$domain_dir/$(basename "$project_dir").sln"
-                fi
-
-                matrix_entry="{\"project-name\":\"$project_name\",\"build-type\":\"dotnet\",\"solution\":\"$solution_file\",\"project\":\"$csproj\",\"configuration\":\"$config_file\"}"
-                matrix_entries+=("$matrix_entry")
-              fi
-            fi
-          done < <(find domains -name "*.csproj" -print0)
-
-          while IFS= read -r -d '' dockerfile; do
-            project_dir=$(dirname "$dockerfile")
-            project_name=$(basename "$project_dir")
-
-            config_file=""
-            if [ -f "$project_dir/configuration.yaml" ]; then
-              config_file="$project_dir/configuration.yaml"
-            fi
-
-            if [ -n "$config_file" ]; then
-              if echo "$CHANGES" | grep -q "$project_dir\|$dockerfile"; then
-                echo "Changes detected in $project_name ($project_dir) - Docker project"
-
-                matrix_entry="{\"project-name\":\"$project_name\",\"build-type\":\"docker\",\"configuration\":\"$config_file\",\"dockerfile\":\"$dockerfile\",\"docker-context\":\"$project_dir\"}"
-                matrix_entries+=("$matrix_entry")
-              fi
-            fi
-          done < <(find domains -name "Dockerfile" -print0)
-
-          if [ ${#matrix_entries[@]} -eq 0 ]; then
-            echo "No projects with changes detected"
-            matrix_json="[]"
-          else
-            matrix_json="[$(IFS=','; echo "${matrix_entries[*]}")]"
-          fi
-        fi
-
+        [ "${{ steps.find-changes.outputs.matches }}" != "true" ] && echo "matrix=[]" >> $GITHUB_OUTPUT && exit 0
+        dotnet_entries=$(find domains -name "*.csproj" -print0 | xargs -0 -I{} sh -c '[[ "{}" =~ /Tests/ || "{}" =~ /Shared/ || "{}" =~ Test\.csproj$ ]] && exit 0; pd=$(dirname "{}"); dn=$(echo "$pd" | sed "s|/.*/.*$||"); pn=$(basename "$pd"); cf=$(test -f "$pd/configuration.yaml" && echo "$pd/configuration.yaml" || test -f "$(dirname "$pd")/configuration.yaml" && echo "$(dirname "$pd")/configuration.yaml" || echo ""); [[ -n "$cf" && "'"$CHANGES"'" =~ "$pd"|"$cf" ]] && echo "{\"project-name\":\"$pn\",\"build-type\":\"dotnet\",\"solution\":\"$(test -f "$dn/$(basename "$dn").sln" && echo "$dn/$(basename "$dn").sln" || test -f "$dn/$(basename "$pd").sln" && echo "$dn/$(basename "$pd").sln" || echo "")\",\"project\":\"{}\",\"configuration\":\"$cf\"}"' | tr '\n' ',' | sed 's/,$//')
+        docker_entries=$(find domains -name "Dockerfile" -print0 | xargs -0 -I{} sh -c 'pd=$(dirname "{}"); pn=$(basename "$pd"); cf="$pd/configuration.yaml"; [[ -f "$cf" && "'"$CHANGES"'" =~ "$pd"|"{}" ]] && echo "{\"project-name\":\"$pn\",\"build-type\":\"docker\",\"configuration\":\"$cf\",\"dockerfile\":\"{}\",\"docker-context\":\"$pd\"}"' | tr '\n' ',' | sed 's/,$//')
+        matrix_json="[$dotnet_entries$docker_entries]" | sed 's/,\]/]/g'
         echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
-        echo "Generated matrix: $matrix_json"
