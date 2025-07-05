@@ -20,7 +20,7 @@ jobs:
       - name: Setup EditorConfig Checker
         uses: editorconfig-checker/action-editorconfig-checker@655bcec9680417a270ee597ee34dcac0fd13a551 #655bcec
         with:
-          version: "90a8919b913e39eef3a6a7011a4ecc67466a98d7"
+          version: "v3.3.0"
 
       - name: Lint with EditorConfig Checker
         working-directory: ${{ inputs.path }}
@@ -33,27 +33,51 @@ jobs:
     outputs:
       run: ${{ steps.check-changes.outputs.matches }}
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
       - name: Check for dependabot.yml changes
         uses: ./.github/actions/find-diff-action
         id: check-changes
         with:
           paths: .github/dependabot.yml
 
-      - name: Validate dependabot.yml
-        if: ${{ steps.check-changes.outputs.matches == 'true' }}
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
       - name: Install check-jsonschema
         if: ${{ steps.check-changes.outputs.matches == 'true' }}
-        run: pipx install check-jsonschema
         shell: bash
+        run: pipx install check-jsonschema
 
       - name: Download dependabot schema
         if: ${{ steps.check-changes.outputs.matches == 'true' }}
-        run: curl -o schema.json 'https://json.schemastore.org/dependabot-2.0.json'
         shell: bash
+        run: curl -o schema.json 'https://json.schemastore.org/dependabot-2.0.json'
 
       - name: Validate dependabot.yml against schema
         if: ${{ steps.check-changes.outputs.matches == 'true' }}
-        run: check-jsonschema --schemafile schema.json .github/dependabot.yml
         shell: bash
+        run: check-jsonschema --schemafile schema.json .github/dependabot.yml
+
+  check-licenses:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: ./.github/actions/find-diff-action
+        id: diff
+        with:
+          paths: domains/*/ libraries/*/*/
+
+      - name: Build relevant project matrix
+        if: ${{ steps.diff.outputs.pattern != '' }}
+        shell: bash
+        run: echo "solution=$(find domains -maxdepth 1 -name "*.sln")" | tee -a "$GITHUB_ENV"
+
+      - name: Check license
+        if: ${{ steps.diff.outputs.pattern != '' }}
+        uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@ee21233cce88e1b8be9bbf186ae903a377059aef # v14.39.1
+        with:
+          project-folder: ${{ env.solution }}
+          license-mapping-file: .mapped-licenses.json
+          license-override-file: .overridden-licenses.json
+          tool-version: 3.1.2
