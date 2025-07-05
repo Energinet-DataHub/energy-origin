@@ -16,12 +16,22 @@
         "node_modules/",
         "\\.git/",
         "\\.vs/",
+        ".idea/**",
+        "html",
+        "*.verified.*",
         "*.user",
         "*.suo",
         "*.cache",
         "*.log",
         "*.tmp",
-        "*.temp"
+        "*.temp",
+        "*.css",
+        "*.js",
+        "*.json",
+        "*.yaml",
+        "*.yml",
+        "*.xml",
+        "domains/*/wwwroot/lib/**"
     ],
     "AllowedContentTypes": [
         "text/plain",
