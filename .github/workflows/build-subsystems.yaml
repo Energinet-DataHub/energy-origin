@@ -16,7 +16,7 @@ permissions: { }
 
 jobs:
 
-  dotnet-lint-solution:
+  lint:
     permissions: { }
     runs-on: ubuntu-22.04
     steps:
@@ -32,43 +32,11 @@ jobs:
         with:
           path: "domains"
 
-  test-subsystems-exclude-e2e:
+  test:
     permissions: { }
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        subsystem: [admin-portal, authorization, certificates, measurements, oidc-mock, transfer, libraries]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+    uses: ./.github/workflows/test.yaml
 
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
-        with:
-          dotnet-version: 9.0.x
-
-      - name: Test ${{ matrix.subsystem }} subsystem (excluding E2E-tests)
-        uses: ./.github/actions/dotnet-validate-solution
-        with:
-          subsystem: ${{ matrix.subsystem }}
-          pin-version: "true"
-          test-filter: "Category!=E2ETest"
-
-  generate-build-matrix:
-    permissions: { }
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.generate-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
-
-      - name: Generate build matrix
-        id: generate-matrix
-        uses: ./.github/actions/build-matrix-generator
-
-  build-projects:
+  build:
     permissions:
       actions: 'read'
       attestations: 'write'
@@ -76,11 +44,8 @@ jobs:
       id-token: 'write'
       packages: 'write'
       security-events: 'write'
-    needs: generate-build-matrix
-    if: ${{ needs.generate-build-matrix.outputs.matrix != '[]' }}
-    uses: ./.github/workflows/build-unified.yaml
+    uses: ./.github/workflows/build.yaml
     with:
-      build-matrix: ${{ needs.generate-build-matrix.outputs.matrix }}
       dry-run: ${{ inputs.dry-run }}
       is-dependabot: ${{ inputs.is-dependabot }}
 
@@ -92,36 +57,26 @@ jobs:
     runs-on: ubuntu-latest
     name: Update environment
     needs:
-      - dotnet-lint-solution
-      - test-subsystems-exclude-e2e
-      - build-projects
+      - lint
+      - test
+      - build
     concurrency: commits-base-environment
     if: ${{ inputs.is-dependabot == 'false' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Update environment
+        if: ${{ fromJson(needs.build.outputs.matrix) != '[]' }}
         uses: Energinet-DataHub/.github/.github/actions/update-base-environment@ee21233cce88e1b8be9bbf186ae903a377059aef # v14.39.1
         with:
-          configurations: |
-            domains/admin-portal/AdminPortal.Web/configuration.yaml
-            domains/authorization/Authorization.API/configuration.yaml
-            domains/authorization/Proxy/configuration.yaml
-            domains/certificates/Query.API/configuration.yaml
-            domains/html-pdf-generator/configuration.yaml
-            domains/measurements/Measurements.API/configuration.yaml
-            domains/oidc-mock/API/configuration.yaml
-            domains/transfer/Transfer.API/configuration.yaml
-            domains/transfer/ClaimAutomation/configuration.yaml
-            domains/transfer/TransferAgreementAutomation/configuration.yaml
-            domains/redoc/configuration.yaml
+          configurations: ${{ fromJson(needs.build.outputs.matrix)[0].configuration }}
           dry_run: ${{ inputs.dry-run }}
           github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
           github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
 
   deploy-b2c-preview:
     name: 🌀 Deploy B2C Policy for Preview
-    if: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/') }}
+    if: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'preview/') && needs.update.result == 'success' }}
     permissions:
       actions: 'read'
       contents: 'write'
@@ -129,7 +84,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - update
-      - generate-build-matrix
     concurrency: commits-base-environment
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
