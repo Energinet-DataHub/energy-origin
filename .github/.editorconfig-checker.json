@@ -5,8 +5,9 @@
     "SpacesAfterTabs": false,
     "NoColor": false,
     "Exclude": [
-        ".*\\.csproj$",
-        "**/*.csproj",
+        ".csproj$",
+        "\\.csproj$",
+        "/.*\\.csproj$",
         "\\.sln$",
         "\\.props$",
         "\\.targets$",
@@ -29,12 +30,6 @@
         "\\.html$",
         "domains/*/wwwroot/lib/**"
     ],
-    "AllowedContentTypes": [
-        "text/plain",
-        "text/shellscript",
-        "application/x-shellscript"
-    ],
-    "PassedFiles": [],
     "Disable": {
         "EndOfLine": false,
         "Indentation": false,
