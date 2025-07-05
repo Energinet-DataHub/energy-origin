@@ -21,20 +21,6 @@ jobs:
       - name: Setup variables
         run: exit 0
 
-  lint:
-    permissions:
-      contents: read
-    needs: setup
-    uses: ./.github/workflows/lint.yaml
-    with:
-      path: "domains"
-
-  test:
-    permissions: { }
-    needs: setup
-    uses: ./.github/workflows/test.yaml
-    secrets: inherit
-
   build:
     permissions:
       actions: 'read'
@@ -49,6 +35,19 @@ jobs:
     with:
       dry-run: ${{ needs.setup.outputs.dry-run }}
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
+
+  lint:
+    permissions: { }
+    needs: setup
+    uses: ./.github/workflows/lint.yaml
+    with:
+      path: "domains"
+
+  test:
+    permissions: { }
+    needs: setup
+    uses: ./.github/workflows/test.yaml
+    secrets: inherit
 
   update:
     if: ${{ !(needs.setup.outputs.is-dependabot == 'false' && needs.build.outputs.matrix != '' && fromJson(needs.build.outputs.matrix) != '[]') }}
