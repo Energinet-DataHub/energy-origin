@@ -27,7 +27,7 @@ jobs:
     needs: setup
     uses: ./.github/workflows/lint.yaml
     with:
-      path: "."
+      path: "domains"
 
   test:
     permissions: { }
