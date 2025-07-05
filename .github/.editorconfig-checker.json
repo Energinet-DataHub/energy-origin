@@ -5,7 +5,7 @@
     "SpacesAfterTabs": false,
     "NoColor": false,
     "Exclude": [
-        "\\.csproj$",
+        ".*\\.csproj$",
         "\\.sln$",
         "\\.props$",
         "\\.targets$",
