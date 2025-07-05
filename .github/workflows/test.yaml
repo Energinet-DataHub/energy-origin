@@ -53,6 +53,7 @@ jobs:
           echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
 
   test-subsystem:
+    name: Test ${{ matrix.subsystem }}
     permissions: { }
     runs-on: ubuntu-22.04
     needs: generate-test-matrix

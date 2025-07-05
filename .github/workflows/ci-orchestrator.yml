@@ -51,6 +51,7 @@ jobs:
       is-dependabot: ${{ needs.setup.outputs.is-dependabot }}
 
   update:
+    if: ${{ !(needs.setup.outputs.is-dependabot == 'false' && needs.build.outputs.matrix != '' && fromJson(needs.build.outputs.matrix) != '[]') }}
     permissions:
       actions: 'read'
       contents: 'write'

@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Update environment
     concurrency: commits-base-environment
-    if: ${{ inputs.is-dependabot == 'false' && fromJson(inputs.build-matrix) != '[]' }}
+    if: ${{ inputs.is-dependabot == 'false' && inputs.build-matrix != '' && fromJson(inputs.build-matrix) != '[]' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
