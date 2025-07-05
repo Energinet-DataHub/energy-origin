@@ -39,17 +39,11 @@ jobs:
         id: set-matrix
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "push" ]]; then
-            subsystems="admin-portal authorization certificates measurements oidc-mock transfer"
-            matrix_entries=$(for s in $subsystems; do echo "\"$s\""; done | tr '\n' ',' | sed 's/,$//')
-            matrix_json="[$matrix_entries]"
-          else
-            CHANGES="${{ steps.find-changes.outputs.list }}"
-            [ "${{ steps.find-changes.outputs.matches }}" != "true" ] && echo "matrix=[]" >> $GITHUB_OUTPUT && exit 0
-            subsystems="admin-portal authorization certificates measurements oidc-mock transfer libraries"
-            matrix_entries=$(for s in $subsystems; do echo "$CHANGES" | grep -q "^domains/$s/" && echo "\"$s\""; done | tr '\n' ',' | sed 's/,$//')
-            matrix_json="[$matrix_entries]" | sed 's/,\]/]/g'
-          fi
+          CHANGES="${{ steps.find-changes.outputs.list }}"
+          [ "${{ steps.find-changes.outputs.matches }}" != "true" ] && echo "matrix=[]" >> $GITHUB_OUTPUT && exit 0
+          subsystems="admin-portal authorization certificates measurements oidc-mock transfer libraries"
+          matrix_entries=$(for s in $subsystems; do echo "$CHANGES" | grep -q "^domains/$s/" && echo "\"$s\""; done | tr '\n' ',' | sed 's/,$//')
+          matrix_json="[$matrix_entries]" | sed 's/,\]/]/g'
           echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
 
   test-subsystem:
@@ -57,7 +51,7 @@ jobs:
     permissions: { }
     runs-on: ubuntu-22.04
     needs: generate-test-matrix
-    if: ${{ needs.generate-test-matrix.outputs.matrix != '[]' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false) }}
+    if: ${{ needs.generate-test-matrix.outputs.matrix != '[]' }}
     strategy:
       matrix:
         subsystem: ${{ fromJson(needs.generate-test-matrix.outputs.matrix) }}
@@ -117,9 +111,5 @@ jobs:
           TERM: "xterm"
           version: ""
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "push" ]]; then
-            filter="Category=E2ETest"
-          else
-            filter="${{ inputs.test-filter }}"
-          fi
+          filter="${{ inputs.test-filter }}"
           dotnet test ${{ matrix.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter "$filter" -p:ParallelizeAssemblies=true -p:ParallelizeTestCollections=true
