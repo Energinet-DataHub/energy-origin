@@ -1,12 +1,6 @@
 name: Build Matrix Generator
 description: Generate build matrix based on changed project folders
 
-inputs:
-  commit-range:
-    description: "Git commit range to check for changes (default: HEAD~1..HEAD)"
-    required: false
-    default: "HEAD~1..HEAD"
-
 outputs:
   matrix:
     description: "JSON matrix of projects that need to be built"
@@ -15,65 +9,96 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Find changes in buildable projects
+      id: find-changes
+      uses: ./.github/actions/find-diff-action
+      with:
+        paths: |
+          domains/*/API/**/*.csproj
+          domains/*/API/**/configuration.yaml
+          domains/*/Proxy/**/*.csproj
+          domains/*/Proxy/**/configuration.yaml
+          domains/*/Worker/**/*.csproj
+          domains/*/Worker/**/configuration.yaml
+          domains/*/Web/**/*.csproj
+          domains/*/Web/**/configuration.yaml
+          domains/*/Dockerfile
+          domains/*/configuration.yaml
+          domains/*/*.sln
+
     - name: Generate build matrix
       id: set-matrix
       shell: bash
       run: |
-        declare -A projects=(
-          ["admin-portal"]="domains/admin-portal/AdminPortal.sln|domains/admin-portal/AdminPortal.Web/AdminPortal/AdminPortal.csproj|domains/admin-portal/AdminPortal.Web/configuration.yaml|dotnet"
-          ["authorization-api"]="Authorization.sln|domains/authorization/Authorization.API/API/API.csproj|domains/authorization/Authorization.API/configuration.yaml|dotnet"
-          ["authorization-proxy"]="Authorization.sln|domains/authorization/Proxy/Proxy.csproj|domains/authorization/Proxy/configuration.yaml|dotnet"
-          ["certificates"]="Certificates.sln|domains/certificates/Query.API/API/API.csproj|domains/certificates/Query.API/configuration.yaml|dotnet"
-          ["measurements"]="Measurements.sln|domains/measurements/Measurements.API/API/API.csproj|domains/measurements/Measurements.API/configuration.yaml|dotnet"
-          ["oidc-mock"]="Oidc.Mock.sln|domains/oidc-mock/API/Mock/Oidc.Mock.csproj|domains/oidc-mock/API/configuration.yaml|dotnet"
-          ["transfer-api"]="Transfer.sln|domains/transfer/Transfer.API/API/API.csproj|domains/transfer/Transfer.API/configuration.yaml|dotnet"
-          ["transfer-claim-automation"]="Transfer.sln|domains/transfer/ClaimAutomation/Worker/Worker.csproj|domains/transfer/ClaimAutomation/configuration.yaml|dotnet"
-          ["transfer-agreement-automation"]="Transfer.sln|domains/transfer/TransferAgreementAutomation/Worker/Worker.csproj|domains/transfer/TransferAgreementAutomation/configuration.yaml|dotnet"
-          ["html-pdf-generator"]="||domains/html-pdf-generator/configuration.yaml|docker|domains/html-pdf-generator/Dockerfile|domains/html-pdf-generator"
-          ["openapi"]="||domains/redoc/configuration.yaml|docker|domains/redoc/Dockerfile|."
-        )
+        CHANGES="${{ steps.find-changes.outputs.list }}"
 
-        declare -A project_folders=(
-          ["admin-portal"]="domains/admin-portal"
-          ["authorization-api"]="domains/authorization/Authorization.API"
-          ["authorization-proxy"]="domains/authorization/Proxy"
-          ["certificates"]="domains/certificates/Query.API"
-          ["measurements"]="domains/measurements/Measurements.API"
-          ["oidc-mock"]="domains/oidc-mock/API"
-          ["transfer-api"]="domains/transfer/Transfer.API"
-          ["transfer-claim-automation"]="domains/transfer/ClaimAutomation"
-          ["transfer-agreement-automation"]="domains/transfer/TransferAgreementAutomation"
-          ["html-pdf-generator"]="domains/html-pdf-generator"
-          ["openapi"]="domains/redoc"
-        )
-
-        matrix_entries=()
-
-        for project in "${!projects[@]}"; do
-          folder="${project_folders[$project]}"
-
-          if git diff --name-only ${{ inputs.commit-range }} | grep -q "^$folder/"; then
-            echo "Changes detected in $project ($folder)"
-
-            IFS='|' read -r solution project_path config_path build_type dockerfile docker_context <<< "${projects[$project]}"
-
-            if [ "$build_type" = "dotnet" ]; then
-              matrix_entry="{\"project-name\":\"$project\",\"build-type\":\"$build_type\",\"solution\":\"$solution\",\"project\":\"$project_path\",\"configuration\":\"$config_path\"}"
-            else
-              matrix_entry="{\"project-name\":\"$project\",\"build-type\":\"$build_type\",\"configuration\":\"$config_path\",\"dockerfile\":\"$dockerfile\",\"docker-context\":\"$docker_context\"}"
-            fi
-
-            matrix_entries+=("$matrix_entry")
-          else
-            echo "No changes detected in $project ($folder)"
-          fi
-        done
-
-        if [ ${#matrix_entries[@]} -eq 0 ]; then
-          echo "No projects with changes detected"
+        if [ "${{ steps.find-changes.outputs.matches }}" != "true" ]; then
+          echo "No changes detected in any buildable projects"
           matrix_json="[]"
         else
-          matrix_json="[$(IFS=','; echo "${matrix_entries[*]}")]"
+          echo "Changes detected:"
+          echo "$CHANGES"
+
+          matrix_entries=()
+
+          while IFS= read -r -d '' csproj; do
+            if [[ "$csproj" =~ /Tests/ ]] || [[ "$csproj" =~ /Shared/ ]] || [[ "$csproj" =~ Test\.csproj$ ]]; then
+              continue
+            fi
+
+            project_dir=$(dirname "$csproj")
+            domain_dir=$(echo "$project_dir" | sed 's|/.*/.*$||')
+            project_name=$(basename "$project_dir")
+
+            config_file=""
+            if [ -f "$project_dir/configuration.yaml" ]; then
+              config_file="$project_dir/configuration.yaml"
+            elif [ -f "$(dirname "$project_dir")/configuration.yaml" ]; then
+              config_file="$(dirname "$project_dir")/configuration.yaml"
+            fi
+
+            if [ -n "$config_file" ]; then
+              if echo "$CHANGES" | grep -q "$project_dir\|$config_file"; then
+                echo "Changes detected in $project_name ($project_dir)"
+
+                solution_file=""
+                if [ -f "$domain_dir/$(basename "$domain_dir").sln" ]; then
+                  solution_file="$domain_dir/$(basename "$domain_dir").sln"
+                elif [ -f "$domain_dir/$(basename "$project_dir").sln" ]; then
+                  solution_file="$domain_dir/$(basename "$project_dir").sln"
+                fi
+
+                matrix_entry="{\"project-name\":\"$project_name\",\"build-type\":\"dotnet\",\"solution\":\"$solution_file\",\"project\":\"$csproj\",\"configuration\":\"$config_file\"}"
+                matrix_entries+=("$matrix_entry")
+              fi
+            fi
+          done < <(find domains -name "*.csproj" -print0)
+
+          while IFS= read -r -d '' dockerfile; do
+            project_dir=$(dirname "$dockerfile")
+            project_name=$(basename "$project_dir")
+
+            config_file=""
+            if [ -f "$project_dir/configuration.yaml" ]; then
+              config_file="$project_dir/configuration.yaml"
+            fi
+
+            if [ -n "$config_file" ]; then
+              if echo "$CHANGES" | grep -q "$project_dir\|$dockerfile"; then
+                echo "Changes detected in $project_name ($project_dir) - Docker project"
+
+                matrix_entry="{\"project-name\":\"$project_name\",\"build-type\":\"docker\",\"configuration\":\"$config_file\",\"dockerfile\":\"$dockerfile\",\"docker-context\":\"$project_dir\"}"
+                matrix_entries+=("$matrix_entry")
+              fi
+            fi
+          done < <(find domains -name "Dockerfile" -print0)
+
+          if [ ${#matrix_entries[@]} -eq 0 ]; then
+            echo "No projects with changes detected"
+            matrix_json="[]"
+          else
+            matrix_json="[$(IFS=','; echo "${matrix_entries[*]}")]"
+          fi
         fi
 
         echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
