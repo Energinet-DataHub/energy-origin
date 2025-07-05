@@ -27,13 +27,13 @@ jobs:
         uses: ./.github/actions/find-diff-action
         with:
           paths: |
-            domains/admin-portal
-            domains/authorization
-            domains/certificates
-            domains/measurements
-            domains/oidc-mock
-            domains/transfer
-            domains/libraries
+            domains/admin-portal/**
+            domains/authorization/**
+            domains/certificates/**
+            domains/measurements/**
+            domains/oidc-mock/**
+            domains/transfer/**
+            domains/libraries/**
 
       - name: Generate test matrix
         id: set-matrix
