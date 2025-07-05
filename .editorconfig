@@ -18,6 +18,10 @@ indent_style = space
 indent_size = 4
 indent_style = space
 
+[*.md]
+max_line_length = off
+trim_trailing_whitespace = false
+
 [*.cs,*.csproj]
 indent_size = 4
 indent_style = space
@@ -41,7 +45,7 @@ csharp_indent_switch_labels = true
 csharp_indent_labels = no_change
 
 # Modifier preferences
-csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:warning
+csharp_preferred_modifier_order = public, private, protected, internal, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, volatile, async:warning
 
 # avoid this. unless absolutely necessary
 dotnet_style_qualification_for_field = false:error

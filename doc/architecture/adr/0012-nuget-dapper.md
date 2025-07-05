@@ -10,7 +10,7 @@ Issue: #729
 
 ## Deprecation reason
 
-This ADR was relevant when EventStore was proposed as part of ADR-0003. This is no longer relevant. 
+This ADR was relevant when EventStore was proposed as part of ADR-0003. This is no longer relevant.
 
 ## Context and Problem Statement
 
