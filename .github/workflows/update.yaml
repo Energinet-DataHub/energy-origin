@@ -1,4 +1,4 @@
-name: Build Subsystems
+name: Update Environment
 
 on:
   workflow_call:
@@ -11,44 +11,14 @@ on:
         description: "An indication of a dependabot pull request"
         required: true
         type: string
+      build-matrix:
+        description: "Build matrix output from the build job"
+        required: true
+        type: string
 
 permissions: { }
 
 jobs:
-
-  lint:
-    permissions: { }
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
-        with:
-          dotnet-version: 9.0.x
-
-      - name: Run dotnet lint
-        uses: ./.github/actions/dotnet-lint-solution
-        with:
-          path: "domains"
-
-  test:
-    permissions: { }
-    uses: ./.github/workflows/test.yaml
-
-  build:
-    permissions:
-      actions: 'read'
-      attestations: 'write'
-      contents: 'write'
-      id-token: 'write'
-      packages: 'write'
-      security-events: 'write'
-    uses: ./.github/workflows/build.yaml
-    with:
-      dry-run: ${{ inputs.dry-run }}
-      is-dependabot: ${{ inputs.is-dependabot }}
-
   update:
     permissions:
       actions: 'read'
@@ -56,20 +26,15 @@ jobs:
       id-token: 'write'
     runs-on: ubuntu-latest
     name: Update environment
-    needs:
-      - lint
-      - test
-      - build
     concurrency: commits-base-environment
-    if: ${{ inputs.is-dependabot == 'false' }}
+    if: ${{ inputs.is-dependabot == 'false' && fromJson(inputs.build-matrix) != '[]' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Update environment
-        if: ${{ fromJson(needs.build.outputs.matrix) != '[]' }}
         uses: Energinet-DataHub/.github/.github/actions/update-base-environment@ee21233cce88e1b8be9bbf186ae903a377059aef # v14.39.1
         with:
-          configurations: ${{ fromJson(needs.build.outputs.matrix)[0].configuration }}
+          configurations: ${{ fromJson(inputs.build-matrix)[0].configuration }}
           dry_run: ${{ inputs.dry-run }}
           github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
           github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
@@ -102,6 +67,3 @@ jobs:
           github-app-id: ${{ vars.ACORN_GHA_APP_ID }}
           github-app-private-key: ${{ secrets.ACORN_GHA_PRIVATE_KEY }}
           policy-name-to-substitute: "B2C_1A_OIDCMOCK_V4"
-
-
-

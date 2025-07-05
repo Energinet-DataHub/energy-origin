@@ -1,0 +1,59 @@
+name: Lint
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: "Path to check (e.g. domains)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  editorconfig-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup EditorConfig Checker
+        uses: editorconfig-checker/action-editorconfig-checker@655bcec9680417a270ee597ee34dcac0fd13a551 #655bcec
+        with:
+          version: "90a8919b913e39eef3a6a7011a4ecc67466a98d7"
+
+      - name: Lint with EditorConfig Checker
+        working-directory: ${{ inputs.path }}
+        run: editorconfig-checker
+
+  dependabot-validate:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check-changes.outputs.matches }}
+    steps:
+      - name: Check for dependabot.yml changes
+        uses: ./.github/actions/find-diff-action
+        id: check-changes
+        with:
+          paths: .github/dependabot.yml
+
+      - name: Validate dependabot.yml
+        if: ${{ steps.check-changes.outputs.matches == 'true' }}
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install check-jsonschema
+        if: ${{ steps.check-changes.outputs.matches == 'true' }}
+        run: pipx install check-jsonschema
+        shell: bash
+
+      - name: Download dependabot schema
+        if: ${{ steps.check-changes.outputs.matches == 'true' }}
+        run: curl -o schema.json 'https://json.schemastore.org/dependabot-2.0.json'
+        shell: bash
+
+      - name: Validate dependabot.yml against schema
+        if: ${{ steps.check-changes.outputs.matches == 'true' }}
+        run: check-jsonschema --schemafile schema.json .github/dependabot.yml
+        shell: bash

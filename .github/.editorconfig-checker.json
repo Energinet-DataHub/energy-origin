@@ -1,0 +1,49 @@
+{
+    "Verbose": false,
+    "Debug": false,
+    "IgnoreDefaults": true,
+    "SpacesAfterTabs": false,
+    "NoColor": false,
+    "Exclude": [
+        "\\.csproj$",
+        "\\.sln$",
+        "\\.props$",
+        "\\.targets$",
+        "bin/",
+        "obj/",
+        "packages/",
+        "\\.nuget/",
+        "node_modules/",
+        "\\.git/",
+        "\\.vs/",
+        "*.user",
+        "*.suo",
+        "*.cache",
+        "*.log",
+        "*.tmp",
+        "*.temp"
+    ],
+    "AllowedContentTypes": [
+        "text/plain",
+        "application/json",
+        "application/xml",
+        "text/xml",
+        "text/yaml",
+        "text/markdown",
+        "text/html",
+        "application/javascript",
+        "text/javascript",
+        "text/css",
+        "text/shellscript",
+        "application/x-shellscript"
+    ],
+    "PassedFiles": [],
+    "Disable": {
+        "EndOfLine": false,
+        "Indentation": false,
+        "IndentSize": false,
+        "InsertFinalNewline": false,
+        "TrimTrailingWhitespace": false,
+        "MaxLineLength": true
+    }
+}
