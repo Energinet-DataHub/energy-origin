@@ -32,7 +32,7 @@ jobs:
         run: |
           dotnet tool install --global dotnet-affected
 
-          dotnet affected --format text traversal --from ${{ github.base_ref || 'main' }} --to ${{ github.sha }}
+          dotnet-affected --format text traversal --from ${{ github.base_ref || 'main' }} --to ${{ github.sha }}
 
           if [ -f "affected.proj" ]; then
             echo "affected=true" >> $GITHUB_OUTPUT
