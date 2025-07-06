@@ -11,7 +11,6 @@ WORKDIR /src/
 COPY Directory.* .
 COPY global.json ./
 COPY domains/global.json ./domains/
-COPY ./domains/*.sln .
 
 # Copy only project files for restore (preserves cache when source changes)
 COPY domains/*/*.csproj ./domains/
