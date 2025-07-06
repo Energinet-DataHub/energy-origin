@@ -8,19 +8,15 @@ ARG PROJECT
 ARG MIGRATIONS
 WORKDIR /src/
 
-COPY Directory.Build.targets Directory.Packages.props global.json ./
+COPY Directory.* .
+COPY global.json ./
 COPY domains/global.json ./domains/
 
-COPY *.sln ./
+COPY ./domains/*.sln .
 
-COPY domains/ ./domains/
-RUN find domains -name "*.csproj" -exec cp {} . \; || true
-RUN find domains -name "Directory.Build.props" -exec cp {} . \; || true
-RUN find domains -name "Directory.Build.targets" -exec cp {} . \; || true
-
-RUN --mount=type=cache,target=/root/.nuget/packages \
-    --mount=type=cache,target=/root/.local/share/NuGet \
-    dotnet restore
+RUN --mount=type=context,src=.,dst=/ctx \
+    find /ctx -name '*.csproj' -exec cp --parents {} /src \; && \
+    dotnet restore ${PROJECT}
 
 RUN --mount=type=cache,target=/root/.nuget/packages \
     --mount=type=cache,target=/root/.local/share/NuGet \
