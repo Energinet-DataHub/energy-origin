@@ -15,6 +15,11 @@ jobs:
   generate-test-matrix:
     permissions: { }
     runs-on: ubuntu-latest
+    env:
+      subsystems: "admin-portal authorization certificates measurements oidc-mock transfer libraries"
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+      DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "true"
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -39,33 +44,13 @@ jobs:
         id: set-matrix
         shell: bash
         run: |
-          CHANGES="${{ steps.find-changes.outputs.list }}"
-          MATCHES="${{ steps.find-changes.outputs.matches }}"
-          echo "Debug: CHANGES='$CHANGES'"
-          echo "Debug: MATCHES='$MATCHES'"
-
-          if [ "$MATCHES" != "true" ]; then
-            echo "No changes found in monitored paths"
+          if [ "${{ steps.find-changes.outputs.matches }}" != "true" ]; then
             echo "matrix=[]" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          subsystems="admin-portal authorization certificates measurements oidc-mock transfer libraries"
-          matrix_entries=""
-
-          for s in $subsystems; do
-            if echo "$CHANGES" | grep -q "^domains/$s/"; then
-              if [ -n "$matrix_entries" ]; then
-                matrix_entries="$matrix_entries,\"$s\""
-              else
-                matrix_entries="\"$s\""
-              fi
-            fi
-          done
-
-          matrix_json="[$matrix_entries]"
-          echo "Debug: matrix_json='$matrix_json'"
-          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+          matrix_entries=$(echo "${{ steps.find-changes.outputs.list }}" | grep -o "^domains/[^/]*/" | sort -u | sed 's|domains/||;s|/||' | tr '\n' ',' | sed 's/,$//' | sed 's/^/["/;s/,/","/g;s/$/"]/')
+          echo "matrix=$matrix_entries" >> $GITHUB_OUTPUT
 
   test-subsystem:
     name: Test ${{ matrix.subsystem }}
@@ -85,15 +70,6 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Create dynamic solution file
-        shell: bash
-        run: |
-          rm -f EnergyTrackAndTrace.sln
-          dotnet new sln -n ${{ matrix.subsystem }}
-          find domains/${{ matrix.subsystem }} -name '*.csproj' | while read project; do
-            dotnet sln ${{ matrix.subsystem }}.sln add "$project"
-          done
-
       - name: Cache NuGet packages
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
@@ -102,31 +78,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Restore
+      - name: Build and test
         shell: bash
         env:
-          version: ""
-        run: |
-          dotnet tool restore || true
-          dotnet restore ${{ matrix.subsystem }}.sln
-
-      - name: Test with filter
-        shell: bash
-        env:
-          DOTNET_NOLOGO: "true"
-          DOTNET_CLI_TELEMETRY_OPTOUT: "true"
-          DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "true"
           TERM: "xterm"
-          version: ""
         run: |
-          filter="${{ inputs.test-filter }}"
-          if [[ "$filter" == "Category!=E2ETest" ]]; then
-            mstest_filter="--filter-not-trait Category=E2ETest"
-          else
-            mstest_filter="$filter"
-          fi
+          dotnet new sln -n ${{ matrix.subsystem }} --force
+          find domains/${{ matrix.subsystem }} -name '*.csproj' -exec dotnet sln ${{ matrix.subsystem }}.sln add {} \;
 
-          find domains/${{ matrix.subsystem }} -name "*.csproj" | grep -E "(Test|Tests|test|tests)\.csproj$" | while read testproject; do
-            echo "Running tests in: $testproject"
-            dotnet run --project "$testproject" --no-restore --configuration Release -- $mstest_filter
-          done
+          dotnet tool restore || true
+          dotnet test ${{ matrix.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter "${{ inputs.test-filter }}"
