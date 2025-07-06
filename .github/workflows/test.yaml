@@ -26,8 +26,11 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - uses: leonardochaia/dotnet-affected-action@b69bc1e5ff095df32b84ef4f279ae136e955a82f # v1.4
+      - uses: leonardochaia/dotnet-affected-action@v1
         id: dotnet_affected
+        env:
+          DOTNET_ROOT: ${{ env.DOTNET_ROOT }}
+          PATH: ${{ env.PATH }}
         with:
           from: ${{ github.base_ref || 'main' }}
           to: ${{ github.sha }}
