@@ -68,6 +68,8 @@ jobs:
     strategy:
       matrix:
         include: ${{ fromJson(needs.generate-build-matrix.outputs.matrix) }}
+      fail-fast: false
+      max-parallel: 4
     outputs:
       image-name: ${{ env.LOWERCASED }}
       image-tag: ${{ env.version }}
@@ -75,6 +77,9 @@ jobs:
       configuration: ${{ matrix.configuration }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
 
       - name: Load global.json for dotnet projects
         if: ${{ matrix.build-type == 'dotnet' }}
@@ -124,6 +129,8 @@ jobs:
         env:
           DOCKER_BUILD_SUMMARY: false
           DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_BUILDKIT_INLINE_CACHE: 1
         with:
           context: ${{ matrix.build-type == 'dotnet' && '.' || matrix.docker-context }}
           file: ${{ matrix.build-type == 'dotnet' && 'Dockerfile' || matrix.dockerfile }}
@@ -132,6 +139,8 @@ jobs:
           provenance: false
           pull: true
           tags: ${{ env.LOWERCASED }}:${{ env.version }}
+          cache-from: type=gha,scope=${{ matrix.project-name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.project-name }}
           build-args: |
             ${{ matrix.build-type == 'dotnet' && format('PROJECT={0} SDK_VERSION={1} RUNTIME_VERSION={2}', matrix.project, env.SDK, env.RUNTIME) || '' }}
 
