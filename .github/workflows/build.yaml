@@ -58,7 +58,7 @@ jobs:
               elif [ -f "$(dirname $project_dir)/$(basename $(dirname $project_dir)).sln" ]; then
                 sln="$(dirname $project_dir)/$(basename $(dirname $project_dir)).sln"
               fi
-              csproj=$(find "$project_dir" -maxdepth 1 -name '*.csproj' | head -n1)
+              csproj=$(find "$project_dir" -name '*.csproj' | head -n1)
               matrix_entries+="{\"project-name\":\"$pn\",\"build-type\":\"dotnet\",\"solution\":\"$sln\",\"project\":\"$csproj\",\"configuration\":\"$config\"},"
             fi
           done < <(find domains -name configuration.yaml)
@@ -154,7 +154,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.project-name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.project-name }}
           build-args: |
-            ${{ matrix.build-type == 'dotnet' && format('PROJECT={0}', matrix.project-name) || '' }}
+            ${{ matrix.build-type == 'dotnet' && format('PROJECT={0}', matrix.project) || '' }}
             ${{ matrix.build-type == 'dotnet' && format('SDK_VERSION={0}', env.SDK) || '' }}
             ${{ matrix.build-type == 'dotnet' && format('RUNTIME_VERSION={0}', env.RUNTIME) || '' }}
 
