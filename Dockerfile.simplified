@@ -11,17 +11,22 @@ WORKDIR /src/
 COPY Directory.* .
 COPY global.json ./
 COPY domains/global.json ./domains/
-
 COPY ./domains/*.sln .
 
-RUN --mount=type=context,src=.,dst=/ctx \
-    find /ctx -name '*.csproj' -exec cp --parents {} /src \; && \
+# Copy only project files for restore (preserves cache when source changes)
+COPY domains/*/*.csproj ./domains/
+COPY domains/*/*/*.csproj ./domains/
+COPY domains/*/*/*/*.csproj ./domains/
+
+RUN --mount=type=cache,target=/root/.nuget/packages \
+    --mount=type=cache,target=/root/.local/share/NuGet \
     dotnet restore ${PROJECT}
 
 RUN --mount=type=cache,target=/root/.nuget/packages \
     --mount=type=cache,target=/root/.local/share/NuGet \
     dotnet tool restore || true
 
+# Copy the rest of the source code (this layer invalidates when source changes)
 COPY --link . .
 
 RUN <<EOR
