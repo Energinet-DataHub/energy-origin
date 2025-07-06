@@ -21,29 +21,44 @@ jobs:
         uses: ./.github/actions/find-diff-action
         with:
           paths: |
-            domains/admin-portal
-            domains/authorization
-            domains/certificates
-            domains/measurements
-            domains/oidc-mock
-            domains/transfer
-            domains/libraries
+            domains/admin-portal/**
+            domains/authorization/**
+            domains/certificates/**
+            domains/measurements/**
+            domains/oidc-mock/**
+            domains/transfer/**
+            domains/libraries/**
 
       - name: Generate lint matrix
         id: set-matrix
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "push" ]]; then
-            subsystems="admin-portal authorization certificates measurements oidc-mock transfer"
-            matrix_entries=$(for s in $subsystems; do echo "\"$s\""; done | tr '\n' ',' | sed 's/,$//')
-            matrix_json="[$matrix_entries]"
-          else
-            CHANGES="${{ steps.find-changes.outputs.list }}"
-            [ "${{ steps.find-changes.outputs.matches }}" != "true" ] && echo "matrix=[]" >> $GITHUB_OUTPUT && exit 0
-            subsystems="admin-portal authorization certificates measurements oidc-mock transfer libraries"
-            matrix_entries=$(for s in $subsystems; do echo "$CHANGES" | grep -q "^domains/$s/" && echo "\"$s\""; done | tr '\n' ',' | sed 's/,$//')
-            matrix_json="[$matrix_entries]" | sed 's/,\]/]/g'
+          CHANGES="${{ steps.find-changes.outputs.list }}"
+          MATCHES="${{ steps.find-changes.outputs.matches }}"
+          echo "Debug: CHANGES='$CHANGES'"
+          echo "Debug: MATCHES='$MATCHES'"
+
+          if [ "$MATCHES" != "true" ]; then
+            echo "No changes found in monitored paths"
+            echo "matrix=[]" >> $GITHUB_OUTPUT
+            exit 0
           fi
+
+          subsystems="admin-portal authorization certificates measurements oidc-mock transfer libraries"
+          matrix_entries=""
+
+          for s in $subsystems; do
+            if echo "$CHANGES" | grep -q "^domains/$s/"; then
+              if [ -n "$matrix_entries" ]; then
+                matrix_entries="$matrix_entries,\"$s\""
+              else
+                matrix_entries="\"$s\""
+              fi
+            fi
+          done
+
+          matrix_json="[$matrix_entries]"
+          echo "Debug: matrix_json='$matrix_json'"
           echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
 
   lint-subsystem:
@@ -134,7 +149,12 @@ jobs:
       - uses: ./.github/actions/find-diff-action
         id: diff
         with:
-          paths: domains/*/ libraries/*/*/
+          paths: |
+            domains/**/*.csproj
+            .allowed-licenses.json
+            .mapped-licenses.json
+            .overridden-licenses.json
+            Directory.Packages.props
 
       - name: Build relevant project matrix
         if: ${{ steps.diff.outputs.pattern != '' }}

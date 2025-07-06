@@ -53,7 +53,6 @@ jobs:
   lint:
     permissions: { }
     needs: setup
-    if: ${{ needs.setup.outputs.has-domain-changes == 'true' }}
     uses: ./.github/workflows/lint.yaml
 
   test:
@@ -64,7 +63,7 @@ jobs:
     secrets: inherit
 
   update:
-    if: ${{ !(needs.setup.outputs.is-dependabot == 'false' && needs.build.outputs.matrix != '' && fromJson(needs.build.outputs.matrix) != '[]') }}
+    if: ${{ needs.setup.outputs.is-dependabot == 'false' && needs.build.outputs.matrix != '' && fromJson(needs.build.outputs.matrix) != '[]' }}
     permissions:
       actions: 'read'
       contents: 'write'
