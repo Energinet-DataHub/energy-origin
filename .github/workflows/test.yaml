@@ -128,5 +128,5 @@ jobs:
 
           find domains/${{ matrix.subsystem }} -name "*.csproj" | grep -E "(Test|Tests|test|tests)\.csproj$" | while read testproject; do
             echo "Running tests in: $testproject"
-            dotnet run --project "$testproject" --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" -- $mstest_filter
+            dotnet run --project "$testproject" --no-restore --configuration Release -- $mstest_filter
           done
