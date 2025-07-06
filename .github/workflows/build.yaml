@@ -32,15 +32,23 @@ jobs:
           paths: |
             domains/*/API/**/*.csproj
             domains/*/API/**/configuration.yaml
+            domains/*/API/**/*.cs
             domains/*/Proxy/**/*.csproj
             domains/*/Proxy/**/configuration.yaml
+            domains/*/Proxy/**/*.cs
             domains/*/Worker/**/*.csproj
             domains/*/Worker/**/configuration.yaml
+            domains/*/Worker/**/*.cs
             domains/*/Web/**/*.csproj
             domains/*/Web/**/configuration.yaml
+            domains/*/Web/**/*.cs
             domains/*/Dockerfile
             domains/*/configuration.yaml
             domains/*/*.sln
+            Dockerfile.simplified
+            Directory.Build.targets
+            Directory.Packages.props
+            global.json
 
       - name: Generate build matrix
         id: set-matrix
