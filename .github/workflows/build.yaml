@@ -31,24 +31,14 @@ jobs:
         with:
           paths: |
             domains/*/API/**/*.csproj
-            domains/*/API/**/configuration.yaml
-            domains/*/API/**/*.cs
-            domains/*/Proxy/**/*.csproj
-            domains/*/Proxy/**/configuration.yaml
-            domains/*/Proxy/**/*.cs
-            domains/*/Worker/**/*.csproj
-            domains/*/Worker/**/configuration.yaml
-            domains/*/Worker/**/*.cs
-            domains/*/Web/**/*.csproj
-            domains/*/Web/**/configuration.yaml
-            domains/*/Web/**/*.cs
-            domains/*/Dockerfile
-            domains/*/configuration.yaml
-            domains/*/*.sln
-            Dockerfile.simplified
-            Directory.Build.targets
-            Directory.Packages.props
-            global.json
+            domains/admin-portal/**
+            domains/authorization/**
+            domains/certificates/**
+            domains/measurements/**
+            domains/oidc-mock/**
+            domains/transfer/**
+            domains/html-pdf-generator/**
+            domains/redoc/**
 
       - name: Generate build matrix
         id: set-matrix
@@ -56,9 +46,23 @@ jobs:
         run: |
           CHANGES="${{ steps.find-changes.outputs.list }}"
           [ "${{ steps.find-changes.outputs.matches }}" != "true" ] && echo "matrix=[]" >> $GITHUB_OUTPUT && exit 0
-          dotnet_entries=$(find domains -name "*.csproj" -print0 | xargs -0 -I{} bash -c 'if echo "{}" | grep -q "/Tests/\|/Shared/\|Test\.csproj$"; then exit 0; fi; pd=$(dirname "{}"); dn=$(echo "$pd" | sed "s|/.*/.*$||"); pn=$(basename "$pd"); cf=$(test -f "$pd/configuration.yaml" && echo "$pd/configuration.yaml" || test -f "$(dirname "$pd")/configuration.yaml" && echo "$(dirname "$pd")/configuration.yaml" || echo ""); if [ -n "$cf" ] && echo "'"$CHANGES"'" | grep -q "$pd\|$cf"; then echo "{\"project-name\":\"$pn\",\"build-type\":\"dotnet\",\"solution\":\"$(test -f "$dn/$(basename "$dn").sln" && echo "$dn/$(basename "$dn").sln" || test -f "$dn/$(basename "$pd").sln" && echo "$dn/$(basename "$pd").sln" || echo "")\",\"project\":\"{}\",\"configuration\":\"$cf\"}"; fi' | tr '\n' ',' | sed 's/,$//')
-          docker_entries=$(find domains -name "Dockerfile" -print0 | xargs -0 -I{} bash -c 'pd=$(dirname "{}"); pn=$(basename "$pd"); cf="$pd/configuration.yaml"; if [ -f "$cf" ] && echo "'"$CHANGES"'" | grep -q "$pd\|{}"; then echo "{\"project-name\":\"$pn\",\"build-type\":\"docker\",\"configuration\":\"$cf\",\"dockerfile\":\"{}\",\"docker-context\":\"$pd\"}"; fi' | tr '\n' ',' | sed 's/,$//')
-          matrix_json="[$dotnet_entries$docker_entries]" | sed 's/,\]/]/g'
+
+          matrix_entries=""
+          while IFS= read -r config; do
+            project_dir=$(dirname "$config")
+            if echo "$CHANGES" | grep -q "^$project_dir/"; then
+              pn=$(basename "$project_dir")
+              sln=""
+              if [ -f "$project_dir/$(basename $project_dir).sln" ]; then
+                sln="$project_dir/$(basename $project_dir).sln"
+              elif [ -f "$(dirname $project_dir)/$(basename $(dirname $project_dir)).sln" ]; then
+                sln="$(dirname $project_dir)/$(basename $(dirname $project_dir)).sln"
+              fi
+              csproj=$(find "$project_dir" -maxdepth 1 -name '*.csproj' | head -n1)
+              matrix_entries+="{\"project-name\":\"$pn\",\"build-type\":\"dotnet\",\"solution\":\"$sln\",\"project\":\"$csproj\",\"configuration\":\"$config\"},"
+            fi
+          done < <(find domains -name configuration.yaml)
+          matrix_json="[${matrix_entries%,}]"
           echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
 
   build:
