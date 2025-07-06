@@ -85,19 +85,8 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Set up Ramdisk Directory
-        shell: bash
-        run: |
-          mkdir -p /dev/shm/ramdisk/project
-
-      - name: Copy Code to Ramdisk
-        shell: bash
-        run: |
-          cp -r $GITHUB_WORKSPACE/* /dev/shm/ramdisk/project
-
       - name: Create dynamic solution file
         shell: bash
-        working-directory: /dev/shm/ramdisk/project
         run: |
           rm -f EnergyTrackAndTrace.sln
           dotnet new sln -n ${{ matrix.subsystem }}
@@ -115,7 +104,6 @@ jobs:
 
       - name: Restore
         shell: bash
-        working-directory: /dev/shm/ramdisk/project
         env:
           version: ""
         run: |
@@ -124,7 +112,6 @@ jobs:
 
       - name: Test with filter
         shell: bash
-        working-directory: /dev/shm/ramdisk/project
         env:
           DOTNET_NOLOGO: "true"
           DOTNET_CLI_TELEMETRY_OPTOUT: "true"
@@ -133,4 +120,7 @@ jobs:
           version: ""
         run: |
           filter="${{ inputs.test-filter }}"
-          dotnet test ${{ matrix.subsystem }}.sln --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter "$filter"
+          find domains/${{ matrix.subsystem }} -name "*.csproj" | grep -E "(Test|Tests|test|tests)\.csproj$" | while read testproject; do
+            echo "Running tests in: $testproject"
+            dotnet run --project "$testproject" --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter "$filter"
+          done
