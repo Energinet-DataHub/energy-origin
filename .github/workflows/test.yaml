@@ -30,7 +30,7 @@ jobs:
         id: dotnet_affected
         shell: bash
         run: |
-          dotnet tool install dotnet-affected
+          dotnet tool install --global dotnet-affected
 
           dotnet affected --format text traversal --from ${{ github.base_ref || 'main' }} --to ${{ github.sha }}
 
