@@ -154,7 +154,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.project-name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.project-name }}
           build-args: |
-            ${{ matrix.build-type == 'dotnet' && format('PROJECT={0}', matrix.project) || '' }}
+            ${{ matrix.build-type == 'dotnet' && format('PROJECT={0}', matrix.project-name) || '' }}
             ${{ matrix.build-type == 'dotnet' && format('SDK_VERSION={0}', env.SDK) || '' }}
             ${{ matrix.build-type == 'dotnet' && format('RUNTIME_VERSION={0}', env.RUNTIME) || '' }}
 
