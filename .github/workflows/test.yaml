@@ -26,14 +26,21 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - uses: leonardochaia/dotnet-affected-action@v1
+      - name: Install and run dotnet-affected
         id: dotnet_affected
-        env:
-          DOTNET_ROOT: ${{ env.DOTNET_ROOT }}
-          PATH: ${{ env.PATH }}
-        with:
-          from: ${{ github.base_ref || 'main' }}
-          to: ${{ github.sha }}
+        shell: bash
+        run: |
+          dotnet tool install dotnet-affected
+
+          dotnet affected --format text traversal --from ${{ github.base_ref || 'main' }} --to ${{ github.sha }}
+
+          if [ -f "affected.proj" ]; then
+            echo "affected=true" >> $GITHUB_OUTPUT
+            echo "Affected projects found, affected.proj created"
+          else
+            echo "affected=" >> $GITHUB_OUTPUT
+            echo "No affected projects found"
+          fi
 
       - name: Cache NuGet packages
         if: success() && steps.dotnet_affected.outputs.affected != ''
