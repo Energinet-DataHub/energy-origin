@@ -120,7 +120,13 @@ jobs:
           version: ""
         run: |
           filter="${{ inputs.test-filter }}"
+          if [[ "$filter" == "Category!=E2ETest" ]]; then
+            mstest_filter="--filter-not-trait Category=E2ETest"
+          else
+            mstest_filter="$filter"
+          fi
+
           find domains/${{ matrix.subsystem }} -name "*.csproj" | grep -E "(Test|Tests|test|tests)\.csproj$" | while read testproject; do
             echo "Running tests in: $testproject"
-            dotnet run --project "$testproject" --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" --filter "$filter"
+            dotnet run --project "$testproject" --no-restore --configuration Release -warnaserror --logger:"console;verbosity=minimal" -- $mstest_filter
           done
