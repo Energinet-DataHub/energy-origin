@@ -18,8 +18,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Authorization._Features_;
 
-public record AcceptTermsCommand(string OrgCvr, string OrgName, Guid UserId) : IRequest;
-
+public record AcceptTermsCommand(
+    string OrgCvr,
+    string OrgName,
+    Guid   UserId,
+    bool   IsTrialEnvironment) : IRequest;
 public class AcceptTermsCommandHandler(
     IOrganizationRepository organizationRepository,
     ITermsRepository termsRepository,
@@ -52,12 +55,15 @@ public class AcceptTermsCommandHandler(
             await organizationRepository.AddAsync(organization, cancellationToken);
         }
 
+        var termsType = request.IsTrialEnvironment ? TermsType.Trial : TermsType.Normal;
+
         var latestTerms = await termsRepository.Query()
+            .Where(t => t.Type == termsType)
             .OrderByDescending(t => t.Version)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (latestTerms == null)
-            throw new InvalidConfigurationException("No Terms configured");
+        if (latestTerms is null)
+            throw new InvalidConfigurationException($"No {termsType} terms configured");
 
         if (!organization.TermsAccepted || organization.TermsVersion != latestTerms.Version)
         {

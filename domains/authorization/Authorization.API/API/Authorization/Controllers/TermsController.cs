@@ -29,7 +29,12 @@ public class TermsController(IMediator mediator, IdentityDescriptor identityDesc
     )]
     public async Task<ActionResult<AcceptTermsResponse>> AcceptTerms()
     {
-        var command = new AcceptTermsCommand(identityDescriptor.OrganizationCvr!, identityDescriptor.OrganizationName, identityDescriptor.Subject);
+        var command = new AcceptTermsCommand(
+            identityDescriptor.OrganizationCvr!,
+            identityDescriptor.OrganizationName,
+            identityDescriptor.Subject,
+            identityDescriptor.IsTrial());
+
         await mediator.Send(command);
         return Ok(new AcceptTermsResponse("Terms accepted successfully."));
     }
