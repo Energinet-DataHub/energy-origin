@@ -21,8 +21,8 @@ namespace API.Authorization._Features_;
 public record AcceptTermsCommand(
     string OrgCvr,
     string OrgName,
-    Guid   UserId,
-    bool   IsTrial) : IRequest;
+    Guid UserId,
+    bool IsTrial) : IRequest;
 public class AcceptTermsCommandHandler(
     IOrganizationRepository organizationRepository,
     ITermsRepository termsRepository,
