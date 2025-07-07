@@ -46,7 +46,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenOrganizationDoesNotExist_CreatesNewOrganizationAndPublishesMessage()
     {
-        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), IsTrial: false);
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
 
         await _handler.Handle(command, CancellationToken.None);
@@ -62,9 +62,23 @@ public class AcceptTermsCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenTrialEnvironment_UsesTrialTerms()
+    {
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), true);
+
+        await _termsRepository.AddAsync(Terms.Create(1, TermsType.Trial), CancellationToken.None);
+
+        await _handler.Handle(command, CancellationToken.None);
+
+        var org = _organizationRepository.Query().Single();
+        org.TermsAccepted.Should().BeTrue();
+        org.TermsVersion.Should().Be(1);
+    }
+
+    [Fact]
     public async Task Handle_WhenOrganizationExistsButTermsNotAccepted_UpdatesTermsAndPublishesMessage()
     {
-        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), IsTrial: false);
         var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
         var whitelisted = Whitelisted.Create(Tin.Create(command.OrgCvr));
         await _whitelistedRepository.AddAsync(whitelisted, CancellationToken.None);
@@ -87,7 +101,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenPromotedToNormalFromTrial_UpdatesTermsAndPublishesMessages()
     {
-        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), IsTrial: false);
         var organization = Organization.CreateTrial(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
         var whitelisted = Whitelisted.Create(Tin.Create(command.OrgCvr));
         await _whitelistedRepository.AddAsync(whitelisted, CancellationToken.None);
@@ -114,7 +128,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenExceptionOccurs_RollsBackTransactionAndDoesNotPublishMessage()
     {
-        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), IsTrial: false);
         var mockOrganizationRepository = Substitute.For<IOrganizationRepository>();
         mockOrganizationRepository.Query().Returns(_ => throw new Exception("Test exception"));
         await using var mockUnitOfWork = Substitute.For<IUnitOfWork>();
@@ -128,7 +142,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenWalletNotCreated_RollsBackTransactionAndDoesNotPublishMessage()
     {
-        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), IsTrial: false);
         var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
         var whitelisted = Whitelisted.Create(Tin.Create(command.OrgCvr));
         await _whitelistedRepository.AddAsync(whitelisted, CancellationToken.None);
@@ -149,7 +163,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenNoTermsExist_RollsBackTransactionAndDoesNotPublishMessage()
     {
-        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), IsTrial: false);
 
         var action = async () => await _handler.Handle(command, CancellationToken.None);
 
@@ -161,7 +175,7 @@ public class AcceptTermsCommandHandlerTests
     [Fact]
     public async Task Handle_WhenWalletExistsAndIsDisabledButEnableFails_RollsBackTransactionAndDoesNotPublishMessage()
     {
-        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), IsTrial: false);
         var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
         await _organizationRepository.AddAsync(organization, CancellationToken.None);
         await _termsRepository.AddAsync(Terms.Create(1), CancellationToken.None);
@@ -203,7 +217,7 @@ public class AcceptTermsCommandHandlerTests
     public async Task Handle_WhenWalletExistsAndIsDisabled_EnablesWalletAndPublishesMessage()
     {
         // Arrange
-        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid());
+        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), IsTrial: false);
         var organization = Organization.Create(Tin.Create(command.OrgCvr), OrganizationName.Create("Test Org"));
         var whitelisted = Whitelisted.Create(Tin.Create(command.OrgCvr));
         await _whitelistedRepository.AddAsync(whitelisted, CancellationToken.None);

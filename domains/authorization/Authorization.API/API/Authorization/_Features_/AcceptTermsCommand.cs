@@ -22,7 +22,7 @@ public record AcceptTermsCommand(
     string OrgCvr,
     string OrgName,
     Guid   UserId,
-    bool   IsTrialEnvironment) : IRequest;
+    bool   IsTrial) : IRequest;
 public class AcceptTermsCommandHandler(
     IOrganizationRepository organizationRepository,
     ITermsRepository termsRepository,
@@ -55,7 +55,7 @@ public class AcceptTermsCommandHandler(
             await organizationRepository.AddAsync(organization, cancellationToken);
         }
 
-        var termsType = request.IsTrialEnvironment ? TermsType.Trial : TermsType.Normal;
+        var termsType = request.IsTrial ? TermsType.Trial : TermsType.Normal;
 
         var latestTerms = await termsRepository.Query()
             .Where(t => t.Type == termsType)
