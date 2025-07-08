@@ -42,7 +42,7 @@ public class PopulateReportCommandHandlerTests
         _unitOfWork.ReportRepository.Returns(_reports);
         _unitOfWork.SaveAsync().Returns(Task.CompletedTask);
         _dataFetcher
-            .GetAsync(Arg.Any<OrganizationId>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .GetAsync(Arg.Any<OrganizationId>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns((Enumerable.Empty<ConsumptionHour>().ToList(), Enumerable.Empty<ConsumptionHour>().ToList(), Enumerable.Empty<Claim>().ToList()));
         _svgRenderer.Render(Arg.Any<IReadOnlyList<HourlyEnergy>>()).Returns(new EnergySvgResult("<svg></svg>"));
         _headerRenderer.Render(Arg.Any<string>(), Arg.Any<string>()).Returns("<header/>");
