@@ -17,6 +17,8 @@ public interface IGraphServiceClientWrapper
 
     Task RemovePassword(string? applicationId, RemovePasswordPostRequestBody body,
         CancellationToken cancellationToken);
+
+    Task DeleteApplication(string? applicationId, CancellationToken cancellationToken);
 }
 
 public class GraphServiceClientWrapper(GraphServiceClient graphServiceClient) : IGraphServiceClientWrapper
@@ -40,5 +42,11 @@ public class GraphServiceClientWrapper(GraphServiceClient graphServiceClient) : 
     {
         await graphServiceClient.Applications[applicationId].RemovePassword
             .PostAsync(body, cancellationToken: cancellationToken);
+    }
+
+    public async Task DeleteApplication(string? applicationId, CancellationToken cancellationToken)
+    {
+        await graphServiceClient.Applications[applicationId]
+            .DeleteAsync(cancellationToken: cancellationToken);
     }
 }
