@@ -155,6 +155,37 @@ public class ProxyTests(ProxyIntegrationTestFixture fixture) : IClassFixture<Pro
         responseContent.Should().Be(orgIds[0]);
     }
 
+    [Theory]
+    [InlineData("trial", "Trial")]
+    [InlineData("", "NonTrial")]
+    [InlineData("active", "NonTrial")]
+    public async Task GivenB2C_WhenAggregateClaimsEndpointIsCalled_ThenTrialFilterParameterIsSetCorrectly(string orgStatus, string expectedTrialFilter)
+    {
+        var orgIds = new List<string> { Guid.NewGuid().ToString() };
+        var mockEndpoint = "/wallet-api/v1/aggregate-claims";
+
+        var requestBuilder = Request.Create()
+            .UsingGet()
+            .WithPath(mockEndpoint)
+            .WithParam("TrialFilter", expectedTrialFilter);
+
+        fixture.WalletWireMockServer
+            .Given(requestBuilder)
+            .RespondWith(
+                Response.Create()
+                    .WithStatusCode(200)
+                    .WithHeader("Content-Type", "application/json")
+                    .WithBody("{\"result\":[],\"metadata\":{\"count\":0,\"offset\":0,\"limit\":10,\"total\":0}}")
+            );
+
+        var client = fixture.Factory.CreateAuthenticatedClient(orgIds: orgIds, orgStatus: orgStatus);
+        client.DefaultRequestHeaders.Add("X-API-Version", ApiVersions.Version1);
+
+        var response = await client.GetAsync($"/wallet-api/aggregate-claims?organizationId={orgIds[0]}&TimeAggregate=hour&TimeZone=UTC", TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     public class V20240515PostTestData : IEnumerable<object[]>
     {
         private readonly List<object[]> _data = new List<object[]>
