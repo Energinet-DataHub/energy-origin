@@ -1,0 +1,100 @@
+name: "Update Preview Authorization ConfigMap"
+description: |
+  Composite action that checks out the matching preview branch in eo-base-environment,
+  checks if the B2C policy identifier is already updated in the ConfigMap, and if not,
+  patches it and commits & pushes back.
+
+inputs:
+  github-app-id:
+    description: GitHub App ID
+    required: true
+  github-app-private-key:
+    description: GitHub App private key
+    required: true
+  repository:
+    description: Target repository (owner/repo)
+    required: false
+    default: ${{ github.repository_owner }}/eo-base-environment
+  branch:
+    description: Branch in the target repo to update
+    required: false
+    default: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+  configmap-path:
+    description: Path to the authorization ConfigMap in the repo
+    required: false
+    default: k8s/energy-origin-apps/authorization/shared/resources/preview/authorization-configmap.yaml
+  policy-name-to-substitute:
+    description: The original B2C policy identifier to replace
+    required: false
+    default: B2C_1A_OIDCMOCK_V4
+
+runs:
+  using: composite
+  steps:
+    - name: Extract PREVIEW_ID from branch (uppercase)
+      shell: bash
+      run: |
+        if [[ -n "$GITHUB_HEAD_REF" ]]; then
+          BRANCH="$GITHUB_HEAD_REF"
+        else
+          BRANCH="${GITHUB_REF#refs/heads/}"
+        fi
+
+        RAW_ID="${BRANCH#preview/}"
+        PREVIEW_ID=$(echo "$RAW_ID" \
+          | tr '[:lower:]' '[:upper:]' \
+          | sed 's/[^0-9A-Z]*//g')
+        echo "PREVIEW_ID=$PREVIEW_ID" >> $GITHUB_ENV
+
+    - name: Generate GitHub App token
+      id: create-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.github-app-id }}
+        private-key: ${{ inputs.github-app-private-key }}
+        owner: Energinet-DataHub
+
+    - name: Checkout eo-base-environment
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repository }}
+        token: ${{ steps.create-token.outputs.token }}
+        ref: ${{ inputs.branch }}
+        path: base
+        fetch-depth: 0
+
+    - name: Use correct branch
+      working-directory: base
+      shell: bash
+      run: |
+        git fetch origin ${{ inputs.branch }} \
+          && git checkout ${{ inputs.branch }} 2>/dev/null \
+          || git checkout -b ${{ inputs.branch }}
+
+    - name: Check if ConfigMap already patched
+      shell: bash
+      run: |
+        FILE=base/${{ inputs.configmap-path }}
+        if grep -q "${{ inputs.policy-name-to-substitute }}_${{ env.PREVIEW_ID }}" "$FILE"; then
+          echo "ConfigMap already contains patched policy identifier, skipping."
+          exit 0
+        fi
+
+    - name: Patch B2C policy identifier in ConfigMap
+      shell: bash
+      run: |
+        FILE=base/${{ inputs.configmap-path }}
+        # Append _PREVIEW_ID to the original policy name
+        sed -i \
+          -e "s|${{ inputs.policy-name-to-substitute }}|&_${{ env.PREVIEW_ID }}|g" \
+          "$FILE"
+
+    - name: Commit & Push ConfigMap update
+      uses: EndBug/add-and-commit@v9
+      with:
+        cwd: base
+        fetch: true
+        message: "chore: update preview-configmap to ${{ env.PREVIEW_ID }}"
+        new_branch: ${{ inputs.branch }}
+        push: --force-with-lease --set-upstream origin ${{ inputs.branch }}
+        default_author: github_actions
