@@ -375,13 +375,14 @@ public class EnergyDataFetcherTests
 
     private static bool IsTrialClaim(Claim claim)
     {
+        // A claim is trial only when BOTH certificates have IsTrial=true
+        // Mixed states (true/false) are impossible from the upstream service (Vault)
         var productionIsTrial = claim.ProductionCertificate.Attributes.TryGetValue("IsTrial", out var prodVal) &&
                                string.Equals(prodVal, "true", StringComparison.OrdinalIgnoreCase);
 
         var consumptionIsTrial = claim.ConsumptionCertificate.Attributes.TryGetValue("IsTrial", out var consVal) &&
                                 string.Equals(consVal, "true", StringComparison.OrdinalIgnoreCase);
 
-        // Both should be the same, but we double check to be defensive
-        return productionIsTrial || consumptionIsTrial;
+        return productionIsTrial && consumptionIsTrial;
     }
 }
