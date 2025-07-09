@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,6 +90,11 @@ public class PopulateReportCommandHandler
 
             // Process into hourly aggregates
             var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);
+
+            _logger.LogInformation("FIRST HOURLY Matched: " + hourlyData.First().Matched);
+            _logger.LogInformation("FIRST HOURLY Overmatched: " + hourlyData.First().Overmatched);
+            _logger.LogInformation("FIRST HOURLY Consumption: " + hourlyData.First().Consumption);
+            _logger.LogInformation("FIRST HOURLY Unmatched: " + hourlyData.First().Unmatched);
 
             // Calculate coverage headline
             var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
