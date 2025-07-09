@@ -79,11 +79,15 @@ public class IntegrationTestFixture : IAsyncLifetime
 
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseNpgsql(WebAppFactory.ConnectionString);
-        using var dbContext = new ApplicationDbContext(optionsBuilder.Options);
-        if (!await dbContext.Terms.AnyAsync())
+        await using var dbContext = new ApplicationDbContext(optionsBuilder.Options);
+        var requiredTypes = Enum.GetValues<TermsType>();
+        foreach (var type in requiredTypes)
         {
-            dbContext.Terms.Add(Terms.Create(1));
-            await dbContext.SaveChangesAsync();
+            if (!await dbContext.Terms.AnyAsync(t => t.Type == type))
+            {
+                dbContext.Terms.Add(Terms.Create(1, type));
+            }
         }
+        await dbContext.SaveChangesAsync();
     }
 }
