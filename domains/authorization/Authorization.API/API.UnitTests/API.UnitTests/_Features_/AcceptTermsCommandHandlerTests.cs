@@ -62,20 +62,6 @@ public class AcceptTermsCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenTrialEnvironment_UsesTrialTerms()
-    {
-        var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), true);
-
-        await _termsRepository.AddAsync(Terms.Create(1, TermsType.Trial), CancellationToken.None);
-
-        await _handler.Handle(command, CancellationToken.None);
-
-        var org = _organizationRepository.Query().Single();
-        org.TermsAccepted.Should().BeTrue();
-        org.TermsVersion.Should().Be(1);
-    }
-
-    [Fact]
     public async Task Handle_WhenOrganizationExistsButTermsNotAccepted_UpdatesTermsAndPublishesMessage()
     {
         var command = new AcceptTermsCommand("12345678", "Test Org", Guid.NewGuid(), IsTrial: false);

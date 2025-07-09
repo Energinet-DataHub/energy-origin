@@ -170,4 +170,158 @@ public class GetConsentForUserQueryHandlerTests
         await _fakeUnitOfWork.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
         await Assert.ThrowsAsync<Exception>(() => handler.Handle(command, CancellationToken.None));
     }
+
+    [Fact]
+    public async Task Handle_WhenTrialOrgHasAcceptedLatestTrialTerms_ReturnsTrueTermsAccepted()
+    {
+        // Arrange
+        var trialOrg = Organization.CreateTrial(Tin.Create("87654321"), OrganizationName.Create("Trial Org"));
+        var trialTerms = Terms.Create(version: 1, type: TermsType.Trial);
+        trialOrg.AcceptTerms(trialTerms, false);
+
+        await _fakeOrganizationRepository.AddAsync(trialOrg, CancellationToken.None);
+        await _fakeTermsRepository.AddAsync(trialTerms, CancellationToken.None);
+
+        var cmd = new GetConsentForUserCommand(Guid.NewGuid(), "Trial User", "Trial Org", "87654321");
+
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+
+        result.OrgId.Should().Be(trialOrg.Id);
+        result.TermsAccepted.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_WhenTrialOrgAcceptedOldTrialTermsAndNewerExist_ReturnsFalseTermsAccepted()
+    {
+        var trialOrg = Organization.CreateTrial(Tin.Create("87654321"), OrganizationName.Create("Trial Org"));
+        var oldTrialTerms = Terms.Create(1, TermsType.Trial);
+        trialOrg.AcceptTerms(oldTrialTerms, false);
+
+        await _fakeOrganizationRepository.AddAsync(trialOrg, CancellationToken.None);
+        await _fakeTermsRepository.AddAsync(oldTrialTerms, CancellationToken.None);
+
+        // newer trial terms (v2)
+        await _fakeTermsRepository.AddAsync(Terms.Create(2, TermsType.Trial), CancellationToken.None);
+
+        var cmd = new GetConsentForUserCommand(Guid.NewGuid(), "Trial User", "Trial Org", "87654321");
+
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+
+        result.OrgId.Should().Be(trialOrg.Id);
+        result.TermsAccepted.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Handle_WhenLatestTrialTermsVersionIsHigherThanAccepted_ReturnsFalseTermsAccepted()
+    {
+        // Arrange – trial organisation has accepted v1 of Trial terms
+        var trialOrg = Organization.CreateTrial(
+            Tin.Create("87654321"),
+            OrganizationName.Create("Trial Org"));
+
+        var oldTrialTerms = Terms.Create(1, TermsType.Trial);
+        trialOrg.AcceptTerms(oldTrialTerms, isWhitelisted: false);
+
+        var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Trial User"));
+        Affiliation.Create(user, trialOrg);
+
+        await _fakeOrganizationRepository.AddAsync(trialOrg, CancellationToken.None);
+        await _fakeUserRepository.AddAsync(user, CancellationToken.None);
+        await _fakeTermsRepository.AddAsync(oldTrialTerms, CancellationToken.None);
+
+        // newer Trial terms version (v2) is now available
+        var newTrialTerms = Terms.Create(2, TermsType.Trial);
+        await _fakeTermsRepository.AddAsync(newTrialTerms, CancellationToken.None);
+
+        var command = new GetConsentForUserCommand(
+            user.IdpUserId.Value,
+            "Trial User",
+            "Trial Org",
+            "87654321");
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.OrgId.Should().Be(trialOrg.Id);
+        result.TermsAccepted.Should().BeFalse();
+        _fakeUserRepository.Query().Count().Should().Be(1);
+        trialOrg.Affiliations.Count.Should().Be(1);
+        trialOrg.TermsVersion.Should().Be(oldTrialTerms.Version);
+    }
+
+    [Fact]
+    public async Task Handle_WhenTrialOrgAcceptedLatestTrialTerms_ButNewerNormalTermsExist_ReturnsTrueTermsAccepted()
+    {
+        var trialOrg = Organization.CreateTrial(
+            Tin.Create("87654321"),
+            OrganizationName.Create("Trial Org"));
+
+        // latest Trial terms (v1) – organisation has accepted these
+        var trialTermsV1 = Terms.Create(1, TermsType.Trial);
+        trialOrg.AcceptTerms(trialTermsV1, isWhitelisted: false);
+
+        // persist org, user and accepted Trial terms
+        var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Trial User"));
+        Affiliation.Create(user, trialOrg);
+
+        await _fakeOrganizationRepository.AddAsync(trialOrg, CancellationToken.None);
+        await _fakeUserRepository.AddAsync(user, CancellationToken.None);
+        await _fakeTermsRepository.AddAsync(trialTermsV1, CancellationToken.None);
+
+        // a newer **Normal** terms version appears (v2) – should not influence Trial org terms acceptance
+        var normalTermsV2 = Terms.Create(version: 2, type: TermsType.Normal);
+        await _fakeTermsRepository.AddAsync(normalTermsV2, CancellationToken.None);
+
+        var command = new GetConsentForUserCommand(
+            user.IdpUserId.Value,
+            "Trial User",
+            "Trial Org",
+            "87654321");
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.OrgId.Should().Be(trialOrg.Id);
+        result.TermsAccepted.Should().BeTrue();
+        trialOrg.TermsVersion.Should().Be(trialTermsV1.Version);
+        _fakeUserRepository.Query().Count().Should().Be(1);
+        trialOrg.Affiliations.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Handle_WhenNormalOrgAcceptedLatestNormalTerms_ButNewerTrialTermsExist_ReturnsTrueTermsAccepted()
+    {
+        var normalOrg = Organization.Create(
+            Tin.Create("12345678"),
+            OrganizationName.Create("Normal Org"));
+
+        // latest Normal terms (v1) – organisation has accepted these
+        var normalTermsV1 = Terms.Create(version: 1, type: TermsType.Normal);
+        normalOrg.AcceptTerms(normalTermsV1, isWhitelisted: true);
+
+        // persist org, user and accepted Normal terms
+        var user = User.Create(IdpUserId.Create(Guid.NewGuid()), UserName.Create("Normal User"));
+        Affiliation.Create(user, normalOrg);
+
+        await _fakeOrganizationRepository.AddAsync(normalOrg, CancellationToken.None);
+        await _fakeUserRepository.AddAsync(user, CancellationToken.None);
+        await _fakeTermsRepository.AddAsync(normalTermsV1, CancellationToken.None);
+
+        // a newer **Trial** terms version appears (v2) – must not affect Normal org terms acceptance
+        var trialTermsV2 = Terms.Create(2, TermsType.Trial);
+        await _fakeTermsRepository.AddAsync(trialTermsV2, CancellationToken.None);
+
+        var command = new GetConsentForUserCommand(
+            user.IdpUserId.Value,
+            "Normal User",
+            "Normal Org",
+            "12345678");
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.OrgId.Should().Be(normalOrg.Id);
+        result.TermsAccepted.Should().BeTrue();
+        normalOrg.TermsVersion.Should().Be(normalTermsV1.Version);
+        _fakeUserRepository.Query().Count().Should().Be(1);
+        normalOrg.Affiliations.Count.Should().Be(1);
+    }
 }
