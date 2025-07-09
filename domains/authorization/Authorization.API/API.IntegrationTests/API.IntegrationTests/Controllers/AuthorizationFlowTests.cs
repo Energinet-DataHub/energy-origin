@@ -29,7 +29,7 @@ public class AuthorizationFlowTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task GivenNonExistingUserAndNoneExistingOrganization_WhenGoingThroughAcceptTermsFlow_ThenOrginizationAffiliationAndUserIsCreated()
+    public async Task GivenNonExistingUserAndNoneExistingOrganization_WhenGoingThroughAcceptTermsFlow_ThenOrganizationAffiliationAndUserIsCreated()
     {
         // Given
         var user = new
@@ -159,17 +159,21 @@ public class AuthorizationFlowTests : IntegrationTestBase
         var getClientGrantedConsentsQueryResult =
             await getClientGrantedConsentsQueryHandler.Handle(new GetClientGrantedConsentsQuery(thirdParyIdpClientId),
                 CancellationToken.None);
+
         var consentForClientQueryResult =
             await consentForClientQueryHandler.Handle(new GetConsentForClientQuery(thirdParyIdpClientId.Value),
                 CancellationToken.None);
 
         // Then
-        var grantedConsentsOrganizationIds =
-            getClientGrantedConsentsQueryResult.GetClientConsentsQueryResultItems.Select(x => x.OrganizationId);
+        var grantedConsentsOrganizationIds = getClientGrantedConsentsQueryResult
+            .GetClientConsentsQueryResultItems
+            .Select(x => x.OrganizationId)
+            .ToList();
+
         var authorizationClaimOrganizationsIds = consentForClientQueryResult.OrgIds;
 
         grantedConsentsOrganizationIds.Should().BeEquivalentTo(authorizationClaimOrganizationsIds);
-        grantedConsentsOrganizationIds.Count().Should().Be(normalOrganizations.Length);
+        grantedConsentsOrganizationIds.Should().BeEquivalentTo(normalOrganizations.Select(o => o.Id));
         grantedConsentsOrganizationIds.Should().NotContain(id => id == trialOrganization.Id);
         grantedConsentsOrganizationIds.Should().Contain([organization.Id, organization2.Id]);
     }
@@ -223,12 +227,15 @@ public class AuthorizationFlowTests : IntegrationTestBase
                 CancellationToken.None);
 
         // Then
-        var grantedConsentsOrganizationIds =
-            getClientGrantedConsentsQueryResult.GetClientConsentsQueryResultItems.Select(x => x.OrganizationId);
+        var grantedConsentsOrganizationIds = getClientGrantedConsentsQueryResult
+            .GetClientConsentsQueryResultItems
+            .Select(x => x.OrganizationId)
+            .ToList();
+
         var authorizationClaimOrganizationsIds = consentForClientQueryResult.OrgIds;
 
         grantedConsentsOrganizationIds.Should().BeEquivalentTo(authorizationClaimOrganizationsIds);
-        grantedConsentsOrganizationIds.Count().Should().Be(trialOrganizations.Length);
+        grantedConsentsOrganizationIds.Should().BeEquivalentTo(trialOrganizations.Select(o => o.Id));
         grantedConsentsOrganizationIds.Should().NotContain(id => id == organization.Id || id == organization2.Id);
         grantedConsentsOrganizationIds.Should().Contain(id => id == trialOrganization.Id);
     }
@@ -271,8 +278,6 @@ public class AuthorizationFlowTests : IntegrationTestBase
                 CancellationToken.None);
 
         // Then
-        var authorizationClaimOrganizationsIds = consentForClientQueryResult.OrgIds;
-
         var thirdPartyClient = thirdPartyWithClient.Clients.First();
 
         consentForClientQueryResult.Sub.Should().Be(thirdPartyIdpClientId);
@@ -280,7 +285,7 @@ public class AuthorizationFlowTests : IntegrationTestBase
         consentForClientQueryResult.Scope.Should().Be("dashboard production meters certificates wallet");
         consentForClientQueryResult.OrgName.Should().Be(thirdPartyClient.Name.Value);
         consentForClientQueryResult.SubType.Should().Be(thirdPartyClient.ClientType.ToString());
-        consentForClientQueryResult.OrgId.Should().Be(thirdPartyClient.Organization!.Id.ToString());
+        consentForClientQueryResult.OrgId.Should().Be(thirdPartyClient.Organization?.Id.ToString());
     }
 
     [Fact]
@@ -321,8 +326,6 @@ public class AuthorizationFlowTests : IntegrationTestBase
                 CancellationToken.None);
 
         // Then
-        var authorizationClaimOrganizationsIds = consentForClientQueryResult.OrgIds;
-
         var thirdPartyClient = thirdPartyWithClient.Clients.First();
 
         consentForClientQueryResult.Sub.Should().Be(thirdPartyIdpClientId);
@@ -330,6 +333,6 @@ public class AuthorizationFlowTests : IntegrationTestBase
         consentForClientQueryResult.Scope.Should().Be("dashboard production meters certificates wallet");
         consentForClientQueryResult.OrgName.Should().Be(thirdPartyClient.Name.Value);
         consentForClientQueryResult.SubType.Should().Be(thirdPartyClient.ClientType.ToString());
-        consentForClientQueryResult.OrgId.Should().Be(thirdPartyClient.Organization!.Id.ToString());
+        consentForClientQueryResult.OrgId.Should().Be(thirdPartyClient.Organization?.Id.ToString());
     }
 }
