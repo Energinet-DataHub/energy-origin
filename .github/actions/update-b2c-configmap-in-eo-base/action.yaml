@@ -71,14 +71,24 @@ runs:
           && git checkout ${{ inputs.branch }} 2>/dev/null \
           || git checkout -b ${{ inputs.branch }}
 
+    - name: Construct preview URLs
+      shell: bash
+      run: |
+        MITID_URL="https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/B2C_1A_OIDCMOCK_V4_${{ env.PREVIEW_ID }}/v2.0/.well-known/openid-configuration"
+        FRONTEND_URL="https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/B2C_1A_OIDCMOCK_V4_${{ env.PREVIEW_ID }}/v2.0/"
+        echo "MITID_URL=$MITID_URL" >> $GITHUB_ENV
+        echo "FRONTEND_URL=$FRONTEND_URL" >> $GITHUB_ENV
+
     - name: Check if ConfigMap already patched
       shell: bash
       run: |
         FILE=base/${{ inputs.configmap-path }}
-        # Check if both keys already have the preview ID appended
-        if grep -q "B2C__MitIDCustomPolicyWellKnownUrl.*_${{ env.PREVIEW_ID }}" "$FILE" && \
-           grep -q "Frontend__AzureB2C__Issuer.*_${{ env.PREVIEW_ID }}" "$FILE"; then
-          echo "ConfigMap already contains patched policy identifiers, skipping."
+
+        CURRENT_MITID=$(yq eval '.data.B2C__MitIDCustomPolicyWellKnownUrl' "$FILE")
+        CURRENT_FRONTEND=$(yq eval '.data.Frontend__AzureB2C__Issuer' "$FILE")
+
+        if [[ "$CURRENT_MITID" == "${{ env.MITID_URL }}" && "$CURRENT_FRONTEND" == "${{ env.FRONTEND_URL }}" ]]; then
+          echo "ConfigMap already contains the expected URLs, skipping."
           exit 0
         fi
 
@@ -87,13 +97,9 @@ runs:
       run: |
         FILE=base/${{ inputs.configmap-path }}
 
-        MITID_URL="https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/B2C_1A_OIDCMOCK_V4_${{ env.PREVIEW_ID }}/v2.0/.well-known/openid-configuration"
-        FRONTEND_URL="https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/B2C_1A_OIDCMOCK_V4_${{ env.PREVIEW_ID }}/v2.0/"
-
-        # Replace the entire values for both keys
-        sed -i \
-          -e "/B2C__MitIDCustomPolicyWellKnownUrl:/,/value:/ s|value:.*|value: $MITID_URL|" \
-          -e "/Frontend__AzureB2C__Issuer:/,/value:/ s|value:.*|value: $FRONTEND_URL|" \
+        yq eval \
+          -i \
+          '.data.B2C__MitIDCustomPolicyWellKnownUrl = "${{ env.MITID_URL }}" | .data.Frontend__AzureB2C__Issuer = "${{ env.FRONTEND_URL }}"' \
           "$FILE"
 
     - name: Commit & Push ConfigMap update
