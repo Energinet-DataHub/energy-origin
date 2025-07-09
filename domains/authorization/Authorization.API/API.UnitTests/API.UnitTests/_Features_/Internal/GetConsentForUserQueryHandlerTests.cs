@@ -191,27 +191,6 @@ public class GetConsentForUserQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenTrialOrgAcceptedOldTrialTermsAndNewerExist_ReturnsFalseTermsAccepted()
-    {
-        var trialOrg = Organization.CreateTrial(Tin.Create("87654321"), OrganizationName.Create("Trial Org"));
-        var oldTrialTerms = Terms.Create(1, TermsType.Trial);
-        trialOrg.AcceptTerms(oldTrialTerms, false);
-
-        await _fakeOrganizationRepository.AddAsync(trialOrg, CancellationToken.None);
-        await _fakeTermsRepository.AddAsync(oldTrialTerms, CancellationToken.None);
-
-        // newer trial terms (v2)
-        await _fakeTermsRepository.AddAsync(Terms.Create(2, TermsType.Trial), CancellationToken.None);
-
-        var cmd = new GetConsentForUserCommand(Guid.NewGuid(), "Trial User", "Trial Org", "87654321");
-
-        var result = await _handler.Handle(cmd, CancellationToken.None);
-
-        result.OrgId.Should().Be(trialOrg.Id);
-        result.TermsAccepted.Should().BeFalse();
-    }
-
-    [Fact]
     public async Task Handle_WhenLatestTrialTermsVersionIsHigherThanAccepted_ReturnsFalseTermsAccepted()
     {
         // Arrange – trial organisation has accepted v1 of Trial terms
@@ -234,10 +213,11 @@ public class GetConsentForUserQueryHandlerTests
         await _fakeTermsRepository.AddAsync(newTrialTerms, CancellationToken.None);
 
         var command = new GetConsentForUserCommand(
-            user.IdpUserId.Value,
-            "Trial User",
-            "Trial Org",
-            "87654321");
+            Sub: user.IdpUserId.Value,
+            Name: user.Name.Value,
+            OrgName: trialOrg.Name.Value,
+            OrgCvr: trialOrg.Tin!.Value
+            );
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -273,10 +253,11 @@ public class GetConsentForUserQueryHandlerTests
         await _fakeTermsRepository.AddAsync(normalTermsV2, CancellationToken.None);
 
         var command = new GetConsentForUserCommand(
-            user.IdpUserId.Value,
-            "Trial User",
-            "Trial Org",
-            "87654321");
+            Sub: user.IdpUserId.Value,
+            Name: user.Name.Value,
+            OrgName: trialOrg.Name.Value,
+            OrgCvr: trialOrg.Tin!.Value
+        );
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -311,10 +292,11 @@ public class GetConsentForUserQueryHandlerTests
         await _fakeTermsRepository.AddAsync(trialTermsV2, CancellationToken.None);
 
         var command = new GetConsentForUserCommand(
-            user.IdpUserId.Value,
-            "Normal User",
-            "Normal Org",
-            "12345678");
+            Sub: user.IdpUserId.Value,
+            Name: user.Name.Value,
+            OrgName: normalOrg.Name.Value,
+            OrgCvr: normalOrg.Tin!.Value
+        );
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
