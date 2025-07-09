@@ -4,9 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.Data;
 using API.Repository;
+using API.Services;
 using EnergyOrigin.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace API.Authorization._Features_.Internal;
 
@@ -19,7 +21,7 @@ public class RemoveOrganizationClientsCommandResult
 {
 }
 
-public class RemoveOrganizationClientsCommandHandler(IClientRepository clientRepository, IUnitOfWork unitOfWork)
+public class RemoveOrganizationClientsCommandHandler(IClientRepository clientRepository, IUnitOfWork unitOfWork, IGraphServiceClientWrapper graphServiceClientWrapper, ILogger<RemoveOrganizationClientsCommandHandler> logger)
     : IRequestHandler<RemoveOrganizationClientsCommand, RemoveOrganizationClientsCommandResult>
 {
     public async Task<RemoveOrganizationClientsCommandResult> Handle(RemoveOrganizationClientsCommand request,
@@ -34,6 +36,19 @@ public class RemoveOrganizationClientsCommandHandler(IClientRepository clientRep
 
         if (organizationClients.Count > 0)
         {
+            foreach (var client in organizationClients)
+            {
+                try
+                {
+                    await graphServiceClientWrapper.DeleteApplication(client.IdpClientId.Value.ToString(), cancellationToken);
+                    logger.LogInformation("Deleted Azure B2C app registration for client {ClientId}", client.IdpClientId.Value);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to delete Azure B2C app registration for client {ClientId}", client.IdpClientId.Value);
+                }
+            }
+
             clientRepository.RemoveRange(organizationClients);
             await unitOfWork.CommitAsync(cancellationToken);
         }
