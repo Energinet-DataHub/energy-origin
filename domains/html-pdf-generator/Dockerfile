@@ -1,40 +1,17 @@
-FROM cgr.dev/chainguard/wolfi-base:latest AS build
-
-RUN apk add --no-cache \
-    nodejs-24 \
-    npm \
-    chromium
+FROM node:24-slim
 
 WORKDIR /app
-COPY package.json .
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true
-RUN npm install --omit=dev
-COPY server.js .
 
-RUN mkdir -p /runtime-root/usr/lib /runtime-root/usr/bin /runtime-root/app && \
-    cp -a /usr/lib /runtime-root/usr/ && \
-    cp -a /usr/bin /runtime-root/usr/ && \
-    ln -sf chromium /runtime-root/usr/bin/chromium-browser && \
-    cp -a /app/* /runtime-root/app && \
-    rm -rf /runtime-root/usr/lib/node_modules /runtime-root/usr/lib/apk
+ENV PLAYWRIGHT_BROWSERS_PATH=/app/ms-playwright
 
-RUN rm -f /runtime-root/usr/bin/busybox && \
-    rm -f /runtime-root/usr/bin/npm || true && \
-    rm -rf /runtime-root/usr/share/busybox \
-           /runtime-root/usr/share/doc/busybox \
-           /runtime-root/usr/lib/busybox* \
-               /runtime-root/usr/share/npm \
-               /runtime-root/usr/lib/node_modules/npm
+COPY . .
 
-FROM cgr.dev/chainguard/glibc-dynamic:latest AS final
+RUN npm ci
 
-COPY --from=build /runtime-root/usr /usr
-COPY --from=build /lib /lib
-COPY --from=build /runtime-root/app /app
+RUN npx playwright-core install chromium --with-deps --only-shell
 
-WORKDIR /app
-USER 65532:65532
-
-ENV LANG=C.UTF-8
 EXPOSE 8080
+
+USER node
+
 CMD ["node", "server.js"]
