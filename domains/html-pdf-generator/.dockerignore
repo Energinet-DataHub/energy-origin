@@ -1,0 +1,17 @@
+# IDE files
+**/.vscode/
+**/.idea/
+**/.DS_Store
+
+# Build artifacts
+**/node_modules/
+**/npm-debug.log*
+**/.cache/*
+!**/.cache/ms-playwright/
+**/test-results/
+**/playwright-report/
+
+# Temporary files
+**/*.tmp
+**/*.bak
+**/*.swp

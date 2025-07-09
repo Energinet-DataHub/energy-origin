@@ -394,6 +394,84 @@ public class CredentialServiceTest
         Assert.Null(exception);
     }
 
+    [Fact]
+    public async Task GivenDeleteApplication_WithValidApplicationId_DeletesSuccessfully()
+    {
+        var applicationId = Guid.NewGuid();
+        var applicationIdString = applicationId.ToString();
+
+        _graphServiceClientWrapper
+            .DeleteApplication(applicationIdString, Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+
+        await _graphServiceClientWrapper.DeleteApplication(applicationIdString, CancellationToken.None);
+
+        await _graphServiceClientWrapper.Received(1).DeleteApplication(applicationIdString, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GivenDeleteApplication_WithODataError_ThrowsException()
+    {
+        var applicationId = Guid.NewGuid();
+        var applicationIdString = applicationId.ToString();
+
+        _graphServiceClientWrapper
+            .DeleteApplication(applicationIdString, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ODataError());
+
+        var exception = await Record.ExceptionAsync(
+            async () => await _graphServiceClientWrapper.DeleteApplication(applicationIdString, CancellationToken.None));
+
+        Assert.IsType<ODataError>(exception);
+    }
+
+    [Fact]
+    public async Task GivenDeleteApplication_WithNullApplicationId_ThrowsException()
+    {
+        string? applicationId = null;
+
+        _graphServiceClientWrapper
+            .DeleteApplication(applicationId, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ArgumentNullException(nameof(applicationId)));
+
+        var exception = await Record.ExceptionAsync(
+            async () => await _graphServiceClientWrapper.DeleteApplication(applicationId, CancellationToken.None));
+
+        Assert.IsType<ArgumentNullException>(exception);
+    }
+
+    [Fact]
+    public async Task GivenDeleteApplication_WithEmptyApplicationId_ThrowsException()
+    {
+        var applicationId = string.Empty;
+
+        _graphServiceClientWrapper
+            .DeleteApplication(applicationId, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new ArgumentException("Application ID cannot be empty"));
+
+        var exception = await Record.ExceptionAsync(
+            async () => await _graphServiceClientWrapper.DeleteApplication(applicationId, CancellationToken.None));
+
+        Assert.IsType<ArgumentException>(exception);
+    }
+
+    [Fact]
+    public async Task GivenDeleteApplication_WithCancellationToken_CancelsOperation()
+    {
+        var applicationId = Guid.NewGuid().ToString();
+        var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        _graphServiceClientWrapper
+            .DeleteApplication(applicationId, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new OperationCanceledException());
+
+        var exception = await Record.ExceptionAsync(
+            async () => await _graphServiceClientWrapper.DeleteApplication(applicationId, cancellationTokenSource.Token));
+
+        Assert.IsType<OperationCanceledException>(exception);
+    }
+
     private void ReturnNullApplication(Guid applicationId)
     {
         _graphServiceClientWrapper

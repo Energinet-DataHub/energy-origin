@@ -24,7 +24,7 @@ inputs:
     required: false
     default: k8s/energy-origin-apps/authorization/shared/resources/preview/authorization-configmap.yaml
   policy-name-to-substitute:
-    description: The original B2C policy identifier to replace
+    description: The original B2C policy identifier to replace (deprecated - now targeting specific keys)
     required: false
     default: B2C_1A_OIDCMOCK_V4
 
@@ -71,22 +71,35 @@ runs:
           && git checkout ${{ inputs.branch }} 2>/dev/null \
           || git checkout -b ${{ inputs.branch }}
 
+    - name: Construct preview URLs
+      shell: bash
+      run: |
+        MITID_URL="https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/B2C_1A_OIDCMOCK_V4_${{ env.PREVIEW_ID }}/v2.0/.well-known/openid-configuration"
+        FRONTEND_URL="https://datahubeouenerginet.b2clogin.com/datahubeouenerginet.onmicrosoft.com/B2C_1A_OIDCMOCK_V4_${{ env.PREVIEW_ID }}/v2.0/"
+        echo "MITID_URL=$MITID_URL" >> $GITHUB_ENV
+        echo "FRONTEND_URL=$FRONTEND_URL" >> $GITHUB_ENV
+
     - name: Check if ConfigMap already patched
       shell: bash
       run: |
         FILE=base/${{ inputs.configmap-path }}
-        if grep -q "${{ inputs.policy-name-to-substitute }}_${{ env.PREVIEW_ID }}" "$FILE"; then
-          echo "ConfigMap already contains patched policy identifier, skipping."
+
+        CURRENT_MITID=$(yq eval '.data.B2C__MitIDCustomPolicyWellKnownUrl' "$FILE")
+        CURRENT_FRONTEND=$(yq eval '.data.Frontend__AzureB2C__Issuer' "$FILE")
+
+        if [[ "$CURRENT_MITID" == "${{ env.MITID_URL }}" && "$CURRENT_FRONTEND" == "${{ env.FRONTEND_URL }}" ]]; then
+          echo "ConfigMap already contains the expected URLs, skipping."
           exit 0
         fi
 
-    - name: Patch B2C policy identifier in ConfigMap
+    - name: Patch B2C policy identifiers in ConfigMap
       shell: bash
       run: |
         FILE=base/${{ inputs.configmap-path }}
-        # Append _PREVIEW_ID to the original policy name
-        sed -i \
-          -e "s|${{ inputs.policy-name-to-substitute }}|&_${{ env.PREVIEW_ID }}|g" \
+
+        yq eval \
+          -i \
+          '.data.B2C__MitIDCustomPolicyWellKnownUrl = "${{ env.MITID_URL }}" | .data.Frontend__AzureB2C__Issuer = "${{ env.FRONTEND_URL }}"' \
           "$FILE"
 
     - name: Commit & Push ConfigMap update
