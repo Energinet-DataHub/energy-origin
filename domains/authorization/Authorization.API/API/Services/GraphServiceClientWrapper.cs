@@ -46,7 +46,7 @@ public class GraphServiceClientWrapper(GraphServiceClient graphServiceClient) : 
 
     public async Task DeleteApplication(string? applicationId, CancellationToken cancellationToken)
     {
-        await graphServiceClient.Applications[applicationId]
+        await graphServiceClient.ApplicationsWithAppId(applicationId)
             .DeleteAsync(cancellationToken: cancellationToken);
     }
 }
