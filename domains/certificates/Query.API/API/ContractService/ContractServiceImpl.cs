@@ -58,12 +58,15 @@ internal class ContractServiceImpl : IContractService
                 ? DateTimeOffset.FromUnixTimeSeconds(contract.EndDate.Value)
                 : null;
 
+
             var matchingMeteringPoint = meteringPoints?.Result.Find(mp => mp.Gsrn == contract.GSRN);
 
             if (matchingMeteringPoint == null)
             {
                 return new GsrnNotFound(contract.GSRN);
             }
+
+            logger.LogInformation("Fetched meteringpoint, {GSRN}, {TYPE}", matchingMeteringPoint.Gsrn, matchingMeteringPoint.Type.ToString());
 
             if (!matchingMeteringPoint.CanBeUsedForIssuingCertificates)
             {
@@ -112,6 +115,8 @@ internal class ContractServiceImpl : IContractService
 
             newContracts.Add(issuingContract);
             contractsByGsrn.Add(issuingContract);
+
+            logger.LogInformation("Adding new contract {GSRN}, {MeteringPointType}", issuingContract.GSRN, issuingContract.MeteringPointType.ToString());
 
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
                 actorId: subjectId,
