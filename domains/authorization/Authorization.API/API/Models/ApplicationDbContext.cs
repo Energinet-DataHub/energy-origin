@@ -128,9 +128,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void ConfigureTermsTable(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Terms>().Property(t => t.Version)
+        modelBuilder.Entity<Terms>().Property(t => t.Version).IsRequired();
+
+        modelBuilder.Entity<Terms>().Property(t => t.Type)
+            .HasConversion<string>()
+            .HasColumnType("text")
             .IsRequired();
-        modelBuilder.Entity<Terms>().HasIndex(t => t.Version)
+
+        modelBuilder.Entity<Terms>()
+            .HasIndex(t => new { t.Version, t.Type })
             .IsUnique();
     }
 }
