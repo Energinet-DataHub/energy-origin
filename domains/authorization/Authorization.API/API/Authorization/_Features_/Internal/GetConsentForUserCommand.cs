@@ -47,11 +47,7 @@ public class GetConsentForUserQueryHandler(
             .Include(o => o.Affiliations)
             .FirstOrDefaultAsync(o => o.Tin == orgTin, cancellationToken);
 
-        var latestTerms = await termsRepository.Query()
-            .OrderByDescending(t => t.Version)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (organization == null || latestTerms == null)
+        if (organization is null)
         {
             return new GetConsentForUserCommandResult(
                 command.Sub,
@@ -61,11 +57,34 @@ public class GetConsentForUserQueryHandler(
                 Guid.Empty,
                 new List<Guid>(),
                 scope,
-                false
-            );
+                false);
         }
 
-        var latestTermsAccepted = organization.TermsAccepted && organization.TermsVersion == latestTerms.Version;
+        var termsType = organization.Status == OrganizationStatus.Trial
+            ? TermsType.Trial
+            : TermsType.Normal;
+
+        var terms = await termsRepository.Query()
+            .Where(t => t.Type == termsType)
+            .OrderByDescending(t => t.Version)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (terms is null)
+        {
+            return new GetConsentForUserCommandResult(
+                command.Sub,
+                command.Name,
+                subType,
+                command.OrgName,
+                organization.Id,
+                new List<Guid>(),
+                scope,
+                false);
+        }
+
+        var latestTermsAccepted =
+            organization.TermsAccepted &&
+            organization.TermsVersion == terms.Version;
 
         if (!latestTermsAccepted)
         {
@@ -77,8 +96,7 @@ public class GetConsentForUserQueryHandler(
                 organization.Id,
                 new List<Guid>(),
                 scope,
-                false
-            );
+                false);
         }
 
         var userId = IdpUserId.Create(command.Sub);
