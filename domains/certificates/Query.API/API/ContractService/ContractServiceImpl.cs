@@ -101,12 +101,12 @@ internal class ContractServiceImpl : IContractService
                 contractNumber,
                 new Gsrn(contract.GSRN),
                 matchingMeteringPoint.GridArea,
-                Map(matchingMeteringPoint.MeteringPointType),
+                Map(matchingMeteringPoint.Type),
                 meteringPointOwnerId.ToString(),
                 startDate,
                 endDate,
                 recipientResponse.Id,
-                Map(matchingMeteringPoint.MeteringPointType, matchingMeteringPoint.Technology),
+                Map(matchingMeteringPoint.Type, matchingMeteringPoint.Technology),
                 isTrial,
                 sponsorshipEndDate);
 
