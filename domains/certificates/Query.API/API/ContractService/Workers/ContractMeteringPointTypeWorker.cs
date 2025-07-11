@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.UnitOfWork;
 using DataContext.ValueObjects;
-using Energinet.DataHub.Measurements.Abstractions.Api.Models;
 using Meteringpoint.V1;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,7 +62,9 @@ public class ContractMeteringPointTypeWorker(
                     continue;
                 }
 
-                var meteringPoint = meteringPointsForContractOwner.Value.FirstOrDefault(x => x.MeteringPointId == contract.GSRN);
+                var meteringPoint = meteringPointsForContractOwner.Value
+                    .FirstOrDefault(x => x.MeteringPointId.Equals(contract.GSRN, StringComparison.OrdinalIgnoreCase));
+
                 if (meteringPoint is null)
                 {
                     logger.LogWarning("Contract job: No MeteringPoint found for GSRN {GSRN}", contract.GSRN);
@@ -77,6 +78,9 @@ public class ContractMeteringPointTypeWorker(
                     logger.LogWarning(
                             "Contract job: Contract has MeteringPointType {MeteringPointTypeContract} and MeteringPoint has MeteringPointType {MeteringPointTypeMeteringPoint}. GSRN {GSRN}",
                             contract.MeteringPointType.ToString(), meterType.ToString(), contract.GSRN);
+                    logger.LogWarning("Contract job: Changing MeteringPointType for contract to {MeteringPointType}", meterType.ToString());
+
+                    // TODO: CABOL - Implement change of MeteringPointType in database
                 }
             }
 
