@@ -39,7 +39,8 @@ if (args.Contains("--migrate"))
         .ValidateDataAnnotations()
         .ValidateOnStart();
     var migrateApp = builder.Build();
-    var connectionString = migrateApp.Services.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString();
+    var connectionString =
+        migrateApp.Services.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString();
     var dbMigrator = new DbMigrator(connectionString, typeof(ApplicationDbContext).Assembly,
         migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
     await dbMigrator.MigrateAsync();
@@ -53,8 +54,10 @@ builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
-    x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler, TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
-    x.AddConsumer<TransferOrganizationPromotedToNormalEventHandler, TransferOrganizationPromotedToProductionEventHandlerDefinition>();
+    x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler,
+        TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
+    x.AddConsumer<TransferOrganizationPromotedToNormalEventHandler,
+        TransferOrganizationPromotedToProductionEventHandlerDefinition>();
 });
 
 builder.Services.AddPdfOptions();
@@ -107,8 +110,6 @@ builder.Services.AddValidatorsFromAssembly(typeof(API.Program).Assembly);
 
 builder.Services.AddActivityLog(options => options.ServiceName = "transfer");
 
-
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddLogging();
@@ -118,7 +119,8 @@ builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix)
     .ValidateOnStart();
 
 var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
-builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 builder.Services.AddB2C(b2COptions);
 
 var app = builder.Build();

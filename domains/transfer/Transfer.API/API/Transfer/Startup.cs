@@ -47,7 +47,6 @@ public static class Startup
         {
             c.EnableAnnotations();
             c.DocumentFilter<AddTransferTagDocumentFilter>();
-
         });
 
         services.AddHttpContextAccessor();
