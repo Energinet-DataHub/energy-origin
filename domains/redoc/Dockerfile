@@ -5,6 +5,7 @@ COPY Directory.Packages.props .
 COPY domains/authorization domains/authorization
 COPY domains/certificates domains/certificates
 COPY domains/measurements domains/measurements
+COPY domains/transfer domains/transfer
 COPY domains/libraries domains/libraries
 
 RUN dotnet run --project domains/certificates/Query.API/API/API.csproj --swagger
