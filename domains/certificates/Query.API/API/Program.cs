@@ -3,6 +3,7 @@ using API.Configurations;
 using API.ContractService;
 using API.ContractService.EventHandlers;
 using API.ContractService.Internal;
+using API.ContractService.Workers;
 using API.MeasurementsSyncer;
 using API.MeasurementsSyncer.Metrics;
 using API.Query.API;
@@ -92,6 +93,7 @@ builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).V
     .ValidateOnStart();
 builder.Services.AddB2C(b2COptions);
 
+builder.Services.AddHostedService<ContractMeteringPointTypeWorker>();
 
 var app = builder.Build();
 
