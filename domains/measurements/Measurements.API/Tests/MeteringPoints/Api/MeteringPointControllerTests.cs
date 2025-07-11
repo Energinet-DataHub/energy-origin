@@ -120,7 +120,7 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
 
         response!.Result.First().SubMeterType.Should()
             .Be(API.MeteringPoints.Api.Dto.Responses.MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
-        response.Result.First().Type.Should()
+        response.Result.First().MeteringPointType.Should()
             .Be(API.MeteringPoints.Api.Dto.Responses.MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
     }
 
@@ -188,7 +188,7 @@ public class MeteringPointControllerTests : IClassFixture<CustomMeterPointWebApp
         await Verifier.Verify(response, settings);
         response!.Result.First().SubMeterType.Should()
             .Be(API.MeteringPoints.Api.Dto.Responses.MeteringPoint.GetSubMeterType(mockedResponse.MeteringPoints.First().SubtypeOfMp));
-        response.Result.First().Type.Should()
+        response.Result.First().MeteringPointType.Should()
             .Be(API.MeteringPoints.Api.Dto.Responses.MeteringPoint.GetMeterType(mockedResponse.MeteringPoints.First().TypeOfMp));
     }
 

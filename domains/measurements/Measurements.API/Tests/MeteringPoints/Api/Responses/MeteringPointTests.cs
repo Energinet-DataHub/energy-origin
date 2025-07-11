@@ -10,7 +10,7 @@ public class MeteringPointTests
     {
         Assert.Equal("GSRN", nameof(MeteringPoint.GSRN));
         Assert.Equal("GridArea", nameof(MeteringPoint.GridArea));
-        Assert.Equal("Type", nameof(MeteringPoint.Type));
+        Assert.Equal("MeteringPointType", nameof(MeteringPoint.MeteringPointType));
         Assert.Equal("SubMeterType", nameof(MeteringPoint.SubMeterType));
         Assert.Equal("Address", nameof(MeteringPoint.Address));
         Assert.Equal("Technology", nameof(MeteringPoint.Technology));
