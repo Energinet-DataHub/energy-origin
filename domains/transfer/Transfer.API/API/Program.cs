@@ -114,10 +114,6 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddLogging();
 builder.Services.AddTransfer();
 builder.Services.AddCvr();
-builder.Services.AddVersioningToApi();
-
-builder.Services.AddSwagger("transfer");
-builder.Services.AddSwaggerGen();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
@@ -127,13 +123,12 @@ builder.Services.AddB2C(b2COptions);
 
 var app = builder.Build();
 
-app.MapHealthChecks("/health");
-
-app.AddSwagger("transfer");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.AddSwagger("transfer");
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 app.UseMiddleware<ExceptionHandlerMiddleware>();
