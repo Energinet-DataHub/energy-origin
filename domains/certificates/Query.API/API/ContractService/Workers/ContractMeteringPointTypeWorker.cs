@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using API.ContractService.Clients;
 using API.UnitOfWork;
 using DataContext.ValueObjects;
+using Energinet.DataHub.Measurements.Abstractions.Api.Models;
+using Meteringpoint.V1;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,7 +17,7 @@ namespace API.ContractService.Workers;
 
 public class ContractMeteringPointTypeWorker(
         IServiceScopeFactory serviceScopeFactory,
-        IMeteringPointsClient meteringPointsClient,
+        Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient,
         ILogger<ContractMeteringPointTypeWorker> logger)
     : BackgroundService
 {
@@ -34,13 +36,14 @@ public class ContractMeteringPointTypeWorker(
                 .DistinctBy(x => x.MeteringPointOwner)
                 .Select(x => x.MeteringPointOwner);
 
-            var meteringPoints = new Dictionary<string, List<MeteringPoint>>();
+            var meteringPoints = new Dictionary<string, List<Meteringpoint.V1.MeteringPoint>>();
             foreach (var meteringPointOwner in distinctMeteringPointOwners)
             {
-                var meteringPointsResponse = await meteringPointsClient.GetMeteringPoints(meteringPointOwner, stoppingToken);
+                var request = new OwnedMeteringPointsRequest { Subject = meteringPointOwner };
+                var meteringPointsResponse = await meteringPointsClient.GetOwnedMeteringPointsAsync(request, cancellationToken: stoppingToken);
                 if (meteringPointsResponse is not null)
                 {
-                    meteringPoints.Add(meteringPointOwner, meteringPointsResponse.Result);
+                    meteringPoints.Add(meteringPointOwner, [.. meteringPointsResponse.MeteringPoints]);
                 }
             }
 
@@ -60,19 +63,19 @@ public class ContractMeteringPointTypeWorker(
                     continue;
                 }
 
-                var meteringPoint = meteringPointsForContractOwner.Value.FirstOrDefault(x => x.Gsrn == contract.GSRN);
+                var meteringPoint = meteringPointsForContractOwner.Value.FirstOrDefault(x => x.MeteringPointId == contract.GSRN);
                 if (meteringPoint is null)
                 {
                     logger.LogWarning("Contract job: No MeteringPoint found for GSRN {GSRN}", contract.GSRN);
                     continue;
                 }
-
-                if (meteringPoint.MeteringPointType == MeterType.Production || meteringPoint.MeteringPointType == MeterType.Child)
+                var meterType = GetMeterType(meteringPoint.TypeOfMp);
+                if (meterType == MeterType.Production || meterType == MeterType.Child)
                 {
 
                     logger.LogWarning(
                             "Contract job: Contract has MeteringPointType {MeteringPointTypeContract} and MeteringPoint has MeteringPointType {MeteringPointTypeMeteringPoint}. GSRN {GSRN}",
-                            contract.MeteringPointType.ToString(), meteringPoint.MeteringPointType.ToString(), contract.GSRN);
+                            contract.MeteringPointType.ToString(), meterType.ToString(), contract.GSRN);
                 }
             }
 
@@ -81,5 +84,23 @@ public class ContractMeteringPointTypeWorker(
         {
             logger.LogError(e, "Contract job: Something went wrong with the ContractMeteringPointTypeWorker");
         }
+    }
+
+    public static MeterType GetMeterType(string typeOfMp)
+    {
+        if (typeOfMp == "E17")
+        {
+            return MeterType.Consumption;
+        }
+        else if (typeOfMp == "E18")
+        {
+            return MeterType.Production;
+        }
+        else if (typeOfMp.StartsWith("D") && typeOfMp.Length == 3 && int.Parse(typeOfMp.Substring(1)) >= 1)
+        {
+            return MeterType.Child;
+        }
+
+        throw new NotSupportedException($"TypeOfMP '{typeOfMp}' is not supported.");
     }
 }
