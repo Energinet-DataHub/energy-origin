@@ -23,7 +23,7 @@ public class ContractMeteringPointTypeWorker(
     {
         try
         {
-            using var scope = serviceScopeFactory.CreateScope();
+            await using var scope = serviceScopeFactory.CreateAsyncScope();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var contracts = await unitOfWork
                 .CertificateIssuingContractRepo
