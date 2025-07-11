@@ -15,6 +15,7 @@ using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.Pdf;
 using EnergyOrigin.Setup.RabbitMq;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -141,7 +142,14 @@ var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
 app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
     .HasApiVersion(ApiVersions.Version1AsInt);
 
-app.Run();
+if (args.Contains("--swagger"))
+{
+    app.BuildSwaggerYamlFile(builder.Environment, "transfer.yaml", ApiVersions.Version1);
+}
+else
+{
+    app.Run();
+}
 
 namespace API
 {
