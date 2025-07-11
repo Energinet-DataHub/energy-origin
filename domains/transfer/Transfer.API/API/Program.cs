@@ -127,9 +127,9 @@ var app = builder.Build();
 
 
 app.UseHttpsRedirection();
+app.AddSwagger("transfer");
 app.UseAuthentication();
 app.UseAuthorization();
-app.AddSwagger("transfer");
 app.MapHealthChecks("/health");
 
 app.MapControllers();
