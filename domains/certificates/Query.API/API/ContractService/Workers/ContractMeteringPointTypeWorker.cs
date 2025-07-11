@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace API.ContractService.Workers;
 
+// TODO: CABOL - Remember to remove the revert commit 99918030d301fed94f7859d24d34c6998f453b66 - So the error does not get introduced again!
 public class ContractMeteringPointTypeWorker(
         IServiceScopeFactory serviceScopeFactory,
         Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient,
@@ -74,7 +75,6 @@ public class ContractMeteringPointTypeWorker(
                 var meterType = GetMeterType(meteringPoint.TypeOfMp);
                 if (meterType == MeterType.Production || meterType == MeterType.Child)
                 {
-
                     logger.LogWarning(
                             "Contract job: Contract has MeteringPointType {MeteringPointTypeContract} and MeteringPoint has MeteringPointType {MeteringPointTypeMeteringPoint}. GSRN {GSRN}",
                             contract.MeteringPointType.ToString(), meterType.ToString(), contract.GSRN);
