@@ -212,6 +212,348 @@ public class WalletClientTests(ProjectOriginStack poStack) : IClassFixture<Proje
         certsResponse!.Result.Should().BeEmpty();
     }
 
+    [Fact]
+    public void IsTrialClaim_WhenBothCertificatesAreTrial_ShouldReturnTrue()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "true" } }
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "true" } }
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenBothCertificatesAreTrialWithDifferentCase_ShouldReturnTrue()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "TRUE" } }
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "True" } }
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenOnlyProductionCertificateIsTrial_ShouldReturnFalse()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "true" } }
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "false" } }
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenOnlyConsumptionCertificateIsTrial_ShouldReturnFalse()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "false" } }
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "true" } }
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenNeitherCertificateIsTrial_ShouldReturnFalse()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "false" } }
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "false" } }
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenProductionCertificateHasNoIsTrialAttribute_ShouldReturnFalse()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string>()
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "true" } }
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenConsumptionCertificateHasNoIsTrialAttribute_ShouldReturnFalse()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "true" } }
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string>()
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenBothCertificatesHaveNoIsTrialAttribute_ShouldReturnFalse()
+    {
+        // Arrange
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string>()
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string>()
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenProductionCertificateHasIsTrialWithNonTrueValue_ShouldReturnFalse()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "maybe" } }
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "true" } }
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenConsumptionCertificateHasIsTrialWithNonTrueValue_ShouldReturnFalse()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "true" } }
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "maybe" } }
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsTrialClaim_WhenBothCertificatesHaveIsTrialWithNonTrueValues_ShouldReturnFalse()
+    {
+        var claim = new Claim
+        {
+            ClaimId = Guid.NewGuid(),
+            Quantity = 10,
+            ProductionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "maybe" } }
+            },
+            ConsumptionCertificate = new ClaimedCertificate
+            {
+                FederatedStreamId = new FederatedStreamId { Registry = "DK1", StreamId = Guid.NewGuid() },
+                Start = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                End = DateTimeOffset.Now.AddHours(1).ToUnixTimeSeconds(),
+                GridArea = "DK1",
+                Attributes = new Dictionary<string, string> { { "IsTrial", "false" } }
+            },
+            UpdatedAt = DateTimeOffset.Now.ToUnixTimeSeconds()
+        };
+
+        var result = claim.IsTrialClaim();
+
+        result.Should().BeFalse();
+    }
+
     private HttpClient GetWalletHttpClient()
     {
         var client = new HttpClient();

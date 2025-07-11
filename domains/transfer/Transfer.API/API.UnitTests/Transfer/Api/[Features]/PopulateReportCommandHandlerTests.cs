@@ -22,7 +22,7 @@ using Xunit;
 
 namespace API.UnitTests.Transfer.Api._Features_;
 
-public class PopulateReportCommandTrialFilteringTests
+public class PopulateReportCommandHandlerTests
 {
     private readonly IReportRepository _reports = Substitute.For<IReportRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
@@ -37,9 +37,8 @@ public class PopulateReportCommandTrialFilteringTests
     private readonly IStyleRenderer _styleRenderer = Substitute.For<IStyleRenderer>();
 
     private readonly PopulateReportCommandHandler _sut;
-    private readonly EnergyDataFetcher _realDataFetcher;
 
-    public PopulateReportCommandTrialFilteringTests()
+    public PopulateReportCommandHandlerTests()
     {
         _unitOfWork.ReportRepository.Returns(_reports);
         _unitOfWork.SaveAsync().Returns(Task.CompletedTask);
@@ -59,13 +58,13 @@ public class PopulateReportCommandTrialFilteringTests
             .Send(Arg.Any<GeneratePdfCommand>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(successResult));
 
-        _realDataFetcher = new EnergyDataFetcher(_consumptionService, _walletClient);
+        var realDataFetcher = new EnergyDataFetcher(_consumptionService, _walletClient);
 
         _sut = new PopulateReportCommandHandler(
             _unitOfWork,
             _mediator,
             _logger,
-            _realDataFetcher,
+            realDataFetcher,
             new EnergyDataFormatter(),
             new MunicipalityPercentageProcessor(),
             new CoverageProcessor(),
@@ -77,6 +76,56 @@ public class PopulateReportCommandTrialFilteringTests
             _logoRenderer,
             _styleRenderer
         );
+    }
+
+    [Fact]
+    public async Task GivenValidRangeAndPdfFails_WhenCallingHandler_ThenReportIsFailed()
+    {
+        var errorMsg = "Rendering error";
+        var failureResult = new GeneratePdfResult(
+            IsSuccess: false,
+            ErrorContent: errorMsg,
+            PdfBytes: null
+        );
+        _mediator
+            .Send(Arg.Any<GeneratePdfCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(failureResult));
+
+        var orgId = OrganizationId.Create(Guid.NewGuid());
+        var start = UnixTimestamp.Now().AddDays(-7);
+        var end = UnixTimestamp.Now();
+        var reportId = Guid.NewGuid();
+        var cmd = new PopulateReportCommand(reportId);
+
+        var report = Report.Create(
+            reportId,
+            orgId,
+            Any.OrganizationName(),
+            EnergyTrackAndTrace.Testing.Any.Tin(),
+            orgStatus: "normal",
+            start,
+            end
+        );
+        _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
+
+        Report? captured = null;
+        _reports
+            .When(x => x.AddAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .Do(ci => captured = ci.Arg<Report>());
+        _reports
+            .When(x => x.UpdateAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .Do(ci => captured = ci.Arg<Report>());
+
+        await _sut.Handle(cmd, CancellationToken.None);
+
+        captured?.Status.Should().Be(ReportStatus.Failed);
+        captured?.Content.Should().BeNull();
+
+        await _reports.Received(1)
+            .UpdateAsync(Arg.Is<Report>(r => r.Id == reportId && r.Status == ReportStatus.Failed),
+                Arg.Any<CancellationToken>());
+
+        await _unitOfWork.Received(1).SaveAsync();
     }
 
     [Fact]
@@ -133,9 +182,9 @@ public class PopulateReportCommandTrialFilteringTests
 
         var cmd = new PopulateReportCommand(reportId);
 
-        Report captured = null!;
+        Report? captured = null;
         _reports
-            .When(x => x.UpdateAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .When(x => x.UpdateAsync(Arg.Is<Report>(r => r.Id == reportId), Arg.Any<CancellationToken>()))
             .Do(ci => captured = ci.Arg<Report>());
 
         await _sut.Handle(cmd, CancellationToken.None);
@@ -205,9 +254,9 @@ public class PopulateReportCommandTrialFilteringTests
 
         var cmd = new PopulateReportCommand(reportId);
 
-        Report captured = null!;
+        Report? captured = null;
         _reports
-            .When(x => x.UpdateAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .When(x => x.UpdateAsync(Arg.Is<Report>(r => r.Id == reportId), Arg.Any<CancellationToken>()))
             .Do(ci => captured = ci.Arg<Report>());
 
         await _sut.Handle(cmd, CancellationToken.None);
@@ -274,9 +323,9 @@ public class PopulateReportCommandTrialFilteringTests
 
         var cmd = new PopulateReportCommand(reportId);
 
-        Report captured = null!;
+        Report? captured = null;
         _reports
-            .When(x => x.UpdateAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .When(x => x.UpdateAsync(Arg.Is<Report>(r => r.Id == reportId), Arg.Any<CancellationToken>()))
             .Do(ci => captured = ci.Arg<Report>());
 
         await _sut.Handle(cmd, CancellationToken.None);
@@ -341,9 +390,9 @@ public class PopulateReportCommandTrialFilteringTests
 
         var cmd = new PopulateReportCommand(reportId);
 
-        Report captured = null!;
+        Report? captured = null;
         _reports
-            .When(x => x.UpdateAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .When(x => x.UpdateAsync(Arg.Is<Report>(r => r.Id == reportId), Arg.Any<CancellationToken>()))
             .Do(ci => captured = ci.Arg<Report>());
 
         await _sut.Handle(cmd, CancellationToken.None);
@@ -408,9 +457,9 @@ public class PopulateReportCommandTrialFilteringTests
 
         var cmd = new PopulateReportCommand(reportId);
 
-        Report captured = null!;
+        Report? captured = null;
         _reports
-            .When(x => x.UpdateAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .When(x => x.UpdateAsync(Arg.Is<Report>(r => r.Id == reportId), Arg.Any<CancellationToken>()))
             .Do(ci => captured = ci.Arg<Report>());
 
         await _sut.Handle(cmd, CancellationToken.None);
@@ -476,9 +525,9 @@ public class PopulateReportCommandTrialFilteringTests
 
         var cmd = new PopulateReportCommand(reportId);
 
-        Report captured = null!;
+        Report? captured = null;
         _reports
-            .When(x => x.UpdateAsync(Arg.Any<Report>(), Arg.Any<CancellationToken>()))
+            .When(x => x.UpdateAsync(Arg.Is<Report>(r => r.Id == reportId), Arg.Any<CancellationToken>()))
             .Do(ci => captured = ci.Arg<Report>());
 
         await _sut.Handle(cmd, CancellationToken.None);

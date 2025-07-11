@@ -67,7 +67,7 @@ public class EnergyDataFetcherTests
         var (_, _, claims) = await _sut.GetAsync(orgId, from, to, isTrial, CancellationToken.None);
 
         claims.Should().HaveCount(2);
-        claims.Should().OnlyContain(claim => IsTrialClaim(claim));
+        claims.Should().OnlyContain(claim => claim.IsTrialClaim());
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class EnergyDataFetcherTests
         var (_, _, claims) = await _sut.GetAsync(orgId, from, to, isTrial, CancellationToken.None);
 
         claims.Should().HaveCount(2);
-        claims.Should().OnlyContain(claim => !IsTrialClaim(claim));
+        claims.Should().OnlyContain(claim => !claim.IsTrialClaim());
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public class EnergyDataFetcherTests
         var (_, _, claims) = await _sut.GetAsync(orgId, from, to, isTrial, CancellationToken.None);
 
         claims.Should().HaveCount(1);
-        claims.Should().OnlyContain(claim => IsTrialClaim(claim));
+        claims.Should().OnlyContain(claim => claim.IsTrialClaim());
     }
 
     [Fact]
@@ -371,18 +371,5 @@ public class EnergyDataFetcherTests
                 }
             }
         };
-    }
-
-    private static bool IsTrialClaim(Claim claim)
-    {
-        // A claim is trial only when BOTH certificates have IsTrial=true
-        // Mixed states (true/false) are impossible from the upstream service (Vault)
-        var productionIsTrial = claim.ProductionCertificate.Attributes.TryGetValue("IsTrial", out var prodVal) &&
-                               string.Equals(prodVal, "true", StringComparison.OrdinalIgnoreCase);
-
-        var consumptionIsTrial = claim.ConsumptionCertificate.Attributes.TryGetValue("IsTrial", out var consVal) &&
-                                string.Equals(consVal, "true", StringComparison.OrdinalIgnoreCase);
-
-        return productionIsTrial && consumptionIsTrial;
     }
 }

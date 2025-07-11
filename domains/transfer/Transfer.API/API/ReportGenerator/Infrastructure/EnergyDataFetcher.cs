@@ -44,22 +44,8 @@ public sealed class EnergyDataFetcher : IEnergyDataFetcher
         var (totalHourConsumption, averageHourConsumption) = await allConsumptionFetchedFromDatahub;
         var allClaims = (await allClamsFetchedFromWallet)?.Result.ToList() ?? new List<Claim>();
 
-        // Filter claims based on trial status
-        var filteredClaims = allClaims.Where(claim => IsTrialClaim(claim) == isTrial).ToList();
+        var filteredClaims = allClaims.Where(claim => claim.IsTrialClaim() == isTrial).ToList();
 
         return (totalHourConsumption, averageHourConsumption, claims: filteredClaims);
-    }
-
-    private static bool IsTrialClaim(Claim claim)
-    {
-        // A claim is trial only when BOTH certificates have IsTrial=true
-        // Mixed states (true/false) are impossible from the upstream service (Vault)
-        var productionIsTrial = claim.ProductionCertificate.Attributes.TryGetValue("IsTrial", out var prodVal) &&
-                               string.Equals(prodVal, "true", StringComparison.OrdinalIgnoreCase);
-
-        var consumptionIsTrial = claim.ConsumptionCertificate.Attributes.TryGetValue("IsTrial", out var consVal) &&
-                                string.Equals(consVal, "true", StringComparison.OrdinalIgnoreCase);
-
-        return productionIsTrial && consumptionIsTrial;
     }
 }
