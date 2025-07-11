@@ -11,7 +11,7 @@ namespace API.ReportGenerator.Infrastructure;
 
 public interface IEnergyDataFetcher
 {
-    Task<(List<ConsumptionHour> totalHourConsumption, List<ConsumptionHour> averageHourConsumption, List<Claim> claims)> GetAsync(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);
+    Task<(List<ConsumptionHour> totalHourConsumption, List<ConsumptionHour> averageHourConsumption, List<Claim> claims)> GetAsync(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to, bool isTrial, CancellationToken ct = default);
 }
 
 public sealed class EnergyDataFetcher : IEnergyDataFetcher
@@ -31,6 +31,7 @@ public sealed class EnergyDataFetcher : IEnergyDataFetcher
         OrganizationId orgId,
         DateTimeOffset from,
         DateTimeOffset to,
+        bool isTrial,
         CancellationToken ct = default)
     {
         if (orgId is null) throw new ArgumentNullException(nameof(orgId));
@@ -41,8 +42,10 @@ public sealed class EnergyDataFetcher : IEnergyDataFetcher
         await Task.WhenAll(allConsumptionFetchedFromDatahub, allClamsFetchedFromWallet);
 
         var (totalHourConsumption, averageHourConsumption) = await allConsumptionFetchedFromDatahub;
-        var claimList = (await allClamsFetchedFromWallet)?.Result.ToList() ?? new List<Claim>();
+        var allClaims = (await allClamsFetchedFromWallet)?.Result.ToList() ?? new List<Claim>();
 
-        return (totalHourConsumption, averageHourConsumption, claims: claimList);
+        var filteredClaims = allClaims.Where(claim => claim.IsTrialClaim() == isTrial).ToList();
+
+        return (totalHourConsumption, averageHourConsumption, claims: filteredClaims);
     }
 }
