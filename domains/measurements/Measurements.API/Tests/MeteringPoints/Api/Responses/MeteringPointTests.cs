@@ -5,6 +5,8 @@ namespace Tests.MeteringPoints.Api.Responses;
 
 public class MeteringPointTests
 {
+    // NOTE: When MeteringPoints are returned from measurements the names of the properties are serialized as part of the JSON that is returned.
+    // This test makes sure that we don't change the names on the sending side, and therefore break the API contract.
     [Fact]
     public void MeteringPoint_ResponsePropertyNames_ShouldBeStable()
     {
