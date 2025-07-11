@@ -7,7 +7,6 @@ using API.ContractService.Clients;
 using API.UnitOfWork;
 using DataContext.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -61,7 +60,6 @@ public class ContractMeteringPointTypeWorker(
                 var meteringPoint = meteringPointsForContractOwner.Value.FirstOrDefault(x => x.Gsrn == contract.GSRN);
                 if (meteringPoint is null)
                 {
-
                     logger.LogWarning("Contract job: No MeteringPoint found for GSRN {GSRN}", contract.GSRN);
                     continue;
                 }
@@ -70,8 +68,8 @@ public class ContractMeteringPointTypeWorker(
                 {
 
                     logger.LogWarning(
-                            "Contract job: Contract has MeteringPointType {MeteringPointTypeContract} and MeteringPoint has MeteringPointType {MeteringPointTypeMeteringPoint}",
-                            contract.MeteringPointType.ToString(), meteringPoint.MeteringPointType.ToString());
+                            "Contract job: Contract has MeteringPointType {MeteringPointTypeContract} and MeteringPoint has MeteringPointType {MeteringPointTypeMeteringPoint}. GSRN {GSRN}",
+                            contract.MeteringPointType.ToString(), meteringPoint.MeteringPointType.ToString(), contract.GSRN);
                 }
             }
 
