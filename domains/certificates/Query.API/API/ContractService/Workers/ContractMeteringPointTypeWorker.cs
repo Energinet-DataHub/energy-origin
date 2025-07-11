@@ -7,13 +7,14 @@ using API.ContractService.Clients;
 using API.UnitOfWork;
 using DataContext.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace API.ContractService.Workers;
 
 public class ContractMeteringPointTypeWorker(
-        IUnitOfWork unitOfWork,
+        IServiceScopeFactory serviceScopeFactory,
         IMeteringPointsClient meteringPointsClient,
         ILogger<ContractMeteringPointTypeWorker> logger)
     : BackgroundService
@@ -22,6 +23,8 @@ public class ContractMeteringPointTypeWorker(
     {
         try
         {
+            using var scope = serviceScopeFactory.CreateScope();
+            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var contracts = await unitOfWork
                 .CertificateIssuingContractRepo
                 .Query()
