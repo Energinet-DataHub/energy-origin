@@ -58,9 +58,7 @@ public static class Startup
         services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
             .ValidateDataAnnotations().ValidateOnStart();
 
-        services.AddControllers()
-            .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+        services.AddControllersWithEnumsAsStrings();
 
         services.AddHttpClient<IWalletClient, EnergyOrigin.WalletClient.WalletClient>((sp, c) =>
         {
