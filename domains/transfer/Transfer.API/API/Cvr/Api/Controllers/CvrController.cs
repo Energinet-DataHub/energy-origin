@@ -18,6 +18,7 @@ namespace API.Cvr.Api.Controllers;
 
 [Authorize(Policy.Frontend)]
 [ApiController]
+[ApiExplorerSettings(IgnoreApi = true)]
 [ApiVersion(ApiVersions.Version1)]
 [Route("api/transfer/cvr")]
 public class CvrController(ICvrClient client) : Controller
