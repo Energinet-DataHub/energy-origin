@@ -48,8 +48,8 @@ public class ReportsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ReportGenerationResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [SwaggerOperation(Summary = "Initiates asynchronous report generation.")]
     public async Task<IActionResult> RequestReportGeneration(
         [FromServices] IValidator<ReportGenerationStartRequest> validator,
@@ -100,7 +100,7 @@ public class ReportsController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(GetReportStatusesQueryResult), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [SwaggerOperation(Summary = "Lists all report statuses for an organization.")]
     public async Task<IActionResult> GetReportStatuses(
         [FromQuery] Guid organizationId,
@@ -115,8 +115,8 @@ public class ReportsController : ControllerBase
 
     [HttpGet("{reportId}/download")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [SwaggerOperation(Summary = "Downloads the generated report as a file.")]
     public async Task<IActionResult> DownloadReport(
         [FromRoute] Guid reportId,
