@@ -19,6 +19,7 @@ namespace API.Transfer.Api.Controllers;
 
 [ApiController]
 [Authorize(Policy.Frontend)]
+[ApiExplorerSettings(IgnoreApi = true)]
 [ApiVersion(ApiVersions.Version1)]
 [Route("api/transfer/transfer-agreements")]
 public class TransferAgreementsController(

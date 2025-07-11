@@ -19,6 +19,7 @@ using Energinet.DataHub.Measurements.Client.Extensions.Options;
 using Energinet.DataHub.Measurements.Client.ResponseParsers;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
+using EnergyOrigin.Setup;
 using EnergyOrigin.WalletClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -38,6 +39,18 @@ public static class Startup
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddEndpointsApiExplorer();
+        services.AddVersioningToApi();
+        services.AddSwagger("transfer");
+
+        services.AddSwaggerGen(c =>
+        {
+            c.EnableAnnotations();
+            c.DocumentFilter<AddTransferTagDocumentFilter>();
+        });
+
+        services.AddHttpContextAccessor();
+
         services.AddOptions<TransferAgreementProposalCleanupServiceOptions>()
             .BindConfiguration(TransferAgreementProposalCleanupServiceOptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
         services.AddOptions<TransferAgreementCleanupOptions>()
@@ -45,9 +58,7 @@ public static class Startup
         services.AddOptions<ProjectOriginOptions>().BindConfiguration(ProjectOriginOptions.ProjectOrigin)
             .ValidateDataAnnotations().ValidateOnStart();
 
-        services.AddControllers()
-            .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+        services.AddControllersWithEnumsAsStrings();
 
         services.AddHttpClient<IWalletClient, EnergyOrigin.WalletClient.WalletClient>((sp, c) =>
         {
