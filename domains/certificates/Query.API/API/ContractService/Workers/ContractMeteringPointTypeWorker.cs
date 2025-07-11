@@ -54,7 +54,7 @@ public class ContractMeteringPointTypeWorker(
                 var meteringPointsForContractOwner = meteringPoints
                     .FirstOrDefault(x => x.Key == contract.MeteringPointOwner);
 
-                if (meteringPointsForContractOwner.Value.Count == 0)
+                if (meteringPointsForContractOwner.Value is null || meteringPointsForContractOwner.Value.Count == 0)
                 {
                     logger.LogWarning(
                             "Contract job: Contracts MeteringPointOwner does not have any metering points, for {MeteringPointOwner}",
