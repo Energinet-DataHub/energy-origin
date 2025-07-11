@@ -69,6 +69,7 @@ public class ContractMeteringPointTypeWorker(
                     logger.LogWarning("Contract job: No MeteringPoint found for GSRN {GSRN}", contract.GSRN);
                     continue;
                 }
+
                 var meterType = GetMeterType(meteringPoint.TypeOfMp);
                 if (meterType == MeterType.Production || meterType == MeterType.Child)
                 {
