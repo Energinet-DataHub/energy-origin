@@ -31,7 +31,7 @@ public class RegistryFixture : IAsyncLifetime
     private readonly global::Testcontainers.RabbitMq.RabbitMqContainer rabbitMqContainer;
     private readonly PostgreSqlContainer registryPostgresContainer;
     protected readonly INetwork Network;
-    private readonly string rabbitMqImage = "rabbitmq:3.13-management";
+    private readonly string rabbitMqImage = "rabbitmq:3.13-alpine";
     public const string RegistryName = registryName;
     public IPrivateKey Dk1IssuerKey { get; init; }
     public IPrivateKey Dk2IssuerKey { get; init; }
@@ -47,6 +47,8 @@ public class RegistryFixture : IAsyncLifetime
             .WithNetwork(Network)
             .WithNetworkAliases(RabbitMqAlias)
             .WithPortBinding(RabbitMqHttpPort, true)
+            .WithEnvironment("RABBITMQ_FEATURE_FLAGS",
+                "quorum_queue,classic_mirrored_queue_version,feature_flags_v2")
             .Build();
         Dk1IssuerKey = Algorithms.Ed25519.GenerateNewPrivateKey();
         Dk2IssuerKey = Algorithms.Ed25519.GenerateNewPrivateKey();
@@ -80,9 +82,12 @@ public class RegistryFixture : IAsyncLifetime
                 .Build();
 
         registryPostgresContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:15")
+            .WithImage("postgres:15-alpine")
             .WithNetwork(Network)
             .WithNetworkAliases(VerifierPostgresAlias)
+            .WithCommand("-c", "log_statement=none")
+            .WithEnvironment("POSTGRES_HOST_AUTH_METHOD", "trust")
+            .WithEnvironment("POSTGRES_INITDB_ARGS", "--nosync --auth=trust")
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
             .Build();
 

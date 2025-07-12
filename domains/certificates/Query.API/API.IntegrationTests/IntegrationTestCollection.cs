@@ -23,7 +23,7 @@ public class IntegrationTestFixture : IAsyncLifetime
     public QueryApiWebApplicationFactory WebApplicationFactory { get; private set; }
     public PostgresContainer PostgresContainer { get; private set; }
     private ProjectOriginStack ProjectOriginStack { get; set; }
-    public RabbitMqContainer RabbitMqContainer { get; set; }
+    public RabbitMqTesterContainer RabbitMqTesterContainer { get; set; }
     public MeasurementsWireMock MeasurementsMock { get; private set; }
     private Respawner? _respawner;
 
@@ -32,7 +32,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         WebApplicationFactory = new QueryApiWebApplicationFactory();
         PostgresContainer = new PostgresContainer();
         ProjectOriginStack = new ProjectOriginStack();
-        RabbitMqContainer = new RabbitMqContainer();
+        RabbitMqTesterContainer = new RabbitMqTesterContainer();
         MeasurementsMock = new MeasurementsWireMock();
     }
 
@@ -44,14 +44,14 @@ public class IntegrationTestFixture : IAsyncLifetime
         ProjectOriginStack = new ProjectOriginStack();
         await ProjectOriginStack.InitializeAsync();
 
-        RabbitMqContainer = new RabbitMqContainer();
-        await RabbitMqContainer.InitializeAsync();
+        RabbitMqTesterContainer = new RabbitMqTesterContainer();
+        await RabbitMqTesterContainer.InitializeAsync();
 
         MeasurementsMock = new MeasurementsWireMock();
 
         WebApplicationFactory = new QueryApiWebApplicationFactory();
         WebApplicationFactory.ConnectionString = PostgresContainer.ConnectionString;
-        WebApplicationFactory.RabbitMqOptions = RabbitMqContainer.Options;
+        WebApplicationFactory.RabbitMqOptions = RabbitMqTesterContainer.Options;
         WebApplicationFactory.MeasurementsUrl = MeasurementsMock.Url;
         WebApplicationFactory.WalletUrl = ProjectOriginStack.WalletUrl;
         WebApplicationFactory.StampUrl = ProjectOriginStack.StampUrl;
@@ -83,7 +83,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         await WebApplicationFactory.DisposeAsync();
         await PostgresContainer.DisposeAsync();
         await ProjectOriginStack.DisposeAsync();
-        await RabbitMqContainer.DisposeAsync();
+        await RabbitMqTesterContainer.DisposeAsync();
         MeasurementsMock.Dispose();
     }
 

@@ -32,21 +32,31 @@ public class ProjectOriginStack : RegistryFixture
     public ProjectOriginStack()
     {
         _walletPostgresContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:15.2")
-            .WithNetwork(Network)
+            .WithImage("postgres:15-alpine")
             .WithDatabase("postgres")
+            .WithNetwork(Network)
             .WithUsername("postgres")
             .WithPassword("postgres")
-            .WithPortBinding(5432, true)
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready").UntilPortIsAvailable(5432))
+            .WithPortBinding(PostgreSqlBuilder.PostgreSqlPort, true)
+            .WithCommand("-c", "log_statement=none")
+            .WithEnvironment("POSTGRES_HOST_AUTH_METHOD", "trust")
+            .WithEnvironment("POSTGRES_INITDB_ARGS", "--nosync --auth=trust")
+            .WithCleanUp(true)
             .Build();
 
         _stampPostgresContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:15.2")
-            .WithNetwork(Network)
+            .WithImage("postgres:15-alpine")
             .WithDatabase("postgres")
+            .WithNetwork(Network)
             .WithUsername("postgres")
             .WithPassword("postgres")
-            .WithPortBinding(5432, true)
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready").UntilPortIsAvailable(5432))
+            .WithPortBinding(PostgreSqlBuilder.PostgreSqlPort, true)
+            .WithCommand("-c", "log_statement=none")
+            .WithEnvironment("POSTGRES_HOST_AUTH_METHOD", "trust")
+            .WithEnvironment("POSTGRES_INITDB_ARGS", "--nosync --auth=trust")
+            .WithCleanUp(true)
             .Build();
 
 
