@@ -15,6 +15,7 @@ using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.Pdf;
 using EnergyOrigin.Setup.RabbitMq;
+using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
@@ -38,7 +39,8 @@ if (args.Contains("--migrate"))
         .ValidateDataAnnotations()
         .ValidateOnStart();
     var migrateApp = builder.Build();
-    var connectionString = migrateApp.Services.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString();
+    var connectionString =
+        migrateApp.Services.GetRequiredService<IOptions<DatabaseOptions>>().Value.ToConnectionString();
     var dbMigrator = new DbMigrator(connectionString, typeof(ApplicationDbContext).Assembly,
         migrateApp.Services.GetRequiredService<ILogger<DbMigrator>>());
     await dbMigrator.MigrateAsync();
@@ -52,8 +54,10 @@ builder.AddSerilogWithoutOutboxLogs();
 
 builder.Services.AddMassTransitAndRabbitMq<ApplicationDbContext>(x =>
 {
-    x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler, TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
-    x.AddConsumer<TransferOrganizationPromotedToNormalEventHandler, TransferOrganizationPromotedToProductionEventHandlerDefinition>();
+    x.AddConsumer<TransferOrganizationRemovedFromWhitelistEventHandler,
+        TransferOrganizationRemovedFromWhitelistEventHandlerDefinition>();
+    x.AddConsumer<TransferOrganizationPromotedToNormalEventHandler,
+        TransferOrganizationPromotedToProductionEventHandlerDefinition>();
 });
 
 builder.Services.AddPdfOptions();
@@ -106,33 +110,27 @@ builder.Services.AddValidatorsFromAssembly(typeof(API.Program).Assembly);
 
 builder.Services.AddActivityLog(options => options.ServiceName = "transfer");
 
-
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddLogging();
 builder.Services.AddTransfer();
 builder.Services.AddCvr();
-builder.Services.AddVersioningToApi();
-
-builder.Services.AddSwagger("transfer");
-builder.Services.AddSwaggerGen();
 builder.Services.AddOptions<OtlpOptions>().BindConfiguration(OtlpOptions.Prefix).ValidateDataAnnotations()
     .ValidateOnStart();
 
 var b2COptions = builder.Configuration.GetSection(B2COptions.Prefix).Get<B2COptions>()!;
-builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).ValidateDataAnnotations()
+    .ValidateOnStart();
 builder.Services.AddB2C(b2COptions);
 
 var app = builder.Build();
 
-app.MapHealthChecks("/health");
-
-app.AddSwagger("transfer");
 
 app.UseHttpsRedirection();
+app.AddSwagger("transfer");
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 app.UseMiddleware<ExceptionHandlerMiddleware>();
@@ -141,7 +139,14 @@ var activityLogApiVersionSet = app.NewApiVersionSet("activitylog").Build();
 app.UseActivityLogWithB2CSupport().WithApiVersionSet(activityLogApiVersionSet)
     .HasApiVersion(ApiVersions.Version1AsInt);
 
-app.Run();
+if (args.Contains("--swagger"))
+{
+    app.BuildSwaggerYamlFile(builder.Environment, "transfer.yaml", ApiVersions.Version1);
+}
+else
+{
+    app.Run();
+}
 
 namespace API
 {

@@ -442,6 +442,12 @@ public record Claim()
     public required ClaimedCertificate ProductionCertificate { get; init; }
     public required ClaimedCertificate ConsumptionCertificate { get; init; }
     public required long UpdatedAt { get; init; }
+    public bool IsTrialClaim()
+    {
+        var productionIsTrial = ProductionCertificate.Attributes.TryGetValue("IsTrial", out var prodVal) && string.Equals(prodVal, "true", StringComparison.OrdinalIgnoreCase);
+        var consumptionIsTrial = ConsumptionCertificate.Attributes.TryGetValue("IsTrial", out var consVal) && string.Equals(consVal, "true", StringComparison.OrdinalIgnoreCase);
+        return productionIsTrial && consumptionIsTrial;
+    }
 }
 
 public record ClaimedCertificate()
