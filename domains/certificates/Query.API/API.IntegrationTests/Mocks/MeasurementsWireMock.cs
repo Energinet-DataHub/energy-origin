@@ -48,13 +48,13 @@ public sealed class MeasurementsWireMock : IDisposable
     }
 
     private string BuildMeteringPointsResponse(
-        IEnumerable<(string gsrn, MeteringPointType type, Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
+        IEnumerable<(string gsrn, MeteringPointType meteringPointType, Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
     {
         var result = meteringPoints.Select(mp => new
         {
             mp.gsrn,
             gridArea = "932",
-            mp.type,
+            mp.meteringPointType,
             technology = mp.technology ?? defaultTechnology,
             canBeUsedForIssuingCertificates = mp.canBeUsedforIssuingCertificates
         });
