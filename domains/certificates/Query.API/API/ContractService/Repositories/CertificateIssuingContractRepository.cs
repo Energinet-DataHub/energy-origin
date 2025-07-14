@@ -26,6 +26,11 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
         dbContext.UpdateRange(certificateIssuingContracts);
     }
 
+    public void Update(CertificateIssuingContract certificateIssuingContract)
+    {
+        dbContext.Update(certificateIssuingContract);
+    }
+
     public async Task<IReadOnlyList<CertificateIssuingContract>> GetByGsrn(List<string> gsrn, CancellationToken cancellationToken) =>
         await dbContext.Contracts
             .Where(c => gsrn.Contains(c.GSRN))
@@ -53,4 +58,5 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
     {
         return dbContext.Contracts.AsQueryable();
     }
+
 }
