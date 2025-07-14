@@ -78,7 +78,7 @@ public class ContractMeteringPointTypeWorker(
                     logger.LogWarning(
                             "Contract job: Contract has MeteringPointType {MeteringPointTypeContract} and MeteringPoint has MeteringPointType {MeteringPointTypeMeteringPoint}. GSRN {GSRN}",
                             contract.MeteringPointType.ToString(), meterType.ToString(), contract.GSRN);
-                    logger.LogWarning("Contract job: Changing MeteringPointType for contract to {MeteringPointType}", meterType.ToString());
+                    logger.LogWarning("Contract job: Changing MeteringPointType for contract to {MeteringPointType}, for {GSRN}", meterType.ToString(), contract.GSRN);
 
                     // TODO: CABOL - Implement change of MeteringPointType in database
                 }
