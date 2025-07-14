@@ -58,5 +58,4 @@ internal class CertificateIssuingContractRepository : ICertificateIssuingContrac
     {
         return dbContext.Contracts.AsQueryable();
     }
-
 }
