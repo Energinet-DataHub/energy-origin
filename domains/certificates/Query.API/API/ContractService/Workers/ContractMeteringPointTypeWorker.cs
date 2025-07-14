@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 
 namespace API.ContractService.Workers;
 
-// TODO: CABOL - Remember to remove the revert commit 99918030d301fed94f7859d24d34c6998f453b66 - So the error does not get introduced again!
 public class ContractMeteringPointTypeWorker(
         IServiceScopeFactory serviceScopeFactory,
         Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointsClient,
@@ -73,14 +72,13 @@ public class ContractMeteringPointTypeWorker(
                 }
 
                 var meterType = GetMeterType(meteringPoint.TypeOfMp);
-                if (meterType == MeterType.Production || meterType == MeterType.Child)
+                if (meterType == MeterType.Production)
                 {
                     logger.LogWarning(
                             "Contract job: Contract has MeteringPointType {MeteringPointTypeContract} and MeteringPoint has MeteringPointType {MeteringPointTypeMeteringPoint}. GSRN {GSRN}",
                             contract.MeteringPointType.ToString(), meterType.ToString(), contract.GSRN);
                     logger.LogWarning("Contract job: Changing MeteringPointType for contract to {MeteringPointType}, for {GSRN}", meterType.ToString(), contract.GSRN);
 
-                    // TODO: CABOL - Implement change of MeteringPointType in database
                 }
             }
 
@@ -100,10 +98,6 @@ public class ContractMeteringPointTypeWorker(
         else if (typeOfMp == "E18")
         {
             return MeterType.Production;
-        }
-        else if (typeOfMp.StartsWith("D") && typeOfMp.Length == 3 && int.Parse(typeOfMp.Substring(1)) >= 1)
-        {
-            return MeterType.Child;
         }
 
         throw new NotSupportedException($"TypeOfMP '{typeOfMp}' is not supported.");
