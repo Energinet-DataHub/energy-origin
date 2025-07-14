@@ -79,6 +79,9 @@ public class ContractMeteringPointTypeWorker(
                             contract.MeteringPointType.ToString(), meterType.ToString(), contract.GSRN);
                     logger.LogWarning("Contract job: Changing MeteringPointType for contract to {MeteringPointType}, for {GSRN}", meterType.ToString(), contract.GSRN);
 
+                    contract.MeteringPointType = MeteringPointType.Production;
+                    unitOfWork.CertificateIssuingContractRepo.Update(contract);
+                    await unitOfWork.SaveAsync(stoppingToken);
                 }
             }
 
