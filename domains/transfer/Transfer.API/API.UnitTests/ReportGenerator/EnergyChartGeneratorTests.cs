@@ -77,7 +77,7 @@ public class EnergySvgRendererTests
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
-        var (rawTotalHourConsumption, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, TestContext.Current.CancellationToken);
+        var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);
         var (rawCons, strictProd, allProd) = formatter.Format(rawAverageHourConsumption, claims);
 
         // Pass all three to processor

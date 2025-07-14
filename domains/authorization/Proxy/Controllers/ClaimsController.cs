@@ -6,6 +6,7 @@ using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using Proxy.Controllers;
 
 namespace Proxy.Controllers;
 
@@ -15,8 +16,11 @@ namespace Proxy.Controllers;
 
 public class ClaimsController : ProxyBase
 {
-    public ClaimsController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor) : base(httpClientFactory, httpContextAccessor)
+    private readonly IdentityDescriptor _identityDescriptor;
+
+    public ClaimsController(IHttpClientFactory httpClientFactory, IHttpContextAccessor? httpContextAccessor, IdentityDescriptor identityDescriptor) : base(httpClientFactory, httpContextAccessor)
     {
+        _identityDescriptor = identityDescriptor;
     }
 
     /// <summary>
@@ -70,9 +74,13 @@ public class ClaimsController : ProxyBase
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultList<AggregatedClaims, PageInfo>), StatusCodes.Status200OK)]
-    public Task<IActionResult> AggregateClaims([FromQuery] AggregateClaimsQueryParameters param, [Required][FromQuery] string organizationId)
+    public async Task<IActionResult> AggregateClaims([FromQuery] AggregateClaimsQueryParameters param, [Required][FromQuery] string organizationId)
     {
-        return ProxyClientCredentialsRequest("v1/aggregate-claims", organizationId);
+        var isTrial = _identityDescriptor.IsTrial();
+        var trialFilter = isTrial ? TrialFilter.Trial : TrialFilter.NonTrial;
+        var customQueryString = HttpContext.Request.QueryString.ToString() + $"&TrialFilter={trialFilter}";
+
+        return await ProxyClientCredentialsRequest("v1/aggregate-claims", organizationId, customQueryString);
     }
 
     /// <summary>
@@ -99,6 +107,12 @@ public enum TimeMatch
 {
     Hourly,
     All,
+}
+
+public enum TrialFilter
+{
+    NonTrial,
+    Trial,
 }
 
 public record GetClaimsQueryParameters
@@ -169,6 +183,12 @@ public record AggregateClaimsQueryParameters
     /// </summary>
     [DefaultValue(0)]
     public int Skip { get; init; }
+
+    /// <summary>
+    /// Filter for trial or non-trial certificates. Values: NonTrial (default), Trial
+    /// </summary>
+    [DefaultValue(TrialFilter.NonTrial)]
+    public TrialFilter TrialFilter { get; init; } = TrialFilter.NonTrial;
 }
 
 /// <summary>

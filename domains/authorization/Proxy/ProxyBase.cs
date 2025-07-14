@@ -21,9 +21,9 @@ public class ProxyBase : ControllerBase
         _httpClient = httpClientFactory.CreateClient("Proxy");
     }
 
-    private async Task ProxyRequest(string path, string? organizationId)
+    private async Task ProxyRequest(string path, string? organizationId, string? customQueryString = null)
     {
-        using var requestMessage = await BuildProxyRequest(path);
+        using var requestMessage = await BuildProxyRequest(path, customQueryString);
         BuildProxyForwardHeaders(organizationId, requestMessage);
 
         using var proxyResponse = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
@@ -51,7 +51,7 @@ public class ProxyBase : ControllerBase
             request.Content?.Headers.TryAddWithoutValidation(WalletConstants.Header, organizationId);
     }
 
-    private async Task<HttpRequestMessage> BuildProxyRequest(string path)
+    private async Task<HttpRequestMessage> BuildProxyRequest(string path, string? customQueryString = null)
     {
         if (HttpContext.Request.Body.CanSeek)
             HttpContext.Request.Body.Position = 0;
@@ -60,11 +60,12 @@ public class ProxyBase : ControllerBase
         await HttpContext.Request.Body.CopyToAsync(buffer);
         buffer.Position = 0;
 
+        var queryString = customQueryString ?? HttpContext.Request.QueryString.ToString();
         var req = new HttpRequestMessage
         {
             Method = new HttpMethod(HttpContext.Request.Method),
             Content = new StreamContent(buffer),
-            RequestUri = new Uri($"wallet-api/{path}{HttpContext.Request.QueryString}", UriKind.Relative)
+            RequestUri = new Uri($"wallet-api/{path}{queryString}", UriKind.Relative)
         };
         return req;
     }
@@ -74,7 +75,8 @@ public class ProxyBase : ControllerBase
     /// </summary>
     /// <param name="path"></param>
     /// <param name="organizationId"></param>
-    protected async Task<IActionResult> ProxyClientCredentialsRequest(string path, string? organizationId)
+    /// <param name="customQueryString"></param>
+    protected async Task<IActionResult> ProxyClientCredentialsRequest(string path, string? organizationId, string? customQueryString = null)
     {
         if (_httpContextAccessor is null)
             return Forbidden();
@@ -87,7 +89,7 @@ public class ProxyBase : ControllerBase
         if (!accessDescriptor.IsAuthorizedToOrganization(orgGuid))
             return Forbidden();
 
-        await ProxyRequest(path, organizationId);
+        await ProxyRequest(path, organizationId, customQueryString);
 
         return new EmptyResult();
     }
@@ -96,9 +98,10 @@ public class ProxyBase : ControllerBase
     /// Proxies a request to the wallet service without any validation.
     /// </summary>
     /// <param name="path"></param>
-    protected async Task<IActionResult> ProxyInsecureCall(string path)
+    /// <param name="customQueryString"></param>
+    protected async Task<IActionResult> ProxyInsecureCall(string path, string? customQueryString = null)
     {
-        await ProxyRequest(path, null);
+        await ProxyRequest(path, null, customQueryString);
         return new EmptyResult();
     }
 
