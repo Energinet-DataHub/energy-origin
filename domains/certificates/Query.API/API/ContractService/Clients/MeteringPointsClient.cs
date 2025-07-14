@@ -81,7 +81,7 @@ public record MeteringPointsResponse(List<MeteringPoint> Result);
 public record MeteringPoint(
     string Gsrn,
     string GridArea,
-    MeterType Type,
+    MeterType MeteringPointType,
     SubMeterType SubMeterType,
     Address Address,
     Technology Technology,
