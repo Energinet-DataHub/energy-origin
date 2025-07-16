@@ -80,7 +80,7 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
         return client;
     }
 
-    public HttpClient CreateAuthenticatedClient(string sub = "", string name = "", string? orgId = null, List<string>? orgIds = null, string subType = "")
+    public HttpClient CreateAuthenticatedClient(string sub = "", string name = "", string? orgId = null, List<string>? orgIds = null, string subType = "", string orgStatus = "")
     {
         sub = string.IsNullOrEmpty(sub) ? Guid.NewGuid().ToString() : sub;
         name = string.IsNullOrEmpty(name) ? "Test Testesen" : name;
@@ -89,12 +89,12 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
         orgIds ??= new List<string> { Guid.NewGuid().ToString() };
 
         var client = CreateClient();
-        var token = GenerateToken(sub, name, orgId, orgIds, subType);
+        var token = GenerateToken(sub, name, orgId, orgIds, subType, true, orgStatus);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return client;
     }
 
-    private string GenerateToken(string sub, string name = "Default Name", string orgId = "", List<string>? orgIds = null, string subType = "Default SubType", bool termsAccepted = true)
+    private string GenerateToken(string sub, string name = "Default Name", string orgId = "", List<string>? orgIds = null, string subType = "Default SubType", bool termsAccepted = true, string orgStatus = "")
     {
         using RSA rsa = RSA.Create(2048);
         var req = new CertificateRequest("cn=eotest", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -106,7 +106,7 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
 
         var orgIdsString = string.Join(" ", orgIds ?? new List<string>());
 
-        var identity = new ClaimsIdentity(new List<Claim>
+        var claims = new List<Claim>
         {
             new("sub", sub),
             new("name", name),
@@ -114,7 +114,15 @@ public class ProxyWebApplicationFactory : WebApplicationFactory<Program>
             new("org_ids", orgIdsString),
             new("sub_type", subType),
             new("tos_accepted", termsAccepted.ToString())
-        });
+        };
+
+        // Add org_status claim if provided
+        if (!string.IsNullOrEmpty(orgStatus))
+        {
+            claims.Add(new Claim("org_status", orgStatus));
+        }
+
+        var identity = new ClaimsIdentity(claims);
 
         var securityTokenDescriptor = new SecurityTokenDescriptor
         {

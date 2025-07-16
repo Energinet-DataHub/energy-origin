@@ -85,7 +85,7 @@ public class PopulateReportCommandHandler
             var from = DateTimeOffset.FromUnixTimeSeconds(report.StartDate.EpochSeconds);
             var to = DateTimeOffset.FromUnixTimeSeconds(report.EndDate.EpochSeconds);
 
-            var (totalConsumptionRaw, averageHourConsumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, cancellationToken);
+            var (totalConsumptionRaw, averageHourConsumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, report.IsTrial, cancellationToken);
 
             _logger.LogInformation("totalConsumptionRaw " + totalConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);
             _logger.LogInformation("averageHourConsumptionRaw " + averageHourConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);

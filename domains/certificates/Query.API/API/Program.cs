@@ -92,7 +92,6 @@ builder.Services.AddOptions<B2COptions>().BindConfiguration(B2COptions.Prefix).V
     .ValidateOnStart();
 builder.Services.AddB2C(b2COptions);
 
-
 var app = builder.Build();
 
 app.MapDefaultHealthChecks();

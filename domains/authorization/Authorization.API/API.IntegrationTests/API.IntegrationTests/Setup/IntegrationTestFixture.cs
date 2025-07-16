@@ -16,12 +16,9 @@ public class IntegrationTestCollection : ICollectionFixture<IntegrationTestFixtu
 public class IntegrationTestFixture : IAsyncLifetime
 {
     public PostgresContainer PostgresContainer { get; } = new();
-
-    public RabbitMqContainer RabbitMqContainer { get; } = new();
-
+    private RabbitMqContainer RabbitMqContainer { get; } = new();
     private Respawner? _respawner;
-
-    public TestWebApplicationFactory WebAppFactory { get; private set; } = null!;
+    public TestWebApplicationFactory WebAppFactory { get; } = new();
 
     public async ValueTask InitializeAsync()
     {
@@ -32,7 +29,6 @@ public class IntegrationTestFixture : IAsyncLifetime
 
         var rabbitMqOptions = RabbitMqContainer.Options;
 
-        WebAppFactory = new TestWebApplicationFactory();
         WebAppFactory.ConnectionString = newDatabase.ConnectionString;
         WebAppFactory.SetRabbitMqOptions(rabbitMqOptions);
         await WebAppFactory.InitializeAsync();
@@ -79,11 +75,15 @@ public class IntegrationTestFixture : IAsyncLifetime
 
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseNpgsql(WebAppFactory.ConnectionString);
-        using var dbContext = new ApplicationDbContext(optionsBuilder.Options);
-        if (!await dbContext.Terms.AnyAsync())
+        await using var dbContext = new ApplicationDbContext(optionsBuilder.Options);
+        var requiredTypes = Enum.GetValues<TermsType>();
+        foreach (var type in requiredTypes)
         {
-            dbContext.Terms.Add(Terms.Create(1));
-            await dbContext.SaveChangesAsync();
+            if (!await dbContext.Terms.AnyAsync(t => t.Type == type))
+            {
+                dbContext.Terms.Add(Terms.Create(1, type));
+            }
         }
+        await dbContext.SaveChangesAsync();
     }
 }

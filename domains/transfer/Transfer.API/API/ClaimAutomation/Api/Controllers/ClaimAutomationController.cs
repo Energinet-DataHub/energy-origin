@@ -15,6 +15,7 @@ namespace API.ClaimAutomation.Api.Controllers;
 [ApiController]
 [Authorize(Policy.Frontend)]
 [ApiVersion(ApiVersions.Version1)]
+[ApiExplorerSettings(IgnoreApi = true)]
 [Route("api/claim-automation")]
 public class ClaimAutomationController(IUnitOfWork unitOfWork, AccessDescriptor accessDescriptor) : ControllerBase
 {

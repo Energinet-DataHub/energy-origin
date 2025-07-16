@@ -11,6 +11,7 @@ public interface ICertificateIssuingContractRepository
 {
     Task SaveRange(List<CertificateIssuingContract> certificateIssuingContracts);
     void UpdateRange(List<CertificateIssuingContract> certificateIssuingContracts);
+    void Update(CertificateIssuingContract certificateIssuingContract);
     void RemoveRange(IEnumerable<CertificateIssuingContract> certificateIssuingContracts);
     Task<IReadOnlyList<CertificateIssuingContract>> GetByGsrn(List<string> gsrn, CancellationToken cancellationToken);
     Task<IReadOnlyList<CertificateIssuingContract>> GetAllMeteringPointOwnerContracts(string meteringPointOwner, CancellationToken cancellationToken);
