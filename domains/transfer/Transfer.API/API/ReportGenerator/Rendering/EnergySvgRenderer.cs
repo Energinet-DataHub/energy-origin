@@ -25,7 +25,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
     private const int EnergyUnitConversionFactor = 1000;
 
     private static readonly (string Unmatched, string Overmatched, string Matched,
-        string AvgLine, string Bg, string HourText, string KwhLine)
+        string AvgLine, string Bg, string HourText, string EnergyUnits)
         Colors = ("#DFDFDF", "#59ACE8", "#82CF76", "#FF0000", "#F9FAFB", "rgb(194,194,194)", "FFA500");
 
     private static readonly XNamespace svg = "http://www.w3.org/2000/svg";
@@ -438,7 +438,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
                 new XAttribute("y1", MARGIN_TOP),
                 new XAttribute("x2", MARGIN_LEFT),
                 new XAttribute("y2", MARGIN_TOP + PLOT_HEIGHT),
-                new XAttribute("stroke", Colors.KwhLine),
+                new XAttribute("stroke", Colors.EnergyUnits),
                 new XAttribute("stroke-width", "2")
             )
         );
