@@ -90,6 +90,7 @@ public class PopulateReportCommandHandler
             _logger.LogInformation("totalConsumptionRaw " + totalConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);
             _logger.LogInformation("averageHourConsumptionRaw " + averageHourConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);
             _logger.LogInformation("claims " + claims.Sum(x => x.Quantity));
+            _logger.LogInformation("claims2 " + claims.Sum(x => x.Quantity));
 
             var coverage = _coverageProcessor.Calculate(claims, totalConsumptionRaw, from, to);
 
