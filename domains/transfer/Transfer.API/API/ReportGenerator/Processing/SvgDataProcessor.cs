@@ -38,9 +38,13 @@ public class SvgDataProcessor : ISvgDataProcessor
             }
 
             //overmatch is left out for now
-            var hourly = new HourlyEnergy(hour, averageConsumptionHour, matched, unmatched, 0);
+            //consumption is set to matched because Consumption controls the red line. If we have matched more than consumption, the line needs
+            //to be drawn over the green area instead of the grey
+            var hourly = new HourlyEnergy(hour, matched > averageConsumptionHour ? matched : averageConsumptionHour, matched, unmatched, 0);
             result.Add(hourly);
         }
         return result;
     }
+    public static double MaxStacked(IReadOnlyList<HourlyEnergy> h)
+        => h.Max(x => Math.Max(x.Consumption, x.Matched + x.Unmatched + x.Overmatched));
 }

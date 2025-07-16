@@ -64,7 +64,7 @@ public class SvgDataProcessorTests
         Assert.Equal(24, hourlyEnergy.Count);
         Assert.Equal(1000, hourlyEnergy[hourMissing].Matched);
         Assert.Equal(0, hourlyEnergy[hourMissing].Unmatched);
-        Assert.Equal(0, hourlyEnergy[hourMissing].Consumption);
+        Assert.Equal(1000, hourlyEnergy[hourMissing].Consumption);
     }
 
     [Fact]

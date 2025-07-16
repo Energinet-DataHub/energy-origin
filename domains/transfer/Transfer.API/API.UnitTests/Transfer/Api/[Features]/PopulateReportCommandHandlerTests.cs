@@ -65,7 +65,6 @@ public class PopulateReportCommandHandlerTests
             _mediator,
             _logger,
             realDataFetcher,
-            new EnergyDataFormatter(),
             new MunicipalityPercentageProcessor(),
             new CoverageProcessor(),
             new SvgDataProcessor(),

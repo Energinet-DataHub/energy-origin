@@ -24,7 +24,6 @@ public class PopulateReportCommandHandler
     private readonly IMediator _mediator;
     private readonly ILogger<PopulateReportCommandHandler> _logger;
     private readonly IEnergyDataFetcher _dataFetcher;
-    private readonly IEnergyDataFormatter _dataFormatter;
     private readonly IMunicipalityPercentageProcessor _municipalityPercentageProcessor;
     private readonly ICoverageProcessor _coverageProcessor;
     private readonly ISvgDataProcessor _svgDataProcessor;
@@ -41,7 +40,6 @@ public class PopulateReportCommandHandler
         IMediator mediator,
         ILogger<PopulateReportCommandHandler> logger,
         IEnergyDataFetcher dataFetcher,
-        IEnergyDataFormatter dataFormatter,
         IMunicipalityPercentageProcessor municipalityPercentageProcessor,
         ICoverageProcessor coverageProcessor,
         ISvgDataProcessor svgDataProcessor,
@@ -57,7 +55,6 @@ public class PopulateReportCommandHandler
         _mediator = mediator;
         _logger = logger;
         _dataFetcher = dataFetcher;
-        _dataFormatter = dataFormatter;
         _municipalityPercentageProcessor = municipalityPercentageProcessor;
         _coverageProcessor = coverageProcessor;
         _svgDataProcessor = svgDataProcessor;
@@ -87,24 +84,9 @@ public class PopulateReportCommandHandler
 
             var (totalConsumptionRaw, averageHourConsumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, report.IsTrial, cancellationToken);
 
-            _logger.LogInformation("totalConsumptionRaw " + totalConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);
-            _logger.LogInformation("averageHourConsumptionRaw " + averageHourConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);
-            _logger.LogInformation("claims " + claims.Sum(x => x.Quantity));
-            _logger.LogInformation("claims2 " + claims.Sum(x => x.Quantity));
-
             var coverage = _coverageProcessor.Calculate(claims, totalConsumptionRaw, from, to);
 
             var hourlyData = _svgDataProcessor.Format(averageHourConsumptionRaw, claims);
-
-            //var (consumption, strictProd, allProd) = _dataFormatter.Format(averageHourConsumptionRaw, claims);
-
-            // Process into hourly aggregates
-            //var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);
-
-            _logger.LogInformation("FIRST HOURLY Matched: " + hourlyData.First().Matched);
-            _logger.LogInformation("FIRST HOURLY Overmatched: " + hourlyData.First().Overmatched);
-            _logger.LogInformation("FIRST HOURLY Consumption: " + hourlyData.First().Consumption);
-            _logger.LogInformation("FIRST HOURLY Unmatched: " + hourlyData.First().Unmatched);
 
             // Calculate coverage headline
             var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";

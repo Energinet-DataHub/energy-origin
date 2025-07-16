@@ -21,8 +21,12 @@ public class EnergySvgRenderer : IEnergySvgRenderer
     private const int MARGIN_TOP = 10;
     private const int PLOT_HEIGHT = 304;
 
-    private static readonly (string Unmatched, string Overmatched, string Matched,
-        string AvgLine, string Bg, string HourText)
+    private static readonly (string Unmatched,
+        string Overmatched,
+        string Matched,
+        string AvgLine,
+        string Bg,
+        string HourText)
         Colors = ("#DFDFDF", "#59ACE8", "#82CF76", "#FF0000", "#F9FAFB", "rgb(194,194,194)");
 
     private static readonly XNamespace svg = "http://www.w3.org/2000/svg";
@@ -32,7 +36,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
     {
         ArgumentNullException.ThrowIfNull(data);
 
-        var max = EnergyDataProcessor.MaxStacked(data);
+        var max = SvgDataProcessor.MaxStacked(data);
         var finalRender = CreateSvgDocument(data, max).ToString();
 
         return new EnergySvgResult(finalRender);

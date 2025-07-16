@@ -33,14 +33,13 @@ public class EnergySvgRendererTests
 
         var wallet = Substitute.For<IWalletClient>();
         var strictClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to, strictHourlyOnly: true);
-        var allClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to);
 
         // Mock wallet client to return different claims based on TimeMatch
         wallet.GetClaimsAsync(
                 orgId.Value,
                 from,
                 to,
-                Arg.Is<TimeMatch>(t => t == TimeMatch.Hourly), // Strict hourly
+                Arg.Any<TimeMatch>(),
                 Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
@@ -54,34 +53,15 @@ public class EnergySvgRendererTests
                 }
             });
 
-        wallet.GetClaimsAsync(
-                orgId.Value,
-                from,
-                to,
-                Arg.Is<TimeMatch>(t => t == TimeMatch.All), // All claims
-                Arg.Any<CancellationToken>())
-            .Returns(new ResultList<Claim>
-            {
-                Result = allClaims,
-                Metadata = new PageInfo
-                {
-                    Count = allClaims.Count,
-                    Offset = 0,
-                    Limit = allClaims.Count,
-                    Total = allClaims.Count
-                }
-            });
-
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var formatter = new EnergyDataFormatter();
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);
-        var (rawCons, strictProd, allProd) = formatter.Format(rawAverageHourConsumption, claims);
 
         // Pass all three to processor
-        var hourly = EnergyDataProcessor.ToHourly(rawCons, strictProd, allProd);
+        var hourly = processor.Format(rawAverageHourConsumption, claims);
         var svg = renderer.Render(hourly).Svg;
 
         await Verifier.Verify(svg, extension: "svg");
