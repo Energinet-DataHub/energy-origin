@@ -6,10 +6,10 @@ public record EnergySvgResult(string Svg);
 public record HourlyEnergy
 (
     int Hour,
-    double Consumption,
-    double Matched,
-    double Unmatched,
-    double Overmatched
+    double Consumption, //rød linje
+    double Matched, //grøn
+    double Unmatched, //grå
+    double Overmatched //blå
 );
 
 public record MunicipalityDistribution(string? Municipality, double Percentage);

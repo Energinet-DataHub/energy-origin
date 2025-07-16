@@ -64,6 +64,7 @@ public static class Startup
         services.AddScoped<IEnergyDataFormatter, EnergyDataFormatter>();
         services.AddScoped<IMunicipalityPercentageProcessor, MunicipalityPercentageProcessor>();
         services.AddScoped<ICoverageProcessor, CoverageProcessor>();
+        services.AddScoped<ISvgDataProcessor, SvgDataProcessor>();
         services.AddScoped<IEnergySvgRenderer, EnergySvgRenderer>();
         services.AddScoped<IOrganizationHeaderRenderer, OrganizationHeaderRenderer>();
         services.AddScoped<IHeadlinePercentageRenderer, HeadlinePercentageRenderer>();

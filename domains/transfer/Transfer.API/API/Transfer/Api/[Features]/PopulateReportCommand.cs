@@ -27,6 +27,7 @@ public class PopulateReportCommandHandler
     private readonly IEnergyDataFormatter _dataFormatter;
     private readonly IMunicipalityPercentageProcessor _municipalityPercentageProcessor;
     private readonly ICoverageProcessor _coverageProcessor;
+    private readonly ISvgDataProcessor _svgDataProcessor;
     private readonly IEnergySvgRenderer _svgRenderer;
     private readonly IOrganizationHeaderRenderer _headerRenderer;
     private readonly IHeadlinePercentageRenderer _percentageRenderer;
@@ -43,6 +44,7 @@ public class PopulateReportCommandHandler
         IEnergyDataFormatter dataFormatter,
         IMunicipalityPercentageProcessor municipalityPercentageProcessor,
         ICoverageProcessor coverageProcessor,
+        ISvgDataProcessor svgDataProcessor,
         IEnergySvgRenderer svgRenderer,
         IOrganizationHeaderRenderer headerRenderer,
         IHeadlinePercentageRenderer percentageRenderer,
@@ -58,6 +60,7 @@ public class PopulateReportCommandHandler
         _dataFormatter = dataFormatter;
         _municipalityPercentageProcessor = municipalityPercentageProcessor;
         _coverageProcessor = coverageProcessor;
+        _svgDataProcessor = svgDataProcessor;
         _svgRenderer = svgRenderer;
         _headerRenderer = headerRenderer;
         _percentageRenderer = percentageRenderer;
@@ -90,10 +93,12 @@ public class PopulateReportCommandHandler
 
             var coverage = _coverageProcessor.Calculate(claims, totalConsumptionRaw, from, to);
 
-            var (consumption, strictProd, allProd) = _dataFormatter.Format(averageHourConsumptionRaw, claims);
+            var hourlyData = _svgDataProcessor.Format(averageHourConsumptionRaw, claims);
+
+            //var (consumption, strictProd, allProd) = _dataFormatter.Format(averageHourConsumptionRaw, claims);
 
             // Process into hourly aggregates
-            var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);
+            //var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);
 
             _logger.LogInformation("FIRST HOURLY Matched: " + hourlyData.First().Matched);
             _logger.LogInformation("FIRST HOURLY Overmatched: " + hourlyData.First().Overmatched);

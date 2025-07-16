@@ -68,6 +68,7 @@ public class PopulateReportCommandHandlerTests
             new EnergyDataFormatter(),
             new MunicipalityPercentageProcessor(),
             new CoverageProcessor(),
+            new SvgDataProcessor(),
             _svgRenderer,
             _headerRenderer,
             _percentageRenderer,
