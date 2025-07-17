@@ -1,16 +1,38 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using API.ReportGenerator.Processing;
 using API.Transfer.Api.Services;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace API.UnitTests.ReportGenerator.Processing;
 
 public class SvgDataProcessorTests
 {
+    [Fact]
+    public void Format_WhenHalfQuantityIs500AndOtherHalfIs1000_Expect750AverageMatched()
+    {
+        var claims = GenerateClaims(24, 500);
+        var claim2 = GenerateClaims(24, 1000);
+
+        claims.AddRange(claim2);
+        var consumptionAvg = GenerateAvgConsumption(1);
+
+        var sut = new SvgDataProcessor();
+
+        var hourlyEnergy = sut.Format(consumptionAvg, claims);
+
+        Assert.Equal(24, hourlyEnergy.Count);
+        foreach (var hourly in hourlyEnergy)
+        {
+            Assert.Equal(750, hourly.Matched);
+            Assert.Equal(250, hourly.Unmatched);
+            Assert.Equal(1000, hourly.Consumption);
+        }
+    }
+
     [Fact]
     public void Format_WhenAverageIsTheSame_ExpectTheSame()
     {
