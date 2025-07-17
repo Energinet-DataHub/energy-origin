@@ -84,6 +84,8 @@ public class PopulateReportCommandHandler
 
             var (totalConsumptionRaw, averageHourConsumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, report.IsTrial, cancellationToken);
 
+            _logger.LogInformation("DateFrom: " + from);
+            _logger.LogInformation("DateTo: " + to);
             _logger.LogInformation("totalConsumptionRaw " + totalConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);
             _logger.LogInformation("averageHourConsumptionRaw " + averageHourConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);
             _logger.LogInformation("claims " + claims.Sum(x => x.Quantity));
