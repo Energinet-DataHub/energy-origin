@@ -9,7 +9,7 @@ namespace API.UnitTests.ReportGenerator.Utilities;
 
 public class MockedDataGenerators
 {
-    public static List<ConsumptionHour> GenerateMockConsumption(int seed)
+    public static List<ConsumptionHour> GenerateMockConsumption(int seed, double qualityMultiplier = 1)
     {
         var rnd = new Random(seed);
 
@@ -28,12 +28,13 @@ public class MockedDataGenerators
 
                 var kWh = baseLoad * hourlyFactor * (0.9 + rnd.NextDouble() * 0.2);
 
-                return new ConsumptionHour(h) { KwhQuantity = (decimal)Math.Round(kWh, 2) };
+                // return new ConsumptionHour(h) { KwhQuantity = (decimal)Math.Round(kWh, 2) };
+                return new ConsumptionHour(h) { KwhQuantity = (decimal)Math.Round(kWh * qualityMultiplier, 2) };
             })
             .ToList();
     }
 
-    public static List<Claim> GenerateMockClaims(int seed, DateTimeOffset from, DateTimeOffset to, bool strictHourlyOnly = false)
+    public static List<Claim> GenerateMockClaims(int seed, DateTimeOffset from, DateTimeOffset to, bool strictHourlyOnly = false, double qualityMultiplier = 1)
     {
         var rnd = new Random(seed);
 
@@ -80,7 +81,8 @@ public class MockedDataGenerators
                 return new Claim
                 {
                     ClaimId = Guid.NewGuid(),
-                    Quantity = (uint)Math.Round(prod, 0),
+                    // Quantity = (uint)Math.Round(prod, 0),
+                    Quantity = (uint)Math.Round(prod * qualityMultiplier, 0),
                     UpdatedAt = from.AddHours(i).ToUnixTimeSeconds(),
                     ProductionCertificate = prodCert,
                     ConsumptionCertificate = conCert
