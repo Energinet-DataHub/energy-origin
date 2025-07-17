@@ -60,6 +60,8 @@ public class PopulateReportCommandHandlerTests
 
         var realDataFetcher = new EnergyDataFetcher(_consumptionService, _walletClient);
 
+        var logger = Substitute.For<ILogger<SvgDataProcessor>>();
+
         _sut = new PopulateReportCommandHandler(
             _unitOfWork,
             _mediator,
@@ -67,7 +69,7 @@ public class PopulateReportCommandHandlerTests
             realDataFetcher,
             new MunicipalityPercentageProcessor(),
             new CoverageProcessor(),
-            new SvgDataProcessor(),
+            new SvgDataProcessor(logger),
             _svgRenderer,
             _headerRenderer,
             _percentageRenderer,

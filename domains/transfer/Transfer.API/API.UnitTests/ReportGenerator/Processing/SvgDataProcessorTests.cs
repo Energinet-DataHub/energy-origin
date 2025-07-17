@@ -2,6 +2,8 @@ using API.ReportGenerator.Processing;
 using API.Transfer.Api.Services;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,13 @@ namespace API.UnitTests.ReportGenerator.Processing;
 
 public class SvgDataProcessorTests
 {
+    private ILogger<SvgDataProcessor> logger;
+
+    public SvgDataProcessorTests()
+    {
+        logger = Substitute.For<ILogger<SvgDataProcessor>>();
+    }
+
     [Fact]
     public void Format_WhenHalfQuantityIs500AndOtherHalfIs1000_Expect750AverageMatched()
     {
@@ -20,7 +29,7 @@ public class SvgDataProcessorTests
         claims.AddRange(claim2);
         var consumptionAvg = GenerateAvgConsumption(1);
 
-        var sut = new SvgDataProcessor();
+        var sut = new SvgDataProcessor(logger);
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -39,7 +48,7 @@ public class SvgDataProcessorTests
         var claims = GenerateClaims(60, 1000);
         var consumptionAvg = GenerateAvgConsumption(2);
 
-        var sut = new SvgDataProcessor();
+        var sut = new SvgDataProcessor(logger);
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -61,7 +70,7 @@ public class SvgDataProcessorTests
 
         var consumptionAvg = GenerateAvgConsumption(2);
 
-        var sut = new SvgDataProcessor();
+        var sut = new SvgDataProcessor(logger);
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -79,7 +88,7 @@ public class SvgDataProcessorTests
         var consumptionAvg = GenerateAvgConsumption(2);
         consumptionAvg = consumptionAvg.Where(x => x.HourOfDay != hourMissing).ToList();
 
-        var sut = new SvgDataProcessor();
+        var sut = new SvgDataProcessor(logger);
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -98,7 +107,7 @@ public class SvgDataProcessorTests
         var consumptionAvg = GenerateAvgConsumption(2);
         consumptionAvg = consumptionAvg.Where(x => x.HourOfDay != hourMissing).ToList();
 
-        var sut = new SvgDataProcessor();
+        var sut = new SvgDataProcessor(logger);
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 

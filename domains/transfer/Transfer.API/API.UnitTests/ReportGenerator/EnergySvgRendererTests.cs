@@ -13,11 +13,19 @@ using API.UnitTests.ReportGenerator.Utilities;
 using NSubstitute;
 using VerifyXunit;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 namespace API.UnitTests.ReportGenerator;
 
 public class EnergySvgRendererTests
 {
+
+    private readonly ILogger<SvgDataProcessor> logger;
+
+    public EnergySvgRendererTests()
+    {
+        logger = Substitute.For<ILogger<SvgDataProcessor>>();
+    }
     [Fact]
     public async Task FullPipeline_GeneratesExpectedSvg_Snapshot()
     {
@@ -54,7 +62,7 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var processor = new SvgDataProcessor();
+        var processor = new SvgDataProcessor(logger);
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
@@ -125,7 +133,7 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var processor = new SvgDataProcessor();
+        var processor = new SvgDataProcessor(logger);
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
@@ -195,7 +203,7 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var processor = new SvgDataProcessor();
+        var processor = new SvgDataProcessor(logger);
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
