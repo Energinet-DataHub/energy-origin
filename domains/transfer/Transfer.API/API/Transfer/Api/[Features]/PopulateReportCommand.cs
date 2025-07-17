@@ -94,6 +94,13 @@ public class PopulateReportCommandHandler
 
             var hourlyData = _svgDataProcessor.Format(averageHourConsumptionRaw, claims);
 
+            foreach (var hourly in hourlyData)
+            {
+                _logger.LogInformation(hourly.Hour + "Consumption: " + hourly.Consumption);
+                _logger.LogInformation(hourly.Hour + "Matched: " + hourly.Matched);
+                _logger.LogInformation(hourly.Hour + "Unmatched: " + hourly.Unmatched);
+            }
+
             // Calculate coverage headline
             var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
 
