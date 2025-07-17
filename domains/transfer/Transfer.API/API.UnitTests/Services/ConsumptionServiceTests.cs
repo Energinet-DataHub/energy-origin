@@ -12,7 +12,6 @@ using Xunit;
 using EnergyTrackAndTrace.Testing.Extensions;
 using EnergyOrigin.Datahub3;
 using Energinet.DataHub.Measurements.Abstractions.Api.Models;
-using Microsoft.Extensions.Logging;
 
 namespace API.UnitTests.Services;
 
@@ -155,6 +154,50 @@ public class ConsumptionServiceTests
         foreach (var hour in average)
         {
             Assert.Equal(1, hour.KwhQuantity);
+        }
+    }
+
+    [Fact]
+    public async Task ComputeHourlyAverages_WhenData_ExpectAverage()
+    {
+        var subject = Guid.NewGuid();
+        var numberOfDays = 30;
+        var dateTo = new DateTimeOffset(2025, 1, 31, 0, 0, 0, TimeSpan.Zero);
+        var dateFrom = dateTo.AddDays(-numberOfDays);
+        var gsrn = Any.Gsrn();
+
+        _meteringPointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(new MeteringPointsResponse
+            {
+                MeteringPoints =
+                {
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn)
+                }
+            });
+
+        _dhFacadeClientMock.ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(new ListMeteringPointForCustomerCaResponse
+        {
+            Relations =
+            [
+                new () { MeteringPointId = gsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) }
+            ],
+            Rejections = new List<Rejection>()
+        });
+
+        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 1).ToList();
+        var mpData2 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 3).ToList();
+        mpData.AddRange(mpData2);
+
+        _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+            .Returns(mpData);
+
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+
+        var (_, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
+
+        foreach (var hour in average)
+        {
+            Assert.Equal(2, hour.KwhQuantity);
         }
     }
 
