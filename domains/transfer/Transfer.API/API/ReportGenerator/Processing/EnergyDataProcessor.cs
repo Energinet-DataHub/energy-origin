@@ -37,9 +37,9 @@ public static class EnergyDataProcessor
             .ToList();
     }
 
-    public static double MaxStacked(IReadOnlyList<HourlyEnergy> h)
+    public static double MaxStackedWattHours(IReadOnlyList<HourlyEnergy> h)
         => h.Max(x => Math.Max(x.Consumption, x.Matched + x.Unmatched + x.Overmatched));
 
-    public static double MinStacked(IReadOnlyList<HourlyEnergy> h)
+    public static double MinStackedWattHours(IReadOnlyList<HourlyEnergy> h)
         => h.Min(x => Math.Min(x.Consumption, x.Matched + x.Unmatched + x.Overmatched));
 }
