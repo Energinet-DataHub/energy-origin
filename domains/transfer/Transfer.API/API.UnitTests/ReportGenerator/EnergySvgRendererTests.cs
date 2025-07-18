@@ -162,7 +162,7 @@ public class EnergySvgRendererTests
     [Fact]
     public async Task FullPipeline_ShowingMegawattHours_GeneratesExpectedSvg_Snapshot()
     {
-        var qualityMultiplier = 100000; // So we get a minimumValue > 1000 kWh. This generates the report with MWh values on the y-axis.
+        var qualityMultiplier = 10000; // So we get a minimumValue > 1000 kWh. This generates the report with MWh values on the y-axis.
 
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var from = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero);

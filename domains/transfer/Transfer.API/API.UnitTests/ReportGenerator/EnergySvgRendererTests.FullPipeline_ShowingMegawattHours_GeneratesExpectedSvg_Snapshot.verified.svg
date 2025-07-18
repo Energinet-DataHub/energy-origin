@@ -40,41 +40,40 @@
   </g>
   <g class="highcharts-series-group" data-z-index="3" transform="translate(80,10)">
     <g class="highcharts-series highcharts-series-0 highcharts-column-series" data-z-index="0.1" opacity="1" clip-path="url(#chart-area)">
-      <rect x="2.475" y="233.9590928686406" width="19.8" height="70.0409071313594" fill="#DFDFDF" />
-      <rect x="27.225" y="206.1519417672339" width="19.8" height="97.84805823276609" fill="#DFDFDF" />
-      <rect x="51.975" y="211.7287375528353" width="19.8" height="92.27126244716469" fill="#DFDFDF" />
-      <rect x="76.725" y="216.1628338408082" width="19.8" height="87.83716615919181" fill="#DFDFDF" />
-      <rect x="101.475" y="246.24950216289113" width="19.8" height="57.750497837108874" fill="#DFDFDF" />
-      <rect x="126.225" y="220.1052875847526" width="19.8" height="83.89471241524738" fill="#DFDFDF" />
-      <rect x="150.975" y="59.35490186640055" width="19.8" height="244.64509813359945" fill="#DFDFDF" />
-      <rect x="175.725" y="78.23271765560825" width="19.8" height="127.06393886477987" fill="#DFDFDF" />
-      <rect x="200.475" y="95.6366947119063" width="19.8" height="11.827368736113316" fill="#DFDFDF" />
-      <rect x="225.225" y="33.152963276406695" width="19.8" height="40.189925946252764" fill="#DFDFDF" />
-      <rect x="423.225" y="2.842170943040401E-14" width="19.8" height="74.17232287378094" fill="#DFDFDF" />
-      <rect x="447.975" y="81.5707356614763" width="19.8" height="85.17645914549549" fill="#DFDFDF" />
-      <rect x="472.725" y="28.954002597915007" width="19.8" height="275.045997402085" fill="#DFDFDF" />
-      <rect x="497.475" y="49.33915460252021" width="19.8" height="254.6608453974798" fill="#DFDFDF" />
-      <rect x="522.225" y="73.33674708158665" width="19.8" height="230.66325291841335" fill="#DFDFDF" />
-      <rect x="546.975" y="53.31236934528144" width="19.8" height="250.68763065471856" fill="#DFDFDF" />
-      <rect x="571.725" y="153.63448869655338" width="19.8" height="150.36551130344662" fill="#DFDFDF" />
+      <rect x="2.475" y="264.8122260882772" width="19.8" height="39.187773911722765" fill="#DFDFDF" />
+      <rect x="27.225" y="249.2541712418601" width="19.8" height="54.74582875813992" fill="#DFDFDF" />
+      <rect x="51.975" y="252.37437705603844" width="19.8" height="51.625622943961574" fill="#DFDFDF" />
+      <rect x="76.725" y="254.85524735581714" width="19.8" height="49.144752644182844" fill="#DFDFDF" />
+      <rect x="101.475" y="271.688691103944" width="19.8" height="32.31130889605599" fill="#DFDFDF" />
+      <rect x="126.225" y="257.0610441471392" width="19.8" height="46.93895585286079" fill="#DFDFDF" />
+      <rect x="150.975" y="167.12146253365975" width="19.8" height="136.87853746634025" fill="#DFDFDF" />
+      <rect x="175.725" y="177.68356992300477" width="19.8" height="71.09206910208646" fill="#DFDFDF" />
+      <rect x="200.475" y="187.42106692598998" width="19.8" height="6.139702872197244" fill="#DFDFDF" />
+      <rect x="423.225" y="133.91249187861462" width="19.8" height="16.924504210067763" fill="#DFDFDF" />
+      <rect x="447.975" y="179.55118739966872" width="19.8" height="47.65609017475119" fill="#DFDFDF" />
+      <rect x="472.725" y="150.1122085822586" width="19.8" height="153.8877914177414" fill="#DFDFDF" />
+      <rect x="497.475" y="161.51766934746007" width="19.8" height="142.48233065253993" fill="#DFDFDF" />
+      <rect x="522.225" y="174.94428321030986" width="19.8" height="129.05571678969014" fill="#DFDFDF" />
+      <rect x="546.975" y="163.74067626672598" width="19.8" height="140.25932373327402" fill="#DFDFDF" />
+      <rect x="571.725" y="219.87073911926848" width="19.8" height="84.12926088073154" fill="#DFDFDF" />
     </g>
     <g class="highcharts-series highcharts-series-1 highcharts-column-series" data-z-index="0.1" opacity="1" clip-path="url(#chart-area)" />
     <g class="highcharts-series highcharts-series-2 highcharts-column-series" data-z-index="0.1" opacity="1" clip-path="url(#chart-area)">
-      <rect x="175.725" y="205.29665652038813" width="19.8" height="98.70334347961189" fill="#82CF76" />
-      <rect x="200.475" y="107.46406344801963" width="19.8" height="196.53593655198037" fill="#82CF76" />
-      <rect x="225.225" y="73.34288922265944" width="19.8" height="230.65711077734056" fill="#82CF76" />
-      <rect x="249.975" y="73.27546386820737" width="19.8" height="230.72453613179263" fill="#82CF76" />
-      <rect x="274.725" y="73.27546386820737" width="19.8" height="230.72453613179263" fill="#82CF76" />
-      <rect x="299.475" y="73.27546386820737" width="19.8" height="230.72453613179263" fill="#82CF76" />
-      <rect x="324.225" y="73.27546386820737" width="19.8" height="230.72453613179263" fill="#82CF76" />
-      <rect x="348.975" y="73.27546386820737" width="19.8" height="230.72453613179263" fill="#82CF76" />
-      <rect x="373.725" y="73.27546386820737" width="19.8" height="230.72453613179263" fill="#82CF76" />
-      <rect x="398.475" y="73.27546386820737" width="19.8" height="230.72453613179263" fill="#82CF76" />
-      <rect x="423.225" y="74.17232287378098" width="19.8" height="229.82767712621902" fill="#82CF76" />
-      <rect x="447.975" y="166.74719480697178" width="19.8" height="137.25280519302822" fill="#82CF76" />
+      <rect x="175.725" y="248.7756390250912" width="19.8" height="55.22436097490879" fill="#82CF76" />
+      <rect x="200.475" y="193.5607697981872" width="19.8" height="110.43923020181279" fill="#82CF76" />
+      <rect x="225.225" y="137.12162099246706" width="19.8" height="166.87837900753294" fill="#82CF76" />
+      <rect x="249.975" y="81.71291809462878" width="19.8" height="222.28708190537122" fill="#82CF76" />
+      <rect x="274.725" y="28.023434403173326" width="19.8" height="275.9765655968267" fill="#82CF76" />
+      <rect x="299.475" y="30.064998650474536" width="19.8" height="273.93500134952546" fill="#82CF76" />
+      <rect x="324.225" y="12.753691655510806" width="19.8" height="291.2463083444892" fill="#82CF76" />
+      <rect x="348.975" y="0.6407527496898524" width="19.8" height="303.35924725031015" fill="#82CF76" />
+      <rect x="373.725" y="0" width="19.8" height="304" fill="#82CF76" />
+      <rect x="398.475" y="74.36234591028997" width="19.8" height="229.63765408971003" fill="#82CF76" />
+      <rect x="423.225" y="150.83699608868238" width="19.8" height="153.16300391131762" fill="#82CF76" />
+      <rect x="447.975" y="227.2072775744199" width="19.8" height="76.79272242558011" fill="#82CF76" />
     </g>
     <g class="highcharts-series highcharts-series-3 highcharts-line-series" data-z-index="10" opacity="1" clip-path="url(#chart-area)">
-      <path fill="none" class="highcharts-graph" d="M 12.375,233.9590928686406 37.125,206.1519417672339 61.875,211.7287375528353 86.625,216.1628338408082 111.375,246.24950216289113 136.125,220.1052875847526 160.875,59.35490186640055 185.625,78.23271765560824 210.375,95.63669471190633 235.125,33.15296327640664 259.875,73.27546386820737 284.625,73.27546386820737 309.375,73.27546386820737 334.125,73.27546386820737 358.875,73.27546386820737 383.625,73.27546386820737 408.375,73.27546386820737 433.125,0 457.875,81.57073566147628 482.625,28.954002597915007 507.375,49.33915460252021 532.125,73.33674708158665 556.875,53.31236934528144 581.625,153.63448869655338" stroke="#FF0000" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+      <path fill="none" class="highcharts-graph" d="M 12.375,264.8122260882772 37.125,249.2541712418601 61.875,252.37437705603844 86.625,254.85524735581714 111.375,271.688691103944 136.125,257.0610441471392 160.875,167.12146253365975 185.625,177.68356992300477 210.375,187.42106692598998 235.125,137.12162099246706 259.875,81.71291809462878 284.625,28.023434403173326 309.375,30.064998650474536 334.125,12.753691655510806 358.875,0.6407527496898524 383.625,0 408.375,74.36234591028997 433.125,133.91249187861462 457.875,179.5511873996687 482.625,150.1122085822586 507.375,161.51766934746007 532.125,174.94428321030986 556.875,163.74067626672598 581.625,219.87073911926848" stroke="#FF0000" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
     </g>
   </g>
   <g class="highcharts-axis-labels highcharts-xaxis-labels" data-z-index="7">
@@ -128,11 +127,11 @@
   </g>
   <g class="highcharts-axis-labels highcharts-yaxis-labels" data-z-index="7">
     <text x="75" y="314" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">0.00 MWh</text>
-    <text x="75" y="253.2" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">1131.80 MWh</text>
-    <text x="75" y="192.39999999999998" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">2263.60 MWh</text>
-    <text x="75" y="131.6" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">3395.40 MWh</text>
-    <text x="75" y="70.79999999999998" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">4527.20 MWh</text>
-    <text x="75" y="10" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">5659.00 MWh</text>
+    <text x="75" y="253.2" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">202.29 MWh</text>
+    <text x="75" y="192.4" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">404.58 MWh</text>
+    <text x="75" y="131.6" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">606.86 MWh</text>
+    <text x="75" y="70.80000000000001" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">809.15 MWh</text>
+    <text x="75" y="10" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">1011.44 MWh</text>
   </g>
   <g class="highcharts-axis highcharts-yaxis-left">
     <line x1="80" y1="10" x2="80" y2="314" stroke="FFA500" stroke-width="2" />
