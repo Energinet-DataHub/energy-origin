@@ -87,20 +87,40 @@ public class ConsumptionService : IConsumptionService
 
     private List<ConsumptionHour> ComputeHourlyAverages(MeasurementAggregationByPeriodDto[] data)
     {
-        return Enumerable.Range(0, 24)
-            .Select(hour => new ConsumptionHour(hour)
+        var allPoints = data
+            .SelectMany(mp => mp.PointAggregationGroups.Values)
+            .SelectMany(pg => pg.PointAggregations)
+            .Select(p => new
             {
-                KwhQuantity = data
-                    .SelectMany(mp => mp.PointAggregationGroups.Values)
-                    .SelectMany(pg => pg.PointAggregations)
-                    .Where(p => DateTimeOffset
-                        .FromUnixTimeSeconds(p.From.ToUnixTimeSeconds())
-                        .Hour == hour)
-                    .Select(p => p.Quantity ?? 0)
-                    .DefaultIfEmpty(0m)
-                    .Average()
+                Hour = DateTimeOffset.FromUnixTimeSeconds(p.From.ToUnixTimeSeconds()).Hour,
+                Day = DateTimeOffset.FromUnixTimeSeconds(p.From.ToUnixTimeSeconds()).Date,
+                Quantity = p.Quantity ?? 0m
+            });
+
+        // Group by Day and Hour
+        var groupedByDayHour = allPoints
+            .GroupBy(p => new { p.Day, p.Hour })
+            .Select(g => new
+            {
+                g.Key.Hour,
+                DailySum = g.Sum(x => x.Quantity)
+            });
+
+        // Group by Hour again, and average the daily sums
+        var averagesByHour = groupedByDayHour
+            .GroupBy(x => x.Hour)
+            .Select(g => new ConsumptionHour(g.Key)
+            {
+                KwhQuantity = g.Average(x => x.DailySum)
             })
             .ToList();
+
+        // Ensure all 24 hours are represented
+        var complete = Enumerable.Range(0, 24)
+            .Select(h => averagesByHour.FirstOrDefault(x => x.HourOfDay == h) ?? new ConsumptionHour(h))
+            .ToList();
+
+        return complete;
     }
 
     private static bool IsConsumption(string typeOfMp)
