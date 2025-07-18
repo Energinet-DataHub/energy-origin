@@ -162,6 +162,7 @@ public class ConsumptionServiceTests
     {
         var subject = Guid.NewGuid();
         var numberOfDays = 30;
+        var halfOfPeriod = numberOfDays / 2;
         var fullPeriodDateTo = new DateTimeOffset(2025, 1, 31, 0, 0, 0, TimeSpan.Zero);
         var fullPeriodDateFrom = fullPeriodDateTo.AddDays(-numberOfDays);
         var gsrn = Any.Gsrn();
@@ -189,8 +190,8 @@ public class ConsumptionServiceTests
 
         var gsrnQuantity = 1;
         var gsrn2Quantity = 3;
-        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.AddDays(-15).ToUnixTimeSeconds(), 100, gsrnQuantity).ToList();
-        var mpData2 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn2, fullPeriodDateFrom.AddDays(15).ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), 100, gsrn2Quantity).ToList();
+        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.AddDays(-halfOfPeriod).ToUnixTimeSeconds(), 100, gsrnQuantity).ToList();
+        var mpData2 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn2, fullPeriodDateFrom.AddDays(halfOfPeriod).ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), 100, gsrn2Quantity).ToList();
         mpData.AddRange(mpData2);
 
         _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
