@@ -13,7 +13,6 @@ using API.UnitTests.ReportGenerator.Utilities;
 using NSubstitute;
 using VerifyXunit;
 using Xunit;
-using Microsoft.Extensions.Logging;
 
 namespace API.UnitTests.ReportGenerator;
 
@@ -77,7 +76,7 @@ public class EnergySvgRendererTests
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
         var processor = new SvgDataProcessor();
-        var renderer = new EnergySvgRenderer(Substitute.For<ILogger<EnergySvgRenderer>>());
+        var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);
@@ -147,7 +146,7 @@ public class EnergySvgRendererTests
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
         var processor = new SvgDataProcessor();
-        var renderer = new EnergySvgRenderer(Substitute.For<ILogger<EnergySvgRenderer>>());
+        var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);
@@ -217,7 +216,7 @@ public class EnergySvgRendererTests
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
         var processor = new SvgDataProcessor();
-        var renderer = new EnergySvgRenderer(Substitute.For<ILogger<EnergySvgRenderer>>());
+        var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);

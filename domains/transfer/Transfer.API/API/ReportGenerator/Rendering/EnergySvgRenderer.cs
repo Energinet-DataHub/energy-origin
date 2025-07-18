@@ -14,7 +14,7 @@ public interface IEnergySvgRenderer
     EnergySvgResult Render(IReadOnlyList<HourlyEnergy> hourly);
 }
 
-public class EnergySvgRenderer(ILogger<EnergySvgRenderer> logger) : IEnergySvgRenderer
+public class EnergySvgRenderer() : IEnergySvgRenderer
 {
     private const int SVG_WIDTH = 754;
     private const int SVG_HEIGHT = 400;
@@ -367,7 +367,6 @@ public class EnergySvgRenderer(ILogger<EnergySvgRenderer> logger) : IEnergySvgRe
         var energyUnit = GetEnergyUnitForYAxis(minValueWattHours);
 
         var maxValueKilowattHours = maxValueWattHours / EnergyUnitConversionFactor;
-        logger.LogInformation("Report is being generated with EnergyUnit {EnergyUnit}", energyUnit.ToString());
         switch (energyUnit)
         {
             case EnergyUnit.WattHours:
@@ -394,13 +393,6 @@ public class EnergySvgRenderer(ILogger<EnergySvgRenderer> logger) : IEnergySvgRe
             .OrderBy(v => v)
             .Distinct()
             .ToList();
-
-        logger.LogInformation("MaxValueWattHours {MaxValueWattHours}", maxValueWattHours);
-        for (int i = 0; i < yAxisLabelValues.Count; i++)
-        {
-            double label = yAxisLabelValues[i];
-            logger.LogInformation("Y-axis label WattHours {Index}, {Label}", i, label);
-        }
 
         return new XElement(svg + "g",
             new XAttribute("class", "highcharts-axis-labels highcharts-yaxis-labels"),
@@ -430,13 +422,6 @@ public class EnergySvgRenderer(ILogger<EnergySvgRenderer> logger) : IEnergySvgRe
             .Distinct()
             .ToList();
 
-        logger.LogInformation("MaxValueKwh {MaxValueKwh}", maxValueKwh);
-        for (int i = 0; i < yAxisLabelValues.Count; i++)
-        {
-            double label = yAxisLabelValues[i];
-            logger.LogInformation("Y-axis label KilowattHours {Index}, {Label}", i, label);
-        }
-
         return new XElement(svg + "g",
             new XAttribute("class", "highcharts-axis-labels highcharts-yaxis-labels"),
             new XAttribute("data-z-index", "7"),
@@ -464,13 +449,6 @@ public class EnergySvgRenderer(ILogger<EnergySvgRenderer> logger) : IEnergySvgRe
             .OrderBy(v => v)
             .Distinct()
             .ToList();
-
-        logger.LogInformation("MaxValueMwh {MaxValueMwh}", maxValueMwh);
-        for (int i = 0; i < yAxisLabelValues.Count; i++)
-        {
-            double label = yAxisLabelValues[i];
-            logger.LogInformation("Y-axis label MegawattHours {Index}, {Label}", i, label);
-        }
 
         return new XElement(svg + "g",
             new XAttribute("class", "highcharts-axis-labels highcharts-yaxis-labels"),
