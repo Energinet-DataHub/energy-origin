@@ -84,7 +84,7 @@ public class EnergySvgRendererTests
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
         var processor = new SvgDataProcessor(logger);
-        var renderer = new EnergySvgRenderer();
+        var renderer = new EnergySvgRenderer(Substitute.For<ILogger<EnergySvgRenderer>>());
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);
@@ -154,7 +154,7 @@ public class EnergySvgRendererTests
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
         var processor = new SvgDataProcessor(logger);
-        var renderer = new EnergySvgRenderer();
+        var renderer = new EnergySvgRenderer(Substitute.For<ILogger<EnergySvgRenderer>>());
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);
@@ -224,7 +224,7 @@ public class EnergySvgRendererTests
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
         var processor = new SvgDataProcessor(logger);
-        var renderer = new EnergySvgRenderer();
+        var renderer = new EnergySvgRenderer(Substitute.For<ILogger<EnergySvgRenderer>>());
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);

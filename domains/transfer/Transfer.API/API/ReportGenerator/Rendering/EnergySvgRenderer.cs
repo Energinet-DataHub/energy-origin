@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using API.ReportGenerator.Domain;
 using API.ReportGenerator.Processing;
+using Microsoft.Extensions.Logging;
 
 namespace API.ReportGenerator.Rendering;
 
@@ -13,7 +14,7 @@ public interface IEnergySvgRenderer
     EnergySvgResult Render(IReadOnlyList<HourlyEnergy> hourly);
 }
 
-public class EnergySvgRenderer : IEnergySvgRenderer
+public class EnergySvgRenderer(ILogger<EnergySvgRenderer> logger) : IEnergySvgRenderer
 {
     private const int SVG_WIDTH = 754;
     private const int SVG_HEIGHT = 400;
@@ -44,7 +45,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
         return new EnergySvgResult(finalRender);
     }
 
-    private static XDocument CreateSvgDocument(IReadOnlyList<HourlyEnergy> data, double maxValueWattHours, double minValueWattHours)
+    private XDocument CreateSvgDocument(IReadOnlyList<HourlyEnergy> data, double maxValueWattHours, double minValueWattHours)
     {
         var unitWidth = (SVG_WIDTH - MARGIN_LEFT * 2) / 24.0;
 
@@ -360,11 +361,12 @@ public class EnergySvgRenderer : IEnergySvgRenderer
             item.Label);
     }
 
-    private static XElement CreateYAxisLabels(double maxValueWattHours, double minValueWattHours)
+    private XElement CreateYAxisLabels(double maxValueWattHours, double minValueWattHours)
     {
         var energyUnit = GetEnergyUnitForYAxis(minValueWattHours);
 
         var maxValueKilowattHours = maxValueWattHours / EnergyUnitConversionFactor;
+        logger.LogInformation("Report is being generated with EnergyUnit {EnergyUnit}", energyUnit.ToString());
         switch (energyUnit)
         {
             case EnergyUnit.WattHours:
@@ -379,7 +381,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
         }
     }
 
-    private static XElement CreateYAxisLabelsForWattHours(double maxValueWattHours)
+    private XElement CreateYAxisLabelsForWattHours(double maxValueWattHours)
     {
         var yAxisLabelCount = 5;
         var yAxisLabelInterval = maxValueWattHours / yAxisLabelCount;
@@ -391,6 +393,13 @@ public class EnergySvgRenderer : IEnergySvgRenderer
             .OrderBy(v => v)
             .Distinct()
             .ToList();
+
+        logger.LogInformation("MaxValueWattHours {MaxValueWattHours}", maxValueWattHours);
+        for (int i = 0; i < yAxisLabelValues.Count; i++)
+        {
+            double label = yAxisLabelValues[i];
+            logger.LogInformation("Y-axis label WattHours {Index}, {Label}", i, label);
+        }
 
         return new XElement(svg + "g",
             new XAttribute("class", "highcharts-axis-labels highcharts-yaxis-labels"),
@@ -407,7 +416,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
             })
         );
     }
-    private static XElement CreateYAxisLabelsForKilowattHours(double maxValueKwh)
+    private XElement CreateYAxisLabelsForKilowattHours(double maxValueKwh)
     {
         var yAxisLabelCount = 5;
         var yAxisLabelInterval = maxValueKwh / yAxisLabelCount;
@@ -419,6 +428,13 @@ public class EnergySvgRenderer : IEnergySvgRenderer
             .OrderBy(v => v)
             .Distinct()
             .ToList();
+
+        logger.LogInformation("MaxValueKwh {MaxValueKwh}", maxValueKwh);
+        for (int i = 0; i < yAxisLabelValues.Count; i++)
+        {
+            double label = yAxisLabelValues[i];
+            logger.LogInformation("Y-axis label KilowattHours {Index}, {Label}", i, label);
+        }
 
         return new XElement(svg + "g",
             new XAttribute("class", "highcharts-axis-labels highcharts-yaxis-labels"),
@@ -436,7 +452,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
         );
     }
 
-    private static XElement CreateYAxisLabelsForMegawattHours(double maxValueMwh)
+    private XElement CreateYAxisLabelsForMegawattHours(double maxValueMwh)
     {
         var yAxisLabelCount = 5;
         var yAxisLabelInterval = maxValueMwh / yAxisLabelCount;
@@ -447,6 +463,13 @@ public class EnergySvgRenderer : IEnergySvgRenderer
             .OrderBy(v => v)
             .Distinct()
             .ToList();
+
+        logger.LogInformation("MaxValueMwh {MaxValueMwh}", maxValueMwh);
+        for (int i = 0; i < yAxisLabelValues.Count; i++)
+        {
+            double label = yAxisLabelValues[i];
+            logger.LogInformation("Y-axis label MegawattHours {Index}, {Label}", i, label);
+        }
 
         return new XElement(svg + "g",
             new XAttribute("class", "highcharts-axis-labels highcharts-yaxis-labels"),
