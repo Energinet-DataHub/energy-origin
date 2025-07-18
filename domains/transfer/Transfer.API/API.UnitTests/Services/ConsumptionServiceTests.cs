@@ -197,7 +197,7 @@ public class ConsumptionServiceTests
 
         foreach (var hour in average)
         {
-            Assert.Equal(2, hour.KwhQuantity);
+            Assert.Equal(4, hour.KwhQuantity);
         }
     }
 
