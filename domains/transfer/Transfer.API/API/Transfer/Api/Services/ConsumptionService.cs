@@ -85,28 +85,26 @@ public class ConsumptionService : IConsumptionService
         return consumptionOnly;
     }
 
-    private List<ConsumptionHour> ComputeHourlyAverages(MeasurementAggregationByPeriodDto[] data)
+    private static List<ConsumptionHour> ComputeHourlyAverages(MeasurementAggregationByPeriodDto[] data)
     {
         var allPoints = data
             .SelectMany(mp => mp.PointAggregationGroups.Values)
             .SelectMany(pg => pg.PointAggregations)
-            .Select(p => new
+            .Select(pa => new
             {
-                Hour = DateTimeOffset.FromUnixTimeSeconds(p.From.ToUnixTimeSeconds()).Hour,
-                Day = DateTimeOffset.FromUnixTimeSeconds(p.From.ToUnixTimeSeconds()).Date,
-                Quantity = p.Quantity ?? 0m
+                DateTimeOffset.FromUnixTimeSeconds(pa.From.ToUnixTimeSeconds()).Hour,
+                DateTimeOffset.FromUnixTimeSeconds(pa.From.ToUnixTimeSeconds()).Date,
+                Quantity = pa.Quantity ?? 0m
             });
 
-        // Group by Day and Hour
         var groupedByDayHour = allPoints
-            .GroupBy(p => new { p.Day, p.Hour })
+            .GroupBy(x => new { x.Date, x.Hour })
             .Select(g => new
             {
                 g.Key.Hour,
                 DailySum = g.Sum(x => x.Quantity)
             });
 
-        // Group by Hour again, and average the daily sums
         var averagesByHour = groupedByDayHour
             .GroupBy(x => x.Hour)
             .Select(g => new ConsumptionHour(g.Key)
@@ -115,12 +113,11 @@ public class ConsumptionService : IConsumptionService
             })
             .ToList();
 
-        // Ensure all 24 hours are represented
-        var complete = Enumerable.Range(0, 24)
+        var hourlyAverages = Enumerable.Range(0, 24)
             .Select(h => averagesByHour.FirstOrDefault(x => x.HourOfDay == h) ?? new ConsumptionHour(h))
             .ToList();
 
-        return complete;
+        return hourlyAverages;
     }
 
     private static bool IsConsumption(string typeOfMp)

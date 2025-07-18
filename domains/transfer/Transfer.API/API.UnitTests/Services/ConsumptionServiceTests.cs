@@ -158,20 +158,22 @@ public class ConsumptionServiceTests
     }
 
     [Fact]
-    public async Task ComputeHourlyAverages_WhenData_ExpectAverage()
+    public async Task ComputeHourlyAverages_WhenMultipleMeteringPointsGenerateDataForDiffentPeriods_ExpectAverage()
     {
         var subject = Guid.NewGuid();
         var numberOfDays = 30;
-        var dateTo = new DateTimeOffset(2025, 1, 31, 0, 0, 0, TimeSpan.Zero);
-        var dateFrom = dateTo.AddDays(-numberOfDays);
+        var fullPeriodDateTo = new DateTimeOffset(2025, 1, 31, 0, 0, 0, TimeSpan.Zero);
+        var fullPeriodDateFrom = fullPeriodDateTo.AddDays(-numberOfDays);
         var gsrn = Any.Gsrn();
+        var gsrn2 = Any.Gsrn();
 
         _meteringPointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
             .Returns(new MeteringPointsResponse
             {
                 MeteringPoints =
                 {
-                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn)
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn),
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn2)
                 }
             });
 
@@ -179,28 +181,79 @@ public class ConsumptionServiceTests
         {
             Relations =
             [
-                new () { MeteringPointId = gsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) }
+                new () { MeteringPointId = gsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) },
+                new () { MeteringPointId = gsrn2.Value, ValidFromDate = DateTime.Now.AddHours(-1) }
             ],
-            Rejections = new List<Rejection>()
+            Rejections = []
         });
 
-        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 1).ToList();
-        var mpData2 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), 100, 3).ToList();
+        var gsrnQuantity = 1;
+        var gsrn2Quantity = 3;
+        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.AddDays(-15).ToUnixTimeSeconds(), 100, gsrnQuantity).ToList();
+        var mpData2 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn2, fullPeriodDateFrom.AddDays(15).ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), 100, gsrn2Quantity).ToList();
         mpData.AddRange(mpData2);
 
-        _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+        _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
         var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
 
-        var (_, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
+        var (_, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), fullPeriodDateFrom, fullPeriodDateTo, new CancellationToken());
+
+        foreach (var hour in average)
+        {
+            Assert.Equal(2, hour.KwhQuantity);
+        }
+    }
+
+    [Fact]
+    public async Task ComputeHourlyAverages_WhenMultipleMeteringPointsGenerateDataForTheSamePeriod_ExpectAverage()
+    {
+        var subject = Guid.NewGuid();
+        var numberOfDays = 30;
+        var fullPeriodDateTo = new DateTimeOffset(2025, 1, 31, 0, 0, 0, TimeSpan.Zero);
+        var fullPeriodDateFrom = fullPeriodDateTo.AddDays(-numberOfDays);
+        var gsrn = Any.Gsrn();
+        var gsrn2 = Any.Gsrn();
+
+        _meteringPointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(new MeteringPointsResponse
+            {
+                MeteringPoints =
+                {
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn),
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn2)
+                }
+            });
+
+        _dhFacadeClientMock.ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(new ListMeteringPointForCustomerCaResponse
+        {
+            Relations =
+            [
+                new () { MeteringPointId = gsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) },
+                new () { MeteringPointId = gsrn2.Value, ValidFromDate = DateTime.Now.AddHours(-1) }
+            ],
+            Rejections = []
+        });
+
+        var gsrnQuantity = 1;
+        var gsrn2Quantity = 3;
+        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), 100, gsrnQuantity).ToList();
+        var mpData2 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn2, fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), 100, gsrn2Quantity).ToList();
+        mpData.AddRange(mpData2);
+
+        _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+            .Returns(mpData);
+
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+
+        var (_, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), fullPeriodDateFrom, fullPeriodDateTo, new CancellationToken());
 
         foreach (var hour in average)
         {
             Assert.Equal(4, hour.KwhQuantity);
         }
     }
-
     [Fact]
     public async Task GetTotalHourlyConsumption_WhenExcludingHour2_ExpectHour2IsZero()
     {
