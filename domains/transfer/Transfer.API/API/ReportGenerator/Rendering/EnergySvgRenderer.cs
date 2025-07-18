@@ -22,7 +22,8 @@ public class EnergySvgRenderer(ILogger<EnergySvgRenderer> logger) : IEnergySvgRe
     private const int MARGIN_TOP = 10;
     private const int PLOT_HEIGHT = 304;
 
-    private const int EnergyUnitSwitchThreshold = 1000;
+    private const int SwitchToMegawattHoursThreshold = 1000;
+    private const int SwitchToKilowattHoursThreshold = 10000;
     private const int EnergyUnitConversionFactor = 1000;
 
     private static readonly (string Unmatched, string Overmatched, string Matched,
@@ -504,13 +505,13 @@ public class EnergySvgRenderer(ILogger<EnergySvgRenderer> logger) : IEnergySvgRe
 
     private static EnergyUnit GetEnergyUnitForYAxis(double minValueWattHours)
     {
-        if (minValueWattHours < EnergyUnitSwitchThreshold)
+        if (minValueWattHours < SwitchToKilowattHoursThreshold)
         {
             return EnergyUnit.WattHours;
         }
 
         var minValueKilowattHours = minValueWattHours / EnergyUnitConversionFactor;
-        if (minValueKilowattHours < EnergyUnitSwitchThreshold)
+        if (minValueKilowattHours < SwitchToMegawattHoursThreshold)
         {
             return EnergyUnit.KilowattHour;
         }
