@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using API.ReportGenerator.Domain;
 using API.ReportGenerator.Processing;
+using Microsoft.Extensions.Logging;
 
 namespace API.ReportGenerator.Rendering;
 
@@ -13,7 +14,7 @@ public interface IEnergySvgRenderer
     EnergySvgResult Render(IReadOnlyList<HourlyEnergy> hourly);
 }
 
-public class EnergySvgRenderer : IEnergySvgRenderer
+public class EnergySvgRenderer() : IEnergySvgRenderer
 {
     private const int SVG_WIDTH = 754;
     private const int SVG_HEIGHT = 400;
@@ -21,7 +22,8 @@ public class EnergySvgRenderer : IEnergySvgRenderer
     private const int MARGIN_TOP = 10;
     private const int PLOT_HEIGHT = 304;
 
-    private const int EnergyUnitSwitchThreshold = 1000;
+    private const int SwitchToMegawattHoursThreshold = 1000;
+    private const int SwitchToKilowattHoursThreshold = 10000;
     private const int EnergyUnitConversionFactor = 1000;
 
     private static readonly (string Unmatched, string Overmatched, string Matched,
@@ -37,14 +39,14 @@ public class EnergySvgRenderer : IEnergySvgRenderer
     {
         ArgumentNullException.ThrowIfNull(data);
 
-        var maxWattHours = EnergyDataProcessor.MaxStackedWattHours(data);
-        var minWattHours = EnergyDataProcessor.MinStackedWattHours(data);
+        var maxWattHours = SvgDataProcessor.MaxStackedWattHours(data);
+        var minWattHours = SvgDataProcessor.MinStackedWattHours(data);
         var finalRender = CreateSvgDocument(data, maxWattHours, minWattHours).ToString();
 
         return new EnergySvgResult(finalRender);
     }
 
-    private static XDocument CreateSvgDocument(IReadOnlyList<HourlyEnergy> data, double maxValueWattHours, double minValueWattHours)
+    private XDocument CreateSvgDocument(IReadOnlyList<HourlyEnergy> data, double maxValueWattHours, double minValueWattHours)
     {
         var unitWidth = (SVG_WIDTH - MARGIN_LEFT * 2) / 24.0;
 
@@ -360,7 +362,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
             item.Label);
     }
 
-    private static XElement CreateYAxisLabels(double maxValueWattHours, double minValueWattHours)
+    private XElement CreateYAxisLabels(double maxValueWattHours, double minValueWattHours)
     {
         var energyUnit = GetEnergyUnitForYAxis(minValueWattHours);
 
@@ -379,7 +381,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
         }
     }
 
-    private static XElement CreateYAxisLabelsForWattHours(double maxValueWattHours)
+    private XElement CreateYAxisLabelsForWattHours(double maxValueWattHours)
     {
         var yAxisLabelCount = 5;
         var yAxisLabelInterval = maxValueWattHours / yAxisLabelCount;
@@ -407,7 +409,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
             })
         );
     }
-    private static XElement CreateYAxisLabelsForKilowattHours(double maxValueKwh)
+    private XElement CreateYAxisLabelsForKilowattHours(double maxValueKwh)
     {
         var yAxisLabelCount = 5;
         var yAxisLabelInterval = maxValueKwh / yAxisLabelCount;
@@ -436,7 +438,7 @@ public class EnergySvgRenderer : IEnergySvgRenderer
         );
     }
 
-    private static XElement CreateYAxisLabelsForMegawattHours(double maxValueMwh)
+    private XElement CreateYAxisLabelsForMegawattHours(double maxValueMwh)
     {
         var yAxisLabelCount = 5;
         var yAxisLabelInterval = maxValueMwh / yAxisLabelCount;
@@ -481,13 +483,13 @@ public class EnergySvgRenderer : IEnergySvgRenderer
 
     private static EnergyUnit GetEnergyUnitForYAxis(double minValueWattHours)
     {
-        if (minValueWattHours < EnergyUnitSwitchThreshold)
+        if (minValueWattHours < SwitchToKilowattHoursThreshold)
         {
             return EnergyUnit.WattHours;
         }
 
         var minValueKilowattHours = minValueWattHours / EnergyUnitConversionFactor;
-        if (minValueKilowattHours < EnergyUnitSwitchThreshold)
+        if (minValueKilowattHours < SwitchToMegawattHoursThreshold)
         {
             return EnergyUnit.KilowattHour;
         }

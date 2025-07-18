@@ -37,25 +37,34 @@ public class MockedDataGenerators
     public static List<Claim> GenerateMockClaims(int seed, DateTimeOffset from, DateTimeOffset to, bool strictHourlyOnly = false, double qualityMultiplier = 1)
     {
         var rnd = new Random(seed);
-        var dummyCert = new ClaimedCertificate
-        {
-            FederatedStreamId = new FederatedStreamId { Registry = "dummy", StreamId = Guid.NewGuid() },
-            Start = 0,
-            End = 0,
-            GridArea = string.Empty,
-            Attributes = new Dictionary<string, string>()
-        };
 
         var hrs = (int)(to - from).TotalHours;
 
         return Enumerable.Range(0, hrs)
             .Select(i =>
             {
+
                 // For strict hourly claims, align to exact hours
                 var timestamp = strictHourlyOnly
                     ? from.AddHours(i)
                     : from.AddHours(i).AddMinutes(rnd.Next(0, 60)); // Add random minutes
 
+                var prodCert = new ClaimedCertificate
+                {
+                    FederatedStreamId = new FederatedStreamId { Registry = "dummy", StreamId = Guid.NewGuid() },
+                    Start = timestamp.ToUnixTimeSeconds(),
+                    End = timestamp.AddHours(1).ToUnixTimeSeconds(),
+                    GridArea = string.Empty,
+                    Attributes = new Dictionary<string, string>()
+                };
+                var conCert = new ClaimedCertificate
+                {
+                    FederatedStreamId = new FederatedStreamId { Registry = "dummy", StreamId = Guid.NewGuid() },
+                    Start = timestamp.ToUnixTimeSeconds(),
+                    End = timestamp.AddHours(1).ToUnixTimeSeconds(),
+                    GridArea = string.Empty,
+                    Attributes = new Dictionary<string, string>()
+                };
                 var hod = timestamp.Hour;
                 var factor = hod switch
                 {
@@ -67,7 +76,7 @@ public class MockedDataGenerators
 
                 const double maxProd = 120;
                 var weather = 0.7 + rnd.NextDouble() * 0.3;
-                var prod = maxProd * factor * weather * (0.9 + rnd.NextDouble() * 0.2);
+                var prod = maxProd * factor * weather * (0.9 + rnd.NextDouble() * 0.2) * 1000;
 
                 return new Claim
                 {
@@ -75,8 +84,8 @@ public class MockedDataGenerators
                     // Quantity = (uint)Math.Round(prod, 0),
                     Quantity = (uint)Math.Round(prod * qualityMultiplier, 0),
                     UpdatedAt = from.AddHours(i).ToUnixTimeSeconds(),
-                    ProductionCertificate = dummyCert,
-                    ConsumptionCertificate = dummyCert
+                    ProductionCertificate = prodCert,
+                    ConsumptionCertificate = conCert
                 };
             })
             .ToList();

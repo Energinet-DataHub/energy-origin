@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,9 +24,9 @@ public class PopulateReportCommandHandler
     private readonly IMediator _mediator;
     private readonly ILogger<PopulateReportCommandHandler> _logger;
     private readonly IEnergyDataFetcher _dataFetcher;
-    private readonly IEnergyDataFormatter _dataFormatter;
     private readonly IMunicipalityPercentageProcessor _municipalityPercentageProcessor;
     private readonly ICoverageProcessor _coverageProcessor;
+    private readonly ISvgDataProcessor _svgDataProcessor;
     private readonly IEnergySvgRenderer _svgRenderer;
     private readonly IOrganizationHeaderRenderer _headerRenderer;
     private readonly IHeadlinePercentageRenderer _percentageRenderer;
@@ -39,9 +40,9 @@ public class PopulateReportCommandHandler
         IMediator mediator,
         ILogger<PopulateReportCommandHandler> logger,
         IEnergyDataFetcher dataFetcher,
-        IEnergyDataFormatter dataFormatter,
         IMunicipalityPercentageProcessor municipalityPercentageProcessor,
         ICoverageProcessor coverageProcessor,
+        ISvgDataProcessor svgDataProcessor,
         IEnergySvgRenderer svgRenderer,
         IOrganizationHeaderRenderer headerRenderer,
         IHeadlinePercentageRenderer percentageRenderer,
@@ -54,9 +55,9 @@ public class PopulateReportCommandHandler
         _mediator = mediator;
         _logger = logger;
         _dataFetcher = dataFetcher;
-        _dataFormatter = dataFormatter;
         _municipalityPercentageProcessor = municipalityPercentageProcessor;
         _coverageProcessor = coverageProcessor;
+        _svgDataProcessor = svgDataProcessor;
         _svgRenderer = svgRenderer;
         _headerRenderer = headerRenderer;
         _percentageRenderer = percentageRenderer;
@@ -85,10 +86,7 @@ public class PopulateReportCommandHandler
 
             var coverage = _coverageProcessor.Calculate(claims, totalConsumptionRaw, from, to);
 
-            var (consumption, strictProd, allProd) = _dataFormatter.Format(averageHourConsumptionRaw, claims);
-
-            // Process into hourly aggregates
-            var hourlyData = EnergyDataProcessor.ToHourly(consumption, strictProd, allProd);
+            var hourlyData = _svgDataProcessor.Format(averageHourConsumptionRaw, claims);
 
             // Calculate coverage headline
             var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";

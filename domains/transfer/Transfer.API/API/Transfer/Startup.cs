@@ -1,6 +1,5 @@
 using System;
 using System.Net.Http.Headers;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using API.ReportGenerator.Infrastructure;
 using API.ReportGenerator.Processing;
@@ -68,9 +67,9 @@ public static class Startup
 
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<IEnergyDataFetcher, EnergyDataFetcher>();
-        services.AddScoped<IEnergyDataFormatter, EnergyDataFormatter>();
         services.AddScoped<IMunicipalityPercentageProcessor, MunicipalityPercentageProcessor>();
         services.AddScoped<ICoverageProcessor, CoverageProcessor>();
+        services.AddScoped<ISvgDataProcessor, SvgDataProcessor>();
         services.AddScoped<IEnergySvgRenderer, EnergySvgRenderer>();
         services.AddScoped<IOrganizationHeaderRenderer, OrganizationHeaderRenderer>();
         services.AddScoped<IHeadlinePercentageRenderer, HeadlinePercentageRenderer>();

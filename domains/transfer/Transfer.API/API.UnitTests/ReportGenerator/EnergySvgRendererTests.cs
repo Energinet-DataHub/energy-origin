@@ -21,19 +21,21 @@ public class EnergySvgRendererTests
     [Fact]
     public async Task FullPipeline_ShowingWattHours_GeneratesExpectedSvg_Snapshot()
     {
+        var qualityMultiplier = 0.03; // So we get a minimumValue > 1000 Wh. This generates the report with kWh values on the y-axis.
+
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var from = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var to = from.AddYears(1);
         const int seed = 5;
 
         var consSvc = Substitute.For<IConsumptionService>();
-        var consAverageHours = MockedDataGenerators.GenerateMockConsumption(seed);
+        var consAverageHours = MockedDataGenerators.GenerateMockConsumption(seed, qualityMultiplier: qualityMultiplier);
         consSvc.GetTotalAndAverageHourlyConsumption(orgId, from, to, Arg.Any<CancellationToken>())
                    .Returns((new List<ConsumptionHour>(), consAverageHours));
 
         var wallet = Substitute.For<IWalletClient>();
-        var strictClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to, strictHourlyOnly: true);
-        var allClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to);
+        var strictClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to, strictHourlyOnly: true, qualityMultiplier: qualityMultiplier);
+        var allClaims = MockedDataGenerators.GenerateMockClaims(seed, from, to, qualityMultiplier: qualityMultiplier);
 
         // Mock wallet client to return different claims based on TimeMatch
         wallet.GetClaimsAsync(
@@ -73,15 +75,14 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var formatter = new EnergyDataFormatter();
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);
-        var (rawCons, strictProd, allProd) = formatter.Format(rawAverageHourConsumption, claims);
 
         // Pass all three to processor
-        var hourly = EnergyDataProcessor.ToHourly(rawCons, strictProd, allProd);
+        var hourly = processor.Format(rawAverageHourConsumption, claims);
         var svg = renderer.Render(hourly).Svg;
 
         await Verifier.Verify(svg, extension: "svg");
@@ -90,7 +91,7 @@ public class EnergySvgRendererTests
     [Fact]
     public async Task FullPipeline_ShowingKilowattHours_GeneratesExpectedSvg_Snapshot()
     {
-        var qualityMultiplier = 225.5; // So we get a minimumValue > 1000 Wh. This generates the report with kWh values on the y-axis.
+        var qualityMultiplier = 2; // So we get a minimumValue > 1000 Wh. This generates the report with kWh values on the y-axis.
 
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var from = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -144,15 +145,14 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var formatter = new EnergyDataFormatter();
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);
-        var (rawCons, strictProd, allProd) = formatter.Format(rawAverageHourConsumption, claims);
 
         // Pass all three to processor
-        var hourly = EnergyDataProcessor.ToHourly(rawCons, strictProd, allProd);
+        var hourly = processor.Format(rawAverageHourConsumption, claims);
         var svg = renderer.Render(hourly).Svg;
 
         await Verifier.Verify(svg, extension: "svg");
@@ -161,7 +161,7 @@ public class EnergySvgRendererTests
     [Fact]
     public async Task FullPipeline_ShowingMegawattHours_GeneratesExpectedSvg_Snapshot()
     {
-        var qualityMultiplier = 100000; // So we get a minimumValue > 1000 kWh. This generates the report with MWh values on the y-axis.
+        var qualityMultiplier = 10000; // So we get a minimumValue > 1000 kWh. This generates the report with MWh values on the y-axis.
 
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var from = new DateTimeOffset(2023, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -215,15 +215,14 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var formatter = new EnergyDataFormatter();
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
         var (_, rawAverageHourConsumption, claims) = await fetcher.GetAsync(orgId, from, to, false, TestContext.Current.CancellationToken);
-        var (rawCons, strictProd, allProd) = formatter.Format(rawAverageHourConsumption, claims);
 
         // Pass all three to processor
-        var hourly = EnergyDataProcessor.ToHourly(rawCons, strictProd, allProd);
+        var hourly = processor.Format(rawAverageHourConsumption, claims);
         var svg = renderer.Render(hourly).Svg;
 
         await Verifier.Verify(svg, extension: "svg");
