@@ -69,7 +69,7 @@ public class PopulateReportCommandHandlerTests
             realDataFetcher,
             new MunicipalityPercentageProcessor(),
             new CoverageProcessor(),
-            new SvgDataProcessor(logger),
+            new SvgDataProcessor(),
             _svgRenderer,
             _headerRenderer,
             _percentageRenderer,

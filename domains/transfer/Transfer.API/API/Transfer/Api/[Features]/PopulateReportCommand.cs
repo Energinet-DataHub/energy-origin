@@ -84,22 +84,9 @@ public class PopulateReportCommandHandler
 
             var (totalConsumptionRaw, averageHourConsumptionRaw, claims) = await _dataFetcher.GetAsync(report.OrganizationId, from, to, report.IsTrial, cancellationToken);
 
-            _logger.LogInformation("DateFrom: " + from);
-            _logger.LogInformation("DateTo: " + to);
-            _logger.LogInformation("totalConsumptionRaw " + totalConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);
-            _logger.LogInformation("averageHourConsumptionRaw " + averageHourConsumptionRaw.Sum(x => x.KwhQuantity) * 1000);
-            _logger.LogInformation("claims " + claims.Sum(x => x.Quantity));
-
             var coverage = _coverageProcessor.Calculate(claims, totalConsumptionRaw, from, to);
 
             var hourlyData = _svgDataProcessor.Format(averageHourConsumptionRaw, claims);
-
-            foreach (var hourly in hourlyData)
-            {
-                _logger.LogInformation(hourly.Hour + "Consumption: " + hourly.Consumption);
-                _logger.LogInformation(hourly.Hour + "Matched: " + hourly.Matched);
-                _logger.LogInformation(hourly.Hour + "Unmatched: " + hourly.Unmatched);
-            }
 
             // Calculate coverage headline
             var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";

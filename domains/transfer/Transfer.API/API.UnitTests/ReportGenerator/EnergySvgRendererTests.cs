@@ -19,13 +19,6 @@ namespace API.UnitTests.ReportGenerator;
 
 public class EnergySvgRendererTests
 {
-    private readonly ILogger<SvgDataProcessor> logger;
-
-    public EnergySvgRendererTests()
-    {
-        logger = Substitute.For<ILogger<SvgDataProcessor>>();
-    }
-
     [Fact]
     public async Task FullPipeline_ShowingWattHours_GeneratesExpectedSvg_Snapshot()
     {
@@ -83,7 +76,7 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var processor = new SvgDataProcessor(logger);
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer(Substitute.For<ILogger<EnergySvgRenderer>>());
 
         // Fetch all three datasets
@@ -153,7 +146,7 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var processor = new SvgDataProcessor(logger);
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer(Substitute.For<ILogger<EnergySvgRenderer>>());
 
         // Fetch all three datasets
@@ -223,7 +216,7 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var processor = new SvgDataProcessor(logger);
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer(Substitute.For<ILogger<EnergySvgRenderer>>());
 
         // Fetch all three datasets
