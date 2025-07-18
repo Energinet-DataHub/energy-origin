@@ -126,12 +126,12 @@
     </g>
   </g>
   <g class="highcharts-axis-labels highcharts-yaxis-labels" data-z-index="7">
-    <text x="75" y="314" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">0.00 MWh</text>
-    <text x="75" y="253.2" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">20.27 MWh</text>
-    <text x="75" y="192.39999999999998" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">40.54 MWh</text>
-    <text x="75" y="131.6" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">60.81 MWh</text>
-    <text x="75" y="70.79999999999998" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">81.08 MWh</text>
-    <text x="75" y="10" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">101.35 MWh</text>
+    <text x="75" y="314" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">0 kWh</text>
+    <text x="75" y="254.0093575886703" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">20 kWh</text>
+    <text x="75" y="194.01871517734057" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">40 kWh</text>
+    <text x="75" y="134.02807276601087" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">60 kWh</text>
+    <text x="75" y="74.03743035468113" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">80 kWh</text>
+    <text x="75" y="11.047255822784962" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">101 kWh</text>
   </g>
   <g class="highcharts-axis highcharts-yaxis-left">
     <line x1="80" y1="10" x2="80" y2="314" stroke="FFA500" stroke-width="2" />

@@ -127,11 +127,11 @@
   </g>
   <g class="highcharts-axis-labels highcharts-yaxis-labels" data-z-index="7">
     <text x="75" y="314" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">0.00 MWh</text>
-    <text x="75" y="253.2" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">4561.60 MWh</text>
-    <text x="75" y="192.4" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">9123.20 MWh</text>
-    <text x="75" y="131.6" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">13684.81 MWh</text>
-    <text x="75" y="70.80000000000001" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">18246.41 MWh</text>
-    <text x="75" y="10" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">22808.01 MWh</text>
+    <text x="75" y="253.2" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">4.56 MWh</text>
+    <text x="75" y="192.4" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">9.12 MWh</text>
+    <text x="75" y="131.6" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">13.68 MWh</text>
+    <text x="75" y="70.80000000000001" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">18.25 MWh</text>
+    <text x="75" y="10" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">22.81 MWh</text>
   </g>
   <g class="highcharts-axis highcharts-yaxis-left">
     <line x1="80" y1="10" x2="80" y2="314" stroke="FFA500" stroke-width="2" />
