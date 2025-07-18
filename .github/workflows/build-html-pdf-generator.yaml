@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Resolve image version
-        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@ee21233cce88e1b8be9bbf186ae903a377059aef # v14.39.1
+        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@7fa3f5b3a0daf166b500a1d69bbee8fec08728f1 # v14.40.0
 
       - name: Resolve image name
         shell: bash
