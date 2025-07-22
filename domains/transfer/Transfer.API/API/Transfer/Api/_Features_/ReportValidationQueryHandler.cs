@@ -16,7 +16,10 @@ public class ReportValidationQueryHandler(MeteringpointClient meteringpointClien
     public async Task<ReportValidationQueryResult> Handle(ReportValidationQuery request, CancellationToken cancellationToken)
     {
         var ownedMeteringPoints = await meteringpointClient.GetOwnedMeteringPointsAsync(
-            new OwnedMeteringPointsRequest { Subject = request.OrganizatonId.ToString() },
+            new OwnedMeteringPointsRequest
+            {
+                Subject = request.OrganizatonId.ToString()
+            },
             cancellationToken: cancellationToken);
 
         var anyConsumptionMeteringPoints = ownedMeteringPoints.MeteringPoints
