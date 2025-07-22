@@ -30,10 +30,8 @@ public class ReportValidationQueryHandlerTests
 
         var queryHandler = new ReportValidationQueryHandler(_meteringPointClientMock);
 
-        var organizationId = Guid.NewGuid();
-
         // Act
-        var result = await queryHandler.Handle(new ReportValidationQuery(organizationId), CancellationToken.None);
+        var result = await queryHandler.Handle(new ReportValidationQuery(Guid.NewGuid()), CancellationToken.None);
 
         // Assert
         Assert.False(result.Valid);
@@ -57,10 +55,8 @@ public class ReportValidationQueryHandlerTests
 
         var queryHandler = new ReportValidationQueryHandler(_meteringPointClientMock);
 
-        var organizationId = Guid.NewGuid();
-
         // Act
-        var result = await queryHandler.Handle(new ReportValidationQuery(organizationId), CancellationToken.None);
+        var result = await queryHandler.Handle(new ReportValidationQuery(Guid.NewGuid()), CancellationToken.None);
 
         // Assert
         Assert.False(result.Valid);
@@ -84,10 +80,8 @@ public class ReportValidationQueryHandlerTests
 
         var queryHandler = new ReportValidationQueryHandler(_meteringPointClientMock);
 
-        var organizationId = Guid.NewGuid();
-
         // Act
-        var result = await queryHandler.Handle(new ReportValidationQuery(organizationId), CancellationToken.None);
+        var result = await queryHandler.Handle(new ReportValidationQuery(Guid.NewGuid()), CancellationToken.None);
 
         // Assert
         Assert.True(result.Valid);
