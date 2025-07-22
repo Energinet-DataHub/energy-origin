@@ -34,7 +34,6 @@ public class ReportValidationQueryHandler(MeteringpointClient meteringpointClien
 
         return new ReportValidationQueryResult(Valid: true, null);
     }
-
 }
 
 public record ReportValidationQuery(Guid OrganizatonId) : IRequest<ReportValidationQueryResult>;
