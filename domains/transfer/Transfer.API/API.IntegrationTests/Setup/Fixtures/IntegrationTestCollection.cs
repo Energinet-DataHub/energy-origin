@@ -4,13 +4,17 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Setup.Factories;
+using API.UnitTests;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
+using EnergyTrackAndTrace.Testing.Extensions;
 using EnergyTrackAndTrace.Testing.Testcontainers;
+using Meteringpoint.V1;
 using NSubstitute;
 using ProjectOrigin.HierarchicalDeterministicKeys.Implementations;
 using WireMock.Server;
 using Xunit;
+using static Meteringpoint.V1.Meteringpoint;
 
 namespace API.IntegrationTests.Setup.Fixtures;
 
@@ -43,6 +47,7 @@ public class IntegrationTestFixture : IAsyncLifetime
         await RabbitMqContainer.InitializeAsync();
 
         SetupPoWalletClientMock();
+        SetupMeteringpointClientMock();
 
         Factory.ConnectionString = PostgresContainer.ConnectionString;
         Factory.CvrBaseUrl = CvrWireMockServer.Url!;
@@ -74,6 +79,21 @@ public class IntegrationTestFixture : IAsyncLifetime
             .Returns(new CreateExternalEndpointResponse { ReceiverId = Guid.NewGuid() });
 
         return walletClientMock;
+    }
+
+    private void SetupMeteringpointClientMock()
+    {
+        var gsrn = Any.Gsrn();
+
+        var meteringpointClientMock = Factory.MeteringpointClientMock;
+        meteringpointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(new MeteringPointsResponse
+            {
+                MeteringPoints =
+                {
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn)
+                }
+            });
     }
 
     public TestCaseContext CreateIsolatedWireMockTest([CallerMemberName] string testName = "")

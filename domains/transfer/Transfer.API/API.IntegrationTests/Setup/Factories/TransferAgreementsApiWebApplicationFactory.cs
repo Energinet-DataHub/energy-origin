@@ -30,6 +30,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
+using static Meteringpoint.V1.Meteringpoint;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
 
 namespace API.IntegrationTests.Setup.Factories;
@@ -53,6 +54,7 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
     public string CvrBaseUrl { get; set; } = "SomeUrl";
     public bool WithCleanupWorker { get; set; } = true;
     public IWalletClient WalletClientMock { get; private set; } = Substitute.For<IWalletClient>();
+    public MeteringpointClient MeteringpointClientMock { get; private set; } = Substitute.For<MeteringpointClient>();
     public RabbitMqOptions? RabbitMqOptions = null;
 
     public async Task WithApiVersionDescriptionProvider(Func<IApiVersionDescriptionProvider, Task> withAction)
@@ -125,6 +127,9 @@ public class TransferAgreementsApiWebApplicationFactory : WebApplicationFactory<
 
             s.Remove(Enumerable.First<ServiceDescriptor>(s, sd => sd.ServiceType == typeof(IWalletClient)));
             ServiceCollectionServiceExtensions.AddScoped(s, _ => WalletClientMock);
+
+            s.Remove(Enumerable.First<ServiceDescriptor>(s, sd => sd.ServiceType == typeof(MeteringpointClient)));
+            ServiceCollectionServiceExtensions.AddScoped(s, _ => MeteringpointClientMock);
 
             if (!WithCleanupWorker)
             {
