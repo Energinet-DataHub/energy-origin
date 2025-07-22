@@ -70,6 +70,12 @@ public class ReportsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
+        var reportValid = await _mediator.Send(new ReportValidationQuery(organizationId), cancellationToken);
+        if (!reportValid.Valid)
+        {
+            return BadRequest(reportValid.ErrorMessage);
+        }
+
         var report = Report.Create(
             id: Guid.NewGuid(),
             organizationId: OrganizationId.Create(organizationId),
