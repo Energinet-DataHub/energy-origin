@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using API.Transfer.Api.Common;
 using Energinet.DataHub.Measurements.Abstractions.Api.Models;
 using EnergyOrigin.Datahub3;
 using EnergyOrigin.DatahubFacade;
@@ -67,7 +68,7 @@ public class ConsumptionService : IConsumptionService
             cancellationToken: ct);
 
         var consumptionGs = owned.MeteringPoints
-            .Where(mp => IsConsumption(mp.TypeOfMp))
+            .Where(mp => MeteringPointTypeHelper.IsConsumption(mp.TypeOfMp))
             .Select(mp => new Gsrn(mp.MeteringPointId))
             .ToList();
 
@@ -118,11 +119,6 @@ public class ConsumptionService : IConsumptionService
             .ToList();
 
         return hourlyAverages;
-    }
-
-    private static bool IsConsumption(string typeOfMp)
-    {
-        return typeOfMp.Trim().Equals("E17", StringComparison.OrdinalIgnoreCase);
     }
 
     private List<ConsumptionHour> MapToTotalHourFormat(MeasurementAggregationByPeriodDto[] totalConsumption)

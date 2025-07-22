@@ -13,7 +13,6 @@ using DataContext.Models;
 using EnergyOrigin.Domain.ValueObjects;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using VerifyXunit;
 using Xunit;
 
 namespace API.IntegrationTests.Transfer.Api.Controllers;
