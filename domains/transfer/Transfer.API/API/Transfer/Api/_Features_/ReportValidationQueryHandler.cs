@@ -26,7 +26,7 @@ public class ReportValidationQueryHandler(MeteringpointClient meteringpointClien
         {
             return new ReportValidationQueryResult(
                     Valid: false,
-                    "No consumption metering points found for your organization. Report generation is only available for organizations with at least one consumption metering point.");
+                    "No consumption metering points found for the organization. Report generation is only available for organizations with at least one consumption metering point.");
         }
 
         return new ReportValidationQueryResult(Valid: true, null);
