@@ -70,10 +70,10 @@ public class ReportsController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var reportValid = await _mediator.Send(new ReportValidationQuery(organizationId), cancellationToken);
-        if (!reportValid.Valid)
+        var validationQueryResult = await _mediator.Send(new ReportValidationQuery(organizationId), cancellationToken);
+        if (!validationQueryResult.Valid)
         {
-            return BadRequest(reportValid.ErrorMessage);
+            return BadRequest(validationQueryResult.ErrorMessage);
         }
 
         var report = Report.Create(
@@ -97,7 +97,7 @@ public class ReportsController : ControllerBase
             using var scope = _scopeFactory.CreateScope();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             await mediator.Send(cmd, CancellationToken.None);
-        });
+        }, CancellationToken.None);
 
         return AcceptedAtAction(
             actionName: null,
