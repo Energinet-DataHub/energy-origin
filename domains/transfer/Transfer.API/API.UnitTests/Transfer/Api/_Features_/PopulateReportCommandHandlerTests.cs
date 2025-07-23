@@ -35,6 +35,7 @@ public class PopulateReportCommandHandlerTests
     private readonly IHeadlinePercentageRenderer _percentageRenderer = Substitute.For<IHeadlinePercentageRenderer>();
     private readonly ILogoRenderer _logoRenderer = Substitute.For<ILogoRenderer>();
     private readonly IStyleRenderer _styleRenderer = Substitute.For<IStyleRenderer>();
+    private readonly ILogger<EnergyDataFetcher> _fetcherLogger = Substitute.For<ILogger<EnergyDataFetcher>>();
 
     private readonly PopulateReportCommandHandler _sut;
 
@@ -58,7 +59,7 @@ public class PopulateReportCommandHandlerTests
             .Send(Arg.Any<GeneratePdfCommand>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(successResult));
 
-        var realDataFetcher = new EnergyDataFetcher(_consumptionService, _walletClient);
+        var realDataFetcher = new EnergyDataFetcher(_consumptionService, _walletClient, _fetcherLogger);
 
         var logger = Substitute.For<ILogger<SvgDataProcessor>>();
 

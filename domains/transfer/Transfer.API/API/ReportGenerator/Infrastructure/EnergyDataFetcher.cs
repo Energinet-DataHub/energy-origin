@@ -31,7 +31,6 @@ public sealed class EnergyDataFetcher : IEnergyDataFetcher
         _logger = logger;
     }
 
-
     public async Task<(List<ConsumptionHour> totalHourConsumption, List<ConsumptionHour> averageHourConsumption, List<Claim> claims)> GetAsync(
         OrganizationId orgId,
         DateTimeOffset from,
