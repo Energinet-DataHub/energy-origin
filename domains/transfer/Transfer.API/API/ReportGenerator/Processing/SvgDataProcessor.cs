@@ -18,7 +18,7 @@ public class SvgDataProcessor() : ISvgDataProcessor
     public List<HourlyEnergy> Format(List<ConsumptionHour> averageConsumptionHours, List<Claim> claims)
     {
         var averageClaimHours = (from c in claims
-                                 where c.ProductionCertificate.Start - c.ConsumptionCertificate.Start <= UnixTimestamp.SecondsPerHour
+                                 where c.ProductionCertificate.Start == c.ConsumptionCertificate.Start
                                  group (double)c.Quantity by DateTimeOffset.FromUnixTimeSeconds(c.ProductionCertificate.Start).Hour
             into g
                                  select new { g.Key, avg = g.Average(x => x) }).ToList();
