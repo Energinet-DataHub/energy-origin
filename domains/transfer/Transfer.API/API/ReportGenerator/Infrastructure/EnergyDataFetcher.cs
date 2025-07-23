@@ -52,8 +52,8 @@ public sealed class EnergyDataFetcher : IEnergyDataFetcher
         foreach (var claim in allClaims)
         {
             _logger.LogInformation(
-                    "Fetched claims: Quantity {Quantity}, ConsumptionStart {StartConsumption}, ProductionStart {StartProduction}",
-                    claim.Quantity, claim.ConsumptionCertificate.Start, claim.ProductionCertificate.Start);
+                    "Fetched claims: Quantity {Quantity}, Consumption {StartConsumption} {EndConsumption}, Production {StartProduction} {EndProduction}",
+                    claim.Quantity, claim.ConsumptionCertificate.Start, claim.ConsumptionCertificate.End, claim.ProductionCertificate.Start, claim.ProductionCertificate.End);
         }
         var filteredClaims = allClaims.Where(claim => claim.IsTrialClaim() == isTrial).ToList();
 
