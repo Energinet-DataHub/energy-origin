@@ -8,6 +8,7 @@ using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
@@ -23,7 +24,7 @@ public class EnergyDataFetcherTests
     {
         _consumptionService = Substitute.For<IConsumptionService>();
         _walletClient = Substitute.For<IWalletClient>();
-        _sut = new EnergyDataFetcher(_consumptionService, _walletClient);
+        _sut = new EnergyDataFetcher(_consumptionService, _walletClient, Substitute.For<ILogger<EnergyDataFetcher>>());
     }
 
     [Fact]
