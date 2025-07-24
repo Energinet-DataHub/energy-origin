@@ -12,6 +12,8 @@ using Xunit;
 using EnergyTrackAndTrace.Testing.Extensions;
 using EnergyOrigin.Datahub3;
 using Energinet.DataHub.Measurements.Abstractions.Api.Models;
+using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace API.UnitTests.Services;
 
@@ -59,7 +61,7 @@ public class ConsumptionServiceTests
         _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
-        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
         var (total, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
@@ -103,7 +105,7 @@ public class ConsumptionServiceTests
         _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpDataConsumption);
 
-        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
         var (total, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
@@ -143,7 +145,7 @@ public class ConsumptionServiceTests
         _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
-        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
         var (total, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
@@ -197,7 +199,7 @@ public class ConsumptionServiceTests
         _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
-        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
         var (_, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), fullPeriodDateFrom, fullPeriodDateTo, new CancellationToken());
 
@@ -246,7 +248,7 @@ public class ConsumptionServiceTests
         _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), fullPeriodDateFrom.ToUnixTimeSeconds(), fullPeriodDateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
-        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
         var (_, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), fullPeriodDateFrom, fullPeriodDateTo, new CancellationToken());
 
@@ -295,7 +297,7 @@ public class ConsumptionServiceTests
         _measurementClientMock.GetMeasurements(Arg.Any<List<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(mpData);
 
-        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock, Substitute.For<ILogger<ConsumptionService>>());
 
         var (total, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
 
