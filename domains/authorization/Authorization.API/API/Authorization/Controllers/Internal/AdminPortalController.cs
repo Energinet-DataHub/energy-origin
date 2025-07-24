@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using API.Authorization._Features_;
 using API.Authorization._Features_.Internal;
 using Asp.Versioning;
 using EnergyOrigin.Domain.ValueObjects;
@@ -10,9 +7,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Npgsql;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using OrganizationId = API.ValueObjects.OrganizationId;
 
 namespace API.Authorization.Controllers.Internal;
 
@@ -72,5 +73,13 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
         var cmd = new RemoveFromWhitelistCommand(tin);
         await mediator.Send(cmd, cancellationToken);
         return Ok();
+    }
+
+    [HttpGet]
+    [Route("organizations/{organizationId:guid}")]
+    public async Task<ActionResult<ClientResponse>> GetOrganization([FromServices] ILogger<ClientResponse> logger, [FromRoute] Guid organizationId)
+    {
+        var queryResult = await mediator.Send(new GetOrganizationQuery(OrganizationId.Create(organizationId)));
+        return Ok(new AdminPortalOrganizationResponse(queryResult.OrganizationId.Value, queryResult.OrganizationName.Value, queryResult.Tin?.Value, queryResult.Status.ToString()));
     }
 }

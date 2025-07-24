@@ -22,11 +22,11 @@ public class GetOrganizationQueryHandler(IOrganizationRepository organizationRep
         {
             throw new EntityNotFoundException(request.OrganizationId.Value, typeof(Organization));
         }
-
-        return new GetOrganizationQueryResult(OrganizationId.Create(org.Id), org.Name, org.Tin);
+        
+        return new GetOrganizationQueryResult(OrganizationId.Create(org.Id), org.Name, org.Tin, org.Status);
     }
 }
 
 public record GetOrganizationQuery(OrganizationId OrganizationId) : IRequest<GetOrganizationQueryResult>;
 
-public record GetOrganizationQueryResult(OrganizationId OrganizationId, OrganizationName OrganizationName, Tin? Tin);
+public record GetOrganizationQueryResult(OrganizationId OrganizationId, OrganizationName OrganizationName, Tin? Tin, OrganizationStatus Status);
