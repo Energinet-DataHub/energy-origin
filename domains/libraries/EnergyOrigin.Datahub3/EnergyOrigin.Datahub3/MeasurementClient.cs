@@ -68,19 +68,7 @@ public class MeasurementClient(IMeasurementsClient client, IOptions<DataHub3Opti
         {
             if (aggregations.Any())
             {
-                logger.LogInformation("Aggregation count {AggregationCount}", aggregations.Count());
                 combinedAggregations.Add(aggregations.First());
-            }
-        }
-
-        foreach (var response in responses)
-        {
-            foreach (var measurementAggregation in response)
-            {
-                foreach (var elem in measurementAggregation.PointAggregationGroups)
-                {
-                    logger.LogInformation("PointAggregationGroup {Key}, {QuantitySum}", elem.Key, elem.Value.PointAggregations.Sum(x => x.Quantity));
-                }
             }
         }
 
