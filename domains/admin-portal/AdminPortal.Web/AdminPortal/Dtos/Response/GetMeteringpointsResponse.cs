@@ -46,7 +46,6 @@ public record Address(
             Locality,
             $"{PostalCode} {City}".Trim(),
             CitySubDivisionName,
-            $"Municipality Code: {MunicipalityCode}",
             Country
         };
 
@@ -58,6 +57,11 @@ public record Technology(string AibTechCode, string AibFuelCode)
 {
     public override string ToString()
     {
-        return $"TechCode: {AibTechCode}, FuelCode: {AibFuelCode}";
+        if (AibTechCode == "T010000" && AibFuelCode == "F01040100")
+            return "Solar";
+        else if (AibTechCode == "T020000" && AibFuelCode == "F01050100")
+            return "Wind";
+        else
+            return "Other";
     }
 }

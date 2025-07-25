@@ -1,14 +1,17 @@
-﻿@model List<AdminPortal._Features_.GetMeteringPointsQueryResultItem>
+@model AdminPortal._Features_.GetMeteringPointsQueryResultViewModel
 
 <div class="container mt-4 mb-5">
     <div class="card shadow-sm">
-        <div class="card-header bg-light border-bottom py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="h5 mb-0 text-primary d-flex align-items-center">
-                    <i class="bi bi-speedometer2 me-2"></i>Meteringpoints
-                </h2>
-            </div>
-        </div>
+	    <div class="card-header bg-light border-bottom py-3">
+		    <div class="d-flex justify-content-between align-items-center">
+			    <h2 class="h5 mb-0 text-primary d-flex align-items-center">
+				    <i class="bi bi-speedometer2 me-2"></i>Meteringpoints
+			    </h2>
+		    </div>
+	    </div>
+	    <div>
+		    <h2 style="margin-left:1rem">@Model.OrganizationName (@Model.Tin)</h2>
+	    </div>
 
         <div class="card-body p-4">
             <!-- Search and Filters Section -->
@@ -43,21 +46,45 @@
                 <table class="table table-hover table-striped table-bordered mb-0" id="meteringpointsTable">
                     <thead class="table-light">
                         <tr>
-                            <th scope="col">Organization</th>
-                            <th scope="col">TIN</th>
                             <th scope="col">GSRN</th>
                             <th scope="col">Type</th>
+                            <th scope="col">Address</th>
+                            <th scope="col">Bidding zone</th>
+                            <th scope="col">Grid area</th>
+                            <th scope="col">Sub meter type</th>
+                            <th scope="col">Technology</th>
+                            <th scope="col">Capacity</th>
+                            <th scope="col">Can be used for issuing?</th>
                             <th scope="col">Issuing certificates</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var point in Model)
+                        @foreach (var point in Model.MeteringPoints)
                         {
                             <tr>
-                                <td class="fw-medium">@point.OrganizationName</td>
-                                <td class="fw-medium">@point.Tin</td>
                                 <td class="fw-medium">@point.GSRN</td>
                                 <td data-original-text="@point.MeterType"><span class="badge bg-info">@point.MeterType</span></td>
+                                <td class="fw-medium">@point.Address</td>
+                                <td class="fw-medium">@point.BiddingZone</td>
+                                <td class="fw-medium">@point.GridArea</td>
+                                <td class="fw-medium">@point.SubMeterType</td>
+                                @if (point.MeterType == MeteringPointType.Consumption)
+                                {
+	                                <td class="fw-medium">-</td>
+                                }
+                                else
+                                {
+	                                <td class="fw-medium">@point.Technology</td>
+                                }
+                                <td class="fw-medium">@point.Capacity</td>
+                                @if (point.CanBeUsedForIssuingCertificates)
+                                {
+	                                <td class="fw-medium">Yes</td>
+                                }
+                                else
+                                {
+	                                <td class="fw-medium">No</td>
+                                }
                                 @if (point.ActiveContract)
                                 {
                                     <td class="fw-medium">Yes</td>
