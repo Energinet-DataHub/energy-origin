@@ -255,6 +255,7 @@ public class ConsumptionServiceTests
             Assert.Equal(4, hour.KwhQuantity);
         }
     }
+
     [Fact]
     public async Task GetTotalHourlyConsumption_WhenExcludingHour2_ExpectHour2IsZero()
     {
@@ -301,5 +302,62 @@ public class ConsumptionServiceTests
 
         Assert.Equal(0, total.First(x => x.HourOfDay == 2).KwhQuantity);
         Assert.Equal(0, average.First(x => x.HourOfDay == 2).KwhQuantity);
+    }
+
+    [Fact]
+    public async Task ComputeHourlyAverages_Test_ExpectAverage()
+    {
+        var subject = Guid.NewGuid();
+        var dateTo = new DateTimeOffset(2025, 7, 18, 0, 0, 0, TimeSpan.Zero);
+        var dateFrom = new DateTimeOffset(2025, 7, 16, 0, 0, 0, TimeSpan.Zero);
+        var gsrn = Any.Gsrn();
+        var gsrn2 = Any.Gsrn();
+
+        _meteringPointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(new MeteringPointsResponse
+            {
+                MeteringPoints =
+                {
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn),
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn2)
+                }
+            });
+
+        _dhFacadeClientMock.ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(new ListMeteringPointForCustomerCaResponse
+        {
+            Relations =
+            [
+                new () { MeteringPointId = gsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) },
+                new () { MeteringPointId = gsrn2.Value, ValidFromDate = DateTime.Now.AddHours(-1) }
+            ],
+            Rejections = []
+        });
+
+        var mpData = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.ToUnixTimeSeconds(), dateFrom.AddHours(1).ToUnixTimeSeconds(), 100, 1800).ToList();
+        var mpData2 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.AddHours(1).ToUnixTimeSeconds(), dateFrom.AddHours(2).ToUnixTimeSeconds(), 100, 1900).ToList();
+        var mpData3 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.AddDays(1).ToUnixTimeSeconds(), dateFrom.AddHours(1).ToUnixTimeSeconds(), 100, 3000).ToList();
+        var mpData4 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn, dateFrom.AddDays(1).AddHours(1).ToUnixTimeSeconds(), dateFrom.AddHours(2).ToUnixTimeSeconds(), 100, 4000).ToList();
+        mpData.AddRange(mpData2);
+        mpData.AddRange(mpData3);
+        mpData.AddRange(mpData4);
+
+        var mpData5 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn2, dateFrom.ToUnixTimeSeconds(), dateFrom.AddHours(1).ToUnixTimeSeconds(), 100, 200).ToList();
+        var mpData6 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn2, dateFrom.AddHours(1).ToUnixTimeSeconds(), dateFrom.AddHours(2).ToUnixTimeSeconds(), 100, 300).ToList();
+        var mpData7 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn2, dateFrom.AddDays(1).ToUnixTimeSeconds(), dateFrom.AddHours(1).ToUnixTimeSeconds(), 100, 1000).ToList();
+        var mpData8 = EnergyTrackAndTrace.Testing.Any.MeasurementsApiResponse(gsrn2, dateFrom.AddDays(1).AddHours(1).ToUnixTimeSeconds(), dateFrom.AddHours(2).ToUnixTimeSeconds(), 100, 2000).ToList();
+        mpData.AddRange(mpData5);
+        mpData.AddRange(mpData6);
+        mpData.AddRange(mpData7);
+        mpData.AddRange(mpData8);
+
+        _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+            .Returns(mpData);
+
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+
+        var (_, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
+
+        Assert.Equal(3000, average[0].KwhQuantity);
+        Assert.Equal(4100, average[1].KwhQuantity);
     }
 }
