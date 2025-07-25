@@ -24,30 +24,20 @@ public class ConsumptionService : IConsumptionService
     private readonly Meteringpoint.V1.Meteringpoint.MeteringpointClient _meteringPointClient;
     private readonly IDataHubFacadeClient _dhFacadeClient;
     private readonly IMeasurementClient _measurementClient;
-    private readonly ILogger<ConsumptionService> _logger;
 
     public ConsumptionService(Meteringpoint.V1.Meteringpoint.MeteringpointClient meteringPointClient,
         IDataHubFacadeClient dhFacadeClient,
-        IMeasurementClient measurementClient,
-        ILogger<ConsumptionService> logger)
+        IMeasurementClient measurementClient)
     {
         _meteringPointClient = meteringPointClient;
         _dhFacadeClient = dhFacadeClient;
         _measurementClient = measurementClient;
-        _logger = logger;
     }
 
     public async Task<(List<ConsumptionHour>, List<ConsumptionHour>)> GetTotalAndAverageHourlyConsumption(OrganizationId orgId, DateTimeOffset from, DateTimeOffset to,
         CancellationToken ct = default)
     {
         var data = await GetRawMeteringDataAsync(orgId, from, to, ct);
-        foreach (var measurementAggregationByPeriod in data)
-        {
-            foreach (var pointAggregationGroup in measurementAggregationByPeriod.PointAggregationGroups)
-            {
-                _logger.LogInformation("Before computing total: PointAggregationGroup {Key}, {QuantitySum}", pointAggregationGroup.Key, pointAggregationGroup.Value.PointAggregations.Sum(x => x.Quantity));
-            }
-        }
 
         return (MapToTotalHourFormat(data), ComputeHourlyAverages(data));
     }
@@ -60,11 +50,6 @@ public class ConsumptionService : IConsumptionService
     {
         var gsrns = await GetValidGsrnsAsync(orgId, ct);
         if (gsrns.Count == 0) return [];
-
-        foreach (var gsrn in gsrns)
-        {
-            _logger.LogInformation("Valid gsrn {GSRN}", gsrn.Value);
-        }
 
         return (await _measurementClient.GetMeasurements(
                    [.. gsrns],
@@ -152,9 +137,6 @@ public class ConsumptionService : IConsumptionService
                 }
             }
         }
-
-
-        _logger.LogInformation("After map to hours {QuantitySum}", result.Sum(x => x.KwhQuantity));
 
         return result;
     }

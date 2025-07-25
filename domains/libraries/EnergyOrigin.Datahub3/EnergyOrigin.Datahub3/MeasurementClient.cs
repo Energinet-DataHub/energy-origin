@@ -73,19 +73,16 @@ public class MeasurementClient(IMeasurementsClient client, IOptions<DataHub3Opti
             }
         }
 
-        decimal sum = 0;
         foreach (var response in responses)
         {
             foreach (var measurementAggregation in response)
             {
                 foreach (var elem in measurementAggregation.PointAggregationGroups)
                 {
-                    sum += elem.Value.PointAggregations.Sum(x => x.Quantity ?? 0);
+                    logger.LogInformation("PointAggregationGroup {Key}, {QuantitySum}", elem.Key, elem.Value.PointAggregations.Sum(x => x.Quantity));
                 }
             }
         }
-
-        logger.LogInformation("PointAggregationGroup {QuantitySum}", sum);
 
         //As the wiremock is stupid and does not only get entries within dateFrom and dateTo
         return FilterByDateRange(combinedAggregations, dateFromEpoch, dateToEpoch);
