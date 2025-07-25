@@ -18,7 +18,16 @@ public class MeasurementsServiceTest
     {
         var mockResponse = new GetMeteringpointsResponse(new List<GetMeteringPointsResponseItem>()
         {
-            new("GSRN", MeteringPointType.Consumption)
+            new("571313131313131314",
+                MeteringPointType.Consumption,
+                "982",
+                SubMeterType.Physical,
+                new Address("Some vej 124", null, null, "Aarhus C", "8000", "Denmark", "0751", "Aarhus"),
+                new Technology("Some tech code", "Some fuel code"),
+                "12345678",
+                true,
+                "1234567",
+                "DK1")
         });
         var organizationId = Guid.NewGuid();
 
