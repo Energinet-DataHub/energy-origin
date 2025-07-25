@@ -22,7 +22,7 @@ public class GetOrganizationQueryHandler(IOrganizationRepository organizationRep
         {
             throw new EntityNotFoundException(request.OrganizationId.Value, typeof(Organization));
         }
-        
+
         return new GetOrganizationQueryResult(OrganizationId.Create(org.Id), org.Name, org.Tin, org.Status);
     }
 }
