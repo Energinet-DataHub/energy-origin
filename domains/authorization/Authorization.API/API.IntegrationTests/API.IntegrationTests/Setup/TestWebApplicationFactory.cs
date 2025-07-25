@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using API.Models;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Cache;
 using EnergyOrigin.Setup.Migrations;
 using EnergyOrigin.Setup.RabbitMq;
 using EnergyOrigin.WalletClient;
@@ -27,9 +28,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
 {
     internal string ConnectionString { get; set; } = "";
     internal RabbitMqOptions RabbitMqOptions { get; set; } = new();
+    internal RedisOptions RedisOptions { get; private set; } = new();
+
     public readonly Guid IssuerIdpClientId = Guid.NewGuid();
     public readonly string AdminPortalEnterpriseAppRegistrationObjectId = "d216b90b-3872-498a-bc18-4941a0f4398e";
     public string WalletUrl { get; set; } = "http://non-existing-wallet";
+
+
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -37,6 +42,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
         builder.UseSetting("B2C:AdminPortalEnterpriseAppRegistrationObjectId", AdminPortalEnterpriseAppRegistrationObjectId);
         builder.UseSetting("MitID:URI", "https://pp.netseidbroker.dk/op");
         builder.UseSetting("ProjectOrigin:WalletUrl", WalletUrl);
+        builder.UseSetting("Redis:ConnectionString", RedisOptions.ConnectionString);
+
 
         builder.ConfigureTestServices(services =>
         {
@@ -53,6 +60,11 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
                 options.Password = RabbitMqOptions.Password;
             });
 
+            services.Configure<RedisOptions>(options =>
+            {
+                options.ConnectionString = RedisOptions.ConnectionString;
+            });
+
             services.Remove(services.First(s => s.ServiceType == typeof(IWalletClient)));
             services.AddSingleton<IWalletClient, FakeWalletStampClient>();
         });
@@ -61,6 +73,11 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncL
     public void SetRabbitMqOptions(RabbitMqOptions options)
     {
         RabbitMqOptions = options;
+    }
+
+    public void SetRedisOptions(RedisOptions redisOptions)
+    {
+        RedisOptions = redisOptions;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

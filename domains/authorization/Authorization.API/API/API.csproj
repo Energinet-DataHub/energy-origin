@@ -14,9 +14,11 @@
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
         <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" />
+        <PackageReference Include="EFCoreSecondLevelCacheInterceptor" />
         <PackageReference Include="EnergyOrigin.IntegrationEvents" />
         <PackageReference Include="FluentValidation.AspNetCore" />
         <PackageReference Include="Grpc.AspNetCore" />
+        <PackageReference Include="EFCoreSecondLevelCacheInterceptor.FusionCache" />
         <PackageReference Include="MassTransit.EntityFrameworkCore" />
         <PackageReference Include="MassTransit.RabbitMQ" />
         <PackageReference Include="MediatR" />

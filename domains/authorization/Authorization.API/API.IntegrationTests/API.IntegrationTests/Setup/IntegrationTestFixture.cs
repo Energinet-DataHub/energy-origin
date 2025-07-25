@@ -17,6 +17,7 @@ public class IntegrationTestFixture : IAsyncLifetime
 {
     public PostgresContainer PostgresContainer { get; } = new();
     private RabbitMqContainer RabbitMqContainer { get; } = new();
+    public RedisContainer RedisContainer { get; } = new();
     private Respawner? _respawner;
     public TestWebApplicationFactory WebAppFactory { get; } = new();
 
@@ -24,13 +25,16 @@ public class IntegrationTestFixture : IAsyncLifetime
     {
         await PostgresContainer.InitializeAsync();
         await RabbitMqContainer.InitializeAsync();
+        await RedisContainer.InitializeAsync();
 
         var newDatabase = await PostgresContainer.CreateNewDatabase();
 
         var rabbitMqOptions = RabbitMqContainer.Options;
+        var redisOptions = RedisContainer.RedisOptions;
 
         WebAppFactory.ConnectionString = newDatabase.ConnectionString;
         WebAppFactory.SetRabbitMqOptions(rabbitMqOptions);
+        WebAppFactory.SetRedisOptions(redisOptions);
         await WebAppFactory.InitializeAsync();
 
         await using var connection = new NpgsqlConnection(WebAppFactory.ConnectionString);

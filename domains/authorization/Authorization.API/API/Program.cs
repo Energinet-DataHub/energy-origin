@@ -9,7 +9,9 @@ using API.Models;
 using API.Options;
 using API.Repository;
 using API.Services;
+using EFCoreSecondLevelCacheInterceptor;
 using EnergyOrigin.Setup;
+using EnergyOrigin.Setup.Cache;
 using EnergyOrigin.Setup.Exceptions.Middleware;
 using EnergyOrigin.Setup.Health;
 using EnergyOrigin.Setup.Migrations;
@@ -77,15 +79,25 @@ builder.Services.AddAuthentication(OpenApiConstants.Bearer)
 
 builder.Services.AddHttpContextAccessor();
 
-// Register DbContext and related services
-builder.Services.AddDbContext<ApplicationDbContext>(
-    options =>
-    {
-        options.UseNpgsql(
-            builder.Configuration.GetConnectionString("Postgres"),
-            _ => { }
-        );
-    });
+builder.Services.AddConfiguredFusionCache(builder.Configuration);
+
+builder.Services.AddEFSecondLevelCache(options =>
+    options.UseFusionCacheProvider()
+        .ConfigureLogging(true)
+        .UseCacheKeyPrefix("EF_")
+        .UseDbCallsIfCachingProviderIsDown(TimeSpan.FromMinutes(1))
+);
+
+builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+{
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Postgres"),
+        _ => { }
+    );
+
+    var cacheInterceptor = serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>();
+    options.AddInterceptors(cacheInterceptor);
+});
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());

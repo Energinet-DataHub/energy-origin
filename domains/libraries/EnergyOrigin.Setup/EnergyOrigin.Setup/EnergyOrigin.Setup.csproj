@@ -11,7 +11,8 @@
 		<Company>Energinet DataHub A/S</Company>
 		<PackageDescription>This library contains functions for setting up Energy Origin solutions with logging, swagger, api versioning and OpenTelemetry</PackageDescription>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-	</PropertyGroup>
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    </PropertyGroup>
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -25,6 +26,7 @@
 	  <PackageReference Include="MassTransit" />
 	  <PackageReference Include="MassTransit.EntityFrameworkCore" />
 	  <PackageReference Include="MassTransit.RabbitMQ" />
+	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
 	  <PackageReference Include="Npgsql.OpenTelemetry" />
 	  <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
 	  <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
@@ -36,5 +38,10 @@
 	  <PackageReference Include="Swashbuckle.AspNetCore" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
+	  <PackageReference Include="Testcontainers.Redis" />
+	  <PackageReference Include="ZiggyCreatures.FusionCache" />
+	  <PackageReference Include="ZiggyCreatures.FusionCache.Backplane.StackExchangeRedis" />
+	  <PackageReference Include="ZiggyCreatures.FusionCache.OpenTelemetry" />
+	  <PackageReference Include="ZiggyCreatures.FusionCache.Serialization.SystemTextJson" />
 	</ItemGroup>
 </Project>

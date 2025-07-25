@@ -59,11 +59,13 @@ public static class ServiceCollectionExtensions
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
+                    .AddFusionCacheInstrumentation()
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint))
             .WithTracing(tracerProviderBuilder =>
                 tracerProviderBuilder
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation()
+                    .AddFusionCacheInstrumentation()
                     .AddNpgsql()
                     .AddOtlpExporter(o => o.Endpoint = oltpReceiverEndpoint));
     }
