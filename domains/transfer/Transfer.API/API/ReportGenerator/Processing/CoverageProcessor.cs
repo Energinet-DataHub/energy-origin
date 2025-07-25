@@ -12,11 +12,12 @@ public interface ICoverageProcessor
     CoveragePercentage Calculate(IReadOnlyList<Claim> claims, IReadOnlyList<ConsumptionHour> consumption, DateTimeOffset startDate, DateTimeOffset endDate);
 }
 
-public class CoverageProcessor : ICoverageProcessor
+public class CoverageProcessor(ILogger<CoverageProcessor> logger) : ICoverageProcessor
 {
     public CoveragePercentage Calculate(IReadOnlyList<Claim> claims, IReadOnlyList<ConsumptionHour> consumption, DateTimeOffset startDate, DateTimeOffset endDate)
     {
         var totalConsumption = (double)consumption.Sum(x => x.KwhQuantity) * 1000;
+        logger.LogInformation("Total consumption: {Total}", totalConsumption);
 
         if (totalConsumption == 0)
         {
@@ -29,6 +30,7 @@ public class CoverageProcessor : ICoverageProcessor
 
         var hourly = (double)claims.Where(x => x.ProductionCertificate.Start == x.ConsumptionCertificate.Start)
             .Sum(x => x.Quantity);
+        logger.LogInformation("Hourly claim {HourlyClaim}", hourly);
 
         var hourlyPercentage = (hourly / totalConsumption) * 100;
 

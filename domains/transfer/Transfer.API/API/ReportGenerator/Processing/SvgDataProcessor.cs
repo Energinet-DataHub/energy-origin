@@ -34,10 +34,10 @@ public class SvgDataProcessor(ILogger<SvgDataProcessor> logger) : ISvgDataProces
                                  select new { g.Key, avg = g.Average(x => x) }).ToList();
 
 
-        foreach (var averageClaimHour in averageConsumptionHours)
+        foreach (var averageClaimHour in averageClaimHours)
         {
 
-            logger.LogInformation("SvgDataProcessor average claim {Hour}, {KWH}", averageClaimHour.HourOfDay, averageClaimHour.KwhQuantity);
+            logger.LogInformation("SvgDataProcessor average claim {Hour}, {AVG}", averageClaimHour.Key, averageClaimHour.avg);
         }
 
         var hours = Enumerable.Range(0, 24);
