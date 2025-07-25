@@ -74,6 +74,7 @@ public record GrantConsentToOrganizationRequest(Guid OrganizationId);
 public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
 
 public record OrganizationResponse(Guid OrganizationId, string OrganizationName, string? Tin);
+public record AdminPortalOrganizationResponse(Guid OrganizationId, string OrganizationName, string? Tin, string Status);
 
 public record ClientConsentsResponseItem(Guid OrganizationId, string OrganizationName, string? Tin);
 public record ClientConsentsResponse(IEnumerable<ClientConsentsResponseItem> Result);
