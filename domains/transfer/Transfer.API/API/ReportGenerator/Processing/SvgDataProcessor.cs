@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using API.ReportGenerator.Domain;
 using API.Transfer.Api.Services;
-using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
+using Microsoft.Extensions.Logging;
 
 namespace API.ReportGenerator.Processing;
 
@@ -13,15 +13,32 @@ public interface ISvgDataProcessor
     List<HourlyEnergy> Format(List<ConsumptionHour> averageConsumptionHours, List<Claim> claims);
 }
 
-public class SvgDataProcessor() : ISvgDataProcessor
+public class SvgDataProcessor(ILogger<SvgDataProcessor> logger) : ISvgDataProcessor
 {
     public List<HourlyEnergy> Format(List<ConsumptionHour> averageConsumptionHours, List<Claim> claims)
     {
+        foreach (var consumption in averageConsumptionHours)
+        {
+            logger.LogInformation("SvgDataProcessor consumption {Hour}, {KWH}", consumption.HourOfDay, consumption.KwhQuantity); ;
+        }
+
+        foreach (var claim in claims)
+        {
+            logger.LogInformation("SvgDataProcessor claim {Date}, {Quantity}", DateTimeOffset.FromUnixTimeSeconds(claim.ProductionCertificate.Start), claim.Quantity);
+        }
+
         var averageClaimHours = (from c in claims
                                  where c.ProductionCertificate.Start == c.ConsumptionCertificate.Start
                                  group (double)c.Quantity by DateTimeOffset.FromUnixTimeSeconds(c.ProductionCertificate.Start).Hour
-            into g
+                                 into g
                                  select new { g.Key, avg = g.Average(x => x) }).ToList();
+
+
+        foreach (var averageClaimHour in averageConsumptionHours)
+        {
+
+            logger.LogInformation("SvgDataProcessor average claim {Hour}, {KWH}", averageClaimHour.HourOfDay, averageClaimHour.KwhQuantity);
+        }
 
         var hours = Enumerable.Range(0, 24);
 
@@ -43,6 +60,12 @@ public class SvgDataProcessor() : ISvgDataProcessor
             var hourly = new HourlyEnergy(hour, matched > averageConsumptionHour ? matched : averageConsumptionHour, matched, unmatched, 0);
             result.Add(hourly);
         }
+
+        foreach (var elem in result)
+        {
+            logger.LogInformation("SvgDataProcessor calculated {Hour}, {Consumption}, {Matched}", elem.Hour, elem.Consumption, elem.Matched);
+        }
+
         return result;
     }
 
