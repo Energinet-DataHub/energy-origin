@@ -24,7 +24,14 @@ public record GetMeteringPointsQueryResultItem(
     MeteringPointType MeterType,
     string OrganizationName,
     string Tin,
-    bool ActiveContract)
+    string Address,
+    string BiddingZone,
+    string GridArea,
+    string SubMeterType,
+    string Technology,
+    string Capacity,
+    bool ActiveContract,
+    bool CanBeUsedForIssuingCertificates)
 {
 }
 
@@ -74,7 +81,14 @@ public class GetMeteringPointsQueryHandler(
                             meteringpoint.Type,
                             selectedOrganization.OrganizationName,
                             selectedOrganization.Tin,
-                            activeContract
+                            meteringpoint.Address.ToString(),
+                            meteringpoint.BiddingZone,
+                            meteringpoint.GridArea,
+                            meteringpoint.SubMeterType.ToString(),
+                            meteringpoint.Technology.ToString(),
+                            meteringpoint.Capacity,
+                            activeContract,
+                            meteringpoint.CanBeUsedForIssuingCertificates
                         );
                     }
                 )
