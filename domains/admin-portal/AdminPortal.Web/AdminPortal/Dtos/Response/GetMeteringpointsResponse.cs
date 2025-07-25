@@ -42,8 +42,8 @@ public record Address(
         var parts = new List<string>
         {
             Address1,
-            Address2,
-            Locality,
+            Address2 ?? "",
+            Locality ?? "",
             $"{PostalCode} {City}".Trim(),
             CitySubDivisionName,
             Country
