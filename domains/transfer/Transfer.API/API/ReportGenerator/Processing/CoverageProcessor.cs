@@ -12,12 +12,11 @@ public interface ICoverageProcessor
     CoveragePercentage Calculate(IReadOnlyList<Claim> claims, IReadOnlyList<ConsumptionHour> consumption, DateTimeOffset startDate, DateTimeOffset endDate);
 }
 
-public class CoverageProcessor(ILogger<CoverageProcessor> logger) : ICoverageProcessor
+public class CoverageProcessor : ICoverageProcessor
 {
     public CoveragePercentage Calculate(IReadOnlyList<Claim> claims, IReadOnlyList<ConsumptionHour> consumption, DateTimeOffset startDate, DateTimeOffset endDate)
     {
         var totalConsumption = (double)consumption.Sum(x => x.KwhQuantity) * 1000;
-        logger.LogInformation("CoveragePercentage - Total consumption = {Total}", totalConsumption);
 
         if (totalConsumption == 0)
         {
@@ -28,16 +27,10 @@ public class CoverageProcessor(ILogger<CoverageProcessor> logger) : ICoveragePro
                 (endDate - startDate).Duration() >= TimeSpan.FromDays(365) ? 100 : null);
         }
 
-        LogDuplicates(claims);
-
         var hourly = (double)claims.Where(x => x.ProductionCertificate.Start == x.ConsumptionCertificate.Start)
             .Sum(x => x.Quantity);
 
-        logger.LogInformation("CoveragePercentage: - Hourly {Hourly}", hourly);
-
         var hourlyPercentage = (hourly / totalConsumption) * 100;
-
-        logger.LogInformation("CoveragePercentage: - Hourly percentage {HourlyPercentage}", hourlyPercentage);
 
         var daily = (double)claims.Where(x =>
             (DateTimeOffset.FromUnixTimeSeconds(x.ProductionCertificate.Start) - DateTimeOffset.FromUnixTimeSeconds(x.ConsumptionCertificate.Start)).Duration() <= TimeSpan.FromDays(1))
@@ -72,30 +65,6 @@ public class CoverageProcessor(ILogger<CoverageProcessor> logger) : ICoveragePro
             weeklyPercentage,
             monthlyPercentage,
             yearlyPercentage);
-    }
-
-    private void LogDuplicates(IReadOnlyList<Claim> claims)
-    {
-        var hourlyClaims = claims.Where(x => x.ProductionCertificate.Start == x.ConsumptionCertificate.Start);
-        var duplicateGroups = hourlyClaims
-            .GroupBy(x => x.ProductionCertificate.Start)
-            .Where(g => g.Count() > 1)
-            .ToList();
-
-        if (duplicateGroups.Count != 0)
-        {
-            foreach (var group in duplicateGroups)
-            {
-                logger.LogInformation("Duplicate hourly claims found for start time {StartTime}, count: {Count}",
-                    DateTimeOffset.FromUnixTimeSeconds(group.Key), group.Count());
-
-                foreach (var claim in group.OrderByDescending(c => c.Quantity))
-                {
-                    logger.LogWarning("Duplicate claim: ID: {ClaimId}, Quantity: {Quantity}",
-                        claim.GetHashCode(), claim.Quantity);
-                }
-            }
-        }
     }
 }
 

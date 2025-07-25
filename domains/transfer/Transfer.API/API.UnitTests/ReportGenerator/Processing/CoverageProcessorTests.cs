@@ -4,8 +4,6 @@ using API.ReportGenerator.Processing;
 using API.Transfer.Api.Services;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
 using Xunit;
 
 namespace API.UnitTests.ReportGenerator.Processing;
@@ -33,7 +31,7 @@ public class CoverageProcessorTests
 
         var consumption = GenerateConsumption();
 
-        var sut = new CoverageProcessor(Substitute.For<ILogger<CoverageProcessor>>());
+        var sut = new CoverageProcessor();
 
         var result = sut.Calculate(claims, consumption, now, now.AddYears(1));
 
@@ -55,7 +53,7 @@ public class CoverageProcessorTests
 
         var consumption = GenerateConsumption();
 
-        var sut = new CoverageProcessor(Substitute.For<ILogger<CoverageProcessor>>());
+        var sut = new CoverageProcessor();
 
         var result = sut.Calculate(claims, consumption, now, now.AddYears(1));
 
@@ -73,7 +71,7 @@ public class CoverageProcessorTests
 
         var consumption = GenerateConsumption();
 
-        var sut = new CoverageProcessor(Substitute.For<ILogger<CoverageProcessor>>());
+        var sut = new CoverageProcessor();
 
         var result = sut.Calculate(new List<Claim>(), consumption, now, now.AddYears(1));
 
@@ -89,7 +87,7 @@ public class CoverageProcessorTests
     {
         var now = DateTimeOffset.Now;
 
-        var sut = new CoverageProcessor(Substitute.For<ILogger<CoverageProcessor>>());
+        var sut = new CoverageProcessor();
 
         var result = sut.Calculate(new List<Claim>(), new List<ConsumptionHour>(), now, now.AddYears(1));
 
@@ -121,7 +119,7 @@ public class CoverageProcessorTests
 
         var consumption = GenerateConsumption();
 
-        var sut = new CoverageProcessor(Substitute.For<ILogger<CoverageProcessor>>());
+        var sut = new CoverageProcessor();
 
         var result = sut.Calculate(claims, consumption, now, now.AddDays(25));
 
@@ -150,7 +148,7 @@ public class CoverageProcessorTests
 
         var consumption = GenerateConsumption();
 
-        var sut = new CoverageProcessor(Substitute.For<ILogger<CoverageProcessor>>());
+        var sut = new CoverageProcessor();
 
         var result = sut.Calculate(claims, consumption, now, now.AddDays(360));
 
