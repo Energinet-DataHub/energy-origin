@@ -28,8 +28,6 @@ public class CoverageProcessor(ILogger<CoverageProcessor> logger) : ICoveragePro
                 (endDate - startDate).Duration() >= TimeSpan.FromDays(365) ? 100 : null);
         }
 
-        LogDuplicates(claims);
-
         var hourly = (double)claims.Where(x => x.ProductionCertificate.Start == x.ConsumptionCertificate.Start)
             .Sum(x => x.Quantity);
 
@@ -72,30 +70,6 @@ public class CoverageProcessor(ILogger<CoverageProcessor> logger) : ICoveragePro
             weeklyPercentage,
             monthlyPercentage,
             yearlyPercentage);
-    }
-
-    private void LogDuplicates(IReadOnlyList<Claim> claims)
-    {
-        var hourlyClaims = claims.Where(x => x.ProductionCertificate.Start == x.ConsumptionCertificate.Start);
-        var duplicateGroups = hourlyClaims
-            .GroupBy(x => x.ProductionCertificate.Start)
-            .Where(g => g.Count() > 1)
-            .ToList();
-
-        if (duplicateGroups.Count != 0)
-        {
-            foreach (var group in duplicateGroups)
-            {
-                logger.LogInformation("Duplicate hourly claims found for start time {StartTime}, count: {Count}",
-                    DateTimeOffset.FromUnixTimeSeconds(group.Key), group.Count());
-
-                foreach (var claim in group.OrderByDescending(c => c.Quantity))
-                {
-                    logger.LogWarning("Duplicate claim: ID: {ClaimId}, Quantity: {Quantity}",
-                        claim.GetHashCode(), claim.Quantity);
-                }
-            }
-        }
     }
 }
 
