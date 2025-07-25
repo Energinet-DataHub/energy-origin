@@ -8,7 +8,6 @@ using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
-using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
 using FluentValidation;
 using FluentValidation.AspNetCore;

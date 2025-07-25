@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
 using API.Query.API.ApiModels.Requests;
+using API.Query.API.ApiModels.Responses;
 using API.Query.API.Controllers.Internal;
 using DataContext.ValueObjects;
 using EnergyOrigin.Setup;
