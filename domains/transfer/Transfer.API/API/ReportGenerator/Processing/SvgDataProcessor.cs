@@ -27,17 +27,30 @@ public class SvgDataProcessor(ILogger<SvgDataProcessor> logger) : ISvgDataProces
             logger.LogInformation("SvgDataProcessor claim {Date}, {Quantity}", DateTimeOffset.FromUnixTimeSeconds(claim.ProductionCertificate.Start), claim.Quantity);
         }
 
-        var averageClaimHours = (from c in claims
-                                 where c.ProductionCertificate.Start == c.ConsumptionCertificate.Start
-                                 group (double)c.Quantity by DateTimeOffset.FromUnixTimeSeconds(c.ProductionCertificate.Start).Hour
-                                 into g
-                                 select new { g.Key, avg = g.Average(x => x) }).ToList();
+        // Step 1: Group by day and hour, summing matched claims per (day, hour)
+        var dailyHourTotals =
+            from c in claims
+            where c.ProductionCertificate.Start == c.ConsumptionCertificate.Start
+            let dt = DateTimeOffset.FromUnixTimeSeconds(c.ProductionCertificate.Start)
+            let day = dt.Date
+            let hour = dt.Hour
+            group (double)c.Quantity by new { day, hour } into g
+            select new { g.Key.day, g.Key.hour, total = g.Sum(x => x) };
+
+        // Step 2: Count distinct days
+        var dayCount = dailyHourTotals.Select(x => x.day).Distinct().Count();
+
+        // Step 3: Average those totals per hour of day
+        var averageClaimHours =
+            (from entry in dailyHourTotals
+             group entry.total by entry.hour into g
+             select new { Hour = g.Key, Avg = g.Sum() / dayCount })
+            .ToList();
 
 
         foreach (var averageClaimHour in averageClaimHours)
         {
-
-            logger.LogInformation("SvgDataProcessor average claim {Hour}, {AVG}", averageClaimHour.Key, averageClaimHour.avg);
+            logger.LogInformation("SvgDataProcessor average claim {Hour}, {AVG}", averageClaimHour.Hour, averageClaimHour.Avg);
         }
 
         var hours = Enumerable.Range(0, 24);
@@ -47,7 +60,7 @@ public class SvgDataProcessor(ILogger<SvgDataProcessor> logger) : ISvgDataProces
         {
             var averageConsumptionHour = (double)(averageConsumptionHours.FirstOrDefault(x => x.HourOfDay == hour) == null ? 0 : averageConsumptionHours.First(x => x.HourOfDay == hour).KwhQuantity * 1000);
 
-            var matched = averageClaimHours.FirstOrDefault(x => x.Key == hour)?.avg ?? 0;
+            var matched = averageClaimHours.FirstOrDefault(x => x.Hour == hour)?.Avg ?? 0;
             var unmatched = averageConsumptionHour - matched;
             if (unmatched < 0)
             {
