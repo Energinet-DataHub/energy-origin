@@ -40,15 +40,42 @@ public static class MockData
             Org1Id,
             new List<GetMeteringPointsResponseItem>
             {
-                new("571313131313131313", MeteringPointType.Production),
-                new("571313131313131314", MeteringPointType.Consumption)
+                new("571313131313131313",
+                    MeteringPointType.Production,
+                    "982",
+                    SubMeterType.Physical,
+                    new Address("Some vej 123", null, null, "Aarhus C", "8000", "Denmark", "0751", "Aarhus"),
+                    new Technology("T010000", "F01040100"),
+                    "12345678",
+                    true,
+                    "1234567",
+                    "DK1"),
+                new("571313131313131314",
+                    MeteringPointType.Consumption,
+                    "982",
+                    SubMeterType.Physical,
+                    new Address("Some vej 124", null, null, "Aarhus C", "8000", "Denmark", "0751", "Aarhus"),
+                    new Technology("Some tech code", "Some fuel code"),
+                    "12345678",
+                    true,
+                    "1234567",
+                    "DK1"),
             }
         },
         {
             Org2Id,
             new List<GetMeteringPointsResponseItem>
             {
-                new("571414141414141414", MeteringPointType.Consumption)
+                new("571414141414141414",
+                    MeteringPointType.Consumption,
+                    "982",
+                    SubMeterType.Physical,
+                    new Address("Some vej 125", null, null, "Aarhus C", "8000", "Denmark", "0751", "Aarhus"),
+                    new Technology("Some tech code", "Some fuel code"),
+                    "12345678",
+                    true,
+                    "1234567",
+                    "DK1")
             }
         }
     };

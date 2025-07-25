@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
-using AdminPortal.Models;
-using EnergyOrigin.Setup;
-
 namespace AdminPortal.Services;
 
 public interface IMeasurementsService

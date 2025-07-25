@@ -32,8 +32,26 @@ public class GetMeteringPointsQueryHandlerTest
         _measurementsService.GetMeteringPointsHttpRequestAsync(Arg.Any<Guid>())
             .Returns(new GetMeteringpointsResponse(new List<GetMeteringPointsResponseItem>()
             {
-                new("GSRN", MeteringPointType.Production),
-                new("GSRN1", MeteringPointType.Production),
+                new("GSRN",
+                    MeteringPointType.Production,
+                    "982",
+                    SubMeterType.Physical,
+                    new Address("Some vej 123", null, null, "Aarhus C", "8000", "Denmark", "0751", "Aarhus"),
+                    new Technology("T010000", "F01040100"),
+                    "12345678",
+                    true,
+                    "1234567",
+                    "DK1"),
+                new("GSRN1",
+                    MeteringPointType.Production,
+                    "982",
+                    SubMeterType.Physical,
+                    new Address("Some vej 123", null, null, "Aarhus C", "8000", "Denmark", "0751", "Aarhus"),
+                    new Technology("T010000", "F01040100"),
+                    "12345678",
+                    true,
+                    "1234567",
+                    "DK1"),
             }));
 
         _certificatesService.GetContractsHttpRequestAsync()
@@ -54,22 +72,30 @@ public class GetMeteringPointsQueryHandlerTest
 
         Assert.NotNull(result);
         Assert.IsType<GetMeteringPointsQueryResult>(result);
-        Assert.NotEmpty(result.ViewModel);
-        Assert.Collection(result.ViewModel,
+        Assert.NotEmpty(result.ViewModel.MeteringPoints);
+        Assert.Equal("12345678", result.ViewModel.Tin);
+        Assert.Equal("TestOrg", result.ViewModel.OrganizationName);
+        Assert.Collection(result.ViewModel.MeteringPoints,
             item =>
             {
                 Assert.Equal("GSRN", item.GSRN);
                 Assert.Equal(MeteringPointType.Production, item.MeterType);
-                Assert.Equal("12345678", item.Tin);
-                Assert.Equal("TestOrg", item.OrganizationName);
+                Assert.Equal("DK1", item.BiddingZone);
+                Assert.Equal("1234567", item.Capacity);
+                Assert.Equal("982", item.GridArea);
+                Assert.Equal("Solar", item.Technology);
+                Assert.True(item.CanBeUsedForIssuingCertificates);
                 Assert.True(item.ActiveContract);
             },
             item =>
             {
                 Assert.Equal("GSRN1", item.GSRN);
                 Assert.Equal(MeteringPointType.Production, item.MeterType);
-                Assert.Equal("12345678", item.Tin);
-                Assert.Equal("TestOrg", item.OrganizationName);
+                Assert.Equal("DK1", item.BiddingZone);
+                Assert.Equal("1234567", item.Capacity);
+                Assert.Equal("982", item.GridArea);
+                Assert.Equal("Solar", item.Technology);
+                Assert.True(item.CanBeUsedForIssuingCertificates);
                 Assert.False(item.ActiveContract);
             });
     }
@@ -93,7 +119,9 @@ public class GetMeteringPointsQueryHandlerTest
 
         var query = new GetMeteringPointsQuery("12345678");
         var result = await handler.Handle(query, CancellationToken.None);
-        Assert.Empty(result.ViewModel);
+        Assert.Equal(string.Empty, result.ViewModel.Tin);
+        Assert.Equal(string.Empty, result.ViewModel.OrganizationName);
+        Assert.Empty(result.ViewModel.MeteringPoints);
     }
 
 }
