@@ -7,7 +7,6 @@ using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
 using API.Query.API.ApiModels.Requests;
 using API.Query.API.ApiModels.Responses;
-using API.Query.API.Controllers.Internal;
 using DataContext.ValueObjects;
 using EnergyOrigin.Setup;
 using Xunit;
@@ -15,18 +14,10 @@ using Xunit;
 namespace API.IntegrationTests.Controllers.Internal;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class InternalContractsControllerTests : TestBase
+public class InternalContractsControllerTests(IntegrationTestFixture fixture) : TestBase(fixture)
 {
-    private readonly IntegrationTestFixture _fixture;
-    private readonly QueryApiWebApplicationFactory _factory;
-    private readonly MeasurementsWireMock _measurementsWireMock;
-
-    public InternalContractsControllerTests(IntegrationTestFixture fixture) : base(fixture)
-    {
-        _fixture = fixture;
-        _factory = fixture.WebApplicationFactory;
-        _measurementsWireMock = fixture.MeasurementsMock;
-    }
+    private readonly QueryApiWebApplicationFactory _factory = fixture.WebApplicationFactory;
+    private readonly MeasurementsWireMock _measurementsWireMock = fixture.MeasurementsMock;
 
     [Fact]
     public async Task Given_NoContracts_When_CallingApi_Then_Return200ok_With_EmptyContractsForAdminPortalResponse()
