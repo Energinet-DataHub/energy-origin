@@ -4,7 +4,6 @@ using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
 using FluentAssertions.Common;
 using Microsoft.Extensions.Logging;
-using NBitcoin;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -24,7 +23,7 @@ public class SvgDataProcessorTests
         claims.AddRange(claim2);
         var consumptionAvg = GenerateAvgConsumption(1);
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -43,7 +42,7 @@ public class SvgDataProcessorTests
         var claims = GenerateClaims(60, 1000);
         var consumptionAvg = GenerateAvgConsumption(2);
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -65,7 +64,7 @@ public class SvgDataProcessorTests
 
         var consumptionAvg = GenerateAvgConsumption(2);
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -83,7 +82,7 @@ public class SvgDataProcessorTests
         var consumptionAvg = GenerateAvgConsumption(2);
         consumptionAvg = consumptionAvg.Where(x => x.HourOfDay != hourMissing).ToList();
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -102,7 +101,7 @@ public class SvgDataProcessorTests
         var consumptionAvg = GenerateAvgConsumption(2);
         consumptionAvg = consumptionAvg.Where(x => x.HourOfDay != hourMissing).ToList();
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -165,7 +164,7 @@ public class SvgDataProcessorTests
             KwhQuantity = 1
         }).ToList();
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         // Act
         var result = sut.Format(dummyConsumptionAvg, claims);
@@ -233,7 +232,7 @@ public class SvgDataProcessorTests
             KwhQuantity = 1
         }).ToList();
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         // Arrange
         var hourlyEnergy = sut.Format(dummyConsumptionAvg, claims);

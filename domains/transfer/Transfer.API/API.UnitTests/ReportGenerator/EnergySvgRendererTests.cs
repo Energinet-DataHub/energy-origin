@@ -76,7 +76,7 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var processor = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
@@ -146,7 +146,7 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var processor = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
@@ -216,7 +216,7 @@ public class EnergySvgRendererTests
             });
 
         var fetcher = new EnergyDataFetcher(consSvc, wallet);
-        var processor = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var processor = new SvgDataProcessor();
         var renderer = new EnergySvgRenderer();
 
         // Fetch all three datasets
