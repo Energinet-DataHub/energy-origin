@@ -1,12 +1,12 @@
 [
     {
         "Id": "MockQueryable.NSubstitute",
-        "Version": "7.0.3",
+        "Version": "8.0.0",
         "License": "MIT"
     },
     {
         "Id": "Microsoft.Graph",
-        "Version": "5.85.0",
+        "Version": "5.87.0",
         "License": "MIT"
     }
 ]
