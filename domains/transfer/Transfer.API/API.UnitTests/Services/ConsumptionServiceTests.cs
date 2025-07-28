@@ -12,6 +12,7 @@ using Xunit;
 using EnergyTrackAndTrace.Testing.Extensions;
 using EnergyOrigin.Datahub3;
 using Energinet.DataHub.Measurements.Abstractions.Api.Models;
+using NodaTime;
 
 namespace API.UnitTests.Services;
 
@@ -255,6 +256,7 @@ public class ConsumptionServiceTests
             Assert.Equal(4, hour.KwhQuantity);
         }
     }
+
     [Fact]
     public async Task GetTotalHourlyConsumption_WhenExcludingHour2_ExpectHour2IsZero()
     {
@@ -301,5 +303,117 @@ public class ConsumptionServiceTests
 
         Assert.Equal(0, total.First(x => x.HourOfDay == 2).KwhQuantity);
         Assert.Equal(0, average.First(x => x.HourOfDay == 2).KwhQuantity);
+    }
+
+    [Fact]
+    public async Task ComputeHourlyAverages_WhenMultipleMetersHaveDataForTheSameHour_ExpectAverage()
+    {
+        var subject = Guid.NewGuid();
+        var dateTo = new DateTimeOffset(2025, 7, 18, 0, 0, 0, TimeSpan.Zero);
+        var dateFrom = new DateTimeOffset(2025, 7, 16, 0, 0, 0, TimeSpan.Zero);
+        var gsrn = Any.Gsrn();
+        var gsrn2 = Any.Gsrn();
+
+        _meteringPointClientMock.GetOwnedMeteringPointsAsync(Arg.Any<OwnedMeteringPointsRequest>(), cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(new MeteringPointsResponse
+            {
+                MeteringPoints =
+                {
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn),
+                    EnergyTrackAndTrace.Testing.Any.ConsumptionMeteringPoint(gsrn2)
+                }
+            });
+
+        _dhFacadeClientMock.ListCustomerRelations(Arg.Any<string>(), Arg.Any<List<Gsrn>>(), Arg.Any<CancellationToken>()).Returns(new ListMeteringPointForCustomerCaResponse
+        {
+            Relations =
+            [
+                new () { MeteringPointId = gsrn.Value, ValidFromDate = DateTime.Now.AddHours(-1) },
+                new () { MeteringPointId = gsrn2.Value, ValidFromDate = DateTime.Now.AddHours(-1) }
+            ],
+            Rejections = []
+        });
+
+        var pags1 = new Dictionary<string, PointAggregationGroup>();
+
+        var pag1 = new PointAggregationGroup(
+                Instant.FromUnixTimeSeconds(dateFrom.ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateTo.ToUnixTimeSeconds()),
+                Resolution.Hourly,
+                []);
+
+        pag1.PointAggregations.Add(new PointAggregation(
+                Instant.FromUnixTimeSeconds(dateFrom.ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateFrom.AddHours(1).ToUnixTimeSeconds()),
+                1800,
+                Quality.Measured));
+
+        pag1.PointAggregations.Add(new PointAggregation(
+                Instant.FromUnixTimeSeconds(dateFrom.AddHours(1).ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateFrom.AddHours(2).ToUnixTimeSeconds()),
+                1900,
+                Quality.Measured));
+
+        pag1.PointAggregations.Add(new PointAggregation(
+                Instant.FromUnixTimeSeconds(dateFrom.AddDays(1).ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateFrom.AddDays(1).AddHours(1).ToUnixTimeSeconds()),
+                3000,
+                Quality.Measured));
+
+        pag1.PointAggregations.Add(new PointAggregation(
+                Instant.FromUnixTimeSeconds(dateFrom.AddDays(1).AddHours(1).ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateFrom.AddDays(1).AddHours(2).ToUnixTimeSeconds()),
+                4000,
+                Quality.Measured));
+
+        var pags2 = new Dictionary<string, PointAggregationGroup>();
+        var pag2 = new PointAggregationGroup(
+                Instant.FromUnixTimeSeconds(dateFrom.ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateTo.ToUnixTimeSeconds()),
+                Resolution.Hourly,
+                []);
+
+        pag2.PointAggregations.Add(new PointAggregation(
+                Instant.FromUnixTimeSeconds(dateFrom.ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateFrom.AddHours(1).ToUnixTimeSeconds()),
+                200,
+                Quality.Measured));
+
+        pag2.PointAggregations.Add(new PointAggregation(
+                Instant.FromUnixTimeSeconds(dateFrom.AddHours(1).ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateFrom.AddHours(2).ToUnixTimeSeconds()),
+                300,
+                Quality.Measured));
+
+        pag2.PointAggregations.Add(new PointAggregation(
+                Instant.FromUnixTimeSeconds(dateFrom.AddDays(1).ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateFrom.AddDays(1).AddHours(1).ToUnixTimeSeconds()),
+                1000,
+                Quality.Measured));
+
+        pag2.PointAggregations.Add(new PointAggregation(
+                Instant.FromUnixTimeSeconds(dateFrom.AddDays(1).AddHours(1).ToUnixTimeSeconds()),
+                Instant.FromUnixTimeSeconds(dateFrom.AddDays(1).AddHours(2).ToUnixTimeSeconds()),
+                2000,
+                Quality.Measured));
+
+        pags1.Add("NotUsedByTest1", pag1);
+        pags2.Add("NotUsedByTest2", pag2);
+
+        _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
+            .Returns(
+                    [
+                    new MeasurementAggregationByPeriodDto(new Energinet.DataHub.Measurements.Abstractions.Api.Models.MeteringPoint(gsrn.Value), pags1),
+                    new MeasurementAggregationByPeriodDto(new Energinet.DataHub.Measurements.Abstractions.Api.Models.MeteringPoint(gsrn2.Value), pags2)
+                    ]);
+
+        var sut = new ConsumptionService(_meteringPointClientMock, _dhFacadeClientMock, _measurementClientMock);
+
+        var (_, average) = await sut.GetTotalAndAverageHourlyConsumption(OrganizationId.Create(subject), dateFrom, dateTo, new CancellationToken());
+
+        Assert.Equal(3000, average[0].KwhQuantity);
+        Assert.Equal(4100, average[1].KwhQuantity);
+        Assert.Equal(0, average[2].KwhQuantity);
+        Assert.Equal(0, average[23].KwhQuantity);
     }
 }

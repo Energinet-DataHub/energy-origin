@@ -2,8 +2,7 @@ using API.ReportGenerator.Processing;
 using API.Transfer.Api.Services;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
+using FluentAssertions.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,7 @@ namespace API.UnitTests.ReportGenerator.Processing;
 public class SvgDataProcessorTests
 {
     [Fact]
-    public void Format_WhenHalfQuantityIs500AndOtherHalfIs1000_Expect750AverageMatched()
+    public void Format_WhenQuantityIs1000Plus500ForAllHours_Expect1500AverageMatched()
     {
         var claims = GenerateClaims(24, 500);
         var claim2 = GenerateClaims(24, 1000);
@@ -22,16 +21,16 @@ public class SvgDataProcessorTests
         claims.AddRange(claim2);
         var consumptionAvg = GenerateAvgConsumption(1);
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
         Assert.Equal(24, hourlyEnergy.Count);
         foreach (var hourly in hourlyEnergy)
         {
-            Assert.Equal(750, hourly.Matched);
-            Assert.Equal(250, hourly.Unmatched);
-            Assert.Equal(1000, hourly.Consumption);
+            Assert.Equal(1500, hourly.Matched);
+            Assert.Equal(0, hourly.Unmatched);
+            Assert.Equal(1500, hourly.Consumption);
         }
     }
 
@@ -41,7 +40,7 @@ public class SvgDataProcessorTests
         var claims = GenerateClaims(60, 1000);
         var consumptionAvg = GenerateAvgConsumption(2);
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -63,7 +62,7 @@ public class SvgDataProcessorTests
 
         var consumptionAvg = GenerateAvgConsumption(2);
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -81,7 +80,7 @@ public class SvgDataProcessorTests
         var consumptionAvg = GenerateAvgConsumption(2);
         consumptionAvg = consumptionAvg.Where(x => x.HourOfDay != hourMissing).ToList();
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -100,7 +99,7 @@ public class SvgDataProcessorTests
         var consumptionAvg = GenerateAvgConsumption(2);
         consumptionAvg = consumptionAvg.Where(x => x.HourOfDay != hourMissing).ToList();
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         var hourlyEnergy = sut.Format(consumptionAvg, claims);
 
@@ -158,15 +157,15 @@ public class SvgDataProcessorTests
             claims.Add(claim);
         }
 
-        var consumptionAvg = Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
+        var dummyConsumptionAvg = Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
         {
             KwhQuantity = 1
         }).ToList();
 
-        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+        var sut = new SvgDataProcessor();
 
         // Act
-        var result = sut.Format(consumptionAvg, claims);
+        var result = sut.Format(dummyConsumptionAvg, claims);
 
         // Assert
         foreach (var hourly in result)
@@ -177,15 +176,79 @@ public class SvgDataProcessorTests
         }
     }
 
-    private List<ConsumptionHour> GenerateAvgConsumption(decimal kwhQuantity)
+
+    [InlineData(500, 1000)]
+    [InlineData(5500, 11000)]
+    [Theory]
+    public void Format_WhenSameTotalPerHourOverMultipleDays_ShouldReportCorrectAverage(uint quantity, double average)
     {
-        return Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
+        var baseDate = new DateTime(2025, 1, 1, 0, 0, 0).ToDateTimeOffset().Date;
+        var days = 3;
+        var claimsPerDay = 2;
+
+        var claims = new List<Claim>();
+        for (int day = 0; day < days; day++)
         {
-            KwhQuantity = kwhQuantity
+            var hourTenUnixTime = baseDate.AddDays(day).AddHours(10).ToDateTimeOffset().ToUnixTimeSeconds();
+            for (int i = 0; i < claimsPerDay; i++)
+            {
+                claims.Add(new Claim
+                {
+                    ClaimId = Guid.NewGuid(),
+                    Quantity = quantity,
+                    UpdatedAt = hourTenUnixTime,
+                    ConsumptionCertificate = new ClaimedCertificate
+                    {
+                        Start = hourTenUnixTime,
+                        End = hourTenUnixTime + 3600,
+                        FederatedStreamId = new FederatedStreamId
+                        {
+                            Registry = "Narnia",
+                            StreamId = Guid.NewGuid()
+                        },
+                        GridArea = "DK1",
+                        Attributes = []
+                    },
+                    ProductionCertificate = new ClaimedCertificate
+                    {
+                        Start = hourTenUnixTime,
+                        End = hourTenUnixTime + 3600,
+                        FederatedStreamId = new FederatedStreamId
+                        {
+                            Registry = "Narnia",
+                            StreamId = Guid.NewGuid()
+                        },
+                        GridArea = "DK1",
+                        Attributes = []
+                    }
+                });
+            }
+        }
+
+        var dummyConsumptionAvg = Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
+        {
+            KwhQuantity = 1
         }).ToList();
+
+        var sut = new SvgDataProcessor();
+
+        // Arrange
+        var hourlyEnergy = sut.Format(dummyConsumptionAvg, claims);
+
+        // Assert
+        var hourTen = hourlyEnergy.First(x => x.Hour == 10);
+        Assert.Equal(average, hourTen.Matched);
     }
 
-    private List<Claim> GenerateClaims(int count, uint quantity)
+    private static List<ConsumptionHour> GenerateAvgConsumption(decimal kwhQuantity)
+    {
+        return [.. Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
+        {
+            KwhQuantity = kwhQuantity
+        })];
+    }
+
+    private static List<Claim> GenerateClaims(int count, uint quantity)
     {
         var claims = new List<Claim>();
         var attributes = new Dictionary<string, string>();
