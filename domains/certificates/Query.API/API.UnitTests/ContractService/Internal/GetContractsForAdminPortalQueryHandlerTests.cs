@@ -21,7 +21,7 @@ public class GetContractsForAdminPortalQueryHandlerTests
     {
         // Arrange
         var mockRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockRepo.Query().Returns(Enumerable.Empty<CertificateIssuingContract>().AsQueryable().BuildMock());
+        mockRepo.Query().Returns(Enumerable.Empty<CertificateIssuingContract>().AsQueryable().ToList().BuildMock());
 
         var mockUnitOfWork = Substitute.For<IUnitOfWork>();
         mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockRepo);
@@ -55,7 +55,7 @@ public class GetContractsForAdminPortalQueryHandlerTests
         };
 
         var mockRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockRepo.Query().Returns(data.AsQueryable().BuildMock());
+        mockRepo.Query().Returns(data.AsQueryable().ToList().BuildMock());
 
         var mockUnitOfWork = Substitute.For<IUnitOfWork>();
         mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockRepo);
@@ -103,7 +103,7 @@ public class GetContractsForAdminPortalQueryHandlerTests
         };
 
         var mockRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockRepo.Query().Returns(data.AsQueryable().BuildMock());
+        mockRepo.Query().Returns(data.AsQueryable().ToList().BuildMock());
 
         var mockUnitOfWork = Substitute.For<IUnitOfWork>();
         mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockRepo);
@@ -155,7 +155,7 @@ public class GetContractsForAdminPortalQueryHandlerTests
         var data = new List<CertificateIssuingContract> { expiredContract, activeContract1, activeContract2 };
 
         var mockRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockRepo.Query().Returns(data.AsQueryable().BuildMock());
+        mockRepo.Query().Returns(data.AsQueryable().ToList().BuildMock());
 
         var mockUnitOfWork = Substitute.For<IUnitOfWork>();
         mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockRepo);
@@ -221,7 +221,7 @@ public class GetContractsForAdminPortalQueryHandlerTests
         };
 
         var mockRepo = Substitute.For<ICertificateIssuingContractRepository>();
-        mockRepo.Query().Returns(data.AsQueryable().BuildMock());
+        mockRepo.Query().Returns(data.AsQueryable().ToList().BuildMock());
 
         var mockUnitOfWork = Substitute.For<IUnitOfWork>();
         mockUnitOfWork.CertificateIssuingContractRepo.Returns(mockRepo);

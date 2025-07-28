@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using WireMock.Server;
 
 namespace Proxy.IntegrationTests.Setup;

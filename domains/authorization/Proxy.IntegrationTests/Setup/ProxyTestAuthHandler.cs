@@ -1,6 +1,9 @@
+using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
