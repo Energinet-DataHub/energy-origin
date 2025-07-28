@@ -306,7 +306,7 @@ public class ConsumptionServiceTests
     }
 
     [Fact]
-    public async Task ComputeHourlyAverages_Test_ExpectAverage()
+    public async Task ComputeHourlyAverages_WhenMultipleMetersHaveDataForTheSameHour_ExpectAverage()
     {
         var subject = Guid.NewGuid();
         var dateTo = new DateTimeOffset(2025, 7, 18, 0, 0, 0, TimeSpan.Zero);
@@ -397,8 +397,8 @@ public class ConsumptionServiceTests
                 2000,
                 Quality.Measured));
 
-        pags1.Add("DoesNotMatter1", pag1);
-        pags2.Add("DoesNotMatter2", pag2);
+        pags1.Add("NotUsedByTest1", pag1);
+        pags2.Add("NotUsedByTest2", pag2);
 
         _measurementClientMock.GetMeasurements(Arg.Any<IList<Gsrn>>(), dateFrom.ToUnixTimeSeconds(), dateTo.ToUnixTimeSeconds(), Arg.Any<CancellationToken>())
             .Returns(

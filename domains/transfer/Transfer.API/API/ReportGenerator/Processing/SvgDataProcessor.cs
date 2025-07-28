@@ -36,11 +36,12 @@ public class SvgDataProcessor() : ISvgDataProcessor
             .ToList();
 
         var hours = Enumerable.Range(0, 24);
-
         var result = new List<HourlyEnergy>();
         foreach (var hour in hours)
         {
-            var averageConsumptionHour = (double)(averageConsumptionHours.FirstOrDefault(x => x.HourOfDay == hour) == null ? 0 : averageConsumptionHours.First(x => x.HourOfDay == hour).KwhQuantity * 1000);
+            var averageConsumptionHour = (double)(averageConsumptionHours.FirstOrDefault(x => x.HourOfDay == hour) == null
+                    ? 0
+                    : averageConsumptionHours.First(x => x.HourOfDay == hour).KwhQuantity * 1000);
 
             var matched = averageClaimHours.FirstOrDefault(x => x.Hour == hour)?.Avg ?? 0;
             var unmatched = averageConsumptionHour - matched;
