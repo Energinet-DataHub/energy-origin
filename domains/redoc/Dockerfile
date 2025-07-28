@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0.301-noble AS builder
+FROM mcr.microsoft.com/dotnet/sdk:9.0.303-noble AS builder
 
 WORKDIR /app
 COPY Directory.Packages.props .
