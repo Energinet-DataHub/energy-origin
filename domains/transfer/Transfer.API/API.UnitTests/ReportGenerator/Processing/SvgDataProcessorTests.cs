@@ -2,7 +2,9 @@ using API.ReportGenerator.Processing;
 using API.Transfer.Api.Services;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
+using FluentAssertions.Common;
 using Microsoft.Extensions.Logging;
+using NBitcoin;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
@@ -158,7 +160,7 @@ public class SvgDataProcessorTests
             claims.Add(claim);
         }
 
-        var consumptionAvg = Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
+        var dummyConsumptionAvg = Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
         {
             KwhQuantity = 1
         }).ToList();
@@ -166,7 +168,7 @@ public class SvgDataProcessorTests
         var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
 
         // Act
-        var result = sut.Format(consumptionAvg, claims);
+        var result = sut.Format(dummyConsumptionAvg, claims);
 
         // Assert
         foreach (var hourly in result)
@@ -177,15 +179,79 @@ public class SvgDataProcessorTests
         }
     }
 
-    private List<ConsumptionHour> GenerateAvgConsumption(decimal kwhQuantity)
+
+    [InlineData(500, 1000)]
+    [InlineData(5500, 11000)]
+    [Theory]
+    public void Format_WhenSameTotalPerHourOverMultipleDays_ShouldReportCorrectAverage(uint quantity, double average)
     {
-        return Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
+        var baseDate = new DateTime(2025, 1, 1, 0, 0, 0).ToDateTimeOffset().Date;
+        var days = 3;
+        var claimsPerDay = 2;
+
+        var claims = new List<Claim>();
+        for (int day = 0; day < days; day++)
         {
-            KwhQuantity = kwhQuantity
+            var hourTenUnixTime = baseDate.AddDays(day).AddHours(10).ToDateTimeOffset().ToUnixTimeSeconds();
+            for (int i = 0; i < claimsPerDay; i++)
+            {
+                claims.Add(new Claim
+                {
+                    ClaimId = Guid.NewGuid(),
+                    Quantity = quantity,
+                    UpdatedAt = hourTenUnixTime,
+                    ConsumptionCertificate = new ClaimedCertificate
+                    {
+                        Start = hourTenUnixTime,
+                        End = hourTenUnixTime + 3600,
+                        FederatedStreamId = new FederatedStreamId
+                        {
+                            Registry = "Narnia",
+                            StreamId = Guid.NewGuid()
+                        },
+                        GridArea = "DK1",
+                        Attributes = []
+                    },
+                    ProductionCertificate = new ClaimedCertificate
+                    {
+                        Start = hourTenUnixTime,
+                        End = hourTenUnixTime + 3600,
+                        FederatedStreamId = new FederatedStreamId
+                        {
+                            Registry = "Narnia",
+                            StreamId = Guid.NewGuid()
+                        },
+                        GridArea = "DK1",
+                        Attributes = []
+                    }
+                });
+            }
+        }
+
+        var dummyConsumptionAvg = Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
+        {
+            KwhQuantity = 1
         }).ToList();
+
+        var sut = new SvgDataProcessor(Substitute.For<ILogger<SvgDataProcessor>>());
+
+        // Arrange
+        var hourlyEnergy = sut.Format(dummyConsumptionAvg, claims);
+
+        // Assert
+        var hourTen = hourlyEnergy.First(x => x.Hour == 10);
+        Assert.Equal(average, hourTen.Matched);
     }
 
-    private List<Claim> GenerateClaims(int count, uint quantity)
+    private static List<ConsumptionHour> GenerateAvgConsumption(decimal kwhQuantity)
+    {
+        return [.. Enumerable.Range(0, 24).Select(h => new ConsumptionHour(h)
+        {
+            KwhQuantity = kwhQuantity
+        })];
+    }
+
+    private static List<Claim> GenerateClaims(int count, uint quantity)
     {
         var claims = new List<Claim>();
         var attributes = new Dictionary<string, string>();
