@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using API.Transfer.Api.Services;
 using EnergyOrigin.WalletClient;
-using Microsoft.Extensions.Logging;
 
 namespace API.ReportGenerator.Processing;
 
@@ -12,12 +11,11 @@ public interface ICoverageProcessor
     CoveragePercentage Calculate(IReadOnlyList<Claim> claims, IReadOnlyList<ConsumptionHour> consumption, DateTimeOffset startDate, DateTimeOffset endDate);
 }
 
-public class CoverageProcessor(ILogger<CoverageProcessor> logger) : ICoverageProcessor
+public class CoverageProcessor() : ICoverageProcessor
 {
     public CoveragePercentage Calculate(IReadOnlyList<Claim> claims, IReadOnlyList<ConsumptionHour> consumption, DateTimeOffset startDate, DateTimeOffset endDate)
     {
         var totalConsumption = (double)consumption.Sum(x => x.KwhQuantity) * 1000;
-        logger.LogInformation("Total consumption: {Total}", totalConsumption);
 
         if (totalConsumption == 0)
         {
@@ -30,7 +28,6 @@ public class CoverageProcessor(ILogger<CoverageProcessor> logger) : ICoveragePro
 
         var hourly = (double)claims.Where(x => x.ProductionCertificate.Start == x.ConsumptionCertificate.Start)
             .Sum(x => x.Quantity);
-        logger.LogInformation("Hourly claim {HourlyClaim}", hourly);
 
         var hourlyPercentage = (hourly / totalConsumption) * 100;
 

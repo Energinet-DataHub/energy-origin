@@ -68,7 +68,7 @@ public class PopulateReportCommandHandlerTests
             _logger,
             realDataFetcher,
             new MunicipalityPercentageProcessor(),
-            new CoverageProcessor(Substitute.For<ILogger<CoverageProcessor>>()),
+            new CoverageProcessor(),
             new SvgDataProcessor(),
             _svgRenderer,
             _headerRenderer,
