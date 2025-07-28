@@ -54,7 +54,6 @@ public class InternalContractsController(IMediator mediator, IdentityDescriptor 
     [ProducesResponseType(201)]
     [ProducesResponseType(400)]
     [ProducesResponseType(typeof(void), 409)]
-    [Route("api/certificates/contracts")]
     public async Task<ActionResult> CreateContract(
         [FromBody] CreateContracts createContracts,
         [Required][FromQuery] Guid organizationId,
@@ -99,7 +98,6 @@ public class InternalContractsController(IMediator mediator, IdentityDescriptor 
     [ProducesResponseType(typeof(void), 200)]
     [ProducesResponseType(typeof(void), 404)]
     [ProducesResponseType(typeof(void), 403)]
-    [Route("api/certificates/contracts")]
     public async Task<ActionResult> UpdateEndDate(
         [FromBody] EditContracts editContracts,
         [Required][FromQuery] Guid organizationId,
