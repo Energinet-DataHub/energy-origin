@@ -1,4 +1,10 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using EnergyOrigin.TokenValidation.b2c;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Proxy.Controllers;
 

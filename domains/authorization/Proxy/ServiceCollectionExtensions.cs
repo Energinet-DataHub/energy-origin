@@ -1,4 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+
+namespace Proxy;
 
 public static class ServiceCollectionExtensions
 {

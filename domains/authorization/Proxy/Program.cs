@@ -1,11 +1,15 @@
-using System.Text.Json;
+using System;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using EnergyOrigin.Setup;
 using EnergyOrigin.Setup.OpenTelemetry;
 using EnergyOrigin.Setup.Swagger;
 using EnergyOrigin.TokenValidation.b2c;
-using OpenTelemetry;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Proxy;
 using Proxy.Options;
 
