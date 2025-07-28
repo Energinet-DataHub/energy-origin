@@ -3,8 +3,6 @@ using API.Transfer.Api.Services;
 using EnergyOrigin.WalletClient;
 using EnergyOrigin.WalletClient.Models;
 using FluentAssertions.Common;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +13,7 @@ namespace API.UnitTests.ReportGenerator.Processing;
 public class SvgDataProcessorTests
 {
     [Fact]
-    public void Format_WhenHalfQuantityIs500AndOtherHalfIs1000_Expect750AverageMatched()
+    public void Format_WhenQuantityIs1000Plus500ForAllHours_Expect1500AverageMatched()
     {
         var claims = GenerateClaims(24, 500);
         var claim2 = GenerateClaims(24, 1000);
@@ -30,9 +28,9 @@ public class SvgDataProcessorTests
         Assert.Equal(24, hourlyEnergy.Count);
         foreach (var hourly in hourlyEnergy)
         {
-            Assert.Equal(750, hourly.Matched);
-            Assert.Equal(250, hourly.Unmatched);
-            Assert.Equal(1000, hourly.Consumption);
+            Assert.Equal(1500, hourly.Matched);
+            Assert.Equal(0, hourly.Unmatched);
+            Assert.Equal(1500, hourly.Consumption);
         }
     }
 
