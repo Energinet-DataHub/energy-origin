@@ -25,7 +25,7 @@ namespace API.Query.API.Controllers.Internal;
 [ApiVersionNeutral]
 [ApiExplorerSettings(IgnoreApi = true)]
 [Route("api/certificates/admin-portal/internal-contracts")]
-public class InternalContractsController(IMediator mediator, IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
+public class InternalContractsController(IMediator mediator, AccessDescriptor accessDescriptor) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(ContractsForAdminPortalResponse), StatusCodes.Status200OK)]
@@ -58,14 +58,9 @@ public class InternalContractsController(IMediator mediator, IdentityDescriptor 
         [FromBody] CreateContracts createContracts,
         [Required][FromQuery] Guid organizationId,
         [FromServices] IValidator<CreateContract> validator,
-        [FromServices] IContractService service,
+        [FromServices] IAdminPortalContractService service,
         CancellationToken cancellationToken)
     {
-        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
-        {
-            return Forbid();
-        }
-
         foreach (var createContract in createContracts.Contracts)
         {
             var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
@@ -75,10 +70,8 @@ public class InternalContractsController(IMediator mediator, IdentityDescriptor 
                 return ValidationProblem(ModelState);
             }
         }
-        var isTrial = identityDescriptor.IsTrial();
 
-        var result = await service.Create(createContracts, organizationId, identityDescriptor.Subject, identityDescriptor.Name,
-            identityDescriptor.OrganizationName, identityDescriptor.OrganizationCvr ?? string.Empty, isTrial, cancellationToken);
+        var result = await service.Create(createContracts, organizationId, cancellationToken);
 
         return result switch
         {
@@ -102,7 +95,7 @@ public class InternalContractsController(IMediator mediator, IdentityDescriptor 
         [FromBody] EditContracts editContracts,
         [Required][FromQuery] Guid organizationId,
         [FromServices] IValidator<EditContractEndDate> validator,
-        [FromServices] IContractService service,
+        [FromServices] IAdminPortalContractService service,
         CancellationToken cancellationToken)
     {
         if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
@@ -120,14 +113,7 @@ public class InternalContractsController(IMediator mediator, IdentityDescriptor 
             }
         }
 
-        var result = await service.SetEndDate(
-            editContracts,
-            organizationId,
-            identityDescriptor.Subject,
-            identityDescriptor.Name,
-            identityDescriptor.OrganizationName,
-            identityDescriptor.OrganizationCvr ?? string.Empty,
-            cancellationToken);
+        var result = await service.SetEndDate(editContracts, organizationId, cancellationToken);
 
         return result switch
         {

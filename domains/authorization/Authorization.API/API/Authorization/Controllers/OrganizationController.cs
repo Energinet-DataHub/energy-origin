@@ -8,7 +8,6 @@ using EnergyOrigin.TokenValidation.b2c;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Authorization.Controllers;
@@ -32,7 +31,7 @@ public class OrganizationController : ControllerBase
         Summary = "Retrieves Organization",
         Description = "Retrieves info for organization with id organizationId"
     )]
-    public async Task<ActionResult<ClientResponse>> GetClient([FromServices] ILogger<ClientResponse> logger, [FromRoute] Guid organizationId)
+    public async Task<ActionResult<ClientResponse>> GetOrganization([FromRoute] Guid organizationId)
     {
         var queryResult = await _mediator.Send(new GetOrganizationQuery(new OrganizationId(organizationId)));
         return Ok(new OrganizationResponse(queryResult.OrganizationId.Value, queryResult.OrganizationName.Value, queryResult.Tin?.Value));

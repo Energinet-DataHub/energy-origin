@@ -11,14 +11,12 @@ namespace API.IntegrationTests.Controllers.Internal;
 public class AdminPortalControllerTests : IntegrationTestBase
 {
     private readonly Api _api;
-    private readonly IntegrationTestFixture _integrationTestFixture;
     private readonly DbContextOptions<ApplicationDbContext> _options;
 
     public AdminPortalControllerTests(IntegrationTestFixture integrationTestFixture) : base(integrationTestFixture)
     {
         var newDatabaseInfo = integrationTestFixture.WebAppFactory.ConnectionString;
         _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(newDatabaseInfo).Options;
-        _integrationTestFixture = integrationTestFixture;
         _api = integrationTestFixture.WebAppFactory
             .CreateApi(sub: integrationTestFixture.WebAppFactory.AdminPortalEnterpriseAppRegistrationObjectId);
     }
@@ -40,6 +38,6 @@ public class AdminPortalControllerTests : IntegrationTestBase
         Assert.Equal(orgDb.Name.Value, result.OrganizationName);
         Assert.Equal(orgDb.Tin?.Value, result.Tin);
         Assert.Equal(orgDb.Id, result.OrganizationId);
-        Assert.Equal("Trial", result.Status);
+        Assert.Equal(Authorization.Controllers.OrganizationStatus.Trial, result.Status);
     }
 }

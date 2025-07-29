@@ -96,7 +96,6 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
                 (gsrn1, MeteringPointType.Production, null, true)
             });
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 

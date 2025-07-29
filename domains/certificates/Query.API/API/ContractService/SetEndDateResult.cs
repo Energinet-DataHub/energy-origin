@@ -8,6 +8,7 @@ public abstract record SetEndDateResult
     public record EndDateBeforeStartDate(DateTimeOffset ExistingStartDateOnContract, DateTimeOffset IllegalEndDate) : SetEndDateResult;
     public record NonExistingContract : SetEndDateResult;
     public record MeteringPointOwnerNoMatch : SetEndDateResult;
+    public record OrganizationNotFound(string OrganizationId) : SetEndDateResult;
 
     public record OverlappingContract : SetEndDateResult;
 

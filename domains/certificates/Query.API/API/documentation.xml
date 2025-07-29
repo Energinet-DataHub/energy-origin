@@ -74,5 +74,15 @@
             Edit the end date for multiple contracts
             </summary>
         </member>
+        <member name="M:API.Query.API.Controllers.Internal.InternalContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IAdminPortalContractService,System.Threading.CancellationToken)">
+            <summary>
+            Create contracts that activates granular certificate generation for a metering point
+            </summary>
+        </member>
+        <member name="M:API.Query.API.Controllers.Internal.InternalContractsController.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IAdminPortalContractService,System.Threading.CancellationToken)">
+            <summary>
+            Edit the end date for multiple contracts
+            </summary>
+        </member>
     </members>
 </doc>

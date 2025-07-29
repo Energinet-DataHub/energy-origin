@@ -67,8 +67,7 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
 
     [HttpDelete]
     [Route("whitelisted-organizations/{tin}")]
-    public async Task<IActionResult> RemoveOrganizationFromWhitelist([FromRoute][Required] string tin, [FromServices] ILogger<AdminPortalController> logger,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> RemoveOrganizationFromWhitelist([FromRoute][Required] string tin, CancellationToken cancellationToken)
     {
         var cmd = new RemoveFromWhitelistCommand(tin);
         await mediator.Send(cmd, cancellationToken);
@@ -77,9 +76,22 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
 
     [HttpGet]
     [Route("organizations/{organizationId:guid}")]
-    public async Task<ActionResult<ClientResponse>> GetOrganization([FromServices] ILogger<ClientResponse> logger, [FromRoute] Guid organizationId)
+    public async Task<ActionResult<AdminPortalOrganizationResponse>> GetOrganization([FromRoute] Guid organizationId)
     {
         var queryResult = await mediator.Send(new GetOrganizationQuery(OrganizationId.Create(organizationId)));
-        return Ok(new AdminPortalOrganizationResponse(queryResult.OrganizationId.Value, queryResult.OrganizationName.Value, queryResult.Tin?.Value, queryResult.Status.ToString()));
+
+        return Ok(new AdminPortalOrganizationResponse(
+                    queryResult.OrganizationId.Value,
+                    queryResult.OrganizationName.Value,
+                    queryResult.Tin?.Value,
+                    ToApiOrganizationStatus(queryResult.Status)));
     }
+
+    public static OrganizationStatus ToApiOrganizationStatus(Models.OrganizationStatus organizationStatus) => organizationStatus switch
+    {
+        Models.OrganizationStatus.Trial => OrganizationStatus.Trial,
+        Models.OrganizationStatus.Normal => OrganizationStatus.Normal,
+        Models.OrganizationStatus.Deactivated => OrganizationStatus.Deactivated,
+        _ => throw new ArgumentOutOfRangeException(nameof(organizationStatus), $"Non expected organization status value: {organizationStatus}"),
+    };
 }
