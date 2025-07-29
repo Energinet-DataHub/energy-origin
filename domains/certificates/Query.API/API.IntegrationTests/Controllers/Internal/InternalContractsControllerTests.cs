@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
-using API.Query.API.ApiModels.Requests;
-using API.Query.API.ApiModels.Responses;
+using API.Query.API.ApiModels.Requests.Internal;
+using API.Query.API.ApiModels.Responses.Internal;
 using DataContext;
 using DataContext.ValueObjects;
 using EnergyOrigin.ActivityLog.API;
@@ -36,6 +36,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
 
         var response = await clientForInternalCalls.GetAsync("/api/certificates/admin-portal/internal-contracts",
             TestContext.Current.CancellationToken);
+
+        var str = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var contractsResponse =
@@ -64,8 +66,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
                 GSRN = gsrn,
                 StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
                 EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
-            }
-        ]);
+            },
+        ], "", "", false);
 
         await userCreatesAContract.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts?organizationId={orgId}", insertedIntoDb,
             cancellationToken: TestContext.Current.CancellationToken);

@@ -29,6 +29,31 @@
             End Date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
         </member>
+        <member name="P:API.Query.API.ApiModels.Requests.Internal.CreateContract.GSRN">
+            <summary>
+            Global Service Relation Number (GSRN) for the metering point
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Requests.Internal.CreateContract.StartDate">
+            <summary>
+            Starting date for generation of certificates in Unix time seconds
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Requests.Internal.CreateContract.EndDate">
+            <summary>
+            End date for generation of certificates in Unix time seconds. Set to null for no end date
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Requests.Internal.EditContractEndDate.EndDate">
+            <summary>
+            End Date for generation of certificates in Unix time seconds. Set to null for no end date
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Requests.Internal.EditContractEndDate20230101.EndDate">
+            <summary>
+            End Date for generation of certificates in Unix time seconds. Set to null for no end date
+            </summary>
+        </member>
         <member name="P:API.Query.API.ApiModels.Responses.Contract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
@@ -54,6 +79,31 @@
             Metering point type of the contract. Can be Production or Consumption
             </summary>
         </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Internal.Contract.GSRN">
+            <summary>
+            Global Service Relation Number (GSRN) for the metering point
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Internal.Contract.StartDate">
+            <summary>
+            Starting date for generation of certificates in Unix time seconds
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Internal.Contract.EndDate">
+            <summary>
+            End date for generation of certificates in Unix time seconds. The value null indicates no end date
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Internal.Contract.Created">
+            <summary>
+            Creation date for the contract
+            </summary>
+        </member>
+        <member name="P:API.Query.API.ApiModels.Responses.Internal.Contract.MeteringPointType">
+            <summary>
+            Metering point type of the contract. Can be Production or Consumption
+            </summary>
+        </member>
         <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
             Create contracts that activates granular certificate generation for a metering point
@@ -74,12 +124,12 @@
             Edit the end date for multiple contracts
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.Internal.InternalContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IAdminPortalContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.Internal.InternalContractsController.CreateContract(API.Query.API.ApiModels.Requests.Internal.CreateContracts,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.Internal.CreateContract},API.ContractService.IAdminPortalContractService,System.Threading.CancellationToken)">
             <summary>
             Create contracts that activates granular certificate generation for a metering point
             </summary>
         </member>
-        <member name="M:API.Query.API.Controllers.Internal.InternalContractsController.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IAdminPortalContractService,System.Threading.CancellationToken)">
+        <member name="M:API.Query.API.Controllers.Internal.InternalContractsController.UpdateEndDate(API.Query.API.ApiModels.Requests.Internal.EditContracts,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.Internal.EditContractEndDate},API.ContractService.IAdminPortalContractService,System.Threading.CancellationToken)">
             <summary>
             Edit the end date for multiple contracts
             </summary>

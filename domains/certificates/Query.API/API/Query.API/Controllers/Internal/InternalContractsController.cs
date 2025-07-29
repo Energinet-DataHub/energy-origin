@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Http;
 using MediatR;
-using API.Query.API.ApiModels.Responses;
-using API.Query.API.ApiModels.Requests;
 using System.ComponentModel.DataAnnotations;
 using System;
 using FluentValidation;
@@ -17,6 +15,8 @@ using API.ContractService;
 using FluentValidation.AspNetCore;
 using static API.ContractService.CreateContractResult;
 using static API.ContractService.SetEndDateResult;
+using API.Query.API.ApiModels.Requests.Internal;
+using API.Query.API.ApiModels.Responses.Internal;
 
 namespace API.Query.API.Controllers.Internal;
 
@@ -25,7 +25,7 @@ namespace API.Query.API.Controllers.Internal;
 [ApiVersionNeutral]
 [ApiExplorerSettings(IgnoreApi = true)]
 [Route("api/certificates/admin-portal/internal-contracts")]
-public class InternalContractsController(IMediator mediator, AccessDescriptor accessDescriptor) : ControllerBase
+public class InternalContractsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(ContractsForAdminPortalResponse), StatusCodes.Status200OK)]
@@ -56,7 +56,6 @@ public class InternalContractsController(IMediator mediator, AccessDescriptor ac
     [ProducesResponseType(typeof(void), 409)]
     public async Task<ActionResult> CreateContract(
         [FromBody] CreateContracts createContracts,
-        [Required][FromQuery] Guid organizationId,
         [FromServices] IValidator<CreateContract> validator,
         [FromServices] IAdminPortalContractService service,
         CancellationToken cancellationToken)
@@ -71,7 +70,7 @@ public class InternalContractsController(IMediator mediator, AccessDescriptor ac
             }
         }
 
-        var result = await service.Create(createContracts, organizationId, cancellationToken);
+        var result = await service.Create(createContracts, cancellationToken);
 
         return result switch
         {
@@ -79,7 +78,7 @@ public class InternalContractsController(IMediator mediator, AccessDescriptor ac
             CannotBeUsedForIssuingCertificates(var gsrn) => ValidationProblem(statusCode: 409, detail: $"GSRN {gsrn} cannot be used for issuing certificates"),
             ContractAlreadyExists(var existing) => ValidationProblem(statusCode: 409, detail: $"{existing?.GSRN} already has an active contract"),
             CreateContractResult.Success(var createdContracts) => Created("",
-                new ContractList { Result = createdContracts.Select(Contract.CreateFrom).ToList() }),
+                new ContractList { Result = [.. createdContracts.Select(Contract.CreateFrom)] }),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }
@@ -93,16 +92,10 @@ public class InternalContractsController(IMediator mediator, AccessDescriptor ac
     [ProducesResponseType(typeof(void), 403)]
     public async Task<ActionResult> UpdateEndDate(
         [FromBody] EditContracts editContracts,
-        [Required][FromQuery] Guid organizationId,
         [FromServices] IValidator<EditContractEndDate> validator,
         [FromServices] IAdminPortalContractService service,
         CancellationToken cancellationToken)
     {
-        if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
-        {
-            return Forbid();
-        }
-
         foreach (var contract in editContracts.Contracts)
         {
             var validationResult = await validator.ValidateAsync(contract, cancellationToken);
@@ -113,7 +106,7 @@ public class InternalContractsController(IMediator mediator, AccessDescriptor ac
             }
         }
 
-        var result = await service.SetEndDate(editContracts, organizationId, cancellationToken);
+        var result = await service.SetEndDate(editContracts, cancellationToken);
 
         return result switch
         {
