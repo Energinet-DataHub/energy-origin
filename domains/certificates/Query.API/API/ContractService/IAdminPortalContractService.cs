@@ -9,4 +9,8 @@ public interface IAdminPortalContractService
     public Task<CreateContractResult> Create(
             CreateContracts contracts,
             CancellationToken cancellationToken);
+
+    Task<SetEndDateResult> SetEndDate(
+            EditContracts contracts,
+            CancellationToken cancellationToken);
 }

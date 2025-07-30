@@ -12,8 +12,10 @@ using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using WalletClient;
 using static API.ContractService.CreateContractResult;
+using static API.ContractService.SetEndDateResult;
 using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.ContractService;
@@ -22,8 +24,8 @@ internal class AdminPortalContractServiceImpl(
     IMeteringPointsClient meteringPointsClient,
     IWalletClient walletClient,
     IStampClient stampClient,
-    IUnitOfWork unitOfWork)
-    : IAdminPortalContractService
+    IUnitOfWork unitOfWork,
+    ILogger<ContractServiceImpl> logger) : IAdminPortalContractService
 {
     public async Task<CreateContractResult> Create(
             CreateContracts contracts,
@@ -126,6 +128,79 @@ internal class AdminPortalContractServiceImpl(
         {
             return new ContractAlreadyExists(null);
         }
+    }
+
+    public async Task<SetEndDateResult> SetEndDate(
+            EditContracts contracts,
+            CancellationToken cancellationToken)
+    {
+        var meteringPointOwner = contracts.MeteringPointOwnerId.ToString();
+        var issuingContracts =
+            await unitOfWork.CertificateIssuingContractRepo.GetAllByIds([.. contracts.Contracts.Select(c => c.Id)],
+                cancellationToken);
+
+        var contractsByGsrn =
+            await GetAllContractsByGsrn([.. issuingContracts.Select(c => c.GSRN)], cancellationToken);
+
+        foreach (var updatedContract in contracts.Contracts)
+        {
+            DateTimeOffset? newEndDate = updatedContract.EndDate.HasValue
+                ? DateTimeOffset.FromUnixTimeSeconds(updatedContract.EndDate.Value)
+                : null;
+            var existingContract = issuingContracts.Find(c => c.Id == updatedContract.Id);
+            if (existingContract == null)
+            {
+                logger.LogInformation("Non existing contracts for {owner} contractId: {id}", meteringPointOwner,
+                    updatedContract.Id);
+
+                return new NonExistingContract();
+            }
+
+            if (existingContract.MeteringPointOwner != meteringPointOwner)
+            {
+                logger.LogInformation("Metering point owner no match for {owner}", meteringPointOwner);
+                return new MeteringPointOwnerNoMatch();
+            }
+
+            if (newEndDate != null &&
+                newEndDate <= existingContract.StartDate)
+            {
+                logger.LogInformation("End date before start date. EndDate: {enddate}, StartDate: {startDate}",
+                    newEndDate, existingContract.StartDate);
+                return new EndDateBeforeStartDate(existingContract.StartDate, newEndDate.Value);
+            }
+
+            var overlappingContract = contractsByGsrn.Where(c => c.GSRN == existingContract.GSRN).FirstOrDefault(c =>
+                c.Overlaps(existingContract.StartDate, newEndDate) &&
+                c.Id != existingContract.Id);
+
+            if (overlappingContract != null)
+            {
+                logger.LogInformation("Overlapping: {enddate}, StartDate: {startDate}", newEndDate,
+                    existingContract.StartDate);
+                return new OverlappingContract();
+            }
+
+            existingContract.EndDate = newEndDate;
+
+            // We don't want to log the ActorId and ActorName, since in this scenario it would be of the supporter logged in to the Admin Portal
+            await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
+                actorId: Guid.Empty,
+                actorType: ActivityLogEntry.ActorTypeEnum.User,
+                actorName: string.Empty,
+                organizationTin: contracts.OrganizationTin,
+                organizationName: contracts.OrganizationName,
+                otherOrganizationTin: string.Empty,
+                otherOrganizationName: string.Empty,
+                entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
+                actionType: ActivityLogEntry.ActionTypeEnum.EndDateChanged,
+                entityId: existingContract.GSRN)
+            );
+        }
+
+        unitOfWork.CertificateIssuingContractRepo.UpdateRange(issuingContracts);
+        await unitOfWork.SaveAsync(cancellationToken);
+        return new SetEndDateResult.Success();
     }
 
     private async Task<List<CertificateIssuingContract>> GetAllContractsByGsrn(List<string> gsrn,

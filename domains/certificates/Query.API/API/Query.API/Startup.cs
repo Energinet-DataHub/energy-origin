@@ -21,6 +21,8 @@ public static class Startup
         services.AddValidatorsFromAssemblyContaining<ApiModels.Requests.Internal.CreateContractValidator>();
         services.AddValidatorsFromAssemblyContaining<ApiModels.Requests.CreateContractValidator>();
 
+        services.AddValidatorsFromAssemblyContaining<ApiModels.Requests.Internal.EditContractEndDateValidator>();
+        services.AddValidatorsFromAssemblyContaining<ApiModels.Requests.EditContractEndDateValidator>();
         services.AddScoped<CertificatesSpreadsheetExporter>();
     }
 }
