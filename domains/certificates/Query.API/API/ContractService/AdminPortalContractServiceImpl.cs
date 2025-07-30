@@ -102,7 +102,7 @@ internal class AdminPortalContractServiceImpl(
             await unitOfWork.ActivityLogEntryRepo.AddActivityLogEntryAsync(ActivityLogEntry.Create(
                 actorId: Guid.Empty,
                 actorType: ActivityLogEntry.ActorTypeEnum.User,
-                actorName: string.Empty,
+                actorName: "Energinet Datahub Suppport",
                 organizationTin: contracts.OrganizationTin,
                 organizationName: contracts.OrganizationName,
                 otherOrganizationTin: string.Empty,
