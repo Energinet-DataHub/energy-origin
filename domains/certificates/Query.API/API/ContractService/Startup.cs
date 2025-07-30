@@ -14,6 +14,7 @@ public static class Startup
     {
         services.AddMeasurementsOptions();
         services.AddScoped<IContractService, ContractServiceImpl>();
+        services.AddScoped<IAdminPortalContractService, AdminPortalContractServiceImpl>();
 
         services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
 

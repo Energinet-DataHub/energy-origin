@@ -1,31 +1,35 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using API.IntegrationTests.Extensions;
 using API.IntegrationTests.Factories;
 using API.IntegrationTests.Mocks;
-using API.Query.API.ApiModels.Requests;
-using API.Query.API.Controllers.Internal;
+using API.Query.API.ApiModels.Requests.Internal;
+using API.Query.API.ApiModels.Responses.Internal;
+using DataContext;
 using DataContext.ValueObjects;
+using EnergyOrigin.ActivityLog.API;
+using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Setup;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Technology = API.ContractService.Clients.Technology;
 
 namespace API.IntegrationTests.Controllers.Internal;
 
 [Collection(IntegrationTestCollection.CollectionName)]
-public class InternalContractsControllerTests : TestBase
+public class InternalContractsControllerTests(IntegrationTestFixture fixture) : TestBase(fixture)
 {
-    private readonly IntegrationTestFixture _fixture;
-    private readonly QueryApiWebApplicationFactory _factory;
-    private readonly MeasurementsWireMock _measurementsWireMock;
+    private readonly QueryApiWebApplicationFactory _factory = fixture.WebApplicationFactory;
+    private readonly MeasurementsWireMock _measurementsWireMock = fixture.MeasurementsMock;
 
-    public InternalContractsControllerTests(IntegrationTestFixture fixture) : base(fixture)
-    {
-        _fixture = fixture;
-        _factory = fixture.WebApplicationFactory;
-        _measurementsWireMock = fixture.MeasurementsMock;
-    }
+    private readonly string OrganizationTin = "11223344";
+    private readonly string OrganizationName = "Peter Producent";
 
     [Fact]
     public async Task Given_NoContracts_When_CallingApi_Then_Return200ok_With_EmptyContractsForAdminPortalResponse()
@@ -49,12 +53,11 @@ public class InternalContractsControllerTests : TestBase
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
 
         await _factory.CreateWallet(orgId.ToString());
 
-        using var userCreatesAContract = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var insertedIntoDb = new CreateContracts([
             new CreateContract
@@ -62,15 +65,14 @@ public class InternalContractsControllerTests : TestBase
                 GSRN = gsrn,
                 StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
                 EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
-            }
-        ]);
+            },
+        ], orgId, OrganizationTin, OrganizationName, false);
 
-        await userCreatesAContract.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", insertedIntoDb,
+        await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", insertedIntoDb,
             cancellationToken: TestContext.Current.CancellationToken);
 
-        var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
         using var response =
-            await adminPortalClient.GetAsync("api/certificates/admin-portal/internal-contracts", TestContext.Current.CancellationToken);
+            await adminPortalClient.GetAsync("/api/certificates/admin-portal/internal-contracts", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var internalContractsApiResponse =
@@ -79,5 +81,533 @@ public class InternalContractsControllerTests : TestBase
         Assert.NotEmpty(internalContractsApiResponse.Result);
         Assert.Equal(internalContractsApiResponse.Result.First().GSRN, insertedIntoDb.Contracts[0].GSRN);
         Assert.IsType<ContractsForAdminPortalResponse>(internalContractsApiResponse);
+    }
+
+    [Fact]
+    public async Task CreateMultipleContract_ActivateWithEndDate_Created()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        var gsrn1 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+
+        _measurementsWireMock.SetupMeteringPointsResponse(
+            new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
+            {
+                (gsrn, MeteringPointType.Production, null, true),
+                (gsrn1, MeteringPointType.Production, null, true)
+            });
+
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrn,
+                EndDate = endDate,
+                StartDate = startDate
+            },
+
+            new CreateContract
+            {
+                GSRN = gsrn1,
+                EndDate = endDate,
+                StartDate = startDate
+            }
+        ], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var contracts = await response.Content.ReadJson<ContractList>();
+        contracts!.Result.Count().Should().Be(body.Contracts.Count);
+    }
+
+    [Fact]
+    public async Task CreateMulitpleContract_Overlapping_Conflict()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+
+        _measurementsWireMock.SetupMeteringPointsResponse(
+            new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
+            {
+                (gsrn, MeteringPointType.Production, null, true),
+                (gsrn, MeteringPointType.Production, null, true)
+            });
+
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var overlappingEnddate = DateTimeOffset.Now.AddDays(2).ToUnixTimeSeconds();
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrn,
+                EndDate = endDate,
+                StartDate = startDate
+            },
+
+            new CreateContract
+            {
+                GSRN = gsrn,
+                EndDate = overlappingEnddate,
+                StartDate = startDate
+            }
+        ], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task CreateContract_ActivateWithEndDate_Created()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createdContracts = await response.Content.ReadJson<ContractList>();
+        var createdContractId = createdContracts!.Result.First().Id;
+
+        var subject = Guid.NewGuid();
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        var expectedContract = new
+        {
+            GSRN = gsrn,
+            StartDate = startDate,
+            EndDate = endDate
+        };
+
+        createdContract.Should().BeEquivalentTo(expectedContract);
+    }
+
+    [Fact]
+    public async Task CreateContract_ActivateWithEndDateAndConsumptionType_Created()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Consumption);
+
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createdContracts = await response.Content.ReadJson<ContractList>();
+        var createdContractId = createdContracts!.Result.First().Id;
+
+        var subject = Guid.NewGuid();
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
+    }
+
+    [Fact]
+    public async Task CreateContract_ActivateWithoutEndDate_Created()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createdContracts = await response.Content.ReadJson<ContractList>();
+        var createdContractId = createdContracts!.Result.First().Id;
+
+        var subject = Guid.NewGuid();
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        createdContract.Should()
+            .BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
+    }
+
+    [Fact]
+    public async Task CreateContract_GsrnAlreadyExistsInDb_Conflict()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+        var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var body = new CreateContracts([
+            new CreateContract
+            { GSRN = gsrn, StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(), EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds() }
+        ], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        using var conflictResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        conflictResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task CreateContract_MeteringPointNotOwnedByUser_BadRequest()
+    {
+        var gsrn1 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        var gsrn2 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn1, MeteringPointType.Production);
+
+        var orgId = Guid.NewGuid();
+        var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrn2,
+                StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            }
+        ], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateContract_WithConsumptionMeteringPoint_TechnologyNull()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Consumption, technology);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var createdContracts = await response.Content.ReadJson<ContractList>();
+        var createdContractId = createdContracts!.Result.First().Id;
+
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        createdContract?.Technology.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateContract_WithProductionMeteringPoint_TechnologyExists()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, technology);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var createdContracts = await response.Content.ReadJson<ContractList>();
+        var createdContractId = createdContracts!.Result.First().Id;
+
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        createdContract!.Technology!.AibFuelCode.Should().Be(technology.AibFuelCode);
+        createdContract!.Technology!.AibTechCode.Should().Be(technology.AibTechCode);
+    }
+
+    [Fact]
+    public async Task CreateContract_WhenCreatingMultipleNonOverlappingContracts_Created()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var now = DateTimeOffset.Now;
+
+        var startDateContract1 = now.AddDays(1).ToUnixTimeSeconds();
+        var endDateContract1 = now.AddDays(2).ToUnixTimeSeconds();
+
+        var startDateContract2 = now.AddDays(3).ToUnixTimeSeconds();
+        var endDateContract2 = now.AddDays(4).ToUnixTimeSeconds();
+
+        var contract1Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }], orgId, OrganizationTin, OrganizationName, false);
+        var contract2Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }], orgId, OrganizationTin, OrganizationName, false);
+
+        using var responseContract1 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract1Body, cancellationToken: TestContext.Current.CancellationToken);
+        using var responseContract2 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract2Body, cancellationToken: TestContext.Current.CancellationToken);
+
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        contracts!.Result.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task CreateContract_WhenCreatingOverlappingContracts_Conflict()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var now = DateTimeOffset.Now;
+
+        var startDateContract1 = now.AddDays(1).ToUnixTimeSeconds();
+        var endDateContract1 = now.AddDays(3).ToUnixTimeSeconds();
+
+        var startDateContract2 = now.AddDays(2).ToUnixTimeSeconds();
+        var endDateContract2 = now.AddDays(5).ToUnixTimeSeconds();
+
+        var contract1Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }], orgId, OrganizationTin, OrganizationName, false);
+        var contract2Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }], orgId, OrganizationTin, OrganizationName, false);
+
+        using var responseContract1 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract1Body, cancellationToken: TestContext.Current.CancellationToken);
+        using var responseContract2 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract2Body, cancellationToken: TestContext.Current.CancellationToken);
+
+        var responseContent2 = await responseContract2.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        responseContent2.Should().Contain($"{contract2Body.Contracts[0].GSRN} already has an active contract");
+        responseContract2.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        contracts!.Result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task CreateContract_InvalidGsrn_BadRequest()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        var invalidGsrn = "invalid GSRN";
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var orgId = Guid.NewGuid();
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = invalidGsrn,
+                StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            }
+        ], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateContract_GsrnNotFound_BadRequest()
+    {
+        var gsrnNotFound = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+
+        var orgId = Guid.NewGuid();
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrnNotFound,
+                StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            }
+        ], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        responseContent.Should().Contain($"GSRN {gsrnNotFound} was not found");
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+
+    [Fact]
+    public async Task CreateContract_CannotBeUsedForIssuingCertificates_Conflict()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, canBeUsedforIssuingCertificates: false);
+
+        var orgId = Guid.NewGuid();
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var body = new CreateContracts([
+            new CreateContract
+            {
+                GSRN = gsrn,
+                StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
+                EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
+            }
+        ], orgId, OrganizationTin, OrganizationName, false);
+
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        responseContent.Should().Contain($"GSRN {gsrn} cannot be used for issuing certificates");
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task CreateContract_ConcurrentRequests_OnlyOneContractCreated()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+
+        var now = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var futureDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+
+        var tenConcurrentRequests = Enumerable
+            .Range(1, 10)
+            .Select(_ =>
+                adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts",
+                    new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = now, EndDate = futureDate }], orgId, OrganizationTin, OrganizationName, false)));
+
+        var responses = await Task.WhenAll(tenConcurrentRequests);
+
+        responses.Where(r => r.StatusCode == HttpStatusCode.Created).Should().HaveCount(1);
+        responses.Where(r => !r.IsSuccessStatusCode).Should().HaveCount(9);
+
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
+        contracts!.Result.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GivenMeteringPoint_WhenCreatingContract_ActivityLogIsUpdated()
+    {
+        // Create contract
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        await _factory.CreateWallet(orgId.ToString());
+
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
+        using var contractResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Assert activity log entry
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
+        var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+        using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest, cancellationToken: TestContext.Current.CancellationToken);
+        activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
+        Assert.Single(activityLog!.ActivityLogEntries, x => x.ActorId == Guid.Empty && x.OrganizationTin == OrganizationTin && x.OrganizationName == OrganizationName);
+    }
+
+    [Fact]
+    public async Task GivenOldActivityLog_WhenCleaningUp_ActivityLogIsRemoved()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>()!;
+        var activityLogEntry = CreateActivityLogEligiblyForCleanup();
+        dbContext.ActivityLogs.Add(activityLogEntry);
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
+
+        // Wait for activity log entries to be cleaned up
+        await WaitForCondition(TimeSpan.FromSeconds(10), async ctx =>
+        {
+            var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
+            var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest, cancellationToken: ctx);
+            activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
+            return !activityLog!.ActivityLogEntries.Where(al => al.ActorId == activityLogEntry.ActorId).Any();
+        }, CancellationToken.None);
+    }
+
+    private static ActivityLogEntry CreateActivityLogEligiblyForCleanup()
+    {
+        var activityLogEntry = ActivityLogEntry.Create(Guid.NewGuid(), ActivityLogEntry.ActorTypeEnum.System, "", "", "", "", "",
+            ActivityLogEntry.EntityTypeEnum.MeteringPoint, ActivityLogEntry.ActionTypeEnum.Activated, "");
+        typeof(ActivityLogEntry).GetProperty(nameof(ActivityLogEntry.Timestamp))!.SetValue(activityLogEntry, DateTimeOffset.UtcNow.AddDays(-60));
+        return activityLogEntry;
+    }
+
+    private static async Task WaitForCondition(TimeSpan timeout, Func<CancellationToken, Task<bool>> conditionAction, CancellationToken cancellationToken)
+    {
+        using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        tokenSource.CancelAfter(timeout);
+        var conditionFulfilled = false;
+
+        while (!tokenSource.IsCancellationRequested)
+        {
+            conditionFulfilled = await conditionAction.Invoke(tokenSource.Token);
+            if (conditionFulfilled)
+            {
+                return;
+            }
+        }
+
+        Assert.True(conditionFulfilled, $"Condition was not fulfilled withing timeout {timeout}");
     }
 }
