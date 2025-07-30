@@ -54,12 +54,11 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
 
         await _factory.CreateWallet(orgId.ToString());
 
-        using var userCreatesAContract = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var insertedIntoDb = new CreateContracts([
             new CreateContract
@@ -70,10 +69,9 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             },
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        var res = await userCreatesAContract.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", insertedIntoDb,
+        await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", insertedIntoDb,
             cancellationToken: TestContext.Current.CancellationToken);
 
-        var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
         using var response =
             await adminPortalClient.GetAsync("/api/certificates/admin-portal/internal-contracts", TestContext.Current.CancellationToken);
 
@@ -102,7 +100,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -122,7 +120,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var contracts = await response.Content.ReadJson<ContractList>();
@@ -144,7 +142,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -165,7 +163,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
@@ -178,19 +176,22 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        var subject = Guid.NewGuid();
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         var expectedContract = new
         {
@@ -210,19 +211,22 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
-        using var client = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        var subject = Guid.NewGuid();
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         createdContract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
@@ -235,18 +239,21 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
-        using var client = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        var subject = Guid.NewGuid();
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         createdContract.Should()
             .BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
@@ -258,21 +265,20 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var body = new CreateContracts([
             new CreateContract
             { GSRN = gsrn, StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(), EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds() }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        using var conflictResponse = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var conflictResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         conflictResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
@@ -284,9 +290,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
 
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn1, MeteringPointType.Production);
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var body = new CreateContracts([
             new CreateContract
@@ -297,7 +302,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -312,18 +317,19 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
 
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}", cancellationToken: TestContext.Current.CancellationToken);
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         createdContract?.Technology.Should().BeNull();
     }
@@ -338,25 +344,27 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
-        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}", cancellationToken: TestContext.Current.CancellationToken);
+
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var createdContract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         createdContract!.Technology!.AibFuelCode.Should().Be(technology.AibFuelCode);
         createdContract!.Technology!.AibTechCode.Should().Be(technology.AibTechCode);
     }
 
     [Fact]
-    public async Task CreateContract_WhenCtreatingMultipleNonOverlappingContracts_Created()
+    public async Task CreateContract_WhenCreatingMultipleNonOverlappingContracts_Created()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
@@ -365,7 +373,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var now = DateTimeOffset.Now;
 
@@ -378,10 +386,11 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var contract1Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }], orgId, OrganizationTin, OrganizationName, false);
         var contract2Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var responseContract1 = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract1Body, cancellationToken: TestContext.Current.CancellationToken);
-        using var responseContract2 = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract2Body, cancellationToken: TestContext.Current.CancellationToken);
+        using var responseContract1 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract1Body, cancellationToken: TestContext.Current.CancellationToken);
+        using var responseContract2 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract2Body, cancellationToken: TestContext.Current.CancellationToken);
 
-        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts", cancellationToken: TestContext.Current.CancellationToken);
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         contracts!.Result.Should().HaveCount(2);
     }
@@ -396,7 +405,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var now = DateTimeOffset.Now;
 
@@ -409,14 +418,15 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var contract1Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }], orgId, OrganizationTin, OrganizationName, false);
         var contract2Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var responseContract1 = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract1Body, cancellationToken: TestContext.Current.CancellationToken);
-        using var responseContract2 = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract2Body, cancellationToken: TestContext.Current.CancellationToken);
+        using var responseContract1 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract1Body, cancellationToken: TestContext.Current.CancellationToken);
+        using var responseContract2 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract2Body, cancellationToken: TestContext.Current.CancellationToken);
 
         var responseContent2 = await responseContract2.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         responseContent2.Should().Contain($"{contract2Body.Contracts[0].GSRN} already has an active contract");
         responseContract2.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
-        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts", cancellationToken: TestContext.Current.CancellationToken);
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         contracts!.Result.Should().HaveCount(1);
     }
@@ -428,9 +438,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var invalidGsrn = "invalid GSRN";
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var body = new CreateContracts([
             new CreateContract
@@ -441,7 +450,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -451,9 +460,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         var gsrnNotFound = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var body = new CreateContracts([
             new CreateContract
@@ -464,7 +472,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         responseContent.Should().Contain($"GSRN {gsrnNotFound} was not found");
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -477,9 +485,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, canBeUsedforIssuingCertificates: false);
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var body = new CreateContracts([
             new CreateContract
@@ -490,7 +497,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         var responseContent = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         responseContent.Should().Contain($"GSRN {gsrn} cannot be used for issuing certificates");
@@ -506,7 +513,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var now = DateTimeOffset.Now.ToUnixTimeSeconds();
         var futureDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -514,7 +522,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var tenConcurrentRequests = Enumerable
             .Range(1, 10)
             .Select(_ =>
-                client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts",
+                adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts",
                     new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = now, EndDate = futureDate }], orgId, OrganizationTin, OrganizationName, false)));
 
         var responses = await Task.WhenAll(tenConcurrentRequests);
@@ -522,7 +530,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         responses.Where(r => r.StatusCode == HttpStatusCode.Created).Should().HaveCount(1);
         responses.Where(r => !r.IsSuccessStatusCode).Should().HaveCount(9);
 
-        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts", cancellationToken: TestContext.Current.CancellationToken);
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contracts = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
         contracts!.Result.Should().HaveCount(1);
     }
 
@@ -536,12 +545,12 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
@@ -549,9 +558,10 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }], orgId, OrganizationTin, OrganizationName);
 
-        using var editResponse = await client.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
+        using var editResponse = await adminPortalClient.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
 
-        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}", cancellationToken: TestContext.Current.CancellationToken);
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
@@ -566,22 +576,23 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
 
         var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = null }], orgId, OrganizationTin, OrganizationName);
 
-        using var editResponse = await client.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
+        using var editResponse = await adminPortalClient.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
 
-        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}", cancellationToken: TestContext.Current.CancellationToken);
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = (DateTimeOffset?)null });
     }
@@ -596,12 +607,12 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
-        using var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
@@ -609,9 +620,10 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var endDate = DateTimeOffset.Now.AddDays(1).ToUnixTimeSeconds();
         var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }], orgId, OrganizationTin, OrganizationName);
 
-        using var editResponse = await client.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
+        using var editResponse = await adminPortalClient.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
 
-        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}", cancellationToken: TestContext.Current.CancellationToken);
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{createdContractId}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = endDate });
     }
@@ -626,7 +638,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(1).ToUnixTimeSeconds();
         var endDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(3).ToUnixTimeSeconds();
@@ -646,7 +658,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
                 StartDate = startDate
             }
         ], orgId, OrganizationTin, OrganizationName, false);
-        using var createResponse = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        using var createResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         var response = await createResponse.Content.ReadJson<ContractList>();
         var id = response!.Result.ToList().Find(c => c.StartDate == startDate)!.Id;
 
@@ -656,7 +669,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             new() { Id = id, EndDate = newEndDate },
         };
 
-        var updateResponse = await client.PutAsJsonAsync(
+        var updateResponse = await adminPortalClient.PutAsJsonAsync(
                 $"api/certificates/admin-portal/internal-contracts",
                 new EditContracts(contracts, orgId, OrganizationTin, OrganizationName),
                 cancellationToken: TestContext.Current.CancellationToken);
@@ -680,7 +693,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(1).ToUnixTimeSeconds();
         var startDate1 = UnixTimestamp.Now().ToDateTimeOffset().AddDays(2).ToUnixTimeSeconds();
@@ -699,7 +712,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        using var createResponse = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var createResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         var createContent = await createResponse.Content.ReadJson<ContractList>();
 
         var id = createContent!.Result.ToList().Find(c => c.StartDate == startDate)!.Id;
@@ -713,15 +726,16 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             new() { Id = id1, EndDate = newEndDate1 }
         };
 
-        var response = await client.PutAsJsonAsync(
+        var response = await adminPortalClient.PutAsJsonAsync(
                 $"api/certificates/admin-portal/internal-contracts",
                 new EditContracts(contracts, orgId, OrganizationTin, OrganizationName),
                 cancellationToken: TestContext.Current.CancellationToken);
 
         response.EnsureSuccessStatusCode();
 
-        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{id}", cancellationToken: TestContext.Current.CancellationToken);
-        var contract1 = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{id1}", cancellationToken: TestContext.Current.CancellationToken);
+        var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var contract = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{id}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
+        var contract1 = await client.GetFromJsonAsync<Contract>($"api/certificates/contracts/{id1}?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
 
         contract.Should().BeEquivalentTo(new { GSRN = gsrn, StartDate = startDate, EndDate = newEndDate });
         contract1.Should().BeEquivalentTo(new { GSRN = gsrn1, StartDate = startDate1, EndDate = newEndDate1 });
@@ -733,9 +747,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var putBody = new EditContracts([
             new EditContractEndDate
@@ -748,7 +761,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var nonExistingContractId = Guid.NewGuid();
 
         using var response =
-            await client.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
+            await adminPortalClient.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -759,11 +772,10 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var start = DateTimeOffset.Now.AddDays(3);
 
@@ -776,7 +788,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
@@ -789,7 +801,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName);
 
-        using var editResponse = await client.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
+        using var editResponse = await adminPortalClient.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -800,11 +812,10 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
-        var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var start = DateTimeOffset.Now.AddDays(3);
 
@@ -817,22 +828,21 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
 
         var newSubject = Guid.NewGuid();
         var newOrgId = Guid.NewGuid();
-        using var client2 = _factory.CreateB2CAuthenticatedClient(newSubject, newOrgId, apiVersion: ApiVersions.Version1);
         var putBody = new EditContracts([
             new EditContractEndDate
             {
                 Id = createdContractId,
                 EndDate = start.AddDays(-1).ToUnixTimeSeconds()
             }
-        ], orgId, OrganizationTin, OrganizationName);
+        ], newOrgId, OrganizationTin, OrganizationName);
 
-        using var editResponse = await client2.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts?organizationId={newOrgId}", putBody, cancellationToken: TestContext.Current.CancellationToken);
+        using var editResponse = await adminPortalClient.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
 
         editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -848,19 +858,20 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
-        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var contractResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Assert activity log entry
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
         var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
         using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest, cancellationToken: TestContext.Current.CancellationToken);
         activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
-        Assert.Single(activityLog!.ActivityLogEntries, x => x.ActorId.ToString() == subject.ToString());
+        Assert.Single(activityLog!.ActivityLogEntries, x => x.ActorId == Guid.Empty && x.OrganizationTin == OrganizationTin && x.OrganizationName == OrganizationName);
     }
 
     [Fact]
@@ -874,10 +885,10 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
 
-        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
+        using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
-        using var contractResponse = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
+        using var contractResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Update end date
@@ -885,14 +896,15 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var createdContractId = createdContracts!.Result.First().Id;
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }], orgId, OrganizationTin, OrganizationName);
-        await client.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
+        await adminPortalClient.PutAsJsonAsync($"api/certificates/admin-portal/internal-contracts", putBody, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert activity log entries (created, updated)
+        using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId);
         var activityLogRequest = new ActivityLogEntryFilterRequest(null, null, null);
         using var activityLogResponse = await client.PostAsJsonAsync("api/certificates/activity-log", activityLogRequest, cancellationToken: TestContext.Current.CancellationToken);
         activityLogResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var activityLog = await activityLogResponse.Content.ReadJson<ActivityLogListEntryResponse>();
-        Assert.Equal(2, activityLog!.ActivityLogEntries.Count(x => x.ActorId.ToString() == subject.ToString()));
+        Assert.Equal(2, activityLog!.ActivityLogEntries.Count(x => x.ActorId == Guid.Empty && x.OrganizationTin == OrganizationTin && x.OrganizationName == OrganizationName));
     }
 
     [Fact]
