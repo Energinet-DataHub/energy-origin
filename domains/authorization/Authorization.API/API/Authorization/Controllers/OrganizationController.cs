@@ -31,7 +31,7 @@ public class OrganizationController : ControllerBase
         Summary = "Retrieves Organization",
         Description = "Retrieves info for organization with id organizationId"
     )]
-    public async Task<ActionResult<ClientResponse>> GetOrganization([FromRoute] Guid organizationId)
+    public async Task<ActionResult<OrganizationResponse>> GetOrganization([FromRoute] Guid organizationId)
     {
         var queryResult = await _mediator.Send(new GetOrganizationQuery(new OrganizationId(organizationId)));
         return Ok(new OrganizationResponse(queryResult.OrganizationId.Value, queryResult.OrganizationName.Value, queryResult.Tin?.Value));
