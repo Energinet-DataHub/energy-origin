@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using EnergyOrigin.TokenValidation.b2c;
 using Microsoft.AspNetCore.Http;
 using MediatR;
-using System.ComponentModel.DataAnnotations;
 using System;
 using FluentValidation;
 using API.ContractService;

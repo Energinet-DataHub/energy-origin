@@ -76,6 +76,7 @@ public record ClientResponse(Guid IdpClientId, string Name, string RedirectUrl);
 
 public record OrganizationResponse(Guid OrganizationId, string OrganizationName, string? Tin);
 
+// TODO: CABOL - Do we need this enum?
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OrganizationStatus
 {
