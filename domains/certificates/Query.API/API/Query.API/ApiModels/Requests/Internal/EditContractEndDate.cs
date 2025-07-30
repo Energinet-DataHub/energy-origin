@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Query.API.ApiModels.Requests.Internal;
 
@@ -21,5 +22,11 @@ public class EditContractEndDate20230101
     public long? EndDate { get; set; }
 }
 
-// TODO: CABOL - Are we validating all input is there?
-public record EditContracts(List<EditContractEndDate> Contracts, Guid MeteringPointOwnerId, string OrganizationTin, string OrganizationName);
+public record EditContracts(
+        List<EditContractEndDate> Contracts,
+        [Required]
+        Guid MeteringPointOwnerId,
+        [Required]
+        string OrganizationTin,
+        [Required]
+        string OrganizationName);

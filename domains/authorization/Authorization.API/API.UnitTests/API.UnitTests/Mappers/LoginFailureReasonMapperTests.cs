@@ -1,4 +1,5 @@
 using API.Authorization.Controllers;
+using API.Models;
 
 namespace API.UnitTests.Mappers;
 
@@ -13,13 +14,13 @@ public class LoginFailureReasonContractTests
     [InlineData("trial", null, "e5f6g7h8-e444-7777-dddd-dddddddddddd - Unknown login type specified in request - Have you configured your client correctly?")]
     [InlineData("invalid", null, "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee - Unhandled Exception")]
     [InlineData("", null, "d4e5f6g7-e999-8888-eeee-eeeeeeeeeeee - Unhandled Exception")]
-    public void LoginFailureReasons_HaveExpectedGuids(string loginType, API.Models.OrganizationStatus? status, string expected)
+    public void LoginFailureReasons_HaveExpectedGuids(string loginType, OrganizationStatus? status, string expected)
     {
         var failureGuid = (loginType.ToLowerInvariant(), status) switch
         {
-            ("normal", API.Models.OrganizationStatus.Trial) => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
-            ("trial", API.Models.OrganizationStatus.Normal) => LoginFailureReasons.NormalOrganizationsAreNotAllowedToLogInAsTrial,
-            (_, API.Models.OrganizationStatus.Deactivated) => LoginFailureReasons.OrganizationIsDeactivated,
+            ("normal", OrganizationStatus.Trial) => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
+            ("trial", OrganizationStatus.Normal) => LoginFailureReasons.NormalOrganizationsAreNotAllowedToLogInAsTrial,
+            (_, OrganizationStatus.Deactivated) => LoginFailureReasons.OrganizationIsDeactivated,
             ("normal", _) or ("trial", _) => LoginFailureReasons.UnknownLoginTypeSpecifiedInRequest,
             _ => LoginFailureReasons.UnhandledException
         };

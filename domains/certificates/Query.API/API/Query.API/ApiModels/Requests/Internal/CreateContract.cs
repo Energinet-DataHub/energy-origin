@@ -26,5 +26,13 @@ public class CreateContract
     public long? EndDate { get; set; }
 }
 
-// TODO: CABOL - Are we validating all input is there?
-public record CreateContracts(List<CreateContract> Contracts, Guid MeteringPointOwnerId, string OrganizationTin, string OrganizationName, bool IsTrial);
+public record CreateContracts(
+        List<CreateContract> Contracts,
+        [Required]
+        Guid MeteringPointOwnerId,
+        [Required]
+        string OrganizationTin,
+        [Required]
+        string OrganizationName,
+        [Required]
+        bool IsTrial);

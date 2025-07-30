@@ -83,14 +83,6 @@ public class AdminPortalController(IMediator mediator) : ControllerBase
                     queryResult.OrganizationId.Value,
                     queryResult.OrganizationName.Value,
                     queryResult.Tin?.Value,
-                    ToApiOrganizationStatus(queryResult.Status)));
+                    queryResult.Status.ToString()));
     }
-
-    public static OrganizationStatus ToApiOrganizationStatus(Models.OrganizationStatus organizationStatus) => organizationStatus switch
-    {
-        Models.OrganizationStatus.Trial => OrganizationStatus.Trial,
-        Models.OrganizationStatus.Normal => OrganizationStatus.Normal,
-        Models.OrganizationStatus.Deactivated => OrganizationStatus.Deactivated,
-        _ => throw new ArgumentOutOfRangeException(nameof(organizationStatus), $"Non expected organization status value: {organizationStatus}"),
-    };
 }

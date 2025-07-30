@@ -38,6 +38,6 @@ public class AdminPortalControllerTests : IntegrationTestBase
         Assert.Equal(orgDb.Name.Value, result.OrganizationName);
         Assert.Equal(orgDb.Tin?.Value, result.Tin);
         Assert.Equal(orgDb.Id, result.OrganizationId);
-        Assert.Equal(Authorization.Controllers.OrganizationStatus.Trial, result.Status);
+        Assert.Equal("Trial", result.Status);
     }
 }
