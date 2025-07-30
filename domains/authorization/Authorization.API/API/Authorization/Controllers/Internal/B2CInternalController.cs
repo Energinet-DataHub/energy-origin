@@ -120,9 +120,9 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
 
         var failureGuid = (OrgStatus: queryHandlerResult.GrantedAccessAsTypeOf, loginType) switch
         {
-            (Models.OrganizationStatus.Trial, "normal") => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
-            (Models.OrganizationStatus.Normal, "trial") => LoginFailureReasons.NormalOrganizationsAreNotAllowedToLogInAsTrial,
-            (Models.OrganizationStatus.Deactivated, _) => LoginFailureReasons.OrganizationIsDeactivated,
+            (OrganizationStatus.Trial, "normal") => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
+            (OrganizationStatus.Normal, "trial") => LoginFailureReasons.NormalOrganizationsAreNotAllowedToLogInAsTrial,
+            (OrganizationStatus.Deactivated, _) => LoginFailureReasons.OrganizationIsDeactivated,
             (_, "normal") or (_, "trial") => LoginFailureReasons.UnknownLoginTypeSpecifiedInRequest,
             _ => LoginFailureReasons.UnhandledException
         };
