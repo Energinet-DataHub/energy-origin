@@ -12,10 +12,8 @@ using EnergyOrigin.ActivityLog.DataContext;
 using EnergyOrigin.Domain.ValueObjects;
 using EnergyOrigin.WalletClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using WalletClient;
 using static API.ContractService.CreateContractResult;
-using static API.ContractService.SetEndDateResult;
 using Technology = DataContext.ValueObjects.Technology;
 
 namespace API.ContractService;
@@ -24,8 +22,8 @@ internal class AdminPortalContractServiceImpl(
     IMeteringPointsClient meteringPointsClient,
     IWalletClient walletClient,
     IStampClient stampClient,
-    IUnitOfWork unitOfWork,
-    ILogger<ContractServiceImpl> logger) : IAdminPortalContractService
+    IUnitOfWork unitOfWork)
+    : IAdminPortalContractService
 {
     public async Task<CreateContractResult> Create(
             CreateContracts contracts,
