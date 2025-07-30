@@ -37,10 +37,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         using var clientForInternalCalls = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
-        var response = await clientForInternalCalls.GetAsync("/api/certificates/contracts",
+        var response = await clientForInternalCalls.GetAsync("/api/certificates/admin-portal/internal-contracts",
             TestContext.Current.CancellationToken);
-
-        var str = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var contractsResponse =
@@ -72,12 +70,12 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             },
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        await userCreatesAContract.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", insertedIntoDb,
+        var res = await userCreatesAContract.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", insertedIntoDb,
             cancellationToken: TestContext.Current.CancellationToken);
 
         var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
         using var response =
-            await adminPortalClient.GetAsync("api/certificates/contracts", TestContext.Current.CancellationToken);
+            await adminPortalClient.GetAsync("/api/certificates/admin-portal/internal-contracts", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var internalContractsApiResponse =
