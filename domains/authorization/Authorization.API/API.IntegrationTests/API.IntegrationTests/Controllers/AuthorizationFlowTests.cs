@@ -281,7 +281,7 @@ public class AuthorizationFlowTests : IntegrationTestBase
         var thirdPartyClient = thirdPartyWithClient.Clients.First();
 
         consentForClientQueryResult.Sub.Should().Be(thirdPartyIdpClientId);
-        consentForClientQueryResult.OrgStatus.Should().Be(OrganizationStatus.Normal);
+        consentForClientQueryResult.OrgStatus.Should().Be(Models.OrganizationStatus.Normal);
         consentForClientQueryResult.Scope.Should().Be("dashboard production meters certificates wallet");
         consentForClientQueryResult.OrgName.Should().Be(thirdPartyClient.Name.Value);
         consentForClientQueryResult.SubType.Should().Be(thirdPartyClient.ClientType.ToString());
@@ -329,7 +329,7 @@ public class AuthorizationFlowTests : IntegrationTestBase
         var thirdPartyClient = thirdPartyWithClient.Clients.First();
 
         consentForClientQueryResult.Sub.Should().Be(thirdPartyIdpClientId);
-        consentForClientQueryResult.OrgStatus.Should().Be(OrganizationStatus.Trial);
+        consentForClientQueryResult.OrgStatus.Should().Be(Models.OrganizationStatus.Trial);
         consentForClientQueryResult.Scope.Should().Be("dashboard production meters certificates wallet");
         consentForClientQueryResult.OrgName.Should().Be(thirdPartyClient.Name.Value);
         consentForClientQueryResult.SubType.Should().Be(thirdPartyClient.ClientType.ToString());

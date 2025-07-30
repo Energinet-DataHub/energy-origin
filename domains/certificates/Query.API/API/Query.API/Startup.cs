@@ -1,5 +1,3 @@
-using API.Query.API.ApiModels.Requests;
-using API.Query.API.Controllers;
 using API.Query.API.Swagger;
 using API.Reports;
 using EnergyOrigin.Setup;
@@ -20,7 +18,8 @@ public static class Startup
         });
         services.AddHttpContextAccessor();
 
-        services.AddValidatorsFromAssemblyContaining<CreateContractValidator>();
+        services.AddValidatorsFromAssemblyContaining<ApiModels.Requests.Internal.CreateContractValidator>();
+        services.AddValidatorsFromAssemblyContaining<ApiModels.Requests.CreateContractValidator>();
 
         services.AddScoped<CertificatesSpreadsheetExporter>();
     }
