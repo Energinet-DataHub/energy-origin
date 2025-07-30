@@ -13,6 +13,7 @@ using FluentValidation;
 using API.ContractService;
 using FluentValidation.AspNetCore;
 using static API.ContractService.CreateContractResult;
+using static API.ContractService.SetEndDateResult;
 using API.Query.API.ApiModels.Requests.Internal;
 using API.Query.API.ApiModels.Responses.Internal;
 
@@ -77,6 +78,42 @@ public class InternalContractsController(IMediator mediator) : ControllerBase
             ContractAlreadyExists(var existing) => ValidationProblem(statusCode: 409, detail: $"{existing?.GSRN} already has an active contract"),
             CreateContractResult.Success(var createdContracts) => Created("",
                 new ContractList { Result = [.. createdContracts.Select(Contract.CreateFrom)] }),
+            _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
+        };
+    }
+
+    /// <summary>
+    /// Edit the end date for multiple contracts
+    /// </summary>
+    [HttpPut]
+    [ProducesResponseType(typeof(void), 200)]
+    [ProducesResponseType(typeof(void), 404)]
+    [ProducesResponseType(typeof(void), 403)]
+    public async Task<ActionResult> UpdateEndDate(
+        [FromBody] EditContracts editContracts,
+        [FromServices] IValidator<EditContractEndDate> validator,
+        [FromServices] IAdminPortalContractService service,
+        CancellationToken cancellationToken)
+    {
+        foreach (var contract in editContracts.Contracts)
+        {
+            var validationResult = await validator.ValidateAsync(contract, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                validationResult.AddToModelState(ModelState, null);
+                return ValidationProblem(ModelState);
+            }
+        }
+
+        var result = await service.SetEndDate(editContracts, cancellationToken);
+
+        return result switch
+        {
+            NonExistingContract => NotFound(),
+            MeteringPointOwnerNoMatch => Forbid(),
+            EndDateBeforeStartDate => ValidationProblem("EndDate must be after StartDate"),
+            OverlappingContract => ValidationProblem(statusCode: 409),
+            SetEndDateResult.Success => Ok(),
             _ => throw new NotImplementedException($"{result.GetType()} not handled by {nameof(ContractsController)}")
         };
     }

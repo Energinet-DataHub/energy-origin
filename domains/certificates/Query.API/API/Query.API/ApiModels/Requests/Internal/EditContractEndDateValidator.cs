@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace API.Query.API.ApiModels.Requests;
+namespace API.Query.API.ApiModels.Requests.Internal;
 
 public class EditContractEndDateValidator : AbstractValidator<EditContractEndDate>
 {
