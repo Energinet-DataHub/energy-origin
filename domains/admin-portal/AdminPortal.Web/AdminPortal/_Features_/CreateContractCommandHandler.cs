@@ -53,7 +53,6 @@ public class CreateContractItem
 
 public class CreateContractCommand : IRequest<CreateContractResponse>
 {
-
     public required List<CreateContractItem> Contracts { get; set; }
     public Guid MeteringPointOwnerId { get; set; }
     public required string OrganizationTin { get; set; }
