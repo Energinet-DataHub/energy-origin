@@ -17,4 +17,7 @@ public class ClientUriOptions
 
     [Required]
     public string Transfers { get; set; } = null!;
+
+    [Required]
+    public string Contracts { get; set; } = null!;
 }

@@ -47,6 +47,9 @@ public static class ServiceCollectionExtensions
                         sp.GetRequiredService<MsalHttpClientFactoryAdapter>()
                     );
                 });
+
+            services.AddTypedHttpClient<IContractService, ContractService>(sp =>
+                sp.GetRequiredService<IOptions<ClientUriOptions>>().Value.Certificates);
         }
 
         return services;
