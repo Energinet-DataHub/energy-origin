@@ -31,10 +31,13 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             services.Remove(services.First(s => s.ServiceType == typeof(IAuthorizationService)));
             services.Remove(services.First(s => s.ServiceType == typeof(ICertificatesService)));
             services.Remove(services.First(s => s.ServiceType == typeof(IMeasurementsService)));
+            services.Remove(services.First(s => s.ServiceType == typeof(ITransferService)));
+            services.Remove(services.First(s => s.ServiceType == typeof(IContractService)));
             services.AddScoped<IAuthorizationService, MockAuthorizationService>();
             services.AddScoped<ICertificatesService, MockCertificatesService>();
             services.AddScoped<IMeasurementsService, MockMeasurementsService>();
             services.AddScoped<ITransferService, MockTransferService>();
+            services.AddScoped<IContractService, MockContractService>();
 
             services.AddTransient<IAuthenticationSchemeProvider, AutoFailSchemeProvider>();
             services.AddAuthentication(AutoFailSchemeProvider.AutoFailScheme)
@@ -62,7 +65,11 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             CancellationToken cancellationToken)
         {
             return Task.FromResult(
-                new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>()));
+                new GetWhitelistedOrganizationsResponse(new List<GetWhitelistedOrganizationsResponseItem>
+                {
+                    new GetWhitelistedOrganizationsResponseItem(new Guid("12345678-1234-1234-1234-123456789012"), "12345678")
+                }));
+
         }
 
         public Task AddOrganizationToWhitelistAsync(Tin tin, CancellationToken cancellationToken)
@@ -121,6 +128,38 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                     }
                 ]
             });
+        }
+    }
+
+    private class MockContractService : IContractService
+    {
+        public Task<ContractList> CreateContracts(CreateContracts request)
+        {
+            return Task.FromResult(new ContractList
+            {
+                Result =
+                [
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        Gsrn = request.Contracts.First().Gsrn,
+                        StartDate = request.Contracts.First().StartDate,
+                        EndDate = request.Contracts.First().EndDate,
+                        Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                        MeteringPointType = MeteringPointTypeResponse.Production,
+                        Technology = new AdminPortal.Services.Technology
+                        {
+                            AibFuelCode = "FuelCode",
+                            AibTechCode = "TechCode"
+                        }
+                    }
+                ]
+            });
+        }
+
+        public Task EditContracts(EditContracts request)
+        {
+            return Task.CompletedTask;
         }
     }
 
