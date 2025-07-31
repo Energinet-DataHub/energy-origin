@@ -51,11 +51,9 @@ public class ContractService(HttpClient client) : IContractService
     }
 }
 
-// TODO: CABOL - Move to DTO folder?
 public class CreateContract
 {
-    [JsonPropertyName("gsrn")]
-    public string GSRN { get; init; } = "";
+    public string Gsrn { get; init; } = "";
 
     public long StartDate { get; init; }
 
