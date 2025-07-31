@@ -30,7 +30,7 @@ public class CreateContractCommandHandler(IContractService contractService, IAut
 
     private async Task<CreateContractResponse> CreateContracts(CreateContractCommand command)
     {
-        var createContracts = command.Contracts.Select(x => new CreateContract { GSRN = x.Gsrn, StartDate = x.StartDate, EndDate = x.EndDate }).ToList();
+        var createContracts = command.Contracts.Select(x => new CreateContract { Gsrn = x.Gsrn, StartDate = x.StartDate, EndDate = x.EndDate }).ToList();
 
         var request = new CreateContracts(createContracts, command.MeteringPointOwnerId, command.OrganizationTin, command.OrganizationName, command.IsTrial);
         var contractList = await contractService.CreateContracts(request);
