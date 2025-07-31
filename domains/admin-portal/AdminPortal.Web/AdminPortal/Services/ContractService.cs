@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -12,12 +13,13 @@ namespace AdminPortal.Services;
 
 public interface IContractService
 {
-    Task<ContractList> CreateContracts(CreateContractsRequest request);
+    Task<ContractList> CreateContracts(CreateContracts request);
+    Task EditContracts(EditContracts request);
 }
 
 public class ContractService(HttpClient client) : IContractService
 {
-    public async Task<ContractList> CreateContracts(CreateContractsRequest request)
+    public async Task<ContractList> CreateContracts(CreateContracts request)
     {
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
@@ -33,8 +35,23 @@ public class ContractService(HttpClient client) : IContractService
         var result = await response.Content.ReadFromJsonAsync<ContractList>();
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
     }
+
+    public async Task EditContracts(EditContracts request)
+    {
+        var requestStr = JsonSerializer.Serialize(request);
+        var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"api/certificates/admin-portal/internal-contracts", content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new BusinessException("It was not possible to edit the contract");
+        }
+
+        response.EnsureSuccessStatusCode();
+    }
 }
 
+// TODO: CABOL - Move to DTO folder?
 public class CreateContract
 {
     [JsonPropertyName("gsrn")]
@@ -45,7 +62,7 @@ public class CreateContract
     public long? EndDate { get; set; }
 }
 
-public record CreateContractsRequest(
+public record CreateContracts(
         List<CreateContract> Contracts,
         Guid MeteringPointOwnerId,
         string OrganizationTin,
@@ -60,10 +77,7 @@ public class ContractList
 public class Contract
 {
     public Guid Id { get; set; }
-
-    [JsonPropertyName("gsrn")]
-    public string GSRN { get; set; } = "";
-
+    public string Gsrn { get; set; } = "";
     public long StartDate { get; set; }
     public long? EndDate { get; set; }
     public long Created { get; set; }
@@ -86,3 +100,17 @@ public class Technology
     public required string AibTechCode { get; set; }
 };
 
+public class EditContractEndDate
+{
+    public required Guid Id { get; init; }
+    public long? EndDate { get; set; }
+}
+
+public record EditContracts(
+        List<EditContractEndDate> Contracts,
+        [Required]
+        Guid MeteringPointOwnerId,
+        [Required]
+        string OrganizationTin,
+        [Required]
+        string OrganizationName);

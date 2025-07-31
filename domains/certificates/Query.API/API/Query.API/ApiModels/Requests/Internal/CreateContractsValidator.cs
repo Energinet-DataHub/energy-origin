@@ -19,7 +19,7 @@ public class CreateContractsValidator : AbstractValidator<CreateContract>
             .MustBeBeforeYear10000()
             .When(s => s.EndDate != default);
 
-        RuleFor(cs => cs.GSRN)
+        RuleFor(cs => cs.Gsrn)
             .MustBeValidGsrn();
     }
 }
