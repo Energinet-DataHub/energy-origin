@@ -23,7 +23,7 @@ public class MeasurementsServiceTest
                 "982",
                 SubMeterType.Physical,
                 new Address("Some vej 124", null, null, "Aarhus C", "8000", "Denmark", "0751", "Aarhus"),
-                new Technology("Some tech code", "Some fuel code"),
+                new Dtos.Response.Technology("Some tech code", "Some fuel code"),
                 "12345678",
                 true,
                 "1234567",
