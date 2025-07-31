@@ -9,7 +9,6 @@ using MediatR;
 
 namespace AdminPortal._Features_;
 
-
 public class CreateContractCommandHandler(IContractService contractService, IAuthorizationService authorizationService)
     : IRequestHandler<CreateContractCommand, CreateContractResponse>
 {
@@ -17,7 +16,10 @@ public class CreateContractCommandHandler(IContractService contractService, IAut
     {
         var organizations = await authorizationService.GetOrganizationsAsync(cancellationToken);
 
-        var validOrganization = organizations.Result.Any(x => x.OrganizationId == command.MeteringPointOwnerId && x.Tin == command.OrganizationTin);
+        var validOrganization = organizations
+            .Result
+            .Any(x => x.OrganizationId == command.MeteringPointOwnerId && x.Tin.Equals(command.OrganizationTin, StringComparison.OrdinalIgnoreCase));
+
         if (!validOrganization)
         {
             throw new BusinessException("An invalid organization was supplied");
@@ -30,12 +32,12 @@ public class CreateContractCommandHandler(IContractService contractService, IAut
     {
         var createContracts = command.Contracts.Select(x => new CreateContract { GSRN = x.Gsrn, StartDate = x.StartDate, EndDate = x.EndDate }).ToList();
 
-        var request = new CreateContractsRequest(createContracts, command.MeteringPointOwnerId, command.OrganizationTin, command.OrganizationName, command.IsTrial);
+        var request = new CreateContracts(createContracts, command.MeteringPointOwnerId, command.OrganizationTin, command.OrganizationName, command.IsTrial);
         var contractList = await contractService.CreateContracts(request);
 
         var createContractResponse = new CreateContractResponse
         {
-            Contracts = [.. contractList.Result.Select(x => new CreateContractResponseItem { Created = x.Created, Gsrn = x.GSRN })]
+            Contracts = [.. contractList.Result.Select(x => new CreateContractResponseItem { Created = x.Created, Gsrn = x.Gsrn, Id = x.Id })]
         };
 
         return createContractResponse;
@@ -61,8 +63,9 @@ public class CreateContractCommand : IRequest<CreateContractResponse>
 
 public class CreateContractResponseItem
 {
-    public long Created { get; set; }
-    public string Gsrn { get; init; } = "";
+    public Guid Id { get; init; }
+    public long Created { get; init; }
+    public string Gsrn { get; init; } = string.Empty;
 }
 
 public class CreateContractResponse

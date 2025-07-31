@@ -14,14 +14,6 @@ public class EditContractEndDate
     public long? EndDate { get; set; }
 }
 
-public class EditContractEndDate20230101
-{
-    /// <summary>
-    /// End Date for generation of certificates in Unix time seconds. Set to null for no end date
-    /// </summary>
-    public long? EndDate { get; set; }
-}
-
 public record EditContracts(
         List<EditContractEndDate> Contracts,
         [Required]

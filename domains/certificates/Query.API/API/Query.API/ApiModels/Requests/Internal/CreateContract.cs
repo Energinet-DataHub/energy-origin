@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace API.Query.API.ApiModels.Requests.Internal;
 
@@ -10,9 +9,8 @@ public class CreateContract
     /// <summary>
     /// Global Service Relation Number (GSRN) for the metering point
     /// </summary>
-    [JsonPropertyName("gsrn")]
     [Required]
-    public string GSRN { get; init; } = "";
+    public string Gsrn { get; init; } = "";
 
     /// <summary>
     /// Starting date for generation of certificates in Unix time seconds
