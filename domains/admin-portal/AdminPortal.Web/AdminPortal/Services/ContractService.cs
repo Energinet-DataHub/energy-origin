@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -19,44 +20,58 @@ public interface IContractService
 
 public class ContractService(HttpClient client) : IContractService
 {
+    private readonly string _mediaType = "application/json";
+    private readonly Encoding _encoding = Encoding.UTF8;
+
     public async Task<ContractList> CreateContracts(CreateContracts request)
     {
         var requestStr = JsonSerializer.Serialize(request);
-        var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
-        var response = await client.PostAsync($"api/certificates/admin-portal/internal-contracts", content);
-
-        if (!response.IsSuccessStatusCode)
+        var content = new StringContent(requestStr, _encoding, _mediaType);
+        var response = await client.PostAsync($"internal-contracts", content);
+        if (response.IsSuccessStatusCode)
         {
-            throw new BusinessException("It was not possible to create the contract");
+            var result = await response.Content.ReadFromJsonAsync<ContractList>();
+            return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
         }
 
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<ContractList>();
-        return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
+        switch (response.StatusCode)
+        {
+            case HttpStatusCode.BadRequest:
+            case HttpStatusCode.Conflict:
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new BusinessException(errorContent, response.StatusCode);
+            default:
+                throw new BusinessException("It was not possible to create the contract");
+        }
     }
 
     public async Task EditContracts(EditContracts request)
     {
         var requestStr = JsonSerializer.Serialize(request);
-        var content = new StringContent(requestStr, Encoding.UTF8, "application/json");
+        var content = new StringContent(requestStr, _encoding, _mediaType);
         var response = await client.PutAsync($"api/certificates/admin-portal/internal-contracts", content);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new BusinessException("It was not possible to edit the contract");
-        }
+        if (response.IsSuccessStatusCode) return;
 
-        response.EnsureSuccessStatusCode();
+        switch (response.StatusCode)
+        {
+            case HttpStatusCode.BadRequest:
+            case HttpStatusCode.Conflict:
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new BusinessException(errorContent, response.StatusCode);
+            case HttpStatusCode.Forbidden:
+            case HttpStatusCode.NotFound:
+                throw new BusinessException(string.Empty, response.StatusCode);
+            default:
+                throw new BusinessException("It was not possible to edit the contract");
+        }
     }
 }
 
 public class CreateContract
 {
     public string Gsrn { get; init; } = "";
-
     public long StartDate { get; init; }
-
     public long? EndDate { get; set; }
 }
 

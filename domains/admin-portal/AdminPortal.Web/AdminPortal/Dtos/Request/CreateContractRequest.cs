@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace API.Query.API.ApiModels.Requests.Internal;
+namespace AdminPortal.Dtos.Request;
 
 public class CreateContract
 {
@@ -29,10 +29,4 @@ public class CreateContract
 public record CreateContracts(
         List<CreateContract> Contracts,
         [Required]
-        Guid MeteringPointOwnerId,
-        [Required]
-        string OrganizationTin,
-        [Required]
-        string OrganizationName,
-        [Required]
-        bool IsTrial);
+        Guid MeteringPointOwnerId);
