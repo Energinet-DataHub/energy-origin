@@ -5,19 +5,18 @@ using AdminPortal._Features_;
 using AdminPortal.Dtos.Request;
 using EnergyOrigin.Setup.Exceptions;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPortal.Controllers;
 
-[Authorize]
+// [Authorize] TODO: CABOL - Enable again
 [Route("contracts")]
 public class ContractsController(IMediator mediator) : Controller
 {
     /// <summary>
     /// Create contracts that activates granular certificate generation for a metering point
     /// </summary>
-    [ValidateAntiForgeryToken]
+    // [ValidateAntiForgeryToken] TODO: CABOL - Enable again
     [HttpPost]
     public async Task<ActionResult> CreateContract([FromBody] CreateContracts createContracts, CancellationToken cancellationToken)
     {
@@ -44,7 +43,7 @@ public class ContractsController(IMediator mediator) : Controller
     /// <summary>
     /// Edit the end date for multiple contracts
     /// </summary>
-    [ValidateAntiForgeryToken]
+    // [ValidateAntiForgeryToken] TODO: CABOL - Enable again
     [HttpPut]
     public async Task<ActionResult> UpdateEndDate([FromBody] EditContracts editContracts, CancellationToken cancellationToken)
     {
