@@ -16,35 +16,35 @@ public class EditContractCommandHandler(IContractService contractService, IAutho
     {
         var organizations = await authorizationService.GetOrganizationsAsync(cancellationToken);
 
-        var validOrganization = organizations.Result.Any(x => x.OrganizationId == command.MeteringPointOwnerId && x.Tin == command.OrganizationTin);
-        if (!validOrganization)
+        var organization = organizations
+            .Result
+            .FirstOrDefault(x => x.OrganizationId == command.MeteringPointOwnerId);
+
+        if (organization is null)
         {
-            throw new BusinessException("An invalid organization was supplied");
+            throw new BusinessException("An invalid metering point owner was supplied");
         }
 
-        await EditContracts(command);
+        await EditContracts(command, organizationTin: organization.Tin, organizationName: organization.OrganizationName);
     }
 
-    private async Task EditContracts(EditContractCommand command)
+    private async Task EditContracts(EditContractCommand command, string organizationTin, string organizationName)
     {
         var editContracts = command.Contracts.Select(x => new EditContractEndDate { Id = x.Id, EndDate = x.EndDate }).ToList();
 
-        var request = new EditContracts(editContracts, command.MeteringPointOwnerId, command.OrganizationTin, command.OrganizationName);
+        var request = new EditContracts(editContracts, command.MeteringPointOwnerId, organizationTin, organizationName);
         await contractService.EditContracts(request);
     }
 }
 
 public class EditContractItem
 {
-    public required Guid Id { get; init; }
+    public Guid Id { get; init; }
     public long? EndDate { get; set; }
 }
 
 public class EditContractCommand : IRequest
 {
-
     public required List<EditContractItem> Contracts { get; set; }
     public Guid MeteringPointOwnerId { get; set; }
-    public required string OrganizationTin { get; set; }
-    public required string OrganizationName { get; set; }
 }

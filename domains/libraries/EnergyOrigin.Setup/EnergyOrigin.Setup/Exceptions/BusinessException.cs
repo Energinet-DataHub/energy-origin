@@ -17,7 +17,7 @@ public class BusinessException : Exception
         StatusCode = HttpStatusCode.BadRequest;
     }
 
-    protected BusinessException(string msg, HttpStatusCode statusCode) : base(msg)
+    public BusinessException(string msg, HttpStatusCode statusCode) : base(msg)
     {
         StatusCode = statusCode;
     }
