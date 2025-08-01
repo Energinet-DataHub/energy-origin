@@ -39,9 +39,9 @@ public class ContractService(HttpClient client) : IContractService
             case HttpStatusCode.BadRequest:
             case HttpStatusCode.Conflict:
                 var errorContent = await response.Content.ReadAsStringAsync();
-                throw new BusinessException(errorContent, response.StatusCode);
+                throw new ContractsException(errorContent, response.StatusCode);
             default:
-                throw new BusinessException("It was not possible to create the contract");
+                throw new ContractsException("It was not possible to create the contract", HttpStatusCode.BadRequest);
         }
     }
 
@@ -58,12 +58,12 @@ public class ContractService(HttpClient client) : IContractService
             case HttpStatusCode.BadRequest:
             case HttpStatusCode.Conflict:
                 var errorContent = await response.Content.ReadAsStringAsync();
-                throw new BusinessException(errorContent, response.StatusCode);
+                throw new ContractsException(errorContent, response.StatusCode);
             case HttpStatusCode.Forbidden:
             case HttpStatusCode.NotFound:
-                throw new BusinessException(string.Empty, response.StatusCode);
+                throw new ContractsException(string.Empty, response.StatusCode);
             default:
-                throw new BusinessException("It was not possible to edit the contract");
+                throw new ContractsException("It was not possible to edit the contract", HttpStatusCode.BadRequest);
         }
     }
 }
