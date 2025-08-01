@@ -18,13 +18,14 @@ public class EditContractCommandHandlerTests
         // Arrange
         var organizationId = Guid.NewGuid();
         var organizationTin = "12345678";
+        var organizationName = "Test Organization";
 
         var mockContractService = Substitute.For<IContractService>();
         mockContractService.EditContracts(Arg.Any<EditContracts>()).Returns(Task.CompletedTask);
 
         var mockAuthorizationService = Substitute.For<IAuthorizationService>();
         mockAuthorizationService.GetOrganizationsAsync(Arg.Any<CancellationToken>())
-            .Returns(new GetOrganizationsResponse([new GetOrganizationsResponseItem(organizationId, "Test Organization", organizationTin, "Normal")]));
+            .Returns(new GetOrganizationsResponse([new GetOrganizationsResponseItem(organizationId, organizationName, organizationTin, "Normal")]));
 
         var command = new EditContractCommand
         {
@@ -33,8 +34,6 @@ public class EditContractCommandHandlerTests
                 new EditContractItem { Id = Guid.NewGuid(), EndDate = 1720000000 }
             ],
             MeteringPointOwnerId = organizationId,
-            OrganizationTin = organizationTin,
-            OrganizationName = "Test Organization",
         };
 
         var handler = new EditContractCommandHandler(mockContractService, mockAuthorizationService);
@@ -47,15 +46,12 @@ public class EditContractCommandHandlerTests
         await mockContractService.Received(1).EditContracts(Arg.Is<EditContracts>(x =>
             x.Contracts.Count == 1 &&
             x.Contracts[0].Id == command.Contracts.First().Id &&
-            x.MeteringPointOwnerId == command.MeteringPointOwnerId &&
-            x.OrganizationTin == command.OrganizationTin &&
-            x.OrganizationName == command.OrganizationName));
+            x.MeteringPointOwnerId == command.MeteringPointOwnerId));
     }
 
-    [InlineData("65f76bf5-b308-48af-bca7-f8c36620abd4", "12345677")]
-    [InlineData("2b198070-373e-4e3e-9bf6-5e94b96987d7", "12345678")]
+    [InlineData("2b198070-373e-4e3e-9bf6-5e94b96987d7")]
     [Theory]
-    public async Task GivenEditContract_WhenOrganizationIsNotValid_ThenContractIsEdited(string organizationId, string tin)
+    public async Task GivenEditContract_WhenOrganizationIsNotValid_ThenContractIsEdited(string organizationId)
     {
         // Arrange
         var mockContractService = Substitute.For<IContractService>();
@@ -73,8 +69,6 @@ public class EditContractCommandHandlerTests
                 new EditContractItem { Id = Guid.NewGuid(), EndDate = 1720000000 }
             ],
             MeteringPointOwnerId = new Guid(organizationId),
-            OrganizationTin = tin,
-            OrganizationName = "Test Organization",
         };
 
         var handler = new EditContractCommandHandler(mockContractService, mockAuthorizationService);

@@ -63,7 +63,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var insertedIntoDb = new CreateContracts([
             new CreateContract
             {
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
                 EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
             },
@@ -80,7 +80,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             await response.Content.ReadFromJsonAsync<ContractsForAdminPortalResponse>(cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(internalContractsApiResponse);
         Assert.NotEmpty(internalContractsApiResponse.Result);
-        Assert.Equal(internalContractsApiResponse.Result.First().GSRN, insertedIntoDb.Contracts[0].Gsrn);
+        Assert.Equal(internalContractsApiResponse.Result.First().GSRN, insertedIntoDb.Contracts[0].GSRN);
         Assert.IsType<ContractsForAdminPortalResponse>(internalContractsApiResponse);
     }
 
@@ -107,14 +107,14 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var body = new CreateContracts([
             new CreateContract
             {
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 EndDate = endDate,
                 StartDate = startDate
             },
 
             new CreateContract
             {
-                Gsrn = gsrn1,
+                GSRN = gsrn1,
                 EndDate = endDate,
                 StartDate = startDate
             }
@@ -150,14 +150,14 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var body = new CreateContracts([
             new CreateContract
             {
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 EndDate = endDate,
                 StartDate = startDate
             },
 
             new CreateContract
             {
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 EndDate = overlappingEnddate,
                 StartDate = startDate
             }
@@ -180,7 +180,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
 
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -215,7 +215,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
 
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -242,7 +242,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -271,7 +271,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
 
         var body = new CreateContracts([
             new CreateContract
-            { Gsrn = gsrn, StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(), EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds() }
+            { GSRN = gsrn, StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(), EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds() }
         ], orgId, OrganizationTin, OrganizationName, false);
 
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
@@ -296,7 +296,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var body = new CreateContracts([
             new CreateContract
             {
-                Gsrn = gsrn2,
+                GSRN = gsrn2,
                 StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
                 EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
             }
@@ -320,7 +320,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -347,7 +347,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -383,8 +383,8 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var startDateContract2 = now.AddDays(3).ToUnixTimeSeconds();
         var endDateContract2 = now.AddDays(4).ToUnixTimeSeconds();
 
-        var contract1Body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }], orgId, OrganizationTin, OrganizationName, false);
-        var contract2Body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }], orgId, OrganizationTin, OrganizationName, false);
+        var contract1Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }], orgId, OrganizationTin, OrganizationName, false);
+        var contract2Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }], orgId, OrganizationTin, OrganizationName, false);
 
         using var responseContract1 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract1Body, cancellationToken: TestContext.Current.CancellationToken);
         using var responseContract2 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract2Body, cancellationToken: TestContext.Current.CancellationToken);
@@ -415,14 +415,14 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var startDateContract2 = now.AddDays(2).ToUnixTimeSeconds();
         var endDateContract2 = now.AddDays(5).ToUnixTimeSeconds();
 
-        var contract1Body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }], orgId, OrganizationTin, OrganizationName, false);
-        var contract2Body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }], orgId, OrganizationTin, OrganizationName, false);
+        var contract1Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract1, EndDate = endDateContract1 }], orgId, OrganizationTin, OrganizationName, false);
+        var contract2Body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDateContract2, EndDate = endDateContract2 }], orgId, OrganizationTin, OrganizationName, false);
 
         using var responseContract1 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract1Body, cancellationToken: TestContext.Current.CancellationToken);
         using var responseContract2 = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", contract2Body, cancellationToken: TestContext.Current.CancellationToken);
 
         var responseContent2 = await responseContract2.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        responseContent2.Should().Contain($"{contract2Body.Contracts[0].Gsrn} already has an active contract");
+        responseContent2.Should().Contain($"{contract2Body.Contracts[0].GSRN} already has an active contract");
         responseContract2.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
         using var client = _factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
@@ -444,7 +444,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var body = new CreateContracts([
             new CreateContract
             {
-                Gsrn = invalidGsrn,
+                GSRN = invalidGsrn,
                 StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
                 EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
             }
@@ -466,7 +466,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var body = new CreateContracts([
             new CreateContract
             {
-                Gsrn = gsrnNotFound,
+                GSRN = gsrnNotFound,
                 StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
                 EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
             }
@@ -491,7 +491,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var body = new CreateContracts([
             new CreateContract
             {
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(),
                 EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds()
             }
@@ -523,7 +523,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             .Range(1, 10)
             .Select(_ =>
                 adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts",
-                    new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = now, EndDate = futureDate }], orgId, OrganizationTin, OrganizationName, false)));
+                    new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = now, EndDate = futureDate }], orgId, OrganizationTin, OrganizationName, false)));
 
         var responses = await Task.WhenAll(tenConcurrentRequests);
 
@@ -548,7 +548,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -580,7 +580,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
 
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -610,7 +610,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
 
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -648,13 +648,13 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             new CreateContract
             {
                 EndDate = endDate1,
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 StartDate = startDate1
             },
             new CreateContract
             {
                 EndDate = endDate,
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 StartDate = startDate
             }
         ], orgId, OrganizationTin, OrganizationName, false);
@@ -701,13 +701,13 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var body = new CreateContracts([
             new CreateContract
             {
-                Gsrn = gsrn1,
+                GSRN = gsrn1,
                 StartDate = startDate1
             },
 
             new CreateContract
             {
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 StartDate = startDate
             }
         ], orgId, OrganizationTin, OrganizationName, false);
@@ -782,7 +782,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var body = new CreateContracts([
             new CreateContract
             {
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 StartDate = start.ToUnixTimeSeconds(),
                 EndDate = start.AddYears(1).ToUnixTimeSeconds()
             }
@@ -822,7 +822,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var body = new CreateContracts([
             new CreateContract
             {
-                Gsrn = gsrn,
+                GSRN = gsrn,
                 StartDate = start.ToUnixTimeSeconds(),
                 EndDate = start.AddYears(1).ToUnixTimeSeconds()
             }
@@ -861,7 +861,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }], orgId, OrganizationTin, OrganizationName, false);
         using var contractResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -887,7 +887,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
 
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { Gsrn = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }], orgId, OrganizationTin, OrganizationName, false);
         using var contractResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
         contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 

@@ -10,32 +10,33 @@ using MediatR;
 namespace AdminPortal._Features_;
 
 public class CreateContractCommandHandler(IContractService contractService, IAuthorizationService authorizationService)
-    : IRequestHandler<CreateContractCommand, CreateContractResponse>
+    : IRequestHandler<CreateContractCommand, CreateContractCommandResponse>
 {
-    public async Task<CreateContractResponse> Handle(CreateContractCommand command, CancellationToken cancellationToken)
+    public async Task<CreateContractCommandResponse> Handle(CreateContractCommand command, CancellationToken cancellationToken)
     {
         var organizations = await authorizationService.GetOrganizationsAsync(cancellationToken);
 
-        var validOrganization = organizations
+        var organization = organizations
             .Result
-            .Any(x => x.OrganizationId == command.MeteringPointOwnerId && x.Tin.Equals(command.OrganizationTin, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(x => x.OrganizationId == command.MeteringPointOwnerId);
 
-        if (!validOrganization)
+        if (organization is null)
         {
-            throw new BusinessException("An invalid organization was supplied");
+            throw new BusinessException("An invalid metering point owner was supplied");
         }
 
-        return await CreateContracts(command);
+        var isTrial = organization.Status.Equals("Trial", StringComparison.OrdinalIgnoreCase);
+        return await CreateContracts(command, organizationTin: organization.Tin, organizationName: organization.OrganizationName, isTrial: isTrial);
     }
 
-    private async Task<CreateContractResponse> CreateContracts(CreateContractCommand command)
+    private async Task<CreateContractCommandResponse> CreateContracts(CreateContractCommand command, string organizationTin, string organizationName, bool isTrial)
     {
         var createContracts = command.Contracts.Select(x => new CreateContract { Gsrn = x.Gsrn, StartDate = x.StartDate, EndDate = x.EndDate }).ToList();
 
-        var request = new CreateContracts(createContracts, command.MeteringPointOwnerId, command.OrganizationTin, command.OrganizationName, command.IsTrial);
+        var request = new CreateContracts(createContracts, command.MeteringPointOwnerId, organizationTin, organizationName, isTrial);
         var contractList = await contractService.CreateContracts(request);
 
-        var createContractResponse = new CreateContractResponse
+        var createContractResponse = new CreateContractCommandResponse
         {
             Contracts = [.. contractList.Result.Select(x => new CreateContractResponseItem { Created = x.Created, Gsrn = x.Gsrn, Id = x.Id })]
         };
@@ -51,13 +52,10 @@ public class CreateContractItem
     public long? EndDate { get; set; }
 }
 
-public class CreateContractCommand : IRequest<CreateContractResponse>
+public class CreateContractCommand : IRequest<CreateContractCommandResponse>
 {
     public required List<CreateContractItem> Contracts { get; set; }
     public Guid MeteringPointOwnerId { get; set; }
-    public required string OrganizationTin { get; set; }
-    public required string OrganizationName { get; set; }
-    public bool IsTrial { get; set; }
 }
 
 public class CreateContractResponseItem
@@ -67,7 +65,7 @@ public class CreateContractResponseItem
     public string Gsrn { get; init; } = string.Empty;
 }
 
-public class CreateContractResponse
+public class CreateContractCommandResponse
 {
     public required List<CreateContractResponseItem> Contracts { get; set; }
 }
