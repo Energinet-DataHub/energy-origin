@@ -31,7 +31,7 @@ public class ContractsController(IMediator mediator) : Controller
             var result = await mediator.Send(command, cancellationToken);
             return Created();
         }
-        catch (BusinessException ex)
+        catch (ContractsException ex)
         {
             return new ObjectResult(new { message = ex.Message })
             {
@@ -58,7 +58,7 @@ public class ContractsController(IMediator mediator) : Controller
             await mediator.Send(command, cancellationToken);
             return Created();
         }
-        catch (BusinessException ex)
+        catch (ContractsException ex)
         {
             return new ObjectResult(new { message = ex.Message })
             {
