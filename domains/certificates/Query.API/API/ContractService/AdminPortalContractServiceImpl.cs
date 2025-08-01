@@ -33,7 +33,7 @@ internal class AdminPortalContractServiceImpl(
     {
         var meteringPoints = await meteringPointsClient.GetMeteringPoints(contracts.MeteringPointOwnerId.ToString(), cancellationToken);
         var contractsByGsrn =
-            await GetAllContractsByGsrn([.. contracts.Contracts.Select(c => c.Gsrn)], cancellationToken);
+            await GetAllContractsByGsrn([.. contracts.Contracts.Select(c => c.GSRN)], cancellationToken);
 
         var newContracts = new List<CertificateIssuingContract>();
         var number = 0;
@@ -44,19 +44,19 @@ internal class AdminPortalContractServiceImpl(
                 ? DateTimeOffset.FromUnixTimeSeconds(contract.EndDate.Value)
                 : null;
 
-            var matchingMeteringPoint = meteringPoints?.Result.Find(mp => mp.Gsrn == contract.Gsrn);
+            var matchingMeteringPoint = meteringPoints?.Result.Find(mp => mp.Gsrn == contract.GSRN);
 
             if (matchingMeteringPoint == null)
             {
-                return new GsrnNotFound(contract.Gsrn);
+                return new GsrnNotFound(contract.GSRN);
             }
 
             if (!matchingMeteringPoint.CanBeUsedForIssuingCertificates)
             {
-                return new CannotBeUsedForIssuingCertificates(contract.Gsrn);
+                return new CannotBeUsedForIssuingCertificates(contract.GSRN);
             }
 
-            var contractsGsrn = contractsByGsrn.Where(c => c.GSRN == contract.Gsrn).ToList();
+            var contractsGsrn = contractsByGsrn.Where(c => c.GSRN == contract.GSRN).ToList();
 
             var overlappingContract = contractsGsrn.Find(c =>
                 c.Overlaps(startDate, endDate));
@@ -81,12 +81,12 @@ internal class AdminPortalContractServiceImpl(
             var recipientResponse = await stampClient.CreateRecipient(walletEndpoint, cancellationToken);
 
             var sponsorshipEndDate = await unitOfWork.SponsorshipRepo
-                .GetEndDateAsync(new Gsrn(contract.Gsrn), cancellationToken);
+                .GetEndDateAsync(new Gsrn(contract.GSRN), cancellationToken);
 
 
             var issuingContract = CertificateIssuingContract.Create(
                 contractNumber,
-                new Gsrn(contract.Gsrn),
+                new Gsrn(contract.GSRN),
                 matchingMeteringPoint.GridArea,
                 Map(matchingMeteringPoint.MeteringPointType),
                 contracts.MeteringPointOwnerId.ToString(),
@@ -111,7 +111,7 @@ internal class AdminPortalContractServiceImpl(
                 otherOrganizationName: string.Empty,
                 entityType: ActivityLogEntry.EntityTypeEnum.MeteringPoint,
                 actionType: ActivityLogEntry.ActionTypeEnum.Activated,
-                entityId: contract.Gsrn)
+                entityId: contract.GSRN)
             );
             number++;
         }
