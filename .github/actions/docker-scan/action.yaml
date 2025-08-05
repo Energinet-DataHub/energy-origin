@@ -92,7 +92,7 @@ runs:
       with:
         subject-name:  "${{ env.LOWERCASED }}"
         subject-digest: "${{ inputs.image-digest }}"
-        sbom-path: sbom.enriched.cyclonedx.json
+        sbom-path: ${{ env.SBOM_FILE }}
         push-to-registry: true
         show-summary: true
 
