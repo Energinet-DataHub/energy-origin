@@ -27,7 +27,6 @@ internal class AdminPortalContractServiceImpl(
     IUnitOfWork unitOfWork,
     ILogger<ContractServiceImpl> logger) : IAdminPortalContractService
 {
-    // TODO: CABOL - Are we sending back the wrong id? Setting the wrong id? Edit is not working and the ETT frontend does not see our contract as created
     public async Task<CreateContractResult> Create(
             CreateContracts contracts,
             CancellationToken cancellationToken)

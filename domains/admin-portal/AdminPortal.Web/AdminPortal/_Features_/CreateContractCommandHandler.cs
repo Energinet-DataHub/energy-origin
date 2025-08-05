@@ -69,17 +69,3 @@ public class CreateContractCommandResponse
 {
     public required List<CreateContractResponseItem> Contracts { get; set; }
 }
-
-
-// TODO: CABOL - Do we want to return more info here?
-// public static Contract CreateFrom(DataContext.Models.CertificateIssuingContract contract) =>
-//     new()
-//     {
-//         Id = contract.Id,
-//         GSRN = contract.GSRN,
-//         StartDate = contract.StartDate.ToUnixTimeSeconds(),
-//         EndDate = contract.EndDate?.ToUnixTimeSeconds(),
-//         Created = contract.Created.ToUnixTimeSeconds(),
-//         MeteringPointType = contract.MeteringPointType.ToMeteringPointTypeResponse(),
-//         Technology = Technology.From(contract.Technology)
-//     };
