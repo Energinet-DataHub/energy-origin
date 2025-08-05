@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPortal.Controllers;
 
-
 [Authorize]
 [Route("contracts")]
 public class ContractsController(IMediator mediator) : Controller
