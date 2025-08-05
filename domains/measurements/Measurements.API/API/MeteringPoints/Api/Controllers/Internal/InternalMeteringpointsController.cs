@@ -5,13 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.MeteringPoints.Api.Dto.Responses;
 using API.MeteringPoints.Api.Dto.Responses.Enums;
-using API.MeteringPoints.Api.Models;
 using Asp.Versioning;
 using EnergyOrigin.TokenValidation.b2c;
 using Meteringpoint.V1;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using MeteringPoint = API.MeteringPoints.Api.Dto.Responses.MeteringPoint;
 
 namespace API.MeteringPoints.Api.Controllers.Internal;

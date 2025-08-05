@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using System;
 using EnergyOrigin.WalletClient;
 using WalletClient;
+using API.ContractService.Clients.Internal;
 
 namespace API.ContractService;
 
@@ -16,9 +17,13 @@ public static class Startup
         services.AddScoped<IContractService, ContractServiceImpl>();
         services.AddScoped<IAdminPortalContractService, AdminPortalContractServiceImpl>();
 
-        services.AddScoped<IMeteringPointsClient, MeteringPointsClient>();
-
         services.AddHttpClient<IMeteringPointsClient, MeteringPointsClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<MeasurementsOptions>>().Value;
+            client.BaseAddress = new Uri(options.Url);
+        });
+
+        services.AddHttpClient<IAdminPortalMeteringPointsClient, AdminPortalMeteringPointsClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<IOptions<MeasurementsOptions>>().Value;
             client.BaseAddress = new Uri(options.Url);
