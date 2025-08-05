@@ -101,7 +101,7 @@
     <text x="612.125" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">21</text>
     <text x="636.875" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">22</text>
     <text x="661.625" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194);">23</text>
-    <text x="686.375" y="359" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194); font-style: italic;">(UTC)</text>
+    <text x="686.375" y="341" text-anchor="middle" style="cursor: default; font-size: 12px; fill: rgb(194,194,194); font-style: italic;">(UTC)</text>
   </g>
   <g class="highcharts-legend" data-z-index="7" transform="translate(119,355)">
     <rect fill="none" class="highcharts-legend-box" rx="0" ry="0" stroke="#999999" stroke-width="0" x="0" y="0" width="517" height="30" />
