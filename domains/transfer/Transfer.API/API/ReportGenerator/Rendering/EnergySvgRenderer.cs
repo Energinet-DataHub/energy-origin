@@ -195,7 +195,7 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
             new XAttribute("x", utcX.ToString(CultureInfo.InvariantCulture)),
             new XAttribute("y", MARGIN_TOP + PLOT_HEIGHT + 45),
             new XAttribute("text-anchor", "middle"),
-            new XAttribute("style", $"font-size: 12px; fill: {Colors.HourText}; font-style: italic;"),
+            new XAttribute("style", $"cursor: default; font-size: 12px; fill: {Colors.HourText}; font-style: italic;"),
             "(UTC)"
         ));
 
