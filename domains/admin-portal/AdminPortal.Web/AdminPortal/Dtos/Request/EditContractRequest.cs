@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace API.Query.API.ApiModels.Requests.Internal;
+namespace AdminPortal.Dtos.Request;
 
 public class EditContractEndDate
 {
@@ -17,8 +17,4 @@ public class EditContractEndDate
 public record EditContracts(
         List<EditContractEndDate> Contracts,
         [Required]
-        Guid MeteringPointOwnerId,
-        [Required]
-        string OrganizationTin,
-        [Required]
-        string OrganizationName);
+        Guid MeteringPointOwnerId);
