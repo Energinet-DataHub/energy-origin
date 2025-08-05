@@ -266,7 +266,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         string gsrn,
         DateTimeOffset startDate,
         MeteringPointType meteringPointType,
-        Mocks.MeasurementsWireMock measurementsWireMock,
+        MeasurementsWireMock measurementsWireMock,
         Technology technology = null!)
     {
         measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
