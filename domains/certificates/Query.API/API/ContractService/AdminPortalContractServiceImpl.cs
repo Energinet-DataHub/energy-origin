@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using API.ContractService.Clients;
+using API.ContractService.Clients.Internal;
 using API.Query.API.ApiModels.Requests.Internal;
 using API.UnitOfWork;
 using DataContext.Models;
@@ -21,7 +21,7 @@ using Technology = DataContext.ValueObjects.Technology;
 namespace API.ContractService;
 
 internal class AdminPortalContractServiceImpl(
-    IMeteringPointsClient meteringPointsClient,
+    IAdminPortalMeteringPointsClient meteringPointsClient,
     IWalletClient walletClient,
     IStampClient stampClient,
     IUnitOfWork unitOfWork,
@@ -220,7 +220,7 @@ internal class AdminPortalContractServiceImpl(
         throw new ArgumentException($"Unsupported MeterType {type}");
     }
 
-    private static Technology? Map(MeterType meterType, Clients.Technology technology)
+    private static Technology? Map(MeterType meterType, Clients.Internal.Technology technology)
     {
         if (meterType == MeterType.Production)
         {

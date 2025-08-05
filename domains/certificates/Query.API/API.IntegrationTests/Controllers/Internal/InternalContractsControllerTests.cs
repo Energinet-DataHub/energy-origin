@@ -19,7 +19,7 @@ using EnergyOrigin.Setup;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Technology = API.ContractService.Clients.Technology;
+using Technology = API.ContractService.Clients.Internal.Technology;
 
 namespace API.IntegrationTests.Controllers.Internal;
 
@@ -52,7 +52,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task Given_ContractsExist_When_CallingInternalContractsEndpoints_Then_Return200ok_With_PopulatedContractsForAdminPortalResponse()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var orgId = Guid.NewGuid();
 
@@ -90,7 +90,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         var gsrn1 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
-        _measurementsWireMock.SetupMeteringPointsResponse(
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(
             new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
             {
                 (gsrn, MeteringPointType.Production, null, true),
@@ -132,7 +132,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
-        _measurementsWireMock.SetupMeteringPointsResponse(
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(
             new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
             {
                 (gsrn, MeteringPointType.Production, null, true),
@@ -171,7 +171,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task CreateContract_ActivateWithEndDate_Created()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
@@ -207,7 +207,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task CreateContract_ActivateWithEndDateAndConsumptionType_Created()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Consumption);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Consumption);
 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
@@ -235,7 +235,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task CreateContract_ActivateWithoutEndDate_Created()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
@@ -263,7 +263,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task CreateContract_GsrnAlreadyExistsInDb_Conflict()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
@@ -274,8 +274,11 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             { GSRN = gsrn, StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(), EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds() }
         ], orgId, OrganizationTin, OrganizationName, false);
 
+        // 574724831373413171
+
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
+        var str = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         using var conflictResponse = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
@@ -288,7 +291,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
         var gsrn1 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         var gsrn2 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn1, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn1, MeteringPointType.Production);
 
         var orgId = Guid.NewGuid();
         var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
@@ -312,7 +315,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Consumption, technology);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Consumption, technology);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -339,7 +342,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         var technology = new Technology(AibFuelCode: "F01040100", AibTechCode: "T010000");
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, technology);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production, technology);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -368,7 +371,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -400,7 +403,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -436,7 +439,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         var invalidGsrn = "invalid GSRN";
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var orgId = Guid.NewGuid();
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
@@ -483,7 +486,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task CreateContract_CannotBeUsedForIssuingCertificates_Conflict()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production, canBeUsedforIssuingCertificates: false);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production, canBeUsedforIssuingCertificates: false);
 
         var orgId = Guid.NewGuid();
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
@@ -508,7 +511,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task CreateContract_ConcurrentRequests_OnlyOneContractCreated()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -539,7 +542,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task EditEndDate_StartsWithNoEndDate_HasEndDate()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -570,7 +573,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task EditEndDate_SetsToNoEndDate_HasNoEndDate()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -601,7 +604,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task EditEndDate_WithoutEndDate_Ended()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -632,7 +635,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task UpdateEndDate_OverlappingContract_ReturnsConflict()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -682,7 +685,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         var gsrn1 = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(
             new List<(string gsrn, MeteringPointType type, Technology? technology, bool CanBeUsedForIssuingCertificates)>
             {
                 (gsrn, MeteringPointType.Production, null, true),
@@ -745,7 +748,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task EditEndDate_NoContractCreated_NoContract()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var orgId = Guid.NewGuid();
         using var adminPortalClient = _factory.CreateB2CAuthenticatedClient(_factory.AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
@@ -770,7 +773,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task EditEndDate_NewEndDateBeforeStartDate_BadRequest()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
@@ -810,7 +813,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     public async Task EditEndDate_UserIsNotOwnerOfMeteringPoint_Forbidden()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var orgId = Guid.NewGuid();
         await _factory.CreateWallet(orgId.ToString());
@@ -852,7 +855,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         // Create contract
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
@@ -879,7 +882,7 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
     {
         // Create contract
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
-        _measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+        _measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn, MeteringPointType.Production);
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
