@@ -39,11 +39,21 @@ runs:
       uses: anchore/sbom-action@9246b90769f852b3a8921f330c59e0b3f439d6e9 # v0.20.1
       with:
         image: "${{ env.LOWERCASED }}@${{ inputs.image-digest }}"
-        format: spdx-json
-        output-file: sbom.spdx.json
+        format: cyclonedx-json
+        output-file: sbom.cyclonedx.json
         upload-artifact: true
-      env:
-        SYFT_SCOPE: all-layers
+
+    - name: Install parlay (v0.9.0)
+      shell: bash
+      run: |
+        curl -fsSL https://github.com/snyk/parlay/releases/download/v0.9.0/parlay_Linux_x86_64.tar.gz -o parlay.tgz
+        tar -xzf parlay.tgz
+        sudo mv parlay /usr/local/bin/parlay
+        parlay --version
+
+    - name: Enrich SBOM
+      shell: bash
+      run: parlay ecosystems enrich sbom.cyclonedx.json > sbom.enriched.cyclonedx.json
 
     - name: Attest Provenance for docker image using SLSA framework
       uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
@@ -58,7 +68,7 @@ runs:
       with:
         subject-name:  "${{ env.LOWERCASED }}"
         subject-digest: "${{ inputs.image-digest }}"
-        sbom-path: sbom.spdx.json
+        sbom-path: sbom.enriched.cyclonedx.json
         push-to-registry: true
         show-summary: true
 
@@ -66,7 +76,7 @@ runs:
       uses: anchore/scan-action@be7a22da4f22dde446c4c4c099887ff5b256526c # v6.3.0
       id: scan
       with:
-        sbom: sbom.spdx.json
+        sbom: sbom.enriched.cyclonedx.json
         fail-build: false
         output-format: sarif
         output-file: results.sarif
