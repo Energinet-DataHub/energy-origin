@@ -17,9 +17,6 @@ fi
 EOR
 RUN dotnet tool restore || true
 RUN dotnet publish ${PROJECT} -c Release -o /app/publish
-RUN dotnet tool install --global nuget-license \
-    && export PATH="$PATH:/root/.dotnet/tools" \
-    && nuget-license -i ${PROJECT} -t -o JsonPretty -fo /app/publish/licenses.json
 WORKDIR /app/publish
 RUN rm -f appsettings.json appsettings.*.json || true
 RUN <<EOR
@@ -36,7 +33,6 @@ COPY --from=build /app/migrations /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
-COPY --from=build /app/publish/licenses.json /licenses/licenses.json
 EXPOSE 8080
 EXPOSE 8081
 ENTRYPOINT ["/app/main"]
