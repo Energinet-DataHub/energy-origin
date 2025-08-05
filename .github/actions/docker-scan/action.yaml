@@ -42,6 +42,10 @@ runs:
         format: cyclonedx-json
         output-file: sbom.cyclonedx.json
         upload-artifact: true
+      env:
+        SYFT_SCOPE: "all-layers"
+
+
 
     - name: Install parlay (v0.9.0)
       shell: bash
