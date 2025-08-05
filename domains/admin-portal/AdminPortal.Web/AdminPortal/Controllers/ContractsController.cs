@@ -58,7 +58,7 @@ public class ContractsController(IMediator mediator) : Controller
         try
         {
             await mediator.Send(command, cancellationToken);
-            return Created();
+            return Ok();
         }
         catch (ContractsException ex)
         {
