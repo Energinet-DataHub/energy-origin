@@ -133,15 +133,15 @@ public class CreateContractCommandHandlerTests
             x.IsTrial == true));
     }
 
-    [InlineData("2b198070-373e-4e3e-9bf6-5e94b96987d7")]
-    [Theory]
-    public async Task GivenCreateContract_WhenOrganizationIsNotValid_ThenContractIsNotCreated(string organizationId)
+    [Fact]
+    public async Task GivenCreateContract_WhenOrganizationIsNotValid_ThenContractIsNotCreated()
     {
         var mockContractService = Substitute.For<IContractService>();
 
         var organizationIdFromService = new Guid("65f76bf5-b308-48af-bca7-f8c36620abd4");
         var organizationTinFromService = "12345678";
         var organizationName = "Test Organization";
+        var organizationId = "2b198070-373e-4e3e-9bf6-5e94b96987d7";
         var mockAuthorizationService = Substitute.For<IAuthorizationService>();
         mockAuthorizationService.GetOrganizationsAsync(Arg.Any<CancellationToken>())
             .Returns(new GetOrganizationsResponse([new GetOrganizationsResponseItem(organizationIdFromService, organizationName, organizationTinFromService, "Normal")]));

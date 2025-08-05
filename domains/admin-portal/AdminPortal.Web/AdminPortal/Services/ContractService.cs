@@ -31,7 +31,7 @@ public class ContractService(HttpClient client) : IContractService
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<ContractList>();
-            return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
+            return result ?? throw new InvalidOperationException("ContractList could not be read from the response");
         }
 
         switch (response.StatusCode)
