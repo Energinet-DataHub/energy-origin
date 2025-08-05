@@ -44,12 +44,11 @@ public static class OidcConfigurationExtensions
             options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Email;
         });
 
-        // TODO: CABOL - Enable again
-        // var policy = env.IsDevelopment()
-        //     ? new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build()
-        //     : new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-        //
-        // services.AddAuthorizationBuilder().SetFallbackPolicy(policy);
+        var policy = env.IsDevelopment()
+            ? new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build()
+            : new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+
+        services.AddAuthorizationBuilder().SetFallbackPolicy(policy);
 
         return services;
     }
