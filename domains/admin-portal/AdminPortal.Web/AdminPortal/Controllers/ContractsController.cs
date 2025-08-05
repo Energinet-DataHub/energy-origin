@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPortal.Controllers;
 
+// TODO: CABOL - We are not sending back created information in the post response
+
 // [Authorize] TODO: CABOL - Enable again
 [Route("contracts")]
 public class ContractsController(IMediator mediator) : Controller
@@ -29,7 +31,7 @@ public class ContractsController(IMediator mediator) : Controller
         try
         {
             var result = await mediator.Send(command, cancellationToken);
-            return Created();
+            return Created(string.Empty, result);
         }
         catch (ContractsException ex)
         {

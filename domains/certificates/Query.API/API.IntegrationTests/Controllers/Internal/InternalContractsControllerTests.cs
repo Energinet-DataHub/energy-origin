@@ -274,8 +274,6 @@ public class InternalContractsControllerTests(IntegrationTestFixture fixture) : 
             { GSRN = gsrn, StartDate = DateTimeOffset.Now.ToUnixTimeSeconds(), EndDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds() }
         ], orgId, OrganizationTin, OrganizationName, false);
 
-        // 574724831373413171
-
         using var response = await adminPortalClient.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts", body, cancellationToken: TestContext.Current.CancellationToken);
 
         var str = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
