@@ -190,13 +190,13 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
                 d.Hour.ToString("D2"));
         }).ToList();
 
-        var utcX = MARGIN_LEFT + unitWidth * 24.5;
+        var utcX = MARGIN_LEFT + unitWidth * 25;
         labels.Add(new XElement(svg + "text",
             new XAttribute("x", utcX.ToString(CultureInfo.InvariantCulture)),
             new XAttribute("y", MARGIN_TOP + PLOT_HEIGHT + 27),
             new XAttribute("text-anchor", "middle"),
             new XAttribute("style", $"cursor: default; font-size: 12px; fill: {Colors.HourText}; font-style: italic;"),
-            "(UTC)"
+            " (UTC)"
         ));
 
         return new XElement(svg + "g",
