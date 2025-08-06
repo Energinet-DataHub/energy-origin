@@ -41,7 +41,43 @@ runs:
         image: "${{ env.LOWERCASED }}@${{ inputs.image-digest }}"
         format: cyclonedx-json
         output-file: sbom.cyclonedx.json
-        upload-artifact: true
+        upload-artifact: false
+      env:
+        SYFT_SCOPE: "all-layers"
+
+    - name: Install parlay (v0.9.0)
+      shell: bash
+      run: |
+        curl -fsSL https://github.com/snyk/parlay/releases/download/v0.9.0/parlay_Linux_x86_64.tar.gz -o parlay.tgz
+        tar -xzf parlay.tgz
+        sudo mv parlay /usr/local/bin/parlay
+        parlay --version
+
+    - name: Enrich SBOM
+      shell: bash
+      run: parlay ecosystems enrich sbom.cyclonedx.json > sbom.enriched.cyclonedx.json
+
+    - name: Name enriched SBOM for release
+      shell: bash
+      run: |
+        IMAGE_NAME_LC=$(echo "${{ inputs.image-name }}" | tr '[:upper:]' '[:lower:]')
+        DIGEST="${{ inputs.image-digest }}"
+        if [[ "$DIGEST" == sha256:* ]]; then
+          DIGEST_HASH="${DIGEST#sha256:}"
+        else
+          DIGEST_HASH="$DIGEST"
+        fi
+        OUT="${IMAGE_NAME_LC}_sha256_${DIGEST_HASH}.enriched.cyclonedx.json"
+        mv sbom.enriched.cyclonedx.json "$OUT"
+        echo "SBOM_FILE=$OUT" >> "$GITHUB_ENV"
+
+    - name: Upload enriched SBOM as artifact
+      uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      with:
+        name: ${{ env.SBOM_FILE }}
+        path: ${{ env.SBOM_FILE }}
+        if-no-files-found: error
+        retention-days: 7
 
     - name: Attest Provenance for docker image using SLSA framework
       uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
@@ -56,7 +92,7 @@ runs:
       with:
         subject-name:  "${{ env.LOWERCASED }}"
         subject-digest: "${{ inputs.image-digest }}"
-        sbom-path: sbom.cyclonedx.json
+        sbom-path: ${{ env.SBOM_FILE }}
         push-to-registry: true
         show-summary: true
 
@@ -64,7 +100,7 @@ runs:
       uses: anchore/scan-action@be7a22da4f22dde446c4c4c099887ff5b256526c # v6.3.0
       id: scan
       with:
-        sbom: sbom.cyclonedx.json
+        sbom: ${{ env.SBOM_FILE }}
         fail-build: false
         output-format: sarif
         output-file: results.sarif
