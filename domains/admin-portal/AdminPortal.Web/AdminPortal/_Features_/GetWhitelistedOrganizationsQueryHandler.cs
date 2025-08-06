@@ -24,12 +24,12 @@ public class GetWhitelistedOrganizationsQueryHandler(IAuthorizationService autho
     {
         var whitelistedOrganizations = await authorizationService.GetWhitelistedOrganizationsAsync(cancellationToken);
 
-        if (whitelistedOrganizations is null || !whitelistedOrganizations.Result.Any())
+        if (!whitelistedOrganizations.Result.Any())
         {
             return new WhitelistedOrganizationsQueryResult([]);
         }
-
         var companies = await transferService.GetCompanies([.. whitelistedOrganizations.Result.Select(w => w.Tin)]);
+        var organizations = await authorizationService.GetOrganizationsAsync(cancellationToken);
 
         var result = whitelistedOrganizations.Result
             .GroupJoin(
@@ -40,11 +40,19 @@ public class GetWhitelistedOrganizationsQueryHandler(IAuthorizationService autho
             )
             .SelectMany(
                 x => x.companyGroup.DefaultIfEmpty(),
-                (x, company) => new WhitelistedOrganizationViewModel
+                (x, company) =>
                 {
-                    OrganizationId = x.whiteListed.OrganizationId,
-                    CompanyName = company?.Name ?? string.Empty,
-                    Tin = x.whiteListed.Tin
+                    var orgStatus = organizations.Result
+                        .FirstOrDefault(o => o.OrganizationId == x.whiteListed.OrganizationId)
+                        ?.Status;
+
+                    return new WhitelistedOrganizationViewModel
+                    {
+                        OrganizationId = x.whiteListed.OrganizationId,
+                        CompanyName = company?.Name ?? string.Empty,
+                        Tin = x.whiteListed.Tin,
+                        Status = orgStatus ?? "Unknown"
+                    };
                 }
             )
             .ToList();
