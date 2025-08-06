@@ -539,8 +539,8 @@
                     </Metadata>
                     <InputClaims>
                         <InputClaim ClaimTypeReferenceId="self_grant_type" PartnerClaimType="grant_type" DefaultValue="client_credentials"/>
-                        <InputClaim ClaimTypeReferenceId="self_client_id" PartnerClaimType="client_id" DefaultValue="f00b9b4d-3c59-4c40-b209-2ef87e509f54"/> <!-- ett: ett-authorization-b2c client id: 44d0d03c-bd3f-47a9-97b2-c13eb8d8e901 -->
-                        <InputClaim ClaimTypeReferenceId="self_client_secret" PartnerClaimType="client_secret" DefaultValue="GGz..."/> <!-- ett: ett-authorization-b2c client secret: bTn...  -->
+                        <InputClaim ClaimTypeReferenceId="self_client_id" PartnerClaimType="client_id" DefaultValue="f00b9b4d-3c59-4c40-b209-2ef87e509f54"/> <!-- ett: ett-internal-authorization-b2c client id: 44d0d03c-bd3f-47a9-97b2-c13eb8d8e901 -->
+                        <InputClaim ClaimTypeReferenceId="self_client_secret" PartnerClaimType="client_secret" DefaultValue="GGz..."/> <!-- ett: ett-internal-authorization-b2c client secret: bTn...  -->
                         <InputClaim ClaimTypeReferenceId="self_scope" PartnerClaimType="scope" DefaultValue="https://datahubeopenerginet.onmicrosoft.com/energy-origin/.default"/>
                     </InputClaims>
                     <OutputClaims>

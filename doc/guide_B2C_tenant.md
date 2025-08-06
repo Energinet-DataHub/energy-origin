@@ -16,7 +16,7 @@ The following prerequiresites must be addressed before starting the configuratio
 
 #### B2C app registration
 
-Create registration for `ett-authorization-b2c` client. This client will be used by custom policies to make requests to `Authorization` service.
+Create registration for `ett-internal-authorization-b2c` client. This client will be used by custom policies to make requests to `Authorization` service.
 
 Navigate to `App registrations`.
 
@@ -26,7 +26,7 @@ Click `New registration`.
 
 ![New app registration](images/App_registrations_new.png)
 
-Enter `ett-authorization-b2c` in `Name`. Uncheck `Grant admin consent to openid and offline_access permission` checkbox. Finally click `Register`.
+Enter `ett-internal-authorization-b2c` in `Name`. Uncheck `Grant admin consent to openid and offline_access permission` checkbox. Finally click `Register`.
 
 ![New b2c app registration](images/App_registration_b2c.png)
 
