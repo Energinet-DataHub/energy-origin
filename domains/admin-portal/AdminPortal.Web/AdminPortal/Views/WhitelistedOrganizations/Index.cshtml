@@ -68,6 +68,7 @@
                             <th scope="col">Organisation Name</th>
                             <th scope="col">CVR Number</th>
                             <th scope="col">Org ID</th>
+                            <th scope="col">Status</th>
                             <th scope="col">Manage</th>
                         </tr>
                     </thead>
@@ -78,6 +79,7 @@
                                 <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.CompanyName</td>
                                 <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Tin</td>
                                 <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.OrganizationId</td>
+                                <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Status</td>
                                 <td>
                                     <button id="removeOrganizationButton" type="button" class="btn btn-light" onclick="onRemoveTinClicked(@org.Tin)">
                                         <i class="bi bi-minus-circle me-1"></i> Remove
@@ -215,12 +217,12 @@
                     let showRow = true;
 
                     if (globalFilter) {
-                        const rowText = Array.from(cells).slice(0, 3).map(cell => cell.textContent).join(' ').toLowerCase();
+                        const rowText = Array.from(cells).slice(0, 4).map(cell => cell.textContent).join(' ').toLowerCase();
                         showRow = rowText.includes(globalFilter);
                     }
 
                     Array.from(cells).forEach((cell, idx) => {
-                        if (globalFilter && idx < 3) {
+                        if (globalFilter && idx < 4) {
                             cell.innerHTML = highlightMatches(cell.dataset.originalHtml || cell.textContent, globalFilter);
                         } else {
                             cell.innerHTML = cell.dataset.originalHtml || cell.textContent;
