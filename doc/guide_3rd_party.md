@@ -190,41 +190,6 @@ var response = await httpClient.SendAsync(request);
 var meteringPoints = await response.Content.ReadFromJsonAsync<MeteringpointsResponse>();
 ```
 
-## Create Contract
-
-To enable certificates to be generated for a metering point, the metering point needs to be activated. Creating a contract on the metering point activates it. Use the <https://demo.energytrackandtrace.dk/developer#tag/Contracts/paths/~1api~1certificates~1contracts/post> endpoint.
-
-Use a GSRN number from the response described in [Get Metering Points](#get-metering-points). Certificates will be issued while a contract is active, make sure to specify appropriate start and end dates. End date may be `null` to create an open-ended contract.
-
-If the metering point owner does not already have a wallet, a new wallet will be created as part of the request. For both production and consumption certificates a contract is needed.
-
-```csharp
-var token = "<access-token>"; // Access token obtained with client-credentials
-var organizationId = "<organizationId>"; // One of the organizations you have consent to fetch data from
-var gsrn = "<gsrn>"; // One of the metering points GSRN's
-
-var contracts = new List<dynamic>();
-{
-    new
-    {
-        Gsrn = gsrn,
-        StartDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-        EndDate = DateTimeOffset.UtcNow.AddDays(20).ToUnixTimeSeconds(),
-    }
-};
-var request = new { Contracts = contracts };
-var jsonString = JsonSerializer.Serialize(test);
-
-var httpClient = new HttpClient();
-var request = new HttpRequestMessage(HttpMethod.Post, "https://demo.energytrackandtrace.dk/api/certificates/contracts?organizationId=" + organizationId )
-{
-    Content = new StringContent(jsonString, Encoding.UTF8, "application/json")
-};
-request.Headers.Authorization = new AuthenticationHeaderValue("bearer", accessToken);
-request.Headers.Add("X-API-Version", "1");
-var response = await httpClient.SendAsync(request);
-```
-
 ## Get Wallet
 
 Certificates will be issued to the organizations wallet, to obtain wallet information use the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1wallets/get> endpoint.
