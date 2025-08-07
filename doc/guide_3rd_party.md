@@ -10,9 +10,9 @@ In this document code examples are shown in `C#`, and all requests target the de
 
 Before following this guide, you need to complete an onboarding process with Energinet Energy Track & Trace (ETT). As part of this process you will receive credentials for machine-to-machine integration. These credentials consist of a `client-id` and a `client-secret`.
 
-The initial `client-secret` you receive will **only be valid for one month**. There is a Credentials API that must be used to generate a new `client-secret`. Secrets that aregenerated through this API will be valid for one year. A client can have two `client-secrets` configured.
+The initial `client-secret` you receive will **only be valid for one month**. There is a Credentials API that must be used to generate a new `client-secret`. Secrets that are generated through this API will be valid for one year. A client can have two `client-secrets` configured.
 
-The value of the `client-secret(s)` must be kept secret at all times. Use appropriate measures to store them securily while developing and deploying client systems.
+The value of the `client-secret(s)` must be kept secret at all times. Use appropriate measures to store them securely while developing and deploying client systems.
 
 It is possible to initiate a grant consent user flow on the ETT website from another website. In order for the flow to redirect the user back to the original website after granting consent, ETT will need a valid `redirect-url`. See [Consent](#consent) section. This `redirect-url` can be provided to Energinet as part of the onboarding process.
 
@@ -190,7 +190,9 @@ var response = await httpClient.SendAsync(request);
 var meteringPoints = await response.Content.ReadFromJsonAsync<MeteringpointsResponse>();
 ```
 
-## Create Contract
+## Create Contract (Trial only)
+
+**This feature can only be used by trial organizations.** Creating and editing contracts (metering points) for a Live organization is done by Energinet Datahub through a support request.
 
 To enable certificates to be generated for a metering point, the metering point needs to be activated. Creating a contract on the metering point activates it. Use the <https://demo.energytrackandtrace.dk/developer#tag/Contracts/paths/~1api~1certificates~1contracts/post> endpoint.
 
@@ -213,7 +215,7 @@ var contracts = new List<dynamic>();
     }
 };
 var request = new { Contracts = contracts };
-var jsonString = JsonSerializer.Serialize(test);
+var jsonString = JsonSerializer.Serialize(request);
 
 var httpClient = new HttpClient();
 var request = new HttpRequestMessage(HttpMethod.Post, "https://demo.energytrackandtrace.dk/api/certificates/contracts?organizationId=" + organizationId )
@@ -246,7 +248,7 @@ var wallet = await response.Content.ReadFromJsonAsync<WalletResponse>();
 
 In order to transfer certificates to another wallet. The receiving wallet owner will need to create a wallet endpoint.
 
-Create wallet endpoint using the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1wallets~1%7BwalletId%7D~1endpoints/post> endpoint. Use `Wallet id` from [](#get-wallet) and `organization id` from consent. see [Authorization](#authorization) for information about how to obtain `organization id`.
+Create wallet endpoint using the <https://demo.energytrackandtrace.dk/developer#tag/Wallet/paths/~1wallet-api~1wallets~1%7BwalletId%7D~1endpoints/post> endpoint. Use `Wallet id` from [Get Wallet](#get-wallet) and `organization id` from consent. see [Authorization](#authorization) for information about how to obtain `organization id`.
 
 ```csharp
 var token = "<access-token>"; // Access token obtained with client-credentials
@@ -366,7 +368,7 @@ var requestObject = new
 };
 
 var httpClient = new HttpClient();
-HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"https://demo.energytrackandtrace.dk/wallet-api/claims?organizationId={consumerConsents.OrganizationId}")
+HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"https://demo.energytrackandtrace.dk/wallet-api/claims?organizationId={organizationId}")
 {
     Content = new StringContent(JsonSerializer.Serialize(requestObject), Encoding.UTF8, "application/json")
 };
