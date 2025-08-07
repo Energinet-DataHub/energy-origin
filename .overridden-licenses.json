@@ -6,7 +6,7 @@
     },
     {
         "Id": "Microsoft.Graph",
-        "Version": "5.87.0",
+        "Version": "5.89.0",
         "License": "MIT"
     }
 ]

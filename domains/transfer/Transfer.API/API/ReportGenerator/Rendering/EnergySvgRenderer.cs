@@ -179,20 +179,31 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
     private static XElement CreateXAxisLabels(IEnumerable<HourlyEnergy> data,
                                               double unitWidth)
     {
+        var labels = data.Select(d =>
+        {
+            var x = MARGIN_LEFT + unitWidth * (d.Hour + 0.5);
+            return new XElement(svg + "text",
+                new XAttribute("x", x.ToString(CultureInfo.InvariantCulture)),
+                new XAttribute("y", MARGIN_TOP + PLOT_HEIGHT + 27),
+                new XAttribute("text-anchor", "middle"),
+                new XAttribute("style", $"cursor: default; font-size: 12px; fill: {Colors.HourText};"),
+                d.Hour.ToString("D2"));
+        }).ToList();
+
+        var utcX = MARGIN_LEFT + unitWidth * 25;
+        labels.Add(new XElement(svg + "text",
+            new XAttribute("x", utcX.ToString(CultureInfo.InvariantCulture)),
+            new XAttribute("y", MARGIN_TOP + PLOT_HEIGHT + 27),
+            new XAttribute("text-anchor", "middle"),
+            new XAttribute("style", $"cursor: default; font-size: 12px; fill: {Colors.HourText}; font-style: italic;"),
+            " (UTC)"
+        ));
+
         return new XElement(svg + "g",
-            new XAttribute("class",
-                "highcharts-axis-labels highcharts-xaxis-labels"),
+            new XAttribute("class", "highcharts-axis-labels highcharts-xaxis-labels"),
             new XAttribute("data-z-index", "7"),
-            data.Select(d =>
-            {
-                var x = MARGIN_LEFT + unitWidth * (d.Hour + 0.5);
-                return new XElement(svg + "text",
-                    new XAttribute("x", x.ToString(CultureInfo.InvariantCulture)),
-                    new XAttribute("y", MARGIN_TOP + PLOT_HEIGHT + 27),
-                    new XAttribute("text-anchor", "middle"),
-                    new XAttribute("style", $"cursor: default; font-size: 12px; fill: {Colors.HourText};"),
-                    d.Hour.ToString("D2"));
-            }));
+            labels
+        );
     }
 
 
