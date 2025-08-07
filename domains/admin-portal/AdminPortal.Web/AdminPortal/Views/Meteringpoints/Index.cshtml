@@ -34,7 +34,7 @@
                     <!-- Column Filters -->
                     <div class="col-lg-3 col-md-6">
                         <label for="typeFilter" class="form-label small fw-semibold text-muted">Filter by Type</label>
-                        <select id="typeFilter" class="form-select column-filter" data-column="3">
+                        <select id="typeFilter" class="form-select column-filter" data-column="2">
                             <option value="">All Types</option>
                         </select>
                     </div>
@@ -221,7 +221,7 @@
                 });
 
             function initColumnFilters() {
-                const columnIndicesToFilter = [3]; // Type column
+                const columnIndicesToFilter = [2]; // Type column
 
                 columnIndicesToFilter.forEach(colIndex => {
                     const filter = document.querySelector(`.column-filter[data-column="${colIndex}"]`);
