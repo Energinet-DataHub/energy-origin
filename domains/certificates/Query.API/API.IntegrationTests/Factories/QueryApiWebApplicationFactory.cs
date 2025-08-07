@@ -200,11 +200,23 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
         string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
     {
+        return CreateB2CAuthenticatedClientInternal(sub, orgId, tin, name, apiVersion, termsAccepted, isTrial: false);
+    }
+
+    public HttpClient CreateB2CAuthenticatedTrialClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
+        string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
+    {
+        return CreateB2CAuthenticatedClientInternal(sub, orgId, tin, name, apiVersion, termsAccepted, isTrial: true);
+    }
+
+    private HttpClient CreateB2CAuthenticatedClientInternal(Guid sub, Guid orgId, string tin, string name, string apiVersion, bool termsAccepted, bool isTrial)
+    {
         _client = CreateClient();
         _client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer",
-                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted));
+                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted, isTrial: isTrial));
         _client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
+
 
         return _client;
     }
@@ -229,8 +241,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         string issuer = "demo.energioprindelse.dk",
         string audience = "Users",
         string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
-        string orgStatus = "normal",
-        bool termsAccepted = true)
+        bool termsAccepted = true,
+        bool isTrial = false)
     {
         var claims = new Dictionary<string, object>()
         {
@@ -242,7 +254,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },
             { ClaimType.TermsAccepted, termsAccepted.ToString() },
-            { ClaimType.OrgStatus, orgStatus },
+            { ClaimType.OrgStatus, isTrial ? "trial" : "normal" },
             { UserClaimName.AccessToken, "" },
             { UserClaimName.IdentityToken, "" },
             { UserClaimName.ProviderKeys, "" }

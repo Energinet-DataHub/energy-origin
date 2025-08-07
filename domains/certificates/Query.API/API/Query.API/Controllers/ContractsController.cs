@@ -44,6 +44,11 @@ public class ContractsController(IdentityDescriptor identityDescriptor, AccessDe
             return Forbid();
         }
 
+        if (!identityDescriptor.IsTrial())
+        {
+            return Forbid();
+        }
+
         foreach (var createContract in createContracts.Contracts)
         {
             var validationResult = await validator.ValidateAsync(createContract, cancellationToken);
@@ -134,6 +139,11 @@ public class ContractsController(IdentityDescriptor identityDescriptor, AccessDe
         CancellationToken cancellationToken)
     {
         if (!accessDescriptor.IsAuthorizedToOrganization(organizationId))
+        {
+            return Forbid();
+        }
+
+        if (!identityDescriptor.IsTrial())
         {
             return Forbid();
         }
