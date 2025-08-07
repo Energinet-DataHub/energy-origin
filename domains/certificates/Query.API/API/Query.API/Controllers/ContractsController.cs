@@ -25,7 +25,7 @@ namespace API.Query.API.Controllers;
 public class ContractsController(IdentityDescriptor identityDescriptor, AccessDescriptor accessDescriptor) : ControllerBase
 {
     /// <summary>
-    /// Create contracts that activates granular certificate generation for a metering point
+    /// Create contracts that activates granular certificate generation for a metering point (Trial organizations only)
     /// </summary>
     [HttpPost]
     [ProducesResponseType(201)]
@@ -124,7 +124,7 @@ public class ContractsController(IdentityDescriptor identityDescriptor, AccessDe
     }
 
     /// <summary>
-    /// Edit the end date for multiple contracts
+    /// Edit the end date for multiple contracts (Trial organizations only)
     /// </summary>
     [HttpPut]
     [ProducesResponseType(typeof(void), 200)]
