@@ -33,7 +33,7 @@ public class AdminPortalMeteringPointsClient(HttpClient httpClient, IHttpContext
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext is null)
         {
-            throw new HttpRequestException($"No HTTP context found. {nameof(MeteringPointsClient)} must be used as part of a request");
+            throw new HttpRequestException($"No HTTP context found. {nameof(AdminPortalMeteringPointsClient)} must be used as part of a request");
         }
     }
 
