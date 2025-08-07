@@ -49,7 +49,7 @@ public class ContractService(HttpClient client) : IContractService
     {
         var requestStr = JsonSerializer.Serialize(request);
         var content = new StringContent(requestStr, _encoding, _mediaType);
-        var response = await client.PutAsync($"api/certificates/admin-portal/internal-contracts", content);
+        var response = await client.PutAsync($"internal-contracts", content);
 
         if (response.IsSuccessStatusCode) return;
 
