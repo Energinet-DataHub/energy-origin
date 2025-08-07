@@ -38,6 +38,13 @@
                             <option value="">All Types</option>
                         </select>
                     </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <button id="deactivateBtn" class="btn btn-warning me-2" type="button">Deactivate</button>
+                        <button id="activateBtn" class="btn btn-success" type="button">Activate</button>
+                    </div>
+
+
                 </div>
             </div>
 
@@ -45,23 +52,30 @@
             <div class="table-responsive">
                 <table class="table table-hover table-striped table-bordered mb-0" id="meteringpointsTable">
                     <thead class="table-light">
-                        <tr>
-                            <th scope="col">GSRN</th>
-                            <th scope="col">Type</th>
-                            <th scope="col">Address</th>
-                            <th scope="col">Bidding zone</th>
-                            <th scope="col">Grid area</th>
-                            <th scope="col">Sub meter type</th>
-                            <th scope="col">Technology</th>
-                            <th scope="col">Capacity</th>
-                            <th scope="col">Can be used for issuing?</th>
-                            <th scope="col">Issuing certificates</th>
-                        </tr>
+                    <tr>
+                        <th scope="col">
+                            <input type="checkbox" id="selectAllCheckbox" title="Select all meteringpoints" />
+                        </th>
+                        <th scope="col">GSRN</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Bidding zone</th>
+                        <th scope="col">Grid area</th>
+                        <th scope="col">Sub meter type</th>
+                        <th scope="col">Technology</th>
+                        <th scope="col">Capacity</th>
+                        <th scope="col">Can be used for issuing?</th>
+                        <th scope="col">Issuing certificates</th>
+
+                    </tr>
                     </thead>
                     <tbody>
                         @foreach (var point in Model.MeteringPoints)
                         {
                             <tr>
+                                <td>
+                                    <input type="checkbox" class="meteringpoint-checkbox" value="@point.GSRN" />
+                                </td>
                                 <td class="fw-medium">@point.GSRN</td>
                                 <td data-original-text="@point.MeterType"><span class="badge bg-info">@point.MeterType</span></td>
                                 <td class="fw-medium">@point.Address</td>
@@ -70,20 +84,20 @@
                                 <td class="fw-medium">@point.SubMeterType</td>
                                 @if (point.MeterType == MeteringPointType.Consumption)
                                 {
-	                                <td class="fw-medium">-</td>
+                                    <td class="fw-medium">-</td>
                                 }
                                 else
                                 {
-	                                <td class="fw-medium">@point.Technology</td>
+                                    <td class="fw-medium">@point.Technology</td>
                                 }
                                 <td class="fw-medium">@point.Capacity</td>
                                 @if (point.CanBeUsedForIssuingCertificates)
                                 {
-	                                <td class="fw-medium">Yes</td>
+                                    <td class="fw-medium">Yes</td>
                                 }
                                 else
                                 {
-	                                <td class="fw-medium">No</td>
+                                    <td class="fw-medium">No</td>
                                 }
                                 @if (point.ActiveContract)
                                 {
@@ -93,6 +107,7 @@
                                 {
                                     <td class="fw-medium">No</td>
                                 }
+
                             </tr>
                         }
                     </tbody>
@@ -173,6 +188,27 @@
                         }
                     }
                 });
+            });
+
+            // Select all functionality
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const meteringpointCheckboxes = () => document.querySelectorAll('.meteringpoint-checkbox');
+
+            selectAllCheckbox.addEventListener('change', function () {
+                meteringpointCheckboxes().forEach(cb => {
+                    cb.checked = selectAllCheckbox.checked;
+                });
+            });
+
+            // Uncheck "Select All" if any individual checkbox is unchecked
+            document.addEventListener('change', function (e) {
+                if (e.target.classList.contains('meteringpoint-checkbox')) {
+                    if (!e.target.checked) {
+                        selectAllCheckbox.checked = false;
+                    } else if ([...meteringpointCheckboxes()].every(cb => cb.checked)) {
+                        selectAllCheckbox.checked = true;
+                    }
+                }
             });
 
             document.querySelectorAll('#meteringpointsTable tbody td:nth-child(3), #meteringpointsTable tbody td:nth-child(4)')
