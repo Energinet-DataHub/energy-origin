@@ -212,17 +212,17 @@ internal class AdminPortalContractServiceImpl(
         return [.. contracts];
     }
 
-    private static MeteringPointType Map(MeterType type)
+    private static MeteringPointType Map(Models.MeterType type)
     {
-        if (type == MeterType.Production) return MeteringPointType.Production;
-        if (type == MeterType.Consumption) return MeteringPointType.Consumption;
+        if (type == Models.MeterType.Production) return MeteringPointType.Production;
+        if (type == Models.MeterType.Consumption) return MeteringPointType.Consumption;
 
         throw new ArgumentException($"Unsupported MeterType {type}");
     }
 
-    private static Technology? Map(MeterType meterType, Clients.Internal.Technology technology)
+    private static Technology? Map(Models.MeterType meterType, Models.Technology technology)
     {
-        if (meterType == MeterType.Production)
+        if (meterType == Models.MeterType.Production)
         {
             return new Technology(technology.AibFuelCode, technology.AibTechCode);
         }

@@ -36,7 +36,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
-using Technology = API.ContractService.Clients.Technology;
+using Technology = API.ContractService.Models.Technology;
 
 namespace API.IntegrationTests.Factories;
 

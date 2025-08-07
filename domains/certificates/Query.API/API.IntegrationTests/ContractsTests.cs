@@ -19,7 +19,7 @@ using EnergyOrigin.Setup;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Technology = API.ContractService.Clients.Technology;
+using Technology = API.ContractService.Models.Technology;
 
 namespace API.IntegrationTests;
 
