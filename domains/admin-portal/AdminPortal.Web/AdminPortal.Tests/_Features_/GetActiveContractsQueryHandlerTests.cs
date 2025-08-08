@@ -29,7 +29,7 @@ public class GetActiveContractsQueryHandlerTests
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
         {
-            new("123456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
+            new(Guid.NewGuid(), "123456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
         mockAuthorizationFacade.GetOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
@@ -82,7 +82,7 @@ public class GetActiveContractsQueryHandlerTests
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
         {
-            new("123456789012345678", Guid.NewGuid().ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
+            new(Guid.NewGuid(), "123456789012345678", Guid.NewGuid().ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
         mockAuthorizationFacade.GetOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
@@ -112,9 +112,9 @@ public class GetActiveContractsQueryHandlerTests
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
         {
-            new("123456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption),
-            new("223456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Production),
-            new("323456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
+            new(Guid.NewGuid(), "123456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption),
+            new(Guid.NewGuid(), "223456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Production),
+            new(Guid.NewGuid(), "323456789012345678", organizationId.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
         mockAuthorizationFacade.GetOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));
@@ -163,7 +163,7 @@ public class GetActiveContractsQueryHandlerTests
 
         var predefinedContracts = new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>
         {
-            new("123456789012345678", organizationId1.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
+            new(Guid.NewGuid(), "123456789012345678", organizationId1.ToString(), 1625097600, 1625097600, 1627689600, MeteringPointType.Consumption)
         });
 
         mockAuthorizationFacade.GetOrganizationsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(predefinedOrganizations));

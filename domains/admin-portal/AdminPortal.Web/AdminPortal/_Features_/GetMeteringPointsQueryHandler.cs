@@ -19,11 +19,12 @@ public class GetMeteringPointsQueryResult(GetMeteringPointsQueryResultViewModel 
     public GetMeteringPointsQueryResultViewModel ViewModel = viewModel;
 }
 
-public class GetMeteringPointsQueryResultViewModel(string orgName, string tin, List<GetMeteringPointsQueryResultItem> meteringPoints)
+public class GetMeteringPointsQueryResultViewModel(Guid organizationId, string orgName, string tin, List<GetMeteringPointsQueryResultItem> meteringPoints)
 {
     public string OrganizationName = orgName;
     public string Tin = tin;
     public List<GetMeteringPointsQueryResultItem> MeteringPoints = meteringPoints;
+    public Guid OrganizationId { get; set; } = organizationId;
 }
 
 public record GetMeteringPointsQueryResultItem(
@@ -35,6 +36,7 @@ public record GetMeteringPointsQueryResultItem(
     string SubMeterType,
     string Technology,
     string Capacity,
+    Guid? ContractId,
     bool ActiveContract,
     bool CanBeUsedForIssuingCertificates)
 {
@@ -58,7 +60,7 @@ public class GetMeteringPointsQueryHandler(
 
         if (selectedOrganization == null)
         {
-            return new GetMeteringPointsQueryResult(new GetMeteringPointsQueryResultViewModel("", "", []));
+            return new GetMeteringPointsQueryResult(new GetMeteringPointsQueryResultViewModel(Guid.Empty, "", "", []));
         }
 
         try
@@ -68,7 +70,7 @@ public class GetMeteringPointsQueryHandler(
 
             if (meteringpoints.Result.Count == 0)
             {
-                return new GetMeteringPointsQueryResult(new GetMeteringPointsQueryResultViewModel(selectedOrganization.OrganizationName, selectedOrganization.Tin, []));
+                return new GetMeteringPointsQueryResult(new GetMeteringPointsQueryResultViewModel(selectedOrganization.OrganizationId, selectedOrganization.OrganizationName, selectedOrganization.Tin, []));
             }
 
             var contracts = await certificatesService.GetContractsHttpRequestAsync();
@@ -77,9 +79,10 @@ public class GetMeteringPointsQueryHandler(
                 .Select(meteringpoint =>
                     {
 
-                        var activeContract = contracts
+                        var contract = contracts
                             .Result
-                            .Any(contract => contract.GSRN == meteringpoint.GSRN);
+                            .FirstOrDefault(contract => contract.GSRN == meteringpoint.GSRN);
+                        var activeContract = contract != null;
 
                         return new GetMeteringPointsQueryResultItem(
                             meteringpoint.GSRN,
@@ -90,19 +93,20 @@ public class GetMeteringPointsQueryHandler(
                             meteringpoint.SubMeterType.ToString(),
                             meteringpoint.Technology.ToString(),
                             meteringpoint.Capacity,
+                            contract?.Id,
                             activeContract,
                             meteringpoint.CanBeUsedForIssuingCertificates
                         );
                     }
                 )
                 .ToList();
-            return new GetMeteringPointsQueryResult(new GetMeteringPointsQueryResultViewModel(selectedOrganization.OrganizationName, selectedOrganization.Tin, result));
+            return new GetMeteringPointsQueryResult(new GetMeteringPointsQueryResultViewModel(selectedOrganization.OrganizationId, selectedOrganization.OrganizationName, selectedOrganization.Tin, result));
 
         }
         catch (Exception e)
         {
             logger.LogError("Something went wrong when getting metering points: {Message}", e.Message);
-            return new GetMeteringPointsQueryResult(new GetMeteringPointsQueryResultViewModel("", "", []));
+            return new GetMeteringPointsQueryResult(new GetMeteringPointsQueryResultViewModel(Guid.Empty, "", "", []));
         }
     }
 }

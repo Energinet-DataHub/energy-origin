@@ -28,9 +28,9 @@ public static class MockData
 
     public static readonly List<GetContractsForAdminPortalResponseItem> Contracts = new()
     {
-        new("571313131313131313", Org1Id.ToString(), DateTimeOffset.Now.AddDays(-30).ToUnixTimeSeconds(),
+        new(Guid.NewGuid(), "571313131313131313", Org1Id.ToString(), DateTimeOffset.Now.AddDays(-30).ToUnixTimeSeconds(),
             DateTimeOffset.Now.AddDays(-29).ToUnixTimeSeconds(), null, MeteringPointType.Production),
-        new("571414141414141414", Org2Id.ToString(), DateTimeOffset.Now.AddDays(-60).ToUnixTimeSeconds(),
+        new(Guid.NewGuid(), "571414141414141414", Org2Id.ToString(), DateTimeOffset.Now.AddDays(-60).ToUnixTimeSeconds(),
             DateTimeOffset.Now.AddDays(-59).ToUnixTimeSeconds(), DateTimeOffset.Now.AddDays(30).ToUnixTimeSeconds(), MeteringPointType.Consumption)
     };
 

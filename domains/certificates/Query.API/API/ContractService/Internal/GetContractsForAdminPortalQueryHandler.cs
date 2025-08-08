@@ -23,6 +23,7 @@ public class GetContractsForAdminPortalQueryHandler(
             .Select(g =>
                     g.OrderByDescending(x => x.Created)
                         .Select(x => new GetContractsForAdminPortalQueryResultItem(
+                            x.Id,
                             x.GSRN,
                             x.MeteringPointOwner,
                             x.Created,
@@ -42,6 +43,7 @@ public record GetContractsForAdminPortalQuery() : IRequest<GetContractsForAdminP
 public record GetContractsForAdminPortalQueryResult(List<GetContractsForAdminPortalQueryResultItem> Result);
 
 public record GetContractsForAdminPortalQueryResultItem(
+    Guid Id,
     string GSRN,
     string MeteringPointOwner,
     DateTimeOffset Created,

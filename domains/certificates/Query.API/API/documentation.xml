@@ -24,7 +24,7 @@
             End Date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.Internal.CreateContract.Gsrn">
+        <member name="P:API.Query.API.ApiModels.Requests.Internal.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
             </summary>
