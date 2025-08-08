@@ -1,17 +1,84 @@
 @model AdminPortal._Features_.GetMeteringPointsQueryResultViewModel
+<script>
+    function onActivateBtnlicked() {
+        showActivateMeteringPointModal(() => {
+            const form = document.getElementById('activateMeteringPointForm');
+            form.querySelectorAll('input[name="gsrn"], input[name="owner"], input[name="tin"]').forEach(e => e.remove());
+
+            const ownerGuid = '@Model.OrganizationId';
+            const tin = '@Model.Tin';
+
+            document.querySelectorAll('.meteringpoint-checkbox:checked').forEach(cb => {
+                const [gsrn, , activeContract, canBeUsedForIssuingCertificates] = cb.value.split(',');
+                if (activeContract === "True" || canBeUsedForIssuingCertificates === "False") return;
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'gsrn';
+                input.value = gsrn;
+                form.appendChild(input);
+            });
+
+            ['owner', 'tin'].forEach(name => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = name === 'owner' ? ownerGuid : tin;
+                form.appendChild(input);
+            });
+
+            form.submit();
+        });
+    }
+
+    function onDeactivateBtnlicked() {
+        showDeactivateMeteringPointModal(() => {
+            const form = document.getElementById('deactivateMeteringPointForm');
+            form.querySelectorAll('input[name="contractId"], input[name="owner"], input[name="tin"]').forEach(e => e.remove());
+
+            const ownerGuid = '@Model.OrganizationId';
+            const tin = '@Model.Tin';
+
+            document.querySelectorAll('.meteringpoint-checkbox:checked').forEach(cb => {
+                const [, contractId] = cb.value.split(',');
+                if (!contractId) return;
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'contractIds';
+                input.value = contractId;
+                form.appendChild(input);
+            });
+
+            ['owner', 'tin'].forEach(name => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = name === 'owner' ? ownerGuid : tin;
+                form.appendChild(input);
+            });
+
+            fetch(form.action, {
+                method: 'PUT',
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(response => response.ok ? location.reload() : alert('Failed to update metering point.'));
+        });
+    }
+</script>
 
 <div class="container mt-4 mb-5">
     <div class="card shadow-sm">
-	    <div class="card-header bg-light border-bottom py-3">
-		    <div class="d-flex justify-content-between align-items-center">
-			    <h2 class="h5 mb-0 text-primary d-flex align-items-center">
-				    <i class="bi bi-speedometer2 me-2"></i>Meteringpoints
-			    </h2>
-		    </div>
-	    </div>
-	    <div>
-		    <h2 style="margin-left:1rem">@Model.OrganizationName (@Model.Tin)</h2>
-	    </div>
+        <div class="card-header bg-light border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0 text-primary d-flex align-items-center">
+                    <i class="bi bi-speedometer2 me-2"></i>Meteringpoints
+                </h2>
+            </div>
+        </div>
+        <div>
+            <h2 style="margin-left:1rem">@Model.OrganizationName (@Model.Tin)</h2>
+        </div>
 
         <div class="card-body p-4">
             <!-- Search and Filters Section -->
@@ -40,11 +107,9 @@
                     </div>
 
                     <div class="col-lg-3 col-md-6">
-                        <button id="deactivateBtn" class="btn btn-warning me-2" type="button">Deactivate</button>
-                        <button id="activateBtn" class="btn btn-success" type="button">Activate</button>
+                        <button id="deactivateBtn" class="btn btn-warning me-2" type="button" onclick="onDeactivateBtnlicked()" disabled>Deactivate</button>
+                        <button id="activateBtn" class="btn btn-success" type="button" onclick="onActivateBtnlicked()" disabled>Activate</button>
                     </div>
-
-
                 </div>
             </div>
 
@@ -70,52 +135,60 @@
                     </tr>
                     </thead>
                     <tbody>
-                        @foreach (var point in Model.MeteringPoints)
-                        {
-                            <tr>
-                                <td>
-                                    <input type="checkbox" class="meteringpoint-checkbox" value="@point.GSRN" />
+                    @foreach (var point in Model.MeteringPoints)
+                    {
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="meteringpoint-checkbox" value="@point.GSRN,@point.ContractId,@point.ActiveContract,@point.CanBeUsedForIssuingCertificates" />                            </td>
+                            <td class="fw-medium">@point.GSRN</td>
+                            <td data-original-text="@point.MeterType"><span class="badge bg-info">@point.MeterType</span></td>
+                            <td class="fw-medium">@point.Address</td>
+                            <td class="fw-medium">@point.BiddingZone</td>
+                            <td class="fw-medium">@point.GridArea</td>
+                            <td class="fw-medium">@point.SubMeterType</td>
+                            @if (point.MeterType == MeteringPointType.Consumption)
+                            {
+                                <td class="fw-medium">-</td>
+                            }
+                            else
+                            {
+                                <td class="fw-medium">@point.Technology</td>
+                            }
+                            <td class="fw-medium">@point.Capacity</td>
+                            @if (point.CanBeUsedForIssuingCertificates)
+                            {
+                                <td class="fw-medium">Yes</td>
+                            }
+                            else
+                            {
+                                <td class="fw-medium">No</td>
+                            }
+                            @if (point.ActiveContract)
+                            {
+                                <td class="fw-medium">
+                                    <span class="badge bg-success">ON</span>
                                 </td>
-                                <td class="fw-medium">@point.GSRN</td>
-                                <td data-original-text="@point.MeterType"><span class="badge bg-info">@point.MeterType</span></td>
-                                <td class="fw-medium">@point.Address</td>
-                                <td class="fw-medium">@point.BiddingZone</td>
-                                <td class="fw-medium">@point.GridArea</td>
-                                <td class="fw-medium">@point.SubMeterType</td>
-                                @if (point.MeterType == MeteringPointType.Consumption)
-                                {
-                                    <td class="fw-medium">-</td>
-                                }
-                                else
-                                {
-                                    <td class="fw-medium">@point.Technology</td>
-                                }
-                                <td class="fw-medium">@point.Capacity</td>
-                                @if (point.CanBeUsedForIssuingCertificates)
-                                {
-                                    <td class="fw-medium">Yes</td>
-                                }
-                                else
-                                {
-                                    <td class="fw-medium">No</td>
-                                }
-                                @if (point.ActiveContract)
-                                {
-                                    <td class="fw-medium">Yes</td>
-                                }
-                                else
-                                {
-                                    <td class="fw-medium">No</td>
-                                }
+                            }
+                            else
+                            {
+                                <td class="fw-medium">
+                                    <span class="badge bg-danger">OFF</span>
+                                </td>
+                            }
 
-                            </tr>
-                        }
+                        </tr>
+                    }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
+<partial name="_ActivateMeteringPointForm" />
+<partial name="_ActivateMeteringPointContractModal" />
+<partial name="_DeactivateMeteringPointForm" />
+<partial name="_DeactivateMeteringPointContractModal" />
 
 <style>
     .card-header .h5 {
@@ -177,7 +250,7 @@
             // Store original content for badge cells
             Array.from(tbody.rows).forEach(row => {
                 Array.from(row.cells).forEach((cell, index) => {
-                    if (index === 3) { // Type column with badge
+                    if (index === 2) { // Type column with badge
                         const badge = cell.querySelector('.badge');
                         if (badge) {
                             cell.dataset.originalText = badge.textContent.trim();
@@ -210,6 +283,18 @@
                     }
                 }
             });
+
+            function updateActionButtons() {
+                const anyChecked = [...meteringpointCheckboxes()].some(cb => cb.checked);
+                document.getElementById('deactivateBtn').disabled = !anyChecked;
+                document.getElementById('activateBtn').disabled = !anyChecked;
+            }
+
+            meteringpointCheckboxes().forEach(cb => {
+                cb.addEventListener('change', updateActionButtons);
+            });
+            selectAllCheckbox.addEventListener('change', updateActionButtons);
+            updateActionButtons();
 
             document.querySelectorAll('#meteringpointsTable tbody td:nth-child(3), #meteringpointsTable tbody td:nth-child(4)')
                 .forEach(cell => {
@@ -301,14 +386,15 @@
 
                     // Reset and apply highlighting
                     Array.from(cells).forEach((cell, index) => {
-                        if (index === 3 && cell.dataset.originalBadgeHtml) {
+                        if (index === 0) return;
+                        if (index === 2 && cell.dataset.originalBadgeHtml) {
                             cell.innerHTML = cell.dataset.originalBadgeHtml;
                         } else if (!cell.dataset.originalBadgeHtml) {
                             cell.innerHTML = cell.textContent;
                         }
 
                         if (globalFilter && showRow) {
-                            if (index === 3) {
+                            if (index === 2) {
                                 const badge = cell.querySelector('.badge');
                                 if (badge) {
                                     const originalText = cell.dataset.originalText || badge.textContent;
@@ -330,7 +416,7 @@
                 columnFilters.forEach(filter => filter.value = '');
                 Array.from(tbody.rows).forEach(row => {
                     Array.from(row.cells).forEach((cell, index) => {
-                        if (index === 3 && cell.dataset.originalBadgeHtml) {
+                        if (index === 2 && cell.dataset.originalBadgeHtml) {
                             cell.innerHTML = cell.dataset.originalBadgeHtml;
                         } else if (!cell.dataset.originalBadgeHtml) {
                             cell.innerHTML = cell.textContent;
