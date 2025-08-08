@@ -45,7 +45,6 @@ public sealed class CertificateIssuingTests : TestBase
     {
         var gsrn = Any.Gsrn();
         await AddGsrnToSponsoredTableAsync(gsrn);
-        var subject = Guid.NewGuid().ToString();
         var orgId = Guid.NewGuid().ToString();
         var now = DateTimeOffset.UtcNow;
         var utcMidnight = now.Subtract(now.TimeOfDay);
@@ -95,7 +94,8 @@ public sealed class CertificateIssuingTests : TestBase
 
         factory.Start();
 
-        await factory.AddContract(subject, orgId, gsrn.Value, utcMidnight, MeteringPointType.Production, _measurementsWireMock);
+        // TODO: cabol - Call admin portal endpoint to create contract
+        await factory.AddContract(orgId, gsrn.Value, utcMidnight, MeteringPointType.Production, _measurementsWireMock);
         var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Any(), orgId);
 
         queryResponse.Should().HaveCount(1);

@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
-using API.Query.API.ApiModels.Requests;
+using API.Query.API.ApiModels.Requests.Internal;
 using Asp.Versioning.ApiExplorer;
 using DataContext;
 using DataContext.ValueObjects;
@@ -42,7 +42,7 @@ namespace API.IntegrationTests.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly List<GrpcChannel> disposableChannels = new();
+    private readonly List<GrpcChannel> disposableChannels = [];
     private HttpClient? _client;
     public string ConnectionString { get; set; } = "";
     public string MeasurementsUrl { get; set; } = "http://foo";
@@ -273,7 +273,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return signedJwtToken;
     }
 
-    public async Task AddContract(string subject,
+    public async Task AddContract(
         string orgId,
         string gsrn,
         DateTimeOffset startDate,
@@ -281,16 +281,18 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         MeasurementsWireMock measurementsWireMock,
         Technology technology = null!)
     {
-        measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
-        var client = CreateB2CAuthenticatedClient(Guid.Parse(subject), Guid.Parse(orgId), apiVersion: ApiVersions.Version1);
+        measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
+        Guid meteringPointOwnerId = Guid.Parse(orgId);
+        var client = CreateB2CAuthenticatedClient(AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
         var body = new CreateContracts([
             new CreateContract
             {
                 GSRN = gsrn,
-                StartDate = startDate.ToUnixTimeSeconds()
+                StartDate = startDate.ToUnixTimeSeconds(),
             }
-        ]);
-        var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
+        ], meteringPointOwnerId, "11223344", "OrganizationName", IsTrial: false);
+
+        var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts?organizationId", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
