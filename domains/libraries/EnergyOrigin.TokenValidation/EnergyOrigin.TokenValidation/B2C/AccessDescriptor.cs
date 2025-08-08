@@ -19,5 +19,4 @@ public class AccessDescriptor(IdentityDescriptor identity)
     {
         return organizationIds.TrueForAll(IsAuthorizedToOrganization);
     }
-
 }
