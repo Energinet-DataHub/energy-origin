@@ -94,7 +94,6 @@ public sealed class CertificateIssuingTests : TestBase
 
         factory.Start();
 
-        // TODO: cabol - Call admin portal endpoint to create contract
         await factory.AddContract(orgId, gsrn.Value, utcMidnight, MeteringPointType.Production, _measurementsWireMock);
         var queryResponse = await client.RepeatedlyQueryCertificatesUntil(res => res.Any(), orgId);
 
