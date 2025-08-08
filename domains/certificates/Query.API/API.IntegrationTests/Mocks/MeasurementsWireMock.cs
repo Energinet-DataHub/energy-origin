@@ -15,12 +15,12 @@ public sealed class MeasurementsWireMock : IDisposable
 {
     private readonly WireMockServer server;
 
-    private readonly API.ContractService.Clients.Technology defaultTechnology = new(
+    private readonly API.ContractService.Models.Technology defaultTechnology = new(
         AibFuelCode: "F01040100",
         AibTechCode: "T010000"
     );
 
-    private readonly API.ContractService.Clients.Internal.Technology defaultInternalTechnology = new(
+    private readonly API.ContractService.Models.Technology defaultInternalTechnology = new(
         AibFuelCode: "F01040100",
         AibTechCode: "T010000"
     );
@@ -30,7 +30,7 @@ public sealed class MeasurementsWireMock : IDisposable
     public string Url => server.Url!;
 
     public void SetupMeteringPointsResponse(
-        IEnumerable<(string gsrn, MeteringPointType type, API.ContractService.Clients.Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
+        IEnumerable<(string gsrn, MeteringPointType type, API.ContractService.Models.Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
     {
         server.ResetMappings();
         var responseJson = BuildMeteringPointsResponse(meteringPoints);
@@ -40,7 +40,7 @@ public sealed class MeasurementsWireMock : IDisposable
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(responseJson));
     }
 
-    public void SetupMeteringPointsResponse(string gsrn, MeteringPointType type, API.ContractService.Clients.Technology? technology = null, bool canBeUsedforIssuingCertificates = true)
+    public void SetupMeteringPointsResponse(string gsrn, MeteringPointType type, API.ContractService.Models.Technology? technology = null, bool canBeUsedforIssuingCertificates = true)
     {
         server.ResetMappings();
 
@@ -52,7 +52,7 @@ public sealed class MeasurementsWireMock : IDisposable
     }
 
     public void SetupInternalMeteringPointsResponse(
-        IEnumerable<(string gsrn, MeteringPointType type, API.ContractService.Clients.Internal.Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
+        IEnumerable<(string gsrn, MeteringPointType type, API.ContractService.Models.Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
     {
         server.ResetMappings();
         var responseJson = BuildInternalMeteringPointsResponse(meteringPoints);
@@ -61,7 +61,7 @@ public sealed class MeasurementsWireMock : IDisposable
             .RespondWith(Response.Create().WithStatusCode(200).WithBody(responseJson));
     }
 
-    public void SetupInternalMeteringPointsResponse(string gsrn, MeteringPointType type, API.ContractService.Clients.Internal.Technology? technology = null, bool canBeUsedforIssuingCertificates = true)
+    public void SetupInternalMeteringPointsResponse(string gsrn, MeteringPointType type, API.ContractService.Models.Technology? technology = null, bool canBeUsedforIssuingCertificates = true)
     {
         server.ResetMappings();
 
@@ -72,7 +72,7 @@ public sealed class MeasurementsWireMock : IDisposable
     }
 
     private string BuildMeteringPointsResponse(
-        IEnumerable<(string gsrn, MeteringPointType meteringPointType, API.ContractService.Clients.Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
+        IEnumerable<(string gsrn, MeteringPointType meteringPointType, API.ContractService.Models.Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
     {
         var result = meteringPoints.Select(mp => new
         {
@@ -90,7 +90,7 @@ public sealed class MeasurementsWireMock : IDisposable
     }
 
     private string BuildInternalMeteringPointsResponse(
-        IEnumerable<(string gsrn, MeteringPointType meteringPointType, API.ContractService.Clients.Internal.Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
+        IEnumerable<(string gsrn, MeteringPointType meteringPointType, API.ContractService.Models.Technology? technology, bool canBeUsedforIssuingCertificates)> meteringPoints)
     {
         var result = meteringPoints.Select(mp => new
         {

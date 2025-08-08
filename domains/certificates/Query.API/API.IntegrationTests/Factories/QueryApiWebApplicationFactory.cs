@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using API.IntegrationTests.Mocks;
 using API.MeasurementsSyncer;
-using API.Query.API.ApiModels.Requests;
+using API.Query.API.ApiModels.Requests.Internal;
 using Asp.Versioning.ApiExplorer;
 using DataContext;
 using DataContext.ValueObjects;
@@ -36,13 +36,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using AuthenticationScheme = EnergyOrigin.TokenValidation.b2c.AuthenticationScheme;
-using Technology = API.ContractService.Clients.Technology;
+using Technology = API.ContractService.Models.Technology;
 
 namespace API.IntegrationTests.Factories;
 
 public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly List<GrpcChannel> disposableChannels = new();
+    private readonly List<GrpcChannel> disposableChannels = [];
     private HttpClient? _client;
     public string ConnectionString { get; set; } = "";
     public string MeasurementsUrl { get; set; } = "http://foo";
@@ -200,11 +200,23 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
     public HttpClient CreateB2CAuthenticatedClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
         string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
     {
+        return CreateB2CAuthenticatedClientInternal(sub, orgId, tin, name, apiVersion, termsAccepted, isTrial: false);
+    }
+
+    public HttpClient CreateB2CAuthenticatedTrialClient(Guid sub, Guid orgId, string tin = "11223344", string name = "Peter Producent",
+        string apiVersion = ApiVersions.Version1, bool termsAccepted = true)
+    {
+        return CreateB2CAuthenticatedClientInternal(sub, orgId, tin, name, apiVersion, termsAccepted, isTrial: true);
+    }
+
+    private HttpClient CreateB2CAuthenticatedClientInternal(Guid sub, Guid orgId, string tin, string name, string apiVersion, bool termsAccepted, bool isTrial)
+    {
         _client = CreateClient();
         _client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer",
-                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted));
+                GenerateB2CDummyToken(sub: sub.ToString(), tin: tin, name: name, orgId: orgId.ToString(), termsAccepted: termsAccepted, isTrial: isTrial));
         _client.DefaultRequestHeaders.Add("X-API-Version", apiVersion);
+
 
         return _client;
     }
@@ -229,8 +241,8 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         string issuer = "demo.energioprindelse.dk",
         string audience = "Users",
         string orgId = "03bad0af-caeb-46e8-809c-1d35a5863bc7",
-        string orgStatus = "normal",
-        bool termsAccepted = true)
+        bool termsAccepted = true,
+        bool isTrial = false)
     {
         var claims = new Dictionary<string, object>()
         {
@@ -242,7 +254,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
             { ClaimType.OrgName, cpn },
             { ClaimType.SubType, "User" },
             { ClaimType.TermsAccepted, termsAccepted.ToString() },
-            { ClaimType.OrgStatus, orgStatus },
+            { ClaimType.OrgStatus, isTrial ? "trial" : "normal" },
             { UserClaimName.AccessToken, "" },
             { UserClaimName.IdentityToken, "" },
             { UserClaimName.ProviderKeys, "" }
@@ -261,7 +273,7 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         return signedJwtToken;
     }
 
-    public async Task AddContract(string subject,
+    public async Task AddContract(
         string orgId,
         string gsrn,
         DateTimeOffset startDate,
@@ -269,16 +281,18 @@ public class QueryApiWebApplicationFactory : WebApplicationFactory<Program>
         MeasurementsWireMock measurementsWireMock,
         Technology technology = null!)
     {
-        measurementsWireMock.SetupMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
-        var client = CreateB2CAuthenticatedClient(Guid.Parse(subject), Guid.Parse(orgId), apiVersion: ApiVersions.Version1);
+        measurementsWireMock.SetupInternalMeteringPointsResponse(gsrn: gsrn, type: meteringPointType, technology: technology);
+        Guid meteringPointOwnerId = Guid.Parse(orgId);
+        var client = CreateB2CAuthenticatedClient(AdminPortalEnterpriseAppRegistrationObjectId, Guid.Empty);
         var body = new CreateContracts([
             new CreateContract
             {
                 GSRN = gsrn,
-                StartDate = startDate.ToUnixTimeSeconds()
+                StartDate = startDate.ToUnixTimeSeconds(),
             }
-        ]);
-        var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body);
+        ], meteringPointOwnerId, "11223344", "OrganizationName", IsTrial: false);
+
+        var response = await client.PostAsJsonAsync($"api/certificates/admin-portal/internal-contracts?organizationId", body);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
