@@ -31,7 +31,7 @@ public class MeteringpointsController(IMediator mediator) : Controller
     {
         var command = new CreateContractCommand
         {
-            Contracts = [.. Gsrn.Select(x => new CreateContractItem { Gsrn = x, StartDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() })],
+            Contracts = [.. Gsrn.Select(x => new CreateContractItem { Gsrn = x, StartDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds() })],
             MeteringPointOwnerId = owner,
         };
 
@@ -58,7 +58,7 @@ public class MeteringpointsController(IMediator mediator) : Controller
     {
         var command = new EditContractCommand
         {
-            Contracts = [.. contractIds.Select(x => new EditContractItem { Id = x, EndDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() })],
+            Contracts = [.. contractIds.Select(x => new EditContractItem { Id = x, EndDate = DateTimeOffset.UtcNow.ToUnixTimeSeconds() })],
             MeteringPointOwnerId = owner,
         };
 
