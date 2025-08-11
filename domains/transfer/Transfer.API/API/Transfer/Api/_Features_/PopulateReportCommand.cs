@@ -88,7 +88,7 @@ public class PopulateReportCommandHandler
             var hourlyData = _svgDataProcessor.Format(averageHourConsumptionRaw, claims);
 
             // Calculate coverage headline
-            var periodLabel = $"{from:dd.MM.yyyy} - {to:dd.MM.yyyy}";
+            var periodLabel = $"{from:dd.MM.yyyy} - {to.AddDays(-1):dd.MM.yyyy}";
 
             var municipalities = _municipalityPercentageProcessor.Calculate(claims);
 
