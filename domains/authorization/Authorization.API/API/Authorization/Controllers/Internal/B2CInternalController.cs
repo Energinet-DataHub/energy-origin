@@ -89,22 +89,20 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
     [Route("whitelisted-organization")]
     [SwaggerOperation(
         Summary = "Gets whether an organization is whitelisted",
-        Description = "This endpoint is only used by Azure B2C"
-    )]
+        Description = "This endpoint is only used by Azure B2C")]
     public async Task<ActionResult<bool>> GetIsWhitelistedOrganization([FromBody] WhitelistedOrganizationRequest request)
     {
         var isWhitelisted = await mediator.Send(new GetWhitelistedOrganizationQuery(request.OrgCvr, request.LoginType));
-        var loginType = request.LoginType.ToLowerInvariant();
-        if (isWhitelisted && loginType == "normal" || !isWhitelisted && loginType == "trial")
+
+        if (isWhitelisted && request.LoginType.Equals("normal") || !isWhitelisted && request.LoginType.Equals("trial"))
         {
             return Ok();
         }
-
-        return new ObjectResult(
-            new AuthorizationErrorResponse($"Organization not whitelisted {request.LoginType}"))
-        {
-            StatusCode = StatusCodes.Status403Forbidden
-        };
+        return StatusCode(400, new AuthorizationErrorResponse($"Organization not whitelisted {request.LoginType}"));
+        // return new ObjectResult(new AuthorizationErrorResponse($"Organization not whitelisted {request.LoginType}"))
+        // {
+        //     StatusCode = StatusCodes.Status403Forbidden
+        // };
     }
 
     [HttpPost]
@@ -114,11 +112,11 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
     public async Task<ActionResult> GetDoesLoginTypeMatch([FromBody] DoesOrganizationStatusMatchLoginTypeRequest request)
     {
         var queryHandlerResult = await mediator.Send(new GetOrganizationStatusQuery(request.OrgCvr, request.LoginType));
-        var loginType = request.LoginType.ToLowerInvariant();
 
         if (queryHandlerResult.IsAllowedAccess)
             return Ok(new DoesOrganizationStatusMatchLoginTypeResponse(queryHandlerResult.GrantedAccessAsTypeOf.ToString()!.ToLowerInvariant()));
 
+        var loginType = request.LoginType.ToLowerInvariant();
         var failureGuid = (OrgStatus: queryHandlerResult.GrantedAccessAsTypeOf, loginType) switch
         {
             (OrganizationStatus.Trial, "normal") => LoginFailureReasons.TrialOrganizationIsNotAllowedToLogInAsNormalOrganization,
