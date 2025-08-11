@@ -129,9 +129,9 @@ public class B2CInternalController(IMediator mediator) : ControllerBase
         };
 
         return new ObjectResult(
-            new AuthorizationErrorResponse($"{failureGuid}"))
+            new AuthorizationErrorResponse(failureGuid))
         {
-            StatusCode = StatusCodes.Status409Conflict
+            StatusCode = StatusCodes.Status400BadRequest
         };
     }
 }
