@@ -24,7 +24,7 @@
             End Date for generation of certificates in Unix time seconds. Set to null for no end date
             </summary>
         </member>
-        <member name="P:API.Query.API.ApiModels.Requests.Internal.CreateContract.Gsrn">
+        <member name="P:API.Query.API.ApiModels.Requests.Internal.CreateContract.GSRN">
             <summary>
             Global Service Relation Number (GSRN) for the metering point
             </summary>
@@ -96,7 +96,7 @@
         </member>
         <member name="M:API.Query.API.Controllers.ContractsController.CreateContract(API.Query.API.ApiModels.Requests.CreateContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.CreateContract},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
-            Create contracts that activates granular certificate generation for a metering point
+            Create contracts that activates granular certificate generation for a metering point (Trial organizations only)
             </summary>
         </member>
         <member name="M:API.Query.API.Controllers.ContractsController.GetContract(System.Guid,System.Guid,API.ContractService.IContractService,System.Threading.CancellationToken)">
@@ -111,7 +111,7 @@
         </member>
         <member name="M:API.Query.API.Controllers.ContractsController.UpdateEndDate(API.Query.API.ApiModels.Requests.EditContracts,System.Guid,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.EditContractEndDate},API.ContractService.IContractService,System.Threading.CancellationToken)">
             <summary>
-            Edit the end date for multiple contracts
+            Edit the end date for multiple contracts (Trial organizations only)
             </summary>
         </member>
         <member name="M:API.Query.API.Controllers.Internal.InternalContractsController.CreateContract(API.Query.API.ApiModels.Requests.Internal.CreateContracts,FluentValidation.IValidator{API.Query.API.ApiModels.Requests.Internal.CreateContract},API.ContractService.IAdminPortalContractService,System.Threading.CancellationToken)">

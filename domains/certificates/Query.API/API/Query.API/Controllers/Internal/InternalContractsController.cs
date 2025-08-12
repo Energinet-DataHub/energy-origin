@@ -35,6 +35,7 @@ public class InternalContractsController(IMediator mediator) : ControllerBase
 
         var responseItems = queryResult.Result
             .Select(c => new ContractsForAdminPortalResponseItem(
+                c.Id,
                 c.GSRN,
                 c.MeteringPointOwner,
                 c.Created.ToUnixTimeSeconds(),

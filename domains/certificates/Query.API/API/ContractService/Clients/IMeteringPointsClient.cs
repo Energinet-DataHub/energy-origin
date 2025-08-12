@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using API.ContractService.Models;
 
 namespace API.ContractService.Clients;
 
