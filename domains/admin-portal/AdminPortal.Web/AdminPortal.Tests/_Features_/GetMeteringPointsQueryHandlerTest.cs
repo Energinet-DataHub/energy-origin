@@ -57,7 +57,7 @@ public class GetMeteringPointsQueryHandlerTest
         _certificatesService.GetContractsHttpRequestAsync()
             .Returns(new GetContractsForAdminPortalResponse(new List<GetContractsForAdminPortalResponseItem>()
             {
-                new("GSRN", "TestOrg", DateTimeOffset.UtcNow.AddHours(-1).ToUnixTimeSeconds(),
+                new(Guid.NewGuid(), "GSRN", "TestOrg", DateTimeOffset.UtcNow.AddHours(-1).ToUnixTimeSeconds(),
                     DateTimeOffset.UtcNow.AddHours(-1).ToUnixTimeSeconds(), null, MeteringPointType.Production)
             }));
 

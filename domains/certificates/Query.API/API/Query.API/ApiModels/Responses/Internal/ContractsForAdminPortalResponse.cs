@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using DataContext.ValueObjects;
@@ -5,6 +6,7 @@ using DataContext.ValueObjects;
 namespace API.Query.API.ApiModels.Responses.Internal;
 
 public record ContractsForAdminPortalResponseItem(
+    Guid Id,
     string GSRN,
     string MeteringPointOwner,
     long Created,
