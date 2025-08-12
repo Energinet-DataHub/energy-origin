@@ -9,7 +9,7 @@
             const tin = '@Model.Tin';
 
             document.querySelectorAll('.meteringpoint-checkbox:checked').forEach(cb => {
-                const [gsrn, , activeContract, canBeUsedForIssuingCertificates] = cb.value.split(',');
+                const [gsrn, contractId, activeContract, canBeUsedForIssuingCertificates] = cb.value.split(',');
                 if (activeContract === "True" || canBeUsedForIssuingCertificates === "False") return;
 
                 const input = document.createElement('input');
@@ -40,7 +40,7 @@
             const tin = '@Model.Tin';
 
             document.querySelectorAll('.meteringpoint-checkbox:checked').forEach(cb => {
-                const [, contractId] = cb.value.split(',');
+                const [gsrn, contractId, activeContract, canBeUsedForIssuingCertificates] = cb.value.split(',');
                 if (!contractId) return;
 
                 const input = document.createElement('input');
@@ -126,7 +126,6 @@
                         <th scope="col">Capacity</th>
                         <th scope="col">Can be used for issuing?</th>
                         <th scope="col">Issuing certificates</th>
-
                     </tr>
                     </thead>
                     <tbody>
