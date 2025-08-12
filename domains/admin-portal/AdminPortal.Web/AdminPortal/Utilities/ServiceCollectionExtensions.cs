@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
             services.AddScoped<ICertificatesService, MockCertificatesService>();
             services.AddScoped<IMeasurementsService, MockMeasurementsService>();
             services.AddScoped<ITransferService, MockTransferService>();
+            services.AddScoped<IContractService, MockContractService>();
         }
         else
         {
