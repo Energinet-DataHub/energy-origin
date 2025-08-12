@@ -1,5 +1,5 @@
-using API.ContractService.Clients;
 using Xunit;
+using API.ContractService.Models;
 
 namespace API.UnitTests.Query.API.ApiModels.Responses;
 

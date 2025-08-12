@@ -19,7 +19,7 @@ using EnergyOrigin.Setup;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Technology = API.ContractService.Clients.Technology;
+using Technology = API.ContractService.Models.Technology;
 
 namespace API.IntegrationTests;
 
@@ -52,7 +52,7 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -95,7 +95,7 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -121,7 +121,7 @@ public class ContractsTests
     }
 
     [Fact]
-    public async Task CreateContract_ActivateWithEndDate_Created()
+    public async Task CreateContract_WithLiveOrganization_Forbidden()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
         measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
@@ -130,6 +130,26 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
         using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }]);
+
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CreateContract_ActivateWithEndDate_Created()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        await factory.CreateWallet(orgId.ToString());
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -162,7 +182,7 @@ public class ContractsTests
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -188,10 +208,10 @@ public class ContractsTests
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }]);
 
         using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -214,7 +234,7 @@ public class ContractsTests
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -239,7 +259,7 @@ public class ContractsTests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -265,10 +285,10 @@ public class ContractsTests
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }]);
 
         using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -291,10 +311,10 @@ public class ContractsTests
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }]);
 
         using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -309,7 +329,7 @@ public class ContractsTests
     }
 
     [Fact]
-    public async Task CreateContract_WhenCtreatingMultipleNonOverlappingContracts_Created()
+    public async Task CreateContract_WhenCreatingMultipleNonOverlappingContracts_Created()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
 
@@ -318,7 +338,7 @@ public class ContractsTests
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var now = DateTimeOffset.Now;
 
@@ -349,7 +369,7 @@ public class ContractsTests
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var now = DateTimeOffset.Now;
 
@@ -383,7 +403,7 @@ public class ContractsTests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -406,7 +426,7 @@ public class ContractsTests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -432,7 +452,7 @@ public class ContractsTests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -459,7 +479,7 @@ public class ContractsTests
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var now = DateTimeOffset.Now.ToUnixTimeSeconds();
         var futureDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -487,7 +507,7 @@ public class ContractsTests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -509,7 +529,7 @@ public class ContractsTests
     {
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var response = await client.GetFromJsonAsync<ContractList>($"api/certificates/contracts?organizationId={orgId}", cancellationToken: TestContext.Current.CancellationToken);
         response!.Result.Should().BeEmpty();
@@ -520,7 +540,7 @@ public class ContractsTests
     {
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var contractId = Guid.NewGuid().ToString();
         using var response = await client.GetAsync($"api/certificates/contracts/{contractId}?organizationId={orgId}", TestContext.Current.CancellationToken);
@@ -537,7 +557,7 @@ public class ContractsTests
         var orgId1 = Guid.NewGuid();
         await factory.CreateWallet(orgId1.ToString());
 
-        using var client1 = factory.CreateB2CAuthenticatedClient(subject1, orgId1, apiVersion: ApiVersions.Version1);
+        using var client1 = factory.CreateB2CAuthenticatedTrialClient(subject1, orgId1, apiVersion: ApiVersions.Version1);
 
         var body = new CreateContracts([
             new CreateContract
@@ -557,7 +577,7 @@ public class ContractsTests
 
         var subject2 = Guid.NewGuid();
         var orgId2 = Guid.NewGuid();
-        using var client2 = factory.CreateB2CAuthenticatedClient(subject2, orgId2, apiVersion: ApiVersions.Version1);
+        using var client2 = factory.CreateB2CAuthenticatedTrialClient(subject2, orgId2, apiVersion: ApiVersions.Version1);
 
         using var getSpecificContractResponse = await client2.GetAsync($"api/certificates/contracts/{createdContractId}?organizationId={orgId2}", TestContext.Current.CancellationToken);
         getSpecificContractResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -573,10 +593,10 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }]);
 
         using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -603,7 +623,7 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
@@ -614,7 +634,7 @@ public class ContractsTests
         var createdContracts = await response.Content.ReadJson<ContractList>();
         var createdContractId = createdContracts!.Result.First().Id;
 
-        var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = (long?)null }]);
+        var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = null }]);
 
         using var editResponse = await client.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -633,10 +653,10 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }]);
 
         using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -654,6 +674,34 @@ public class ContractsTests
     }
 
     [Fact]
+    public async Task EditEndDate_WithLiveOrganization_Forbidden()
+    {
+        var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
+        measurementsWireMock.SetupMeteringPointsResponse(gsrn, MeteringPointType.Production);
+
+        var subject = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        await factory.CreateWallet(orgId.ToString());
+
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
+
+        var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }]);
+
+        using var response = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
+
+        var createdContracts = await response.Content.ReadJson<ContractList>();
+        var createdContractId = createdContracts!.Result.First().Id;
+
+        var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
+        var putBody = new EditContracts([new EditContractEndDate { Id = createdContractId, EndDate = endDate }]);
+
+        using var liveClient = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var editResponse = await liveClient.PutAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", putBody, cancellationToken: TestContext.Current.CancellationToken);
+        editResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task UpdateEndDate_OverlappingContract_ReturnsConflict()
     {
         var gsrn = EnergyTrackAndTrace.Testing.Any.Gsrn().Value;
@@ -663,7 +711,7 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(1).ToUnixTimeSeconds();
         var endDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(3).ToUnixTimeSeconds();
@@ -713,7 +761,7 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var startDate = UnixTimestamp.Now().ToDateTimeOffset().AddDays(1).ToUnixTimeSeconds();
         var startDate1 = UnixTimestamp.Now().ToDateTimeOffset().AddDays(2).ToUnixTimeSeconds();
@@ -763,7 +811,7 @@ public class ContractsTests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var putBody = new EditContracts([
             new EditContractEndDate
@@ -791,7 +839,7 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var start = DateTimeOffset.Now.AddDays(3);
 
@@ -832,7 +880,7 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId, apiVersion: ApiVersions.Version1);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId, apiVersion: ApiVersions.Version1);
 
         var start = DateTimeOffset.Now.AddDays(3);
 
@@ -851,7 +899,7 @@ public class ContractsTests
 
         var newSubject = Guid.NewGuid();
         var newOrgId = Guid.NewGuid();
-        using var client2 = factory.CreateB2CAuthenticatedClient(newSubject, newOrgId, apiVersion: ApiVersions.Version1);
+        using var client2 = factory.CreateB2CAuthenticatedTrialClient(newSubject, newOrgId, apiVersion: ApiVersions.Version1);
         var putBody = new EditContracts([
             new EditContractEndDate
             {
@@ -876,7 +924,7 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
         var endDate = DateTimeOffset.Now.AddDays(3).ToUnixTimeSeconds();
         var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = endDate }]);
@@ -902,9 +950,9 @@ public class ContractsTests
         var orgId = Guid.NewGuid();
         await factory.CreateWallet(orgId.ToString());
 
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId);
         var startDate = DateTimeOffset.Now.ToUnixTimeSeconds();
-        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = (long?)null }]);
+        var body = new CreateContracts([new CreateContract { GSRN = gsrn, StartDate = startDate, EndDate = null }]);
         using var contractResponse = await client.PostAsJsonAsync($"api/certificates/contracts?organizationId={orgId}", body, cancellationToken: TestContext.Current.CancellationToken);
         contractResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -934,7 +982,7 @@ public class ContractsTests
 
         var subject = Guid.NewGuid();
         var orgId = Guid.NewGuid();
-        using var client = factory.CreateB2CAuthenticatedClient(subject, orgId);
+        using var client = factory.CreateB2CAuthenticatedTrialClient(subject, orgId);
 
         // Wait for activity log entries to be cleaned up
         await WaitForCondition(TimeSpan.FromSeconds(10), async ctx =>
@@ -960,7 +1008,7 @@ public class ContractsTests
         await WaitForCondition(timeout, CancellationToken.None, conditionAction);
     }
 
-    private async Task WaitForCondition(TimeSpan timeout, CancellationToken cancellationToken, Func<CancellationToken, Task<bool>> conditionAction)
+    private static async Task WaitForCondition(TimeSpan timeout, CancellationToken cancellationToken, Func<CancellationToken, Task<bool>> conditionAction)
     {
         using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         tokenSource.CancelAfter(timeout);
