@@ -1,7 +1,7 @@
 @model AdminPortal._Features_.GetMeteringPointsQueryResultViewModel
 <script>
     function onActivateBtnlicked() {
-        showActivateMeteringPointModal(() => {
+        showUpdateMeteringPointModal("activate", () => {
             const form = document.getElementById('activateMeteringPointForm');
             form.querySelectorAll('input[name="gsrn"], input[name="owner"], input[name="tin"]').forEach(e => e.remove());
 
@@ -32,7 +32,7 @@
     }
 
     function onDeactivateBtnlicked() {
-        showDeactivateMeteringPointModal(() => {
+        showUpdateMeteringPointModal("deactivate", () => {
             const form = document.getElementById('deactivateMeteringPointForm');
             form.querySelectorAll('input[name="contractId"], input[name="owner"], input[name="tin"]').forEach(e => e.remove());
 
@@ -187,9 +187,8 @@
 </div>
 
 <partial name="_ActivateMeteringPointForm" />
-<partial name="_ActivateMeteringPointContractModal" />
 <partial name="_DeactivateMeteringPointForm" />
-<partial name="_DeactivateMeteringPointContractModal" />
+<partial name="_UpdateMeteringPointContractModal" />
 
 <style>
     .card-header .h5 {

@@ -1,13 +1,12 @@
-<div id="activateMeteringPointModal" class="modal fade" tabindex="-1" role="dialog">
+<div id="updateMeteringPointModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="activateMeteringPointModalLabel">Warning!</h5>
+                <h5 class="modal-title" id="updateMeteringPointModalLabel">Warning!</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>You are about to activate selected meteringpoints
-                <p>Are you sure you want to activate?</p>
+                <p id="updateMeteringPoint"></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
@@ -18,11 +17,16 @@
 </div>
 
 <script>
-    function showActivateMeteringPointModal(confirmCallback) {
-        $('#activateMeteringPointModal').modal('show');
+    function showUpdateMeteringPointModal(text, confirmCallback) {
+        $('#updateMeteringPointModal').modal('show');
+        if (text == "activate") {
+            $('#updateMeteringPoint').html("You are about to activate selected meteringpoints<p>Are you sure you want to activate?</p>");
+        } else {
+            $('#updateMeteringPoint').html("You are about to deactivate selected meteringpoints<p>Are you sure you want to deactivate?</p>");
+        }
 
         $('#confirmActivateButton').off('click').on('click', function() {
-            $('#activateMeteringPointModal').modal('hide');
+            $('#updateMeteringPointModal').modal('hide');
             if (confirmCallback) {
                 confirmCallback();
             }
