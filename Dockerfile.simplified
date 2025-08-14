@@ -1,5 +1,5 @@
-ARG SDK_VERSION=9.0.303
-ARG RUNTIME_VERSION=9.0.7
+ARG SDK_VERSION=9.0.304
+ARG RUNTIME_VERSION=9.0.8
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-azurelinux3.0-distroless-extra AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-noble AS build
