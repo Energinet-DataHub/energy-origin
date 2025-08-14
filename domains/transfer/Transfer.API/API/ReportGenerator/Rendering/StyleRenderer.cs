@@ -257,6 +257,81 @@ public class StyleRenderer : IStyleRenderer
                              margin-bottom: 10px;
                              font-size: 6.3px;
                          }
+                         .explainer-pages {
+                         .explainer-section {
+                             margin-bottom: 50px;
+                         }
+
+                         .explainer-section-small {
+                             margin-bottom: 25px;
+                         }
+
+                         .restricted {
+                             font-size: 10pt;
+                             margin-bottom: 15px;
+                         }
+
+                         h1 {
+                             font-size: 14pt;
+                             font-weight: bold;
+                             margin: 40px 0 30px 0;
+                         }
+
+                         h2 {
+                             font-size: 12pt;
+                             font-weight: bold;
+                             margin: 15px 0 20px 0;
+                         }
+
+                         h3 {
+                             font-size: 11pt;
+                             font-weight: bold;
+                             margin: 12px 0 15px 0;
+                         }
+
+                         h4 {
+                             font-size: 11pt;
+                             font-weight: bold;
+                             margin: 10px 0 10px 0;
+                         }
+
+                         p {
+                             margin: 6px 0;
+                             text-align: justify;
+                         }
+
+                         ul {
+                             margin: 6px 0 6px 20px;
+                             padding: 0;
+                         }
+
+                         li {
+                             margin: 3px 0;
+                         }
+
+                         table {
+                             width: 100%;
+                             border-collapse: collapse;
+                             margin: 10px 0;
+                         }
+
+                         th, td {
+                             border: 1px solid #000;
+                             padding: 6px;
+                             text-align: left;
+                             vertical-align: top;
+                             font-size: 10pt;
+                         }
+
+                         th {
+                             font-weight: bold;
+                             background: #f0f0f0;
+                         }
+
+                         .intro-text {
+                             margin: 15px 0;
+                         }
+                     }
                      </style>
                      """;
         return html.Trim();

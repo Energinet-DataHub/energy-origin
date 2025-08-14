@@ -32,6 +32,7 @@ public class PopulateReportCommandHandler
     private readonly IMunicipalityPercentageRenderer _municipalityPercentageRenderer;
     private readonly IOtherCoverageRenderer _otherCoverageRenderer;
     private readonly ILogoRenderer _logoRenderer;
+    private readonly IExplainerPagesRenderer _explainerPagesRenderer;
     private readonly IStyleRenderer _styleRenderer;
 
     public PopulateReportCommandHandler(
@@ -48,6 +49,7 @@ public class PopulateReportCommandHandler
         IMunicipalityPercentageRenderer municipalityPercentageRenderer,
         IOtherCoverageRenderer otherCoverageRenderer,
         ILogoRenderer logoRenderer,
+        IExplainerPagesRenderer explainerPagesRenderer,
         IStyleRenderer styleRenderer)
     {
         _unitOfWork = unitOfWork;
@@ -63,6 +65,7 @@ public class PopulateReportCommandHandler
         _municipalityPercentageRenderer = municipalityPercentageRenderer;
         _otherCoverageRenderer = otherCoverageRenderer;
         _logoRenderer = logoRenderer;
+        _explainerPagesRenderer = explainerPagesRenderer;
         _styleRenderer = styleRenderer;
     }
 
@@ -99,6 +102,7 @@ public class PopulateReportCommandHandler
             var headlineHtml = _percentageRenderer.Render(coverage.HourlyPercentage, periodLabel);
             var svgHtml = _svgRenderer.Render(hourlyData).Svg;
             var logoHtml = _logoRenderer.Render();
+            var explainerPagesHtml = _explainerPagesRenderer.Render();
             var styleHtml = _styleRenderer.Render();
             var municipalitiesHtml = _municipalityPercentageRenderer.Render(municipalities);
             var otherCoverageHtml = _otherCoverageRenderer.Render(coverage);
@@ -164,6 +168,7 @@ public class PopulateReportCommandHandler
                        sem nec elit.</p>
                   </div>
                 </div>
+                {{explainerPagesHtml}}
               </body>
             </html>
             """;
