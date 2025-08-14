@@ -48,6 +48,14 @@ public class StyleRenderer : IStyleRenderer
                              body {
                                  zoom: 123%
                              }
+                             .page {
+                                 display: block;
+                                 page-break-before: always;
+                                 margin-top: 50px;
+                             }
+                             .explainer-pages {
+                                 zoom: 80%
+                             }
                          }
 
                          body {
