@@ -137,7 +137,7 @@ public class AuthorizationControllerTests : IntegrationTestBase
 
         var response = await _api.GetIsWhitelistedOrganization(request);
 
-        response.Should().Be403Forbidden();
+        response.Should().Be400BadRequest();
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public class AuthorizationControllerTests : IntegrationTestBase
 
         var response = await _api.GetIsWhitelistedOrganization(request);
 
-        response.Should().HaveHttpStatusCode(HttpStatusCode.Forbidden);
+        response.Should().HaveHttpStatusCode(HttpStatusCode.BadRequest);
     }
 
     private async Task<(IdpUserId, Tin, OrganizationName)> SeedData(ApplicationDbContext dbContext)
