@@ -26,10 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Resolve image version
-        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@63cb8bb43775cbae2f54b264f2373694fa74ffb7 # v14.40.1
+        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@7badde7e0ac8f74602c4e3626abf7ed95b2b1511 # v14.42.0
 
       - name: Resolve image name
         shell: bash
