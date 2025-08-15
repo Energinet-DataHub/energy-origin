@@ -34,6 +34,7 @@ public class PopulateReportCommandHandlerTests
     private readonly IOrganizationHeaderRenderer _headerRenderer = Substitute.For<IOrganizationHeaderRenderer>();
     private readonly IHeadlinePercentageRenderer _percentageRenderer = Substitute.For<IHeadlinePercentageRenderer>();
     private readonly ILogoRenderer _logoRenderer = Substitute.For<ILogoRenderer>();
+    private readonly IExplainerPagesRenderer _explainerPagesRenderer = Substitute.For<IExplainerPagesRenderer>();
     private readonly IStyleRenderer _styleRenderer = Substitute.For<IStyleRenderer>();
 
     private readonly PopulateReportCommandHandler _sut;
@@ -46,6 +47,7 @@ public class PopulateReportCommandHandlerTests
         _headerRenderer.Render(Arg.Any<string>(), Arg.Any<string>()).Returns("<header/>");
         _percentageRenderer.Render(Arg.Any<double>(), Arg.Any<string>()).Returns("<percent/>");
         _logoRenderer.Render().Returns("<svg></svg>");
+        _explainerPagesRenderer.Render().Returns("<div></div>");
         _styleRenderer.Render().Returns("<style></style>");
 
         var dummyPdf = new byte[] { 0x01, 0x02, 0x03 };
@@ -76,6 +78,7 @@ public class PopulateReportCommandHandlerTests
             new MunicipalityPercentageRenderer(),
             new OtherCoverageRenderer(),
             _logoRenderer,
+            _explainerPagesRenderer,
             _styleRenderer
         );
     }
