@@ -12,6 +12,9 @@ public class HeadlinePercentageRenderer : IHeadlinePercentageRenderer
     public string Render(double percent, string periodLabel)
     {
         var pct = Math.Round(percent).ToString("0");
+        if (percent is < 1 and > 0)
+            pct = "&lt1";
+
         var html = $"""
                         <div data-layer="Grapth Top" class="GrapthTop" style="width: 562.99px; height: 75px; position: relative; background-color: #F9FAFB;">
                             <div data-layer="For perioden {periodLabel}" class="ForPeriodenRet2024" style="right: 16.07px; top: 19px; position: absolute; text-align: right; line-height: 1.1;">
