@@ -21,8 +21,8 @@ public class TrialOrganizationsController : Controller
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
-        var query = new GetOrganizationsQuery();
+        var query = new GetTrialOrganizationsQuery();
         var result = await _mediator.Send(query, cancellationToken);
-        return View(result.Organizations.Where(org => org.Status == "Trial").ToList());
+        return View(result.Organizations);
     }
 }
