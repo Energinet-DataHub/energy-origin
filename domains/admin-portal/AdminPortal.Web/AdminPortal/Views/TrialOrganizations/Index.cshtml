@@ -1,46 +1,16 @@
-@model List<AdminPortal.Dtos.Response.WhitelistedOrganizationViewModel>
-
-<script>
-    function onRemoveTinClicked(tin) {
-        showRemoveOrgFromWhitelistModal(tin, () => {
-            let tinFormElement = document.getElementById("removeTin");
-            let form = document.getElementById("removeOrganizationForm");
-            tinFormElement.value = tin
-            form.submit();
-        });
-    }
-</script>
+@model List<AdminPortal._Features_.GetOrganizationsQueryResponseItem>
 
 <div class="container mt-4 mb-5">
     <div class="card shadow-sm">
         <div class="card-header bg-light border-bottom py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="h5 mb-0 text-primary d-flex align-items-center">
-                    <i class="bi bi-building me-2"></i>Live Organizations
+                    <i class="bi bi-building me-2"></i>Trial Organizations
                 </h2>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrganizationModal">
-                    <i class="bi bi-plus-circle me-1"></i> Add Organization
-                </button>
             </div>
         </div>
 
         <div class="card-body p-4">
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-
             <!-- Search and Filters Section -->
             <div class="mb-4 p-3 border rounded bg-light-subtle">
                 <div class="row g-3 align-items-end">
@@ -68,21 +38,15 @@
                             <th scope="col">Organisation Name</th>
                             <th scope="col">CVR Number</th>
                             <th scope="col">Org ID</th>
-                            <th scope="col">Manage</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var org in Model)
                         {
                             <tr>
-                                <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.CompanyName</td>
+                                <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.OrganizationName</td>
                                 <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.Tin</td>
                                 <td class="clickable-cell" onclick="window.location.href='@Url.Content("~/Meteringpoints?tin=" + @org.Tin)'">@org.OrganizationId</td>
-                                <td>
-                                    <button id="removeOrganizationButton" type="button" class="btn btn-light" onclick="onRemoveTinClicked(@org.Tin)">
-                                        <i class="bi bi-minus-circle me-1"></i> Remove
-                                    </button>
-                                </td>
                             </tr>
                         }
                     </tbody>
@@ -91,11 +55,6 @@
         </div>
     </div>
 </div>
-
-<partial name="_ConfirmationModal" />
-<partial name="_AddOrganizationModal" />
-<partial name="_RemoveOrganizationModal" />
-<partial name="_RemoveOrganizationFromWhitelistModal" />
 
 <style>
     .card-header .h5 {
@@ -155,41 +114,10 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const forms = document.querySelectorAll('.needs-validation');
-
             const searchInput = document.getElementById('searchInput');
             const clearButton = document.getElementById('clearSearch');
             const table = document.getElementById('organizationsTable');
             let filterTimeout;
-
-            const addOrganizationForm = document.getElementById('addOrganizationForm');
-            const confirmAddBtn = document.getElementById('confirmAddBtn');
-            const tinInput = document.getElementById('tin');
-
-            Array.prototype.slice.call(forms).forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-
-            confirmAddBtn.addEventListener('click', function() {
-                if (!addOrganizationForm.checkValidity()) {
-                    addOrganizationForm.classList.add('was-validated');
-                    return;
-                }
-
-                const addModal = bootstrap.Modal.getInstance(document.getElementById('addOrganizationModal'));
-                addModal.hide();
-                showConfirmationModal("Add organization with TIN: " + tinInput.value + " to whitelist?", () => {addOrganizationForm.submit();})
-            });
-
-            document.getElementById('addOrganizationModal').addEventListener('hidden.bs.modal', function () {
-                addOrganizationForm.classList.remove('was-validated');
-            });
 
             function debounce(func, delay) {
                 return function(...args) {
