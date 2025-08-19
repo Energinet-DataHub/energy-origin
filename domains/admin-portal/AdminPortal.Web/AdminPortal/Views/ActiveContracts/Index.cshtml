@@ -1,39 +1,14 @@
 @model List<AdminPortal.Dtos.Response.MeteringPoint>
 
-@{
-    string GetStatusBadgeClass(string status) {
-        if (string.IsNullOrEmpty(status)) return "bg-secondary";
-        var lowerStatus = status.ToLowerInvariant();
-        switch (lowerStatus) {
-            case "active":
-                return "bg-success";
-            case "inactive":
-            case "expired":
-            case "terminated":
-                return "bg-danger";
-            case "pending":
-            case "awaiting activation":
-                return "bg-warning text-dark";
-            case "completed":
-                return "bg-primary";
-            case "draft":
-                return "bg-info";
-            default:
-                return "bg-secondary";
-        }
-    }
-}
-
 <div class="container mt-4 mb-5">
     <div class="card shadow-sm">
         <div class="card-header bg-light border-bottom py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="h5 mb-0 text-primary d-flex align-items-center">
-                    <i class="bi bi-file-earmark-text me-2"></i>GSRN
+                    <i class="bi bi-file-earmark-text me-2"></i>Issuing GSRNs
                 </h2>
             </div>
         </div>
-
         <div class="card-body p-4">
             <!-- Search and Filters Section -->
             <div class="mb-4 p-3 border rounded bg-light-subtle">
@@ -101,7 +76,7 @@
                                     <td data-original-text="@point.MeteringPointType"><span class="badge bg-info">@point.MeteringPointType</span></td>
                                     <td>@point.OrganizationName</td>
                                     <td>@point.Tin</td>
-                                    <td data-original-text="@point.Status"><span class="badge @GetStatusBadgeClass(point.Status)">@point.Status</span></td>
+                                    <td data-original-text="@point.Status"><span class="badge bg-success">@point.Status</span></td>
                                     <td data-timestamp="@point.Created" class="text-nowrap">
                                         @DateTimeOffset.FromUnixTimeSeconds(point.Created).ToString("yyyy-MM-dd HH:mm")
                                     </td>

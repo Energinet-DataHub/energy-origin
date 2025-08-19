@@ -17,8 +17,8 @@ public static class MockData
 
     public static readonly List<GetOrganizationsResponseItem> Organizations = new()
     {
-        new(Org1Id, "Producent A/S", "11223344", "Active"),
-        new(Org2Id, "TrialCorp", "13371337", "Test"),
+        new(Org1Id, "Producent A/S", "11223344", "Normal"),
+        new(Org2Id, "TrialCorp", "13371337", "Trial"),
     };
 
     public static readonly List<GetWhitelistedOrganizationsResponseItem> WhitelistedOrganizations = new()
