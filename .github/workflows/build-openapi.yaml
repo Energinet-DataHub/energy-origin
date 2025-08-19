@@ -33,7 +33,7 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Resolve image version
-        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@e0daf35be04aa0db82d474fac217bca9f9d7af94 # v14.43.0
+        uses: Energinet-DataHub/.github/.github/actions/docker-image-version@d8fffdd0c4732df2a4b8c4d6866dd9d27d9a1f4a # v14.45.0
 
       - name: Resolve image name
         shell: bash
