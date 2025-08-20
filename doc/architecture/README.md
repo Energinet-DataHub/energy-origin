@@ -93,7 +93,3 @@ Context diagram, high level overview of the system that will be part of the Dani
 ## Domains
 
 [See more about the domains in the system](domains/README.md)
-
-## Hosting platform
-
-[See more about the Cloud native hosting platform](hosting.md)
