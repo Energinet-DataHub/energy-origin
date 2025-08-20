@@ -42,8 +42,8 @@ public class GetActiveContractsQueryHandler : IRequestHandler<GetActiveContracts
                     EndDate = contract.EndDate,
                     Status = org.Status switch
                     {
-                        "Normal" => "Active",
-                        "Trial" => "Test",
+                        "Normal" => "Live",
+                        "Trial" => "Trial",
                         _ => org.Status
                     }
                 })

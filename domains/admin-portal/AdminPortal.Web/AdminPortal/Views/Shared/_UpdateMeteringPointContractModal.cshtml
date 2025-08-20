@@ -2,7 +2,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="updateMeteringPointModalLabel">Warning!</h5>
+                <h5 class="modal-title" id="updateMeteringPointModalLabel"><b>Attention!</b></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -20,9 +20,9 @@
     function showUpdateMeteringPointModal(text, confirmCallback) {
         $('#updateMeteringPointModal').modal('show');
         if (text == "activate") {
-            $('#updateMeteringPoint').html("You are about to activate selected meteringpoints<p>Are you sure you want to activate?</p>");
+            $('#updateMeteringPoint').html("You are about to START issuing Granular Guarantees of Origin for the selected metering points.<p>Do you want to continue?</p>");
         } else {
-            $('#updateMeteringPoint').html("You are about to deactivate selected meteringpoints<p>Are you sure you want to deactivate?</p>");
+            $('#updateMeteringPoint').html("You are about to STOP issuing Granular Guarantees of Origin for the selected metering points.<p>Do you want to continue?</p>");
         }
 
         $('#confirmActivateButton').off('click').on('click', function() {
