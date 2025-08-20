@@ -26,7 +26,7 @@ jobs:
 
       - name: Check license
         if: ${{ steps.diff.outputs.pattern != '' }}
-        uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@8ef814332b1e1110792b7264b5200f9dca0cefa0 # v14.41.0
+        uses: Energinet-DataHub/.github/.github/actions/dotnet-check-license@d8fffdd0c4732df2a4b8c4d6866dd9d27d9a1f4a # v14.45.0
         with:
           project-folder: ${{ env.solution }}
           license-mapping-file: .mapped-licenses.json

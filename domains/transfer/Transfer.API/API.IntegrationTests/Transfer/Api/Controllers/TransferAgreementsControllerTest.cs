@@ -819,7 +819,7 @@ public class TransferAgreementsControllerTests : IClassFixture<IntegrationTestFi
                 existingTransferAgreement
             });
 
-        var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId, UnixTimestamp.Now().EpochSeconds,
+        var request = new CreateTransferAgreementRequest(receiverOrganizationId, senderOrganizationId, UnixTimestamp.Now().AddMinutes(1).EpochSeconds,
             UnixTimestamp.Now().AddDays(10).EpochSeconds, CreateTransferAgreementType.TransferCertificatesBasedOnConsumption);
         var jsonContent = JsonContent.Create(request);
         using var scope = factory.Services.CreateScope();
