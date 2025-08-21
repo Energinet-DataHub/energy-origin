@@ -75,7 +75,8 @@ public static class Startup
         services.AddScoped<IHeadlinePercentageRenderer, HeadlinePercentageRenderer>();
         services.AddScoped<IMunicipalityPercentageRenderer, MunicipalityPercentageRenderer>();
         services.AddScoped<IOtherCoverageRenderer, OtherCoverageRenderer>();
-        services.AddScoped<ILogoRenderer, LogoeRenderer>();
+        services.AddScoped<ILogoRenderer, LogoRenderer>();
+        services.AddScoped<IExplainerPagesRenderer, ExplainerPagesRenderer>();
         services.AddScoped<IStyleRenderer, StyleRenderer>();
         services.AddScoped<IConsumptionService, ConsumptionService>();
 

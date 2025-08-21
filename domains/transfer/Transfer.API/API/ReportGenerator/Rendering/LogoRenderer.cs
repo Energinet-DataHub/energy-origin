@@ -6,7 +6,7 @@ public interface ILogoRenderer
     string Render();
 }
 
-public class LogoeRenderer : ILogoRenderer
+public class LogoRenderer : ILogoRenderer
 {
     public string Render()
     {
