@@ -127,12 +127,13 @@
     </g>
   </g>
   <g class="highcharts-axis-labels highcharts-yaxis-labels" data-z-index="7">
-    <text x="734" y="314" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">0 Wh</text>
-    <text x="734" y="253.38686932802662" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">605 Wh</text>
-    <text x="734" y="192.27280369182205" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">1215 Wh</text>
-    <text x="734" y="131.65967301984867" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">1820 Wh</text>
-    <text x="734" y="71.04654234787529" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">2425 Wh</text>
-    <text x="734" y="10.032663704516949" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">3034 Wh</text>
+    <text x="684" y="314" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">0</text>
+    <text x="684" y="253.38686932802662" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">605</text>
+    <text x="684" y="192.27280369182205" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">1215</text>
+    <text x="684" y="131.65967301984867" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">1820</text>
+    <text x="684" y="71.04654234787529" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">2425</text>
+    <text x="684" y="10.032663704516949" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">3034</text>
+    <text x="-140" y="740" text-anchor="end" style="cursor: default; font-size: 12px; fill: rgb(194,194,194); font-style: italic;" transform="rotate(-90)">(Wh)</text>
   </g>
   <g class="highcharts-axis highcharts-yaxis-left">
     <line x1="80" y1="10" x2="80" y2="314" stroke="FFA500" stroke-width="2" />

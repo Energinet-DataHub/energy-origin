@@ -18,7 +18,7 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
 {
     private const int SVG_WIDTH = 754;
     private const int SVG_HEIGHT = 400;
-    private const int MARGIN_RIGHT = 734;
+    private const int MARGIN_RIGHT = 684;
     private const int MARGIN_LEFT = 80;
     private const int MARGIN_TOP = 10;
     private const int PLOT_HEIGHT = 304;
@@ -415,10 +415,17 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
                 return new XElement(svg + "text",
                     new XAttribute("x", MARGIN_RIGHT),
                     new XAttribute("y", yAxisLabelPosition),
-                    new XAttribute("text-anchor", "end"),
+                    new XAttribute("text-anchor", "start"),
                     new XAttribute("style", $"font-size: 12px; fill: {Colors.HourText};"),
-                    value.ToString(CultureInfo.InvariantCulture) + $" Wh");
-            })
+                    value.ToString(CultureInfo.InvariantCulture));
+            }),
+            new XElement(svg + "text",
+                new XAttribute("x", -140),
+                new XAttribute("y", 740),
+                new XAttribute("text-anchor", "end"),
+                new XAttribute("style", $"cursor: default; font-size: 12px; fill: {Colors.HourText}; font-style: italic;"),
+                new XAttribute("transform", $"rotate(-90)"),
+                "(Wh)")
         );
     }
     private XElement CreateYAxisLabelsForKilowattHours(double maxValueKwh)
@@ -443,10 +450,17 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
                 return new XElement(svg + "text",
                     new XAttribute("x", MARGIN_RIGHT),
                     new XAttribute("y", yAxisLabelPosition),
-                    new XAttribute("text-anchor", "end"),
+                    new XAttribute("text-anchor", "start"),
                     new XAttribute("style", $"font-size: 12px; fill: {Colors.HourText};"),
-                    value.ToString(CultureInfo.InvariantCulture) + $" kWh");
-            })
+                    value.ToString(CultureInfo.InvariantCulture));
+            }),
+            new XElement(svg + "text",
+                new XAttribute("x", -140),
+                new XAttribute("y", 740),
+                new XAttribute("text-anchor", "end"),
+                new XAttribute("style", $"cursor: default; font-size: 12px; fill: {Colors.HourText}; font-style: italic;"),
+                new XAttribute("transform", $"rotate(-90)"),
+                "(kWh)")
         );
     }
 
@@ -471,10 +485,17 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
                 return new XElement(svg + "text",
                     new XAttribute("x", MARGIN_RIGHT),
                     new XAttribute("y", yAxisLabelPosition),
-                    new XAttribute("text-anchor", "end"),
+                    new XAttribute("text-anchor", "start"),
                     new XAttribute("style", $"font-size: 12px; fill: {Colors.HourText};"),
-                    value.ToString("F2", CultureInfo.InvariantCulture) + $" MWh");
-            })
+                    value.ToString("F2", CultureInfo.InvariantCulture));
+            }),
+            new XElement(svg + "text",
+                new XAttribute("x", -140),
+                new XAttribute("y", 740),
+                new XAttribute("text-anchor", "end"),
+                new XAttribute("style", $"cursor: default; font-size: 12px; fill: {Colors.HourText}; font-style: italic;"),
+                new XAttribute("transform", $"rotate(-90)"),
+                "(MWh)")
         );
     }
 
