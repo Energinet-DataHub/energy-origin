@@ -18,6 +18,7 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
 {
     private const int SVG_WIDTH = 754;
     private const int SVG_HEIGHT = 400;
+    private const int MARGIN_RIGHT = 754;
     private const int MARGIN_LEFT = 80;
     private const int MARGIN_TOP = 10;
     private const int PLOT_HEIGHT = 304;
@@ -412,7 +413,7 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
             {
                 var yAxisLabelPosition = MARGIN_TOP + PLOT_HEIGHT - (PLOT_HEIGHT * value / maxValueWattHours);
                 return new XElement(svg + "text",
-                    new XAttribute("x", MARGIN_LEFT - 5),
+                    new XAttribute("x", MARGIN_RIGHT + 5),
                     new XAttribute("y", yAxisLabelPosition),
                     new XAttribute("text-anchor", "end"),
                     new XAttribute("style", $"font-size: 12px; fill: {Colors.HourText};"),
