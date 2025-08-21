@@ -5,7 +5,7 @@
 The Admin Portal is the operator UI for Energy Track & Trace.
 It provides controlled workflows for Organization Management, and metering-points management.
 The portal does not own data, and never interfaces directly with our datastores;
-All calls go through upstream APIs that own the data.
+All calls go through upstream subsystems that own the data.
 Only workflows that modify data are documented with sequence diagrams.
 
 ## Workflows
