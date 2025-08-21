@@ -10,7 +10,7 @@ public class ActivityLogOptionsTests
     {
         var options = new ActivityLogOptions();
 
-        options.CleanupActivityLogsOlderThanInDays.Should().Be(60);
+        options.CleanupActivityLogsOlderThanInDays.Should().Be(180);
         options.CleanupIntervalInSeconds.Should().Be(15 * 60);
     }
 
