@@ -126,7 +126,6 @@ public class PopulateReportCommandHandler
               <body>
                 {{watermarkHtml}}
                 <div class="content">
-                <h1>Test</h1>
                   {{headerHtml}}
                   <div class="chart">
                     {{headlineHtml}}
