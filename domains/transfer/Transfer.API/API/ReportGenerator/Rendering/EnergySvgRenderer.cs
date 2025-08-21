@@ -28,7 +28,7 @@ public class EnergySvgRenderer() : IEnergySvgRenderer
 
     private static readonly (string Unmatched, string Overmatched, string Matched,
         string AvgLine, string Bg, string HourText, string EnergyUnits)
-        Colors = ("#DFDFDF", "#59ACE8", "#82CF76", "#FF0000", "#F9FAFB", "rgb(194,194,194)", "FFA500");
+        Colors = ("#DFDFDF", "#59ACE8", "#82CF76", "#002433", "#F9FAFB", "rgb(194,194,194)", "FFA500");
 
     private static readonly XNamespace svg = "http://www.w3.org/2000/svg";
 
