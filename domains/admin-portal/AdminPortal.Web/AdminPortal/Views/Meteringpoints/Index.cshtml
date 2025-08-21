@@ -61,10 +61,11 @@
             fetch(form.action, {
                 method: 'PUT',
                 body: new FormData(form),
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
             }).then(response => response.ok ? location.reload() : alert('Failed to update metering point.'));
         });
     }
+
 </script>
 
 <div class="container mt-4 mb-5">
@@ -90,9 +91,10 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" id="searchInput" class="form-control"
-                                   placeholder="Search by Organization, TIN, GSRN, Type..."
+                                   placeholder="Search by GSRN, Type, Address, Technology..."
                                    aria-label="Search meteringpoints">
-                            <button id="clearSearch" class="btn btn-outline-secondary" type="button" title="Clear search">
+                            <button id="clearSearch" class="btn btn-outline-secondary" type="button"
+                                    title="Clear search">
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         </div>
@@ -114,17 +116,13 @@
                     <thead class="table-light">
                     <tr>
                         <th scope="col">
-                            <input type="checkbox" id="selectAllCheckbox" title="Select all meteringpoints" />
+                            <input type="checkbox" id="selectAllCheckbox" title="Select all meteringpoints"/>
                         </th>
                         <th scope="col">GSRN</th>
                         <th scope="col">Type</th>
                         <th scope="col">Address</th>
-                        <th scope="col">Bidding zone</th>
-                        <th scope="col">Grid area</th>
-                        <th scope="col">Sub meter type</th>
                         <th scope="col">Technology</th>
-                        <th scope="col">Capacity</th>
-                        <th scope="col">Can be used for issuing?</th>
+                        <th scope="col">Details</th>
                         <th scope="col">Issuing certificates</th>
                     </tr>
                     </thead>
@@ -133,13 +131,13 @@
                     {
                         <tr>
                             <td>
-                                <input type="checkbox" class="meteringpoint-checkbox" value="@point.GSRN,@point.ContractId,@point.ActiveContract,@point.CanBeUsedForIssuingCertificates" />                            </td>
+                                <input type="checkbox" class="meteringpoint-checkbox"
+                                       value="@point.GSRN,@point.ContractId,@point.ActiveContract,@point.CanBeUsedForIssuingCertificates"/>
+                            </td>
                             <td class="fw-medium">@point.GSRN</td>
-                            <td data-original-text="@point.MeterType"><span class="badge bg-info">@point.MeterType</span></td>
+                            <td data-original-text="@point.MeterType"><span
+                                    class="badge bg-info">@point.MeterType</span></td>
                             <td class="fw-medium">@point.Address</td>
-                            <td class="fw-medium">@point.BiddingZone</td>
-                            <td class="fw-medium">@point.GridArea</td>
-                            <td class="fw-medium">@point.SubMeterType</td>
                             @if (point.MeterType == MeteringPointType.Consumption)
                             {
                                 <td class="fw-medium">-</td>
@@ -148,15 +146,18 @@
                             {
                                 <td class="fw-medium">@point.Technology</td>
                             }
-                            <td class="fw-medium">@point.Capacity</td>
-                            @if (point.CanBeUsedForIssuingCertificates)
-                            {
-                                <td class="fw-medium">Yes</td>
-                            }
-                            else
-                            {
-                                <td class="fw-medium">No</td>
-                            }
+                            <td class="fw-medium">
+                                <button type="button" class="btn btn-link p-0 fw-medium"
+                                        onclick='showMeteringPointDetailsModal({
+                                            "biddingZone": "@point.BiddingZone",
+                                        "gridArea": "@point.GridArea",
+                                        "subMeterType": "@point.SubMeterType",
+                                        "capacity": "@point.Capacity",
+                                        "canBeUsedForIssuingCertificates": @point.CanBeUsedForIssuingCertificates.ToString().ToLower()
+                                        })'>
+                                    More Info
+                                </button>
+                            </td>
                             @if (point.ActiveContract)
                             {
                                 <td class="fw-medium">
@@ -176,8 +177,12 @@
                 </table>
                 <div class="row mt-3">
                     <div class="col-12 d-flex flex-wrap gap-2 justify-content-start">
-                        <button id="deactivateBtn" class="btn btn-warning" type="button" onclick="onDeactivateBtnlicked()" disabled>Deactivate</button>
-                        <button id="activateBtn" class="btn btn-success" type="button" onclick="onActivateBtnlicked()" disabled>Activate</button>
+                        <button id="deactivateBtn" class="btn btn-warning" type="button"
+                                onclick="onDeactivateBtnlicked()" disabled>Deactivate
+                        </button>
+                        <button id="activateBtn" class="btn btn-success" type="button" onclick="onActivateBtnlicked()"
+                                disabled>Activate
+                        </button>
                     </div>
                 </div>
             </div>
@@ -185,9 +190,10 @@
     </div>
 </div>
 
-<partial name="_ActivateMeteringPointForm" />
-<partial name="_DeactivateMeteringPointForm" />
-<partial name="_UpdateMeteringPointContractModal" />
+<partial name="_ActivateMeteringPointForm"/>
+<partial name="_DeactivateMeteringPointForm"/>
+<partial name="_UpdateMeteringPointContractModal"/>
+<partial name="_MeteringPointDetailsModal"/>
 
 <style>
     .card-header .h5 {
@@ -214,9 +220,11 @@
         cursor: pointer;
         transition: background-color 0.2s;
     }
+
     .sortable:hover {
         background-color: #e9ecef;
     }
+
     .sortable .bi {
         font-size: 0.8em;
     }
@@ -298,7 +306,7 @@
             document.querySelectorAll('#meteringpointsTable tbody td:nth-child(3), #meteringpointsTable tbody td:nth-child(4)')
                 .forEach(cell => {
                     cell.style.cursor = 'pointer';
-                    cell.addEventListener('click', function() {
+                    cell.addEventListener('click', function () {
                         searchInput.value = this.textContent.trim();
                         applyFilters();
                     });
@@ -334,7 +342,7 @@
             }
 
             function debounce(func, delay) {
-                return function(...args) {
+                return function (...args) {
                     clearTimeout(filterTimeout);
                     filterTimeout = setTimeout(() => {
                         func.apply(this, args);
@@ -349,7 +357,7 @@
                 return text.replace(regex, '<span class="filter-highlight">$1</span>');
             }
 
-            const applyFilters = debounce(function() {
+            const applyFilters = debounce(function () {
                 const globalFilter = searchInput.value.toLowerCase().trim();
                 const columnFiltersState = Array.from(columnFilters).map(filter => ({
                     index: parseInt(filter.dataset.column),
