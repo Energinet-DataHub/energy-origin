@@ -29,11 +29,6 @@ public class OrganizationHeaderRenderer : IOrganizationHeaderRenderer
                             <span style="color: #002433; font-size: 12px; font-family: OpenSansNormal; font-weight: 700;
                                 padding-left: 12px; text-transform: uppercase; line-height: 16px; letter-spacing: 1.20px;
                                 word-wrap: break-word">
-                                CVR
-                            </span>
-                            <span style="color: #002433; font-size: 12px; font-family: OpenSansNormal; font-weight: 700;
-                                padding-left: 12px; text-transform: uppercase; line-height: 16px; letter-spacing: 1.20px;
-                                word-wrap: break-word">
                                 {firstLetter}
                             </span>
                             <span style="color: #002433; font-size: 12px; font-family: OpenSansNormal; font-weight: 700;
