@@ -100,6 +100,7 @@ public class GetMeteringPointsQueryHandler(
                     }
                 )
                 .ToList();
+            logger.LogInformation("QUERY: " + System.Text.Json.JsonSerializer.Serialize(result));
             return new GetMeteringPointsQueryResult(new GetMeteringPointsQueryResultViewModel(selectedOrganization.OrganizationId, selectedOrganization.OrganizationName, selectedOrganization.Tin, result));
 
         }

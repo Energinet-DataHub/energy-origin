@@ -20,6 +20,8 @@ public class MeasurementsService(HttpClient client, ILogger<MeasurementsService>
         response.EnsureSuccessStatusCode();
         logger.LogInformation("CLIENT; " + await response.Content.ReadAsStringAsync());
         var result = await response.Content.ReadFromJsonAsync<GetMeteringpointsResponse>();
+        logger.LogInformation("CLIENT RESULT; " + System.Text.Json.JsonSerializer.Serialize(result.Result));
+
         return result ?? throw new InvalidOperationException("The API could not be reached or returned null.");
     }
 }
