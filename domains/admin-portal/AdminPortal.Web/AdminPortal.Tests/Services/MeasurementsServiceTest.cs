@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Models;
 using AdminPortal.Services;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 
@@ -37,8 +38,8 @@ public class MeasurementsServiceTest
             .Respond(HttpStatusCode.OK, new StringContent(JsonConvert.SerializeObject(mockResponse)));
         var client = mockHttp.ToHttpClient();
         client.BaseAddress = new Uri("http://localhost");
-
-        var measurementsService = new MeasurementsService(client);
+        var logger = NSubstitute.Substitute.For<ILogger<MeasurementsService>>();
+        var measurementsService = new MeasurementsService(client, logger);
 
         var result = await measurementsService.GetMeteringPointsHttpRequestAsync(organizationId);
         Assert.Equivalent(mockResponse, result);
@@ -55,8 +56,9 @@ public class MeasurementsServiceTest
             .Respond(HttpStatusCode.OK, new StringContent(JsonConvert.SerializeObject(mockResponse)));
         var client = mockHttp.ToHttpClient();
         client.BaseAddress = new Uri("http://localhost");
+        var logger = NSubstitute.Substitute.For<ILogger<MeasurementsService>>();
 
-        var measurementsService = new MeasurementsService(client);
+        var measurementsService = new MeasurementsService(client, logger);
 
         var result = await measurementsService.GetMeteringPointsHttpRequestAsync(organizationId);
         Assert.Equivalent(mockResponse, result);
