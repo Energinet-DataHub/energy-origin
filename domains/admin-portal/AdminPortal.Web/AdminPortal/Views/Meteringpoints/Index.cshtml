@@ -135,7 +135,8 @@
                                        value="@point.GSRN,@point.ContractId,@point.ActiveContract,@point.CanBeUsedForIssuingCertificates"/>
                             </td>
                             <td class="fw-medium">@point.GSRN</td>
-                            <td data-original-text="@point.MeterType"><span class="badge bg-info">@point.MeterType</span></td>
+                            <td data-original-text="@point.MeterType"><span
+                                    class="badge bg-info">@point.MeterType</span></td>
                             <td class="fw-medium">@point.Address</td>
                             @if (point.MeterType == MeteringPointType.Consumption)
                             {
@@ -253,18 +254,11 @@
             const columnFilters = document.querySelectorAll('.column-filter');
             let filterTimeout;
 
-            // Store original content for badge cells
+            // Store original HTML for all cells except checkboxes
             Array.from(tbody.rows).forEach(row => {
                 Array.from(row.cells).forEach((cell, index) => {
-                    if (index === 2) { // Type column with badge
-                        const badge = cell.querySelector('.badge');
-                        if (badge) {
-                            cell.dataset.originalText = badge.textContent.trim();
-                            cell.dataset.originalBadgeHtml = cell.innerHTML;
-                        } else {
-                            cell.dataset.originalText = cell.textContent.trim();
-                            cell.dataset.originalBadgeHtml = cell.innerHTML;
-                        }
+                    if (index !== 0) { // skip checkbox cell
+                        cell.dataset.originalHtml = cell.innerHTML;
                     }
                 });
             });
@@ -321,7 +315,7 @@
                     const uniqueValues = new Set();
                     Array.from(tbody.rows).forEach(row => {
                         const cell = row.cells[colIndex];
-                        const value = cell.dataset.originalText ? cell.dataset.originalText.trim() : cell.textContent.trim();
+                        const value = cell.textContent.trim();
                         if (value) {
                             uniqueValues.add(value);
                         }
@@ -371,7 +365,7 @@
                     columnFiltersState.forEach(filterState => {
                         if (filterState.value) {
                             const cell = cells[filterState.index];
-                            const cellText = (cell.dataset.originalText || cell.textContent).trim().toLowerCase();
+                            const cellText = cell.textContent.trim().toLowerCase();
                             if (cellText !== filterState.value) {
                                 showRow = false;
                             }
@@ -380,37 +374,28 @@
 
                     // Apply global filter
                     if (showRow && globalFilter) {
-                        const rowText = Array.from(cells).map((cell, idx) => {
-                            if (idx === 3) return cell.dataset.originalText || cell.textContent;
-                            return cell.textContent;
-                        }).join(' ').toLowerCase();
-
+                        const rowText = Array.from(cells).map(cell => cell.textContent).join(' ').toLowerCase();
                         if (!rowText.includes(globalFilter)) {
                             showRow = false;
                         }
                     }
 
-                    // Reset and apply highlighting
+                    // Restore original HTML for all cells except checkbox
                     Array.from(cells).forEach((cell, index) => {
-                        if (index === 0) return;
-                        if (index === 2 && cell.dataset.originalBadgeHtml) {
-                            cell.innerHTML = cell.dataset.originalBadgeHtml;
-                        } else if (!cell.dataset.originalBadgeHtml) {
-                            cell.innerHTML = cell.textContent;
-                        }
-
-                        if (globalFilter && showRow) {
-                            if (index === 2) {
-                                const badge = cell.querySelector('.badge');
-                                if (badge) {
-                                    const originalText = cell.dataset.originalText || badge.textContent;
-                                    badge.innerHTML = highlightMatches(originalText, globalFilter);
-                                }
-                            } else {
-                                cell.innerHTML = highlightMatches(cell.textContent, globalFilter);
-                            }
+                        if (index !== 0 && cell.dataset.originalHtml) {
+                            cell.innerHTML = cell.dataset.originalHtml;
                         }
                     });
+
+                    // Only highlight plain text cells (no child elements)
+                    if (globalFilter && showRow) {
+                        Array.from(cells).forEach((cell, index) => {
+                            if (index === 0) return;
+                            if (cell.childElementCount === 0) {
+                                cell.innerHTML = highlightMatches(cell.textContent, globalFilter);
+                            }
+                        });
+                    }
 
                     row.style.display = showRow ? '' : 'none';
                 });
@@ -422,10 +407,8 @@
                 columnFilters.forEach(filter => filter.value = '');
                 Array.from(tbody.rows).forEach(row => {
                     Array.from(row.cells).forEach((cell, index) => {
-                        if (index === 2 && cell.dataset.originalBadgeHtml) {
-                            cell.innerHTML = cell.dataset.originalBadgeHtml;
-                        } else if (!cell.dataset.originalBadgeHtml) {
-                            cell.innerHTML = cell.textContent;
+                        if (index !== 0 && cell.dataset.originalHtml) {
+                            cell.innerHTML = cell.dataset.originalHtml;
                         }
                     });
                     row.style.display = '';
