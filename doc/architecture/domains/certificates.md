@@ -1,6 +1,6 @@
 # Certificates Domain
 
-## Current architecture (as-is)
+## Current architecture
 
 ### Container diagram
 
@@ -21,7 +21,7 @@ sequenceDiagram
     actor user as User
     actor support as Support
     participant ap as AdminPortal
-    participant capi as CertificatesApi
+    participant capi as Certificates
     participant vault as Vault
     participant stamp as Stamp
 
@@ -30,11 +30,11 @@ sequenceDiagram
     support ->>+ ap: Activates GSRNs
     ap ->>+ capi: POST api/certificates/contracts
     capi ->>+ vault: GetWallet()
-    vault -->>- capi: Wallet
-    capi ->>+ vault: CreateWalletEndpoint()
-    vault -->>- capi: WalletEndpoint
+    vault -->>- capi: return Wallet
+    capi ->>+ vault: CreateWalletEndpoint(Wallet.Id)
+    vault -->>- capi: return WalletEndpoint
     capi ->>+ stamp: CreateRecipient(walletEndpoint)
-    stamp -->>- capi: Recipient
+    stamp -->>- capi: return Recipient
     capi ->>+ capi: CreateIssuingContract(Recipient)
     capi -->> ap: issuing contract created
 
