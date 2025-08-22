@@ -244,6 +244,7 @@ public class StyleRenderer : IStyleRenderer
 
                          .bottom-container {
                             display: flex;
+                            flex-direction: column;
                             align-self: flex-end;
                          }
 
