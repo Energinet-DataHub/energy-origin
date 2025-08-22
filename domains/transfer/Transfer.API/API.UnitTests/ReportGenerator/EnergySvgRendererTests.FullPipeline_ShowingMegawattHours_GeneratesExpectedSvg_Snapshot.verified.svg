@@ -73,7 +73,7 @@
       <rect x="447.975" y="227.2072775744199" width="19.8" height="76.79272242558011" fill="#82CF76" />
     </g>
     <g class="highcharts-series highcharts-series-3 highcharts-line-series" data-z-index="10" opacity="1" clip-path="url(#chart-area)">
-      <path fill="none" class="highcharts-graph" d="M 12.375,264.8122260882772 37.125,249.2541712418601 61.875,252.37437705603844 86.625,254.85524735581714 111.375,271.688691103944 136.125,257.0610441471392 160.875,167.12146253365975 185.625,177.68356992300477 210.375,187.42106692598998 235.125,137.12162099246706 259.875,81.71291809462878 284.625,28.023434403173326 309.375,30.064998650474536 334.125,12.753691655510806 358.875,0.6407527496898524 383.625,0 408.375,74.36234591028997 433.125,133.91249187861462 457.875,179.5511873996687 482.625,150.1122085822586 507.375,161.51766934746007 532.125,174.94428321030986 556.875,163.74067626672598 581.625,219.87073911926848" stroke="#FF0000" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+      <path fill="none" class="highcharts-graph" d="M 12.375,264.8122260882772 37.125,249.2541712418601 61.875,252.37437705603844 86.625,254.85524735581714 111.375,271.688691103944 136.125,257.0610441471392 160.875,167.12146253365975 185.625,177.68356992300477 210.375,187.42106692598998 235.125,137.12162099246706 259.875,81.71291809462878 284.625,28.023434403173326 309.375,30.064998650474536 334.125,12.753691655510806 358.875,0.6407527496898524 383.625,0 408.375,74.36234591028997 433.125,133.91249187861462 457.875,179.5511873996687 482.625,150.1122085822586 507.375,161.51766934746007 532.125,174.94428321030986 556.875,163.74067626672598 581.625,219.87073911926848" stroke="#002433" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
     </g>
   </g>
   <g class="highcharts-axis-labels highcharts-xaxis-labels" data-z-index="7">
@@ -120,19 +120,20 @@
           <rect x="2" y="6" rx="6" ry="6" width="12" height="12" fill="#82CF76" class="highcharts-point" data-z-index="3" />
         </g>
         <g class="highcharts-legend-item highcharts-line-series" data-z-index="1" transform="translate(368,3)">
-          <path fill="none" class="highcharts-graph" stroke-width="2" stroke-linecap="round" d="M 1 13 L 15 13" stroke="#FF0000" />
+          <path fill="none" class="highcharts-graph" stroke-width="2" stroke-linecap="round" d="M 1 13 L 15 13" stroke="#002433" />
           <text x="21" y="17" text-anchor="start" data-z-index="2" style="font-size: 12px; font-family: OpenSansNormal; fill: rgb(51, 51, 51);">Årligt forbrug</text>
         </g>
       </g>
     </g>
   </g>
   <g class="highcharts-axis-labels highcharts-yaxis-labels" data-z-index="7">
-    <text x="75" y="314" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">0.00 MWh</text>
-    <text x="75" y="253.2" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">202.29 MWh</text>
-    <text x="75" y="192.4" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">404.58 MWh</text>
-    <text x="75" y="131.6" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">606.86 MWh</text>
-    <text x="75" y="70.80000000000001" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">809.15 MWh</text>
-    <text x="75" y="10" text-anchor="end" style="font-size: 12px; fill: rgb(194,194,194);">1011.44 MWh</text>
+    <text x="684" y="314" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">0.00</text>
+    <text x="684" y="253.2" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">202.29</text>
+    <text x="684" y="192.4" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">404.58</text>
+    <text x="684" y="131.6" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">606.86</text>
+    <text x="684" y="70.80000000000001" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">809.15</text>
+    <text x="684" y="10" text-anchor="start" style="font-size: 12px; fill: rgb(194,194,194);">1011.44</text>
+    <text x="-140" y="740" text-anchor="end" style="cursor: default; font-size: 12px; fill: rgb(194,194,194); font-style: italic;" transform="rotate(-90)">(MWh)</text>
   </g>
   <g class="highcharts-axis highcharts-yaxis-left">
     <line x1="80" y1="10" x2="80" y2="314" stroke="FFA500" stroke-width="2" />
