@@ -161,12 +161,14 @@ public class PopulateReportCommandHandler
                           </div>
                         </div>
                       </div>
-                      {{logoHtml}}
-                      <div class="disclaimer">
-                        <p>Data grundlag & Godkendelse. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
-                           Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
-                           sit amet risus. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio
-                           sem nec elit.</p>
+                      <div class="bottom-container">
+                          {{logoHtml}}
+                          <div class="disclaimer">
+                            <p>Data grundlag & Godkendelse. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
+                               Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
+                               sit amet risus. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio
+                               sem nec elit.</p>
+                          </div>
                       </div>
                     </div>
                 </div>

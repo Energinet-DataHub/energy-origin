@@ -46,7 +46,7 @@ public class StyleRenderer : IStyleRenderer
                                  margin: 0;
                              }
                              body {
-                                 zoom: 123%
+                                 zoom: 125%
                              }
                              .page {
                                  display: block;
@@ -240,6 +240,11 @@ public class StyleRenderer : IStyleRenderer
                          .sections .section-column ul li {
                              font-size: 10px;
                              letter-spacing: var(--letter-space--015);
+                         }
+
+                         .bottom-container {
+                            display: flex;
+                            align-self: flex-end;
                          }
 
                          .logo-container {
