@@ -14,13 +14,12 @@ using Microsoft.Extensions.Logging;
 namespace AdminPortal.Controllers;
 
 [Authorize]
-public class MeteringpointsController(IMediator mediator, ILogger<MeteringpointsController> _logger) : Controller
+public class MeteringpointsController(IMediator mediator) : Controller
 {
     public async Task<IActionResult> Index(string Tin, CancellationToken cancellationToken)
     {
         var query = new GetMeteringPointsQuery(Tin);
         var result = await mediator.Send(query, cancellationToken);
-        _logger.LogInformation("THIS LOGGER: " + System.Text.Json.JsonSerializer.Serialize(result.ViewModel.MeteringPoints));
 
         return View(result.ViewModel);
     }

@@ -38,8 +38,7 @@ public class MeasurementsServiceTest
             .Respond(HttpStatusCode.OK, new StringContent(JsonConvert.SerializeObject(mockResponse)));
         var client = mockHttp.ToHttpClient();
         client.BaseAddress = new Uri("http://localhost");
-        var logger = NSubstitute.Substitute.For<ILogger<MeasurementsService>>();
-        var measurementsService = new MeasurementsService(client, logger);
+        var measurementsService = new MeasurementsService(client);
 
         var result = await measurementsService.GetMeteringPointsHttpRequestAsync(organizationId);
         Assert.Equivalent(mockResponse, result);
@@ -56,9 +55,8 @@ public class MeasurementsServiceTest
             .Respond(HttpStatusCode.OK, new StringContent(JsonConvert.SerializeObject(mockResponse)));
         var client = mockHttp.ToHttpClient();
         client.BaseAddress = new Uri("http://localhost");
-        var logger = NSubstitute.Substitute.For<ILogger<MeasurementsService>>();
 
-        var measurementsService = new MeasurementsService(client, logger);
+        var measurementsService = new MeasurementsService(client);
 
         var result = await measurementsService.GetMeteringPointsHttpRequestAsync(organizationId);
         Assert.Equivalent(mockResponse, result);
