@@ -3,6 +3,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
+using Microsoft.Extensions.Logging;
+
 namespace AdminPortal.Services;
 
 public interface IMeasurementsService

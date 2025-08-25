@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AdminPortal.Dtos.Response;
 using AdminPortal.Models;
 using AdminPortal.Services;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RichardSzalay.MockHttp;
 
@@ -19,7 +20,7 @@ public class MeasurementsServiceTest
         var mockResponse = new GetMeteringpointsResponse(new List<GetMeteringPointsResponseItem>()
         {
             new("571313131313131314",
-                MeteringPointType.Consumption,
+                MeteringPointType.Production,
                 "982",
                 SubMeterType.Physical,
                 new Address("Some vej 124", null, null, "Aarhus C", "8000", "Denmark", "0751", "Aarhus"),
@@ -37,7 +38,6 @@ public class MeasurementsServiceTest
             .Respond(HttpStatusCode.OK, new StringContent(JsonConvert.SerializeObject(mockResponse)));
         var client = mockHttp.ToHttpClient();
         client.BaseAddress = new Uri("http://localhost");
-
         var measurementsService = new MeasurementsService(client);
 
         var result = await measurementsService.GetMeteringPointsHttpRequestAsync(organizationId);

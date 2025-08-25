@@ -9,6 +9,7 @@ using EnergyOrigin.Setup.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace AdminPortal.Controllers;
 
@@ -19,6 +20,7 @@ public class MeteringpointsController(IMediator mediator) : Controller
     {
         var query = new GetMeteringPointsQuery(Tin);
         var result = await mediator.Send(query, cancellationToken);
+
         return View(result.ViewModel);
     }
 

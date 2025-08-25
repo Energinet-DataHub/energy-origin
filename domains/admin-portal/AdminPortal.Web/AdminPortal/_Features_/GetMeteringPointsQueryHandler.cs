@@ -86,7 +86,7 @@ public class GetMeteringPointsQueryHandler(
 
                         return new GetMeteringPointsQueryResultItem(
                             meteringpoint.GSRN,
-                            meteringpoint.Type,
+                            meteringpoint.MeteringPointType,
                             meteringpoint.Address.ToString(),
                             meteringpoint.BiddingZone,
                             meteringpoint.GridArea,
