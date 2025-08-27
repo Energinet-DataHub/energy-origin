@@ -34,6 +34,7 @@ public class PopulateReportCommandHandler
     private readonly ILogoRenderer _logoRenderer;
     private readonly IExplainerPagesRenderer _explainerPagesRenderer;
     private readonly IStyleRenderer _styleRenderer;
+    private readonly IFullReportRenderer _fullReportRenderer;
 
     public PopulateReportCommandHandler(
         IUnitOfWork unitOfWork,
@@ -50,7 +51,8 @@ public class PopulateReportCommandHandler
         IOtherCoverageRenderer otherCoverageRenderer,
         ILogoRenderer logoRenderer,
         IExplainerPagesRenderer explainerPagesRenderer,
-        IStyleRenderer styleRenderer)
+        IStyleRenderer styleRenderer,
+        IFullReportRenderer fullReportRenderer)
     {
         _unitOfWork = unitOfWork;
         _mediator = mediator;
@@ -67,6 +69,7 @@ public class PopulateReportCommandHandler
         _logoRenderer = logoRenderer;
         _explainerPagesRenderer = explainerPagesRenderer;
         _styleRenderer = styleRenderer;
+        _fullReportRenderer = fullReportRenderer;
     }
 
     public async Task<Unit> Handle(
@@ -118,65 +121,8 @@ public class PopulateReportCommandHandler
                 : string.Empty;
 
             // Assemble full HTML
-            var fullHtml = $$"""
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                {{styleHtml}}
-                <title>Granulære Oprindelsesgarantier</title>
-              </head>
-              <body>
-                  <div class="front-page">
-                    {{watermarkHtml}}
-                    <div class="content">
-                      {{headerHtml}}
-                      <div class="chart">
-                        {{headlineHtml}}
-                        {{svgHtml}}
-                        {{otherCoverageHtml}}
-                      </div>
-                      <div class="details">
-                        <p class="description">Granulære Oprindelsesgarantier er udelukkende udstedt på basis af sol- og vindproduktion.
-                           Herunder kan du se en fordeling af geografisk oprindelse, teknologityper samt andelen fra statsstøttede
-                           producenter.</p>
-                        <div class="sections">
-                          <div class="section-column">
-                            {{municipalitiesHtml}}
-                          </div>
-                          <div class="section-column">
-                            <h6 class="section-title">Teknologi</h6>
-                            <ul>
-                              <li>Solenergi: 38%</li>
-                              <li>Vindenergi: 62%</li>
-                            </ul>
-                          </div>
-                          <div class="section-column">
-                            <h6 class="section-title">Andel fra statsstøttede producenter</h6>
-                            <ul>
-                              <li>Ikke statsstøttede: 95%</li>
-                              <li>Statsstøttede: 5%</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="bottom-container">
-                          {{logoHtml}}
-                          <div class="disclaimer">
-                            <p>Data grundlag & Godkendelse. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.
-                               Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
-                               sit amet risus. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio
-                               sem nec elit.</p>
-                          </div>
-                      </div>
-                    </div>
-                </div>
-
-                {{explainerPagesHtml}}
-              </body>
-            </html>
-            """;
+            var fullHtml = _fullReportRenderer.Render(styleHtml, watermarkHtml, headerHtml, headlineHtml, svgHtml,
+                otherCoverageHtml, municipalitiesHtml, logoHtml, explainerPagesHtml);
 
             // Convert to base64 and generate PDF
             var base64Html = Convert.ToBase64String(Encoding.UTF8.GetBytes(fullHtml));

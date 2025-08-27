@@ -27,7 +27,10 @@ public class PopulateReportCommandHandlerTests
     private readonly IReportRepository _reports = Substitute.For<IReportRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly IMediator _mediator = Substitute.For<IMediator>();
-    private readonly ILogger<PopulateReportCommandHandler> _logger = Substitute.For<ILogger<PopulateReportCommandHandler>>();
+
+    private readonly ILogger<PopulateReportCommandHandler> _logger =
+        Substitute.For<ILogger<PopulateReportCommandHandler>>();
+
     private readonly IConsumptionService _consumptionService = Substitute.For<IConsumptionService>();
     private readonly IWalletClient _walletClient = Substitute.For<IWalletClient>();
     private readonly IEnergySvgRenderer _svgRenderer = Substitute.For<IEnergySvgRenderer>();
@@ -36,6 +39,7 @@ public class PopulateReportCommandHandlerTests
     private readonly ILogoRenderer _logoRenderer = Substitute.For<ILogoRenderer>();
     private readonly IExplainerPagesRenderer _explainerPagesRenderer = Substitute.For<IExplainerPagesRenderer>();
     private readonly IStyleRenderer _styleRenderer = Substitute.For<IStyleRenderer>();
+    private readonly IFullReportRenderer _fullReportRenderer = Substitute.For<IFullReportRenderer>();
 
     private readonly PopulateReportCommandHandler _sut;
 
@@ -49,6 +53,9 @@ public class PopulateReportCommandHandlerTests
         _logoRenderer.Render().Returns("<svg></svg>");
         _explainerPagesRenderer.Render().Returns("<div></div>");
         _styleRenderer.Render().Returns("<style></style>");
+        _fullReportRenderer.Render(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(),
+            Arg.Any<string>()).Returns("<div></div>");
 
         var dummyPdf = new byte[] { 0x01, 0x02, 0x03 };
         var successResult = new GeneratePdfResult(
@@ -79,7 +86,8 @@ public class PopulateReportCommandHandlerTests
             new OtherCoverageRenderer(),
             _logoRenderer,
             _explainerPagesRenderer,
-            _styleRenderer
+            _styleRenderer,
+            _fullReportRenderer
         );
     }
 
@@ -168,11 +176,13 @@ public class PopulateReportCommandHandlerTests
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         _consumptionService
-            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>())
             .Returns((consumptionHours, consumptionHours));
 
         _walletClient
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = allClaims,
@@ -199,10 +209,12 @@ public class PopulateReportCommandHandlerTests
         captured.IsTrial.Should().Be(true);
 
         await _walletClient.Received(1)
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>());
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>());
 
         await _consumptionService.Received(1)
-            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
+            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -240,11 +252,13 @@ public class PopulateReportCommandHandlerTests
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         _consumptionService
-            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>())
             .Returns((consumptionHours, consumptionHours));
 
         _walletClient
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = allClaims,
@@ -271,10 +285,12 @@ public class PopulateReportCommandHandlerTests
         captured.IsTrial.Should().Be(false);
 
         await _walletClient.Received(1)
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>());
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>());
 
         await _consumptionService.Received(1)
-            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
+            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -309,11 +325,13 @@ public class PopulateReportCommandHandlerTests
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         _consumptionService
-            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>())
             .Returns((consumptionHours, consumptionHours));
 
         _walletClient
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = nonTrialClaims,
@@ -340,7 +358,8 @@ public class PopulateReportCommandHandlerTests
         captured.IsTrial.Should().Be(true);
 
         await _walletClient.Received(1)
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>());
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -376,11 +395,13 @@ public class PopulateReportCommandHandlerTests
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         _consumptionService
-            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>())
             .Returns((consumptionHours, consumptionHours));
 
         _walletClient
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = trialClaims,
@@ -407,13 +428,15 @@ public class PopulateReportCommandHandlerTests
         captured.IsTrial.Should().Be(false);
 
         await _walletClient.Received(1)
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>());
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>());
     }
 
     [Theory]
     [InlineData("trial", true)]
     [InlineData("normal", false)]
-    public async Task Handle_WhenOrganizationStatusIsSet_ThenCorrectTrialParameterIsPassed(string orgStatus, bool expectedIsTrial)
+    public async Task Handle_WhenOrganizationStatusIsSet_ThenCorrectTrialParameterIsPassed(string orgStatus,
+        bool expectedIsTrial)
     {
         var orgId = OrganizationId.Create(Guid.NewGuid());
         var start = UnixTimestamp.Now().AddDays(-7);
@@ -443,11 +466,13 @@ public class PopulateReportCommandHandlerTests
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         _consumptionService
-            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>())
             .Returns((consumptionHours, consumptionHours));
 
         _walletClient
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = claims,
@@ -474,7 +499,8 @@ public class PopulateReportCommandHandlerTests
         captured.IsTrial.Should().Be(expectedIsTrial);
 
         await _walletClient.Received(1)
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>());
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -511,11 +537,13 @@ public class PopulateReportCommandHandlerTests
         _reports.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(report);
 
         _consumptionService
-            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .GetTotalAndAverageHourlyConsumption(orgId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>())
             .Returns((consumptionHours, consumptionHours));
 
         _walletClient
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>())
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>())
             .Returns(new ResultList<Claim>
             {
                 Result = mixedClaims,
@@ -542,7 +570,8 @@ public class PopulateReportCommandHandlerTests
         captured.IsTrial.Should().Be(true);
 
         await _walletClient.Received(1)
-            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All, Arg.Any<CancellationToken>());
+            .GetClaimsAsync(orgId.Value, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), TimeMatch.All,
+                Arg.Any<CancellationToken>());
     }
 
     private static Claim CreateClaim(bool isTrial)

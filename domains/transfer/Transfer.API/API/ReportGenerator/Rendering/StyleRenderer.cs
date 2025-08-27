@@ -46,7 +46,7 @@ public class StyleRenderer : IStyleRenderer
                                  margin: 0;
                              }
                              body {
-                                 zoom: 125%
+                                 zoom: 130%
                              }
                              .page {
                                  display: block;
@@ -85,11 +85,22 @@ public class StyleRenderer : IStyleRenderer
                            z-index: 1;
                          }
 
+                         .front-page {
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: space-between;
+                         }
+
                          .top {
                              display: flex;
                              flex-direction: row;
                              justify-content: space-between;
-                             padding: 0px 16px;
+                             align-items: center;
+                             width: 100%;
+                             padding-left: 2px;
+                             padding-right: 2px;
+                             padding-top: 10px;
+                             padding-bottom: 30px;
                          }
 
                          .company-name {
@@ -106,7 +117,19 @@ public class StyleRenderer : IStyleRenderer
                          }
 
                          .header {
-                             margin: 14px;
+                         }
+
+                         .title {
+                            left: 14px;
+                            top: 22px;
+                            padding-bottom: 32px;
+                            position: relative;
+                            color: #002433;
+                            font-size: 47px;
+                            font-family: OpenSansBolder;
+                            font-weight: 800;
+                            line-height: 51.70px;
+                            word-wrap: break-word
                          }
 
                          .header .subtitle {
@@ -219,6 +242,7 @@ public class StyleRenderer : IStyleRenderer
                              display: flex;
                              flex-direction: row;
                              justify-content: space-between;
+                             height: 68px;
                          }
 
                          .sections .section-column {
@@ -242,10 +266,8 @@ public class StyleRenderer : IStyleRenderer
                              letter-spacing: var(--letter-space--015);
                          }
 
-                         .bottom-container {
-                            display: flex;
-                            flex-direction: column;
-                            align-self: flex-end;
+                         .front-page-logo-margin-top {
+                            margin-top: 25px;
                          }
 
                          .logo-container {
@@ -265,15 +287,25 @@ public class StyleRenderer : IStyleRenderer
                              margin: 0 20px;
                          }
 
-                         .disclaimer p {
-                             padding: 0 16px;
-                             margin-top: 10px;
-                             margin-bottom: 10px;
-                             font-size: 6.3px;
+                         .logo-page-2-bottom {
+                            margin-top: 20px;
                          }
+
+                         .logo-page-3-bottom {
+                            margin-top: 400px;
+                         }
+
+                         .logo-page-4-bottom {
+                            margin-top: -20px;
+                         }
+
+                         .logo-page-5-bottom {
+                            margin-top: 400px;
+                         }
+
                          .explainer-pages {
                          .explainer-section {
-                             margin-bottom: 50px;
+                             margin-bottom: 40px;
                          }
 
                          .explainer-section-small {
